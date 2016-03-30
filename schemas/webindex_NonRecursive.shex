@@ -1,0 +1,67 @@
+# WebIndex example with no recursion
+prefix : <http://example.org/> 
+prefix sh: <http://www.w3.org/ns/shacl#> 
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix wf: <http://data.webfoundation.org#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix qb: <http://purl.org/linked-data/cube#> 
+prefix cex: <http://purl.org/weso/ontology/computex#> 
+prefix dct: <http://purl.org/dc/terms/>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
+prefix foaf: <http://xmlns.com/foaf/0.1/>
+prefix org: <http://www.w3.org/ns/org#>
+
+:Country {
+ a          [ wf:Country ], 
+ rdfs:label xsd:string, 
+ wf:iso2    xsd:string
+}
+
+:DataSet {
+  a [ qb:DataSet ], 
+  qb:structure [ wf:DSD ], 
+  rdfs:label xsd:string, 
+  qb:slice { a [ qb:Slice ] } *,
+  dct:publisher { a [ org:Organization ] }
+}
+
+:Slice {
+ a [ qb:Slice ], 
+ qb:sliceStructure [ wf:sliceByYear ], 
+ qb:observation . *, 
+ cex:indicator { a [ wf:PrimaryIndicator wf:SecondaryIndicator ] }
+}
+
+:Observation {
+ a [ qb:Observation ], 
+ a [ wf:Observation ], 
+ cex:value xsd:float, 
+ rdfs:label xsd:string ?, 
+ dct:issued xsd:dateTime, 
+ dct:publisher [ wf:WebFoundation ] ?, 
+ qb:dataSet { a [ qb:DataSet ] }, 
+ cex:ref-area { a [wf:Country ]} , 
+ cex:indicator { a [wf:PrimaryIndicator wf:SecondaryIndicator] }, 
+ ( cex:computation { a [ cex:Computation ] }
+ | wf:source IRI
+ )
+}
+
+:Computation {
+ a [ cex:Computation ]
+}
+
+:Indicator {
+ a [ wf:PrimaryIndicator 
+     wf:SecondaryIndicator
+   ], 
+ rdfs:label xsd:string, 
+ wf:provider .
+}
+
+:Organization CLOSED EXTRA a {
+ a [ org:Organization ], 
+ rdfs:label xsd:string, 
+ foaf:homepage IRI
+}

@@ -1,0 +1,103 @@
+# baseURI: http://topbraid.org/examples/shaclsquare
+# imports: http://www.w3.org/ns/shacl
+# prefix: ex
+
+@prefix : <http://example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix inst: <http://example.org/instance#> .
+@prefix wfonto: <http://data.webfoundation.org/ontology/> . 
+@prefix dcterms: <http://purl.org/dc/terms/> . 
+@prefix qb: <http://purl.org/linked-data/cube#> .
+@prefix cex: <http://purl.org/weso/ontology/computex#> .
+@prefix wforg: <http://data.webfoundation.org/organization/> .
+
+:Observation
+	a sh:Shape ;
+	sh:property [
+		sh:predicate rdf:type ;
+		sh:qualifiedMinCount 1 ;
+		sh:qualifiedValueShape [
+			sh:constraint [
+			  sh:in ( qb:Observation ) 
+			 ]
+		] ;
+	] ;
+	sh:property [
+		sh:predicate rdf:type ;
+		sh:qualifiedMinCount 1 ;
+		sh:qualifiedValueShape [
+			sh:constraint [
+			  sh:in ( wfonto:Observation ) 
+			 ]
+		] ;
+	] ;
+	sh:property [
+	   sh:predicate rdf:type ;
+	   sh:minCount 2 ;
+	   sh:maxCount 2
+	] ;
+	sh:property [
+		sh:predicate cex:md5-checksum ;
+		sh:minCount 0 ;
+		sh:maxCount 1 ;
+		sh:datatype xsd:string
+	] ;
+	sh:constraint [
+  	    a sh:OrConstraint ;
+		sh:shapes (
+		 [ sh:property [
+				sh:predicate cex:computation  ;
+				sh:valueShape :Raw ;
+				sh:minCount 1 ;
+				sh:maxCount 1 ;
+			]
+		 ]
+		 [	sh:property [
+			  sh:predicate cex:computation ;
+			  sh:valueShape :Score ;
+			  sh:minCount 1 ;
+			  sh:maxCount 1 ;
+			]
+		 ]
+		)
+		] ;
+	sh:property [
+		sh:predicate rdfs:label ;
+		sh:minCount 0 ;
+		sh:maxCount 1 ;
+	] ;
+	sh:property [
+		sh:predicate dcterms:issued ;
+		sh:datatype xsd:integer ;
+		sh:minCount 0 ;
+		sh:maxCount 1 ;
+	] ;  
+	sh:property [
+		sh:predicate dcterms:publisher ;
+		sh:hasValue wforg:WebFoundation ;
+		sh:minCount 0 ;
+		sh:maxCount 1 ;
+	]	.
+
+# For testing
+:NoObservation 
+  a sh:Shape ;
+  sh:constraint [
+   a sh:NotConstraint;
+   sh:shape :Observation
+  ] .
+
+	
+
+<> rdf:type sh:Graph ;
+   rdfs:comment "WebIndex data" ;
+   rdfs:label "SHACL Example for WebIndex" ;
+   sh:shapesGraph <http://www.w3.org/ns/shacl> ;
+.
+

@@ -1,0 +1,50 @@
+@prefix : <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix pc:   <http://purl.org/procurement/public-contracts#> .
+@prefix gr:   <http://purl.org/goodrelations/v1#> .
+
+:PublicContract
+	a sh:Shape ;
+	sh:property [
+		sh:predicate rdfs:label ;
+		sh:minCount 1 ; sh:maxCount 1 ;
+		sh:dataType xsd:string 
+	] ;
+	sh:property [
+		sh:predicate time:year ;
+		sh:minCount 1 ; sh:maxCount 1 ;
+		sh:dataType xsd:year 
+	] ;
+	sh:property [
+		sh:predicate pc:agreedPrice ;
+		sh:minCount 1 ; sh:maxCount 1 ;
+		sh:dataType xsd:integer 
+	] ;
+	sh:property [
+		sh:predicate pc:tender ;
+		sh:minCount 1 ;
+		sh:valueShape :BusinessEntity 
+	] ;
+.
+
+:BusinessEntity
+  a sh:Shape ;
+  sh:property [
+		sh:predicate rdf:type ;
+		sh:minCount 1 ; sh:maxCount 1 ;
+		sh:hasValue gr:BusinessEntity 
+	] ;
+  sh:property [
+		sh:predicate rdfs:label ;
+		sh:minCount 1 ; sh:maxCount 1 ;
+		sh:dataType xsd:string 
+	] ;
+.		
+	
+<> rdf:type sh:Graph ;
+   sh:shapesGraph <http://www.w3.org/ns/shacl> .
+

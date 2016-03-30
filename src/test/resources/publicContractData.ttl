@@ -1,0 +1,21 @@
+@prefix : <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix pc:   <http://purl.org/procurement/public-contracts#> .
+@prefix gr:   <http://purl.org/goodrelations/v1#> .
+
+:PublicContract sh:scopeNode :c23 .
+
+:c23 rdfs:label "Maintenance service" ;
+     time:year "2015"^^xsd:year ; 
+     pc:agreedPrice "259870";
+     pc:tender :e45 ;
+     pc:tender :e47 .
+
+:e45 rdf:type gr:BusinessEntity;
+     rdfs:label "Company ABC" .
+:e47 rdf:type gr:BusinessEntity;
+     rdfs:label "Company XYZ" . 

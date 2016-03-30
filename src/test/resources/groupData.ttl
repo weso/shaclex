@@ -1,0 +1,27 @@
+@prefix : <http://example.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+:ClosedIssueShape 
+  sh:scopeNode :i1, :i2, :i3 .
+:NotClosedIssueShape 
+  sh:scopeNode :bad1, :bad2, :bad3 .
+
+:RejectionShape sh:scopeNode :rejection1 .
+:Resolutionhape sh:scopeNode :resolution1 .
+ 
+:i1 :resolution :resolution1 .
+
+:i2 :rejection :rejection1 .
+
+:i3 :resolution :resolution1 ;
+    :rejection :rejection1 .
+  
+:bad1 :resolution :rejection1 .
+:bad2 :resolution 23 .
+:bad3 :retolusion :resolution1 .
+  
+# These nodes are well defined  
+:rejection1 a :RejectionShape .
+  
+:resolution1 a :ResolutionShape .
+   

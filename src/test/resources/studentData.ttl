@@ -1,0 +1,30 @@
+@prefix : <http://example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix inst: <http://example.org/instance#> .
+@prefix wfonto: <http://data.webfoundation.org/ontology/> . 
+@prefix dcterms: <http://purl.org/dc/terms/> . 
+@prefix qb: <http://purl.org/linked-data/cube#> .
+@prefix cex: <http://purl.org/weso/ontology/computex#> .
+@prefix wforg: <http://data.webfoundation.org/organization/> .
+
+:UserShape sh:scopeNode :user1, :user2 .
+:NonUserShape sh:scopeNode :noUser3, :noUser4 .
+
+:user1 rdfs:label "User 1" ;
+       :role :User .
+  
+:user2 rdfs:label "User 2" ;
+  .
+  
+:noUser3 rdfs:label "User 3" ;
+  :role :NonUser .
+  
+:noUser4 rdfs:label "User 4" ;
+  :role :User, :NonUser .
+  
