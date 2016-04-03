@@ -11,8 +11,10 @@ import org.apache.log4j._
 import es.weso.utils.FileUtils
 import es.weso.utils.TryUtils
 import util._
-import es.weso.rdf.RDFReader
+import es.weso.rdf.{ PrefixMap, RDFReader }
 import java.nio.file._
+import es.weso.shacl.converter.RDF2Schema
+import java.io.File
 
 object Main extends App {
   override def main(args: Array[String]): Unit = {
@@ -32,13 +34,13 @@ object Main extends App {
 
     val tryValidate = for {
       rdf <- getRDFReader(opts)
-      schema <- getSchema(opts,rdf)
-    } yield (rdf,schema)
+      (schema,pm) <- getSchema(opts,rdf)
+    } yield (rdf,schema,pm)
 
     tryValidate match {
-      case Success((reader,schema)) => {
+      case Success((reader,schema,pm)) => {
         if (opts.show()) {
-          println("Validation report:")
+          println("Schema:" + schema.serialize("TURTLE"))
         }
 
         if (opts.outputFile.get.isDefined) {
@@ -88,20 +90,30 @@ object Main extends App {
     }
   }
   
-   def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
+   def getSchema(opts: MainOpts, rdf: RDFReader): Try[(Schema,PrefixMap)] = {
     if (opts.shacl.isDefined) {
-      val path = Paths.get(opts.data())
+      val path = Paths.get(opts.shacl())
       for {
         rdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.shaclFormat())
-        schema <- extractSchema(rdf)
-      } yield schema
+        (schema,pm) <- extractSchema(rdf)
+      } yield (schema,pm)
     } else {
-      Failure(throw new Exception("Not supported yet extraction of shapes from RDF"))
+      extractSchema(rdf)
     }
   }
-   
-  def extractSchema(rdf:RDFReader): Try[Schema] = {
-    Failure(throw new Exception("Not yet supported conversion from RDF to Schema"))
+
+  def getShacl(file: File, format: String): Try[(Schema,PrefixMap)] = {
+    format match {
+      case "TURTLE" => for {
+        rdf <- RDFAsJenaModel.fromFile(file,format)
+        (schema,pm) <- extractSchema(rdf)
+      } yield (schema,pm)
+      case _ => Failure(throw new Exception("Unsupported format: " + format))
+    }
+  }
+  
+  def extractSchema(rdf:RDFReader): Try[(Schema,PrefixMap)] = {
+    RDF2Schema.rdf2Schema(rdf)
   }
 
 }
