@@ -9,6 +9,10 @@ import scala.concurrent.duration._
 import org.slf4j._
 import org.apache.log4j._
 import es.weso.utils.FileUtils
+import es.weso.utils.TryUtils
+import util._
+import es.weso.rdf.RDFReader
+import java.nio.file._
 
 object Main extends App {
   override def main(args: Array[String]): Unit = {
@@ -23,49 +27,44 @@ object Main extends App {
 
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
+    val startTime = System.nanoTime()
 
-    val rdf = RDFAsJenaModel.empty
 
-    if (opts.shex.isDefined) {
-      val (valid, time) = validateShEx(opts.shex(),rdf, opts.explain())
-      if (valid) {
-        printTime("shex,      valid",opts,time)
-      } else {
-        printTime("shex,  not valid",opts,time)
+    val tryValidate = for {
+      rdf <- getRDFReader(opts)
+      schema <- getSchema(opts,rdf)
+    } yield (rdf,schema)
+
+    tryValidate match {
+      case Success((reader,schema)) => {
+        if (opts.show()) {
+          println("Validation report:")
+        }
+
+        if (opts.outputFile.get.isDefined) {
+          val fileName = opts.outputFile.get.get
+          val str = "" //TODO: str should contain the generated report
+          FileUtils.writeFile(fileName, str)
+        }
+
+        if (opts.time()) {
+          val endTime = System.nanoTime()
+          val time : Long = endTime - startTime
+          printTime("Time", opts, time)
+        }
+
+      }
+      case Failure(e) => {
+        println("Exception: " + e.getMessage())
       }
     }
 
-    if (opts.shacl.isDefined) {
-      try {
-      val (valid,time) = validateShacl(opts.shacl(),rdf, opts.explain())
-      if (valid) {
-        printTime("shacl,     valid", opts, time)
-      } else {
-        printTime("shacl, not valid", opts, time)
-      } 
-      } catch {
-        case e : Throwable => 
-          printTime("shacl error " + e,opts,-1)
-      }
-      
-    }
-
-    if (opts.show()) {
-      val str = generated.serialize(opts.format())
-      println(str)
-    }
-    
-    if (opts.outputFile.get.isDefined) {
-      val fileName = opts.outputFile.get.get 
-      val str = generated.serialize(opts.format())
-      FileUtils.writeFile(fileName,str)
-    }
   }
 
   def printTime(msg: String, opts: MainOpts, nanos: Long): Unit = {
     if (opts.time()) {
       val time = Duration(nanos, NANOSECONDS).toMillis
-      println(f"$msg%s, ${opts.allScopeNodes()}, ${opts.numCountries()}%3d, ${opts.numDataSets()}%3d, ${opts.numSlices()}%3d,${opts.numObs()}%3d,${opts.numComps()}%3d,${opts.numIndicators()}%3d,${opts.numOrgs()}%3d,$time%10d")
+      println(f"$msg%s, $time%10d")
     }
   }
 
@@ -78,6 +77,31 @@ object Main extends App {
       println("Error: %s".format(e.getMessage))
       scallop.printHelp
       sys.exit(1)
+  }
+
+  def getRDFReader(opts: MainOpts): Try[RDFReader] = {
+    if (opts.data.isDefined) {
+      val path = Paths.get(opts.data())
+      RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
+    } else {
+      Success(RDFAsJenaModel.empty)
+    }
+  }
+  
+   def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
+    if (opts.shacl.isDefined) {
+      val path = Paths.get(opts.data())
+      for {
+        rdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.shaclFormat())
+        schema <- extractSchema(rdf)
+      } yield schema
+    } else {
+      Failure(throw new Exception("Not supported yet extraction of shapes from RDF"))
+    }
+  }
+   
+  def extractSchema(rdf:RDFReader): Try[Schema] = {
+    Failure(throw new Exception("Not yet supported conversion from RDF to Schema"))
   }
 
 }

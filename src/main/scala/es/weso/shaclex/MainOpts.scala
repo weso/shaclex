@@ -1,155 +1,70 @@
-package es.weso.wiGen
+package es.weso.shaclex
 
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import es.weso.shacl._
-import es.weso.main.Processors
 
 class MainOpts(
   arguments: Array[String],
   onError: (Throwable, Scallop) => Nothing) extends ScallopConf(arguments) {
 
-  banner("""| wiGen: WebIndex-like data generation and validation
+  banner("""| shaclex: SHACL processor
             | Options:
             |""".stripMargin)
 
   footer("Enjoy!")
-
-  val numCountries = opt[Int]("countries",
-    short = 'c',
-    default = Some(1),
-    descr = "Number of countries"
-  )
-
-  val numDataSets = opt[Int]("dataSets",
-    short = 'd',
-    default = Some(1),
-    descr = "Number of data sets"
-  )
     
-  val numSlices = opt[Int]("slices",
-    short = 'l',
-    default = Some(1),
-    descr = "Number of slices"
+  val shacl = opt[String]("shacl",
+    short = 's',
+    default = None,
+    descr = "shacl file"
   )
   
-  val numObs = opt[Int]("observations",
-    short = 'o',
-    default = Some(1),
-    descr = "Number of observations"
-  )
-    
-  val numComps = opt[Int]("computations",
-    short = 'p',
-    default = Some(1),
-    descr = "Number of computations"
+  val shaclFormat = opt[String]("shaclFormat",
+    noshort = true,
+    default = Some("TURTLE"),
+    descr = "SHACL input format"
   )
   
-  val numIndicators = opt[Int]("Indicators",
-    short = 'i',
-    default = Some(1),
-    descr = "Number of indicators"
-  )
-
-  val numOrgs = opt[Int]("Organizations",
-    short = 'g',
-    default = Some(1),
-    descr = "Number of organizations"
+  val data = opt[String]("data",
+    default = None,
+    descr = "Data file(s) to validate",
+    short = 'd'
   )
   
-  val numBadCountries = opt[Int]("badCountries",
-    default = Some(0),
-    descr = "Number of invalid countries",
+  val dataFormat = opt[String]("dataFormat",
+    default = Some("TURTLE"),
+    descr = "Data format",
     noshort = true
   )
-
-  val numBadDataSets = opt[Int]("badDataSets",
-    default = Some(0),
-    descr = "Number of invalid dataSets",
+ 
+  val engine = opt[String]("engine",
+    default = Some("SHACL_WD_16_01"),
+    descr = "Data format",
     noshort = true
   )
   
-  val numBadSlices = opt[Int]("badSlices",
-    default = Some(0),
-    descr = "Number of invalid slices",
-    noshort = true
-  )
-  
-  val numBadObs = opt[Int]("badObs",
-    default = Some(0),
-    descr = "Number of invalid observations",
-    noshort = true
-  )
-  
-  val numBadComps = opt[Int]("badComps",
-    default = Some(0),
-    descr = "Number of invalid computations",
-    noshort = true
-  )
-  
-  val numBadIndicators = opt[Int]("badIndicators",
-    default = Some(0),
-    descr = "Number of invalid indicators",
-    noshort = true
-  )
-  
-  val numBadOrgs = opt[Int]("badOrgs",
-    default = Some(0),
-    descr = "Number of invalid organizations",
-    noshort = true
-  )
-  
-  val allTypes = toggle("allTypes",
-    prefix = "no-",
-    default = Some(false),
-    descrYes = "add rdf:type to every node",
-    descrNo = "don't add rdf:type to every node",
-    noshort = true
-    )
-    
   val explain = toggle("explain",
     prefix = "no-",
     default = Some(false),
-    descrYes = "show more info in case of errors",
-    descrNo = "don't show info in case of errors",
+    descrYes = "show more extra info about validation process",
+    descrNo = "don't show extra info",
     noshort = true
     )
     
   val show = toggle("show",
     prefix = "no-",
     default = Some(false),
-    descrYes = "show data generated",
-    descrNo = "don't show data generated",
+    descrYes = "show report",
+    descrNo = "don't show report",
     noshort = true
     )
     
-  val format = opt[String]("format",
-    default = Some("TURTLE"),
-    descr = "format"
-    )
-    
-  val outputFile = opt[String]("file",
+  val outputFile = opt[String]("outputFile",
     default = None,
-    descr = "save generated data in a file",
+    descr = "save report a file",
     short = 'f'
     )
-    
-  val allScopeNodes = toggle("scopeNodes",
-    prefix = "no-",
-    default = Some(true),
-    descrYes = "generate all scopeNode declarations",
-    descrNo = "generate only one scopeNode declaration of a dataSet",
-    noshort = true)
-    
-  val shex = opt[String]("shex",
-    default = None,
-    descr = "Validate with ShEx schema",
-    short = 'x')
-    
-  val shacl = opt[String]("shacl",
-    default = None,
-    descr = "Validate with SHACL schema",
-    short = 's')
     
   val time = toggle("time",
     prefix = "no-",
