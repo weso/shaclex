@@ -3,7 +3,7 @@ package es.weso.shacl
 import org.scalatest._
 import es.weso.rdf.nodes._
 
-object AbstractSyntaxTest extends FunSpec with Matchers {
+class AbstractSyntaxTest extends FunSpec with Matchers {
   
 describe("Abstract Syntax") {
   it("should be able to create a shape") {
@@ -11,7 +11,10 @@ describe("Abstract Syntax") {
       PropertyConstraint(
                 id = None,
                 predicate = IRI("http://example.org/p"),
-                components = Seq(NodeKind(IRIType)))
+                components = 
+                  Seq(NodeKind(IRIType),
+                      MinCount(1),
+                      MaxCount(2)))
 
     val shape = Shape(
         id = Some(IRI("http://example.org/s")),
@@ -19,7 +22,6 @@ describe("Abstract Syntax") {
         filters= Seq(),
         component = Seq(c))
         
-    println("Hi")        
     shape.id shouldBe defined 
     
   }
