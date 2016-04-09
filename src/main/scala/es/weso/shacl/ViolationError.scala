@@ -10,4 +10,4 @@ case class ViolationError(
     obj: Option[RDFNode],
     message: Option[String],
     sourceConstraint: Option[RDFNode]
-    )
+)

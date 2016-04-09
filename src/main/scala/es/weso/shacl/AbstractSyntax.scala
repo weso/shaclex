@@ -1,6 +1,19 @@
 package es.weso.shacl
 
 import es.weso.rdf.nodes._
+import util._
+
+case class Schema(shapes: Seq[Shape]) {
+  def serialize(format: String): Try[String] = {
+    format match {
+      case "AST" => {
+        Success(toString)
+      }
+      case _ => 
+        Shacl2RDF.serialize(this, format)
+    }
+  }
+}
 
 case class Shape(
     id: Option[IRI],

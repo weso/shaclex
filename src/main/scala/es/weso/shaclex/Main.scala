@@ -13,7 +13,7 @@ import es.weso.utils.TryUtils
 import util._
 import es.weso.rdf.{ PrefixMap, RDFReader }
 import java.nio.file._
-import es.weso.shacl.converter.RDF2Schema
+import es.weso.shacl.RDF2Shacl
 import java.io.File
 
 object Main extends App {
@@ -113,7 +113,7 @@ object Main extends App {
   }
   
   def extractSchema(rdf:RDFReader): Try[(Schema,PrefixMap)] = {
-    RDF2Schema.rdf2Schema(rdf)
+    RDF2Shacl.getShacl(rdf)
   }
 
 }
