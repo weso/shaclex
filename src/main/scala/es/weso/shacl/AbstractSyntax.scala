@@ -49,7 +49,7 @@ case class Shape(
     id: Option[IRI],
     scopes: Seq[Scope],
     filters: Seq[Shape],
-    component: Seq[Constraint] 
+    components: Seq[Constraint] 
 ) {
   def hasId(iri: IRI): Boolean = {
     id contains(iri)
@@ -58,6 +58,10 @@ case class Shape(
   def scopeNodes: Seq[IRI] = { 
     val maybeScopeNodes = scopes.map(_.toScopeNode)
     maybeScopeNodes.flatten.map(_.node)
+  }
+  
+  def propertyConstraints: Seq[PropertyConstraint] = {
+    components.map(_.toPropertyConstraint).flatten
   }
 }
 
@@ -79,25 +83,38 @@ case class ScopeNode(node: IRI) extends Scope {
 // case class ScopeClass(cls: IRI) extends Scope
 // case class PropertyScope(predicate: IRI) extends Scope
 
-sealed abstract class Constraint
+sealed abstract class Constraint {
+  def isPropertyConstraint: Boolean
+  
+  def toPropertyConstraint: Option[PropertyConstraint] = None
+}
 
 case class PropertyConstraint(
     id:Option[IRI],
     predicate: IRI,
     components: Seq[PCComponent]
-) extends Constraint
+) extends Constraint {
+  def isPropertyConstraint = true
+  
+  override def toPropertyConstraint: Option[PropertyConstraint] = Some(this)
+}
 
 case class InversePropertyConstraint(
     id:Option[IRI],
     predicate: IRI,
     components: Seq[IPCComponent]
-) extends Constraint
+) extends Constraint {
+  def isPropertyConstraint = false
+  
+}
 
 case class NodeConstraint(
     id:Option[IRI],
     predicate: IRI,
     components: Seq[NCComponent]
-) extends Constraint
+) extends Constraint {
+  def isPropertyConstraint = false
+}
 
 case class Filter(shape: Shape)
 
@@ -197,6 +214,12 @@ case class In(list: Seq[Value])
  
 
 sealed trait NodeKindType
-case object IRIType extends NodeKindType
-case object LiteralType extends NodeKindType
-case object BNodeType extends NodeKindType
+case object IRIKind extends NodeKindType
+case object LiteralKind extends NodeKindType
+case object BlankNodeKind extends NodeKindType
+case object BlankNodeOrIRI extends NodeKindType
+case object BlankNodeOrLiteral extends NodeKindType
+case object IRIOrLiteral extends NodeKindType
+
+
+

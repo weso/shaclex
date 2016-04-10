@@ -12,7 +12,7 @@ describe("Abstract Syntax") {
                 id = None,
                 predicate = IRI("http://example.org/p"),
                 components = 
-                  Seq(NodeKind(IRIType),
+                  Seq(NodeKind(IRIKind),
                       MinCount(1),
                       MaxCount(2)))
 
@@ -20,7 +20,7 @@ describe("Abstract Syntax") {
         id = Some(IRI("http://example.org/s")),
         scopes =Seq(),
         filters= Seq(),
-        component = Seq(c))
+        components = Seq(c))
         
     shape.id shouldBe defined 
     

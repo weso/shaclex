@@ -12,11 +12,12 @@ object SHACLPrefixes {
   lazy val sh = IRI("http://www.w3.org/ns/shacl#")
   
   lazy val sh_IRI = sh + "IRI"
-  lazy val sh_NonIRI = sh + "NonIRI"
   lazy val sh_Literal = sh + "Literal"
-  lazy val sh_NonLiteral = sh + "NonLiteral"
-  lazy val sh_BNode = sh + "BNode"
-  lazy val sh_NonBNode = sh +  "NonBNode"
+  lazy val sh_BlankNode = sh + "BNode"
+  lazy val sh_IRIOrLiteral = sh + "IRIOrLiteral"
+  lazy val sh_BlankNodeOrIRI = sh +  "BlankNodeOrIRI"
+  lazy val sh_BlankNodeOrLiteral = sh +  "BlankNodeOrLiteral"
+  
   lazy val sh_ClosedShape = sh + "Closed"
   lazy val sh_Shape = sh + "Shape"
   lazy val sh_constraint = sh + "constraint"

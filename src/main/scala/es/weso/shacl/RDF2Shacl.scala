@@ -129,9 +129,12 @@ object RDF2Shacl
       case 0 => fail("no objects of nodeKind property")
       case 1 => {
         os.head match {
-          case sh_IRI => Success(NodeKind(IRIType))
-          case sh_BlankNode => Success(NodeKind(BNodeType))
-          case sh_LiteralType => Success(NodeKind(LiteralType))
+          case `sh_IRI` => Success(NodeKind(IRIKind))
+          case `sh_BlankNode` => Success(NodeKind(BlankNodeKind))
+          case `sh_Literal` => Success(NodeKind(LiteralKind))
+          case `sh_BlankNodeOrLiteral` => Success(NodeKind(BlankNodeOrLiteral))
+          case `sh_BlankNodeOrIRI` => Success(NodeKind(BlankNodeOrIRI))
+          case `sh_IRIOrLiteral` => Success(NodeKind(IRIOrLiteral))
           case x => fail(s"incorrect value of nodeKind property $x") 
         }
       }

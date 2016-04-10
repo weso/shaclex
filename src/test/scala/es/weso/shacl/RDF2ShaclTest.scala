@@ -7,7 +7,7 @@ import es.weso.rdf._
 import util._
 
 class RDF2ShaclTest extends 
-  FunSpec with Matchers with TryValues 
+  FunSpec with Matchers with TryValues with OptionValues 
   with SchemaMatchers {
   
 describe("RDf2Shacl Syntax") {
@@ -70,5 +70,26 @@ describe("RDf2Shacl Syntax") {
     val schema = attempt.success.value
     schema.scopeNodeDeclarations should contain only((s2,S), (s1,S),(t1,T))
   }
+  
+  
+    it("should be able to get the some property constraints") {
+    val ex = IRI("http://example.org/")
+    val str = """|@prefix : <http://example.org/>
+                 |@prefix sh: <http://www.w3.org/ns/shacl#>
+                 |
+                 |:S a sh:Shape; sh:property [ sh:predicate :p; sh:nodeKind sh:IRI ] .
+                 |""".stripMargin
+    val S = ex + "S"
+    val p = ex + "p"
+    val attempt = for {
+      rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
+      (schema,pm) <- RDF2Shacl.getShacl(rdf)
+    } yield (schema)
+    val schema = attempt.success.value
+    val shape = schema.shape(S).value
+    val p1 = PropertyConstraint(id = None, predicate = p, components = Seq(NodeKind(IRIKind))) 
+    shape.propertyConstraints should contain only(p1)
+  }
+
 }
 }
