@@ -4,7 +4,37 @@ import es.weso.rdf.nodes._
 import util._
 
 case class Schema(shapes: Seq[Shape]) {
-  def serialize(format: String): Try[String] = {
+  
+  /**
+   * Get the shape associated to an IRI
+   * @param iri IRI that identifies a shape
+   */
+  def shape(iri: IRI): Option[Shape] = { 
+    shapes.filter(_.id contains(iri)).headOption
+  }
+  
+  /**
+   * Get the sequence of sh:scopeNode declarations
+   */
+  def scopeNodeShapes: Seq[(IRI,Shape)] = {
+    val zero : Seq[(IRI,Shape)] = Seq()
+    def comb(rs:Seq[(IRI,Shape)], s: Shape): Seq[(IRI,Shape)] = {
+      val ns : Seq[IRI] = s.scopeNodes
+      ns.map(n => (n,s)) ++ rs
+    }
+    shapes.foldLeft(zero)(comb)
+  }
+
+ /**
+   * Get the sequence of sh:scopeNode declarations
+   * @return a list of pairs (n,s) where n is the IRI of a node 
+   * and s is the IRI of a shape
+   */
+  def scopeNodeDeclarations: Seq[(IRI,IRI)] = {
+    scopeNodeShapes.map(p => (p._1,p._2.id.get))
+  }
+
+  def serialize(format: String = "AST"): Try[String] = {
     format match {
       case "AST" => {
         Success(toString)
@@ -19,14 +49,32 @@ case class Shape(
     id: Option[IRI],
     scopes: Seq[Scope],
     filters: Seq[Shape],
-    component: Seq[Constraint]
-)
+    component: Seq[Constraint] 
+) {
+  def hasId(iri: IRI): Boolean = {
+    id contains(iri)
+  }
+  
+  def scopeNodes: Seq[IRI] = { 
+    val maybeScopeNodes = scopes.map(_.toScopeNode)
+    maybeScopeNodes.flatten.map(_.node)
+  }
+}
 
 
-sealed abstract class Scope
+sealed abstract class Scope {
+  def isScopeNode: Boolean
+  
+  def toScopeNode: Option[ScopeNode]
+}
 
 
-case class ScopeNode(node: IRI) extends Scope
+case class ScopeNode(node: IRI) extends Scope {
+  def isScopeNode = true
+  
+  def toScopeNode = Some(this)
+  
+}
 // TODO...add more types of scopes
 // case class ScopeClass(cls: IRI) extends Scope
 // case class PropertyScope(predicate: IRI) extends Scope
