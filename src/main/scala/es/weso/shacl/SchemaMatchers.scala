@@ -21,11 +21,10 @@ trait SchemaMatchers {
       )
     }
   }
-
+  
   def constainShapes(shapeIDs: Set[IRI]) = 
     new ContainShapesMatcher(shapeIDs)
-  
-  def pp(a: Boolean): Boolean = true
+
 }
 
 // Make them easy to import with:

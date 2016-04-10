@@ -87,6 +87,8 @@ sealed abstract class Constraint {
   def isPropertyConstraint: Boolean
   
   def toPropertyConstraint: Option[PropertyConstraint] = None
+  
+  def components: Seq[Component]
 }
 
 case class PropertyConstraint(
