@@ -63,8 +63,8 @@ case class Shape(
   def propertyConstraints: Seq[PropertyConstraint] = {
     components.map(_.toPropertyConstraint).flatten
   }
+  
 }
-
 
 sealed abstract class Scope {
   def isScopeNode: Boolean
@@ -224,4 +224,6 @@ case object BlankNodeOrLiteral extends NodeKindType
 case object IRIOrLiteral extends NodeKindType
 
 
-
+object Shape {
+  val empty = Shape(None,Seq(),Seq(),Seq())
+}

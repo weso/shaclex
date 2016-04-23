@@ -1,6 +1,7 @@
 # shaclex
 SHACL implementation based on Shape Expressions
 
+
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex)
 
 ## Introduction
