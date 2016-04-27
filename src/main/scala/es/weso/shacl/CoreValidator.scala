@@ -2,6 +2,12 @@ package es.weso.shacl
 
 import es.weso.rdf._
 import es.weso.rdf.nodes._
+import es.weso.validating.{
+  Constraint => VConstraint, 
+  _
+}
+import ViolationError._
+import Validated._
 
 /**
  * This validator will be implemented directly in Scala
@@ -46,8 +52,22 @@ case class CoreValidator(rdf: RDFReader, schema: Schema) {
   
   def checkPropertyConstraint(node: RDFNode, pc: PropertyConstraint): Seq[ViolationError] = {
     val predicate = pc.predicate
+    val components = pc.components
     // TODO
     ???
   }
+  type VPropertyConstraint = VConstraint[(RDFReader,IRI), RDFNode, Explain, Throwable]
+  
+  type Explain = String
+  def explain(message: String) = message 
+  
+  def minCount(minCount: Int): VPropertyConstraint = Single((node,ctx) => {
+    val (rdf,predicate) = ctx
+    val count = rdf.triplesWithSubjectPredicate(node,predicate).size
+    if (count < minCount) 
+      err(minCountError(node,predicate,minCount,count))  
+    else ok(node,
+      explain(s"$node satisfies minCount=$minCount for predicate $predicate with count=$count"))
+   })
 }
 

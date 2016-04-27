@@ -125,7 +125,7 @@ sealed abstract class Component
 /**
  *  PropertyConstraint Component 
  */
-sealed trait PCComponent extends Component
+sealed trait PCComponent extends Component 
 
 /**
  * InversePropertyConstraint Component
@@ -162,7 +162,9 @@ case class NodeKind(value: NodeKindType)
  extends NCComponent with PCComponent with IPCComponent
 
 case class MinCount(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent with IPCComponent {
+  
+}
  
 case class MaxCount(value: Int)
  extends PCComponent with IPCComponent
