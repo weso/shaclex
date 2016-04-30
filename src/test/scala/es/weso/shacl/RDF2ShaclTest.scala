@@ -124,5 +124,33 @@ describe("RDf2Shacl Syntax") {
     pc.components should contain only(NodeKind(IRIKind), MinCount(1), MaxCount(1))
   }
     
+    it("should be able to get the property constraint with minCount cardinality only") {
+    val ex = IRI("http://example.org/")
+    val str = """|@prefix : <http://example.org/>
+                 |@prefix sh: <http://www.w3.org/ns/shacl#>
+                 |
+                 |:S a sh:Shape; sh:property [ 
+                 |   sh:predicate :p; 
+                 |   sh:minCount 1
+                 |   ] .
+                 |""".stripMargin
+    val S = ex + "S"
+    val p = ex + "p"
+    val attempt = for {
+      rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
+      (schema,pm) <- RDF2Shacl.getShacl(rdf)
+    } yield (schema)
+    val schema = attempt.success.value
+    val shape = schema.shape(S).value
+    val p1 = PropertyConstraint(id = None, predicate = p, 
+        components = Seq(MinCount(1))
+        ) 
+    shape.propertyConstraints.length should be(1)
+    val pc = shape.propertyConstraints.head
+    pc.id should be(None)
+    pc.predicate should be(p)
+    pc.components should contain only(MinCount(1))
+  }
+    
 }
 }

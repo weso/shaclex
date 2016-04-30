@@ -12,7 +12,7 @@ import Validated._
 /**
  * This validator will be implemented directly in Scala
  */
-case class CoreValidator(rdf: RDFReader, schema: Schema) {
+case class CoreValidator(schema: Schema) {
   
   def validate: Seq[ValidationAttempt] = {
     scopeNodes.map {
@@ -56,6 +56,25 @@ case class CoreValidator(rdf: RDFReader, schema: Schema) {
     // TODO
     ???
   }
+  
+  def vPropertyConstraint(pc: PropertyConstraint): 
+       VNodeConstraint = Single((node,rdf) => {
+    val predicate = pc.predicate
+    val components = pc.components
+    val pcConstraints = components.map(component2VPropertyConstraint(predicate))
+    val result : VPropertyConstraint = All(pcConstraints)
+    result.validate(node, (rdf,predicate))
+  })
+  
+  def component2VPropertyConstraint(p:IRI)(c: PCComponent): VPropertyConstraint = {
+    c match {
+      case MinCount(n) => minCount(n)
+      case _ => unsupported(c)
+    }
+  }
+
+  type VNodeConstraint = VConstraint[RDFReader, RDFNode, Explain, Throwable]
+     
   type VPropertyConstraint = VConstraint[(RDFReader,IRI), RDFNode, Explain, Throwable]
   
   type Explain = String
@@ -64,10 +83,16 @@ case class CoreValidator(rdf: RDFReader, schema: Schema) {
   def minCount(minCount: Int): VPropertyConstraint = Single((node,ctx) => {
     val (rdf,predicate) = ctx
     val count = rdf.triplesWithSubjectPredicate(node,predicate).size
-    if (count < minCount) 
-      err(minCountError(node,predicate,minCount,count))  
+    if (count < minCount) {
+      err(minCountError(node,predicate,minCount,count))
+    }
     else ok(node,
       explain(s"$node satisfies minCount=$minCount for predicate $predicate with count=$count"))
    })
+   
+  def unsupported(c: PCComponent): VPropertyConstraint = Single((node,ctx) => {
+      err(Unsupported(s"Property constraint $c not implemented yet"))  
+   })
+   
 }
 

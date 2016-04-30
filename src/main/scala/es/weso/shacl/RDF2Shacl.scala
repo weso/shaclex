@@ -111,7 +111,7 @@ object RDF2Shacl
   
   def maxCount: RDFParser[PCComponent] = (n,rdf) => {
     for {
-     v <- integerLiteralForPredicate(sh_minCount)(n,rdf)
+     v <- integerLiteralForPredicate(sh_maxCount)(n,rdf)
     } yield {
       MaxCount(v)
     }
