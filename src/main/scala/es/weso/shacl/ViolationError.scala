@@ -33,4 +33,22 @@ object ViolationError {
         obj = None,
         message = Some(s"MinCount violation. Expected $minCount, obtained: $count"),
         sourceConstraint = None)
+        
+  def maxCountError(focusNode: RDFNode, predicate: IRI, maxCount: Int, count: Int) = 
+    ViolationError(id = sh + "maxCountError",
+        focusNode = focusNode,
+        subject = Some(focusNode),
+        predicate = Some(predicate),
+        obj = None,
+        message = Some(s"MaxCount violation. Expected $maxCount, obtained: $count"),
+        sourceConstraint = None)
+        
+  def nodeKindError(focusNode: RDFNode, predicate: IRI, maxCount: Int, count: Int) = 
+    ViolationError(id = sh + "maxCountError",
+        focusNode = focusNode,
+        subject = Some(focusNode),
+        predicate = Some(predicate),
+        obj = None,
+        message = Some(s"MaxCount violation. Expected $maxCount, obtained: $count"),
+        sourceConstraint = None)
 }

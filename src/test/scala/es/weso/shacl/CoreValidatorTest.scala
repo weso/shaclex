@@ -78,6 +78,94 @@ describe("Core validator scope Nodes") {
 }
 
 describe("minCount") {
+  it("validates minCount(1) when there is exactly 1") {
+  val ex = IRI("http://example.org/")
+  val str = s"""|@prefix : $ex
+                |:x :p 1 .
+                |""".stripMargin
+    val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+    val x = ex + "x"
+    val p = ex + "p"
+    val validator = CoreValidator(Schema.empty)
+    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
+  }
   
-}
+ it("validates minCount(1) when there are 2") {
+  val ex = IRI("http://example.org/")
+  val str = s"""|@prefix : $ex
+                |:x :p 1, 2 .
+                |""".stripMargin
+    val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+    val x = ex + "x"
+    val p = ex + "p"
+    val validator = CoreValidator(Schema.empty)
+    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
+  }
+
+ it("validates minCount(1) when there are 2 and other things...") {
+  val ex = IRI("http://example.org/")
+  val str = s"""|@prefix : $ex
+                |:x :p 1, 2; :q 1 .
+                |""".stripMargin
+    val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+    val x = ex + "x"
+    val p = ex + "p"
+    val validator = CoreValidator(Schema.empty)
+    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
+  }
+ 
+  it("fails to validate minCount(2) when there are 1") {
+  val ex = IRI("http://example.org/")
+  val str = s"""|@prefix : $ex
+                |:x :p 1; :q 1 .
+                |""".stripMargin
+    val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+    val x = ex + "x"
+    val p = ex + "p"
+    val validator = CoreValidator(Schema.empty)
+    validator.minCount(2).validate(x,(rdf,p)).isOK should be(false)
+  }
+
+  it("fails to validate minCount(2) when there are no values") {
+  val ex = IRI("http://example.org/")
+  val str = s"""|@prefix : $ex
+                |:x :q 1 .
+                |""".stripMargin
+    val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+    val x = ex + "x"
+    val p = ex + "p"
+    val validator = CoreValidator(Schema.empty)
+    validator.minCount(2).validate(x,(rdf,p)).isOK should be(false)
+  }
+  
+ it("fails to validate minCount(2) when there are no resource") {
+  val ex = IRI("http://example.org/")
+  val str = s"""|@prefix : $ex
+                |:y :q 1 .
+                |""".stripMargin
+    val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+    val x = ex + "x"
+    val p = ex + "p"
+    val validator = CoreValidator(Schema.empty)
+    validator.minCount(2).validate(x,(rdf,p)).isOK should be(false)
+  }
+
+ }
+
+ describe("Property constraint"){
+   it("validates minCount(1), maxCount(1) when there is exactly 1") {
+     val ex = IRI("http://example.org/")
+     val p = ex + "p"
+     val x = ex + "x"
+     val pc = PropertyConstraint(id = None, predicate = p, components = 
+       Seq(MinCount(1),MaxCount(1)))
+     val validator = CoreValidator.empty
+     val str = s"""|@prefix : $ex
+                   |:x :p "a" .
+                   |""".stripMargin
+     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
+     val validated = validator.vPropertyConstraint(pc).validate(x,rdf)
+     validated.isOK should be(true)
+   }
+ }
 }

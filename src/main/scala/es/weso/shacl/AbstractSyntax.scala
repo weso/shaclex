@@ -225,6 +225,10 @@ case object BlankNodeOrIRI extends NodeKindType
 case object BlankNodeOrLiteral extends NodeKindType
 case object IRIOrLiteral extends NodeKindType
 
+// Companion objects
+object Schema {
+  val empty = Schema(shapes=Seq())
+}
 
 object Shape {
   val empty = Shape(None,Seq(),Seq(),Seq())
