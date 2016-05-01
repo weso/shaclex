@@ -8,11 +8,17 @@ import es.weso.validating.{
 }
 import ViolationError._
 import Validated._
+import es.weso.generic._
 
 /**
  * This validator will be implemented directly in Scala
  */
 case class CoreValidator(schema: Schema) {
+  
+  implicit val explainMonoid : Monoid[Explain] = new Monoid[Explain] {
+    def combine(e1: Explain, e2: Explain): Explain = e1 + e2
+    def empty: Explain = ""
+  }
   
   def validate: Seq[ValidationAttempt] = {
     scopeNodes.map {
@@ -50,18 +56,22 @@ case class CoreValidator(schema: Schema) {
     }
   }
 
-  def shapeConstraint(shape: Shape): ShapeConstraint = {
-    val pairs = shape.scopeNodes
-    ???
-  }
+  def shapeConstraint: ShapeConstraint = Single((shape,rdf) => {
+    val nodes = shape.scopeNodes
+    val results = nodes.map(n => shapeNodeConstraint.validate((n,shape),rdf))
+    val result = Validated.all(results)
+    result.mapValue(_ => shape)
+  })
   
-  def shapeNodeConstraint(node: RDFNode, shape: Shape): ShapeNodeConstraint = {
+  def shapeNodeConstraint: NodeShapeConstraint = Single((pair,rdf) => {
+    val (node,shape) = pair
     val cs = shape.components.map(vConstraint)
-    //val result = All()
-    ???
-  }
+    val c = All(cs) 
+    val result = c.validate(node,rdf) 
+    result.mapValue(n => (n,shape)) 
+  })
   
-  def vConstraint(c:Constraint): VNodeConstraint = {
+  def vConstraint(c:Constraint): RDFNodeConstraint = {
     c match {
       case pc:PropertyConstraint => vPropertyConstraint(pc)
       case _ => ???
@@ -69,7 +79,7 @@ case class CoreValidator(schema: Schema) {
   }
   
   def vPropertyConstraint(pc: PropertyConstraint): 
-       VNodeConstraint = Single((node,rdf) => {
+       RDFNodeConstraint = Single((node,rdf) => {
     val predicate = pc.predicate
     val components = pc.components
     val pcConstraints = components.map(component2VPropertyConstraint(predicate))
@@ -85,9 +95,9 @@ case class CoreValidator(schema: Schema) {
     }
   }
 
-  type ShapeConstraint = VConstraint[RDFReader,Seq[(RDFNode,Shape)],Explain,Throwable]
-  type ShapeNodeConstraint = VConstraint[RDFReader,(RDFNode,Shape),Explain,Throwable]
-  type VNodeConstraint = VConstraint[RDFReader, RDFNode, Explain, Throwable]
+  type ShapeConstraint = VConstraint[RDFReader,Shape,Explain,Throwable]
+  type NodeShapeConstraint = VConstraint[RDFReader,(RDFNode,Shape),Explain,Throwable]
+  type RDFNodeConstraint = VConstraint[RDFReader, RDFNode, Explain, Throwable]
   type VPropertyConstraint = VConstraint[(RDFReader,IRI), RDFNode, Explain, Throwable]
   
   type Explain = String

@@ -32,13 +32,13 @@ class ValidatedTest extends FunSpec with Matchers {
 
     it("should be able to fold an ok value") {
       val v: Validated[Int,String,Throwable] = ok(2,"ok")
-      val folded = v.fold(x => x.map(p => (p._1 + 1, p._2)), _ => 0)
-      folded should be(Seq((3,"ok")))
+      val folded = v.fold(x => x.values.map(p => Response(p.value + 1, p.reason)), _ => 0)
+      folded should be(Seq(Response(3,"ok")))
     }
     
     it("should be able to fold an errored value") {
       val v: Validated[Int,String,Throwable] = errString("Hi")
-      val folded = v.fold(x => x.map(p => (p._1 + 1, p._2)), _ => 0)
+      val folded = v.fold(x => x.values.map(p => Response(p.value + 1, p.reason)), _ => 0)
       folded should be(0)
     }
 

@@ -38,14 +38,14 @@ class ConstraintTest extends FunSpec with Matchers with OptionValues {
         val c = SomeOf(Seq(isEven, isPositive))
         val validated = c.validate(2,Seq())
         validated.isOK should be(true)
-        validated.reasons.value should contain only ((2, "ok even"), (2, "ok pos"))
+        validated.reasons.value.values should contain only (Response(2, "ok even"), Response(2, "ok pos"))
       }
 
       it("should be able to validate some when some pass") {
         val c = SomeOf(Seq(isEven, isPositive))
         val validated = c.validate(3,Seq())
         validated.isOK should be(true)
-        validated.reasons.value should contain only ((3, "ok pos"))
+        validated.reasons.value.values should contain only (Response(3, "ok pos"))
       }
 
       it("should be able to validate some when all fail failing") {
@@ -61,14 +61,14 @@ class ConstraintTest extends FunSpec with Matchers with OptionValues {
         val c = OneOf(Seq(isEven, isPositive))
         val validated = c.validate(2,Seq())
         validated.isOK should be(false)
-        validated.errors should contain only (OneOfWithSeveralValid(Seq((2, "ok even"), (2, "ok pos"))))
+        validated.errors should contain only (OneOfWithSeveralValid(Responses(Seq(Response(2, "ok even"), Response(2, "ok pos")))))
       }
 
       it("should be able to validate oneOf when only one pass") {
         val c = OneOf(Seq(isEven, isPositive))
         val validated = c.validate(3,Seq())
         validated.isOK should be(true)
-        validated.reasons.value should contain only ((3, "ok pos"))
+        validated.reasons.value.values should contain only (Response(3, "ok pos"))
       }
 
       it("should be able to fail validation of oneOf when none pass") {
@@ -85,7 +85,7 @@ class ConstraintTest extends FunSpec with Matchers with OptionValues {
         val c = All(Seq(isEven, isPositive))
         val validated = c.validate(2,Seq())
         validated.isOK should be(true)
-        validated.reasons.value should contain only ((2, "ok even"), (2, "ok pos"))
+        validated.reasons.value.values should contain only (Response(2, "ok even"), Response(2, "ok pos"))
       }
 
       it("should be able to fail to validate all when only one pass") {
