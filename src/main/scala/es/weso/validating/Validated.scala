@@ -1,65 +1,8 @@
 package es.weso.validating
 
 import org.scalactic._
-import es.weso.generic._
-
-class ValidatingError(msg:String) extends Exception(msg)
-
-case class MsgError(msg:String) extends ValidatingError(msg)
-case class OneOfWithSeveralValid[A,R](valids: Responses[A,R]) extends ValidatingError("More than one alternative in oneOf is valid")
-case object NoneValid extends ValidatingError("None Valid")
-case class Unsupported(msg:String) extends ValidatingError(msg)
-
-/**
- * Represents a deterministic response which contains a single value and reason
- * @tparam A value of the response
- * @tparam R reason 
- */
-case class Response[+A,+R](value: A, reason: R) {
-  
-  def mapValue[B](f: A => B): Response[B,R] = {
-    Response(f(value),reason)
-  }
-  
-  override def toString: String = {
-    "[" + value + ": " + reason + "]"
-  }
-}
-
-/**
- * Represents a non-deterministic response which can contains several 
- * values and reasons
- */
-case class Responses[+A,+R](values: Seq[Response[A,R]]) {
-  
-  def combine[B, R1 >: R](other:Responses[B,R1])(f: A => B): Responses[B,R1] = {
-    ???
-  }
-  
-  /**
-   * Concatenate two responses appending the values and reasons
-   */
-  def ++[A1 >: A,R1 >: R](other: Responses[A1,R1]): Responses[A1,R1] = {
-    Responses(values ++ other.values)
-  }
-  
-  def map[B](f: A => B): Responses[B,R] = {
-    Responses(values.map(r => r.mapValue(f)))
-  }
-  
-  override def toString: String = {
-    values.toString
-  }
-}
-
-object Responses {
-  
-  def single[A,R](a:A, r:R): Responses[A,R] = {
-    Responses(Seq(Response(a,r)))
-  }
-  
-  def empty = Responses(Seq())
-}
+import cats.Functor
+import cats.implicits._
 
 /**
  * Validated defines values that have been validated
@@ -68,7 +11,9 @@ object Responses {
  * @tparam R Explanation type of validation
  * @tparam E Error type
  */
-case class Validated[+A,+R,+E >: Throwable] private(value: Responses[A,R] Or Every[E]){
+case class Validated[A,R[_]:Functor,+E >: Throwable] private(
+    value: Responses[A,R] Or Every[E]
+    ){
   
 import Validated._
   
@@ -95,7 +40,7 @@ import Validated._
    * @param f the function to apply to the current value and reason
    * @return a new Validated with the new value or the list of existing errors
    */
-  def map[B, R1 >: R](f: Responses[A,R1] => Responses[B,R1]): Validated[B,R1,E] = {
+  def map[B, R1[_] >: R[_]:Functor](f: Responses[A,R] => Responses[B,R1]): Validated[B,R1,E] = {
     Validated(value.map(f))
   }
   
@@ -147,7 +92,7 @@ import Validated._
    * Combine two validated values when their values are ok
    * It validates if at least one of the alternatives is validated
    */
-  def combineSome[A1 >: A, R1 >: R, E1 >: E](other: Validated[A1,R1,E1]): Validated[A1,R1,E1] = {
+  def combineSome[E1 >: E](other: Validated[A,R,E1]): Validated[A,R,E1] = {
     fold(rs1 => 
       other.fold(
           rs2 => oks(rs1 ++ rs2), 
@@ -160,8 +105,8 @@ import Validated._
    * Combine two validated values when their values are ok
    * It validates if both of the alternatives are validated
    */
-  def combineAll[A1 >: A, R1 >: R, E1 >: E](other: Validated[A1,R1,E1])
-      : Validated[A1,R1,E1] = {
+  def combineAll[E1 >: E](other: Validated[A,R,E1])
+      : Validated[A,R,E1] = {
     fold(rs => 
       other.fold(
           os => oks(rs ++ os), 
@@ -175,7 +120,7 @@ import Validated._
    * Combine two validated values when one one of the values is ok
    * It validates if only one of the alternatives is validated
    */
-  def combineOne[A1 >: A, R1 >: R, E1 >: E](other: Validated[A1,R1,E1]): Validated[A1,R1,E1] = {
+  def combineOne[E1 >: E](other: Validated[A,R,E1]): Validated[A,R,E1] = {
     fold(rs1 => 
       other.fold(
         rs2 => 
@@ -188,7 +133,7 @@ import Validated._
             es2 => errs(es1 ++ es2)))
   }
   
-  def reasons[A1 >: A, R1 >: R]: Option[Responses[A1,R1]] = {
+  def reasons: Option[Responses[A,R]] = {
     if (isOK) {
       Some(value.get)
     } else
@@ -204,14 +149,14 @@ object Validated {
    * @tparam E type of errors
    * @param e error
    */
-  def err[E >: Throwable](e: E): Validated[Nothing,Nothing,E] = 
+  def err[A,R[_]:Functor,E >: Throwable](e: E): Validated[A,R,E] = 
     Validated(Bad(Every(e)))
 
   /**
    * Make a validated value initialized with an String msg error
    * @param msg error message
    */
-  def errString(msg: String): Validated[Nothing,Nothing,Throwable] = 
+  def errString[A,R[_]:Functor](msg: String): Validated[A,R,Throwable] = 
     Validated(Bad(Every(MsgError(msg))))
     
   /**
@@ -219,7 +164,7 @@ object Validated {
    * @tparam E type of errors
    * @param es sequence of errors
    */
-  def errs[E >: Throwable](es: Seq[E]): Validated[Nothing,Nothing,E] = {
+  def errs[A,R[_]:Functor,E >: Throwable](es: Seq[E]): Validated[A,R,E] = {
     if (es.isEmpty) throw new Exception("errors must not be empty")
     else Validated(Bad(Every.from(es).get))
   }
@@ -231,8 +176,8 @@ object Validated {
    * @param x value
    * @param reason Reason that explains why the value is valid
    */
-  def ok[A,R](x: A, reason: R): Validated[A,R,Throwable] = 
-    Validated(Good(Responses.single(x,reason)))
+  def ok[A,R[_]:Functor](x: R[A]): Validated[A,R,Throwable] = 
+    Validated(Good(Responses.single(x))) 
 
   /**
    * Make a validated value from a sequence of values/reasons
@@ -240,7 +185,7 @@ object Validated {
    * @tparam R type of reasons
    * @param rs sequence of values/reasons
    */
-  def oks[A,R](rs: Responses[A,R]): Validated[A,R,Throwable] = 
+  def oks[A,R[_]:Functor](rs: Responses[A,R]): Validated[A,R,Throwable] = 
     Validated(Good(rs))
 
   /**
@@ -248,10 +193,10 @@ object Validated {
    * @tparam A type of values
    * @tparam R type of reasons
    */
-  def okZero[A,R](): Validated[A,R,Throwable] = 
-    Validated(Good(Responses.empty))
+  def okZero[A,R[_]:Functor](): Validated[A,R,Throwable] = 
+    Validated(Good(Responses.empty)) 
   
-  def all[A,R:Monoid,E >: Throwable](vs: Seq[Validated[A,R,E]]): Validated[Seq[A],R,E] = {
+/*  def all[A,R:Monoid,E >: Throwable](vs: Seq[Validated[A,R,E]]): Validated[Seq[A],R,E] = {
     val zero: Validated[Seq[A],R,E] = okZero()
     def next(v: Validated[A,R,E], 
         rest: Validated[Seq[A],R,E]): Validated[Seq[A],R,E] = {
@@ -261,7 +206,7 @@ object Validated {
           es => ???)
     }
     vs.foldRight(zero)(next)
-  }
+  } */
 }
 
 

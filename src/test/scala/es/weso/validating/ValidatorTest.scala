@@ -1,44 +1,45 @@
 package es.weso.validating
 import Validated._
 import org.scalatest._
+import cats.implicits._
 
 class ValidatedTest extends FunSpec with Matchers {
 
   describe("Validated") {
     
     it("Checks simple ok") {
-      val x2: Validated[Int,String,Throwable] = ok(2,"ok")
+      val x2: Validated[Int,List,Throwable] = ok(List(2))
       x2.isOK should be(true)
     }
     
     it("Checks simple error") {
-      val e: Validated[Int,String,Throwable] = errString("Error")
+      val e: Validated[Int,List,Throwable] = errString("Error")
       e.isOK should be(false)
     }
     
     it("Converts an ok value into an error") {
-      val v: Validated[Int,String,Throwable] = ok(2,"ok2")
+      val v: Validated[Int,List,Throwable] = ok(List(2))
       val e = v.addError("Hi")
       e.isOK should be(false) 
       e.errors should contain only("Hi")
     }
     
     it("Accumulates several errors") {
-      val v: Validated[Int,String,Throwable] = ok(2,"ok2")
+      val v: Validated[Int,List,Throwable] = ok(List(2))
       val e = v.addErrors(Seq("Hi","man"))
       e.isOK should be(false) 
       e.errors should contain only("Hi", "man")
     }
 
     it("should be able to fold an ok value") {
-      val v: Validated[Int,String,Throwable] = ok(2,"ok")
-      val folded = v.fold(x => x.values.map(p => Response(p.value + 1, p.reason)), _ => 0)
-      folded should be(Seq(Response(3,"ok")))
+      val v: Validated[Int,List,Throwable] = ok(List(2))
+      val folded = v.fold(x => x.values.map(r => r.mapValue(_ + 1)), _ => 0)
+      folded should be(Seq(Response(List(3))))
     }
     
     it("should be able to fold an errored value") {
-      val v: Validated[Int,String,Throwable] = errString("Hi")
-      val folded = v.fold(x => x.values.map(p => Response(p.value + 1, p.reason)), _ => 0)
+      val v: Validated[Int,List,Throwable] = errString("Hi")
+      val folded = v.fold(x => x.values.map(r => r.mapValue(_ + 1)), _ => 0)
       folded should be(0)
     }
 

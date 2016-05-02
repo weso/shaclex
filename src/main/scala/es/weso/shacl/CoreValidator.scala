@@ -8,17 +8,11 @@ import es.weso.validating.{
 }
 import ViolationError._
 import Validated._
-import es.weso.generic._
 
 /**
  * This validator will be implemented directly in Scala
  */
 case class CoreValidator(schema: Schema) {
-  
-  implicit val explainMonoid : Monoid[Explain] = new Monoid[Explain] {
-    def combine(e1: Explain, e2: Explain): Explain = e1 + e2
-    def empty: Explain = ""
-  }
   
   def validate: Seq[ValidationAttempt] = {
     scopeNodes.map {
@@ -59,8 +53,9 @@ case class CoreValidator(schema: Schema) {
   def shapeConstraint: ShapeConstraint = Single((shape,rdf) => {
     val nodes = shape.scopeNodes
     val results = nodes.map(n => shapeNodeConstraint.validate((n,shape),rdf))
-    val result = Validated.all(results)
-    result.mapValue(_ => shape)
+//    val result = Validated.all(results)
+//    result.mapValue(_ => shape)
+    ???
   })
   
   def shapeNodeConstraint: NodeShapeConstraint = Single((pair,rdf) => {
@@ -95,10 +90,10 @@ case class CoreValidator(schema: Schema) {
     }
   }
 
-  type ShapeConstraint = VConstraint[RDFReader,Shape,Explain,Throwable]
-  type NodeShapeConstraint = VConstraint[RDFReader,(RDFNode,Shape),Explain,Throwable]
-  type RDFNodeConstraint = VConstraint[RDFReader, RDFNode, Explain, Throwable]
-  type VPropertyConstraint = VConstraint[(RDFReader,IRI), RDFNode, Explain, Throwable]
+  type ShapeConstraint = VConstraint[RDFReader,Shape,Throwable]
+  type NodeShapeConstraint = VConstraint[RDFReader,(RDFNode,Shape),Throwable]
+  type RDFNodeConstraint = VConstraint[RDFReader, RDFNode, Throwable]
+  type VPropertyConstraint = VConstraint[(RDFReader,IRI), RDFNode, Throwable]
   
   type Explain = String
   def explain(message: String) = message 
@@ -109,8 +104,8 @@ case class CoreValidator(schema: Schema) {
     if (count < minCount) {
       err(minCountError(node,predicate,minCount,count))
     }
-    else ok(node,
-      explain(s"$node satisfies minCount=$minCount for predicate $predicate with count=$count"))
+    else ok(SingleReason(node,
+      s"$node satisfies minCount=$minCount for predicate $predicate with count=$count"))
    })
    
   def maxCount(maxCount: Int): VPropertyConstraint = Single((node,ctx) => {
@@ -119,8 +114,8 @@ case class CoreValidator(schema: Schema) {
     if (count > maxCount) {
       err(maxCountError(node,predicate,maxCount,count))
     }
-    else ok(node,
-      explain(s"$node satisfies maxCount=$maxCount for predicate $predicate with count=$count"))
+    else ok(SingleReason(node,
+      explain(s"$node satisfies maxCount=$maxCount for predicate $predicate with count=$count")))
    })
    
    

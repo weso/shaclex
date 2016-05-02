@@ -1,12 +1,11 @@
 package es.weso.validating
 
-sealed abstract class ConstraintReason[A]
-case class OrReason[A](cs: Seq[ConstraintReason[A]]) extends ConstraintReason[A]
-case class AllReason[A](cs: Seq[ConstraintReason[A]]) extends ConstraintReason[A]
-case class OneOfReason[A](cs: Seq[ConstraintReason[A]]) extends ConstraintReason[A]
+import cats.Functor
+import cats.implicits._
+import ConstraintReason._
 
-sealed abstract class Constraint[Context,A,R, E >: Throwable] {
-  def validate: (A,Context) => Validated[A,R,E]
+sealed abstract class Constraint[Context, A, E >: Throwable] {
+  def validate: (A,Context) => Validated[A,ConstraintReason,E]
 }
 
   /**
@@ -19,10 +18,10 @@ sealed abstract class Constraint[Context,A,R, E >: Throwable] {
    * @tparam E Type of errors
    * 
    */
-case class SomeOf[C,A,R,E >: Throwable](cs: Seq[Constraint[C,A,R,E]]) extends Constraint[C,A,R,E] {
+case class SomeOf[C,A,E >: Throwable](cs: Seq[Constraint[C,A,E]]) extends Constraint[C,A,E] {
   def validate = (x,ctx) => {
-    val zero : Validated[A,R,E] = Validated.err(NoneValid)
-    def op(rest: Validated[A,R,E], c: Constraint[C,A,R,E]): Validated[A,R,E] = {
+    val zero : Validated[A,ConstraintReason,E] = Validated.err(NoneValid)
+    def op(rest: Validated[A,ConstraintReason,E], c: Constraint[C,A,E]): Validated[A,ConstraintReason,E] = {
       val current = c.validate(x,ctx)
       rest.combineSome(current)
     }
@@ -39,10 +38,10 @@ case class SomeOf[C,A,R,E >: Throwable](cs: Seq[Constraint[C,A,R,E]]) extends Co
    * @tparam E Type of errors
    * 
    */
-case class All[C,A,R,E >: Throwable](cs: Seq[Constraint[C,A,R,E]]) extends Constraint[C,A,R,E] {
+case class All[C,A,E >: Throwable](cs: Seq[Constraint[C,A,E]]) extends Constraint[C,A,E] {
   def validate = (x,ctx) => {
-    val zero : Validated[A,R,E] = Validated.okZero()
-    def op(rest: Validated[A,R,E], c: Constraint[C,A,R,E]): Validated[A,R,E] = {
+    val zero : Validated[A,ConstraintReason,E] = Validated.okZero()
+    def op(rest: Validated[A,ConstraintReason,E], c: Constraint[C,A,E]): Validated[A,ConstraintReason,E] = {
       val current = c.validate(x,ctx)
       rest.combineAll(current)
     }
@@ -50,8 +49,8 @@ case class All[C,A,R,E >: Throwable](cs: Seq[Constraint[C,A,R,E]]) extends Const
   }
 }
 
-case class Single[C,A,R,E >: Throwable](
-    validate: (A,C) => Validated[A,R,E]) extends Constraint[C,A,R,E]
+case class Single[C,A,E >: Throwable](
+    validate: (A,C) => Validated[A,ConstraintReason,E]) extends Constraint[C,A,E]
 
   /**
    * Given a set of constraints, creates a constraint that is satisfied when one of
@@ -63,10 +62,10 @@ case class Single[C,A,R,E >: Throwable](
    * @tparam E Type of errors
    * 
    */
-case class OneOf[C,A,R,E >: Throwable](cs: Seq[Constraint[C,A,R,E]]) extends Constraint[C,A,R,E] {
+case class OneOf[C,A,E >: Throwable](cs: Seq[Constraint[C,A,E]]) extends Constraint[C,A,E] {
   def validate = (x, ctx) => {
-    val zero : Validated[A,R,E] = Validated.err(NoneValid)
-    def op(rest: Validated[A,R,E], c: Constraint[C,A,R,E]): Validated[A,R,E] = {
+    val zero : Validated[A,ConstraintReason,E] = Validated.err(NoneValid)
+    def op(rest: Validated[A,ConstraintReason,E], c: Constraint[C,A,E]): Validated[A,ConstraintReason,E] = {
       val current = c.validate(x,ctx)
       rest.combineOne(current)
     }
@@ -77,3 +76,4 @@ case class OneOf[C,A,R,E >: Throwable](cs: Seq[Constraint[C,A,R,E]]) extends Con
 object Constraint {
 
 }
+
