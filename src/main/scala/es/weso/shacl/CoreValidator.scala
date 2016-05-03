@@ -117,7 +117,7 @@ case class CoreValidator(schema: Schema) {
     else ok(SingleReason(node,
       explain(s"$node satisfies maxCount=$maxCount for predicate $predicate with count=$count")))
    })
-   
+  
    
   def unsupported(c: PCComponent): VPropertyConstraint = Single((node,ctx) => {
       err(Unsupported(s"Property constraint $c not implemented yet"))  
