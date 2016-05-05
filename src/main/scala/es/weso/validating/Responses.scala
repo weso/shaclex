@@ -17,11 +17,9 @@ case class Responses[A, R[_]: Functor](values: Seq[Response[A, R]]) {
     val zero: Responses[Seq[A], R] = Responses(Seq())
     def next(v: Response[A, R],
              rest: Responses[Seq[A], R]): Responses[Seq[A], R] = {
-      val restRs = rest.values
       val z: Seq[Response[Seq[A], R]] = Seq()
       def n(x: Response[Seq[A], R], cs: Seq[Response[Seq[A], R]]): Seq[Response[Seq[A], R]] = x +: cs
-      val newRs: Seq[Response[Seq[A], R]] = restRs.foldRight(z)(n)
-      Responses(newRs)
+      Responses(rest.values.foldRight(z)(n))
     }
     values.foldRight(zero)(next)
   }

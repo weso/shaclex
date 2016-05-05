@@ -6,7 +6,8 @@ import cats.implicits._
 class ResponsesTest extends FunSpec with Matchers with OptionValues {
 
   describe("Responses") {
-    
+   
+    describe("combineWith") {
     it("can combine several responses") {
       val r1: Response[Int,Option] = Response(Some(1))
       val r2: Response[Int,Option] = Response(Some(2))
@@ -30,6 +31,14 @@ class ResponsesTest extends FunSpec with Matchers with OptionValues {
      rs.values should contain theSameElementsInOrderAs Seq(r4,r5,r5,r6)
     }
   }
+  }
+  describe("merge") {
+   it("can merge responses") {
+     val r1: Responses[Int,Option] = single(Some(1))
+     val r23: Responses[Seq[Int],Option] = single(Some(Seq(2,3)))
+     r1.merge(r23) should be(1)
+   }
   
-
+  }
+  
 }

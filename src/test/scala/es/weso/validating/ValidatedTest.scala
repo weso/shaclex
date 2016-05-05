@@ -1,9 +1,11 @@
 package es.weso.validating
 import Validated._
+import Responses._
 import org.scalatest._
 import cats.implicits._
 
-class ValidatedTest extends FunSpec with Matchers {
+class ValidatedTest 
+ extends FunSpec with Matchers with OptionValues {
 
   describe("Validated") {
     
@@ -91,8 +93,27 @@ class ValidatedTest extends FunSpec with Matchers {
       checker.errors should contain only("not even", "not positive")
     }
 */
-  }
+    describe("all") {
+      it("should be able to pass when one pass") {
+        type Explain[A] = Option[A]
+        type E = Throwable
+        type ValidatedSingle = Validated[Int,Explain,E]
+        type ValidatedSeq = Validated[Seq[Int],Explain,E]
+        
+        val v1: ValidatedSingle = ok(Some(1))
+        val v2: ValidatedSingle = ok(Some(2))
+        val vs : Seq[ValidatedSingle] = Seq(v1,v2)
+        val vall: ValidatedSeq = Validated.all(vs)
+        vall.isOK should be(true)
+        vall.errors should be(Seq())
+        val reasons = vall.reasons.value
+        val expected : ValidatedSeq = ok(Some(Seq(1,2)))
+        vall.reasons should be(expected)
+      }
+      
+    }
 
+  }
 }
 
 //  val x : Validated[Int,String,String] = ok(2,"is 2")
