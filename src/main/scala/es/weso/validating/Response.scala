@@ -1,6 +1,6 @@
 package es.weso.validating
 
-import cats.Functor
+import cats._
 import cats.implicits._
 
 case class Response[A,R[_]:Functor](response: R[A]) {
@@ -9,18 +9,14 @@ case class Response[A,R[_]:Functor](response: R[A]) {
     Response(response = implicitly[Functor[R]].map(response)(f))  
   }
   
+  def merge(rs: Response[Seq[A],R]): Response[Seq[A],R] = {
+    val rs1 : R[Seq[A]] = mapValue(x => Seq(x)).response
+    val rs2 : R[Seq[A]] = rs.response
+    ???
+  }
+  
 }
 
 object Response {
 
- /*implicit def responseFunctor[A,R[_]:Functor, ] = new Functor[Response] {
-   def map[B](fa: Response[A,R])(f:A => B): Response[B,R] = {
-    fa match {
-      case SomeReason(cs) => SomeReason(cs.map(c => this.map(c)(f)))
-      case AllReason(cs) => AllReason(cs.map(c => this.map(c)(f)))
-      case OneOfReason(cs) => OneOfReason(cs.map(c => this.map(c)(f)))
-      case SingleReason(x,msg) => SingleReason(f(x),msg)
-    }
-  } 
-  } */
 }

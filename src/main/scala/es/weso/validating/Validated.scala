@@ -2,6 +2,7 @@ package es.weso.validating
 
 import org.scalactic._
 import cats.Functor
+import cats.Applicative
 import cats.implicits._
 
 /**
@@ -193,20 +194,24 @@ object Validated {
    * @tparam A type of values
    * @tparam R type of reasons
    */
-  def okZero[A,R[_]:Functor](): Validated[A,R,Throwable] = 
-    Validated(Good(Responses.empty)) 
+  def okZero[A,R[_]:Functor](): Validated[A,R,Throwable] = {
+    val r : Responses[A,R] = Responses.initial
+    Validated(Good(r)) 
+  }
   
-/*  def all[A,R:Monoid,E >: Throwable](vs: Seq[Validated[A,R,E]]): Validated[Seq[A],R,E] = {
+  
+  def all[A,R[_]:Functor,E >: Throwable](vs: Seq[Validated[A,R,E]]): 
+        Validated[Seq[A],R,E] = {
     val zero: Validated[Seq[A],R,E] = okZero()
     def next(v: Validated[A,R,E], 
         rest: Validated[Seq[A],R,E]): Validated[Seq[A],R,E] = {
       v.fold(rs => 
-        rest.fold(rss => ???, //rs.combine(rss,...), // Responses(), 
-            es => ???), 
-          es => ???)
+        rest.fold(rss => oks(rs.merge(rss)),  
+            es => errs(es)), 
+          es => errs(es))
     }
     vs.foldRight(zero)(next)
-  } */
+  } 
 }
 
 

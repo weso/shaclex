@@ -9,7 +9,7 @@ sealed abstract class Constraint[Context, A, E >: Throwable] {
   def validate: (A,Context) => Validated[A,ConstraintReason,E]
 }
 
- /**
+/**
    * Given a set of constraints, creates a constraint that is satisfied when at least 
    * one of the constraints is satisfied
    * 
@@ -54,7 +54,7 @@ case class OneOf[C,A,E >: Throwable](cs: Seq[Constraint[C,A,E]]) extends Constra
     Constraint.oneOf(cs.map(c => c.validate(x,ctx)))
 }
 
-case class And[C,A,E >: Throwable](c1: Constraint[C,A,E], c2: Constraint[C,A,E]) extends Constraint[C,A,E] {
+case class AndConstraint[C,A,E >: Throwable](c1: Constraint[C,A,E], c2: Constraint[C,A,E]) extends Constraint[C,A,E] {
   def validate : (A,C) => Validated[A,ConstraintReason,E] = (x,ctx) => {
     lazy val v1 = c1.validate(x,ctx)
     lazy val v2 = c2.validate(x,ctx)
@@ -62,7 +62,7 @@ case class And[C,A,E >: Throwable](c1: Constraint[C,A,E], c2: Constraint[C,A,E])
   }
 }
 
-case class Or[C,A,E >: Throwable](c1: Constraint[C,A,E], c2: Constraint[C,A,E]) extends Constraint[C,A,E] {
+case class OrConstraint[C,A,E >: Throwable](c1: Constraint[C,A,E], c2: Constraint[C,A,E]) extends Constraint[C,A,E] {
   def validate : (A,C) => Validated[A,ConstraintReason,E] = (x,ctx) => {
     lazy val v1 = c1.validate(x,ctx)
     lazy val v2 = c2.validate(x,ctx)
@@ -84,6 +84,9 @@ case class Single[C,A,E >: Throwable](
   
 
 object Constraint {
+  
+  def single[C,A,E>:Throwable](fn: (A,C) => Validated[A,ConstraintReason,E]): Constraint[C,A,E] = 
+    Single(fn)
 
   def all[A,E >: Throwable](vs: Seq[Validated[A,ConstraintReason,E]]): Validated[A,ConstraintReason,E] = {
     def comb(r1: Response[A,ConstraintReason],
@@ -172,5 +175,14 @@ object Constraint {
       }
   }
 
+  
+  def unsupported[Ctx,A,R[_]:Functor,E >: Throwable](msg:String):Constraint[Ctx,A,E] = {
+    val r: Validated[A,ConstraintReason,E] = errString(msg) 
+    def fn(x: A,ctx :Ctx): Validated[A,ConstraintReason,E] = r
+    single(fn)
+  }
+    
+    
+    
 
 }

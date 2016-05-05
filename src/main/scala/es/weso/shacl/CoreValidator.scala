@@ -8,13 +8,14 @@ import es.weso.validating.{
 }
 import ViolationError._
 import Validated._
+import ConstraintReason._
 
 /**
  * This validator will be implemented directly in Scala
  */
 case class CoreValidator(schema: Schema) {
   
-  def validate: Seq[ValidationAttempt] = {
+/*  def validate: Seq[ValidationAttempt] = {
     scopeNodes.map {
       case (node,shape) => validateScopeNode(node,shape)
     }.flatten
@@ -23,18 +24,9 @@ case class CoreValidator(schema: Schema) {
   def validateScopeNode(node: IRI, shape: Shape): Seq[ValidationAttempt] = {
     val results = validateConstraints(node,shape.components)
     Seq(ScopeNodeAttempt(node,shape,schema,results))
-  }
+  } 
   
-  /**
-   * Return all scopeNode declarations which are pairs (n,s) where
-   * <p> `n` = node to validate
-   * <p> `s` = candidate shape
-   */
-  def scopeNodes: Seq[(IRI,Shape)] = {
-    schema.scopeNodeShapes
-  }
-  
-  def validateConstraints(node: RDFNode, constraints: Seq[Constraint]): Seq[ViolationError] = {
+    def validateConstraints(node: RDFNode, constraints: Seq[Constraint]): Seq[ViolationError] = {
     val zero: Seq[ViolationError] = Seq()
     def combine(errors: Seq[ViolationError], constraint: Constraint): Seq[ViolationError] = {
       checkConstraint(node,constraint) ++ errors
@@ -49,16 +41,32 @@ case class CoreValidator(schema: Schema) {
       case _ => Seq(ViolationError.unsupportedError(node))
     }
   }
+   
+  */
+  
+  /**
+   * Return all scopeNode declarations which are pairs (n,s) where
+   * <p> `n` = node to validate
+   * <p> `s` = candidate shape
+   */
+  def scopeNodes: Seq[(IRI,Shape)] = {
+    schema.scopeNodeShapes
+  }
+  
 
   def shapeConstraint: ShapeConstraint = Single((shape,rdf) => {
     val nodes = shape.scopeNodes
     val results = nodes.map(n => shapeNodeConstraint.validate((n,shape),rdf))
-//    val result = Validated.all(results)
-//    result.mapValue(_ => shape)
-    ???
+    println("shapeConstraint shape: " + shape)
+    println("shapeConstraint results: " + results)
+    val result = all(results)
+    println("shapeConstraint result: " + result)
+    val r: ConstraintReason[Shape] = singleReason(shape,"validated\n" + results) 
+    ok(r)
   })
   
   def shapeNodeConstraint: NodeShapeConstraint = Single((pair,rdf) => {
+    
     val (node,shape) = pair
     val cs = shape.components.map(vConstraint)
     val c = All(cs) 
@@ -69,7 +77,7 @@ case class CoreValidator(schema: Schema) {
   def vConstraint(c:Constraint): RDFNodeConstraint = {
     c match {
       case pc:PropertyConstraint => vPropertyConstraint(pc)
-      case _ => ???
+      case _ => VConstraint.unsupported("vConstraint " + c)
     }
   }
   
@@ -86,7 +94,7 @@ case class CoreValidator(schema: Schema) {
     c match {
       case MinCount(n) => minCount(n)
       case MaxCount(n) => maxCount(n)
-      case _ => unsupported(c)
+      case _ => VConstraint.unsupported("Unsupported component: " + c.toString)
     }
   }
 
@@ -101,10 +109,11 @@ case class CoreValidator(schema: Schema) {
   def minCount(minCount: Int): VPropertyConstraint = Single((node,ctx) => {
     val (rdf,predicate) = ctx
     val count = rdf.triplesWithSubjectPredicate(node,predicate).size
+    println("Checking minCount " + node + " count = " + count + " minCount = " + minCount)
     if (count < minCount) {
       err(minCountError(node,predicate,minCount,count))
     }
-    else ok(SingleReason(node,
+    else ok(singleReason(node,
       s"$node satisfies minCount=$minCount for predicate $predicate with count=$count"))
    })
    
@@ -114,14 +123,14 @@ case class CoreValidator(schema: Schema) {
     if (count > maxCount) {
       err(maxCountError(node,predicate,maxCount,count))
     }
-    else ok(SingleReason(node,
+    else ok(singleReason(node,
       explain(s"$node satisfies maxCount=$maxCount for predicate $predicate with count=$count")))
    })
   
    
-  def unsupported(c: PCComponent): VPropertyConstraint = Single((node,ctx) => {
+/*  def unsupported(c: PCComponent): VPropertyConstraint = Single((node,ctx) => {
       err(Unsupported(s"Property constraint $c not implemented yet"))  
-   })
+   }) */
    
 }
 

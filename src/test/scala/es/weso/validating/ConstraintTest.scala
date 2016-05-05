@@ -119,7 +119,7 @@ class ConstraintTest extends FunSpec with Matchers with OptionValues {
     }
     
   describe("or") {
-    val c = Or(isEven,isPositive)
+    val c = OrConstraint(isEven,isPositive)
     
     it("Should be able to pass when both pass") {
       val validated = c.validate(2,Seq())
