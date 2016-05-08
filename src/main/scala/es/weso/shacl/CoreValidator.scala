@@ -57,12 +57,8 @@ case class CoreValidator(schema: Schema) {
   def shapeConstraint: ShapeConstraint = Single((shape,rdf) => {
     val nodes = shape.scopeNodes
     val results = nodes.map(n => shapeNodeConstraint.validate((n,shape),rdf))
-    println("shapeConstraint shape: " + shape)
-    println("shapeConstraint results: " + results)
     val result = all(results)
-    println("shapeConstraint result: " + result)
-    val r: ConstraintReason[Shape] = singleReason(shape,"validated\n" + results) 
-    ok(r)
+    result.mapValue(_ => shape)  
   })
   
   def shapeNodeConstraint: NodeShapeConstraint = Single((pair,rdf) => {
@@ -77,8 +73,12 @@ case class CoreValidator(schema: Schema) {
   def vConstraint(c:Constraint): RDFNodeConstraint = {
     c match {
       case pc:PropertyConstraint => vPropertyConstraint(pc)
-      case _ => VConstraint.unsupported("vConstraint " + c)
+      case _ => undef("vConstraint " + c)
     }
+  }
+  
+  def undef[A](msg:String): VConstraint[A,RDFNode,Throwable] = {
+    VConstraint.unsupported[A, RDFNode, ConstraintReason,Throwable](msg)
   }
   
   def vPropertyConstraint(pc: PropertyConstraint): 
@@ -94,7 +94,7 @@ case class CoreValidator(schema: Schema) {
     c match {
       case MinCount(n) => minCount(n)
       case MaxCount(n) => maxCount(n)
-      case _ => VConstraint.unsupported("Unsupported component: " + c.toString)
+      case _ => undef("Unsupported component: " + c.toString)
     }
   }
 
@@ -109,7 +109,6 @@ case class CoreValidator(schema: Schema) {
   def minCount(minCount: Int): VPropertyConstraint = Single((node,ctx) => {
     val (rdf,predicate) = ctx
     val count = rdf.triplesWithSubjectPredicate(node,predicate).size
-    println("Checking minCount " + node + " count = " + count + " minCount = " + minCount)
     if (count < minCount) {
       err(minCountError(node,predicate,minCount,count))
     }

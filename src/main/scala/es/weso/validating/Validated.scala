@@ -35,6 +35,17 @@ import Validated._
      value.fold(ok,(es: Every[E]) => err(es.toSeq))   
   }
   
+
+  /**
+   * Merge a validated value with a validated of a list of values
+   */
+  def merge[E1 >: E](vs: Validated[Seq[A],R,E1]): Validated[Seq[A],R,E1] = {
+    fold(rs => 
+        vs.fold(rss => oks(rs.merge(rss)),  
+                es => errs(es)), 
+          es => errs(es))
+  }
+  
   /**
    * Build a new Validated value by applying a function to the values and reasons
    * @tparam B the value type of the new Validated
@@ -177,7 +188,7 @@ object Validated {
    * @param x value
    * @param reason Reason that explains why the value is valid
    */
-  def ok[A,R[_]:Functor](x: R[A]): Validated[A,R,Throwable] = 
+  def ok[A,R[_]:Applicative](x: R[A]): Validated[A,R,Throwable] = 
     Validated(Good(Responses.single(x))) 
 
   /**
@@ -194,21 +205,18 @@ object Validated {
    * @tparam A type of values
    * @tparam R type of reasons
    */
-  def okZero[A,R[_]:Functor](): Validated[A,R,Throwable] = {
+  def okZero[A,R[_]:Applicative](): Validated[A,R,Throwable] = {
     val r : Responses[A,R] = Responses.initial
     Validated(Good(r)) 
   }
   
   
-  def all[A,R[_]:Functor,E >: Throwable](vs: Seq[Validated[A,R,E]]): 
+  def all[A,R[_]:Applicative,E >: Throwable](vs: Seq[Validated[A,R,E]]): 
         Validated[Seq[A],R,E] = {
     val zero: Validated[Seq[A],R,E] = okZero()
     def next(v: Validated[A,R,E], 
         rest: Validated[Seq[A],R,E]): Validated[Seq[A],R,E] = {
-      v.fold(rs => 
-        rest.fold(rss => oks(rs.merge(rss)),  
-            es => errs(es)), 
-          es => errs(es))
+      v.merge(rest)
     }
     vs.foldRight(zero)(next)
   } 

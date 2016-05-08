@@ -26,9 +26,7 @@ describe("Shapes") {
     val s = ex + "S"
     val validator = CoreValidator(schema)
     val shape = schema.shape(s).value
-    println("Shape..." + shape)
     val result = validator.shapeConstraint.validate(shape,rdf)
-    println("result:" + result)
     result.isOK should be(true)
  }
 }

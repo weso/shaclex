@@ -7,29 +7,18 @@ import cats.implicits._
  * Represents a non-deterministic response which can contains several
  * values and reasons
  */
-case class Responses[A, R[_]: Functor](values: Seq[Response[A, R]]) {
+case class Responses[A, R[_]: Applicative](values: Seq[Response[A, R]]) {
 
-  /*  def combine[A,R[_]:Applicative](other:Responses[B,R])(f: A => B): Responses[B,R] = {
-    ???
-  } */
-
-  def merge(rss: Responses[Seq[A], R]): Responses[Seq[A], R] = {
-    val zero: Responses[Seq[A], R] = Responses(Seq())
-    def next(v: Response[A, R],
-             rest: Responses[Seq[A], R]): Responses[Seq[A], R] = {
-      val z: Seq[Response[Seq[A], R]] = Seq()
-      def n(x: Response[Seq[A], R], cs: Seq[Response[Seq[A], R]]): Seq[Response[Seq[A], R]] = x +: cs
-      Responses(rest.values.foldRight(z)(n))
+  /**
+   * Merge this set of responses with another one that contains list of values
+   */
+  def merge(rs: Responses[Seq[A], R]): Responses[Seq[A], R] = {
+    if (values.isEmpty) rs
+    else {
+     val rss = values.map(ra => Responses.add(ra,rs))
+     Responses.flatten(rss)
     }
-    values.foldRight(zero)(next)
   }
-
-/*  def merge1(vs: Response[Seq[A], R]): Responses[Seq[A], R] = {
-    def fn(r: Response[A, R]): Response[Seq[A], R] = {
-      r merge vs
-    }
-    Responses(values.map(fn))
-  } */
 
   /**
    * Concatenate two responses appending the values and reasons
@@ -67,9 +56,26 @@ case class Responses[A, R[_]: Functor](values: Seq[Response[A, R]]) {
 
 object Responses {
 
-  def single[A, R[_]: Functor](r: R[A]): Responses[A, R] = {
+  def single[A, R[_]: Applicative](r: R[A]): Responses[A, R] = {
     Responses(Seq(Response(r)))
   }
 
-  def initial[A, R[_]: Functor]: Responses[A, R] = Responses(Seq())
+  def initial[A, R[_]: Applicative]: Responses[A, R] = Responses(Seq())
+  
+  def add[A,R[_]:Applicative](
+        ra: Response[A, R], 
+        rsa: Responses[Seq[A], R]): Responses[Seq[A], R] = {
+    if (rsa.values.isEmpty) {
+      val rs: Response[Seq[A],R] = ra.mapValue(x => Seq(x))
+      Responses(Seq(rs))
+    } else {
+      Responses(rsa.values.map(rs => ra.merge(rs)))
+    }
+  }
+  
+  def flatten[A,R[_]:Applicative](rss: Seq[Responses[A,R]]): Responses[A,R] = {
+    val zero: Responses[A,R] = initial
+    def next(x: Responses[A,R], r: Responses[A,R]): Responses[A,R] = x ++ r
+    rss.foldRight(zero)(next)
+  }
 }

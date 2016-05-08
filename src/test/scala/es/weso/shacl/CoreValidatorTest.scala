@@ -10,7 +10,7 @@ class CoreValidatorTest extends
   FunSpec with Matchers with TryValues with OptionValues 
   with SchemaMatchers {
   
-/*describe("Core validator scope Nodes") {
+describe("Core validator scope Nodes") {
 
   it("should be able to get the scope nodes to validate") {
     val ex = IRI("http://example.org/")
@@ -168,7 +168,7 @@ describe("minCount") {
      validated.isOK should be(true)
    }
  }
- */
+ 
  describe("MinCount shape") {
    val strSchema = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
@@ -184,7 +184,7 @@ describe("minCount") {
    val ex = IRI("http://example.org/")
    val s = ex + "S"
 
-/*   it("validates a single shape") {
+   it("validates a single shape") {
    val str = """|@prefix : <http://example.org/>
                 |@prefix sh: <http://www.w3.org/ns/shacl#>
                 |
@@ -195,10 +195,9 @@ describe("minCount") {
     val validator = CoreValidator(schema)
     val shape = schema.shape(s).value
     val result = validator.shapeConstraint.validate(shape,rdf)
-    println("result:" + result)
     result.isOK should be(true)
    }
-  */  
+    
   it("fails to validate a single shape which doesn't satisfy minCount") {
    val str = """|@prefix : <http://example.org/>
                 |@prefix sh: <http://www.w3.org/ns/shacl#>
@@ -210,7 +209,6 @@ describe("minCount") {
     val validator = CoreValidator(schema)
     val shape = schema.shape(s).value
     val result = validator.shapeConstraint.validate(shape,rdf)
-    println("result:" + result)
     result.isOK should be(false)
    }
  }

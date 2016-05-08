@@ -6,6 +6,11 @@ import cats.implicits._
 
 class ValidatedTest 
  extends FunSpec with Matchers with OptionValues {
+  
+   type Explain[A] = Option[A]
+   type E = Throwable
+   type ValidatedSingle = Validated[Int,Explain,E]
+   type ValidatedSeq = Validated[Seq[Int],Explain,E]
 
   describe("Validated") {
     
@@ -45,61 +50,28 @@ class ValidatedTest
       folded should be(0)
     }
 
-/*    it("should be able to check some conditions when all pass") {
-      val isEven : Constraint[Seq[Int],Int,String,Throwable] = (x) => (ctx) => 
-        if (x % 2 == 0) ok(x,"ok") else errString("not even")
-      val isPositive : Constraint[Seq[Int],Int,String,Throwable] = (x) => (ctx) => 
-        if (x > 0) ok(x,"ok") else errString("not positive")
-      val c = some(Seq(isEven,isPositive))        
-      val validated = 
-      checker.isOK should be(true)
-    }
-    
-    it("should be able to check some conditions when some fail") {
-      val isEven : Int => Checker[Int,String] = (x) => if (x % 2 == 0) ok(x) else err("not even")
-      val isPositive : Int => Checker[Int,String] = (x) => if (x > 0) ok(x) else err("not positive")
-      val checker = checkSome(3,Seq(isPositive,isEven),"none")
-      checker.isOK should be(true)
+    it("should be able to merge a value with a list") {
+      val v1: Validated[Int,List,Throwable] = ok(List(1))
+      val v23: Validated[Seq[Int],List,Throwable] = ok(List(Seq(2,3)))
+      val v = v1.merge(v23) 
+      v.isOK should be(true)
+      val expected: Responses[Seq[Int],List] = Responses(Seq(Response(List(Seq(1,2,3)))))
+      val reasons = v.reasons.value
+      reasons should be(expected)
     }
 
-    it("should be able to check some conditions when all fail") {
-      val isEven : Int => Checker[Int,String] = (x) => if (x % 2 == 0) ok(x) else err("not even")
-      val isPositive : Int => Checker[Int,String] = (x) => if (x > 0) ok(x) else err("not positive")
-      val checker = checkSome(-3,Seq(isPositive,isEven),"none")
-      checker.isOK should be(false)
-      checker.errors should contain only("none")
+    it("should be able to merge an empty value with a list") {
+      val v0: Validated[Int,List,Throwable] = okZero()
+      val v23: Validated[Seq[Int],List,Throwable] = ok(List(Seq(2,3)))
+      val v = v0.merge(v23) 
+      v.isOK should be(true)
+      val expected: Responses[Seq[Int],List] = Responses(Seq(Response(List(Seq(2,3)))))
+      val reasons = v.reasons.value
+      reasons should be(expected)
     }
     
-    it("should be able to check all conditions when all pass") {
-      val isEven : Int => Checker[Int,String] = (x) => if (x % 2 == 0) ok(x) else err("not even")
-      val isPositive : Int => Checker[Int,String] = (x) => if (x > 0) ok(x) else err("not positive")
-      val checker = checkValueAll(2,Seq(isPositive,isEven))
-      checker.isOK should be(true)
-    }
-    
-    it("should be able to check all conditions when some fail") {
-      val isEven : Int => Checker[Int,String] = (x) => if (x % 2 == 0) ok(x) else err("not even")
-      val isPositive : Int => Checker[Int,String] = (x) => if (x > 0) ok(x) else err("not positive")
-      val checker = checkValueAll(3,Seq(isPositive,isEven))
-      checker.isOK should be(false)
-      checker.errors should contain only("not even")
-    }
-    
-    it("should be able to check all conditions when all fail") {
-      val isEven : Int => Checker[Int,String] = (x) => if (x % 2 == 0) ok(x) else err("not even")
-      val isPositive : Int => Checker[Int,String] = (x) => if (x > 0) ok(x) else err("not positive")
-      val checker = checkValueAll(-3,Seq(isPositive,isEven))
-      checker.isOK should be(false)
-      checker.errors should contain only("not even", "not positive")
-    }
-*/
     describe("all") {
       it("should be able to pass when one pass") {
-        type Explain[A] = Option[A]
-        type E = Throwable
-        type ValidatedSingle = Validated[Int,Explain,E]
-        type ValidatedSeq = Validated[Seq[Int],Explain,E]
-        
         val v1: ValidatedSingle = ok(Some(1))
         val v2: ValidatedSingle = ok(Some(2))
         val vs : Seq[ValidatedSingle] = Seq(v1,v2)
@@ -107,23 +79,21 @@ class ValidatedTest
         vall.isOK should be(true)
         vall.errors should be(Seq())
         val reasons = vall.reasons.value
-        val expected : ValidatedSeq = ok(Some(Seq(1,2)))
-        vall.reasons should be(expected)
+        val expected : Responses[Seq[Int],Explain] = 
+          Responses(Seq(Response(Some(Seq(1,2)))))
+        reasons should be(expected)
       }
       
+      it("should fail when one fails") {
+        val v1: ValidatedSingle = errString("err")
+        val v2: ValidatedSingle = ok(Some(2))
+        val vs : Seq[ValidatedSingle] = Seq(v1,v2)
+        val vall: ValidatedSeq = Validated.all(vs)
+        vall.isOK should be(false)
+      }
     }
 
   }
 }
 
-//  val x : Validated[Int,String,String] = ok(2,"is 2")
-  
-  
-/*  val positive: Constraint[Int,String,String,Seq[Int]] = (xs) => { (x) =>
-    if (xs contains x) { 
-      if (x > 0) ok(x, "positive")
-      else err("non positive")
-    }
-    else err("not in context") 
-  }
-*/
+
