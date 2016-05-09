@@ -7,7 +7,7 @@ organization := "es.weso"
 
 name := "shaclex"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 version := "0.0.1"
 
@@ -18,13 +18,12 @@ libraryDependencies ++= Seq(
   , "org.rogach" %% "scallop" % "0.9.5" 
   , "com.typesafe" % "config" % "1.0.1"
   , "org.scala-lang" % "scala-compiler" % scalaVersion.value
-  , "com.novocode" % "junit-interface" % "0.11" % "test"  
-  , "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test"
-  ,	"org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
-  , "org.typelevel" %% "cats" % "0.4.0"
+  , "org.scalatest" %%% "scalatest" % "3.0.0-M15" 
+  , "org.typelevel" %% "cats" % "0.6.0-M1"
 //  , "org.scoverage" %% "scalac-scoverage-runtime" % "1.0.4"  
 //  , "com.storm-enroute" %% "scalameter" % "0.8-SNAPSHOT"
   , "es.weso" % "shexcala_2.11" % "0.7.9" excludeAll(ExclusionRule(organization = "org.slf4j"))  
+  , "es.weso" % "validating_2.11" % "0.0.2"   
   )
 
 autoCompilerPlugins := true

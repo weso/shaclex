@@ -32,8 +32,11 @@ describe("Core validator scope Nodes") {
     val z = ex + "z"
     val s = Shape.empty.copy(id = Some(S), scopes = Seq(ScopeNode(y),ScopeNode(x)))
     val t = Shape.empty.copy(id = Some(T), scopes = Seq(ScopeNode(z)))
-    
-    CoreValidator(schema).scopeNodes should contain only ((x,s),(y,s),(z,t))
+    val scopeNodes = CoreValidator(schema).scopeNodes 
+    scopeNodes.size should be(3)
+    scopeNodes should contain (x,s)
+    scopeNodes should contain (y,s)
+    scopeNodes should contain (z,t)
   }
 
   it("should be able to validate minCount") {
