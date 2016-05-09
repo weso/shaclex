@@ -6,7 +6,6 @@ import es.weso.shacl._
 import es.weso.rdf.jena.RDFAsJenaModel
 import org.apache.jena.riot._
 import scala.concurrent.duration._
-import org.slf4j._
 import org.apache.log4j._
 import es.weso.utils.FileUtils
 import es.weso.utils.TryUtils
@@ -17,31 +16,35 @@ import es.weso.shacl.RDF2Shacl
 import java.io.File
 
 object Main extends App {
+  
+  lazy val log = LogManager.getRootLogger
+  val appenders = log.getAllAppenders
+  val appender: ConsoleAppender = log.getAppender("stdout").asInstanceOf[ConsoleAppender]
+  val error = Level.ERROR
+  log.setLevel(error)
+  appender.setThreshold(error)
+
   override def main(args: Array[String]): Unit = {
-
-    lazy val log = LogManager.getRootLogger
-    val appenders = log.getAllAppenders
-    val appender: ConsoleAppender = log.getAppender("stdout").asInstanceOf[ConsoleAppender]
-
-    val error = Level.ERROR
-    log.setLevel(error)
-    appender.setThreshold(error)
-
+    
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
     val startTime = System.nanoTime()
 
 
-    val tryValidate = for {
+    val validateOptions = for {
       rdf <- getRDFReader(opts)
       (schema,pm) <- getSchema(opts,rdf)
     } yield (rdf,schema,pm)
 
-    tryValidate match {
-      case Success((reader,schema,pm)) => {
+    validateOptions match {
+      case Success((rdf,schema,pm)) => {
         if (opts.show()) {
           println("Schema:" + schema.serialize("TURTLE"))
         }
+        
+        val validator = CoreValidator(schema)
+        val validated = validator.validate(rdf)
+        println(s"Validated result: ${validator.showResult(validated)}")
 
         if (opts.outputFile.get.isDefined) {
           val fileName = opts.outputFile.get.get
@@ -86,6 +89,7 @@ object Main extends App {
       val path = Paths.get(opts.data())
       RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
     } else {
+      log.info("RDF Data option not specified") 
       Success(RDFAsJenaModel.empty)
     }
   }
@@ -94,10 +98,11 @@ object Main extends App {
     if (opts.shacl.isDefined) {
       val path = Paths.get(opts.shacl())
       for {
-        rdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.shaclFormat())
+        shaclRdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.shaclFormat())
         (schema,pm) <- extractSchema(rdf)
       } yield (schema,pm)
     } else {
+      log.info("Schema not specified. Extracting schema from data")
       extractSchema(rdf)
     }
   }
