@@ -214,5 +214,5 @@ describe("minCount") {
     val result = validator.shapeConstraint.validate(shape,rdf)
     result.isOK should be(false)
    }
- }
+ } 
 }

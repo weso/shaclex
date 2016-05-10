@@ -15,7 +15,7 @@ describe("Shapes") {
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape; sh:scopeNode :x;
-                 |   sh:constraint [sh:predicate :p; sh:minCount 1] .
+                 |   sh:property [sh:predicate :p; sh:minCount 1] .
                  |:x :p "a" .
                  |""".stripMargin
     val attempt = for {

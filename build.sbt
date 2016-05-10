@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
 //  , "org.scoverage" %% "scalac-scoverage-runtime" % "1.0.4"  
 //  , "com.storm-enroute" %% "scalameter" % "0.8-SNAPSHOT"
   , "es.weso" % "shexcala_2.11" % "0.7.9" excludeAll(ExclusionRule(organization = "org.slf4j"))  
-  , "es.weso" % "validating_2.11" % "0.0.2"   
+  , "es.weso" % "validating_2.11" % "0.0.6"   
   )
 
 autoCompilerPlugins := true

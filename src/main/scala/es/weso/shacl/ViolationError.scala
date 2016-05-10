@@ -2,6 +2,7 @@ package es.weso.shacl
 
 import es.weso.rdf.nodes._
 import SHACLPrefixes._
+import es.weso.validating._
 
 case class ViolationError(
     id: IRI,
@@ -11,7 +12,7 @@ case class ViolationError(
     obj: Option[RDFNode],
     message: Option[String],
     sourceConstraint: Option[RDFNode]
-) extends Exception("Violation error")
+) extends ConstraintError("Violation error")
 
 object ViolationError {
   
