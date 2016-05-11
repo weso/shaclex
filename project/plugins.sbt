@@ -20,6 +20,12 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.8.1")
 
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.3")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")
+
+resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
+
 resolvers += Classpaths.sbtPluginReleases
 
 resolvers +=  Resolver.url(
