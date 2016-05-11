@@ -1,0 +1,487 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>DirectType - es.weso.shacl.DirectType</title>
+          <meta name="description" content="DirectType - es.weso.shacl.DirectType" />
+          <meta name="keywords" content="DirectType es.weso.shacl.DirectType" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <script type="text/javascript" src="../../../lib/modernizr.custom.js"></script><script type="text/javascript" src="../../../lib/diagrams.js" id="diagrams-js"></script>
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'es.weso.shacl.DirectType';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Class" src="../../../lib/class_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="es">es</a>.<a href="../package.html" class="extype" name="es.weso">weso</a>.<a href="package.html" class="extype" name="es.weso.shacl">shacl</a></p>
+        <h1>DirectType</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="es.weso.shacl">package shacl</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">DirectType</span><span class="params">(<span name="value">value: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>)</span><span class="result"> extends <a href="Component.html" class="extype" name="es.weso.shacl.Component">Component</a> with <a href="NCComponent.html" class="extype" name="es.weso.shacl.NCComponent">NCComponent</a> with <a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a> with <a href="IPCComponent.html" class="extype" name="es.weso.shacl.IPCComponent">IPCComponent</a> with <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/labra/shaclex/tree/master/src/main/scala/es/weso/shacl/AbstractSyntax.scala" target="_blank">AbstractSyntax.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Equals" class="extype" target="_top">Equals</a>, <a href="IPCComponent.html" class="extype" name="es.weso.shacl.IPCComponent">IPCComponent</a>, <a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a>, <a href="NCComponent.html" class="extype" name="es.weso.shacl.NCComponent">NCComponent</a>, <a href="Component.html" class="extype" name="es.weso.shacl.Component">Component</a>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+        </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
+                <span class="toggle diagram-link">Type Hierarchy</span>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="-1 -1 711 123" height="124pt" width="712pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g style="font-family:Times-Roman;font-size:14.00;" class="graph" id="graph0"><g class="cluster" id="graph2"></g><g class="cluster" id="graph3"></g><g class="node" id="node3"><a xlink:title="es.weso.shacl.DirectType (this class)" xlink:href="#inheritance-diagram"><polygon points="416,66 322,66 322,92 416,92 416,66" style="fill:#0a955b;stroke:#115f3b;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/class_diagram.pngnode0"><polygon points="348,71 332,71 332,87 348,87 348,71 "></polygon></clipPath><image xlink:href="../../../lib/class_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/class_diagram.pngnode0)" y="71" x="332" preserveAspectRatio="xMidYMid meet" height="26px" width="94px"></image><text y="82" x="380" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">DirectType</text></a></g><g class="node" id="node4"><a xlink:title="es.weso.shacl.Component" xlink:href="Component.html#inheritance-diagram"><polygon points="101,4 5,4 5,30 101,30 101,4" style="fill:#0a955b;stroke:#115f3b;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/class_diagram.pngnode1"><polygon points="30,9 15,9 15,25 30,25 30,9 "></polygon></clipPath><image xlink:href="../../../lib/class_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/class_diagram.pngnode1)" y="9" x="15" preserveAspectRatio="xMidYMid meet" height="26px" width="96px"></image><text y="20" x="64" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">Component</text></a></g><g class="edge" id="edge4"><path d="M106,29C107,29 109,30 110,30 184,45 270,61 322,71" style="fill:none;stroke:#d4d4d4;"></path><polygon points="106,31 101,28 106,27 106,31" style="fill:none;stroke:#d4d4d4;"></polygon></g><g class="node" id="node5"><a xlink:title="es.weso.shacl.NCComponent" xlink:href="NCComponent.html#inheritance-diagram"><polygon points="231,4 119,4 119,30 231,30 231,4" style="fill:#498aad;stroke:#37657d;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode2"><polygon points="145,9 129,9 129,25 145,25 145,9 "></polygon></clipPath><image xlink:href="../../../lib/trait_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode2)" y="9" x="129" preserveAspectRatio="xMidYMid meet" height="26px" width="112px"></image><text y="20" x="186" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">NCComponent</text></a></g><g class="edge" id="edge6"><path d="M221,32C254,42 298,56 329,66" style="fill:none;stroke:#d4d4d4;"></path><polygon points="220,33 216,30 221,30 220,33" style="fill:none;stroke:#d4d4d4;"></polygon></g><g class="node" id="node6"><a xlink:title="es.weso.shacl.PCComponent" xlink:href="PCComponent.html#inheritance-diagram"><polygon points="359,4 249,4 249,30 359,30 359,4" style="fill:#498aad;stroke:#37657d;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode3"><polygon points="274,9 259,9 259,25 274,25 274,9 "></polygon></clipPath><image xlink:href="../../../lib/trait_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode3)" y="9" x="259" preserveAspectRatio="xMidYMid meet" height="26px" width="110px"></image><text y="20" x="315" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">PCComponent</text></a></g><g class="edge" id="edge8"><path d="M322,33C332,43 345,56 355,66" style="fill:none;stroke:#d4d4d4;"></path><polygon points="321,34 318,30 323,32 321,34" style="fill:none;stroke:#d4d4d4;"></polygon></g><g class="node" id="node7"><a xlink:title="es.weso.shacl.IPCComponent" xlink:href="IPCComponent.html#inheritance-diagram"><polygon points="491,4 377,4 377,30 491,30 491,4" style="fill:#498aad;stroke:#37657d;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode4"><polygon points="403,9 387,9 387,25 403,25 403,9 "></polygon></clipPath><image xlink:href="../../../lib/trait_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode4)" y="9" x="387" preserveAspectRatio="xMidYMid meet" height="26px" width="114px"></image><text y="20" x="445" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">IPCComponent</text></a></g><g class="edge" id="edge10"><path d="M416,33C406,43 393,56 383,66" style="fill:none;stroke:#d4d4d4;"></path><polygon points="415,32 420,30 417,34 415,32" style="fill:none;stroke:#d4d4d4;"></polygon></g><g class="node" id="node8"><polygon points="589,4 509,4 509,30 589,30 589,4" style="fill:#498aad;stroke:#37657d;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode5"><polygon points="535,9 519,9 519,25 535,25 535,9 "></polygon></clipPath><image xlink:href="../../../lib/trait_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode5)" y="9" x="519" preserveAspectRatio="xMidYMid meet" height="26px" width="80px"></image><text y="20" x="560" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">Product</text></g><g class="edge" id="edge12"><path d="M506,32C476,42 435,56 407,66" style="fill:none;stroke:#d4d4d4;"></path><polygon points="506,30 511,30 507,33 506,30" style="fill:none;stroke:#d4d4d4;"></polygon></g><g class="node" id="node9"><polygon points="705,4 607,4 607,30 705,30 705,4" style="fill:#498aad;stroke:#37657d;"></polygon><clipPath id="mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode6"><polygon points="633,9 617,9 617,25 633,25 633,9 "></polygon></clipPath><image xlink:href="../../../lib/trait_diagram.png" clip-path="url(#mypathC:\src\shapes\shaclex\target\scala-2.11\api/lib/trait_diagram.pngnode6)" y="9" x="617" preserveAspectRatio="xMidYMid meet" height="26px" width="98px"></image><text y="20" x="667" style="font-family:Arial;font-size:10.00;fill:#ffffff;" text-anchor="middle">Serializable</text></g><g class="edge" id="edge14"><path d="M602,29C601,29 599,30 598,30 535,44 463,60 416,69" style="fill:none;stroke:#d4d4d4;"></path><polygon points="602,27 607,28 602,31 602,27" style="fill:none;stroke:#d4d4d4;"></polygon></g></g></svg></div>
+              </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="es.weso.shacl.DirectType"><span>DirectType</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="es.weso.shacl.IPCComponent"><span>IPCComponent</span></li><li class="in" name="es.weso.shacl.PCComponent"><span>PCComponent</span></li><li class="in" name="es.weso.shacl.NCComponent"><span>NCComponent</span></li><li class="in" name="es.weso.shacl.Component"><span>Component</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="es.weso.shacl.DirectType#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(value:es.weso.rdf.nodes.RDFNode):es.weso.shacl.DirectType"></a>
+      <a id="&lt;init&gt;:DirectType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">DirectType</span><span class="params">(<span name="value">value: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@&lt;init&gt;(value:es.weso.rdf.nodes.RDFNode):es.weso.shacl.DirectType" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="es.weso.shacl.DirectType#value" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="value:es.weso.rdf.nodes.RDFNode"></a>
+      <a id="value:RDFNode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">value</span><span class="result">: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@value:es.weso.rdf.nodes.RDFNode" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Long" class="extype" target="_top">Long</a></span>, <span name="arg1">arg1: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Long" class="extype" target="_top">Long</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.DirectType@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.Product">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a></h3>
+            </div><div class="parent" name="scala.Equals">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Equals" class="extype" target="_top">Equals</a></h3>
+            </div><div class="parent" name="es.weso.shacl.IPCComponent">
+              <h3>Inherited from <a href="IPCComponent.html" class="extype" name="es.weso.shacl.IPCComponent">IPCComponent</a></h3>
+            </div><div class="parent" name="es.weso.shacl.PCComponent">
+              <h3>Inherited from <a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a></h3>
+            </div><div class="parent" name="es.weso.shacl.NCComponent">
+              <h3>Inherited from <a href="NCComponent.html" class="extype" name="es.weso.shacl.NCComponent">NCComponent</a></h3>
+            </div><div class="parent" name="es.weso.shacl.Component">
+              <h3>Inherited from <a href="Component.html" class="extype" name="es.weso.shacl.Component">Component</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

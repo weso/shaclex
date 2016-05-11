@@ -1,0 +1,1325 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>RDF2Shacl - es.weso.shacl.RDF2Shacl</title>
+          <meta name="description" content="RDF2Shacl - es.weso.shacl.RDF2Shacl" />
+          <meta name="keywords" content="RDF2Shacl es.weso.shacl.RDF2Shacl" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <script type="text/javascript" src="../../../lib/modernizr.custom.js"></script><script type="text/javascript" src="../../../lib/diagrams.js" id="diagrams-js"></script>
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'es.weso.shacl.RDF2Shacl$';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Object" src="../../../lib/object_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="es">es</a>.<a href="../package.html" class="extype" name="es.weso">weso</a>.<a href="package.html" class="extype" name="es.weso.shacl">shacl</a></p>
+        <h1>RDF2Shacl</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="es.weso.shacl">package shacl</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">RDF2Shacl</span><span class="result"> extends <span class="extype" name="org.slf4s.Logging">Logging</span> with <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.parser.RDFParser" class="extype" target="_top">RDFParser</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/labra/shaclex/tree/master/src/main/scala/es/weso/shacl/RDF2Shacl.scala" target="_blank">RDF2Shacl.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.parser.RDFParser" class="extype" target="_top">rdf.parser.RDFParser</a>, <span class="extype" name="org.slf4s.Logging">Logging</span>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="es.weso.shacl.RDF2Shacl"><span>RDF2Shacl</span></li><li class="in" name="es.weso.rdf.parser.RDFParser"><span>RDFParser</span></li><li class="in" name="org.slf4s.Logging"><span>Logging</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="es.weso.rdf.parser.RDFParser.RDFParser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]"></a>
+      <a id="RDFParser[a]:RDFParser[a]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">RDFParser</span><span class="tparams">[<span name="a">a</span>]</span><span class="result"> = (<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>, <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a>) ⇒ <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.RDFParser.a">a</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#allOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="allOf[A](ps:es.weso.shacl.RDF2Shacl.RDFParser[A]*):es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]"></a>
+      <a id="allOf[A](RDFParser[A]*):RDFParser[Seq[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">allOf</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="ps">ps: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.shacl.RDF2Shacl.allOf.A">A</span>]*</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.shacl.RDF2Shacl.allOf.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@allOf[A](ps:es.weso.shacl.RDF2Shacl.RDFParser[A]*):es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Applies a list of parsers
+If a parser fails, it continues with the rest of the list</p><div class="fullcomment"><div class="comment cmt"><p>Applies a list of parsers
+If a parser fails, it continues with the rest of the list</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>the list of successful values that could be parsed</p></dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#combine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="combine[A](p1:es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]],p2:es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]):es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]"></a>
+      <a id="combine[A](RDFParser[Seq[A]],RDFParser[Seq[A]]):RDFParser[Seq[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">combine</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="p1">p1: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.shacl.RDF2Shacl.combine.A">A</span>]]</span>, <span name="p2">p2: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.shacl.RDF2Shacl.combine.A">A</span>]]</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.shacl.RDF2Shacl.combine.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@combine[A](p1:es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]],p2:es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]):es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#combineAll" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="combineAll[A](ps:es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]*):es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]"></a>
+      <a id="combineAll[A](RDFParser[Seq[A]]*):RDFParser[Seq[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">combineAll</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="ps">ps: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.shacl.RDF2Shacl.combineAll.A">A</span>]]*</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.shacl.RDF2Shacl.combineAll.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@combineAll[A](ps:es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]*):es.weso.shacl.RDF2Shacl.RDFParser[Seq[A]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#constraints" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="constraints:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Constraint]]"></a>
+      <a id="constraints:RDFParser[Seq[Constraint]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">constraints</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Constraint.html" class="extype" name="es.weso.shacl.Constraint">Constraint</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@constraints:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Constraint]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#fail" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="fail(str:String):scala.util.Failure[Nothing]"></a>
+      <a id="fail(String):Failure[Nothing]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fail</span><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.util.Failure">Failure</span>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Nothing" class="extype" target="_top">Nothing</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@fail(str:String):scala.util.Failure[Nothing]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.rdf.parser.RDFParser#fail" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fail[A](str:String):scala.util.Try[A]"></a>
+      <a id="fail[A](String):Try[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fail</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.fail.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@fail[A](str:String):scala.util.Try[A]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#filters" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="filters:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Shape]]"></a>
+      <a id="filters:RDFParser[Seq[Shape]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filters</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Shape.html" class="extype" name="es.weso.shacl.Shape">Shape</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@filters:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Shape]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#getIntegerLiteral" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getIntegerLiteral(t:&lt;?&gt;):scala.util.Try[Integer]"></a>
+      <a id="getIntegerLiteral(RDFTriple):Try[Integer]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getIntegerLiteral</span><span class="params">(<span name="t">t: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.triples.RDFTriple" class="extype" target="_top">RDFTriple</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<span class="extype" name="java.lang.Integer">Integer</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@getIntegerLiteral(t:es.weso.rdf.triples.RDFTriple):scala.util.Try[Integer]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#getShacl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getShacl(rdf:es.weso.rdf.RDFReader):scala.util.Try[(es.weso.shacl.Schema,es.weso.rdf.PrefixMap)]"></a>
+      <a id="getShacl(RDFReader):Try[(Schema,PrefixMap)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getShacl</span><span class="params">(<span name="rdf">rdf: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[(<a href="Schema.html" class="extype" name="es.weso.shacl.Schema">Schema</a>, <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.PrefixMap" class="extype" target="_top">PrefixMap</a>)]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@getShacl(rdf:es.weso.rdf.RDFReader):scala.util.Try[(es.weso.shacl.Schema,es.weso.rdf.PrefixMap)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Parses RDF content and obtains a SHACL Schema and a PrefixMap
+</p>
+    </li><li name="es.weso.rdf.parser.RDFParser#group" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="group[A&lt;:&lt;?&gt;](parser:&lt;?&gt;,nodes:&lt;?&gt;):RDFParser.this.RDFParser[Seq[A]]"></a>
+      <a id="group[A](RDFParser[A],Seq[RDFNode]):RDFParser[Seq[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">group</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="parser">parser: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.group.A">A</span>]</span>, <span name="nodes">nodes: <span class="extype" name="scala.Seq">Seq</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="es.weso.rdf.parser.RDFParser.group.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@group[A](parser:RDFParser.this.RDFParser[A],nodes:Seq[es.weso.rdf.nodes.RDFNode]):RDFParser.this.RDFParser[Seq[A]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#hasNoRDFType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasNoRDFType(t:&lt;?&gt;):RDFParser.this.RDFParser[Boolean]"></a>
+      <a id="hasNoRDFType(IRI):RDFParser[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasNoRDFType</span><span class="params">(<span name="t">t: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@hasNoRDFType(t:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Boolean]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#hasPredicateWithSubject" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasPredicateWithSubject(n:&lt;?&gt;,p:&lt;?&gt;,rdf:&lt;?&gt;):Boolean"></a>
+      <a id="hasPredicateWithSubject(RDFNode,IRI,RDFReader):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasPredicateWithSubject</span><span class="params">(<span name="n">n: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>, <span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>, <span name="rdf">rdf: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@hasPredicateWithSubject(n:es.weso.rdf.nodes.RDFNode,p:es.weso.rdf.nodes.IRI,rdf:es.weso.rdf.RDFReader):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#hasRDFType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasRDFType(t:&lt;?&gt;):RDFParser.this.RDFParser[Boolean]"></a>
+      <a id="hasRDFType(IRI):RDFParser[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasRDFType</span><span class="params">(<span name="t">t: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@hasRDFType(t:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Boolean]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#hasSomeRDFType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasSomeRDFType(ts:&lt;?&gt;):RDFParser.this.RDFParser[Boolean]"></a>
+      <a id="hasSomeRDFType(Set[IRI]):RDFParser[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasSomeRDFType</span><span class="params">(<span name="ts">ts: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a>]</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@hasSomeRDFType(ts:Set[es.weso.rdf.nodes.IRI]):RDFParser.this.RDFParser[Boolean]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#integerLiteralForPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="integerLiteralForPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Integer]"></a>
+      <a id="integerLiteralForPredicate(IRI):RDFParser[Integer]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">integerLiteralForPredicate</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="java.lang.Integer">Integer</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@integerLiteralForPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Integer]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#iriFromPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="iriFromPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[es.weso.rdf.nodes.IRI]"></a>
+      <a id="iriFromPredicate(IRI):RDFParser[IRI]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">iriFromPredicate</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@iriFromPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[es.weso.rdf.nodes.IRI]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.slf4s.Logging#log" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="log:org.slf4s.Logger"></a>
+      <a id="log:Logger"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">log</span><span class="result">: <span class="extype" name="org.slf4s.Logger">Logger</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@log:org.slf4s.Logger" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>Logging</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#maxCount" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="maxCount:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PCComponent]"></a>
+      <a id="maxCount:RDFParser[PCComponent]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">maxCount</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@maxCount:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PCComponent]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#minCount" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="minCount:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PCComponent]"></a>
+      <a id="minCount:RDFParser[PCComponent]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">minCount</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@minCount:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PCComponent]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#mkScopeNode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="mkScopeNode(n:es.weso.rdf.nodes.RDFNode):scala.util.Try[es.weso.shacl.ScopeNode]"></a>
+      <a id="mkScopeNode(RDFNode):Try[ScopeNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mkScopeNode</span><span class="params">(<span name="n">n: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<a href="ScopeNode.html" class="extype" name="es.weso.shacl.ScopeNode">ScopeNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@mkScopeNode(n:es.weso.rdf.nodes.RDFNode):scala.util.Try[es.weso.shacl.ScopeNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#noConstraints" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="noConstraints:Seq[es.weso.shacl.Constraint]"></a>
+      <a id="noConstraints:Seq[Constraint]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">noConstraints</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<a href="Constraint.html" class="extype" name="es.weso.shacl.Constraint">Constraint</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@noConstraints:Seq[es.weso.shacl.Constraint]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#noFilters" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="noFilters:Seq[es.weso.shacl.Shape]"></a>
+      <a id="noFilters:Seq[Shape]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">noFilters</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<a href="Shape.html" class="extype" name="es.weso.shacl.Shape">Shape</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@noFilters:Seq[es.weso.shacl.Shape]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#noScopes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="noScopes:Seq[es.weso.shacl.Scope]"></a>
+      <a id="noScopes:Seq[Scope]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">noScopes</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<a href="Scope.html" class="extype" name="es.weso.shacl.Scope">Scope</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@noScopes:Seq[es.weso.shacl.Scope]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#nodeKind" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="nodeKind:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PCComponent]"></a>
+      <a id="nodeKind:RDFParser[PCComponent]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nodeKind</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@nodeKind:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PCComponent]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#objectFromPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objectFromPredicate(p:&lt;?&gt;):RDFParser.this.RDFParser[es.weso.rdf.nodes.RDFNode]"></a>
+      <a id="objectFromPredicate(IRI):RDFParser[RDFNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objectFromPredicate</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@objectFromPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[es.weso.rdf.nodes.RDFNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#objectFromPredicateOptional" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objectFromPredicateOptional(p:&lt;?&gt;):RDFParser.this.RDFParser[Option[es.weso.rdf.nodes.RDFNode]]"></a>
+      <a id="objectFromPredicateOptional(IRI):RDFParser[Option[RDFNode]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objectFromPredicateOptional</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Option" class="extype" target="_top">Option</a>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@objectFromPredicateOptional(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Option[es.weso.rdf.nodes.RDFNode]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#objectsFromPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objectsFromPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Set[es.weso.rdf.nodes.RDFNode]]"></a>
+      <a id="objectsFromPredicate(IRI):RDFParser[Set[RDFNode]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objectsFromPredicate</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@objectsFromPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Set[es.weso.rdf.nodes.RDFNode]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#objectsFromTriples" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objectsFromTriples(triples:&lt;?&gt;):Set[es.weso.rdf.nodes.RDFNode]"></a>
+      <a id="objectsFromTriples(Set[RDFTriple]):Set[RDFNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objectsFromTriples</span><span class="params">(<span name="triples">triples: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.triples.RDFTriple" class="extype" target="_top">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@objectsFromTriples(triples:Set[es.weso.rdf.triples.RDFTriple]):Set[es.weso.rdf.nodes.RDFNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#oneOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="oneOf[A&lt;:&lt;?&gt;](parsers:&lt;?&gt;):RDFParser.this.RDFParser[A]"></a>
+      <a id="oneOf[A](Seq[RDFParser[A]]):RDFParser[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">oneOf</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="parsers">parsers: <span class="extype" name="scala.Seq">Seq</span>[<a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.oneOf.A">A</span>]]</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.oneOf.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@oneOf[A](parsers:Seq[RDFParser.this.RDFParser[A]]):RDFParser.this.RDFParser[A]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#optional" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="optional[A&lt;:&lt;?&gt;](parser:&lt;?&gt;):RDFParser.this.RDFParser[Option[A]]"></a>
+      <a id="optional[A](RDFParser[A]):RDFParser[Option[A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">optional</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="parser">parser: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.optional.A">A</span>]</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.optional.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@optional[A](parser:RDFParser.this.RDFParser[A]):RDFParser.this.RDFParser[Option[A]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#parseNodeKind" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="parseNodeKind(os:Set[es.weso.rdf.nodes.RDFNode]):scala.util.Try[es.weso.shacl.PCComponent]"></a>
+      <a id="parseNodeKind(Set[RDFNode]):Try[PCComponent]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parseNodeKind</span><span class="params">(<span name="os">os: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@parseNodeKind(os:Set[es.weso.rdf.nodes.RDFNode]):scala.util.Try[es.weso.shacl.PCComponent]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#propertyConstraint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="propertyConstraint:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PropertyConstraint]"></a>
+      <a id="propertyConstraint:RDFParser[PropertyConstraint]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">propertyConstraint</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="PropertyConstraint.html" class="extype" name="es.weso.shacl.PropertyConstraint">PropertyConstraint</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@propertyConstraint:es.weso.shacl.RDF2Shacl.RDFParser[es.weso.shacl.PropertyConstraint]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#propertyConstraintComponents" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="propertyConstraintComponents:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.PCComponent]]"></a>
+      <a id="propertyConstraintComponents:RDFParser[Seq[PCComponent]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">propertyConstraintComponents</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="PCComponent.html" class="extype" name="es.weso.shacl.PCComponent">PCComponent</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@propertyConstraintComponents:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.PCComponent]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#propertyConstraints" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="propertyConstraints:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Constraint]]"></a>
+      <a id="propertyConstraints:RDFParser[Seq[Constraint]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">propertyConstraints</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Constraint.html" class="extype" name="es.weso.shacl.Constraint">Constraint</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@propertyConstraints:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Constraint]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.rdf.parser.RDFParser#rdfList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rdfList:RDFParser.this.RDFParser[List[es.weso.rdf.nodes.RDFNode]]"></a>
+      <a id="rdfList:RDFParser[List[RDFNode]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rdfList</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.List">List</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@rdfList:RDFParser.this.RDFParser[List[es.weso.rdf.nodes.RDFNode]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#rdfListForPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rdfListForPredicate(p:&lt;?&gt;):RDFParser.this.RDFParser[List[es.weso.rdf.nodes.RDFNode]]"></a>
+      <a id="rdfListForPredicate(IRI):RDFParser[List[RDFNode]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rdfListForPredicate</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.List">List</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@rdfListForPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[List[es.weso.rdf.nodes.RDFNode]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#rdfType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rdfType:RDFParser.this.RDFParser[es.weso.rdf.nodes.RDFNode]"></a>
+      <a id="rdfType:RDFParser[RDFNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rdfType</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@rdfType:RDFParser.this.RDFParser[es.weso.rdf.nodes.RDFNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#rdfTypes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rdfTypes:RDFParser.this.RDFParser[Set[es.weso.rdf.nodes.RDFNode]]"></a>
+      <a id="rdfTypes:RDFParser[Set[RDFNode]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rdfTypes</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@rdfTypes:RDFParser.this.RDFParser[Set[es.weso.rdf.nodes.RDFNode]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.shacl.RDF2Shacl#scopeNodes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="scopeNodes:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Scope]]"></a>
+      <a id="scopeNodes:RDFParser[Seq[Scope]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scopeNodes</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Scope.html" class="extype" name="es.weso.shacl.Scope">Scope</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@scopeNodes:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Scope]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#scopes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="scopes:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Scope]]"></a>
+      <a id="scopes:RDFParser[Seq[Scope]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scopes</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Scope.html" class="extype" name="es.weso.shacl.Scope">Scope</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@scopes:es.weso.shacl.RDF2Shacl.RDFParser[Seq[es.weso.shacl.Scope]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#shape" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="shape(node:es.weso.rdf.nodes.RDFNode,rdf:es.weso.rdf.RDFReader):scala.util.Try[es.weso.shacl.Shape]"></a>
+      <a id="shape(RDFNode,RDFReader):Try[Shape]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">shape</span><span class="params">(<span name="node">node: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>, <span name="rdf">rdf: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<a href="Shape.html" class="extype" name="es.weso.shacl.Shape">Shape</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@shape(node:es.weso.rdf.nodes.RDFNode,rdf:es.weso.rdf.RDFReader):scala.util.Try[es.weso.shacl.Shape]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.shacl.RDF2Shacl#shapes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="shapes(rdf:es.weso.rdf.RDFReader):scala.util.Try[Seq[es.weso.shacl.Shape]]"></a>
+      <a id="shapes(RDFReader):Try[Seq[Shape]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">shapes</span><span class="params">(<span name="rdf">rdf: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.util.Try" class="extype" target="_top">Try</a>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Shape.html" class="extype" name="es.weso.shacl.Shape">Shape</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@shapes(rdf:es.weso.rdf.RDFReader):scala.util.Try[Seq[es.weso.shacl.Shape]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="es.weso.rdf.parser.RDFParser#someOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="someOf[A&lt;:&lt;?&gt;](ps:&lt;?&gt;):RDFParser.this.RDFParser[A]"></a>
+      <a id="someOf[A](Seq[RDFParser[A]]):RDFParser[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">someOf</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="ps">ps: <span class="extype" name="scala.Seq">Seq</span>[<a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.someOf.A">A</span>]]</span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="es.weso.rdf.parser.RDFParser.someOf.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@someOf[A](ps:Seq[RDFParser.this.RDFParser[A]]):RDFParser.this.RDFParser[A]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#stringFromPredicate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stringFromPredicate(p:&lt;?&gt;):RDFParser.this.RDFParser[String]"></a>
+      <a id="stringFromPredicate(IRI):RDFParser[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stringFromPredicate</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@stringFromPredicate(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#stringFromPredicateOptional" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stringFromPredicateOptional(p:&lt;?&gt;):RDFParser.this.RDFParser[Option[String]]"></a>
+      <a id="stringFromPredicateOptional(IRI):RDFParser[Option[String]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stringFromPredicateOptional</span><span class="params">(<span name="p">p: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>)</span><span class="result">: <a href="#RDFParser[a]=(es.weso.rdf.nodes.RDFNode,es.weso.rdf.RDFReader)=&gt;scala.util.Try[a]" class="extmbr" name="es.weso.shacl.RDF2Shacl.RDFParser">RDFParser</a>[<a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Option" class="extype" target="_top">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@stringFromPredicateOptional(p:es.weso.rdf.nodes.IRI):RDFParser.this.RDFParser[Option[String]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#subjectsFromTriples" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjectsFromTriples(triples:&lt;?&gt;):Set[es.weso.rdf.nodes.RDFNode]"></a>
+      <a id="subjectsFromTriples(Set[RDFTriple]):Set[RDFNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjectsFromTriples</span><span class="params">(<span name="triples">triples: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.triples.RDFTriple" class="extype" target="_top">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@subjectsFromTriples(triples:Set[es.weso.rdf.triples.RDFTriple]):Set[es.weso.rdf.nodes.RDFNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#subjectsWithProperty" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjectsWithProperty(pred:&lt;?&gt;,rdf:&lt;?&gt;):Set[es.weso.rdf.nodes.RDFNode]"></a>
+      <a id="subjectsWithProperty(IRI,RDFReader):Set[RDFNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjectsWithProperty</span><span class="params">(<span name="pred">pred: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.IRI" class="extype" target="_top">IRI</a></span>, <span name="rdf">rdf: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@subjectsWithProperty(pred:es.weso.rdf.nodes.IRI,rdf:es.weso.rdf.RDFReader):Set[es.weso.rdf.nodes.RDFNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="es.weso.rdf.parser.RDFParser#subjectsWithType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjectsWithType(t:es.weso.rdf.nodes.RDFNode,rdf:es.weso.rdf.RDFReader):Set[es.weso.rdf.nodes.RDFNode]"></a>
+      <a id="subjectsWithType(RDFNode,RDFReader):Set[RDFNode]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjectsWithType</span><span class="params">(<span name="t">t: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a></span>, <span name="rdf">rdf: <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.RDFReader" class="extype" target="_top">RDFReader</a></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.nodes.RDFNode" class="extype" target="_top">RDFNode</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@subjectsWithType(t:es.weso.rdf.nodes.RDFNode,rdf:es.weso.rdf.RDFReader):Set[es.weso.rdf.nodes.RDFNode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RDFParser</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Long" class="extype" target="_top">Long</a></span>, <span name="arg1">arg1: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Long" class="extype" target="_top">Long</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#es.weso.shacl.RDF2Shacl$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="es.weso.rdf.parser.RDFParser">
+              <h3>Inherited from <a href="http://labra.github.io/SRDF/latest/api/index.html#es.weso.rdf.parser.RDFParser" class="extype" target="_top">rdf.parser.RDFParser</a></h3>
+            </div><div class="parent" name="org.slf4s.Logging">
+              <h3>Inherited from <span class="extype" name="org.slf4s.Logging">Logging</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.AnyRef" class="extype" target="_top">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Any" class="extype" target="_top">Any</a></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
