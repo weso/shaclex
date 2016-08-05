@@ -1,19 +1,15 @@
 import sbt._
 import sbt.Keys._
 
-lazy val root = project.in(file(".")).
-  settings(publishSettings:_*).
-  enablePlugins(BuildInfoPlugin).
-  settings(
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "buildinfo"
-)
+lazy val shaclex = 
+  project.in(file(".")).
+  settings(publishSettings:_*)
 
 name := "shaclex"
 
 organization := "es.weso"
 
-version := "0.0.1"
+version := "0.0.4"
 
 scalaVersion := "2.11.8"
 
@@ -22,16 +18,23 @@ javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value  
   , "commons-configuration" % "commons-configuration" % "1.7"
-  , "org.rogach" %% "scallop" % "0.9.5" 
+  , "org.rogach" %% "scallop" % "2.0.1" 
   , "com.typesafe" % "config" % "1.0.1"
   , "org.scala-lang" % "scala-compiler" % scalaVersion.value
   , "org.scalatest" %%% "scalatest" % "3.0.0-M15" 
-  , "org.typelevel" %% "cats" % "0.6.0-M1"
-  , "es.weso" % "shexcala_2.11" % "0.7.11" excludeAll(ExclusionRule(organization = "org.slf4j"))  
-  , "es.weso" % "validating_2.11" % "0.0.6"   
+  , "org.typelevel" %% "cats" % "0.6.1"
+  , "org.atnos" %% "eff-cats" % "1.7.5"
+  , "es.weso" % "shexcala_2.11" % "0.7.14" 
   )
 
 autoCompilerPlugins := true
+
+// to write types like Reader[String, ?]
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
+
+// to get types like Reader[String, ?] (with more than one type parameter) correctly inferred
+addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0")
+
 
 
 // Binary packaging

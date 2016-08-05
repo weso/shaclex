@@ -19,6 +19,7 @@ object RDF2Shacl
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap 
    */
   def getShacl(rdf: RDFReader): Try[(Schema, PrefixMap)] = {
+    println(s"Trying to get shacl from $rdf") 
     val pm = rdf.getPrefixMap  
     for {
       shapes <- shapes(rdf)
@@ -26,7 +27,9 @@ object RDF2Shacl
   }
   
   def shapes(rdf: RDFReader): Try[Seq[Shape]] = {
+   println("Searching shapes...")
    val shape_nodes = subjectsWithType(sh_Shape, rdf)
+   println(s"Candidate shapes...$shape_nodes")
    filterSuccess(shape_nodes.toSeq.map (node => shape(node,rdf)))
   }
   

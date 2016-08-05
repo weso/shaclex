@@ -42,9 +42,9 @@ object Main extends App {
           println("Schema:" + schema.serialize("TURTLE"))
         }
         
-        val validator = CoreValidator(schema)
-        val validated = validator.validate(rdf)
-        println(s"Validated result: ${validator.showResult(validated)}")
+        val validator = Validator(schema)
+        val validated = validator.validateAll(rdf)
+        println(s"Result: ${validated.show}")
 
         if (opts.outputFile.get.isDefined) {
           val fileName = opts.outputFile.get.get

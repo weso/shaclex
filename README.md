@@ -8,6 +8,18 @@ SHACL implementation based on Shape Expressions
 
 This is an experimental implementation of SHACL which compiles SHACL to Shape Expressions
 
+## Installation and compilation
+
+The projects uses [sbt](http://www.scala-sbt.org/).  
+
+## Usage
+
+It is possible to run a sample programs by just:
+
+```
+sbt "run -d examples/good1.ttl"
+```
+
 ## More information
 
 * [ShExcala](http://labra.github.io/ShExcala/): Shape Expressions implementation

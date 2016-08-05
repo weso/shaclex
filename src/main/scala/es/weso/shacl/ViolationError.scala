@@ -16,14 +16,14 @@ case class ViolationError(
 
 object ViolationError {
   
-  def unsupportedError(focusNode: RDFNode) =  
+  def unsupported(focusNode: RDFNode, msg: String) =  
     ViolationError(
       id = sh + "unsupported",
       focusNode = focusNode,
       subject = None,
       predicate = None,
       obj = None,
-      message = Some("Unsupported SHACL feature"),
+      message = Some("Unsupported: " + msg),
       sourceConstraint = None)
       
   def minCountError(focusNode: RDFNode, predicate: IRI, minCount: Int, count: Int) = 
