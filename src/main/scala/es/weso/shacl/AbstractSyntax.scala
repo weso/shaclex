@@ -16,22 +16,22 @@ case class Schema(shapes: Seq[Shape]) {
   /**
    * Get the sequence of sh:scopeNode declarations
    */
-  def scopeNodeShapes: Seq[(IRI,Shape)] = {
+  def targetNodeShapes: Seq[(IRI,Shape)] = {
     val zero : Seq[(IRI,Shape)] = Seq()
     def comb(rs:Seq[(IRI,Shape)], s: Shape): Seq[(IRI,Shape)] = {
-      val ns : Seq[IRI] = s.scopeNodes
+      val ns : Seq[IRI] = s.targetNodes
       ns.map(n => (n,s)) ++ rs
     }
     shapes.foldLeft(zero)(comb)
   }
 
  /**
-   * Get the sequence of sh:scopeNode declarations
+   * Get the sequence of `sh:targetNode` declarations
    * @return a list of pairs (n,s) where n is the IRI of a node 
    * and s is the IRI of a shape
    */
-  def scopeNodeDeclarations: Seq[(IRI,IRI)] = {
-    scopeNodeShapes.map(p => (p._1,p._2.id.get))
+  def targetNodeDeclarations: Seq[(IRI,IRI)] = {
+    targetNodeShapes.map(p => (p._1,p._2.id.get))
   }
 
   def serialize(format: String = "AST"): Try[String] = {
@@ -47,7 +47,7 @@ case class Schema(shapes: Seq[Shape]) {
 
 case class Shape(
     id: Option[IRI],
-    scopes: Seq[Scope],
+    targets: Seq[Target],
     filters: Seq[Shape],
     components: Seq[Constraint] 
 ) {
@@ -55,8 +55,8 @@ case class Shape(
     id contains(iri)
   }
   
-  def scopeNodes: Seq[IRI] = { 
-    val maybeScopeNodes = scopes.map(_.toScopeNode)
+  def targetNodes: Seq[IRI] = { 
+    val maybeScopeNodes = targets.map(_.toTargetNode)
     maybeScopeNodes.flatten.map(_.node)
   }
   
@@ -66,22 +66,22 @@ case class Shape(
   
 }
 
-sealed abstract class Scope {
-  def isScopeNode: Boolean
+sealed abstract class Target {
+  def isTargetNode: Boolean
   
-  def toScopeNode: Option[ScopeNode]
+  def toTargetNode: Option[TargetNode]
 }
 
 
-case class ScopeNode(node: IRI) extends Scope {
-  def isScopeNode = true
+case class TargetNode(node: IRI) extends Target {
+  def isTargetNode = true
   
-  def toScopeNode = Some(this)
+  def toTargetNode = Some(this)
   
 }
-// TODO...add more types of scopes
-// case class ScopeClass(cls: IRI) extends Scope
-// case class PropertyScope(predicate: IRI) extends Scope
+// TODO...add more types of targets
+// case class TargetClass(cls: IRI) extends Target
+// case class PropertyTarget(predicate: IRI) extends Target
 
 sealed abstract class Constraint {
   def isPropertyConstraint: Boolean
@@ -101,10 +101,10 @@ case class PropertyConstraint(
   override def toPropertyConstraint: Option[PropertyConstraint] = Some(this)
 }
 
-case class InversePropertyConstraint(
+case class PathPropertyConstraint(
     id:Option[IRI],
-    predicate: IRI,
-    components: Seq[IPCComponent]
+    path: Path,
+    components: Seq[PCComponent]
 ) extends Constraint {
   def isPropertyConstraint = false
   
@@ -128,73 +128,86 @@ sealed abstract class Component
 sealed trait PCComponent extends Component 
 
 /**
- * InversePropertyConstraint Component
- */
-sealed trait IPCComponent extends Component
-
-/**
  * NodeConstraint Component
  */
 sealed trait NCComponent extends Component
 
 
  
-trait Value  // Represents IRIs or Literals (not blank nodes)
-case class IRIValue(iri: IRI) extends Value
-case class LiteralValue(literal: Literal) extends Value
+/**
+ * Represents IRIs or Literals (no Blank nodes)
+ */
+trait Value  {
+  def matchNode(node: RDFNode): Boolean
+} 
+
+case class IRIValue(iri: IRI) extends Value {
+  override def matchNode(node: RDFNode) = {
+    node match {
+      case i: IRI => iri == i
+      case _ => false
+    }
+  }
+}
+
+case class LiteralValue(literal: Literal) extends Value {
+  override def matchNode(node: RDFNode) = {
+    node match {
+      case l: Literal => l == literal
+      case _ => false
+    }
+  }
+}
 
 case class ShClass(value: RDFNode) 
- extends NCComponent with PCComponent with IPCComponent
+ extends NCComponent with PCComponent 
  
 case class ClassIn(values: Seq[RDFNode]) 
- extends NCComponent with PCComponent with IPCComponent
+ extends NCComponent with PCComponent 
 
 case class Datatype(value: RDFNode) 
- extends PCComponent with IPCComponent
+ extends PCComponent 
 
 case class DatatypeIn(values: Seq[RDFNode]) 
- extends PCComponent with IPCComponent
+ extends PCComponent 
  
 case class DirectType(value: RDFNode) 
- extends NCComponent with PCComponent with IPCComponent
+ extends NCComponent with PCComponent 
 
 case class NodeKind(value: NodeKindType) 
- extends NCComponent with PCComponent with IPCComponent
+ extends NCComponent with PCComponent 
 
 case class MinCount(value: Int)
- extends PCComponent with IPCComponent {
+ extends PCComponent {
   
 }
  
 case class MaxCount(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
  
 case class MinExclusive(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
  
 case class MinInclusive(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
  
 case class MaxExclusive(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
 
 case class MaxInclusive(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
  
 case class MinLength(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
  
 case class MaxLength(value: Int)
- extends PCComponent with IPCComponent
+ extends PCComponent 
 
 case class Pattern(pattern: String, flags: Option[String])
- extends NCComponent with PCComponent with IPCComponent
+ extends NCComponent with PCComponent 
  
 case class UniqueLang(value: Boolean)
  extends PCComponent 
-
-
- 
 
 /**
  * 
@@ -210,12 +223,10 @@ case class Closed(
  * TODO: The spec allows also blank nodes     
  */
 case class HasValue(value: Value)
-     extends PCComponent with IPCComponent
+     extends PCComponent 
 
- 
-case class In(list: Seq[Value]) 
-     extends PCComponent with IPCComponent with NCComponent
- 
+case class In(list: List[Value]) 
+     extends PCComponent with NCComponent 
 
 sealed trait NodeKindType
 case object IRIKind extends NodeKindType
@@ -233,3 +244,11 @@ object Schema {
 object Shape {
   val empty = Shape(None,Seq(),Seq(),Seq())
 }
+
+sealed trait Path
+case class PredicatePath(iri: IRI) extends Path
+case class InversePath(iri: IRI) extends Path
+case class SequencePath(paths: Seq[Path]) extends Path
+case class AlternativePath(paths: Seq[Path]) extends Path
+case class ZeroOrMorePath(iri: Path) extends Path
+case class OneOrMorePath(iri: Path) extends Path

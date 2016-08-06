@@ -46,8 +46,8 @@ describe("RDf2Shacl Syntax") {
     } yield (schema.shape(s))
     val maybeShape = attempt.success.value
     maybeShape shouldBe defined
-    val scopeNodes = maybeShape.get.scopeNodes
-    scopeNodes should contain only(n1)    
+    val targetNodes = maybeShape.get.targetNodes
+    targetNodes should contain only(n1)    
   }
   
   it("should be able to get the scope node declarations") {
@@ -68,7 +68,7 @@ describe("RDf2Shacl Syntax") {
       (schema,pm) <- RDF2Shacl.getShacl(rdf)
     } yield (schema)
     val schema = attempt.success.value
-    schema.scopeNodeDeclarations should contain only((s2,S), (s1,S),(t1,T))
+    schema.targetNodeDeclarations should contain only((s2,S), (s1,S),(t1,T))
   }
   
   

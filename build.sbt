@@ -23,8 +23,9 @@ libraryDependencies ++= Seq(
   , "org.scala-lang" % "scala-compiler" % scalaVersion.value
   , "org.scalatest" %%% "scalatest" % "3.0.0-M15" 
   , "org.typelevel" %% "cats" % "0.6.1"
-  , "org.atnos" %% "eff-cats" % "1.7.5"
+  , "org.atnos" %% "eff-cats" % "2.0-preview-1"
   , "es.weso" % "shexcala_2.11" % "0.7.14" 
+  , "org.specs2" %% "specs2-core" % "3.8.4" % "test"
   )
 
 autoCompilerPlugins := true
@@ -74,6 +75,8 @@ resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
 
 // resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
 
+resolvers += Resolver.sonatypeRepo("releases")
+
 resolvers += Resolver.bintrayRepo("labra", "maven")
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
@@ -112,11 +115,23 @@ lazy val publishSettings = Seq(
     </developers>
   ),
   scalacOptions in (Compile,doc) ++= Seq(
-//    "-Xfatal-warnings",
     "-diagrams-debug",
     "-doc-source-url", scmInfo.value.get.browseUrl + "/tree/master€{FILE_PATH}.scala",
     "-sourcepath", baseDirectory.in(LocalRootProject).value.getAbsolutePath,
-    "-diagrams"
+    "-diagrams",
+    "-Yrangepos",
+    "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:_",
+  "-unchecked",
+  "-Xfatal-warnings",
+  "-Xlint",
+  "-Yinline-warnings",
+  "-Yno-adapted-args",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard",
+  "-Xfuture"
   )
 )
 

@@ -5,6 +5,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 import util._
+import Validator._
 
 class ShapeValidatorTest extends 
   FunSpec with Matchers with TryValues with OptionValues {
@@ -24,9 +25,10 @@ describe("Shapes") {
     } yield (rdf,schema)
     val (rdf,schema) = attempt.success.value
     val s = ex + "S"
-    val validator = CoreValidator(schema)
+    val validator = Validator(schema)
     val shape = schema.shape(s).value
-    val result = validator.shapeConstraint.validate(shape,rdf)
-    result.isOK should be(true)
+    val checker = validator.shapeChecker(shape)
+    val result = runCheck(checker,rdf)
+    result.isRight should be(true)
  }
 }

@@ -52,4 +52,13 @@ object ViolationError {
         obj = None,
         message = Some(s"MaxCount violation. Expected $maxCount, obtained: $count"),
         sourceConstraint = None)
+        
+  def inError(focusNode: RDFNode, values: Seq[Value]) = 
+    ViolationError(id = sh + "inError",
+        focusNode = focusNode,
+        subject = Some(focusNode),
+        predicate = None,
+        obj = None,
+        message = Some(s"In violation. Expected $focusNode to be in $values"),
+        sourceConstraint = None)
 }

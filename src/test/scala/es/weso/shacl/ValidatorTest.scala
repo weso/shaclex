@@ -5,12 +5,13 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 import util._
+import Validator._
 
-class CoreValidatorTest extends 
+class ValidatorTest extends 
   FunSpec with Matchers with TryValues with OptionValues 
   with SchemaMatchers {
   
-describe("Core validator scope Nodes") {
+describe("Validator scope Nodes") {
 
   it("should be able to get the scope nodes to validate") {
     val ex = IRI("http://example.org/")
@@ -30,9 +31,9 @@ describe("Core validator scope Nodes") {
     val x = ex + "x"
     val y = ex + "y"
     val z = ex + "z"
-    val s = Shape.empty.copy(id = Some(S), scopes = Seq(ScopeNode(y),ScopeNode(x)))
-    val t = Shape.empty.copy(id = Some(T), scopes = Seq(ScopeNode(z)))
-    val scopeNodes = CoreValidator(schema).scopeNodes 
+    val s = Shape.empty.copy(id = Some(S), targets = Seq(TargetNode(y),TargetNode(x)))
+    val t = Shape.empty.copy(id = Some(T), targets = Seq(TargetNode(z)))
+    val scopeNodes = Validator(schema).targetNodes 
     scopeNodes.size should be(3)
     scopeNodes should contain (x,s)
     scopeNodes should contain (y,s)
@@ -62,23 +63,24 @@ describe("Core validator scope Nodes") {
     val S = ex + "S"
     val p = ex + "p"
     val x = ex + "x"
+    val good1 = ex + "good1"
+    val good2 = ex + "good2"
     val bad1 = ex + "bad1"
     val pc = PropertyConstraint(id = None,predicate = p,
             components= Seq(MinCount(1)))
     val s = Shape.empty.copy(
         id = Some(S), 
-        scopes = Seq(ScopeNode(x)),
+        targets = Seq(TargetNode(x)),
         components = Seq(pc))
-    val validator = CoreValidator(schema)
-    validator.scopeNodes should contain only ((x,s))
-    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
-    val validated = validator.minCount(1).validate(bad1,(rdf,p))
-    validated.isOK should be (false)
-    validated.errors should contain (ViolationError.minCountError(bad1,p,1,0))
-    validator.vPropertyConstraint(pc).validate(ex + "good1",rdf).isOK should be(true)
-    validator.vPropertyConstraint(pc).validate(ex + "good2",rdf).isOK should be(true) 
+    val validator = Validator(schema)
+    validator.targetNodes should contain only ((x,s))
+    val checker = validator.minCount(1)
+    isOK(runCheck(checker(good1,s,p),rdf)) should be(true)
+    isOK(runCheck(checker(good2,s,p),rdf)) should be(true)
+    isOK(runCheck(checker(bad1,s,p),rdf)) should be(false)
   }
 }
+
 
 describe("minCount") {
   it("validates minCount(1) when there is exactly 1") {
@@ -89,10 +91,12 @@ describe("minCount") {
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
     val x = ex + "x"
     val p = ex + "p"
-    val validator = CoreValidator(Schema.empty)
-    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
+    val validator = Validator(Schema.empty)
+    val checker = validator.minCount(1)
+    val s = Shape.empty
+    isOK(runCheck(checker(x,s,p),rdf)) should be(true)
   }
-  
+/*  
  it("validates minCount(1) when there are 2") {
   val ex = IRI("http://example.org/")
   val str = s"""|@prefix : $ex
@@ -101,10 +105,9 @@ describe("minCount") {
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
     val x = ex + "x"
     val p = ex + "p"
-    val validator = CoreValidator(Schema.empty)
-    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
+    val validator = Validator(Schema.empty)
+    validator.minCount(1).validateAll(x,(rdf,p)).isOK should be(true)
   }
-
  it("validates minCount(1) when there are 2 and other things...") {
   val ex = IRI("http://example.org/")
   val str = s"""|@prefix : $ex
@@ -113,8 +116,8 @@ describe("minCount") {
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
     val x = ex + "x"
     val p = ex + "p"
-    val validator = CoreValidator(Schema.empty)
-    validator.minCount(1).validate(x,(rdf,p)).isOK should be(true)
+    val validator = Validator(Schema.empty)
+    validator.minCount(1).validateAll(x,(rdf,p)).isOK should be(true)
   }
  
   it("fails to validate minCount(2) when there are 1") {
@@ -125,8 +128,8 @@ describe("minCount") {
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
     val x = ex + "x"
     val p = ex + "p"
-    val validator = CoreValidator(Schema.empty)
-    validator.minCount(2).validate(x,(rdf,p)).isOK should be(false)
+    val validator = Validator(Schema.empty)
+    validator.minCount(2).validateAll(x,(rdf,p)).isOK should be(false)
   }
 
   it("fails to validate minCount(2) when there are no values") {
@@ -137,8 +140,8 @@ describe("minCount") {
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
     val x = ex + "x"
     val p = ex + "p"
-    val validator = CoreValidator(Schema.empty)
-    validator.minCount(2).validate(x,(rdf,p)).isOK should be(false)
+    val validator = Validator(Schema.empty)
+    validator.minCount(2).validateAll(x,(rdf,p)).isOK should be(false)
   }
   
  it("fails to validate minCount(2) when there are no resource") {
@@ -149,12 +152,12 @@ describe("minCount") {
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
     val x = ex + "x"
     val p = ex + "p"
-    val validator = CoreValidator(Schema.empty)
-    validator.minCount(2).validate(x,(rdf,p)).isOK should be(false)
+    val validator = Validator(Schema.empty)
+    validator.minCount(2).validateAll(x,(rdf,p)).isOK should be(false)
   }
-
+*/
  }
-
+/*
  describe("Property constraint"){
    it("validates minCount(1), maxCount(1) when there is exactly 1") {
      val ex = IRI("http://example.org/")
@@ -162,12 +165,12 @@ describe("minCount") {
      val x = ex + "x"
      val pc = PropertyConstraint(id = None, predicate = p, components = 
        Seq(MinCount(1),MaxCount(1)))
-     val validator = CoreValidator.empty
+     val validator = Validator.empty
      val str = s"""|@prefix : $ex
                    |:x :p "a" .
                    |""".stripMargin
      val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
-     val validated = validator.vPropertyConstraint(pc).validate(x,rdf)
+     val validated = validator.vPropertyConstraint(pc).validateAll(x,rdf)
      validated.isOK should be(true)
    }
  }
@@ -195,9 +198,9 @@ describe("minCount") {
                 |:S sh:scopeNode :x .
                 |""".stripMargin
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
-    val validator = CoreValidator(schema)
+    val validator = Validator(schema)
     val shape = schema.shape(s).value
-    val result = validator.shapeConstraint.validate(shape,rdf)
+    val result = validator.shapeConstraint.validateAll(shape,rdf)
     result.isOK should be(true)
    }
     
@@ -209,10 +212,12 @@ describe("minCount") {
                 |:S sh:scopeNode :y .
                 |""".stripMargin
     val rdf = RDFAsJenaModel.fromChars(str,"TURTLE").get
-    val validator = CoreValidator(schema)
+    val validator = Validator(schema)
     val shape = schema.shape(s).value
     val result = validator.shapeConstraint.validate(shape,rdf)
     result.isOK should be(false)
-   }
- } 
+   } 
+ } */
+
+
 }

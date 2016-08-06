@@ -1,6 +1,8 @@
 package es.weso.validator
-import cats._, data._
-import org.atnos.eff._, all._
+import cats._
+import cats.data._
+import org.atnos.eff._
+import org.atnos.eff.all._
 import org.atnos.eff.syntax.all._
 
 trait Checked {
@@ -18,13 +20,7 @@ trait Checked {
     r.isRight && r.toList.isEmpty == false  
   
   // Computational effects
-  type Comput =  
-    Reader[Ctx,?] |:  
-    State[S,?] |:
-    Choose |: 
-    Validate[Err, ?] |:
-    Eval |:
-    NoEffect
+  type Comput = Fx.fx5[Reader[Ctx,?], State[S,?], Choose, Validate[Err, ?], Eval]
 
  type Check[A] = Eff[Comput,A]
 

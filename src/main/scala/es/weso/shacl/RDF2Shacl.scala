@@ -8,7 +8,11 @@ import es.weso.rdf.{ PrefixMap, RDFReader }
 import es.weso.rdf.nodes.{ BNodeId, IRI, Literal, RDFNode }
 import es.weso.rdf.parser.RDFParser
 import es.weso.utils.TryUtils._
-
+import cats.Semigroup
+import cats.data.{NonEmptyList, OneAnd, Validated, ValidatedNel, Xor}
+import cats.std.list._
+import cats.std.option._
+import cats.syntax.traverse._
 import SHACLPrefixes._
 
 object RDF2Shacl 
@@ -37,7 +41,7 @@ object RDF2Shacl
     node match {
       case iri : IRI => {
         for {
-          scopes <- scopes(node,rdf)
+          scopes <- targets(node,rdf)
           filters <- filters(node,rdf)
           constraints <- constraints(node,rdf)
         } yield Shape(Some(iri),scopes, filters, constraints)
@@ -46,14 +50,14 @@ object RDF2Shacl
     }
   }
   
-  def scopes: RDFParser[Seq[Scope]] = 
+  def targets: RDFParser[Seq[Target]] = 
     combineAll(
-          scopeNodes
+          targetNodes
         // TODO: Add the rest of scope declarations
         //  , scopeClass
         )
     
-  def scopeNodes: RDFParser[Seq[Scope]] = (n,rdf) => {
+  def targetNodes: RDFParser[Seq[Target]] = (n,rdf) => {
     val attempts = for {
       ns <- objectsFromPredicate(sh_scopeNode)(n,rdf)
     } yield {
@@ -63,9 +67,9 @@ object RDF2Shacl
     attempts.flatten
   }
   
-  def mkScopeNode(n: RDFNode): Try[ScopeNode] = {
+  def mkScopeNode(n: RDFNode): Try[TargetNode] = {
     n match {
-      case iri: IRI => Success(ScopeNode(iri))
+      case iri: IRI => Success(TargetNode(iri))
       case _ => fail("Node " + n + " must be an IRI to be a scope node")
     }
   }
@@ -101,8 +105,7 @@ object RDF2Shacl
   
   
   def propertyConstraintComponents: RDFParser[Seq[PCComponent]] = 
-    allOf(minCount, maxCount, nodeKind)
-  
+    allOf(minCount, maxCount, nodeKind, in)
   
   def minCount: RDFParser[PCComponent] = (n,rdf) => {
     for {
@@ -115,8 +118,29 @@ object RDF2Shacl
   def maxCount: RDFParser[PCComponent] = (n,rdf) => {
     for {
      v <- integerLiteralForPredicate(sh_maxCount)(n,rdf)
-    } yield {
-      MaxCount(v)
+    } yield MaxCount(v)
+  }
+  
+  def in: RDFParser[PCComponent] = (n,rdf) => {
+    for {
+     ns <- rdfListForPredicate(sh_in)(n,rdf)
+     vs <- convert2Values(ns.map(node2Value(_)))
+    } yield In(vs) 
+  }
+  
+  def node2Value(n: RDFNode): Try[Value] = {
+    n match {
+      case i: IRI => Success(IRIValue(i))
+      case l: Literal => Success(LiteralValue(l))
+      case _ => Failure(throw new Exception(s"Element $n must be a IRI or a Literal to be part of sh:in"))
+    }
+  }
+  
+  def convert2Values[A](cs: List[Try[A]]): Try[List[A]] = {
+    if (cs.isEmpty) 
+      Failure(throw new Exception("The list of values associated with sh:in must not be empty"))
+    else {
+      filterSuccess(cs).map(_.toList)
     }
   }
   
@@ -185,7 +209,7 @@ object RDF2Shacl
   def fail(str: String) = 
     Failure(throw new Exception(str))
     
-  def noScopes: Seq[Scope] = Seq()
+  def noTarget: Seq[Target] = Seq()
   def noFilters: Seq[Shape] = Seq()
   def noConstraints: Seq[Constraint] = Seq()
 

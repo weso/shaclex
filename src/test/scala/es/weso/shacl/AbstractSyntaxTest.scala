@@ -18,7 +18,7 @@ describe("Abstract Syntax") {
 
     val shape = Shape(
         id = Some(IRI("http://example.org/s")),
-        scopes =Seq(),
+        targets =Seq(),
         filters= Seq(),
         components = Seq(c))
         

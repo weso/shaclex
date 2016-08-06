@@ -1,57 +1,37 @@
 package es.weso.shacl
-
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import ViolationError._
-
 import cats._, data._
 import org.atnos.eff._, all._
 import org.atnos.eff.syntax.all._
- 
 
 /**
  * This validator is implemented directly in Scala
  */
 case class Validator(schema: Schema) {
 
-  type Comput =  
-    Reader[RDFReader,?] |:
-    State[Typing,?] |:
-    Choose |: 
-    Validate[ViolationError, ?] |:
-    Eval |:
-    NoEffect
-
-  type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,Actions)]]
   
-  def isOK[A](r: Result[A]): Boolean = 
-    r.isRight && r.toList.isEmpty == false  
-
- type Check[A] = Eff[Comput,A]
+   
  type Checker[A] = A => Check[A]
  type ShapeChecker = Checker[Shape]
  type NodeShapeChecker = Checker[(RDFNode,Shape)]
  type PropertyChecker = (RDFNode,Shape,IRI) => Check[RDFNode]
  type NodeChecker = (RDFNode,Shape) => Check[RDFNode]
   
- // With this import we use list for non determinism
- // We could import Option if we are only interested in one answer
- import cats.std.list._
-
-  
   /**
    * Return all scopeNode declarations which are pairs (n,s) where
    * <p> `n` = node to validate
    * <p> `s` = candidate shape
    */
-  def scopeNodes: Seq[(IRI,Shape)] = {
-    schema.scopeNodeShapes
+  def targetNodes: Seq[(IRI,Shape)] = {
+    schema.targetNodeShapes
   }
  
   // Fails if there is any error
   def validateAll(rdf: RDFReader): CheckResult = {
    val r: Xor[NonEmptyList[ViolationError],List[(Schema,Typing)]] = 
-     checkSchemaAll(schema).runReader(rdf).runState(Typing.empty).runChoose.runNel.runEval.run
+     Validator.runCheck(checkSchemaAll(schema),rdf)
    CheckResult(r)
   }
   
@@ -61,20 +41,20 @@ case class Validator(schema: Schema) {
    */
   def checkSchemaAll: Checker[Schema] = schema => {
     val shapes = schema.shapes
-    val results: Seq[Check[Shape]] = shapes.map(sh => shapeConstraint(sh))
+    val results: Seq[Check[Shape]] = shapes.map(sh => shapeChecker(sh))
     val r = checkAll(results)
     r.map(_ => schema)
   }
 
   def checkSchemaSome: Checker[Schema] = schema => {
     val shapes = schema.shapes
-    val results: Seq[Check[Shape]] = shapes.map(sh => shapeConstraint(sh))
+    val results: Seq[Check[Shape]] = shapes.map(sh => shapeChecker(sh))
     val r = checkAll(results)
     r.map(_ => schema)
   }
   
-  def shapeConstraint: ShapeChecker = shape => {
-    val nodes = shape.scopeNodes
+  def shapeChecker: ShapeChecker = shape => {
+    val nodes = shape.targetNodes
     val nodesShapes: Seq[Check[(RDFNode,Shape)]] = nodes.map(n => nodeShape(n,shape))
     val r = checkAll(nodesShapes)
     r.map(_ => shape)
@@ -107,18 +87,21 @@ case class Validator(schema: Schema) {
   }
 
   // TODO
-  def checkSome[A](xs: Seq[Check[A]]): Check[Seq[A]] = {
-    val zero: Check[Seq[A]] = pure(Seq())
-    def next(x: Check[A], rest: Check[Seq[A]]): Check[Seq[A]] = {
-      ???
-    }
-/*      *for {
-      v <- x
-      rs <- rest
-    } yield v +: rs */
+  def checkAny(xs: Seq[Check[(RDFNode,Shape)]]): Check[Seq[(RDFNode,Shape)]] = {
+    val zero: Check[Seq[(RDFNode,Shape)]] = pure(Seq())
+    def next(
+        x: Check[(RDFNode,Shape)], 
+        rest: Check[Seq[(RDFNode,Shape)]]): Check[Seq[(RDFNode,Shape)]] = ??? 
+/*      for {
+       rs1 <- catchWrong(x.flatMap(v => Seq(x)))(_ => pure(Seq()))
+       rs2 <- rest
+      } rs1 ++ rs2 */
     xs.foldRight(zero)(next)
   }
 
+  /**
+   * Checks all the values in a sequence
+   */
   def checkAll[A](xs: Seq[Check[A]]): Check[Seq[A]] = {
     val zero: Check[Seq[A]] = pure(Seq())
     def next(x: Check[A], rest: Check[Seq[A]]): Check[Seq[A]] = for {
@@ -133,21 +116,53 @@ case class Validator(schema: Schema) {
     c match {
       case MinCount(n) => minCount(n)
       case MaxCount(n) => maxCount(n)
+      case In(values) => inPropertyChecker(values)
     }
   }
 
-   def minCount(minCount: Int): PropertyChecker = (node,shape,predicate) => for {
+  def conditionSet(cond: RDFNode => Boolean,nodes: Set[RDFNode], shape: Shape, error: ViolationError, evidence: String): Check[Unit] = {
+    val zero: Check[Unit] = pure(())
+    def next(current: Check[Unit], n: RDFNode): Check[Unit] = for {
+      _ <- current
+      _ <- condition(cond(n),n,shape,error,evidence)
+    } yield ()
+    nodes.foldLeft(zero)(next)
+  }
+
+  def condition(
+      condition: Boolean,
+      node: RDFNode,
+      shape: Shape,
+      error: ViolationError,
+      evidence: String): Check[Unit] = for {
+        _ <- validateCheck[Comput,ViolationError](condition,error)
+        _ <- addEvidence(node, shape, evidence)
+      } yield ()
+
+  def inValues(node:RDFNode, values: Seq[Value]): Boolean = {
+   values.exists(_.matchNode(node))
+  }
+      
+  def inPropertyChecker(values: Seq[Value]): PropertyChecker = (node,shape,predicate) => for {
+    rdf <- ask[Comput,RDFReader]
+    val os = rdf.triplesWithSubjectPredicate(node,predicate).map(_.obj)
+    _ <- conditionSet(n => inValues(n,values),os, shape, inError(node,values), s"Checked $node sh:in $values") 
+  } yield node
+
+  def minCount(minCount: Int): PropertyChecker = (node,shape,predicate) => for {
      rdf <- ask[Comput,RDFReader]
      val count = rdf.triplesWithSubjectPredicate(node,predicate).size
-     _ <- validateCheck[Comput,ViolationError](count >= minCount, minCountError(node,predicate,minCount,count))
-     _ <- addEvidence(node,shape,s"Checked minCount($minCount) for predicate($predicate) on node $node")
+     _ <- condition(count >= minCount, node, shape, 
+            minCountError(node,predicate,minCount,count),
+            s"Checked minCount($minCount) for predicate($predicate) on node $node")
    } yield node 
 
    def maxCount(maxCount: Int): PropertyChecker = (node,shape,predicate) => for {
      rdf <- ask[Comput,RDFReader]
      val count = rdf.triplesWithSubjectPredicate(node,predicate).size
-     _ <- validateCheck[Comput,ViolationError](count <= maxCount, maxCountError(node,predicate,maxCount,count))
-     _ <- addEvidence(node,shape, s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
+     _ <- condition(count <= maxCount, node, shape, 
+           maxCountError(node,predicate,maxCount,count),
+           s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
    } yield node
    
    def addEvidence(node: RDFNode, shape: Shape, msg: String): Check[Unit] = for {
@@ -157,8 +172,16 @@ case class Validator(schema: Schema) {
    } yield ()
 }
 
-object EffValidator {
-  def empty = Validator(schema = Schema.empty)
+object Validator {
+  
+ // With this import we use list for non determinism
+ // We could import Option if we are only interested in one answer
+ import cats.std.list._
+
+ def empty = Validator(schema = Schema.empty)
+  
+ def runCheck[A](c: Check[A], rdf: RDFReader): Result[A] = 
+   c.runReader(rdf).runState(Typing.empty).runChoose.runNel.runEval.run
   
 }
 
