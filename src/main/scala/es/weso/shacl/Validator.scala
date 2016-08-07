@@ -10,14 +10,16 @@ import org.atnos.eff.syntax.all._
  * This validator is implemented directly in Scala
  */
 case class Validator(schema: Schema) {
-
-  
    
  type Checker[A] = A => Check[A]
  type ShapeChecker = Checker[Shape]
  type NodeShapeChecker = Checker[(RDFNode,Shape)]
- type PropertyChecker = (RDFNode,Shape,IRI) => Check[RDFNode]
- type NodeChecker = (RDFNode,Shape) => Check[RDFNode]
+ 
+ /**
+  * Checks that a node satisfies a shape 
+  */
+ type PropertyChecker = (NodeShapeEntry,IRI) => Check[RDFNode]
+ type NodeChecker = (NodeShapeEntry, RDFNode) => Check[RDFNode]
   
   /**
    * Return all scopeNode declarations which are pairs (n,s) where
@@ -63,7 +65,7 @@ case class Validator(schema: Schema) {
   def nodeShape: NodeShapeChecker = nodeShape => {
     val (node,shape) = nodeShape
     val cs = shape.components.map(checkConstraint)
-    val r = checkAll(cs.map(c => c(node,shape)))
+    val r = checkAll(cs.map(c => c((node,shape),node)))
     r.map(_ => nodeShape)
   } 
   
@@ -73,17 +75,124 @@ case class Validator(schema: Schema) {
     }
   }
   
-  def checkPropertyConstraint(pc: PropertyConstraint): NodeChecker = (node,shape) => {
+  def checkPropertyConstraint(pc: PropertyConstraint): NodeChecker = (nodeShape,_) => {
     val predicate = pc.predicate
     val components = pc.components
+    val (node,shape) = nodeShape
     val pcConstraints: Seq[PropertyChecker] = components.map(component2PropertyChecker)
     validateCheckers(node, shape, predicate, pcConstraints)
   }
   
   def validateCheckers(n: RDFNode, shape: Shape, p: IRI, cs: Seq[PropertyChecker]): Check[RDFNode] = {
-    val xs : Seq[Check[RDFNode]] = cs.map(c => c(n,shape,p))
+    val xs : Seq[Check[RDFNode]] = cs.map(c => c((n,shape),p))
     val r: Check[Seq[RDFNode]] = checkAll(xs)
     r.map(_ => n)
+  }
+
+  
+  def component2PropertyChecker(c: PCComponent): PropertyChecker = 
+    (nodeShape,predicate) => for {
+     rdf <- getRDF
+     val (node,shape) = nodeShape
+     val os = rdf.triplesWithSubjectPredicate(node,predicate).map(_.obj).toSeq
+     val check: Check[Seq[RDFNode]] = c match {
+      case MinCount(n) => minCount(n, os, nodeShape, predicate)
+      case MaxCount(n) => maxCount(n, os, nodeShape, predicate)
+      case In(values) => checkSeq(os, (o: RDFNode) => inChecker(values)(nodeShape,o))
+//      case k: NodeKindType => checkSeq(os, (o: RDFNode) => nodeKindChecker(k)(nodeShape,o))
+     }
+     _ <- check
+    } yield node  
+   
+/*  def nodeKindChecker(k: NodeKindType): NodeChecker = (nodeShape,currentNode) => {
+    val (node,shape) = nodeShape
+    for {
+      _ <- conditionNode(
+             inValues(currentNode,values), nodeShape, 
+             inError(currentNode,values), 
+             s"Checked $currentNode sh:in $values")
+    } yield node
+  } */
+  
+  def conditionSet(cond: RDFNode => Boolean,nodes: Set[RDFNode], shape: Shape, error: ViolationError, evidence: String): Check[Unit] = {
+    val zero: Check[Unit] = pure(())
+    def next(current: Check[Unit], n: RDFNode): Check[Unit] = for {
+      _ <- current
+      _ <- condition(cond(n),(n,shape),error,evidence)
+    } yield ()
+    nodes.foldLeft(zero)(next)
+  }
+
+  def conditionNode(
+      condition: Boolean,
+      nodeShape: NodeShapeEntry,
+      error: ViolationError,
+      evidence: String): Check[Unit] = for {
+        _ <- validateCheck[Comput,ViolationError](condition,error)
+        _ <- addEvidence(nodeShape, evidence)
+      } yield ()
+
+  def condition(
+      condition: Boolean,
+      nodeShape: NodeShapeEntry,
+      error: ViolationError,
+      evidence: String): Check[Unit] = for {
+        _ <- validateCheck[Comput,ViolationError](condition,error)
+        _ <- addEvidence(nodeShape, evidence)
+      } yield ()
+
+  def inValues(node:RDFNode, values: Seq[Value]): Boolean = {
+   values.exists(_.matchNode(node))
+  }
+      
+  def inChecker(values: Seq[Value]): NodeChecker = (nodeShape,currentNode) => {
+    val (node,shape) = nodeShape
+    for {
+     _ <- conditionNode(
+             inValues(currentNode,values), nodeShape, 
+             inError(currentNode,values), 
+             s"Checked $currentNode sh:in $values")
+    } yield node
+  }
+  
+  def getRDF: Check[RDFReader] = ask[Comput,RDFReader]
+
+  def minCount(minCount: Int, os: Seq[RDFNode], nodeShape: NodeShapeEntry, predicate: IRI): Check[Seq[RDFNode]] = {
+    val count = os.size
+    val (node,shape) = nodeShape
+    for {
+     _ <- condition(count >= minCount, nodeShape, 
+            minCountError(node,predicate,minCount,os.size),
+            s"Checked minCount($minCount) for predicate($predicate) on node $node")
+   } yield os
+  }
+
+  def maxCount(maxCount: Int, os: Seq[RDFNode], nodeShape: NodeShapeEntry, predicate: IRI): Check[Seq[RDFNode]] = {
+    val count = os.size
+    val (node,shape) = nodeShape
+    for {
+     _ <- condition(count <= maxCount, nodeShape, 
+          maxCountError(node,predicate,maxCount,count),
+          s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
+    } yield os
+  }
+   
+  def addEvidence(nodeShape: NodeShapeEntry, msg: String): Check[Unit] = for {
+    typing <- get[Comput,Typing]
+    // TODO: Check that (node, shape) are right
+    _ <- put[Comput,Typing](typing.addAction(nodeShape,msg)) 
+  } yield ()
+
+   // Generic definitions...
+   
+  // TODO: This definition could probably be generalized using traverse's sequence
+  def checkSeq[A](s: Seq[A], check: A => Check[A]): Check[Seq[A]] = {
+    val zero: Check[Seq[A]] = pure(Seq())
+    def next(current: Check[Seq[A]], x: A): Check[Seq[A]] = for {
+      r <- check(x)
+      xs <- current
+    } yield (r +: xs)
+    s.foldLeft(zero)(next) 
   }
 
   // TODO
@@ -111,65 +220,6 @@ case class Validator(schema: Schema) {
     xs.foldRight(zero)(next)
   }
   
-  
-  def component2PropertyChecker(c: PCComponent): PropertyChecker = {
-    c match {
-      case MinCount(n) => minCount(n)
-      case MaxCount(n) => maxCount(n)
-      case In(values) => inPropertyChecker(values)
-    }
-  }
-
-  def conditionSet(cond: RDFNode => Boolean,nodes: Set[RDFNode], shape: Shape, error: ViolationError, evidence: String): Check[Unit] = {
-    val zero: Check[Unit] = pure(())
-    def next(current: Check[Unit], n: RDFNode): Check[Unit] = for {
-      _ <- current
-      _ <- condition(cond(n),n,shape,error,evidence)
-    } yield ()
-    nodes.foldLeft(zero)(next)
-  }
-
-  def condition(
-      condition: Boolean,
-      node: RDFNode,
-      shape: Shape,
-      error: ViolationError,
-      evidence: String): Check[Unit] = for {
-        _ <- validateCheck[Comput,ViolationError](condition,error)
-        _ <- addEvidence(node, shape, evidence)
-      } yield ()
-
-  def inValues(node:RDFNode, values: Seq[Value]): Boolean = {
-   values.exists(_.matchNode(node))
-  }
-      
-  def inPropertyChecker(values: Seq[Value]): PropertyChecker = (node,shape,predicate) => for {
-    rdf <- ask[Comput,RDFReader]
-    val os = rdf.triplesWithSubjectPredicate(node,predicate).map(_.obj)
-    _ <- conditionSet(n => inValues(n,values),os, shape, inError(node,values), s"Checked $node sh:in $values") 
-  } yield node
-
-  def minCount(minCount: Int): PropertyChecker = (node,shape,predicate) => for {
-     rdf <- ask[Comput,RDFReader]
-     val count = rdf.triplesWithSubjectPredicate(node,predicate).size
-     _ <- condition(count >= minCount, node, shape, 
-            minCountError(node,predicate,minCount,count),
-            s"Checked minCount($minCount) for predicate($predicate) on node $node")
-   } yield node 
-
-   def maxCount(maxCount: Int): PropertyChecker = (node,shape,predicate) => for {
-     rdf <- ask[Comput,RDFReader]
-     val count = rdf.triplesWithSubjectPredicate(node,predicate).size
-     _ <- condition(count <= maxCount, node, shape, 
-           maxCountError(node,predicate,maxCount,count),
-           s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
-   } yield node
-   
-   def addEvidence(node: RDFNode, shape: Shape, msg: String): Check[Unit] = for {
-     typing <- get[Comput,Typing]
-     // TODO: Check that (node, shape) are right
-     _ <- put[Comput,Typing](typing.addAction(node,shape,msg)) 
-   } yield ()
 }
 
 object Validator {
@@ -182,6 +232,7 @@ object Validator {
   
  def runCheck[A](c: Check[A], rdf: RDFReader): Result[A] = 
    c.runReader(rdf).runState(Typing.empty).runChoose.runNel.runEval.run
-  
+
+   
 }
 

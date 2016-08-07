@@ -4,7 +4,8 @@ import cats._, data._
 import cats.implicits._
 
 case class Typing(m: Map[(RDFNode,Shape),Xor[NonEmptyList[ViolationError],Actions]]) {
-  def addAction(node: RDFNode, shape: Shape, msg: String): Typing = {
+  def addAction(nodeShape: NodeShapeEntry, msg: String): Typing = {
+    val (node,shape) = nodeShape
     if (m.contains(node,shape)) {
       val current = m((node,shape))
       if (current.isRight) {

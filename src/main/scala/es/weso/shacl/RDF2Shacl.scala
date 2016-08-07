@@ -41,10 +41,10 @@ object RDF2Shacl
     node match {
       case iri : IRI => {
         for {
-          scopes <- targets(node,rdf)
+          targets <- targets(node,rdf)
           filters <- filters(node,rdf)
           constraints <- constraints(node,rdf)
-        } yield Shape(Some(iri),scopes, filters, constraints)
+        } yield Shape(Some(iri),targets, filters, constraints)
       }
       case _ => fail("Non supported shapes without IRI Id. Node: " + node)
     }
@@ -59,7 +59,7 @@ object RDF2Shacl
     
   def targetNodes: RDFParser[Seq[Target]] = (n,rdf) => {
     val attempts = for {
-      ns <- objectsFromPredicate(sh_scopeNode)(n,rdf)
+      ns <- objectsFromPredicate(sh_targetNode)(n,rdf)
     } yield {
       val xs = ns.toSeq.map(mkScopeNode)
       filterSuccess(xs)

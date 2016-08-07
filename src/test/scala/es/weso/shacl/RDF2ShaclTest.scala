@@ -29,12 +29,12 @@ describe("RDf2Shacl Syntax") {
     attempt.success.value should constainShapes(Set(s,t))
   }
   
-  it("should be able to get the list of scope nodes") {
+  it("should be able to get the list of target nodes") {
     val ex = IRI("http://example.org/")
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:scopeNode :n1 .
+                 |:S a sh:Shape; sh:targetNode :n1 .
                  |:T a sh:Shape .
                  |""".stripMargin
     val s = ex + "S"
@@ -50,13 +50,13 @@ describe("RDf2Shacl Syntax") {
     targetNodes should contain only(n1)    
   }
   
-  it("should be able to get the scope node declarations") {
+  it("should be able to get the target node declarations") {
     val ex = IRI("http://example.org/")
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:scopeNode :s1, :s2 .
-                 |:T a sh:Shape; sh:scopeNode :t1 .
+                 |:S a sh:Shape; sh:targetNode :s1, :s2 .
+                 |:T a sh:Shape; sh:targetNode :t1 .
                  |""".stripMargin
     val S = ex + "S"
     val T = ex + "T"
@@ -87,7 +87,10 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyConstraint(id = None, predicate = p, components = Seq(NodeKind(IRIKind))) 
+    val p1 = PropertyConstraint(
+        id = None, 
+        predicate = p, 
+        components = Seq(NodeKind(IRIKind))) 
     shape.propertyConstraints should contain only(p1)
   }
 

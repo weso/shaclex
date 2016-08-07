@@ -22,5 +22,7 @@ package object shacl {
 
   
  type Check[A] = Eff[Comput,A]
+  
+ type NodeShapeEntry = (RDFNode,Shape)
 
 }
