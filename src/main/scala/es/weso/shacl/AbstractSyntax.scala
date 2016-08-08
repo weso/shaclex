@@ -14,12 +14,12 @@ case class Schema(shapes: Seq[Shape]) {
   }
   
   /**
-   * Get the sequence of sh:scopeNode declarations
+   * Get the sequence of sh:targetNode declarations
    */
-  def targetNodeShapes: Seq[(IRI,Shape)] = {
-    val zero : Seq[(IRI,Shape)] = Seq()
-    def comb(rs:Seq[(IRI,Shape)], s: Shape): Seq[(IRI,Shape)] = {
-      val ns : Seq[IRI] = s.targetNodes
+  def targetNodeShapes: Seq[(RDFNode,Shape)] = {
+    val zero : Seq[(RDFNode,Shape)] = Seq()
+    def comb(rs:Seq[(RDFNode,Shape)], s: Shape): Seq[(RDFNode,Shape)] = {
+      val ns : Seq[RDFNode] = s.targetNodes
       ns.map(n => (n,s)) ++ rs
     }
     shapes.foldLeft(zero)(comb)
@@ -30,7 +30,7 @@ case class Schema(shapes: Seq[Shape]) {
    * @return a list of pairs (n,s) where n is the IRI of a node 
    * and s is the IRI of a shape
    */
-  def targetNodeDeclarations: Seq[(IRI,IRI)] = {
+  def targetNodeDeclarations: Seq[(RDFNode,IRI)] = {
     targetNodeShapes.map(p => (p._1,p._2.id.get))
   }
 
@@ -55,7 +55,7 @@ case class Shape(
     id contains(iri)
   }
   
-  def targetNodes: Seq[IRI] = { 
+  def targetNodes: Seq[RDFNode] = { 
     val maybeScopeNodes = targets.map(_.toTargetNode)
     maybeScopeNodes.flatten.map(_.node)
   }
@@ -68,33 +68,30 @@ case class Shape(
 
 sealed abstract class Target {
   def isTargetNode: Boolean
-  
   def toTargetNode: Option[TargetNode]
 }
 
 
-case class TargetNode(node: IRI) extends Target {
+case class TargetNode(node: RDFNode) extends Target {
   def isTargetNode = true
-  
   def toTargetNode = Some(this)
   
 }
+
 // TODO...add more types of targets
 // case class TargetClass(cls: IRI) extends Target
 // case class PropertyTarget(predicate: IRI) extends Target
 
 sealed abstract class Constraint {
   def isPropertyConstraint: Boolean
-  
   def toPropertyConstraint: Option[PropertyConstraint] = None
-  
   def components: Seq[Component]
 }
 
 case class PropertyConstraint(
     id:Option[IRI],
     predicate: IRI,
-    components: Seq[PCComponent]
+    components: Seq[Component]
 ) extends Constraint {
   def isPropertyConstraint = true
   
@@ -104,16 +101,14 @@ case class PropertyConstraint(
 case class PathPropertyConstraint(
     id:Option[IRI],
     path: Path,
-    components: Seq[PCComponent]
+    components: Seq[Component]
 ) extends Constraint {
   def isPropertyConstraint = false
   
 }
 
 case class NodeConstraint(
-    id:Option[IRI],
-    predicate: IRI,
-    components: Seq[NCComponent]
+    components: Seq[Component]
 ) extends Constraint {
   def isPropertyConstraint = false
 }
@@ -122,18 +117,6 @@ case class Filter(shape: Shape)
 
 sealed abstract class Component
 
-/**
- *  PropertyConstraint Component 
- */
-sealed trait PCComponent extends Component 
-
-/**
- * NodeConstraint Component
- */
-sealed trait NCComponent extends Component
-
-
- 
 /**
  * Represents IRIs or Literals (no Blank nodes)
  */
@@ -159,76 +142,25 @@ case class LiteralValue(literal: Literal) extends Value {
   }
 }
 
-case class ShClass(value: RDFNode) 
- extends NCComponent with PCComponent 
- 
-case class ClassIn(values: Seq[RDFNode]) 
- extends NCComponent with PCComponent 
+case class ShClass(value: RDFNode) extends Component  
+case class Datatype(value: IRI) extends Component 
+case class DirectType(value: RDFNode) extends Component  
+case class NodeKind(value: NodeKindType) extends Component 
+case class MinCount(value: Int) extends Component 
+case class MaxCount(value: Int) extends Component 
+case class MinExclusive(value: Int) extends Component 
+case class MinInclusive(value: Int) extends Component 
+case class MaxExclusive(value: Int) extends Component 
+case class MaxInclusive(value: Int) extends Component 
+case class MinLength(value: Int) extends Component 
+case class MaxLength(value: Int) extends Component 
+case class Pattern(pattern: String, flags: Option[String]) extends Component  
+case class UniqueLang(value: Boolean) extends Component 
+case class Closed(isClosed: Boolean, ignoredProperties: Seq[IRI]) extends Component
+case class HasValue(value: Value) extends Component 
+case class In(list: List[Value]) extends Component  
 
-case class Datatype(value: RDFNode) 
- extends PCComponent 
-
-case class DatatypeIn(values: Seq[RDFNode]) 
- extends PCComponent 
- 
-case class DirectType(value: RDFNode) 
- extends NCComponent with PCComponent 
-
-case class NodeKind(value: NodeKindType) 
- extends NCComponent with PCComponent 
-
-case class MinCount(value: Int)
- extends PCComponent {
-  
-}
- 
-case class MaxCount(value: Int)
- extends PCComponent 
- 
-case class MinExclusive(value: Int)
- extends PCComponent 
- 
-case class MinInclusive(value: Int)
- extends PCComponent 
- 
-case class MaxExclusive(value: Int)
- extends PCComponent 
-
-case class MaxInclusive(value: Int)
- extends PCComponent 
- 
-case class MinLength(value: Int)
- extends PCComponent 
- 
-case class MaxLength(value: Int)
- extends PCComponent 
-
-case class Pattern(pattern: String, flags: Option[String])
- extends NCComponent with PCComponent 
- 
-case class UniqueLang(value: Boolean)
- extends PCComponent 
-
-/**
- * 
- */
-case class Closed(
-    isClosed: Boolean, 
-    ignoredProperties: Seq[IRI]) 
-  extends NCComponent
-
-/**
- * sh:hasValue
- * 
- * TODO: The spec allows also blank nodes     
- */
-case class HasValue(value: Value)
-     extends PCComponent 
-
-case class In(list: List[Value]) 
-     extends PCComponent with NCComponent 
-
-sealed trait NodeKindType
+sealed trait NodeKindType extends Component 
 case object IRIKind extends NodeKindType
 case object LiteralKind extends NodeKindType
 case object BlankNodeKind extends NodeKindType

@@ -31,9 +31,7 @@ object RDF2Shacl
   }
   
   def shapes(rdf: RDFReader): Try[Seq[Shape]] = {
-   println("Searching shapes...")
    val shape_nodes = subjectsWithType(sh_Shape, rdf)
-   println(s"Candidate shapes...$shape_nodes")
    filterSuccess(shape_nodes.toSeq.map (node => shape(node,rdf)))
   }
   
@@ -61,17 +59,18 @@ object RDF2Shacl
     val attempts = for {
       ns <- objectsFromPredicate(sh_targetNode)(n,rdf)
     } yield {
-      val xs = ns.toSeq.map(mkScopeNode)
+      val xs = ns.toSeq.map(mkTargetNode)
       filterSuccess(xs)
     }
     attempts.flatten
   }
   
-  def mkScopeNode(n: RDFNode): Try[TargetNode] = {
-    n match {
+  def mkTargetNode(n: RDFNode): Try[TargetNode] = {
+    Success(TargetNode(n))
+/*    n match {
       case iri: IRI => Success(TargetNode(iri))
       case _ => fail("Node " + n + " must be an IRI to be a scope node")
-    }
+    } */
   }
     
   def filters: RDFParser[Seq[Shape]] = (n,rdf) => {
@@ -80,7 +79,13 @@ object RDF2Shacl
   }
   
   def constraints: RDFParser[Seq[Constraint]] = {
-    combineAll(propertyConstraints)
+    combineAll(propertyConstraints, nodeConstraints)
+  }
+
+  def nodeConstraints: RDFParser[Seq[NodeConstraint]] = (n,rdf) => {
+   for {
+     cs <- components(n,rdf)
+   } yield cs.map(c => NodeConstraint(components = Seq(c)))
   }
   
   def propertyConstraints: RDFParser[Seq[Constraint]] = (n,rdf) => {
@@ -97,31 +102,39 @@ object RDF2Shacl
     val id = if (n.isIRI) Some(n.toIRI) else None
     for {
       predicate <- iriFromPredicate(sh_predicate)(n,rdf)
-      components <- propertyConstraintComponents(n,rdf)
+      components <- components(n,rdf)
     } yield {
       PropertyConstraint(id, predicate, components)
     }
   }
   
   
-  def propertyConstraintComponents: RDFParser[Seq[PCComponent]] = 
-    allOf(minCount, maxCount, nodeKind, in)
+  def components: RDFParser[Seq[Component]] = 
+    allOf(minCount, maxCount, nodeKind, in, datatype)
   
-  def minCount: RDFParser[PCComponent] = (n,rdf) => {
+  def minCount: RDFParser[MinCount] = (n,rdf) => {
     for {
      v <- integerLiteralForPredicate(sh_minCount)(n,rdf)
     } yield {
       MinCount(v)
     }
   }
-  
-  def maxCount: RDFParser[PCComponent] = (n,rdf) => {
+
+  def datatype: RDFParser[Datatype] = (n,rdf) => {
+    for {
+     d <- iriFromPredicate(sh_datatype)(n,rdf)
+    } yield {
+      Datatype(d)
+    }
+  }
+
+  def maxCount: RDFParser[Component] = (n,rdf) => {
     for {
      v <- integerLiteralForPredicate(sh_maxCount)(n,rdf)
     } yield MaxCount(v)
   }
   
-  def in: RDFParser[PCComponent] = (n,rdf) => {
+  def in: RDFParser[Component] = (n,rdf) => {
     for {
      ns <- rdfListForPredicate(sh_in)(n,rdf)
      vs <- convert2Values(ns.map(node2Value(_)))
@@ -144,14 +157,14 @@ object RDF2Shacl
     }
   }
   
-  def nodeKind: RDFParser[PCComponent] = (n,rdf) => {
+  def nodeKind: RDFParser[Component] = (n,rdf) => {
     for {
       os <- objectsFromPredicate(sh_nodeKind)(n,rdf)
       nk <- parseNodeKind(os)
     } yield nk
   }
   
-  def parseNodeKind(os: Set[RDFNode]): Try[PCComponent] = {
+  def parseNodeKind(os: Set[RDFNode]): Try[Component] = {
     os.size match {
       case 0 => fail("no objects of nodeKind property")
       case 1 => {
@@ -162,7 +175,10 @@ object RDF2Shacl
           case `sh_BlankNodeOrLiteral` => Success(NodeKind(BlankNodeOrLiteral))
           case `sh_BlankNodeOrIRI` => Success(NodeKind(BlankNodeOrIRI))
           case `sh_IRIOrLiteral` => Success(NodeKind(IRIOrLiteral))
-          case x => fail(s"incorrect value of nodeKind property $x") 
+          case x => {
+            log.error(s"incorrect value of nodeKind property $x")
+            fail(s"incorrect value of nodeKind property $x") 
+          }
         }
       }
       case n => fail(s"objects of nodeKind property > 1. $os") 
