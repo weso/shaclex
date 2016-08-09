@@ -16,15 +16,15 @@ scalaVersion := "2.11.8"
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
 libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value  
-  , "commons-configuration" % "commons-configuration" % "1.7"
-  , "org.rogach" %% "scallop" % "2.0.1" 
+    "org.rogach" %% "scallop" % "2.0.1" 
   , "com.typesafe" % "config" % "1.0.1"
-  , "org.scala-lang" % "scala-compiler" % scalaVersion.value
+  , "org.slf4j" % "slf4j-simple" % "1.7.21"
+  , "log4j" % "log4j" % "1.2.17"
+  , "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
   , "org.scalatest" %%% "scalatest" % "3.0.0-M15" 
   , "org.typelevel" %% "cats" % "0.6.1"
   , "org.atnos" %% "eff-cats" % "2.0-preview-1"
-  , "es.weso" % "shexcala_2.11" % "0.7.14" 
+  , "es.weso" % "shexcala_2.11" % "0.7.16" 
   , "org.specs2" %% "specs2-core" % "3.8.4" % "test"
   )
 

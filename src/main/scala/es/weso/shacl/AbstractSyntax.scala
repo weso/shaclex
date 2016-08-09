@@ -142,21 +142,21 @@ case class LiteralValue(literal: Literal) extends Value {
   }
 }
 
-case class ShClass(value: RDFNode) extends Component  
+case class ClassComponent(value: RDFNode) extends Component  
 case class Datatype(value: IRI) extends Component 
-case class DirectType(value: RDFNode) extends Component  
 case class NodeKind(value: NodeKindType) extends Component 
 case class MinCount(value: Int) extends Component 
 case class MaxCount(value: Int) extends Component 
-case class MinExclusive(value: Int) extends Component 
-case class MinInclusive(value: Int) extends Component 
-case class MaxExclusive(value: Int) extends Component 
-case class MaxInclusive(value: Int) extends Component 
+case class MinExclusive(value: Literal) extends Component 
+case class MinInclusive(value: Literal) extends Component 
+case class MaxExclusive(value: Literal) extends Component 
+case class MaxInclusive(value: Literal) extends Component 
 case class MinLength(value: Int) extends Component 
 case class MaxLength(value: Int) extends Component 
 case class Pattern(pattern: String, flags: Option[String]) extends Component  
 case class UniqueLang(value: Boolean) extends Component 
 case class Closed(isClosed: Boolean, ignoredProperties: Seq[IRI]) extends Component
+case class ShapeComponent(shape: Shape) extends Component
 case class HasValue(value: Value) extends Component 
 case class In(list: List[Value]) extends Component  
 

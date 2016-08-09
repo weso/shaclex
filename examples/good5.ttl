@@ -1,0 +1,30 @@
+@prefix : <http://example.org/>
+@prefix sh: <http://www.w3.org/ns/shacl#>
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+
+:S a sh:Shape; 
+   sh:targetNode :x ;
+   sh:property [
+     sh:predicate :t; 
+     sh:shape :T
+   ]; 
+   sh:property [
+     sh:predicate :u;
+     sh:shape :U
+   ] .
+:T a sh:Shape;
+   sh:property [
+     sh:predicate :p; 
+     sh:datatype xsd:integer
+   ] .
+:U a sh:Shape;
+   sh:property [
+     sh:predicate :t; 
+     sh:shape :T
+   ] .   
+
+:x :t :t1;
+   :u :u1 .
+   
+:t1 :p 23 .
+:u1 :t :t1 .

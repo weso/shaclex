@@ -18,12 +18,15 @@ import SHACLPrefixes._
 object RDF2Shacl 
     extends Logging
     with RDFParser {
+
+  // Keep track of parsed shapes 
+  val parsedShapes = collection.mutable.Map[RDFNode,Shape]()
   
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap 
    */
   def getShacl(rdf: RDFReader): Try[(Schema, PrefixMap)] = {
-    println(s"Trying to get shacl from $rdf") 
+    parsedShapes.clear()
     val pm = rdf.getPrefixMap  
     for {
       shapes <- shapes(rdf)
@@ -36,16 +39,15 @@ object RDF2Shacl
   }
   
   def shape(node: RDFNode, rdf: RDFReader): Try[Shape] = {
-    node match {
-      case iri : IRI => {
-        for {
-          targets <- targets(node,rdf)
-          filters <- filters(node,rdf)
-          constraints <- constraints(node,rdf)
-        } yield Shape(Some(iri),targets, filters, constraints)
-      }
-      case _ => fail("Non supported shapes without IRI Id. Node: " + node)
+    val id = node match {
+      case iri: IRI => Some(iri)
+      case _ => None
     }
+    for { 
+      targets <- targets(node,rdf)
+      filters <- filters(node,rdf)
+      constraints <- constraints(node,rdf)
+     } yield Shape(id,targets, filters, constraints)
   }
   
   def targets: RDFParser[Seq[Target]] = 
@@ -110,29 +112,45 @@ object RDF2Shacl
   
   
   def components: RDFParser[Seq[Component]] = 
-    allOf(minCount, maxCount, nodeKind, in, datatype)
+    anyOf(
+        classComponent,
+        datatype, 
+        nodeKind, 
+        minCount, maxCount,
+        minExclusive, maxExclusive, minInclusive, maxInclusive,
+        minLength, maxLength,
+        shapeComponent, in)
+
+
+  def classComponent = parsePredicate(sh_class, ClassComponent)
+  def datatype = parsePredicateIRI(sh_datatype, Datatype)
+  def minInclusive = parsePredicateLiteral(sh_minInclusive, MinInclusive)
+  def maxInclusive = parsePredicateLiteral(sh_maxInclusive, MaxInclusive)
+  def minExclusive = parsePredicateLiteral(sh_minExclusive, MinExclusive)
+  def maxExclusive = parsePredicateLiteral(sh_maxExclusive, MaxExclusive)
+  def minLength = parsePredicateInt(sh_minLength, MinLength)
+  def maxLength = parsePredicateInt(sh_maxLength, MaxLength)
   
-  def minCount: RDFParser[MinCount] = (n,rdf) => {
+  def pattern : RDFParser[Pattern] = (n,rdf) => for {
+    pat <- stringFromPredicate(sh_pattern)(n,rdf)
+  } yield Pattern(pat,None)
+  
+  
+  def shapeComponent: RDFParser[ShapeComponent] = (n,rdf) => {
     for {
-     v <- integerLiteralForPredicate(sh_minCount)(n,rdf)
+     nodeShape <- objectFromPredicate(sh_shape)(n,rdf)
+     s <- getShape(nodeShape)(n,rdf)
     } yield {
-      MinCount(v)
+      ShapeComponent(s)
     }
   }
+  
+  def getShape(node: RDFNode): RDFParser[Shape] = (n,rdf) => 
+    if (parsedShapes.contains(node)) Success(parsedShapes(node))
+    else shape(node,rdf)
 
-  def datatype: RDFParser[Datatype] = (n,rdf) => {
-    for {
-     d <- iriFromPredicate(sh_datatype)(n,rdf)
-    } yield {
-      Datatype(d)
-    }
-  }
-
-  def maxCount: RDFParser[Component] = (n,rdf) => {
-    for {
-     v <- integerLiteralForPredicate(sh_maxCount)(n,rdf)
-    } yield MaxCount(v)
-  }
+  def minCount = parsePredicateInt(sh_minCount, MinCount)
+  def maxCount = parsePredicateInt(sh_maxCount, MaxCount)
   
   def in: RDFParser[Component] = (n,rdf) => {
     for {
@@ -185,13 +203,35 @@ object RDF2Shacl
     }
   }
 
-  /**
+
+  def parsePredicateLiteral[A](p: IRI, maker: Literal => A): RDFParser[A] = (n,rdf) => for {
+    v <- literalFromPredicate(p)(n,rdf)
+  } yield maker(v)
+
+  def parsePredicateInt[A](p: IRI, maker: Int => A): RDFParser[A] = (n,rdf) => for {
+    v <- integerLiteralForPredicate(p)(n,rdf)
+  } yield maker(v.intValue())
+  
+  def parsePredicate[A](p: IRI, maker: RDFNode => A): RDFParser[A] = (n,rdf) => for {
+    o <- objectFromPredicate(p)(n,rdf)
+  } yield maker(o)
+
+  def parsePredicateIRI[A](p: IRI, maker: IRI => A): RDFParser[A] = (n,rdf) => for {
+    iri <- iriFromPredicate(p)(n,rdf)
+  } yield maker(iri)
+  
+/////////////////////////////////////////////////////////
+
+  
+  // TODO: Move these methods to SRDF project
+  
+    /**
    * Applies a list of parsers 
    * If a parser fails, it continues with the rest of the list
    * @return the list of successful values that could be parsed
    * 
    */
-  def allOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
+  def anyOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
     def comb(rest: RDFParser[Seq[A]], p: RDFParser[A]): RDFParser[Seq[A]] = (n,rdf) => {
       p(n,rdf) match {
         case Failure(_) => rest(n,rdf)
@@ -206,8 +246,10 @@ object RDF2Shacl
     ps.foldLeft(zero)(comb)
   }
 
-  
-  // TODO: Move these methods to SRDF project
+  /**
+   * Combine a sequence of RDFParsers
+   * 
+   */
   def combineAll[A](ps: RDFParser[Seq[A]]*): RDFParser[Seq[A]] = {
     val zero : RDFParser[Seq[A]] = (_,_) => Success(Seq())
     ps.foldLeft(zero)(combine)
@@ -221,6 +263,14 @@ object RDF2Shacl
       vs1 ++ vs2
     }
   }
+
+  def literalFromPredicate(p: IRI): RDFParser[Literal] = (n,rdf) => for {
+    o <- objectFromPredicate(p)(n,rdf)
+    r <- o match {
+      case l: Literal => Success(l)
+      case _ => fail("Value of predicate must be a literal")
+    }
+  } yield r
   
   def fail(str: String) = 
     Failure(throw new Exception(str))

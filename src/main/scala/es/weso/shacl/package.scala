@@ -22,5 +22,5 @@ package object shacl {
 
   
  type Check[A] = Eff[Comput,A]
-  
+ 
 }

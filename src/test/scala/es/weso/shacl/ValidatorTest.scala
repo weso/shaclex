@@ -13,13 +13,13 @@ class ValidatorTest extends
   
 describe("Validator scope Nodes") {
 
-  it("should be able to get the scope nodes to validate") {
+  it("should be able to get the target nodes to validate") {
     val ex = IRI("http://example.org/")
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:scopeNode :x, :y .
-                 |:T a sh:Shape; sh:scopeNode :z .
+                 |:S a sh:Shape; sh:targetNode :x, :y .
+                 |:T a sh:Shape; sh:targetNode :z .
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
@@ -31,13 +31,13 @@ describe("Validator scope Nodes") {
     val x = ex + "x"
     val y = ex + "y"
     val z = ex + "z"
-    val s = Shape.empty.copy(id = Some(S), targets = Seq(TargetNode(y),TargetNode(x)))
+    val s = Shape.empty.copy(id = Some(S), targets = Seq(TargetNode(x),TargetNode(y)))
     val t = Shape.empty.copy(id = Some(T), targets = Seq(TargetNode(z)))
-    val scopeNodes = Validator(schema).targetNodes 
-    scopeNodes.size should be(3)
-    scopeNodes should contain (x,s)
-    scopeNodes should contain (y,s)
-    scopeNodes should contain (z,t)
+    val targetNodes = Validator(schema).targetNodes 
+    targetNodes.size should be(3)
+    targetNodes should contain (x,s)
+    targetNodes should contain (y,s)
+    targetNodes should contain (z,t)
   }
 
   it("should be able to validate minCount") {
@@ -46,7 +46,7 @@ describe("Validator scope Nodes") {
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape; 
-                 |   sh:scopeNode :x ;
+                 |   sh:targetNode :x ;
                  |   sh:property [ sh:predicate :p ;
                  |                 sh:minCount 1
                  |               ] .
@@ -74,10 +74,8 @@ describe("Validator scope Nodes") {
         components = Seq(pc))
     val validator = Validator(schema)
     validator.targetNodes should contain only ((x,s))
-    val checker = validator.minCount(1)
-    isOK(runCheck(checker(good1,s,p),rdf)) should be(true)
-    isOK(runCheck(checker(good2,s,p),rdf)) should be(true)
-    isOK(runCheck(checker(bad1,s,p),rdf)) should be(false)
+    val checked = validator.validateAll(rdf)
+    checked.isOK should be(true)
   }
 }
 
@@ -92,9 +90,9 @@ describe("minCount") {
     val x = ex + "x"
     val p = ex + "p"
     val validator = Validator(Schema.empty)
-    val checker = validator.minCount(1)
+    val checked = validator.validateAll(rdf)
     val s = Shape.empty
-    isOK(runCheck(checker(x,s,p),rdf)) should be(true)
+    checked.isOK should be(true)
   }
 /*  
  it("validates minCount(1) when there are 2") {

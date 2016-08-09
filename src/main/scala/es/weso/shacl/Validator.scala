@@ -63,12 +63,12 @@ case class Validator(schema: Schema) {
     r.map(_ => shape)
   } 
   
-  def nodeShape: NodeShapeChecker = nodeShape => {
-    val (node,shape) = nodeShape
+  def nodeShape: NodeShapeChecker = { case (node,shape) => {
     val cs = shape.components.map(checkConstraint)
     val r = checkAll(cs.map(c => c(Attempt(NodeShape(node,shape), None),node)))
-    r.map(_ => nodeShape)
-  } 
+    r.map(_ => (node,shape))
+   } 
+  }
   
   def checkConstraint(c:Constraint): NodeChecker = {
     c match {
@@ -118,13 +118,13 @@ case class Validator(schema: Schema) {
      val node = attempt.node
      val os = rdf.triplesWithSubjectPredicate(node,predicate).map(_.obj).toSeq
      val check: Check[Seq[RDFNode]] = c match {
-      case ShClass(c) => checkSeq(os, unsupportedNodeChecker("ShClass")(attempt,_))
-      case DirectType(t) => checkSeq(os, unsupportedNodeChecker("Directtype")(attempt,_))
+      case ShapeComponent(s) => checkSeq(os, shapeComponentChecker(s)(attempt,_))
+      case ClassComponent(c) => checkSeq(os, classComponentChecker(c)(attempt,_))
       case Datatype(d) => checkSeq(os, datatypeChecker(d)(attempt,_))
       case NodeKind(k) => checkSeq(os, nodeKindChecker(k)(attempt,_))
       case MinCount(n) => minCount(n, os, attempt, predicate)
       case MaxCount(n) => maxCount(n, os, attempt, predicate)
-      case MinExclusive(n) => checkSeq(os, unsupportedNodeChecker("MinExclusive")(attempt,_))
+      case MinExclusive(n) => checkSeq(os, unsupportedNodeChecker("sh:minExclusive")(attempt,_))
       case MinInclusive(n) => checkSeq(os, unsupportedNodeChecker("MinInclusive")(attempt,_))
       case MaxInclusive(n) => checkSeq(os, unsupportedNodeChecker("MaxInclusive")(attempt,_))
       case MaxExclusive(n) => checkSeq(os, unsupportedNodeChecker("MaxExclusive")(attempt,_))
@@ -138,7 +138,27 @@ case class Validator(schema: Schema) {
      }
      _ <- check
     } yield node  
-   
+
+  def shapeComponentChecker(s: Shape): NodeChecker = (attempt,node) => for {
+    typing <- getTyping
+    _ <- if (typing.getOkShapes(node).contains(s)) pure[Comput,(RDFNode,Shape)]((node,s))
+         else if (typing.getFailedShapes(node).contains(s)) {
+           wrong[Comput,ViolationError](failedNodeShape(
+               node,s,attempt,
+               s"Failed because $node doesn't match shape $s")) >>
+           pure((node,s))
+         } else nodeShape(node,s)
+    _ <- addEvidence(attempt.nodeShape, s"$node has shape ${s.id.getOrElse("?")}") 
+  } yield node
+
+  def classComponentChecker(cls: RDFNode): NodeChecker = (attempt,node) => for {
+    rdf <- getRDF
+    _ <- condition(rdf.hasSHACLClass(node,cls),
+        attempt,
+        classError(node,cls,attempt),
+        s"$node is in class $cls")
+  } yield node
+        
   def nodeKindChecker(k: NodeKindType): NodeChecker = (attempt,node) => 
   k match {
     case IRIKind => iriChecker(attempt,node)
@@ -195,14 +215,6 @@ case class Validator(schema: Schema) {
         iriOrLiteralKindError(node, attempt),
         s"$node is a IRI or Literal") 
   }
-  /*  def conditionSet(cond: RDFNode => Boolean,nodes: Set[RDFNode], shape: Shape, error: ViolationError, evidence: String): Check[Unit] = {
-    val zero: Check[Unit] = pure(())
-    def next(current: Check[Unit], n: RDFNode): Check[Unit] = for {
-      _ <- current
-      _ <- condition(cond(n),NodeShape(n,shape),error,evidence)
-    } yield ()
-    nodes.foldLeft(zero)(next)
-  } */
 
   def condition(
       condition: Boolean,
@@ -213,12 +225,6 @@ case class Validator(schema: Schema) {
         _ <- addEvidence(attempt.nodeShape, evidence)
       } yield attempt.node
 
-/*  def iriKindChecker: NodeChecker = (nodeShape,currentNode) => {
-    condition(inValues(currentNode,values), nodeShape, 
-              inError(currentNode,values), 
-              s"Checked $currentNode sh:in $values") >> 
-    pure(node)
-  } */
       
   def inChecker(values: Seq[Value]): NodeChecker = (attempt,currentNode) => {
     condition(inValues(currentNode,values), attempt, 
@@ -228,6 +234,8 @@ case class Validator(schema: Schema) {
   }
   
   def getRDF: Check[RDFReader] = ask[Comput,RDFReader]
+  
+  def getTyping: Check[Typing] = get[Comput,Typing]
 
   def minCount(minCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[Seq[RDFNode]] = {
     val count = os.size

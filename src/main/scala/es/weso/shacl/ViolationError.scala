@@ -12,7 +12,7 @@ case class ViolationError(
     obj: Option[RDFNode],
     message: Option[String],
     sourceConstraint: Option[RDFNode]
-) extends ConstraintError("Violation error")
+) 
 
 object ViolationError {
 
@@ -25,6 +25,12 @@ object ViolationError {
       message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI}" ),
       sourceConstraint = attempt.shapeIRI)
       
+  def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) = 
+    basic("FailedNodeShape",node, attempt, msg)
+      
+  def classError(focusNode: RDFNode, cls: RDFNode, attempt: Attempt) = 
+    basic("classError", focusNode, attempt, s"Node $focusNode doesn't belong to class $cls")
+    
   def datatypeError(focusNode: RDFNode, datatype: RDFNode, attempt: Attempt) = 
     basic("dataTypeError", focusNode, attempt, s"Node $focusNode doesn't have dataType $datatype")
     
