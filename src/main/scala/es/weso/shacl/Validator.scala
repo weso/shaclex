@@ -6,6 +6,7 @@ import cats._, data._
 import cats.syntax.all._
 import org.atnos.eff._, all._
 import org.atnos.eff.syntax.all._
+import util.matching._
 
 /**
  * This validator is implemented directly in Scala
@@ -124,13 +125,13 @@ case class Validator(schema: Schema) {
       case NodeKind(k) => checkSeq(os, nodeKindChecker(k)(attempt,_))
       case MinCount(n) => minCount(n, os, attempt, predicate)
       case MaxCount(n) => maxCount(n, os, attempt, predicate)
-      case MinExclusive(n) => checkSeq(os, unsupportedNodeChecker("sh:minExclusive")(attempt,_))
-      case MinInclusive(n) => checkSeq(os, unsupportedNodeChecker("MinInclusive")(attempt,_))
-      case MaxInclusive(n) => checkSeq(os, unsupportedNodeChecker("MaxInclusive")(attempt,_))
-      case MaxExclusive(n) => checkSeq(os, unsupportedNodeChecker("MaxExclusive")(attempt,_))
-      case MinLength(n) => checkSeq(os, unsupportedNodeChecker("MinLength")(attempt,_))
-      case MaxLength(n) => checkSeq(os, unsupportedNodeChecker("MaxLength")(attempt,_))
-      case Pattern(p,flags) => checkSeq(os, unsupportedNodeChecker("Pattern")(attempt,_))
+      case MinExclusive(n) => checkSeq(os, minExclusive(n)(attempt,_))
+      case MinInclusive(n) => checkSeq(os, minInclusive(n)(attempt,_))
+      case MaxInclusive(n) => checkSeq(os, maxInclusive(n)(attempt,_))
+      case MaxExclusive(n) => checkSeq(os, maxExclusive(n)(attempt,_))
+      case MinLength(n) => checkSeq(os, minLength(n)(attempt,_))
+      case MaxLength(n) => checkSeq(os, maxLength(n)(attempt,_))
+      case Pattern(p,flags) => checkSeq(os, pattern(p,flags)(attempt,_))
       case UniqueLang(v) => checkSeq(os, unsupportedNodeChecker("UniqueLang")(attempt,_))      
       case HasValue(v) => checkSeq(os, unsupportedNodeChecker("HasValue")(attempt,_))      
       case In(values) => checkSeq(os, inChecker(values)(attempt,_))
@@ -186,6 +187,67 @@ case class Validator(schema: Schema) {
         s"$node is an IRI") 
   }
 
+  def compareIntLiterals(
+      n:Literal, 
+      f: (Int, Int) => Boolean, 
+      err: (RDFNode, Attempt, Int) => ViolationError, 
+      msg: String): NodeChecker = (attempt,node) => for {
+    ctrolValue <- checkNumeric(n, attempt)
+    value <- checkNumeric(node, attempt)
+    _ <- condition(f(ctrolValue,value), attempt, 
+        err(node, attempt, ctrolValue),
+        s"$node satisfies $msg($n)") 
+  } yield node
+
+  
+  def minExclusive(n:Literal): NodeChecker = 
+    compareIntLiterals(n,_ < _, minExclusiveError, "minExclusive")
+    
+  def minInclusive(n:Literal): NodeChecker = 
+    compareIntLiterals(n,_ <= _, minInclusiveError, "minInclusive")
+    
+  def maxExclusive(n:Literal): NodeChecker = 
+    compareIntLiterals(n,_ > _, maxExclusiveError, "maxExclusive")
+    
+  def maxInclusive(n:Literal): NodeChecker = 
+    compareIntLiterals(n,_ >= _, maxInclusiveError, "maxInclusive")
+    
+  def minLength(n:Int): NodeChecker = (attempt,node) => for {
+    _ <- condition(node.getLexicalForm.length >= n, attempt, 
+        minLengthError(node,attempt,n),
+        s"$node satisfies minLength($n)") 
+  } yield node
+  
+  def maxLength(n:Int): NodeChecker = (attempt,node) => for {
+    _ <- condition(node.getLexicalForm.length <= n, attempt, 
+         maxLengthError(node,attempt,n),
+         s"$node satisfies maxLength($n)")
+  } yield node
+    
+  def pattern(p:String, flags: Option[String]): NodeChecker = (attempt,node) => for {
+    pattern <- getRegex(p,flags)
+    _ <- condition(regexMatch(pattern,node), attempt, 
+         patternError(node,attempt,p,flags),
+         s"$node satisfies pattern '$p'${flags.getOrElse("")})")
+  } yield node
+  
+  // TODO: Use xerces implementation of XPath regex instead of Scala's builtin
+  def getRegex(p: String, flags: Option[String]): Check[Regex] = {
+    pure(new Regex(p))
+  }
+  
+  def regexMatch(pattern: Regex, n: RDFNode): Boolean = {
+    pattern.findFirstIn(n.getLexicalForm).isDefined
+  }
+  
+  def checkNumeric(node: RDFNode, attempt: Attempt): Check[Int] = 
+    node match {
+    case n:IntegerLiteral => pure(n.int)
+    case n:DecimalLiteral => pure(n.decimal.toInt)
+    case n:DoubleLiteral => pure(n.double.toInt)
+    case _ => wrong[Comput,ViolationError](notNumeric(node, attempt)) >> pure(0)
+  }
+
   def literalChecker: NodeChecker = (attempt,node) => {
     condition(node.isLiteral, attempt, 
         literalKindError(node, attempt),
@@ -216,6 +278,13 @@ case class Validator(schema: Schema) {
         s"$node is a IRI or Literal") 
   }
 
+  /**
+   * if condition is true adds an evidence, otherwise, raises an error
+   * @param condition condition to check
+   * @param attempt current validation attempt that is being tried
+   * @param error error to raise in case `condition` is false
+   * @param evidence evidence to add to `attempt` in case `condition` is true
+   */
   def condition(
       condition: Boolean,
       attempt: Attempt,

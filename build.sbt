@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
   , "org.slf4j" % "slf4j-simple" % "1.7.21"
   , "log4j" % "log4j" % "1.2.17"
   , "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
-  , "org.scalatest" %%% "scalatest" % "3.0.0-M15" 
+  , "org.scalatest" %% "scalatest" % "3.0.0" 
   , "org.typelevel" %% "cats" % "0.6.1"
   , "org.atnos" %% "eff-cats" % "2.0-preview-1"
   , "es.weso" % "shexcala_2.11" % "0.7.16" 
@@ -31,7 +31,7 @@ libraryDependencies ++= Seq(
 autoCompilerPlugins := true
 
 // to write types like Reader[String, ?]
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
+addCompilerPlugin("org.spire-math" % "kind-projector" % "0.8.0" cross CrossVersion.binary)
 
 // to get types like Reader[String, ?] (with more than one type parameter) correctly inferred
 addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0")
@@ -55,10 +55,6 @@ wixProductUpgradeId := "6a710435-9af4-4adb-a597-98d3dd0bade1"
 // The same numbers as in the docs?
 // wixProductId := "ce07be71-510d-414a-92d4-dff47631848a"
 // wixProductUpgradeId := "4552fb0e-e257-4dbd-9ecb-dba9dbacf424"
-
-site.settings
-
-site.includeScaladoc()
 
 mainClass in Compile := Some("es.weso.shaclex.Main")
 

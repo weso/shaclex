@@ -12,7 +12,9 @@ case class ViolationError(
     obj: Option[RDFNode],
     message: Option[String],
     sourceConstraint: Option[RDFNode]
-) 
+) {
+  override def toString = s"Violation error on $focusNode: ${message.getOrElse("")}"
+}
 
 object ViolationError {
 
@@ -22,7 +24,7 @@ object ViolationError {
       subject = None,
       predicate = attempt.predicate,
       obj = None,
-      message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI}" ),
+      message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, predicate: ${attempt.predicate.getOrElse(IRI(""))}" ),
       sourceConstraint = attempt.shapeIRI)
       
   def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) = 
@@ -37,6 +39,30 @@ object ViolationError {
   def unsupported(focusNode: RDFNode, attempt: Attempt, msg: String) =  
     basic("unsupported", focusNode, attempt, "Unsupported: " + msg) 
       
+  def notNumeric(focusNode: RDFNode, attempt: Attempt) = 
+    basic("notNumericError", focusNode, attempt, s"NotNumeric violation. Expected $focusNode to be a number")
+
+  def minExclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) = 
+    basic("minExclusiveError", focusNode, attempt, s"minExclusive violation. Expected $focusNode > $n")
+    
+  def minInclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) = 
+    basic("minInclusiveError", focusNode, attempt, s"minInclusive violation. Expected $focusNode >= $n")
+    
+  def maxExclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) = 
+    basic("maxExclusiveError", focusNode, attempt, s"maxExclusive violation. Expected $focusNode < $n")
+    
+  def maxInclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) = 
+    basic("maxInclusiveError", focusNode, attempt, s"maxInclusive violation. Expected $focusNode <= $n")
+
+  def minLengthError(focusNode: RDFNode, attempt: Attempt, n: Int) = 
+    basic("minLengthError", focusNode, attempt, s"minLength violation. Expected length($focusNode) >= $n")
+
+  def maxLengthError(focusNode: RDFNode, attempt: Attempt, n: Int) = 
+    basic("maxLengthError", focusNode, attempt, s"maxLength violation. Expected length($focusNode) <= $n")
+    
+  def patternError(focusNode: RDFNode, attempt: Attempt, p: String, flags: Option[String]) = 
+    basic("patternError", focusNode, attempt, s"pattern violation. Expected $focusNode to match '$p'${flags.getOrElse("")}")
+    
   def minCountError(focusNode: RDFNode, attempt: Attempt, minCount: Int, count: Int) = 
     basic("minCountError", focusNode, attempt, s"MinCount violation. Expected $minCount, obtained: $count")
         

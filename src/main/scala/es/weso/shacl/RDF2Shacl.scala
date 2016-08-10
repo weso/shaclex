@@ -119,6 +119,7 @@ object RDF2Shacl
         minCount, maxCount,
         minExclusive, maxExclusive, minInclusive, maxInclusive,
         minLength, maxLength,
+        pattern,
         shapeComponent, in)
 
 
@@ -133,7 +134,8 @@ object RDF2Shacl
   
   def pattern : RDFParser[Pattern] = (n,rdf) => for {
     pat <- stringFromPredicate(sh_pattern)(n,rdf)
-  } yield Pattern(pat,None)
+    flags <- stringFromPredicateOptional(sh_flags)(n,rdf)
+  } yield Pattern(pat,flags)
   
   
   def shapeComponent: RDFParser[ShapeComponent] = (n,rdf) => {
@@ -211,6 +213,10 @@ object RDF2Shacl
   def parsePredicateInt[A](p: IRI, maker: Int => A): RDFParser[A] = (n,rdf) => for {
     v <- integerLiteralForPredicate(p)(n,rdf)
   } yield maker(v.intValue())
+  
+  def parsePredicateString[A](p: IRI, maker: String => A): RDFParser[A] = (n,rdf) => for {
+    v <- stringFromPredicate(p)(n,rdf)
+  } yield maker(v)
   
   def parsePredicate[A](p: IRI, maker: RDFNode => A): RDFParser[A] = (n,rdf) => for {
     o <- objectFromPredicate(p)(n,rdf)
