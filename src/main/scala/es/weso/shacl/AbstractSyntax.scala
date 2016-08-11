@@ -1,7 +1,7 @@
 package es.weso.shacl
-
 import es.weso.rdf.nodes._
 import util._
+import SHACLPrefixes._
 
 case class Schema(shapes: Seq[Shape]) {
   
@@ -49,7 +49,7 @@ case class Shape(
     id: Option[IRI],
     targets: Seq[Target],
     filters: Seq[Shape],
-    components: Seq[Constraint] 
+    constraints: Seq[Constraint] 
 ) {
   def hasId(iri: IRI): Boolean = {
     id contains(iri)
@@ -61,7 +61,7 @@ case class Shape(
   }
   
   def propertyConstraints: Seq[PropertyConstraint] = {
-    components.map(_.toPropertyConstraint).flatten
+    constraints.map(_.toPropertyConstraint).flatten
   }
   
 }
@@ -108,7 +108,7 @@ case class PathPropertyConstraint(
 }
 
 case class NodeConstraint(
-    components: Seq[Component]
+    components: List[Component]
 ) extends Constraint {
   def isPropertyConstraint = false
 }
@@ -121,7 +121,15 @@ sealed abstract class Component
  * Represents IRIs or Literals (no Blank nodes)
  */
 trait Value  {
+  /**
+   * `true` if `node` matches this value
+   */
   def matchNode(node: RDFNode): Boolean
+  
+  /**
+   * Conversion from values to RDFNode's
+   */
+  def rdfNode: RDFNode
 } 
 
 case class IRIValue(iri: IRI) extends Value {
@@ -131,6 +139,8 @@ case class IRIValue(iri: IRI) extends Value {
       case _ => false
     }
   }
+  
+  override def rdfNode: RDFNode = iri
 }
 
 case class LiteralValue(literal: Literal) extends Value {
@@ -140,6 +150,8 @@ case class LiteralValue(literal: Literal) extends Value {
       case _ => false
     }
   }
+
+  override def rdfNode: RDFNode = literal
 }
 
 case class ClassComponent(value: RDFNode) extends Component  
@@ -154,19 +166,38 @@ case class MaxInclusive(value: Literal) extends Component
 case class MinLength(value: Int) extends Component 
 case class MaxLength(value: Int) extends Component 
 case class Pattern(pattern: String, flags: Option[String]) extends Component  
+case class Stem(v: String) extends Component  
 case class UniqueLang(value: Boolean) extends Component 
-case class Closed(isClosed: Boolean, ignoredProperties: Seq[IRI]) extends Component
+case class Or(shapes: List[Shape]) extends Component
+case class And(shapes: List[Shape]) extends Component
+case class Not(shape: Shape) extends Component
+case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component
 case class ShapeComponent(shape: Shape) extends Component
 case class HasValue(value: Value) extends Component 
 case class In(list: List[Value]) extends Component  
 
-sealed trait NodeKindType extends Component 
-case object IRIKind extends NodeKindType
-case object LiteralKind extends NodeKindType
-case object BlankNodeKind extends NodeKindType
-case object BlankNodeOrIRI extends NodeKindType
-case object BlankNodeOrLiteral extends NodeKindType
-case object IRIOrLiteral extends NodeKindType
+
+sealed trait NodeKindType {
+  def id: IRI
+}
+case object IRIKind extends NodeKindType {
+  override def id = sh_IRI
+}
+case object LiteralKind extends NodeKindType {
+  override def id = sh_Literal
+}
+case object BlankNodeKind extends NodeKindType {
+  override def id = sh_BlankNode
+}
+case object BlankNodeOrIRI extends NodeKindType {
+  override def id = sh_BlankNodeOrIRI
+}
+case object BlankNodeOrLiteral extends NodeKindType {
+  override def id = sh_BlankNodeOrLiteral
+}
+case object IRIOrLiteral extends NodeKindType {
+  override def id = sh_IRIOrLiteral
+}
 
 // Companion objects
 object Schema {

@@ -70,8 +70,8 @@ describe("Validator scope Nodes") {
             components= Seq(MinCount(1)))
     val s = Shape.empty.copy(
         id = Some(S), 
-        targets = Seq(TargetNode(x)),
-        components = Seq(pc))
+        targets = List(TargetNode(x)),
+        constraints = List(pc))
     val validator = Validator(schema)
     validator.targetNodes should contain only ((x,s))
     val checked = validator.validateAll(rdf)

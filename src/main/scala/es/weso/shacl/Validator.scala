@@ -65,7 +65,8 @@ case class Validator(schema: Schema) {
   } 
   
   def nodeShape: NodeShapeChecker = { case (node,shape) => {
-    val cs = shape.components.map(checkConstraint)
+    println(s"Checking if $node matches $shape") 
+    val cs = shape.constraints.map(checkConstraint)
     val r = checkAll(cs.map(c => c(Attempt(NodeShape(node,shape), None),node)))
     r.map(_ => (node,shape))
    } 
@@ -74,6 +75,7 @@ case class Validator(schema: Schema) {
   def checkConstraint(c:Constraint): NodeChecker = {
     c match {
       case pc:PropertyConstraint => checkPropertyConstraint(pc)
+      case pc:PathPropertyConstraint => throw new Exception(s"Non-implemented PathProperty Constraints yet: $pc")
       case nc:NodeConstraint => checkNodeConstraint(nc)
     }
   }
@@ -109,6 +111,7 @@ case class Validator(schema: Schema) {
     (attempt,node) => {
       c match {
         case NodeKind(k) => nodeKindChecker(k)(attempt,node)
+        case And(shapes) => and(shapes)(attempt,node)
         case _ => unsupportedNodeChecker(s"$c")(attempt,node)
       }
     }
@@ -132,7 +135,10 @@ case class Validator(schema: Schema) {
       case MinLength(n) => checkSeq(os, minLength(n)(attempt,_))
       case MaxLength(n) => checkSeq(os, maxLength(n)(attempt,_))
       case Pattern(p,flags) => checkSeq(os, pattern(p,flags)(attempt,_))
-      case UniqueLang(v) => checkSeq(os, unsupportedNodeChecker("UniqueLang")(attempt,_))      
+      case UniqueLang(v) => checkSeq(os, unsupportedNodeChecker("UniqueLang")(attempt,_))
+      case And(shapes) => checkSeq(os, and(shapes)(attempt,_))
+      case Or(shapes) => checkSeq(os, or(shapes)(attempt,_))
+      case Not(shape) => checkSeq(os, not(shape)(attempt,_))
       case HasValue(v) => checkSeq(os, unsupportedNodeChecker("HasValue")(attempt,_))      
       case In(values) => checkSeq(os, inChecker(values)(attempt,_))
       case _ => throw new Exception(s"Unsupported check $c")
@@ -240,6 +246,25 @@ case class Validator(schema: Schema) {
     pattern.findFirstIn(n.getLexicalForm).isDefined
   }
   
+  def and(shapes:Seq[Shape]): NodeChecker = (attempt,node) => {
+    import cats.std.list._
+    val es = shapes.map(s => nodeShape(node,s))
+    println(s"Shapes in and: $shapes") 
+    checkAll(es).map(_ => node)
+  }
+  
+  def or(shapes:Seq[Shape]): NodeChecker = (attempt,node) => 
+    throw new Exception(s"Non implemented sh:or yet. Shapes: $shapes, node: $node, attempt: $attempt")
+  /*{
+    _ <- chooseFrom
+  } yield node */
+  
+  def not(shape: Shape): NodeChecker = (attempt,node) => for {
+    _ <- nodeShape(node,shape)
+  } yield node
+  
+  
+  
   def checkNumeric(node: RDFNode, attempt: Attempt): Check[Int] = 
     node match {
     case n:IntegerLiteral => pure(n.int)
@@ -326,11 +351,14 @@ case class Validator(schema: Schema) {
     } yield os
   }
    
-  def addEvidence(nodeShape: NodeShape, msg: String): Check[Unit] = for {
+  def addEvidence(nodeShape: NodeShape, msg: String): Check[Unit] = {
+   println(s"Adding evidence $nodeShape, $msg")
+   for {
     typing <- get[Comput,Typing]
     // TODO: Check that (node, shape) are right
     _ <- put[Comput,Typing](typing.addAction(nodeShape,msg)) 
   } yield ()
+  }
 
   ////////////////////////////////////////////
   /**

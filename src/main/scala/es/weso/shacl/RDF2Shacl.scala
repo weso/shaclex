@@ -14,11 +14,25 @@ import cats.std.list._
 import cats.std.option._
 import cats.syntax.traverse._
 import SHACLPrefixes._
+import cats._
 
 object RDF2Shacl 
     extends Logging
     with RDFParser {
 
+  implicit val applicativeRDFParser = new Applicative[RDFParser] {
+    def pure[A](x: A) = (n,rdf) => Success(x)
+    
+    def ap[A,B](ff:RDFParser[A => B])(fa:RDFParser[A]): RDFParser[B] = (n,f) => {
+      fa(n,f) match {
+        case Success(a) => ff(n,f) match {
+          case Success(f) => Success(f(a))
+          case Failure(e) => Failure(e)
+        }
+        case Failure(e) => Failure(e)
+      }
+    }
+  }
   // Keep track of parsed shapes 
   val parsedShapes = collection.mutable.Map[RDFNode,Shape]()
   
@@ -87,7 +101,7 @@ object RDF2Shacl
   def nodeConstraints: RDFParser[Seq[NodeConstraint]] = (n,rdf) => {
    for {
      cs <- components(n,rdf)
-   } yield cs.map(c => NodeConstraint(components = Seq(c)))
+   } yield cs.map(c => NodeConstraint(components = List(c)))
   }
   
   def propertyConstraints: RDFParser[Seq[Constraint]] = (n,rdf) => {
@@ -120,6 +134,7 @@ object RDF2Shacl
         minExclusive, maxExclusive, minInclusive, maxInclusive,
         minLength, maxLength,
         pattern,
+        or, and,
         shapeComponent, in)
 
 
@@ -137,6 +152,28 @@ object RDF2Shacl
     flags <- stringFromPredicateOptional(sh_flags)(n,rdf)
   } yield Pattern(pat,flags)
   
+  def or : RDFParser[Or] = (n,rdf) => for {
+    shapeNodes <- objectsFromPredicate(sh_or)(n,rdf)
+    if (!shapeNodes.isEmpty)
+    shapes <- mapRDFParser(shapeNodes.toList,getShape)(n,rdf)
+  } yield Or(shapes)
+  
+  def and : RDFParser[And] = (n,rdf) => for {
+    nodes <- rdfListForPredicate(sh_and)(n,rdf)
+    if (!nodes.isEmpty)
+    shapes <- mapRDFParser(nodes,getShape)(n,rdf)
+  } yield And(shapes)
+  
+  def not: RDFParser[Not] = (n,rdf) => for {
+    shapeNode <- objectFromPredicateOptional(sh_not)(n,rdf)
+    if (shapeNode.isDefined)
+    shape <- getShape(shapeNode.get)(n,rdf)
+  } yield Not(shape)
+  
+  def mapRDFParser[A,B](ls: List[A], p: A => RDFParser[B]): RDFParser[List[B]] = {
+    import cats.std.list._
+    ls.map(v => p(v)).sequence
+  }
   
   def shapeComponent: RDFParser[ShapeComponent] = (n,rdf) => {
     for {

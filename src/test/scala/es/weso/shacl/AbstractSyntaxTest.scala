@@ -12,15 +12,15 @@ describe("Abstract Syntax") {
                 id = None,
                 predicate = IRI("http://example.org/p"),
                 components = 
-                  Seq(NodeKind(IRIKind),
-                      MinCount(1),
-                      MaxCount(2)))
+                  List(NodeKind(IRIKind),
+                       MinCount(1),
+                       MaxCount(2)))
 
     val shape = Shape(
         id = Some(IRI("http://example.org/s")),
-        targets =Seq(),
-        filters= Seq(),
-        components = Seq(c))
+        targets = List(),
+        filters = List(),
+        constraints = List(c))
         
     shape.id shouldBe defined 
     
