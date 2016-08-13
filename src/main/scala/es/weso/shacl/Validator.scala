@@ -34,7 +34,7 @@ case class Validator(schema: Schema) {
  
   // Fails if there is any error
   def validateAll(rdf: RDFReader): CheckResult = {
-   val r: Xor[NonEmptyList[ViolationError],List[(Schema,Typing)]] = 
+   val r: Xor[NonEmptyList[ViolationError],List[(Schema,ShapeTyping)]] = 
      Validator.runCheck(checkSchemaAll(schema),rdf)
    CheckResult(r)
   }
@@ -148,8 +148,8 @@ case class Validator(schema: Schema) {
 
   def shapeComponentChecker(s: Shape): NodeChecker = (attempt,node) => for {
     typing <- getTyping
-    _ <- if (typing.getOkShapes(node).contains(s)) pure[Comput,(RDFNode,Shape)]((node,s))
-         else if (typing.getFailedShapes(node).contains(s)) {
+    _ <- if (typing.getOkValues(node).contains(s)) pure[Comput,(RDFNode,Shape)]((node,s))
+         else if (typing.getFailedValues(node).contains(s)) {
            wrong[Comput,ViolationError](failedNodeShape(
                node,s,attempt,
                s"Failed because $node doesn't match shape $s")) >>
@@ -329,7 +329,7 @@ case class Validator(schema: Schema) {
   
   def getRDF: Check[RDFReader] = ask[Comput,RDFReader]
   
-  def getTyping: Check[Typing] = get[Comput,Typing]
+  def getTyping: Check[ShapeTyping] = get[Comput,ShapeTyping]
 
   def minCount(minCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[Seq[RDFNode]] = {
     val count = os.size
@@ -354,9 +354,9 @@ case class Validator(schema: Schema) {
   def addEvidence(nodeShape: NodeShape, msg: String): Check[Unit] = {
    println(s"Adding evidence $nodeShape, $msg")
    for {
-    typing <- get[Comput,Typing]
+    typing <- get[Comput,ShapeTyping]
     // TODO: Check that (node, shape) are right
-    _ <- put[Comput,Typing](typing.addAction(nodeShape,msg)) 
+    _ <- put[Comput,ShapeTyping](typing.addEvidence(nodeShape.node, nodeShape.shape,msg)) 
   } yield ()
   }
 
@@ -425,9 +425,10 @@ object Validator {
 
  def empty = Validator(schema = Schema.empty)
   
- def runCheck[A](c: Check[A], rdf: RDFReader): Result[A] = 
-   c.runReader(rdf).runState(Typing.empty).runChoose.runNel.runEval.run
-
+ def runCheck[A](c: Check[A], rdf: RDFReader): Result[A] = {
+   val initial : ShapeTyping = Typing.empty
+   c.runReader(rdf).runState(initial).runChoose.runNel.runEval.run
+ }
    
 }
 

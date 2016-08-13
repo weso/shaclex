@@ -5,7 +5,7 @@ import cats.std.list._
 import org.atnos.eff._, all._
 import org.atnos.eff.syntax.all._
 
-case class CheckResult(r: Xor[NonEmptyList[ViolationError],List[(Schema,Typing)]]) {
+case class CheckResult(r: Xor[NonEmptyList[ViolationError],List[(Schema,ShapeTyping)]]) {
   def isOK: Boolean = r.isRight && hasResults(r)
 
   // Is there a better way to define this?
@@ -15,7 +15,7 @@ case class CheckResult(r: Xor[NonEmptyList[ViolationError],List[(Schema,Typing)]
   def errors: Seq[ViolationError] = 
     r.fold(_.unwrap, _ => Seq())
     
-  def results: List[(Schema,Typing)] = {
+  def results: List[(Schema,ShapeTyping)] = {
     r.fold(_ => List(), x => x)
   }
   
