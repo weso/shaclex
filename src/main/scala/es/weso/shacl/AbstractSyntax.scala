@@ -55,6 +55,9 @@ case class Shape(
     id contains(iri)
   }
   
+  def showId: String = 
+    id.fold("")(_.str)
+  
   def targetNodes: Seq[RDFNode] = { 
     val maybeScopeNodes = targets.map(_.toTargetNode)
     maybeScopeNodes.flatten.map(_.node)

@@ -1,7 +1,7 @@
 package es.weso.shacl
 import cats._, data._
 import cats.implicits._
-import cats.syntax.all._
+//import cats.syntax.all._
 
 /**
  * Trait that defines a generic typing
@@ -43,8 +43,18 @@ implicit val showEvidence = implicitly[Show[Evidence]]
     es.map(e => showEvidence.show(e)).mkString("\n" + tab)
   }
   
-  def addEvidence(key: Key, value: Value, e: Evidence): Typing[Key,Value,Error,Evidence]
+  def addEvidences(key: Key, value: Value, 
+      es: List[Evidence]): Typing[Key,Value,Error,Evidence]
 
+  def addEvidence(key: Key, value: Value, 
+      es: Evidence): Typing[Key,Value,Error,Evidence]
+  
+  def addType(key:Key, value:Value, 
+      evidences: List[Evidence] = List()): Typing[Key,Value,Error,Evidence] =
+        addEvidences(key,value,evidences)
+        
+  def combineTyping(t: Typing[Key,Value,Error,Evidence]): Typing[Key,Value,Error,Evidence] 
+  
 }
 
 object Typing {
@@ -52,18 +62,32 @@ object Typing {
     val m: Map[Key, Map[Value,TypingResult[Error,Evidence]]] = Map()
     TypingMap(m)
   }
+  
+  def combineTypings[
+    Key:Show, Value: Show, Error: Show, Evidence: Show](
+        ts: Seq[Typing[Key,Value,Error,Evidence]]): Typing[Key,Value,Error,Evidence] = {
+    val zero : Typing[Key,Value,Error,Evidence] = Typing.empty
+    ts.foldLeft(zero)(_.combineTyping(_))
+  }
 }
 
-case class TypingResult[Error,Evidence](t: ValidatedNel[Error,List[Evidence]])  {
+case class TypingResult[
+  Error: Show,
+  Evidence: Show](t: ValidatedNel[Error,List[Evidence]]) {
   def isOK = t.isValid
   
   def addEvidence(e: Evidence): TypingResult[Error,Evidence] = {
-    val r: ValidatedNel[Error,List[Evidence]] = 
-      t.fold(errors => throw new Exception(s"Error adding evidence $e to an error value ${errors}"), 
-          es => Validated.Valid(e :: es))
-    TypingResult(t)
+    addEvidences(List(e))
+  }
+  
+  def addEvidences(es: List[Evidence]): TypingResult[Error,Evidence] = {
+    val r = t.fold(errors => 
+        throw new Exception(s"Error adding evidences $es to an error value ${errors}"), 
+        ls => Validated.Valid(ls ++ es))
+    TypingResult(r)
   }
 }
+
 
 case class TypingMap[
   Key: Show,
@@ -72,7 +96,7 @@ case class TypingMap[
   Evidence: Show](
     m: Map[Key, Map[Value,TypingResult[Error,Evidence]]]) 
     extends Typing[Key,Value,Error,Evidence] {
-  
+
   override def getValues(key: Key): Map[Value,TypingResult[Error,Evidence]] = 
     m.get(key).getOrElse(Map())
   
@@ -91,26 +115,44 @@ case class TypingMap[
     }
   }
   
-  def firstEvidence(e: Evidence): TypingResult[Error,Evidence] = {
-    TypingResult(Validated.Valid(List(e)))
+  def firstEvidences(es: List[Evidence]): TypingResult[Error,Evidence] = {
+    TypingResult(Validated.Valid(es))
   }
   
-    
-  override def addEvidence(key: Key, value: Value, e: Evidence): Typing[Key,Value,Error,Evidence] = {
+  override def addEvidences(key: Key, value: Value, 
+      es: List[Evidence]): Typing[Key,Value,Error,Evidence] = {
     val newTyping: Map[Key, Map[Value,TypingResult[Error,Evidence]]] = m.updated(key, 
         if (m.get(key).isDefined) {
           val valueMap = m(key)
           valueMap.updated(value,
               if (valueMap.get(value).isDefined) {
-                valueMap(value).addEvidence(e)
+                valueMap(value).addEvidences(es)
               } else {
-                TypingResult(Validated.Valid(List(e)))
+                TypingResult(Validated.Valid(es))
               })
         }
         else
-          (Map(value -> firstEvidence(e))))
+          (Map(value -> firstEvidences(es))))
     TypingMap(newTyping) 
   } 
+    
+  override def addEvidence(key: Key, value: Value, e: Evidence): Typing[Key,Value,Error,Evidence] = 
+    addEvidences(key,value,List(e)) 
+
+  implicit def semigroupTypingResult = new Semigroup[TypingResult[Error,Evidence]] {
+    override def combine(
+        t1: TypingResult[Error,Evidence], 
+        t2: TypingResult[Error,Evidence]): TypingResult[Error,Evidence] =
+      TypingResult(t1.t |+| t2.t) 
+  }
+  
+  // TODO
+  override def combineTyping(t: Typing[Key,Value,Error,Evidence]): Typing[Key,Value,Error,Evidence] = {
+    t match {
+      case tm: TypingMap[Key,Value,Error,Evidence] => TypingMap(m combine tm.m) 
+      case _ => throw new Exception("Unsupported combination of different typing maps")
+    }
+  }
   
   override def toString: String = {
     m.map(t => {

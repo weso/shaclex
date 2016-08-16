@@ -29,15 +29,16 @@ package object shacl {
   }
 
   type ShapeTyping = Typing[RDFNode,Shape,ViolationError,String]
-  
-  type Comput = Fx.fx5[
+ 
+  type Comput = Fx.fx6[
     Reader[RDFReader,?], 
-    State[ShapeTyping,?], 
+    Reader[ShapeTyping,?],
+    State[Evidences,?],
     Choose, 
     Validate[ViolationError, ?], 
     Eval]
 
-  type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,ShapeTyping)]]
+  type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,Evidences)]]
   
   def isOK[A](r: Result[A]): Boolean = 
     r.isRight && r.toList.isEmpty == false  
