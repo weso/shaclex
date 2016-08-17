@@ -14,7 +14,7 @@ import util.matching._
 case class Validator(schema: Schema) {
 
 // type Checker[A] = A => Check[A]
- type ShapeChecker = Shape => Check[Shape]
+ type ShapeChecker = Shape => CheckTyping
  type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
   
  /**
@@ -34,9 +34,13 @@ case class Validator(schema: Schema) {
   }
  
   // Fails if there is any error
-  def validateAll(rdf: RDFReader): CheckResult = {
-   val r: Xor[NonEmptyList[ViolationError],List[(Schema,Evidences)]] = 
-     Validator.runCheck(checkSchemaAll(schema),rdf)
+  def validateAll(rdf: RDFReader): CheckResult[ViolationError,(ShapeTyping,Evidences)] = {
+    implicit def showPair = new Show[(ShapeTyping,Evidences)] {
+      def show(e:(ShapeTyping,Evidences)): String = {
+        s"Typing: ${e._1}\n Evidences: ${e._2}" 
+      }
+    }
+   val r = Validator.runCheck(checkSchemaAll(schema),rdf)
    CheckResult(r)
   }
   
@@ -47,34 +51,37 @@ case class Validator(schema: Schema) {
    * Checks if all nodes/shapes are valid in a schema
    * Fails if any of them is not correct 
    */
-  def checkSchemaAll: Schema => Check[Schema] = schema => {
+  def checkSchemaAll: Schema => CheckTyping = schema => {
     val shapes = schema.shapes
-    val results: Seq[Check[Shape]] = shapes.map(sh => shapeChecker(sh))
-    val r = checkAll(results)
-    r.map(_ => schema)
+    val results = shapes.map(sh => shapeChecker(sh))
+    for {
+      ts <- checkAll(results)
+      t <- combineTypings(ts)
+    } yield t
   }
 
-  def checkSchemaSome: Schema => Check[Schema] = schema => {
+/*  def checkSchemaSome: Schema => Check[Schema] = schema => {
     val shapes = schema.shapes
     val results: Seq[Check[Shape]] = shapes.map(sh => shapeChecker(sh))
     val r = checkAll(results)
     r.map(_ => schema)
-  }
+  } */
   
   def shapeChecker: ShapeChecker = shape => {
     val nodes = shape.targetNodes
     val nodesShapes: Seq[CheckTyping] = nodes.map(n => nodeShape(n,shape))
-    val r = checkAll(nodesShapes)
-    r.map(_ => shape)
+    for {
+      ts <- checkAll(nodesShapes)
+      t <- combineTypings(ts)
+    } yield t
   } 
   
   def nodeShape: NodeShapeChecker = { case (node,shape) => {
-    println(s"Checking if $node matches $shape") 
     val cs = shape.constraints.map(checkConstraint)
     val r = checkAll(cs.map(c => c(Attempt(NodeShape(node,shape), None))(node)))
     for {
       current <- getTyping
-      val comp : Check[Seq[ShapeTyping]] = checkAll(cs.map(c => c(Attempt(NodeShape(node,shape), None))(node))) 
+      val comp = checkAll(cs.map(c => c(Attempt(NodeShape(node,shape), None))(node))) 
       ts <- runLocal(comp, _.addType(node,shape))
       t <- combineTypings(ts)
     } yield t
@@ -269,11 +276,10 @@ case class Validator(schema: Schema) {
   def and(shapes:Seq[Shape]): NodeChecker = attempt => node =>  {
     import cats.std.list._
     val es = shapes.map(s => nodeShape(node,s))
-    println(s"Shapes in and: $shapes")
     for {
      ts <- checkAll(es)
-     t <- combineTypings(ts)
-     _ <- addEvidence(attempt.nodeShape,s"$node passes and(${shapes.map(_.showId).mkString(",")})")
+     t1 <- addEvidence(attempt.nodeShape,s"$node passes and(${shapes.map(_.showId).mkString(",")})")
+     t <- combineTypings(t1 +: ts)
     } yield t
   }
   
@@ -328,6 +334,29 @@ case class Validator(schema: Schema) {
         s"$node is a IRI or Literal") 
   }
 
+  def inChecker(values: Seq[Value]): NodeChecker = attempt => currentNode => {
+    condition(inValues(currentNode,values), attempt, 
+              inError(currentNode,attempt, values), 
+              s"Checked $currentNode sh:in $values") 
+  }
+  
+
+  def minCount(minCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[ShapeTyping] = {
+    val count = os.size
+    val node = attempt.node
+    condition(count >= minCount, attempt, 
+            minCountError(node, attempt, minCount,os.size),
+            s"Checked minCount($minCount) for predicate($predicate) on node $node")
+  }
+
+  def maxCount(maxCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[ShapeTyping] = {
+    val count = os.size
+    val node = attempt.node
+    condition(count <= maxCount, attempt, 
+          maxCountError(node,attempt, maxCount,count),
+          s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
+  }
+   
   /**
    * if condition is true adds an evidence, otherwise, raises an error
    * @param condition condition to check
@@ -341,51 +370,20 @@ case class Validator(schema: Schema) {
       error: ViolationError,
       evidence: String): CheckTyping = for {
         _ <- validateCheck[Comput,ViolationError](condition,error)
-        _ <- addEvidence(attempt.nodeShape, evidence)
-        t <- getTyping
-      } yield t
-
+        newTyping <- addEvidence(attempt.nodeShape, evidence)
+      } yield newTyping
       
-  def inChecker(values: Seq[Value]): NodeChecker = attempt => currentNode => {
-    condition(inValues(currentNode,values), attempt, 
-              inError(currentNode,attempt, values), 
-              s"Checked $currentNode sh:in $values") 
+  def addEvidence(nodeShape: NodeShape, msg: String): Check[ShapeTyping] = {
+   for {
+    t <- getTyping
+    _ <- modify[Comput,Evidences](_.addEvidence(nodeShape,msg))
+   } yield t.addEvidence(nodeShape.node, nodeShape.shape,msg)
   }
-  
+      
   def getRDF: Check[RDFReader] = ask[Comput,RDFReader]
   
   def getTyping: Check[ShapeTyping] = ask[Comput,ShapeTyping]
   
-
-  def minCount(minCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[ShapeTyping] = {
-    val count = os.size
-    val node = attempt.node
-    for {
-     t <- condition(count >= minCount, attempt, 
-            minCountError(node, attempt, minCount,os.size),
-            s"Checked minCount($minCount) for predicate($predicate) on node $node")
-   } yield t
-  }
-
-  def maxCount(maxCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[ShapeTyping] = {
-    val count = os.size
-    val node = attempt.node
-    for {
-     t <- condition(count <= maxCount, attempt, 
-          maxCountError(node,attempt, maxCount,count),
-          s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
-    } yield t
-  }
-   
-  def addEvidence(nodeShape: NodeShape, msg: String): Check[Unit] = {
-   println(s"Adding evidence $nodeShape, $msg")
-   for {
-    es <- get[Comput,Evidences]
-    // TODO: Check that (node, shape) are right
-    _ <- put[Comput,Evidences](es.addEvidence(nodeShape,msg)) 
-  } yield ()
-  }
-
   ////////////////////////////////////////////
   /**
    * Checks that `node` is one of `values` 
@@ -451,10 +449,11 @@ object Validator {
 
  def empty = Validator(schema = Schema.empty)
   
- def runCheck[A](c: Check[A], rdf: RDFReader): Result[A] = {
+ def runCheck[A](c: Check[A], rdf: RDFReader): Xor[NonEmptyList[ViolationError],List[(A,Evidences)]] = {
    val initial : ShapeTyping = Typing.empty
    
-   c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
+   val r = c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
+   r
  }
    
 }

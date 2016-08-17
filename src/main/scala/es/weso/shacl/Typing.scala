@@ -22,6 +22,8 @@ implicit val showEvidence = implicitly[Show[Evidence]]
 
  def getOkValues(key: Key): Set[Value]
 
+ def getEvidences(key: Key, value: Value): Option[List[Evidence]]
+
  def getFailedValues(key: Key): Set[Value]
 
  def showResult(r: TypingResult[Error,Evidence]): String = { 
@@ -29,7 +31,7 @@ implicit val showEvidence = implicitly[Show[Evidence]]
        s"Incorrect. Errors: \n ${showErrors(errors)}" 
     },
     es => {
-      s"Correct. Reasons: \n ${showEvidences(es)}" 
+      s"Evidences: \n ${showEvidences(es)}" 
     })
   }
   
@@ -86,6 +88,9 @@ case class TypingResult[
         ls => Validated.Valid(ls ++ es))
     TypingResult(r)
   }
+  
+  def getEvidences: Option[List[Evidence]] =
+    t.toOption
 }
 
 
@@ -97,14 +102,20 @@ case class TypingMap[
     m: Map[Key, Map[Value,TypingResult[Error,Evidence]]]) 
     extends Typing[Key,Value,Error,Evidence] {
 
-  override def getValues(key: Key): Map[Value,TypingResult[Error,Evidence]] = 
+ override def getValues(key: Key): Map[Value,TypingResult[Error,Evidence]] = 
     m.get(key).getOrElse(Map())
   
-  def getOkValues(key: Key): Set[Value] = {
+ override def getOkValues(key: Key): Set[Value] = {
     getValues(key).filter(p => p._2.isOK).keySet
   }
   
-  def getFailedValues(key: Key): Set[Value] = {
+ override def getEvidences(key: Key, value: Value): Option[List[Evidence]] = for {
+   mvalue <- m.get(key)
+   typingResult <- mvalue.get(value) 
+   evidences <- typingResult.getEvidences   
+ } yield evidences
+
+ def getFailedValues(key: Key): Set[Value] = {
     getValues(key).filter(p => !p._2.isOK).keySet
   }
   
@@ -162,7 +173,7 @@ case class TypingMap[
         val value = s._1
         val result = s._2
         val showV = (if (result.isOK) "+" else "-" ) + showValue.show(value) 
-        s"($key - $showV) -> ${showResult(result)}"
+        s"($key: $showV) -> ${showResult(result)}"
       }).mkString("\n")
     }).mkString("\n") 
   }

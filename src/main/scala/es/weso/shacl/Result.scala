@@ -5,27 +5,31 @@ import cats.std.list._
 import org.atnos.eff._, all._
 import org.atnos.eff.syntax.all._
 
-case class CheckResult(r: Xor[NonEmptyList[ViolationError],List[(Schema,Evidences)]]) {
+case class CheckResult[
+  E: Show,
+  A: Show]
+  (r: Xor[NonEmptyList[E],List[A]]) {
+  
   def isOK: Boolean = r.isRight && hasResults(r)
 
   // Is there a better way to define this?
-  def hasResults[E,A](r: Xor[NonEmptyList[E],List[A]]): Boolean =
+  def hasResults(r: Xor[NonEmptyList[E],List[A]]): Boolean =
     r.fold(_ => false, xs => !xs.isEmpty)
   
-  def errors: Seq[ViolationError] = 
+  def errors: Seq[E] = 
     r.fold(_.unwrap, _ => Seq())
     
-  def results: List[(Schema,Evidences)] = {
+  def results: List[A] = {
     r.fold(_ => List(), x => x)
   }
   
   def show: String = {
     if (isOK) {
-      val typing = results.head._2
-      "Valid. Typing: " ++ "\n" ++ 
-      typing.toString
+      val first = results.head
+      "OK. First result: " ++ "\n" ++ 
+      Show[A].show(first)
     } else
-      "Not valid. Errors: " ++ "\n" ++ errors.map(e => e.toString).mkString("\n")
+      "Not OK. Errors: " ++ "\n" ++ errors.map(e => Show[E].show(e)).mkString("\n")
   }
 }
 
