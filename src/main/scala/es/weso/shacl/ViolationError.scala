@@ -18,14 +18,16 @@ case class ViolationError(
 
 object ViolationError {
 
-  def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) = 
-    ViolationError(id = sh + suffix,
+  def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) =
+    msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, predicate: ${attempt.predicate.getOrElse(IRI(""))}"
+  
+    /*ViolationError(id = sh + suffix,
       focusNode = focusNode,
       subject = None,
       predicate = attempt.predicate,
       obj = None,
       message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, predicate: ${attempt.predicate.getOrElse(IRI(""))}" ),
-      sourceConstraint = attempt.shapeIRI)
+      sourceConstraint = attempt.shapeIRI) */
       
   def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) = 
     basic("FailedNodeShape",node, attempt, msg)
@@ -86,6 +88,15 @@ object ViolationError {
     
   def iriOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) = 
     basic("iriOrLiteralKindError", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
+    
+  def notError(focusNode: RDFNode, attempt: Attempt, shape: Shape) = 
+    basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
+    
+  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) = 
+    basic("andError", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
+    
+  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) = 
+    basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
     
   def inError(focusNode: RDFNode, attempt: Attempt, values: Seq[Value]) = 
     basic("inError", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")

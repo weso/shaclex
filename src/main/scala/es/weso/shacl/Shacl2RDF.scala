@@ -1,5 +1,4 @@
 package es.weso.shacl
-
 import util._
 import es.weso.rdf.RDFBuilder
 import cats._, data._
@@ -9,10 +8,9 @@ import org.atnos.eff.syntax.all._
 import es.weso.rdf._
 import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
-import cats.std.list._
+import cats.instances.list._
 import SHACLPrefixes._
 import es.weso.rdf.PREFIXES._
-import cats.std.list._
 import es.weso.rdf.jena._
 
 

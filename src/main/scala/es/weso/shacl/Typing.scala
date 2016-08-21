@@ -12,12 +12,15 @@ abstract class Typing[
   Error: Show, 
   Evidence: Show] {
 
-implicit val showValue = implicitly[Show[Value]]
-implicit val showError = implicitly[Show[Error]]
-implicit val showEvidence = implicitly[Show[Evidence]]
+ implicit val showValue = implicitly[Show[Value]]
+ implicit val showError = implicitly[Show[Error]]
+ implicit val showEvidence = implicitly[Show[Evidence]]
 
  type Evidences = List[Evidence]
 
+ def hasType(key: Key, value: Value): Boolean = 
+  getOkValues(key) contains(value)
+    
  def getValues(key: Key): Map[Value,TypingResult[Error,Evidence]]
 
  def getOkValues(key: Key): Set[Value]
@@ -38,7 +41,7 @@ implicit val showEvidence = implicitly[Show[Evidence]]
   def tab = " "
   
   def showErrors(es: NonEmptyList[Error]): String = { 
-    es.unwrap.map(e => showError.show(e)).mkString("\n" + tab)
+    es.toList.map(e => showError.show(e)).mkString("\n" + tab)
   }
   
   def showEvidences(es: List[Evidence]): String = {

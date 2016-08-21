@@ -7,6 +7,9 @@ import cats.syntax.all._
 import org.atnos.eff._, all._
 import org.atnos.eff.syntax.all._
 import util.matching._
+import cats.instances.string._
+
+// import cats.implicits._
 
 /**
  * This validator is implemented directly in Scala
@@ -34,10 +37,11 @@ case class Validator(schema: Schema) {
   }
  
   // Fails if there is any error
-  def validateAll(rdf: RDFReader): CheckResult[ViolationError,(ShapeTyping,Evidences)] = {
-    implicit def showPair = new Show[(ShapeTyping,Evidences)] {
-      def show(e:(ShapeTyping,Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences: ${e._2}" 
+  def validateAll(rdf: RDFReader): CheckResult[(ShapeTyping,List[Evidence])] = {
+    
+    implicit def showResult = new Show[(ShapeTyping,List[Evidence])] {
+      def show(e:(ShapeTyping,List[Evidence])): String = {
+        s"Result\n** Typing:${e._1}\n** Evidences:\n${e._2.mkString("\n")}" 
       }
     }
    val r = Validator.runCheck(checkSchemaAll(schema),rdf)
@@ -134,6 +138,8 @@ case class Validator(schema: Schema) {
       c match {
         case NodeKind(k) => nodeKindChecker(k)(attempt)(node)
         case And(shapes) => and(shapes)(attempt)(node)
+        case Not(shape) => not(shape)(attempt)(node)
+        case Or(shapes) => or(shapes)(attempt)(node)
         case _ => unsupportedNodeChecker(s"$c")(attempt)(node)
       }
     }
@@ -179,14 +185,18 @@ case class Validator(schema: Schema) {
        if (typing.getOkValues(node).contains(s)) 
            getTyping
        else if (typing.getFailedValues(node).contains(s)) {
-             wrong[Comput,ViolationError](failedNodeShape(
+             wrong(failedNodeShape(
                node,s,attempt,
                s"Failed because $node doesn't match shape $s")) >>
              getTyping
-           } else runLocal(nodeShape(node,s),_.addType(node,s))
+           } else 
+             runLocal(nodeShape(node,s),_.addType(node,s))
     _ <- addEvidence(attempt.nodeShape, s"$node has shape ${s.id.getOrElse("?")}") 
   } yield newTyping
 
+  def wrong[C,A](msg:String): Check[A] =
+    ErrorEffect.fail(msg)
+    
   def classComponentChecker(cls: RDFNode): NodeChecker = attempt => node => for {
     rdf <- getRDF
     t <- condition(rdf.hasSHACLClass(node,cls),
@@ -212,8 +222,7 @@ case class Validator(schema: Schema) {
         s"$node has datatype $d")
         
   def unsupportedNodeChecker(msg:String): NodeChecker = attempt => node => {
-    wrong[Comput,ViolationError](unsupported(node,attempt,msg)) >>
-    getTyping
+    wrong(unsupported(node,attempt,msg)) 
   }
 
   def iriChecker: NodeChecker = attempt => node => {
@@ -225,7 +234,7 @@ case class Validator(schema: Schema) {
   def compareIntLiterals(
       n:Literal, 
       f: (Int, Int) => Boolean, 
-      err: (RDFNode, Attempt, Int) => ViolationError, 
+      err: (RDFNode, Attempt, Int) => String, 
       msg: String): NodeChecker = attempt => node => for {
     ctrolValue <- checkNumeric(n, attempt)
     value <- checkNumeric(node, attempt)
@@ -274,7 +283,7 @@ case class Validator(schema: Schema) {
   }
   
   def and(shapes:Seq[Shape]): NodeChecker = attempt => node =>  {
-    import cats.std.list._
+//    import cats.instances.list._
     val es = shapes.map(s => nodeShape(node,s))
     for {
      ts <- checkAll(es)
@@ -283,18 +292,26 @@ case class Validator(schema: Schema) {
     } yield t
   }
   
-  def or(shapes:Seq[Shape]): NodeChecker = attempt => node =>  
-    throw new Exception(s"Non implemented sh:or yet. Shapes: $shapes, node: $node, attempt: $attempt")
-  /*{
-    _ <- chooseFrom
-  } yield node */
+  def or(shapes:Seq[Shape]): NodeChecker = attempt => node => {
+    val rs = shapes.map(s => {
+      println(s"Checking $node with ${s.showId}")  
+      nodeShape(node,s)
+    })
+    for {
+     t0 <- getTyping
+     t1 <- checkSome(rs.toList)
+     t2 <- addEvidence(attempt.nodeShape,s"$node passes or(${shapes.map(_.showId).mkString(",")})")
+     t3 <- combineTypings(Seq(t1,t2))
+   } yield t3
+  }
   
-  // TODO: Do a real negation
   def not(shape: Shape): NodeChecker = attempt => node => for {
     t <- nodeShape(node,shape)
+    t1 <- condition(!(t.hasType(node,shape)), 
+            attempt,
+            notError(node,attempt,shape),
+            s"$node doesn't satisfy not(${shape.showId})")
   } yield t
-  
-  
   
   def checkNumeric(node: RDFNode, attempt: Attempt): Check[Int] = 
     node match {
@@ -367,16 +384,18 @@ case class Validator(schema: Schema) {
   def condition(
       condition: Boolean,
       attempt: Attempt,
-      error: ViolationError,
-      evidence: String): CheckTyping = for {
-        _ <- validateCheck[Comput,ViolationError](condition,error)
-        newTyping <- addEvidence(attempt.nodeShape, evidence)
-      } yield newTyping
+      error: String,
+      evidence: String): CheckTyping = {
+        println(s"Checking condition with attempt $attempt and evidence $evidence")
+        // _ <- validateCheck[Comput,ViolationError](condition,error)
+        if (condition) addEvidence(attempt.nodeShape, evidence)
+        else ErrorEffect.fail(error)
+  }
       
   def addEvidence(nodeShape: NodeShape, msg: String): Check[ShapeTyping] = {
    for {
     t <- getTyping
-    _ <- modify[Comput,Evidences](_.addEvidence(nodeShape,msg))
+    _ <- tell[Comput,Evidence](Evidence(nodeShape,msg))
    } yield t.addEvidence(nodeShape.node, nodeShape.shape,msg)
   }
       
@@ -439,20 +458,31 @@ case class Validator(schema: Schema) {
     xs.foldRight(zero)(next)
   }
   
+  /**
+   * Checks some of the values in a sequence
+   */
+  def checkSome[A](xs: List[Check[A]]): Check[A] = {
+   val z: Check[A] = {
+     ErrorEffect.fail[Comput,A]("None of the values are satisfied for 'or'") 
+   }
+   def comb(x: Check[A], y: Check[A]): Check[A] = {
+     x orElse y
+   }
+   xs.foldRight(z)(comb)
+  }
 }
 
 object Validator {
-  
- // With this import we use list for non determinism
- // We could import Option if we are only interested in one answer
- import cats.std.list._
-
+ 
  def empty = Validator(schema = Schema.empty)
   
- def runCheck[A](c: Check[A], rdf: RDFReader): Xor[NonEmptyList[ViolationError],List[(A,Evidences)]] = {
-   val initial : ShapeTyping = Typing.empty
+ def runCheck[A](c: Check[A], rdf: RDFReader): 
+       Xor[Xor[Throwable,String],(A,List[Evidence])] = {
    
-   val r = c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
+   val typing0 : ShapeTyping = Typing.empty
+   
+   val r = c.runReader(rdf).runReader(typing0).runWriter.runError.run
+   
    r
  }
    

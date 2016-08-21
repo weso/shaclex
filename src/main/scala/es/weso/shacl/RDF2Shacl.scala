@@ -1,17 +1,14 @@
 package es.weso.shacl
-
 import scala.util.{ Failure, Success, Try }
-
 import org.slf4s.Logging
-
 import es.weso.rdf.{ PrefixMap, RDFReader }
 import es.weso.rdf.nodes.{ BNodeId, IRI, Literal, RDFNode }
 import es.weso.rdf.parser.RDFParser
 import es.weso.utils.TryUtils._
 import cats.Semigroup
 import cats.data.{NonEmptyList, OneAnd, Validated, ValidatedNel, Xor}
-import cats.std.list._
-import cats.std.option._
+import cats.instances.list._
+import cats.instances.option._
 import cats.syntax.traverse._
 import SHACLPrefixes._
 import cats._
@@ -134,7 +131,7 @@ object RDF2Shacl
         minExclusive, maxExclusive, minInclusive, maxInclusive,
         minLength, maxLength,
         pattern,
-        or, and,
+        or, and, not, 
         shapeComponent, in)
 
 
@@ -153,9 +150,9 @@ object RDF2Shacl
   } yield Pattern(pat,flags)
   
   def or : RDFParser[Or] = (n,rdf) => for {
-    shapeNodes <- objectsFromPredicate(sh_or)(n,rdf)
-    if (!shapeNodes.isEmpty)
-    shapes <- mapRDFParser(shapeNodes.toList,getShape)(n,rdf)
+    nodes <- rdfListForPredicate(sh_or)(n,rdf)
+    if (!nodes.isEmpty)
+    shapes <- mapRDFParser(nodes,getShape)(n,rdf)
   } yield Or(shapes)
   
   def and : RDFParser[And] = (n,rdf) => for {
@@ -171,7 +168,6 @@ object RDF2Shacl
   } yield Not(shape)
   
   def mapRDFParser[A,B](ls: List[A], p: A => RDFParser[B]): RDFParser[List[B]] = {
-    import cats.std.list._
     ls.map(v => p(v)).sequence
   }
   

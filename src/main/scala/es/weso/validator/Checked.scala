@@ -12,7 +12,7 @@ trait Checked {
 
   // With this import we use list for non determinism
   // We could import Option if we are only interested in one answer
-  import cats.std.list._
+  import cats.instances.list._
 
   type Result[A] =  Xor[NonEmptyList[Err],List[(A,S)]]
   
