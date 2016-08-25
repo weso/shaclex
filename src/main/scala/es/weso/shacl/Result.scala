@@ -1,35 +1,25 @@
 package es.weso.shacl
 import cats._, data._
-import cats.syntax.show
-import cats.std.list._
-import org.atnos.eff._, all._
-import org.atnos.eff.syntax.all._
+import cats.implicits._
 
-case class CheckResult[
-  E: Show,
-  A: Show]
-  (r: Xor[NonEmptyList[E],List[A]]) {
+case class CheckResult[E: Show,A: Show, Log: Show](r: (Log, Either[E, A])) {
   
-  def isOK: Boolean = r.isRight && hasResults(r)
+  def isOK: Boolean = r._2.isRight 
 
-  // Is there a better way to define this?
-  def hasResults(r: Xor[NonEmptyList[E],List[A]]): Boolean =
-    r.fold(_ => false, xs => !xs.isEmpty)
-  
   def errors: Seq[E] = 
-    r.fold(_.unwrap, _ => Seq())
+    r._2.fold(e => List(e), _ => Seq())
     
   def results: List[A] = {
-    r.fold(_ => List(), x => x)
+    r._2.fold(_ => List(), x => List(x))
   }
   
   def show: String = {
     if (isOK) {
       val first = results.head
-      "OK. First result: " ++ "\n" ++ 
+      "OK. Result: " ++ "\n" ++ 
       Show[A].show(first)
     } else
-      "Not OK. Errors: " ++ "\n" ++ errors.map(e => Show[E].show(e)).mkString("\n")
+      "Not OK. Error: " ++ "\n" ++ errors.map(e => Show[E].show(e)).mkString("\n")
   }
 }
 

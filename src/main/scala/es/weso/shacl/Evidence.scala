@@ -1,7 +1,7 @@
 package es.weso.shacl
 import es.weso.rdf.nodes._
 
-case class Evidences(ls: List[(NodeShape,String)]) extends AnyVal {
+case class Evidences(ls: List[(NodeShape,String)]) {
   def addEvidence(ns: NodeShape, msg:String): Evidences = {
     Evidences((ns,msg) :: ls)
   }

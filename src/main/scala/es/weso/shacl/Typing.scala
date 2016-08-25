@@ -1,11 +1,7 @@
 package es.weso.shacl
 import cats._, data._
 import cats.implicits._
-//import cats.syntax.all._
 
-/**
- * Trait that defines a generic typing
- */
 abstract class Typing[
   Key: Show, 
   Value: Show, 
@@ -38,7 +34,7 @@ implicit val showEvidence = implicitly[Show[Evidence]]
   def tab = " "
   
   def showErrors(es: NonEmptyList[Error]): String = { 
-    es.unwrap.map(e => showError.show(e)).mkString("\n" + tab)
+    es.toList.map(e => showError.show(e)).mkString("\n" + tab)
   }
   
   def showEvidences(es: List[Evidence]): String = {
@@ -150,7 +146,15 @@ case class TypingMap[
   override def addEvidence(key: Key, value: Value, e: Evidence): Typing[Key,Value,Error,Evidence] = 
     addEvidences(key,value,List(e)) 
 
-  implicit def semigroupTypingResult = new Semigroup[TypingResult[Error,Evidence]] {
+/*  implicit def semigroupTypingResult = new Semigroup[TypingResult[Error,Evidence]] {
+    override def combine(
+        t1: TypingResult[Error,Evidence], 
+        t2: TypingResult[Error,Evidence]): TypingResult[Error,Evidence] =
+      TypingResult(t1.t |+| t2.t) 
+  } */
+  
+  implicit def monoidTypingResult = new Monoid[TypingResult[Error,Evidence]] {
+    override def empty = TypingResult(Validated.valid(List())) 
     override def combine(
         t1: TypingResult[Error,Evidence], 
         t2: TypingResult[Error,Evidence]): TypingResult[Error,Evidence] =

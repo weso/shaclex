@@ -1,25 +1,20 @@
 package es.weso.shacl
-
 import util._
 import es.weso.rdf.RDFBuilder
 import cats._, data._
-import cats.syntax.all._
-import org.atnos.eff._, all._
-import org.atnos.eff.syntax.all._
+import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
-import cats.std.list._
 import SHACLPrefixes._
 import es.weso.rdf.PREFIXES._
-import cats.std.list._
 import es.weso.rdf.jena._
 
 
 object Shacl2RDF {
 
-  type RDFBuild = Fx.fx2[State[RDFAsJenaModel,?],Eval]
-  type RDFSaver[A] = Eff[RDFBuild,A]
+  // type RDFBuild[A] = State[RDFAsJenaModel,A]// Fx.fx2[State[RDFAsJenaModel,?],Eval]
+  type RDFSaver[A] = State[RDFAsJenaModel,A]
 
   def serialize(shacl:Schema, format: String): Try[String] = {
     val rdf: RDFAsJenaModel = toRDF(shacl,RDFAsJenaModel.empty)
@@ -27,8 +22,8 @@ object Shacl2RDF {
   }
   
   def toRDF(shacl: Schema, initial: RDFAsJenaModel): RDFAsJenaModel = {
-    val result = schema(shacl).runState(initial).runEval.run
-    result._2
+    val result = schema(shacl).run(initial)
+    result.value._1
   }
   
   def schema(shacl: Schema): RDFSaver[Unit] = {
@@ -54,7 +49,7 @@ object Shacl2RDF {
       _ <- addTriple(bNode,rdf_type,sh_Shape)
     } yield(bNode)
     case Some(iri) =>  
-      addTriple(iri,rdf_type,sh_Shape) >> pure(iri)
+      addTriple(iri,rdf_type,sh_Shape) >> State.pure(iri)
   }
   
   def targets(id: RDFNode, ts: Seq[Target]): RDFSaver[Unit] = 
@@ -93,7 +88,7 @@ object Shacl2RDF {
     case Pattern(p,flags) => addTriple(id,sh_pattern,StringLiteral(p)) >>
                              ( flags match {
                                case Some(f) => addTriple(id,sh_flags,StringLiteral(f))
-                               case None => pure(())
+                               case None => State.pure(())
                              })
     case Stem(s) => addTriple(id,sh_stem,StringLiteral(s))                             
     case UniqueLang(b) => addTriple(id,sh_uniqueLang,BooleanLiteral(b))                             
@@ -111,7 +106,7 @@ object Shacl2RDF {
     } yield ()
     case Closed(b,ignoredPs) => for {
       _ <- addTriple(id,sh_closed,BooleanLiteral(b))
-      nodeList <- saveToRDFList(ignoredPs,(iri: IRI) => pure(iri))
+      nodeList <- saveToRDFList(ignoredPs,(iri: IRI) => State.pure(iri))
       _ <- addTriple(id,sh_ignoredProperties,nodeList)
     } yield ()
     case ShapeComponent(s) => for {
@@ -120,7 +115,7 @@ object Shacl2RDF {
     } yield ()
     case HasValue(v) => addTriple(id,sh_hasValue,v.rdfNode)
     case In(vs) => for {
-      nodeLs <- saveToRDFList(vs, (v: Value) => pure(v.rdfNode))
+      nodeLs <- saveToRDFList(vs, (v: Value) => State.pure(v.rdfNode))
       _ <- addTriple(id,sh_in,nodeLs)
     } yield ()
     
@@ -132,7 +127,7 @@ object Shacl2RDF {
   }
   
   def saveToRDFList[A](ls: List[A], f: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = ls match {
-    case Nil => pure(rdf_nil)
+    case Nil => State.pure(rdf_nil)
     case x :: xs => for {
       nodeX <- f(x)
       bNode <- createBNode
@@ -143,15 +138,15 @@ object Shacl2RDF {
   }
   
   def addTriple(s: RDFNode, p: IRI, o: RDFNode): RDFSaver[Unit] = 
-    modify[RDFBuild,RDFAsJenaModel](_.addTriple(RDFTriple(s,p,o)))
+    State.modify(_.addTriple(RDFTriple(s,p,o)))
   
   def addPrefix(alias: String, value: String): RDFSaver[Unit] = 
-    modify[RDFBuild,RDFAsJenaModel](_.addPrefix(alias,value))
+    State.modify(_.addPrefix(alias,value))
 
     def createBNode(): RDFSaver[RDFNode] = for {
-    rdf <- get[RDFBuild,RDFAsJenaModel]
+    rdf <- State.get[RDFAsJenaModel]
     val (bNode,newRdf) = rdf.createBNode
-    _ <- put[RDFBuild,RDFAsJenaModel](newRdf)
+    _ <- State.set[RDFAsJenaModel](newRdf)
   } yield bNode
     
   

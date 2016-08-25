@@ -30,13 +30,13 @@ package object shacl {
 
   type ShapeTyping = Typing[RDFNode,Shape,ViolationError,String]
  
-  type Comput = Fx.fx6[
+/*  type Comput = Fx.fx6[
     Reader[RDFReader,?], 
     Reader[ShapeTyping,?],
     State[Evidences,?],
     Choose, 
     Validate[ViolationError, ?], 
-    Eval]
+    Eval] */
 
   type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,Evidences)]]
   
@@ -44,6 +44,6 @@ package object shacl {
     r.isRight && r.toList.isEmpty == false  
 
   
- type Check[A] = Eff[Comput,A]
+// type Check[A] = Eff[Comput,A]
  
 }

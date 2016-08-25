@@ -8,11 +8,8 @@ import es.weso.rdf.{ PrefixMap, RDFReader }
 import es.weso.rdf.nodes.{ BNodeId, IRI, Literal, RDFNode }
 import es.weso.rdf.parser.RDFParser
 import es.weso.utils.TryUtils._
-import cats.Semigroup
-import cats.data.{NonEmptyList, OneAnd, Validated, ValidatedNel, Xor}
-import cats.std.list._
-import cats.std.option._
-import cats.syntax.traverse._
+import cats._, data._
+import cats.implicits._
 import SHACLPrefixes._
 import cats._
 
@@ -171,7 +168,6 @@ object RDF2Shacl
   } yield Not(shape)
   
   def mapRDFParser[A,B](ls: List[A], p: A => RDFParser[B]): RDFParser[List[B]] = {
-    import cats.std.list._
     ls.map(v => p(v)).sequence
   }
   
