@@ -14,12 +14,16 @@ case class CheckResult[E: Show,A: Show, Log: Show](r: (Log, Either[E, A])) {
   }
   
   def show: String = {
-    if (isOK) {
+    val result = if (isOK) {
       val first = results.head
       "OK. Result: " ++ "\n" ++ 
-      Show[A].show(first)
+      Show[A].show(first) 
     } else
       "Not OK. Error: " ++ "\n" ++ errors.map(e => Show[E].show(e)).mkString("\n")
+      
+   result ++ 
+   "\n----------------------------log-----------------------\n" ++
+   r.show
   }
 }
 

@@ -44,18 +44,31 @@ abstract class Checker {
 
   def ok[A](x: A): Check[A] =
     EitherT.pure[WriterEC, Err, A](x)
-
+    
   def err[A](e: Err): Check[A] =
     EitherT.left[WriterEC, Err, A](mkErr[WriterEC](e))
 
   def orElse[A](c1: Check[A], c2: => Check[A]): Check[A] =
     c1.orElse(c2)
-
+    
   def checkSome[A](cs: List[Check[A]], errorIfNone: Err): Check[A] = {
     lazy val z: Check[A] = err(errorIfNone)
     def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
     cs.foldRight(z)(comb)
   }
+  
+  def cond[A,B](c: Check[A], thenPart: A => Check[B], elsePart: Err => Check[B]): Check[B] = for {
+    v <- MonadError[Check, Err].attempt(c)
+    b <- v.fold(e => elsePart(e),v => thenPart(v))
+  } yield b
+  
+  def checkList[A,B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
+    checkAll(ls.map(check))
+  }
+  
+  def checkAll[A](xs: List[Check[A]]): Check[List[A]] =
+    xs.sequence
+
 
   def validateCheck(condition: Boolean, e: Err): Check[Unit] = {
     if (condition) EitherT.pure(())
@@ -68,9 +81,15 @@ abstract class Checker {
   def run[A](c: Check[A])(config: Config)(env: Env = Monoid[Env].empty): (Log, Either[Err, A]) =
     c.value.run.run(env).run(config)
 
+  def runCheck[A](c: Check[A])(config: Config)(env: Env = Monoid[Env].empty): (Either[Err, A],Log) =
+    run(c)(config)(env).swap
+    
   def runValue[A](c: Check[A])(config: Config)(env: Env = Monoid[Env].empty): Either[Err, A] =
     run(c)(config)(env)._2
 
+  def runLog[A](c: Check[A])(config: Config)(env: Env = Monoid[Env].empty): Log =
+    run(c)(config)(env)._1
+    
   def mkErr[F[_]: Applicative](e: Err): F[Err] =
     Applicative[F].pure(e)
 

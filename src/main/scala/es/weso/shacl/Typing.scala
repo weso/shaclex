@@ -14,6 +14,9 @@ implicit val showEvidence = implicitly[Show[Evidence]]
 
  type Evidences = List[Evidence]
 
+ def hasType(key: Key, value: Value): Boolean = 
+   getOkValues(key) contains value
+
  def getValues(key: Key): Map[Value,TypingResult[Error,Evidence]]
 
  def getOkValues(key: Key): Set[Value]
@@ -24,10 +27,10 @@ implicit val showEvidence = implicitly[Show[Evidence]]
 
  def showResult(r: TypingResult[Error,Evidence]): String = { 
     r.t.fold(errors => {
-       s"Incorrect. Errors: \n ${showErrors(errors)}" 
+       s"Error: ${showErrors(errors)}" 
     },
     es => {
-      s"Evidences: \n ${showEvidences(es)}" 
+      s"Evidences: ${showEvidences(es)}" 
     })
   }
   
@@ -46,6 +49,9 @@ implicit val showEvidence = implicitly[Show[Evidence]]
 
   def addEvidence(key: Key, value: Value, 
       es: Evidence): Typing[Key,Value,Error,Evidence]
+  
+  def addNotEvidence(key: Key, value: Value, e: Error): Typing[Key,Value,Error,Evidence]
+
   
   def addType(key:Key, value:Value, 
       evidences: List[Evidence] = List()): Typing[Key,Value,Error,Evidence] =
@@ -78,10 +84,18 @@ case class TypingResult[
     addEvidences(List(e))
   }
   
+  def addNotEvidence(e: Error): TypingResult[Error,Evidence] = {
+    val r = t.fold(
+        errors => Validated.invalid(e :: errors),
+        ls => Validated.invalid(NonEmptyList.of(e))
+    )
+    TypingResult(t)
+  }
+  
   def addEvidences(es: List[Evidence]): TypingResult[Error,Evidence] = {
     val r = t.fold(errors => 
         throw new Exception(s"Error adding evidences $es to an error value ${errors}"), 
-        ls => Validated.Valid(ls ++ es))
+        ls => Validated.valid(ls ++ es))
     TypingResult(r)
   }
   
@@ -123,9 +137,12 @@ case class TypingMap[
   }
   
   def firstEvidences(es: List[Evidence]): TypingResult[Error,Evidence] = {
-    TypingResult(Validated.Valid(es))
+    TypingResult(Validated.valid(es))
   }
   
+  def firstNotEvidence(e: Error): TypingResult[Error,Evidence] = {
+    TypingResult(Validated.invalid(NonEmptyList.of(e)))
+  }
   override def addEvidences(key: Key, value: Value, 
       es: List[Evidence]): Typing[Key,Value,Error,Evidence] = {
     val newTyping: Map[Key, Map[Value,TypingResult[Error,Evidence]]] = m.updated(key, 
@@ -135,7 +152,7 @@ case class TypingMap[
               if (valueMap.get(value).isDefined) {
                 valueMap(value).addEvidences(es)
               } else {
-                TypingResult(Validated.Valid(es))
+                TypingResult(Validated.valid(es))
               })
         }
         else
@@ -146,6 +163,23 @@ case class TypingMap[
   override def addEvidence(key: Key, value: Value, e: Evidence): Typing[Key,Value,Error,Evidence] = 
     addEvidences(key,value,List(e)) 
 
+  override def addNotEvidence(key: Key, value: Value, e: Error): Typing[Key,Value,Error,Evidence] = {
+    val newTyping: Map[Key, Map[Value,TypingResult[Error,Evidence]]] = m.updated(key, 
+        if (m.get(key).isDefined) {
+          val valueMap = m(key)
+          valueMap.updated(value,
+              if (valueMap.get(value).isDefined) {
+                valueMap(value).addNotEvidence(e)
+              } else {
+                TypingResult(Validated.invalid(NonEmptyList.of(e)))
+              })
+        }
+        else
+          (Map(value -> firstNotEvidence(e))))
+    TypingMap(newTyping)
+  }
+    
+    
 /*  implicit def semigroupTypingResult = new Semigroup[TypingResult[Error,Evidence]] {
     override def combine(
         t1: TypingResult[Error,Evidence], 

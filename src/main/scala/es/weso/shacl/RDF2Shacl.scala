@@ -131,8 +131,8 @@ object RDF2Shacl
         minExclusive, maxExclusive, minInclusive, maxInclusive,
         minLength, maxLength,
         pattern,
-        or, and,
-        shapeComponent, in)
+        or, and, not,
+        shapeComponent, hasValue, in)
 
 
   def classComponent = parsePredicate(sh_class, ClassComponent)
@@ -150,7 +150,7 @@ object RDF2Shacl
   } yield Pattern(pat,flags)
   
   def or : RDFParser[Or] = (n,rdf) => for {
-    shapeNodes <- objectsFromPredicate(sh_or)(n,rdf)
+    shapeNodes <- rdfListForPredicate(sh_or)(n,rdf)
     if (!shapeNodes.isEmpty)
     shapes <- mapRDFParser(shapeNodes.toList,getShape)(n,rdf)
   } yield Or(shapes)
@@ -186,6 +186,13 @@ object RDF2Shacl
 
   def minCount = parsePredicateInt(sh_minCount, MinCount)
   def maxCount = parsePredicateInt(sh_maxCount, MaxCount)
+  
+  def hasValue: RDFParser[Component] = (n,rdf) => {
+    for {
+     o <- objectFromPredicate(sh_hasValue)(n,rdf)
+     v <- node2Value(o)
+    } yield HasValue(v) 
+  }
   
   def in: RDFParser[Component] = (n,rdf) => {
     for {
