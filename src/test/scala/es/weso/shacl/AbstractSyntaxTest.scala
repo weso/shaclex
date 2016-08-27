@@ -20,7 +20,7 @@ describe("Abstract Syntax") {
         id = Some(IRI("http://example.org/s")),
         targets = List(),
         filters = List(),
-        constraints = List(c))
+        constraints = List(c),false,List())
         
     shape.id shouldBe defined 
     

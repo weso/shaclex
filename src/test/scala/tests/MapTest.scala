@@ -21,13 +21,13 @@ class MapsTest extends FunSpec with Matchers with TryValues with OptionValues {
           "x" -> Map("S" -> TypingResult(List("x+S").right), "T" -> TypingResult(List("x+T").right)),
           "y" -> Map("S" -> TypingResult(List("y+S").right)),
           "contradict" -> Map("S" -> TypingResult(List("c+S1","c+S2").right)),
-          "wrong" -> Map("S" -> TypingResult(NonEmptyList("w!S1","w!S2").left))
+          "wrong" -> Map("S" -> TypingResult(NonEmptyList.of("w!S1","w!S2").left))
           )
       val m2: Typing = Map(
           "x" -> Map("W" -> TypingResult(List("x+W").right), "S" -> TypingResult(List("x+S2").right)),
-          "z" -> Map("S" -> TypingResult(NonEmptyList("z!S").left)),
-          "contradict" -> Map("S" -> TypingResult(NonEmptyList("c!!!s").left)),
-          "wrong" -> Map("S" -> TypingResult(NonEmptyList("w!S1","w!S3").left))
+          "z" -> Map("S" -> TypingResult(NonEmptyList.of("z!S").left)),
+          "contradict" -> Map("S" -> TypingResult(NonEmptyList.of("c!!!s").left)),
+          "wrong" -> Map("S" -> TypingResult(NonEmptyList.of("w!S1","w!S3").left))
           )
           
       implicit def semigroupTypingResult = new Semigroup[TypingResult] {

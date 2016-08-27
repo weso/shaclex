@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   , "org.atnos" %% "eff-cats" % "2.0.0-RC2-20160814085121-d925e69"
 //  , "es.weso" % "shexcala_2.11" % "0.7.16"
   , "es.weso" % "srdf-jena_2.11" % "0.0.8" 
+  , "es.weso" % "validating_2.11" % "0.0.16" 
   , "es.weso" % "weso_utils_2.11" % "0.0.15" 
   , "org.specs2" %% "specs2-core" % "3.8.4" % "test"
   )

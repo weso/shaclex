@@ -11,7 +11,7 @@ import util.matching._
  */
 case class Validator(schema: Schema) {
 
-  import es.weso.validator._
+  import es.weso.checking._
 
   object MyChecker extends Checker {
     type Config = RDFReader
@@ -74,8 +74,6 @@ case class Validator(schema: Schema) {
     CheckResult(r)
   }
 
-  def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
-    local(f)(c)
 
   /**
    * Checks if all nodes/shapes are valid in a schema
@@ -516,6 +514,9 @@ case class Validator(schema: Schema) {
       _ <- addLog(List((nodeShape, msg)))
     } yield t.addNotEvidence(node, shape, e)
   }
+  
+  def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
+    local(f)(c)
 
   def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
 
