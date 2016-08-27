@@ -20,10 +20,11 @@ case class CheckResult[E: Show,A: Show, Log: Show](r: (Log, Either[E, A])) {
       Show[A].show(first) 
     } else
       "Not OK. Error: " ++ "\n" ++ errors.map(e => Show[E].show(e)).mkString("\n")
-      
-   result ++ 
-   "\n----------------------------log-----------------------\n" ++
-   r.show
+   val sb = new StringBuilder
+   sb ++= result
+   sb ++= "\n----------------------------log-----------------------\n"
+   sb ++= r._1.show
+   sb.toString
   }
 }
 

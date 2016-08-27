@@ -49,7 +49,9 @@ case class Shape(
     id: Option[IRI],
     targets: Seq[Target],
     filters: Seq[Shape],
-    constraints: Seq[Constraint] 
+    constraints: Seq[Constraint],
+    closed: Boolean,
+    ignoredProperties: List[IRI]
 ) {
   def hasId(iri: IRI): Boolean = {
     id contains(iri)
@@ -58,32 +60,50 @@ case class Shape(
   def showId: String = 
     id.fold("")(_.str)
   
-  def targetNodes: Seq[RDFNode] = { 
-    val maybeScopeNodes = targets.map(_.toTargetNode)
-    maybeScopeNodes.flatten.map(_.node)
-  }
+  def targetNodes: Seq[RDFNode] =  
+    targets.map(_.toTargetNode).flatten.map(_.node)
   
-  def propertyConstraints: Seq[PropertyConstraint] = {
+  def targetClasses: Seq[RDFNode] =  
+    targets.map(_.toTargetClass).flatten.map(_.node)
+  
+  def targetSubjectsOf: Seq[IRI] =  
+    targets.map(_.toTargetSubjectsOf).flatten.map(_.pred)
+    
+  def targetObjectsOf: Seq[IRI] =  
+    targets.map(_.toTargetObjectsOf).flatten.map(_.pred)
+    
+  def propertyConstraints: Seq[PropertyConstraint] = 
     constraints.map(_.toPropertyConstraint).flatten
-  }
   
+  def predicatesInPropertyConstraints: List[IRI] = 
+      propertyConstraints.map(_.predicate).toList
+
 }
 
 sealed abstract class Target {
-  def isTargetNode: Boolean
-  def toTargetNode: Option[TargetNode]
+  def toTargetNode: Option[TargetNode] = this match {
+    case tn: TargetNode => Some(tn)
+    case _ => None
+  }
+  def toTargetClass: Option[TargetClass] = this match {
+    case tc: TargetClass => Some(tc)
+    case _ => None
+  }
+  def toTargetSubjectsOf: Option[TargetSubjectsOf] = this match {
+    case t: TargetSubjectsOf => Some(t)
+    case _ => None
+  }
+  def toTargetObjectsOf: Option[TargetObjectsOf] = this match {
+    case t: TargetObjectsOf => Some(t)
+    case _ => None
+  }
 }
+case class TargetNode(node: RDFNode) extends Target 
+case class TargetClass(node: RDFNode) extends Target
+case class TargetSubjectsOf(pred: IRI) extends Target 
+case class TargetObjectsOf(pred: IRI) extends Target 
 
 
-case class TargetNode(node: RDFNode) extends Target {
-  def isTargetNode = true
-  def toTargetNode = Some(this)
-  
-}
-
-// TODO...add more types of targets
-// case class TargetClass(cls: IRI) extends Target
-// case class PropertyTarget(predicate: IRI) extends Target
 
 sealed abstract class Constraint {
   def isPropertyConstraint: Boolean
@@ -171,6 +191,10 @@ case class MaxLength(value: Int) extends Component
 case class Pattern(pattern: String, flags: Option[String]) extends Component  
 case class Stem(v: String) extends Component  
 case class UniqueLang(value: Boolean) extends Component 
+case class Equals(p: IRI) extends Component
+case class Disjoint(p: IRI) extends Component
+case class LessThan(p: IRI) extends Component
+case class LessThanOrEquals(p: IRI) extends Component
 case class Or(shapes: List[Shape]) extends Component
 case class And(shapes: List[Shape]) extends Component
 case class Not(shape: Shape) extends Component
@@ -208,7 +232,7 @@ object Schema {
 }
 
 object Shape {
-  val empty = Shape(None,Seq(),Seq(),Seq())
+  val empty = Shape(None,Seq(),Seq(),Seq(),false,List())
 }
 
 sealed trait Path

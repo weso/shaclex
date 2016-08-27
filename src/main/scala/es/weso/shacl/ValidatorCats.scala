@@ -97,8 +97,15 @@ case class Validator(schema: Schema) {
     r.map(_ => schema)
   } */
 
-  def shapeChecker: ShapeChecker = shape => {
-    val nodes = shape.targetNodes
+  def shapeChecker: ShapeChecker = shape => for {
+    t1 <- checkTargetNodes(shape.targetNodes)(shape)
+    t2 <- checkTargetClasses(shape.targetClasses)(shape)
+    t3 <- checkTargetSubjectsOf(shape.targetSubjectsOf)(shape)
+    t4 <- checkTargetObjectsOf(shape.targetObjectsOf)(shape)
+    t <- combineTypings(List(t1,t2,t3,t4))
+  } yield t
+
+  def checkTargetNodes(nodes: Seq[RDFNode]): ShapeChecker = shape => {
     val nodesShapes = nodes.map(n => nodeShape(n, shape)).toList
     for {
       ts <- checkAll(nodesShapes)
@@ -106,16 +113,53 @@ case class Validator(schema: Schema) {
     } yield t
   }
 
+  def checkTargetClasses(classes: Seq[RDFNode]): ShapeChecker = shape => {
+    for {
+      rdf <- getRDF
+      val nodes = classes.map(cls => findNodesInClass(cls, rdf)).flatten
+      val nodesShapes = nodes.map(n => nodeShape(n, shape)).toList
+      ts <- checkAll(nodesShapes)
+      t <- combineTypings(ts)
+    } yield t
+  }
+  
+  def checkTargetSubjectsOf(preds: Seq[IRI]): ShapeChecker = shape => {
+    for {
+      rdf <- getRDF
+      val subjects = preds.map(rdf.triplesWithPredicate(_).map(_.subj).toSeq).flatten
+      val nodesShapes = subjects.map(n => nodeShape(n, shape)).toList
+      ts <- checkAll(nodesShapes)
+      t <- combineTypings(ts)
+    } yield t
+  }
+  
+  def checkTargetObjectsOf(preds: Seq[IRI]): ShapeChecker = shape => {
+    for {
+      rdf <- getRDF
+      val objects = preds.map(rdf.triplesWithPredicate(_).map(_.obj).toSeq).flatten
+      val nodesShapes = objects.map(n => nodeShape(n, shape)).toList
+      ts <- checkAll(nodesShapes)
+      t <- combineTypings(ts)
+    } yield t
+  }
+  
+  def findNodesInClass(cls: RDFNode, rdf: RDFReader): List[RDFNode] = 
+    rdf.getSHACLInstances(cls).toList
+  
   def nodeShape: NodeShapeChecker = {
     case (node, shape) => {
       val cs = shape.constraints.map(checkConstraint).toList
-      val r = checkAll(cs.map(c => c(Attempt(NodeShape(node, shape), None))(node)))
+      //      val r = checkAll(cs.map(c => c(Attempt(NodeShape(node, shape), None))(node)))
       for {
         current <- getTyping
-        val comp = checkAll(cs.map(c => c(Attempt(NodeShape(node, shape), None))(node)))
+        val attempt = Attempt(NodeShape(node, shape), None)
+        val comp = checkAll(cs.map(c => c(attempt)(node)))
         ts <- runLocal(comp, _.addType(node, shape))
         t <- combineTypings(ts)
-      } yield t
+        t1 <- if (shape.closed)
+          checkClosed(shape.ignoredProperties, shape.predicatesInPropertyConstraints)(attempt)(node)
+        else ok(t)
+      } yield t1
     }
   }
 
@@ -162,8 +206,8 @@ case class Validator(schema: Schema) {
     c match {
       case NodeKind(k) => nodeKindChecker(k)(attempt)(node)
       case And(shapes) => and(shapes)(attempt)(node)
-      case Or(shapes) => or(shapes)(attempt)(node)
-      case Not(shape) => not(shape)(attempt)(node)
+      case Or(shapes)  => or(shapes)(attempt)(node)
+      case Not(shape)  => not(shape)(attempt)(node)
       case _           => unsupportedNodeChecker(s"Node constraint: $c")(attempt)(node)
     }
   }
@@ -179,26 +223,30 @@ case class Validator(schema: Schema) {
       val node = attempt.node
       val os = rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
       val check: Check[ShapeTyping] = c match {
-        case ShapeComponent(s) => checkValues(os, shapeComponentChecker(s)(attempt))
-        case ClassComponent(c) => checkValues(os, classComponentChecker(c)(attempt))
-        case Datatype(d)       => checkValues(os, datatypeChecker(d)(attempt))
-        case NodeKind(k)       => checkValues(os, nodeKindChecker(k)(attempt))
-        case MinCount(n)       => minCount(n, os, attempt, predicate)
-        case MaxCount(n)       => maxCount(n, os, attempt, predicate)
-        case MinExclusive(n)   => checkValues(os, minExclusive(n)(attempt))
-        case MinInclusive(n)   => checkValues(os, minInclusive(n)(attempt))
-        case MaxInclusive(n)   => checkValues(os, maxInclusive(n)(attempt))
-        case MaxExclusive(n)   => checkValues(os, maxExclusive(n)(attempt))
-        case MinLength(n)      => checkValues(os, minLength(n)(attempt))
-        case MaxLength(n)      => checkValues(os, maxLength(n)(attempt))
-        case Pattern(p, flags) => checkValues(os, pattern(p, flags)(attempt))
-        case UniqueLang(v)     => checkValues(os, unsupportedNodeChecker("UniqueLang")(attempt))
-        case And(shapes)       => checkValues(os, and(shapes)(attempt))
-        case Or(shapes)        => checkValues(os, or(shapes)(attempt))
-        case Not(shape)        => checkValues(os, not(shape)(attempt))
-        case HasValue(v)       => checkValues(os, hasValue(v)(attempt))
-        case In(values)        => checkValues(os, inChecker(values)(attempt))
-        case _                 => throw new Exception(s"Unsupported check $c")
+        case ShapeComponent(s)   => checkValues(os, shapeComponentChecker(s)(attempt))
+        case ClassComponent(c)   => checkValues(os, classComponentChecker(c)(attempt))
+        case Datatype(d)         => checkValues(os, datatypeChecker(d)(attempt))
+        case NodeKind(k)         => checkValues(os, nodeKindChecker(k)(attempt))
+        case MinCount(n)         => minCount(n, os, attempt, predicate)
+        case MaxCount(n)         => maxCount(n, os, attempt, predicate)
+        case MinExclusive(n)     => checkValues(os, minExclusive(n)(attempt))
+        case MinInclusive(n)     => checkValues(os, minInclusive(n)(attempt))
+        case MaxInclusive(n)     => checkValues(os, maxInclusive(n)(attempt))
+        case MaxExclusive(n)     => checkValues(os, maxExclusive(n)(attempt))
+        case MinLength(n)        => checkValues(os, minLength(n)(attempt))
+        case MaxLength(n)        => checkValues(os, maxLength(n)(attempt))
+        case Pattern(p, flags)   => checkValues(os, pattern(p, flags)(attempt))
+        case UniqueLang(v)       => checkValues(os, unsupportedNodeChecker("UniqueLang")(attempt))
+        case Equals(p)           => checkValues(os, equals(p)(attempt))
+        case Disjoint(p)         => checkValues(os, disjoint(p)(attempt))
+        case LessThan(p)         => checkValues(os, lessThan(p)(attempt))
+        case LessThanOrEquals(p) => checkValues(os, lessThanOrEquals(p)(attempt))
+        case And(shapes)         => checkValues(os, and(shapes)(attempt))
+        case Or(shapes)          => checkValues(os, or(shapes)(attempt))
+        case Not(shape)          => checkValues(os, not(shape)(attempt))
+        case HasValue(v)         => checkValues(os, hasValue(v)(attempt))
+        case In(values)          => checkValues(os, inChecker(values)(attempt))
+        case _                   => throw new Exception(s"Unsupported check $c")
       }
       t <- check
     } yield t
@@ -301,6 +349,26 @@ case class Validator(schema: Schema) {
     pattern.findFirstIn(n.getLexicalForm).isDefined
   }
 
+  def equals(p: IRI): NodeChecker = comparison(p, "equals", equalsError, equalsNode)
+  def disjoint(p: IRI): NodeChecker = comparison(p, "disjoint", disjointError, disjointNode)
+  def lessThan(p: IRI): NodeChecker = comparison(p, "lessThan", lessThanError, lessThanNode)
+  def lessThanOrEquals(p: IRI): NodeChecker = comparison(p, "lessThanOrEquals", lessThanOrEqualsError, lessThanOrEqualNode)
+
+  // TODO: Maybe add a check to see if the nodes are comparable
+  // With current definition, if nodes are not comparable, always returns false without raising any error...
+  def comparison(p: IRI,
+                 name: String,
+                 errorMaker: (RDFNode, Attempt, IRI, Set[RDFNode]) => ViolationError,
+                 cond: (RDFNode, RDFNode) => Boolean): NodeChecker =
+    attempt => node => for {
+      rdf <- getRDF
+      val subject = attempt.node
+      val vs = rdf.triplesWithSubjectPredicate(subject, p).map(_.obj)
+      t <- condition(vs.forall(cond(node, _)), attempt,
+        errorMaker(node, attempt, p, vs),
+        s"$node satisfies $name $p with values ${vs})")
+    } yield t
+
   def and(shapes: Seq[Shape]): NodeChecker = attempt => node => {
     val es = shapes.map(s => nodeShape(node, s)).toList
     for {
@@ -326,16 +394,16 @@ case class Validator(schema: Schema) {
 
   def not(shape: Shape): NodeChecker = attempt => node => {
     val parentShape = attempt.nodeShape.shape
-    val check: Check[ShapeTyping] = nodeShape(node,shape)
+    val check: Check[ShapeTyping] = nodeShape(node, shape)
     val handleError: ViolationError => Check[ShapeTyping] = e => for {
-      t1 <- addNotEvidence(NodeShape(node,shape), e,
-          s"$node doesn't satisfy ${shape.showId}. Negation declared in ${parentShape.showId}. Error: $e")
-      t2 <- addEvidence(attempt.nodeShape,s"$node satisfies not(${shape.showId})")
-      t <- combineTypings(List(t1,t2))
+      t1 <- addNotEvidence(NodeShape(node, shape), e,
+        s"$node doesn't satisfy ${shape.showId}. Negation declared in ${parentShape.showId}. Error: $e")
+      t2 <- addEvidence(attempt.nodeShape, s"$node satisfies not(${shape.showId})")
+      t <- combineTypings(List(t1, t2))
     } yield t
     val handleNotError: ShapeTyping => Check[ShapeTyping] = t =>
       err(notError(node, attempt, shape))
-    cond(check,handleNotError, handleError) 
+    cond(check, handleNotError, handleError)
   }
 
   def checkNumeric(node: RDFNode, attempt: Attempt): Check[Int] =
@@ -404,6 +472,19 @@ case class Validator(schema: Schema) {
       s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
   }
 
+  def checkClosed(ignoredProperties: List[IRI], allowedProperties: List[IRI]): NodeChecker = attempt => node => {
+    println(s"Checking closed ${node} ${ignoredProperties}, ${allowedProperties}")
+    for {
+      rdf <- getRDF
+      val neighbours = rdf.triplesWithSubject(node)
+      val predicates = neighbours.map(_.pred).toList
+      val notAllowed = predicates.diff(ignoredProperties).diff(allowedProperties)
+      t <- condition(notAllowed.isEmpty, attempt,
+        closedError(node, attempt, allowedProperties, ignoredProperties, notAllowed),
+        s"Passes closed condition with predicates $predicates and ignoredProperties $ignoredProperties")
+    } yield t
+  }
+
   /**
    * if condition is true adds an evidence, otherwise, raises an error
    * @param condition condition to check
@@ -427,9 +508,9 @@ case class Validator(schema: Schema) {
     } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
   }
 
- def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
-   val node = nodeShape.node
-   val shape = nodeShape.shape
+  def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
+    val node = nodeShape.node
+    val shape = nodeShape.shape
     for {
       t <- getTyping
       _ <- addLog(List((nodeShape, msg)))
@@ -447,7 +528,7 @@ case class Validator(schema: Schema) {
   def inValues(node: RDFNode, values: Seq[Value]): Boolean = {
     values.exists(_.matchNode(node))
   }
-  
+
   def isValue(node: RDFNode, value: Value): Boolean = {
     value.matchNode(node)
   }
@@ -457,6 +538,40 @@ case class Validator(schema: Schema) {
       case l: Literal => l.dataType == d
       case _          => false
     }
+  }
+
+  // TODO: Refactor the following code...
+  // move to SRDF and check SPARQL compatibility
+  // SPARQL comparison opetators: https://www.w3.org/TR/sparql11-query/#OperatorMapping
+  def equalsNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
+    case (l1: Literal, l2: Literal) => l1 == l2
+    case (i1: IRI, i2: IRI)         => i1 == i2
+    case (b1: BNodeId, b2: BNodeId) => b1 == b2
+    case (_, _)                     => false
+  }
+
+  def disjointNode(n1: RDFNode, n2: RDFNode): Boolean = n1 != n2
+  def lessThanNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
+    case (IntegerLiteral(n1), IntegerLiteral(n2)) => n1 < n2
+    case (DecimalLiteral(n1), DecimalLiteral(n2)) => n1 < n2
+    case (DoubleLiteral(n1), DoubleLiteral(n2)) => n1 < n2
+    case (StringLiteral(n1), StringLiteral(n2)) => n1 < n2
+    case (DatatypeLiteral(n1, d1), DatatypeLiteral(n2, d2)) => d1 == d2 && n1 < n2
+    case (LangLiteral(n1, l1), LangLiteral(n2, l2)) => n1 < n2
+    case (i1: IRI, i2: IRI) => i1.str < i2.str
+    case (b1: BNodeId, b2: BNodeId) => b1.id < b2.id
+    case (_, _) => false
+  }
+  def lessThanOrEqualNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
+    case (IntegerLiteral(n1), IntegerLiteral(n2)) => n1 <= n2
+    case (DecimalLiteral(n1), DecimalLiteral(n2)) => n1 <= n2
+    case (DoubleLiteral(n1), DoubleLiteral(n2)) => n1 <= n2
+    case (StringLiteral(n1), StringLiteral(n2)) => n1 <= n2
+    case (DatatypeLiteral(n1, d1), DatatypeLiteral(n2, d2)) => d1 == d2 && n1 <= n2
+    case (LangLiteral(n1, l1), LangLiteral(n2, l2)) => n1 <= n2
+    case (i1: IRI, i2: IRI) => i1.str <= i2.str
+    case (b1: BNodeId, b2: BNodeId) => b1.id <= b2.id
+    case (_, _) => false
   }
 
   def combineTypings(ts: Seq[ShapeTyping]): Check[ShapeTyping] = {

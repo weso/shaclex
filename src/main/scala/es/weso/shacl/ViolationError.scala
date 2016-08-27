@@ -61,6 +61,21 @@ object ViolationError {
   def patternError(focusNode: RDFNode, attempt: Attempt, p: String, flags: Option[String]) =
     basic("patternError", focusNode, attempt, s"pattern violation. Expected $focusNode to match '$p'${flags.getOrElse("")}")
 
+  def equalsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
+    comparisonError("equals", focusNode, attempt, p, vs)
+    
+  def disjointError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
+    comparisonError("disjoint", focusNode, attempt, p, vs)
+    
+  def lessThanError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
+    comparisonError("lessThan", focusNode, attempt, p, vs)
+    
+  def lessThanOrEqualsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
+    comparisonError("lessThanOrEquals", focusNode, attempt, p, vs)
+
+  def comparisonError(name: String, focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
+    basic(s"${name}Error", focusNode, attempt, s"$name violation. Expected $focusNode to match $name '$p', values: $vs")
+    
   def minCountError(focusNode: RDFNode, attempt: Attempt, minCount: Int, count: Int) =
     basic("minCountError", focusNode, attempt, s"MinCount violation. Expected $minCount, obtained: $count")
 
@@ -88,11 +103,6 @@ object ViolationError {
   def notError(focusNode: RDFNode, attempt: Attempt, shape: Shape) =
     basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
-  def notShapeError(focusNode: RDFNode, shape: Shape) = {
-    val attempt = Attempt(NodeShape(focusNode,shape), None)
-    basic("notShapeError", focusNode, attempt, s"$focusNode doesn't satisfy ${shape.showId}")
-  }
-    
   def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
     basic("andError", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
@@ -105,4 +115,12 @@ object ViolationError {
   def inError(focusNode: RDFNode, attempt: Attempt, values: Seq[Value]) =
     basic("inError", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
 
+  def closedError(
+      focusNode: RDFNode, 
+      attempt: Attempt, 
+      allowedProperties: List[IRI],
+      ignoredProperties: List[IRI],
+      notAllowed: List[IRI]) =
+    basic("closedError", focusNode, attempt, 
+        s"closed violation. $focusNode has more properties than $allowedProperties. Extra properties found: $notAllowed, ignoredProperties: $ignoredProperties")
 }

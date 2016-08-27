@@ -20,7 +20,7 @@ case class Attempt(nodeShape: NodeShape, path: Option[IRI]) {
 case class NodeShape(node: RDFNode, shape: Shape) {
   
  implicit val nodeShapeShow = new Show[NodeShape] {
-  def show(ns: NodeShape) = s"[$node,$shape]"
+  def show(ns: NodeShape) = s"[$node,${shape.showId}]"
  }
  
  override def toString = Show[NodeShape].show(this)

@@ -59,6 +59,8 @@ object SHACLPrefixes {
   lazy val sh_Schema = sh + "Schema"
   lazy val sh_targetNode = sh + "targetNode"
   lazy val sh_targetClass = sh + "targetClass"
+  lazy val sh_targetSubjectsOf = sh + "targetSubjectsOf"
+  lazy val sh_targetObjectsOf = sh + "targetObjectsOf"
   
   lazy val sh_text = sh + "text"
   

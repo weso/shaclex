@@ -1,17 +1,16 @@
 package es.weso.shacl
-
 import scala.util.{ Failure, Success, Try }
 
 import org.slf4s.Logging
 
 import es.weso.rdf.{ PrefixMap, RDFReader }
-import es.weso.rdf.nodes.{ BNodeId, IRI, Literal, RDFNode }
+import es.weso.rdf.nodes._
 import es.weso.rdf.parser.RDFParser
+import es.weso.rdf.PREFIXES._
 import es.weso.utils.TryUtils._
 import cats._, data._
 import cats.implicits._
 import SHACLPrefixes._
-import cats._
 
 object RDF2Shacl 
     extends Logging
@@ -58,14 +57,22 @@ object RDF2Shacl
       targets <- targets(node,rdf)
       filters <- filters(node,rdf)
       constraints <- constraints(node,rdf)
-     } yield Shape(id,targets, filters, constraints)
+      closed <- booleanFromPredicateOptional(sh_closed)(node,rdf)
+      ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(node,rdf)
+      ignoredIRIs <- fromEitherString(nodes2iris(ignoredNodes))
+     } yield Shape(id,targets, filters, constraints, closed.getOrElse(false),ignoredIRIs)
   }
+
   
+  
+
   def targets: RDFParser[Seq[Target]] = 
     combineAll(
-          targetNodes
-        // TODO: Add the rest of scope declarations
-        //  , scopeClass
+          targetNodes,
+          targetClasses,
+          implicitTargetClass, 
+          targetSubjectsOf, 
+          targetObjectsOf
         )
     
   def targetNodes: RDFParser[Seq[Target]] = (n,rdf) => {
@@ -78,12 +85,54 @@ object RDF2Shacl
     attempts.flatten
   }
   
-  def mkTargetNode(n: RDFNode): Try[TargetNode] = {
-    Success(TargetNode(n))
-/*    n match {
-      case iri: IRI => Success(TargetNode(iri))
-      case _ => fail("Node " + n + " must be an IRI to be a scope node")
-    } */
+  def targetClasses: RDFParser[Seq[Target]] = (n,rdf) => {
+    val attempts = for {
+      ns <- objectsFromPredicate(sh_targetClass)(n,rdf)
+    } yield {
+      val xs = ns.toSeq.map(mkTargetClass)
+      filterSuccess(xs)
+    }
+    attempts.flatten
+  }
+  
+  def implicitTargetClass: RDFParser[Seq[Target]] = (n,rdf) => { 
+    val shapeTypes = rdf.triplesWithSubjectPredicate(n, rdf_type).map(_.obj)
+    val rdfs_Class = rdfs + "Class"
+    if (shapeTypes.contains(rdfs_Class)) 
+      mkTargetClass(n).map(Seq(_))
+    else
+      Success(Seq())
+  }
+    
+  def targetSubjectsOf: RDFParser[Seq[Target]] = (n,rdf) => {
+    val attempts = for {
+      ns <- objectsFromPredicate(sh_targetSubjectsOf)(n,rdf)
+    } yield {
+      val xs = ns.toSeq.map(mkTargetSubjectsOf)
+      filterSuccess(xs)
+    }
+    attempts.flatten
+  }
+  
+  def targetObjectsOf: RDFParser[Seq[Target]] = (n,rdf) => {
+    val attempts = for {
+      ns <- objectsFromPredicate(sh_targetObjectsOf)(n,rdf)
+    } yield {
+      val xs = ns.toSeq.map(mkTargetObjectsOf)
+      filterSuccess(xs)
+    }
+    attempts.flatten
+  }
+  
+  def mkTargetNode(n: RDFNode): Try[TargetNode] = Success(TargetNode(n))
+  def mkTargetClass(n: RDFNode): Try[TargetClass] = Success(TargetClass(n))
+  def mkTargetSubjectsOf(n: RDFNode): Try[TargetSubjectsOf] = n match {
+    case i:IRI => Success(TargetSubjectsOf(i))
+    case _ => fail(s"targetSubjectsOf requires an IRI. Obtained $n")
+  }
+  def mkTargetObjectsOf(n: RDFNode): Try[TargetObjectsOf] = n match {
+    case i:IRI => Success(TargetObjectsOf(i))
+    case _ => fail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
     
   def filters: RDFParser[Seq[Shape]] = (n,rdf) => {
@@ -131,6 +180,7 @@ object RDF2Shacl
         minExclusive, maxExclusive, minInclusive, maxInclusive,
         minLength, maxLength,
         pattern,
+        equals, disjoint, lessThan, lessThanOrEquals,
         or, and, not,
         shapeComponent, hasValue, in)
 
@@ -148,6 +198,15 @@ object RDF2Shacl
     pat <- stringFromPredicate(sh_pattern)(n,rdf)
     flags <- stringFromPredicateOptional(sh_flags)(n,rdf)
   } yield Pattern(pat,flags)
+  
+  def equals = parsePredicateComparison(sh_equals,Equals)
+  def disjoint = parsePredicateComparison(sh_disjoint,Disjoint)
+  def lessThan = parsePredicateComparison(sh_lessThan,LessThan)
+  def lessThanOrEquals = parsePredicateComparison(sh_lessThanOrEquals,LessThanOrEquals)
+  
+  def parsePredicateComparison(pred: IRI, mkComp: IRI => Component): RDFParser[Component] = (n,rdf) => for {
+    p <- iriFromPredicate(pred)(n,rdf)
+  } yield mkComp(p)
   
   def or : RDFParser[Or] = (n,rdf) => for {
     shapeNodes <- rdfListForPredicate(sh_or)(n,rdf)
@@ -310,6 +369,10 @@ object RDF2Shacl
     }
   }
 
+  def rdfListForPredicateOptional(p: IRI): RDFParser[List[RDFNode]] = for {
+    maybeLs <- optional(rdfListForPredicate(p))
+  } yield maybeLs.fold(List[RDFNode]())(ls => ls)
+  
   def literalFromPredicate(p: IRI): RDFParser[Literal] = (n,rdf) => for {
     o <- objectFromPredicate(p)(n,rdf)
     r <- o match {
@@ -318,7 +381,41 @@ object RDF2Shacl
     }
   } yield r
   
-  def fail(str: String) = 
+  def booleanFromPredicateOptional(p: IRI): RDFParser[Option[Boolean]] = (n,rdf) => {
+    objectFromPredicateOptional(p)(n,rdf) match {
+      case Success(None) => Success(None)
+      case Success(Some(BooleanLiteral(b))) => Success(Some(b))
+      case Success(Some(o)) => fail(s"value of $p must be a boolean literal. Obtained $o")
+      case Failure(e) => Failure(e)
+    }
+  }
+
+  def irisFromPredicate(p: IRI): RDFParser[List[IRI]] = (n,rdf) => {
+    val r = objectsFromPredicate(p)(n,rdf)
+    r match {
+      case Success(ns) => {
+        nodes2iris(ns.toList) match {
+          case Right(iris) => Success(iris)
+          case Left(msg) => fail(msg)
+        }
+      }
+      case Failure(f) => Failure(f)
+    }
+  }
+  
+  def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = { 
+    ns.map(node2IRI(_)).sequence
+  }
+  
+  def node2IRI(node: RDFNode): Either[String,IRI] = node match {
+    case (i: IRI) => Right(i)
+    case _ => Left(s"$node is not an IRI\n") 
+  }
+
+  def fromEitherString[A](e: Either[String,A]): Try[A] = 
+    e.fold(str => fail(str),v => Success(v))
+
+  def fail[A](str: String): Try[A] = 
     Failure(throw new Exception(str))
     
   def noTarget: Seq[Target] = Seq()
