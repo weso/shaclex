@@ -1,0 +1,11 @@
+@prefix sh:    &lt;http://www.w3.org/ns/shacl/core#&gt; .
+@prefix xsd:   &lt;http://www.w3.org/2001/XMLSchema#&gt; .
+
+&lt;http://a.example/S1&gt;
+        sh:property  [ a             sh:PropertyConstraint ;
+                       sh:maxCount   1 ;
+                       sh:minCount   1 ;
+                       sh:predicate  &lt;http://a.example/p1&gt;
+                     ] ;
+        sh:schema    [ a  sh:Schema ] .
+

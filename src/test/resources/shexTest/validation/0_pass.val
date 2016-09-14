@@ -1,0 +1,5 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/s1",
+  "shape": "http://a.example/S1"
+}

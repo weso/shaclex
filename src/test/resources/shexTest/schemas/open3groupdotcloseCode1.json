@@ -1,0 +1,28 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p1"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p2"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p3"
+          }
+        ],
+        "semActs": [
+          { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(\"group semAct\") " }
+        ]
+      }
+    }
+  }
+}

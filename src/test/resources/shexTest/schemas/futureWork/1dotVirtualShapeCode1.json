@@ -1,0 +1,18 @@
+{
+  "type": "Schema",
+  "prefixes": {},
+  "shapes":{
+    "http://a.example/S1": {
+      "type": "Shape",
+      "virtual": true,
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": { "type": "ValueClass" }
+      },
+      "semActs": [
+        { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(o) " }
+      ]
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/vc1": {
+      "type": "NodeConstraint",
+      "nodeKind": "literal",
+      "pattern": "^ab"
+    },
+    "http://a.example/vc2": {
+      "type": "NodeConstraint",
+      "nodeKind": "literal",
+      "pattern": "cd"
+    },
+    "http://a.example/vc3": {
+      "type": "NodeConstraint",
+      "nodeKind": "literal",
+      "pattern": "ef$"
+    },
+    "http://a.example/vc4": {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        { "type": "ShapeRef", "reference": "http://a.example/vc1" },
+        { "type": "ShapeRef", "reference": "http://a.example/vc2" },
+        { "type": "ShapeRef", "reference": "http://a.example/vc3" }
+      ]
+    },
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "http://a.example/vc4"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/n2",
+  "shape": "http://a.example/Sext",
+  "solution": { 
+    "type":"TripleConstraintSolutions", "predicate":"http://a.example/p2",
+    "solutions":[
+      {"type":"TestedTriple","subject":"http://a.example/n2","predicate":"http://a.example/p2","object":"\"X\""}
+    ]
+  }
+}

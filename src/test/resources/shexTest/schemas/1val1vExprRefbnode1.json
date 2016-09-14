@@ -1,0 +1,21 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "_:vc1": {
+      "type": "NodeConstraint",
+      "nodeKind": "literal",
+      "minlength": 5
+    },
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "_:vc1"
+        }
+      }
+    }
+  }
+}

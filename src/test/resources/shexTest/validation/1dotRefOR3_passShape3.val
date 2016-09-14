@@ -1,0 +1,51 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/n1",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p1",
+    "valueExpr": {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        {
+          "type": "ShapeRef",
+          "reference": "http://a.example/S2"
+        },
+        {
+          "type": "ShapeRef",
+          "reference": "http://a.example/S3"
+        },
+        {
+          "type": "ShapeRef",
+          "reference": "http://a.example/S4"
+        }
+      ]
+    },
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/n1",
+        "predicate": "http://a.example/p1",
+        "object": "http://a.example/n4",
+        "referenced": {
+          "type": "ShapeTest",
+          "node": "http://a.example/n4",
+          "shape": "http://a.example/S4",
+          "solution": {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p4",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/n4",
+                "predicate": "http://a.example/p4",
+                "object": "\"X\""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

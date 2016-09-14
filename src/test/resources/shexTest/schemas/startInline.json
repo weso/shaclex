@@ -1,0 +1,10 @@
+{
+  "type": "Schema",
+  "start": {
+    "type": "Shape",
+    "expression": {
+      "type": "TripleConstraint",
+      "predicate": "http://a.example/p1"
+    }
+  }
+}

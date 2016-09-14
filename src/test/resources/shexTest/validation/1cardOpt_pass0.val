@@ -1,0 +1,11 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/s1",
+  "shape": "http://a.example/S1",
+  "solution": { 
+    "type":"TripleConstraintSolutions", "predicate":"http://a.example/p1",
+    "solutions":[
+    ],
+    "min": 0, "max": 1
+  }
+}
