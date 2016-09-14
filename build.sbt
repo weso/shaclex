@@ -15,9 +15,17 @@ scalaVersion := "2.11.8"
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
+val circeVersion = "0.5.1"
+
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)
+
 libraryDependencies ++= Seq(
     "org.rogach" %% "scallop" % "2.0.1" 
-  , "com.typesafe" % "config" % "1.0.1"
+  , "com.typesafe" % "config" % "1.3.0"
   , "org.slf4j" % "slf4j-simple" % "1.7.21"
   , "log4j" % "log4j" % "1.2.17"
   , "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
