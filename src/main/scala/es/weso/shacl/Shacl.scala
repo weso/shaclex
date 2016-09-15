@@ -2,17 +2,18 @@ package es.weso.shacl
 import es.weso.rdf.nodes._
 import util._
 import SHACLPrefixes._
+import es.weso.shacl.converter.Shacl2RDF
 
 case class Schema(shapes: Seq[Shape]) {
-  
+
   /**
    * Get the shape associated to an IRI
    * @param iri IRI that identifies a shape
    */
-  def shape(iri: IRI): Option[Shape] = { 
+  def shape(iri: IRI): Option[Shape] = {
     shapes.filter(_.id contains(iri)).headOption
   }
-  
+
   /**
    * Get the sequence of sh:targetNode declarations
    */
@@ -27,7 +28,7 @@ case class Schema(shapes: Seq[Shape]) {
 
  /**
    * Get the sequence of `sh:targetNode` declarations
-   * @return a list of pairs (n,s) where n is the IRI of a node 
+   * @return a list of pairs (n,s) where n is the IRI of a node
    * and s is the IRI of a shape
    */
   def targetNodeDeclarations: Seq[(RDFNode,IRI)] = {
@@ -39,7 +40,7 @@ case class Schema(shapes: Seq[Shape]) {
       case "AST" => {
         Success(toString)
       }
-      case _ => 
+      case _ =>
         Shacl2RDF.serialize(this, format)
     }
   }
@@ -53,29 +54,34 @@ case class Shape(
     closed: Boolean,
     ignoredProperties: List[IRI]
 ) {
+
+  def addId(iri: IRI): Shape = {
+    this.copy(id = Some(iri))
+  }
+  
   def hasId(iri: IRI): Boolean = {
     id contains(iri)
   }
-  
-  def showId: String = 
+
+  def showId: String =
     id.fold("")(_.str)
-  
-  def targetNodes: Seq[RDFNode] =  
+
+  def targetNodes: Seq[RDFNode] =
     targets.map(_.toTargetNode).flatten.map(_.node)
-  
-  def targetClasses: Seq[RDFNode] =  
+
+  def targetClasses: Seq[RDFNode] =
     targets.map(_.toTargetClass).flatten.map(_.node)
-  
-  def targetSubjectsOf: Seq[IRI] =  
+
+  def targetSubjectsOf: Seq[IRI] =
     targets.map(_.toTargetSubjectsOf).flatten.map(_.pred)
-    
-  def targetObjectsOf: Seq[IRI] =  
+
+  def targetObjectsOf: Seq[IRI] =
     targets.map(_.toTargetObjectsOf).flatten.map(_.pred)
-    
-  def propertyConstraints: Seq[PropertyConstraint] = 
+
+  def propertyConstraints: Seq[PropertyConstraint] =
     constraints.map(_.toPropertyConstraint).flatten
-  
-  def predicatesInPropertyConstraints: List[IRI] = 
+
+  def predicatesInPropertyConstraints: List[IRI] =
       propertyConstraints.map(_.predicate).toList
 
 }
@@ -98,10 +104,10 @@ sealed abstract class Target {
     case _ => None
   }
 }
-case class TargetNode(node: RDFNode) extends Target 
+case class TargetNode(node: RDFNode) extends Target
 case class TargetClass(node: RDFNode) extends Target
-case class TargetSubjectsOf(pred: IRI) extends Target 
-case class TargetObjectsOf(pred: IRI) extends Target 
+case class TargetSubjectsOf(pred: IRI) extends Target
+case class TargetObjectsOf(pred: IRI) extends Target
 
 
 
@@ -117,7 +123,7 @@ case class PropertyConstraint(
     components: Seq[Component]
 ) extends Constraint {
   def isPropertyConstraint = true
-  
+
   override def toPropertyConstraint: Option[PropertyConstraint] = Some(this)
 }
 
@@ -127,7 +133,7 @@ case class PathPropertyConstraint(
     components: Seq[Component]
 ) extends Constraint {
   def isPropertyConstraint = false
-  
+
 }
 
 case class NodeConstraint(
@@ -148,12 +154,12 @@ trait Value  {
    * `true` if `node` matches this value
    */
   def matchNode(node: RDFNode): Boolean
-  
+
   /**
    * Conversion from values to RDFNode's
    */
   def rdfNode: RDFNode
-} 
+}
 
 case class IRIValue(iri: IRI) extends Value {
   override def matchNode(node: RDFNode) = {
@@ -162,7 +168,7 @@ case class IRIValue(iri: IRI) extends Value {
       case _ => false
     }
   }
-  
+
   override def rdfNode: RDFNode = iri
 }
 
@@ -177,20 +183,20 @@ case class LiteralValue(literal: Literal) extends Value {
   override def rdfNode: RDFNode = literal
 }
 
-case class ClassComponent(value: RDFNode) extends Component  
-case class Datatype(value: IRI) extends Component 
-case class NodeKind(value: NodeKindType) extends Component 
-case class MinCount(value: Int) extends Component 
-case class MaxCount(value: Int) extends Component 
-case class MinExclusive(value: Literal) extends Component 
-case class MinInclusive(value: Literal) extends Component 
-case class MaxExclusive(value: Literal) extends Component 
-case class MaxInclusive(value: Literal) extends Component 
-case class MinLength(value: Int) extends Component 
-case class MaxLength(value: Int) extends Component 
-case class Pattern(pattern: String, flags: Option[String]) extends Component  
-case class Stem(v: String) extends Component  
-case class UniqueLang(value: Boolean) extends Component 
+case class ClassComponent(value: RDFNode) extends Component
+case class Datatype(value: IRI) extends Component
+case class NodeKind(value: NodeKindType) extends Component
+case class MinCount(value: Int) extends Component
+case class MaxCount(value: Int) extends Component
+case class MinExclusive(value: Literal) extends Component
+case class MinInclusive(value: Literal) extends Component
+case class MaxExclusive(value: Literal) extends Component
+case class MaxInclusive(value: Literal) extends Component
+case class MinLength(value: Int) extends Component
+case class MaxLength(value: Int) extends Component
+case class Pattern(pattern: String, flags: Option[String]) extends Component
+case class Stem(v: String) extends Component
+case class UniqueLang(value: Boolean) extends Component
 case class Equals(p: IRI) extends Component
 case class Disjoint(p: IRI) extends Component
 case class LessThan(p: IRI) extends Component
@@ -200,8 +206,8 @@ case class And(shapes: List[Shape]) extends Component
 case class Not(shape: Shape) extends Component
 case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component
 case class ShapeComponent(shape: Shape) extends Component
-case class HasValue(value: Value) extends Component 
-case class In(list: List[Value]) extends Component  
+case class HasValue(value: Value) extends Component
+case class In(list: List[Value]) extends Component
 
 
 sealed trait NodeKindType {

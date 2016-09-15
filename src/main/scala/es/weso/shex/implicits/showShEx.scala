@@ -1,24 +1,14 @@
-package es.weso.shex
+package es.weso.shex.implicits
 import cats._
 import cats.implicits._
 import es.weso.rdf.nodes._
+import es.weso.shex._
 
-object shexShow {
+object showShEx {
 
-implicit lazy val showMax = new Show[Max] {
-  final def show(a: Max): String = a match {
-   case Star => "*"
-   case IntMax(n) => n.show
-  }
-}
-
-implicit lazy val showIRI : Show[IRI] = new Show[IRI] {
-  final def show(iri: IRI): String = iri.str
-}
-
-implicit lazy val showSemAct : Show[SemAct] = new Show[SemAct] {
-  final def show(a: SemAct): String =
-    "SemAct(" + a.name.show + "," + optShow(a.code) + ")"
+implicit lazy val showSchema: Show[Schema] = new Show[Schema] {
+  final def show(s: Schema): String =
+    s"Schema(${optShow(s.prefixes)}, ${optShow(s.base)}, ${optShow(s.startActs)}, ${optShow(s.start)}, ${optShow(s.shapes)})"
 }
 
 implicit lazy val showShapeExpr: Show[ShapeExpr] = new Show[ShapeExpr] {
@@ -70,6 +60,27 @@ implicit lazy val showStemValue: Show[StemValue] = new Show[StemValue] {
   }
 }
 
+implicit lazy val showMax = new Show[Max] {
+  final def show(a: Max): String = a match {
+   case Star => "*"
+   case IntMax(n) => n.show
+  }
+}
+
+implicit lazy val showIRI : Show[IRI] = new Show[IRI] {
+  final def show(iri: IRI): String = iri.str
+}
+
+implicit lazy val showPrefix : Show[Prefix] = new Show[Prefix] {
+  final def show(p: Prefix): String = p.s
+}
+
+
+implicit lazy val showSemAct : Show[SemAct] = new Show[SemAct] {
+  final def show(a: SemAct): String =
+    "SemAct(" + a.name.show + "," + optShow(a.code) + ")"
+}
+
 implicit lazy val showXsFacet: Show[XsFacet] = new Show[XsFacet] {
   final def show(a: XsFacet): String = a match {
     case Length(v) => s"${a.fieldName}(${v.show})"
@@ -114,7 +125,7 @@ implicit lazy val showSomeOf: Show[SomeOf] = new Show[SomeOf] {
 
 implicit lazy val showTripleConstraint: Show[TripleConstraint] = new Show[TripleConstraint] {
   final def show(a: TripleConstraint): String =
-    s"TripleConstraint(${optShow(a.inverse)}, ${optShow(a.negated)}, ${a.predicate.show}, ${a.valueExpr.show}, ${optShow(a.min)}, ${optShow(a.max)}, ${optShow(a.semActs)})"
+    s"TripleConstraint(${optShow(a.inverse)}, ${optShow(a.negated)}, ${a.predicate.show}, ${a.valueExpr.show}, ${optShow(a.min)}, ${optShow(a.max)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
 }
 
 implicit lazy val showAnnotation: Show[Annotation] = new Show[Annotation] {
@@ -126,8 +137,8 @@ implicit lazy val showObjectValue: Show[ObjectValue] = new Show[ObjectValue] {
   final def show(a: ObjectValue): String = a match {
     case IRIValue(i) => i.show
     case StringValue(s) => "\"" + s + "\""
-    case DatatypeString(s,iri) => "\"" + s + "\"^^" + iri.show 
-    case LangString(s,l) => "\"" + s + "\"@" + l 
+    case DatatypeString(s,iri) => "\"" + s + "\"^^" + iri.show
+    case LangString(s,l) => "\"" + s + "\"@" + l
   }
 }
 

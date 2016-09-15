@@ -4,14 +4,19 @@ import com.typesafe.config._
 import java.io.File
 import io.circe._
 import io.circe.parser._
+import io.circe.syntax._
 import util._
 import scala.io._
-import es.weso.shex.shexDecoder._
-import es.weso.shex.shexShow._
+import es.weso.shex._
+import es.weso.shex.implicits._
+import es.weso.shex.implicits.decoderShEx._
+import es.weso.shex.implicits.encoderShEx._
+import es.weso.shex.implicits.showShEx._
 import cats._, data._
 import cats.implicits._
+import es.weso.json._
 
-class shexJsonSingle extends FunSpec with Matchers with EitherValues {
+class shexJsonSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
@@ -29,11 +34,7 @@ class shexJsonSingle extends FunSpec with Matchers with EitherValues {
     val file = getJsonFile(schemasFolder, name)
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString
-      decode[Schema](str) match {
-        case Xor.Right(schema) => info(s"Parsed ${schema.toString}")
-        case Xor.Left(e)       => fail(s"Error $e. Contents:\n$str")
-      }
+      shouldDecodeEncodeEqual[Schema](str)
     }
   }
 }
- 

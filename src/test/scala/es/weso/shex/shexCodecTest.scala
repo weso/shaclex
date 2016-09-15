@@ -1,9 +1,9 @@
 package es.weso.shex
 import org.scalatest._
-import shexEncoder._
-import shexDecoder._
-import shexEq._
-import shexShow._
+import es.weso.shex.implicits.decoderShEx._
+import es.weso.shex.implicits.encoderShEx._
+import es.weso.shex.implicits.showShEx._
+import es.weso.shex.implicits.eqShEx._
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._

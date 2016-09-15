@@ -5,6 +5,7 @@ import ViolationError._
 import cats._, data._
 import cats.implicits._
 import util.matching._
+import showShacl._
 
 /**
  * This validator is implemented directly in Scala using cats library
@@ -12,6 +13,7 @@ import util.matching._
 case class Validator(schema: Schema) {
 
   import es.weso.checking._
+  import Validator._
 
   object MyChecker extends Checker {
     type Config = RDFReader
@@ -607,6 +609,24 @@ object Validator {
    val r = c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
    r
  } */
+  
+  type ShapeTyping = Typing[RDFNode,Shape,ViolationError,String]
+ 
+/*  type Comput = Fx.fx6[
+    Reader[RDFReader,?], 
+    Reader[ShapeTyping,?],
+    State[Evidences,?],
+    Choose, 
+    Validate[ViolationError, ?], 
+    Eval] */
+
+ type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,Evidences)]]
+  
+ def isOK[A](r: Result[A]): Boolean = 
+    r.isRight && r.toList.isEmpty == false  
+  
+// type Check[A] = Eff[Comput,A]
+ 
 
 }
 

@@ -7,7 +7,14 @@ case class Schema(
     startActs: Option[List[SemAct]],
     start: Option[ShapeExpr],
     shapes: Option[Map[ShapeLabel,ShapeExpr]]
-)
+) {
+
+  def resolveShapeLabel(l: ShapeLabel): Either[String,IRI] = l match {
+    case IRILabel(iri) => Right(iri)
+    case _ => Left(s"Label $l can't be converted to IRI")
+  }
+
+}
 
 case class Prefix(s: String)
 
@@ -106,7 +113,7 @@ case class StringValue(s: String) extends ObjectValue
 case class DatatypeString(s: String, iri: IRI) extends ObjectValue
 case class LangString(s: String, lang: String) extends ObjectValue
 
-case class Stem(stem: IRI) extends ValueSetValue 
+case class Stem(stem: IRI) extends ValueSetValue
 case class StemRange(stem: StemValue, exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
 
 
@@ -145,7 +152,8 @@ case class TripleConstraint(
     valueExpr: Option[ShapeExpr],
     min: Option[Int],
     max: Option[Max],
-    semActs: Option[List[SemAct]]
+    semActs: Option[List[SemAct]],
+    annotations: Option[List[Annotation]]
     ) extends TripleExpr
 
 case class Annotation(predicate: IRI, obj: ObjectValue)
@@ -164,7 +172,7 @@ abstract sealed trait ShapeLabel
 case class IRILabel(iri: IRI) extends ShapeLabel
 case class BNodeLabel(bnode: BNodeId) extends ShapeLabel
 
-
-object ShEx {
-
+object Schema {
+  def empty: Schema =
+    Schema(None,None,None,None,None)
 }

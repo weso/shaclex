@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   , "log4j" % "log4j" % "1.2.17"
   , "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
   , "org.scalatest" %% "scalatest" % "3.0.0" 
-  , "org.typelevel" %% "cats" % "0.7.0"
+  , "org.typelevel" %% "cats" % "0.7.2"
   , "org.atnos" %% "eff-cats" % "2.0.0-RC2-20160814085121-d925e69"
 //  , "es.weso" % "shexcala_2.11" % "0.7.16"
   , "es.weso" % "srdf-jena_2.11" % "0.0.8" 

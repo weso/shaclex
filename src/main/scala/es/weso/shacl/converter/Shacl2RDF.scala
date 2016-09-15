@@ -1,15 +1,15 @@
-package es.weso.shacl
+package es.weso.shacl.converter
 import util._
-import es.weso.rdf.RDFBuilder
-import cats._, data._
+import cats._
+import cats.data._
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
-import SHACLPrefixes._
+import es.weso.shacl.SHACLPrefixes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.jena._
-
+import es.weso.shacl._
 
 object Shacl2RDF {
 

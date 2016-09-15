@@ -6,28 +6,29 @@ import io.circe._
 import io.circe.parser._
 import util._
 import scala.io._
-import es.weso.shex.shexDecoder._
-import es.weso.shex.shexShow._
+import es.weso.shex.implicits._
+import es.weso.shex.implicits.decoderShEx._
+import es.weso.shex.implicits.encoderShEx._
+import es.weso.shex.implicits.showShEx._
 import cats._, data._
 import cats.implicits._
+import es.weso.json._
 
-
-
-class shexJson extends FunSpec with Matchers with EitherValues {
+class shexJson extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
-  
+
   val ignoreFiles = List("coverage")
 
  def getJsonFiles(schemasDir: String): List[File] = {
     getFilesFromFolderWithExt(schemasDir, "json", ignoreFiles)
  }
-  
+
  def getFilesFromFolderWithExt(path: String, ext: String, ignoreFiles: List[String]): List[(File)] = {
     val d = new File(path)
     if (d.exists && d.isDirectory) {
-      d.listFiles.filter { file => 
+      d.listFiles.filter { file =>
         if (file.isFile) {
           val (name,extension) = splitExtension(file.getName)
           extension == ext && !ignoreFiles.contains(name)
@@ -40,19 +41,15 @@ class shexJson extends FunSpec with Matchers with EitherValues {
 
   def splitExtension(str: String): (String,String) = {
     val splits = str.split('.')
-    (splits.init.mkString("."),splits.last) 
+    (splits.init.mkString("."),splits.last)
   }
 
   describe("Parsing Schemas from Json") {
-    for(file <- getJsonFiles(schemasFolder)) { 
+    for(file <- getJsonFiles(schemasFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
-        decode[Schema](str) match {
-          case Xor.Right(schema) => info(s"Parsed ${schema.toString}")
-          case Xor.Left(e) => fail(s"Error $e. Contents:\n$str")
-        }
+        shouldDecodeEncodeEqual[Schema](str)
       }
     }
   }
 }
- 

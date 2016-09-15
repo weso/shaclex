@@ -6,6 +6,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 import util._
 import Validator._
+import showShacl._
 
 class TypingTest extends 
   FunSpec with Matchers with TryValues with OptionValues {

@@ -1,27 +1,43 @@
-package es.weso.shex
+package es.weso.shex.implicits
 import io.circe._
 import io.circe.syntax._
 import cats.data._
 import es.weso.rdf.nodes._
 import cats._
 import cats.implicits._
+import es.weso.shex._
+import showShEx._
 
-object shexEncoder {
+object encoderShEx {
 
-  implicit lazy val encodeSchema= new Encoder[Schema] {
-   final def apply(s: Schema): Json = ??? 
+  implicit lazy val encodeSchema: Encoder[Schema] = new Encoder[Schema] {
+   final def apply(s: Schema): Json =
+     mkObjectTyped("Schema",
+        List(optFieldMap("prefixes", s.prefixes),
+             optField("base",s.base),
+             optField("startActs",s.startActs),
+             optField("start",s.start),
+             optFieldMap("shapes",s.shapes)
+            ))
   }
 
-  implicit lazy val encodePrefix = new Encoder[Prefix] {
-   final def apply(p: Prefix): Json = ??? 
-  }
-  
-  implicit lazy val encodeIRI = new Encoder[IRI] {
-   final def apply(iri: IRI): Json = Json.fromString(iri.str) 
+  implicit lazy val encoderPrefix = new Encoder[Prefix] {
+   final def apply(p: Prefix): Json = Json.fromString(p.s)
   }
 
+  implicit lazy val keyEncoderPrefix: KeyEncoder[Prefix] = new KeyEncoder[Prefix] {
+   final def apply(p: Prefix): String = p.s
+  }
 
-  implicit lazy val encodeSemAct = new Encoder[SemAct] {
+  implicit lazy val keyEncoderShapeLabel: KeyEncoder[ShapeLabel] = new KeyEncoder[ShapeLabel] {
+   final def apply(p: ShapeLabel): String = p.show
+  }
+
+  implicit lazy val encoderIRI: Encoder[IRI] = new Encoder[IRI] {
+   final def apply(iri: IRI): Json = Json.fromString(iri.str)
+  }
+
+  implicit lazy val encoderSemAct: Encoder[SemAct] = new Encoder[SemAct] {
    final def apply(a: SemAct): Json = {
     mkObjectTyped("SemAct",
         List(field("name", a.name),
@@ -29,31 +45,32 @@ object shexEncoder {
    )
   }
   }
- 
- implicit lazy val encodeMax: Encoder[Max] = new Encoder[Max] {
+
+ implicit lazy val encoderMax: Encoder[Max] = new Encoder[Max] {
   final def apply(a: Max): Json = a match {
    case Star => Json.fromString("*")
    case IntMax(n) => Json.fromInt(n)
   }
  }
 
- implicit lazy val encodeAnnotation: Encoder[Annotation] = new Encoder[Annotation] {
-  final def apply(a: Annotation): Json = 
+ implicit lazy val encoderAnnotation: Encoder[Annotation] = new Encoder[Annotation] {
+  final def apply(a: Annotation): Json =
     mkObjectTyped("Annotation",
         List(field("predicate",a.predicate),
              field("object",a.obj)))
  }
- 
- implicit lazy val encodeTripleConstraint: Encoder[TripleConstraint] = new Encoder[TripleConstraint] {
-  final def apply(a: TripleConstraint): Json = 
+
+ implicit lazy val encoderTripleConstraint: Encoder[TripleConstraint] = new Encoder[TripleConstraint] {
+  final def apply(a: TripleConstraint): Json =
         mkObjectTyped("TripleConstraint",
         List(optField("inverse", a.inverse),
              optField("negated", a.negated),
              field("predicate", a.predicate),
-             field("valueExpr", a.valueExpr),
+             optField("valueExpr", a.valueExpr),
              optField("min", a.min),
              optField("max", a.max),
-             optField("semActs", a.semActs)
+             optField("semActs", a.semActs),
+             optField("annotations", a.annotations)
              )
    )
  }
@@ -61,13 +78,13 @@ object shexEncoder {
 implicit lazy val encodeShapeExpr: Encoder[ShapeExpr] = new Encoder[ShapeExpr] {
   final def apply(a: ShapeExpr): Json =
     a match {
-    case ShapeOr(ses) => 
+    case ShapeOr(ses) =>
       mkObjectTyped("ShapeOr", List(field("shapeExprs",ses)))
-    
-    case ShapeAnd(ses) => 
+
+    case ShapeAnd(ses) =>
       mkObjectTyped("ShapeAnd", List(field("shapeExprs",ses)))
 
-    case ShapeNot(se) => 
+    case ShapeNot(se) =>
       mkObjectTyped("ShapeNot", List(field("shapeExpr",se)))
 
     case nc : NodeConstraint => nc.asJson
@@ -78,24 +95,24 @@ implicit lazy val encodeShapeExpr: Encoder[ShapeExpr] = new Encoder[ShapeExpr] {
 }
 
 implicit lazy val encodeNodeConstraint: Encoder[NodeConstraint] = new Encoder[NodeConstraint] {
-  final def apply(a: NodeConstraint): Json =  
-    mkObjectTyped("NodeConstraint", 
+  final def apply(a: NodeConstraint): Json =
+    mkObjectTyped("NodeConstraint",
         List(optField("nodeKind",a.nodeKind),
              optField("datatype",a.datatype),
              optField("values",a.values)
-            ) ++ mkFieldsFacets(a.xsFacets)) 
+            ) ++ mkFieldsFacets(a.xsFacets))
 }
 
 implicit lazy val encodeShape: Encoder[Shape] = new Encoder[Shape] {
-  final def apply(a: Shape): Json =  
-    mkObjectTyped("Shape", 
+  final def apply(a: Shape): Json =
+    mkObjectTyped("Shape",
         List(optField("virtual",a.virtual),
              optField("closed",a.closed),
              optField("extra",a.extra),
              optField("expression",a.expression),
              optField("inherit",a.inherit),
              optField("semActs",a.semActs)
-            )) 
+            ))
 }
 
 implicit lazy val encodeShapeLabel: Encoder[ShapeLabel] = new Encoder[ShapeLabel] {
@@ -109,7 +126,7 @@ implicit lazy val encodeTripleExpr: Encoder[TripleExpr] = new Encoder[TripleExpr
     case s: SomeOf => s.asJson
     case s: EachOf => s.asJson
     case Inclusion(i) => mkObjectTyped("Inclusion",List(field("include",i)))
-    case tc: TripleConstraint => tc.asJson 
+    case tc: TripleConstraint => tc.asJson
   }
 }
 
@@ -139,7 +156,7 @@ def mkFieldsFacets(xs: List[XsFacet]): List[Option[(String,Json)]] = {
   xs.map(x => Some(mkFieldFacet(x)))
 }
 
-def mkFieldFacet(x: XsFacet): (String,Json) = 
+def mkFieldFacet(x: XsFacet): (String,Json) =
   x match {
   case Length(v) => (x.fieldName,Json.fromInt(v))
   case MinLength(v) => (x.fieldName,Json.fromInt(v))
@@ -160,7 +177,7 @@ implicit lazy val encodeNumeric: Encoder[NumericLiteral] = new Encoder[NumericLi
     case NumericDecimal(d) => Json.fromBigDecimal(d)
   }
 }
-  
+
 implicit lazy val encodeNodeKind: Encoder[NodeKind] = new Encoder[NodeKind] {
   final def apply(a: NodeKind): Json = Json.fromString(a match {
     case IRIKind => "iri"
@@ -174,8 +191,8 @@ implicit lazy val encodeValueSetValue: Encoder[ValueSetValue] = new Encoder[Valu
   final def apply(a: ValueSetValue): Json = a match {
     case ov: ObjectValue => ov.asJson
     case Stem(s) => mkObjectTyped("Stem",List(field("stem",s)))
-    case StemRange(s,exclusions) => 
-      mkObjectTyped("StemRange",List(field("stem",s), optField("exclusiones", exclusions)))
+    case StemRange(s,exclusions) =>
+      mkObjectTyped("StemRange",List(field("stem",s), optField("exclusions", exclusions)))
   }
 }
 
@@ -197,15 +214,15 @@ implicit lazy val encodeStemValue: Encoder[StemValue] = new Encoder[StemValue] {
 }
 
 // Utils...
-  
-def encodeOptFieldAsMap[A](name: String, m: Option[A])(implicit encoder: Encoder[A]): Map[String,Json] = 
+
+def encodeOptFieldAsMap[A](name: String, m: Option[A])(implicit encoder: Encoder[A]): Map[String,Json] =
  m match {
       case None => Map()
       case Some(v) => Map(name -> encoder(v))
  }
 
 def field[A: Encoder](name: String, v: A): Option[(String, Json)] = {
-  val encoder = implicitly[Encoder[A]] 
+  val encoder = implicitly[Encoder[A]]
   Some(name, encoder(v))
 }
 
@@ -213,6 +230,16 @@ def optField[A: Encoder](name: String, m: Option[A]): Option[(String,Json)] = {
   m match {
     case None => None
     case Some(v) => field(name,v)
+  }
+}
+
+def optFieldMap[A: KeyEncoder, B: Encoder](name: String, m: Option[Map[A,B]]): Option[(String,Json)] = {
+  m match {
+    case None => None
+    case Some(mapValue) => {
+      val encoder = implicitly[Encoder[Map[A,B]]]
+      Some((name,encoder(mapValue)))
+    }
   }
 }
 

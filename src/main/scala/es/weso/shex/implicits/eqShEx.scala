@@ -1,10 +1,12 @@
-package es.weso.shex
+package es.weso.shex.implicits
 
-import cats._, data._
+import cats._
+import cats.data._
 import cats.implicits._
 import es.weso.rdf.nodes._
+import es.weso.shex._
 
-object shexEq {
+object eqShEx {
 
   implicit lazy val eqMax: Eq[Max] = new Eq[Max] {
     final def eqv(a1: Max, a2: Max): Boolean = (a1, a2) match {

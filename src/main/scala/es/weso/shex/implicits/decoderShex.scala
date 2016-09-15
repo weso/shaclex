@@ -1,4 +1,4 @@
-package es.weso.shex
+package es.weso.shex.implicits
 import io.circe._
 import io.circe.syntax._
 import cats._
@@ -7,8 +7,9 @@ import cats.implicits._
 import es.weso.rdf.nodes._
 import util.matching._
 import java.net.URISyntaxException
+import es.weso.shex._
 
-object shexDecoder {
+object decoderShEx {
 
   implicit lazy val decodeSchema: Decoder[Schema] = Decoder.instance { c =>
     for {
@@ -60,7 +61,7 @@ object shexDecoder {
       case "Shape"          => c.as[Shape]
       case "ShapeRef"       => c.as[ShapeRef]
       case "ShapeExternal"  => c.as[ShapeExternal]
-      case other => 
+      case other =>
         Xor.left(DecodingFailure(s"Decoding ShapeExpr. Unexpected value $other", Nil))
     }
   }
@@ -111,9 +112,11 @@ object shexDecoder {
       case "maxlength"    => c.get[Int](name).map(n => Some(MaxLength(n)))
       case "pattern"      => c.get[String](name).map(p => Some(Pattern(p)))
       case "mininclusive" => c.get[NumericLiteral](name).map(p => Some(MinInclusive(p)))
-      case "minExclusive" => c.get[NumericLiteral](name).map(p => Some(MinInclusive(p)))
+      case "minexclusive" => c.get[NumericLiteral](name).map(p => Some(MinExclusive(p)))
       case "maxinclusive" => c.get[NumericLiteral](name).map(p => Some(MaxInclusive(p)))
       case "maxexclusive" => c.get[NumericLiteral](name).map(p => Some(MaxExclusive(p)))
+      case "fractiondigits" => c.get[Int](name).map(p => Some(FractionDigits(p)))
+      case "totaldigits" => c.get[Int](name).map(p => Some(TotalDigits(p)))
       case _              => None.right
     }
   }
@@ -152,7 +155,7 @@ object shexDecoder {
       case "SomeOf"           => c.as[SomeOf]
       case "Inclusion"        => c.as[Inclusion]
       case "TripleConstraint" => c.as[TripleConstraint]
-      case other => 
+      case other =>
         Xor.left(DecodingFailure(s"Decoding TripleExpr. Unexpected value $other", Nil))
     }
   }
@@ -212,7 +215,7 @@ object shexDecoder {
       Decoder[StemRange].map(identity).or(
         Decoder[ObjectValue].map(identity)))
 
-  implicit lazy val decodeObjectValue: Decoder[ObjectValue] =   
+  implicit lazy val decodeObjectValue: Decoder[ObjectValue] =
     Decoder[String].emap(s => parseObjectValue(s))
 
   def parseObjectValue(s: String): Xor[String, ObjectValue] = {
@@ -263,7 +266,8 @@ object shexDecoder {
       min <- optFieldDecode[Int](c, "min")
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
-    } yield TripleConstraint(inverse, negated, predicate, valueExpr, min, max, semActs)
+      annotations <- optFieldDecode[List[Annotation]](c, "annotations")
+    } yield TripleConstraint(inverse, negated, predicate, valueExpr, min, max, semActs, annotations)
   }
 
   // Utils...
@@ -317,13 +321,13 @@ object shexDecoder {
         try {
           IRI(i).right
         } catch {
-           case _: URISyntaxException => 
+           case _: URISyntaxException =>
              Xor.Left(s"$str doesn't have the syntax of an URI")
         }
-      case _ => 
+      case _ =>
         Xor.Left(s"$str doesn't match IRI regex $iriRegex")
     }
-  
+
 
   lazy val prefixRegex: Regex = "^(.*)$".r // PN_PREFIX_STR.r
   lazy val iriRegex: Regex = "^(.*)$".r
@@ -348,4 +352,3 @@ lazy val PN_CHARS_BASE =
       """\x{10000}-\x{EFFFF}]"""
 */
 }
-
