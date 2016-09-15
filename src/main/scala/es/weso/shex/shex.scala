@@ -46,6 +46,17 @@ case class ShapeRef(reference: ShapeLabel) extends ShapeExpr
 
 case class ShapeExternal() extends ShapeExpr
 
+object Shape{
+  def empty: Shape = Shape(
+   virtual = None,
+   closed = None,
+   extra = None,
+   expression = None,
+   inherit = None,
+   semActs = None
+  )
+}
+
 object NodeConstraint {
 
   def empty = NodeConstraint(
