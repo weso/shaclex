@@ -18,3 +18,7 @@ project/plugins/project/
 .classpath
 .cache
 /bin
+settings.json
+.vscode
+.ensime_cache
+.ensime

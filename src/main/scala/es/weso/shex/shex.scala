@@ -1,5 +1,6 @@
 package es.weso.shex
 import es.weso.rdf.nodes._
+import es.weso.rdf.PREFIXES._
 
 case class Schema(
     prefixes: Option[Map[Prefix,IRI]],
@@ -13,6 +14,9 @@ case class Schema(
     case IRILabel(iri) => Right(iri)
     case _ => Left(s"Label $l can't be converted to IRI")
   }
+
+  lazy val prefixMap: Map[Prefix,IRI] =
+    prefixes.getOrElse(Map())
 
 }
 
@@ -32,6 +36,25 @@ case class NodeConstraint(
     xsFacets: List[XsFacet],
     values: Option[List[ValueSetValue]]
     ) extends ShapeExpr
+object NodeConstraint {
+
+  def empty = NodeConstraint(
+          nodeKind = None,
+          datatype = None,
+          xsFacets = List(),
+          values = None
+      )
+
+  def nodeKind(nk: NodeKind): NodeConstraint =
+    NodeConstraint.empty.copy(nodeKind = Some(nk))
+
+  def datatype(dt: IRI): NodeConstraint =
+    NodeConstraint.empty.copy(datatype = Some(dt))
+
+  def valueSet(vs: List[ValueSetValue]): NodeConstraint =
+    NodeConstraint.empty.copy(values = Some(vs))
+
+}
 
 case class Shape(
     virtual:Option[Boolean],
@@ -41,10 +64,6 @@ case class Shape(
     inherit: Option[ShapeLabel],
     semActs: Option[List[SemAct]]
 ) extends ShapeExpr
-
-case class ShapeRef(reference: ShapeLabel) extends ShapeExpr
-
-case class ShapeExternal() extends ShapeExpr
 
 object Shape{
   def empty: Shape = Shape(
@@ -57,24 +76,17 @@ object Shape{
   )
 }
 
-object NodeConstraint {
+case class ShapeRef(reference: ShapeLabel) extends ShapeExpr
 
-  def empty = NodeConstraint(
-      nodeKind = None,
-      datatype = None,
-      xsFacets = List(),
-      values = None
-  )
+case class ShapeExternal() extends ShapeExpr
 
-  def nodeKind(nk: NodeKind): NodeConstraint =
-    NodeConstraint.empty.copy(nodeKind = Some(nk))
-
-}
 
 sealed trait XsFacet {
   val fieldName: String
 }
+
 sealed trait StringFacet extends XsFacet
+
 case class Length(v: Int) extends StringFacet {
   val fieldName = "length"
 }
@@ -124,6 +136,17 @@ case class StringValue(s: String) extends ObjectValue
 case class DatatypeString(s: String, iri: IRI) extends ObjectValue
 case class LangString(s: String, lang: String) extends ObjectValue
 
+object ObjectValue {
+  def trueValue: ObjectValue = DatatypeString("true", xsd_boolean)
+  def falseValue: ObjectValue = DatatypeString("false", xsd_boolean)
+  def intValue(n: Int): ObjectValue =
+    DatatypeString(n.toString, xsd_integer)
+  def doubleValue(d: Double): ObjectValue =
+      DatatypeString(d.toString, xsd_double)
+  def decimalValue(d: BigDecimal): ObjectValue =
+      DatatypeString(d.toString, xsd_decimal)
+}
+
 case class Stem(stem: IRI) extends ValueSetValue
 case class StemRange(stem: StemValue, exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
 
@@ -136,6 +159,7 @@ case class Wildcard() extends StemValue
 case class SemAct(name: IRI, code: Option[String])
 
 abstract sealed trait TripleExpr
+
 case class EachOf(
     expressions: List[TripleExpr],
     min: Option[Int],
@@ -165,11 +189,31 @@ case class TripleConstraint(
     max: Option[Max],
     semActs: Option[List[SemAct]],
     annotations: Option[List[Annotation]]
-    ) extends TripleExpr
+    ) extends TripleExpr {
+ lazy val isInverse = inverse.getOrElse(false)
+ lazy val isNegated = negated.getOrElse(false)
+ lazy val defaultMin = 1
+ lazy val defaultMax = IntMax(1)
+
+ lazy val minValue = min.getOrElse(defaultMin)
+ lazy val maxValue = max.getOrElse(defaultMax)
+}
+
+object TripleConstraint {
+  def emptyPred(pred: IRI): TripleConstraint =
+    TripleConstraint(
+      None,None,pred,None,None,None,None,None
+    )
+}
 
 case class Annotation(predicate: IRI, obj: ObjectValue)
 
-abstract sealed trait Max
+abstract sealed trait Max {
+  def show = this match {
+      case IntMax(v) => v.toString
+      case Star => "*"
+    }
+}
 case object Star extends Max
 case class IntMax(v: Int) extends Max
 
@@ -186,4 +230,20 @@ case class BNodeLabel(bnode: BNodeId) extends ShapeLabel
 object Schema {
   def empty: Schema =
     Schema(None,None,None,None,None)
+
+    /**
+      * If prefixMap contains a: -> http://example.org/
+      * then qualify(IRI("http://example.org/x")) = "a:x"
+      */
+  def qualify(iri: IRI, pm: Map[Prefix,IRI]): String = {
+      def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
+        iri.str.startsWith(p._2.str)
+      }
+
+      pm.find(startsWithPredicate) match {
+        case None => "<" ++ iri.str ++ ">"
+        case Some(p) => p._1.s + iri.str.stripPrefix(p._2.str)
+      }
+  }
+
 }

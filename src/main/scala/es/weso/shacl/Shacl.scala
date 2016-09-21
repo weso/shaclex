@@ -4,6 +4,12 @@ import util._
 import SHACLPrefixes._
 import es.weso.shacl.converter.Shacl2RDF
 
+object Shacl {
+  case object Unbounded
+  lazy val defaultMin = 0
+  lazy val defaultMax = Unbounded
+}
+
 case class Schema(shapes: Seq[Shape]) {
 
   /**
@@ -58,7 +64,7 @@ case class Shape(
   def addId(iri: IRI): Shape = {
     this.copy(id = Some(iri))
   }
-  
+
   def hasId(iri: IRI): Boolean = {
     id contains(iri)
   }

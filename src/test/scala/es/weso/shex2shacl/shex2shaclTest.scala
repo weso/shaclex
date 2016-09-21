@@ -35,7 +35,6 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
     }
   }
 
-
   describe("shacl2Shex") {
     it ("Should convert simple node constraint") {
       val shexSchema: shex.Schema =
@@ -64,4 +63,5 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
       )
     }
   }
+
 }

@@ -31,6 +31,7 @@ libraryDependencies ++= Seq(
   , "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
   , "org.scalatest" %% "scalatest" % "3.0.0" 
   , "org.typelevel" %% "cats" % "0.7.2"
+  , "com.lihaoyi" %% "pprint" % "0.4.1"
   , "org.atnos" %% "eff-cats" % "2.0.0-RC2-20160814085121-d925e69"
 //  , "es.weso" % "shexcala_2.11" % "0.7.16"
   , "es.weso" % "srdf-jena_2.11" % "0.0.8" 
@@ -39,13 +40,25 @@ libraryDependencies ++= Seq(
   , "org.specs2" %% "specs2-core" % "3.8.4" % "test"
   )
 
+antlr4Settings
+
+antlr4GenListener in Antlr4 := true
+
+antlr4GenVisitor in Antlr4 := true
+
+antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % "4.5"
+
+antlr4PackageName in Antlr4 := Some("es.weso.shex.parser")
+  
 autoCompilerPlugins := true
 
 // to write types like Reader[String, ?]
-addCompilerPlugin("org.spire-math" % "kind-projector" % "0.8.0" cross CrossVersion.binary)
+addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary)
 
 // to get types like Reader[String, ?] (with more than one type parameter) correctly inferred
-addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0")
+addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.2.0" cross CrossVersion.full)
+
+// addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0" cross CrossVersion.full)
 
 // Needed by simulacrum
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)

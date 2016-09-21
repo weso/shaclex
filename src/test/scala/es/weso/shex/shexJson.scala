@@ -2,15 +2,10 @@ package es.weso.shex
 import org.scalatest._
 import com.typesafe.config._
 import java.io.File
-import io.circe._
-import io.circe.parser._
-import util._
 import scala.io._
-import es.weso.shex.implicits._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
-import cats._, data._
 import cats.implicits._
 import es.weso.json._
 
