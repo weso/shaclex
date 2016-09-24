@@ -6,6 +6,7 @@ import cats._, data._
 import cats.implicits._
 import util.matching._
 import showShacl._
+import es.weso.mytyping._
 
 /**
  * This validator is implemented directly in Scala using cats library

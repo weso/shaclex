@@ -85,12 +85,12 @@ object ShEx2Shacl extends Converter {
   }
 
   def cnvTripleConstraint(tc: shex.TripleConstraint, schema: shex.Schema): Result[shacl.Shape] = {
-    if (tc.isInverse) err(s"cnvTripleConstraint: Not implemented inverse")
+    if (tc.inverse) err(s"cnvTripleConstraint: Not implemented inverse")
     else {
-     if (tc.isNegated) err(s"cnvTripleConstraint: Not implemented negated")
+     if (tc.negated) err(s"cnvTripleConstraint: Not implemented negated")
      val pc: Result[PropertyConstraint] =
        mkPropertyConstraint(tc.predicate,
-         tc.valueExpr, tc.minValue, tc.maxValue, schema)
+         tc.valueExpr, tc.min, tc.max, schema)
     ???
 //     ok(Shape.empty.copy(constraints = Seq(pc)))
     }

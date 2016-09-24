@@ -535,8 +535,8 @@ object Parser {
         TripleConstraint.
           emptyPred(predicate).copy(
             valueExpr = Some(shapeExpr),
-            min = cardinality._1,
-            max = cardinality._2
+            optMin = cardinality._1,
+            optMax = cardinality._2
           )
 
   type Cardinality = (Option[Int], Option[Max])

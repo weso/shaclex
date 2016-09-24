@@ -8,6 +8,16 @@ import es.weso.shex._
 
 object eqShEx {
 
+  implicit lazy val eqSchema: Eq[Schema] = new Eq[Schema] {
+    final def eqv(s1: Schema, s2: Schema): Boolean = {
+      s1.prefixes === s2.prefixes &&
+      s1.base === s2.base &&
+      s1.startActs === s2.startActs &&
+      s1.start === s2.start &&
+      s1.shapes === s2.shapes
+    }
+  }
+
   implicit lazy val eqMax: Eq[Max] = new Eq[Max] {
     final def eqv(a1: Max, a2: Max): Boolean = (a1, a2) match {
       case (Star, Star)           => true
@@ -42,8 +52,64 @@ object eqShEx {
   }
   
   implicit lazy val eqShape: Eq[Shape] = new Eq[Shape] {
-    final def eqv(a1: Shape, a2: Shape): Boolean = a1 == a2
+    final def eqv(s1: Shape, s2: Shape): Boolean =
+    s1.isVirtual === s2.isVirtual &&
+    s1.isClosed === s2.isClosed &&
+    s1.expression === s2.expression &&
+    s1.inherit === s2.inherit &&
+    s1.semActs === s2.semActs
   }
+  
+  implicit lazy val eqTripleExpr: Eq[TripleExpr] = new Eq[TripleExpr] {
+    final def eqv(s1: TripleExpr, s2: TripleExpr): Boolean = (s1,s2) match {
+      case (e1: EachOf, e2: EachOf) => e1 === e2
+      case (e1: SomeOf, e2: SomeOf) => e1 === e2
+      case (Inclusion(l1), Inclusion(l2)) => l1 === l2
+      case (t1: TripleConstraint, t2: TripleConstraint) => t1 === t2
+      case (_,_) => false
+    }
+  }
+
+  implicit lazy val eqEachOf: Eq[EachOf] = new Eq[EachOf] {
+    final def eqv(s1: EachOf, s2: EachOf): Boolean =
+      s1.expressions === s2.expressions &&
+    s1.min === s2.min &&
+    s1.max === s2.max &&
+    s1.semActs === s2.semActs &&
+    s1.annotations === s2.annotations
+    }
+
+  implicit lazy val eqSomeOf: Eq[SomeOf] = new Eq[SomeOf] {
+    final def eqv(s1: SomeOf, s2: SomeOf): Boolean =
+      s1.expressions === s2.expressions &&
+    s1.min === s2.min &&
+    s1.max === s2.max &&
+    s1.semActs === s2.semActs &&
+    s1.annotations === s2.annotations
+    }
+
+  implicit lazy val eqTripleConstraint: Eq[TripleConstraint] = new Eq[TripleConstraint] {
+    final def eqv(s1: TripleConstraint, s2: TripleConstraint): Boolean = {
+      println(s"Comparing triple constraints $s1 and $s2")
+      println(s"Min/max (${s1.min}/${s1.max}) and (${s2.min}/${s2.max})")
+
+    s1.inverse === s2.inverse &&
+    s1.negated === s2.negated &&
+    s1.predicate === s2.predicate &&
+    s1.min === s2.min &&
+    s1.max === s2.max &&
+    s1.semActs === s2.semActs &&
+    s1.annotations === s2.annotations
+    }
+  }
+
+  implicit lazy val eqAnnotation: Eq[Annotation] = new Eq[Annotation] {
+    final def eqv(s1: Annotation, s2: Annotation): Boolean =
+      s1.predicate === s2.predicate &&
+      s1.obj == s2.obj  // TODO?
+  }
+
+
   
   implicit lazy val eqNodeConstraint: Eq[NodeConstraint] = new Eq[NodeConstraint] {
 
@@ -52,7 +118,8 @@ object eqShEx {
       n1.nodeKind === n2.nodeKind &&
         n1.datatype === n2.datatype &&
         n1.xsFacets.toSet === n2.xsFacets.toSet &&
-        n1.values.getOrElse(List()).toSet === n2.values.getOrElse(List()).toSet
+        n1.values.getOrElse(List()).toSet ===
+        n2.values.getOrElse(List()).toSet
     }
   }
 

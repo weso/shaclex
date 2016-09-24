@@ -13,19 +13,26 @@ class shexDiffTest extends FunSpec with Matchers with EitherValues {
       val iri = IRI("http://example.org/")
       val x1 = Schema.empty.copy(base = Some(iri))
       val x2 = Schema.empty.copy(base = Some(iri))
-      val d = ShExDiff.diff(x1,x2)
+      val d = ShExDiff.schemaDiff(x1,x2)
       shouldBeOK(d)
     }
     it ("should calculate diffs of start actions") {
       val iri = IRI("http://example.org/")
       val x1 = Schema.empty.copy(startActs = Some(List(SemAct(iri,Some("code")))))
       val x2 = Schema.empty.copy(startActs = Some(List(SemAct(iri,Some("code")))))
-      val d = ShExDiff.diff(x1,x2)
+      val d = ShExDiff.schemaDiff(x1,x2)
+      shouldBeOK(d)
+    }
+    it ("should calculate diffs of prefixes") {
+      val iri = IRI("http://example.org/")
+      val x1 = Schema.empty.copy(prefixes = Some(Map(Prefix(":") -> iri)))
+      val x2 = Schema.empty.copy(prefixes = Some(Map(Prefix(":") -> iri)))
+      val d = ShExDiff.schemaDiff(x1,x2)
       shouldBeOK(d)
     }
   }
 
-  def shouldBeOK[A](x: ShExDiff.Diff[A]): Unit = {
+  def shouldBeOK[A](x: ShExDiff.Result[A]): Unit = {
     if (!x.isValid) {
         fail(s"Different: $x")
       }

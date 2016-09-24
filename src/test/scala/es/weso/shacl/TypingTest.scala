@@ -7,6 +7,7 @@ import es.weso.rdf._
 import util._
 import Validator._
 import showShacl._
+import es.weso.mytyping._
 
 class TypingTest extends 
   FunSpec with Matchers with TryValues with OptionValues {

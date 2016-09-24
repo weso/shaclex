@@ -1,4 +1,4 @@
-package es.weso.shacl
+package es.weso.mytyping
 import cats._, data._
 import cats.implicits._
 

@@ -113,7 +113,12 @@ object printer {
     optDoc(nc.values, valueSetDoc(pm))
 
   def nodeKindDoc(nc: NodeKind): Document =
-    str("nodeKindDoc")
+    nc match {
+      case IRIKind => keyword("IRI")
+      case BNodeKind => keyword("BNode")
+      case NonLiteralKind => keyword("NonLiteral")
+      case LiteralKind => keyword("Literal")
+    }
 
   def datatypeDoc(pm: PrefixMap)(d: IRI): Document =
     iriDoc(pm)(d)
@@ -206,22 +211,22 @@ object printer {
 
   def eachOfDoc(pm: PrefixMap)(e: EachOf): Document =
     listDocIntersperse(e.expressions,tripleExprDoc(pm),keyword(";")) ::
-    cardinalityDoc(e.min,e.max) ::
+    cardinalityDoc(e.optMin,e.optMax) ::
     optDoc(e.semActs,semActsDoc(pm)) ::
     optDoc(e.annotations, annotationsDoc(pm))
 
   def someOfDoc(pm: PrefixMap)(e: SomeOf): Document =
       listDocIntersperse(e.expressions,tripleExprDoc(pm),keyword("|")) ::
-      cardinalityDoc(e.min,e.max) ::
+      cardinalityDoc(e.optMin,e.optMax) ::
       optDoc(e.semActs,semActsDoc(pm)) ::
       optDoc(e.annotations, annotationsDoc(pm))
 
   def tripleConstraintDoc(pm: PrefixMap)(t: TripleConstraint): Document =
-    optDocConst(t.inverse, str("^")) ::
-    optDocConst(t.negated, str("!")) ::
+    optDocConst(t.optInverse, str("^")) ::
+    optDocConst(t.optNegated, str("!")) ::
     iriDoc(pm)(t.predicate) :: space ::
     optDoc(t.valueExpr, shapeExprDoc(pm)) ::
-    cardinalityDoc(t.min,t.max) ::
+    cardinalityDoc(t.optMin,t.optMax) ::
     optDoc(t.semActs,semActsDoc(pm)) ::
     optDoc(t.annotations, annotationsDoc(pm))
 

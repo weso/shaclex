@@ -63,7 +63,10 @@ case class Shape(
     expression: Option[TripleExpr],
     inherit: Option[ShapeLabel],
     semActs: Option[List[SemAct]]
-) extends ShapeExpr
+) extends ShapeExpr {
+  def isVirtual: Boolean = virtual.getOrElse(Shape.defaultVirtual)
+  def isClosed: Boolean = closed.getOrElse(Shape.defaultClosed)
+}
 
 object Shape{
   def empty: Shape = Shape(
@@ -74,6 +77,13 @@ object Shape{
    inherit = None,
    semActs = None
   )
+
+  def defaultVirtual = false
+  def defaultClosed = false
+  def defaultExtra = List[IRI]()
+  def defaultInherit = List[ShapeLabel]()
+  def defaultSemActs = List[SemAct]()
+
 }
 
 case class ShapeRef(reference: ShapeLabel) extends ShapeExpr
@@ -148,7 +158,9 @@ object ObjectValue {
 }
 
 case class Stem(stem: IRI) extends ValueSetValue
-case class StemRange(stem: StemValue, exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
+case class StemRange(
+  stem: StemValue,
+  exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
 
 
 sealed trait StemValue
@@ -158,45 +170,50 @@ case class Wildcard() extends StemValue
 
 case class SemAct(name: IRI, code: Option[String])
 
+
 abstract sealed trait TripleExpr
 
 case class EachOf(
     expressions: List[TripleExpr],
-    min: Option[Int],
-    max: Option[Max],
+    optMin: Option[Int],
+    optMax: Option[Max],
     semActs: Option[List[SemAct]],
     annotations: Option[List[Annotation]]
-) extends TripleExpr
+) extends TripleExpr {
+  lazy val min = optMin.getOrElse(Cardinality.defaultMin)
+  lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+}
 
 
 case class SomeOf(
     expressions: List[TripleExpr],
-    min: Option[Int],
-    max: Option[Max],
+    optMin: Option[Int],
+    optMax: Option[Max],
     semActs: Option[List[SemAct]],
     annotations: Option[List[Annotation]]
-) extends TripleExpr
+) extends TripleExpr {
+  lazy val min = optMin.getOrElse(Cardinality.defaultMin)
+  lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+}
+
 
 case class Inclusion(include: ShapeLabel)
   extends TripleExpr
 
 case class TripleConstraint(
-    inverse: Option[Boolean],
-    negated: Option[Boolean],
+    optInverse: Option[Boolean],
+    optNegated: Option[Boolean],
     predicate: IRI,
     valueExpr: Option[ShapeExpr],
-    min: Option[Int],
-    max: Option[Max],
+    optMin: Option[Int],
+    optMax: Option[Max],
     semActs: Option[List[SemAct]],
     annotations: Option[List[Annotation]]
     ) extends TripleExpr {
- lazy val isInverse = inverse.getOrElse(false)
- lazy val isNegated = negated.getOrElse(false)
- lazy val defaultMin = 1
- lazy val defaultMax = IntMax(1)
-
- lazy val minValue = min.getOrElse(defaultMin)
- lazy val maxValue = max.getOrElse(defaultMax)
+ lazy val inverse = optInverse.getOrElse(false)
+ lazy val negated = optNegated.getOrElse(false)
+ lazy val min = optMin.getOrElse(Cardinality.defaultMin)
+ lazy val max = optMax.getOrElse(Cardinality.defaultMax)
 }
 
 object TripleConstraint {
@@ -204,9 +221,15 @@ object TripleConstraint {
     TripleConstraint(
       None,None,pred,None,None,None,None,None
     )
+
 }
 
 case class Annotation(predicate: IRI, obj: ObjectValue)
+
+object Cardinality {
+  lazy val defaultMin = 1
+  lazy val defaultMax = IntMax(1)
+}
 
 abstract sealed trait Max {
   def show = this match {

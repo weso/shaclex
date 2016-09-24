@@ -63,12 +63,12 @@ object encoderShEx {
  implicit lazy val encoderTripleConstraint: Encoder[TripleConstraint] = new Encoder[TripleConstraint] {
   final def apply(a: TripleConstraint): Json =
         mkObjectTyped("TripleConstraint",
-        List(optField("inverse", a.inverse),
-             optField("negated", a.negated),
+        List(optField("inverse", a.optInverse),
+             optField("negated", a.optNegated),
              field("predicate", a.predicate),
              optField("valueExpr", a.valueExpr),
-             optField("min", a.min),
-             optField("max", a.max),
+             optField("min", a.optMin),
+             optField("max", a.optMax),
              optField("semActs", a.semActs),
              optField("annotations", a.annotations)
              )
@@ -134,8 +134,8 @@ implicit lazy val encodeEachOf: Encoder[EachOf] = new Encoder[EachOf] {
   final def apply(a: EachOf): Json =
     mkObjectTyped("EachOf",
         List(field("expressions",a.expressions),
-             optField("min",a.min),
-             optField("max",a.max),
+             optField("min",a.optMin),
+             optField("max",a.optMax),
              optField("semActs",a.semActs),
              optField("annotations",a.annotations)
     ))
@@ -145,8 +145,8 @@ implicit lazy val encodeSomeOf: Encoder[SomeOf] = new Encoder[SomeOf] {
   final def apply(a: SomeOf): Json =
     mkObjectTyped("SomeOf",
         List(field("expressions",a.expressions),
-             optField("min",a.min),
-             optField("max",a.max),
+             optField("min",a.optMin),
+             optField("max",a.optMax),
              optField("semActs",a.semActs),
              optField("annotations",a.annotations)
     ))
