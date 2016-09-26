@@ -80,10 +80,18 @@ case class Validator(schema: Schema) {
     case s: ShapeExternal => throw new Exception("Not implemented ShapeExternal")
   }
 
-  def checkNodeConstraint(node: RDFNode, s: NodeConstraint): CheckTyping = {
-    throw new Exception("Not implemented NodeConstraint")
-  }
+  def checkNodeConstraint(node: RDFNode, s: NodeConstraint): CheckTyping =
+  for {
+    _ <- getTyping
+    t1 <- optCheck(s.nodeKind, checkNodeKind(node), getTyping)
+  } yield t1
 
+  def optCheck[A,B](c: Option[A],
+                    check: A => Check[B],
+                    default: => Check[B]
+  ): Check[B] = ???
+
+  def checkNodeKind(node: RDFNode)(nk: NodeKind): CheckTyping = ???
 
   def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
