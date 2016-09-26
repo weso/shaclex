@@ -21,6 +21,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
       shouldNotValidate(IRI("http://example.org/a"), IRILabel(IRI("a")),
         rdfStr,schema)
     }
+
     it("Should validate single node constraint") {
       shouldValidate(IRI("http://example.org/a"), IRILabel(IRI("s")),
         rdfStr,schema)

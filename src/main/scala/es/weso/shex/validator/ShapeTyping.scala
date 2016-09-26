@@ -18,6 +18,13 @@ case class ShapeTyping(
 
   def addType(node: RDFNode, label: ShapeLabel): ShapeTyping =
     ShapeTyping(t.addType(node,label))
+
+  def addEvidence(node: RDFNode, label: ShapeLabel, evidence: String): ShapeTyping =
+    ShapeTyping(t.addEvidence(node,label,evidence))
+
+  def addNotEvidence(node: RDFNode, label: ShapeLabel, err: ViolationError): ShapeTyping =
+    ShapeTyping(t.addNotEvidence(node,label,err))
+
 }
 
 object ShapeTyping {

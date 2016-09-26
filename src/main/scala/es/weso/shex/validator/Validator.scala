@@ -6,7 +6,7 @@ import cats._, data._
 import cats.implicits._
 // import util.matching._
 import es.weso.shex.implicits.showShEx._
-import es.weso.mytyping._
+import ViolationError._
 
 /**
  * ShEx validator
@@ -62,28 +62,32 @@ case class Validator(schema: Schema) {
       } else schema.getShape(label) match {
         case None =>
           errStr[ShapeTyping](s"Can't find shape $label is Schema:\n${schema.show}")
-        case Some(shape) =>
-          runLocal(checkNodeShapeExpr(node, shape), _.addType(node, label))
+        case Some(shape) => {
+          val attempt = Attempt(NodeShape(node,label),None)
+          runLocal(checkNodeShapeExpr(attempt, node, shape), _.addType(node, label))
+        }
       }
     } yield newTyping
 
   def errStr[A](msg: String): Check[A] =
-    err[A](ViolationError.strError(msg))
+    err[A](ViolationError.msgErr(msg))
 
-  def checkNodeShapeExpr(node: RDFNode, s: ShapeExpr): CheckTyping = s match{
+  def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = s match{
     case ShapeOr(ss) => throw new Exception("Not implemented ShapeOr")
     case ShapeAnd(ss) => throw new Exception("Not implemented ShapeAnd")
     case ShapeNot(s) => throw new Exception("Not implemented ShapeNot")
-    case nc: NodeConstraint => checkNodeConstraint(node,nc)
+    case nc: NodeConstraint => checkNodeConstraint(attempt,node,nc)
     case s: Shape => throw new Exception("Not implemented Shape")
     case s: ShapeRef => throw new Exception("Not implemented ShapeRef")
     case s: ShapeExternal => throw new Exception("Not implemented ShapeExternal")
   }
 
-  def checkNodeConstraint(node: RDFNode, s: NodeConstraint): CheckTyping =
+  def checkNodeConstraint(attempt: Attempt,
+                          node: RDFNode,
+                          s: NodeConstraint): CheckTyping =
   for {
     _ <- getTyping
-    t1 <- optCheck(s.nodeKind, checkNodeKind(node), getTyping)
+    t1 <- optCheck(s.nodeKind, checkNodeKind(attempt,node), getTyping)
   } yield t1
 
   def optCheck[A,B](c: Option[A],
@@ -91,8 +95,8 @@ case class Validator(schema: Schema) {
                     default: => Check[B]
   ): Check[B] = c.fold(default)(check(_))
 
-  def checkNodeKind(node: RDFNode)(nk: NodeKind): CheckTyping = nk match {
-    case IRIKind =>  cond(node.isIRI, attempt, errStr, s"$node is an IRI")
+  def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = nk match {
+    case IRIKind =>  cond(node.isIRI, attempt, msgErr(s"$node is not an IRI"), s"$node is an IRI")
     case _ => throw new Exception(s"Unimplemented nodeKind $nk")
   }
 
@@ -104,6 +108,22 @@ case class Validator(schema: Schema) {
     _ <- validateCheck(condition, error)
     newTyping <- addEvidence(attempt.nodeShape, evidence)
   } yield newTyping
+
+  def addEvidence(nodeShape: NodeShape, msg: String): Check[ShapeTyping] = {
+    for {
+      t <- getTyping
+      _ <- addLog(List((nodeShape, msg)))
+    } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
+  }
+
+  def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
+    val node = nodeShape.node
+    val shape = nodeShape.shape
+    for {
+      t <- getTyping
+      _ <- addLog(List((nodeShape, msg)))
+    } yield t.addNotEvidence(node, shape, e)
+  }
 
 
   def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =

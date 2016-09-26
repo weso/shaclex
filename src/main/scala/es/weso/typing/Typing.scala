@@ -6,7 +6,7 @@ abstract class Typing[Key, Value, Err, Evidence] {
 
  type Evidences = List[Evidence]
 
- def hasType(key: Key, value: Value): Boolean = 
+ def hasType(key: Key, value: Value): Boolean =
    getOkValues(key) contains value
 
  def getValues(key: Key): Map[Value,TypingResult[Err,Evidence]]
@@ -17,21 +17,21 @@ abstract class Typing[Key, Value, Err, Evidence] {
 
  def getFailedValues(key: Key): Set[Value]
 
-  def addEvidences(key: Key, value: Value, 
+  def addEvidences(key: Key, value: Value,
       es: List[Evidence]): Typing[Key,Value,Err,Evidence]
 
-  def addEvidence(key: Key, value: Value, 
+  def addEvidence(key: Key, value: Value,
       es: Evidence): Typing[Key,Value,Err,Evidence]
-  
+
   def addNotEvidence(key: Key, value: Value, e: Err): Typing[Key,Value,Err,Evidence]
 
-  
-  def addType(key:Key, value:Value, 
+
+  def addType(key:Key, value:Value,
       evidences: List[Evidence] = List()): Typing[Key,Value,Err,Evidence] =
         addEvidences(key,value,evidences)
-        
-  def combineTyping(t: Typing[Key,Value,Err,Evidence]): Typing[Key,Value,Err,Evidence] 
-  
+
+  def combineTyping(t: Typing[Key,Value,Err,Evidence]): Typing[Key,Value,Err,Evidence]
+
 }
 
 object Typing {
@@ -47,7 +47,7 @@ object Typing {
     val m: Map[Key, Map[Value,TypingResult[Err,Evidence]]] = Map()
     TypingMap(m)
   }
-  
+
   def combineTypings[
     Key:Show,
     Value: Show,
@@ -72,10 +72,10 @@ object Typing {
         case tm: TypingMap[Key,Value,Err,Evidence] =>
           tm.m.map{ case (key,valuesMap) => {
       valuesMap.map{ case (value,result) => {
-        val showV = (if (result.isOK) "+" else "-" ) + value.show 
+        val showV = (if (result.isOK) "+" else "-" ) + value.show
         s"($key: $showV) -> ${result.show}"
       }}.mkString("\n")
-    }}.mkString("\n") 
+    }}.mkString("\n")
     }
   }
 

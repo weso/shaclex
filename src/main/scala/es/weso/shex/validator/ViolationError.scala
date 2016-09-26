@@ -6,7 +6,7 @@ case class ViolationError(msg: String)
 
 object ViolationError {
 
-  def strError(msg: String) = ViolationError(msg)
+  def msgErr(msg: String) = ViolationError(msg)
 
   implicit def showViolationError = new Show[ViolationError] {
     override def show(e: ViolationError): String =

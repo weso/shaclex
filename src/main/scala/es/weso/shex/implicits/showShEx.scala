@@ -7,8 +7,9 @@ import es.weso.shex._
 object showShEx {
 
 implicit lazy val showSchema: Show[Schema] = new Show[Schema] {
-  final def show(s: Schema): String =
+  final def show(s: Schema): String = {
     s"Schema(${optShow(s.prefixes)}, ${optShow(s.base)}, ${optShow(s.startActs)}, ${optShow(s.start)}, ${optShow(s.shapes)})"
+  }
 }
 
 implicit lazy val showShapeExpr: Show[ShapeExpr] = new Show[ShapeExpr] {
@@ -68,7 +69,8 @@ implicit lazy val showMax = new Show[Max] {
 }
 
 implicit lazy val showIRI : Show[IRI] = new Show[IRI] {
-  final def show(iri: IRI): String = iri.str
+  final def show(iri: IRI): String = 
+    iri.str
 }
 
 implicit lazy val showPrefix : Show[Prefix] = new Show[Prefix] {
@@ -155,5 +157,6 @@ def optShow[A: Show](m: Option[A]): String =
   case None => "-"
   case Some(v) => v.show
 }
+
 
 }
