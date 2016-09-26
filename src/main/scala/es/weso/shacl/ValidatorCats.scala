@@ -117,8 +117,8 @@ case class Validator(schema: Schema) {
   def checkTargetClasses(classes: Seq[RDFNode]): ShapeChecker = shape => {
     for {
       rdf <- getRDF
-      val nodes = classes.map(cls => findNodesInClass(cls, rdf)).flatten
-      val nodesShapes = nodes.map(n => nodeShape(n, shape)).toList
+      nodes = classes.map(cls => findNodesInClass(cls, rdf)).flatten
+      nodesShapes = nodes.map(n => nodeShape(n, shape)).toList
       ts <- checkAll(nodesShapes)
       t <- combineTypings(ts)
     } yield t
@@ -127,8 +127,8 @@ case class Validator(schema: Schema) {
   def checkTargetSubjectsOf(preds: Seq[IRI]): ShapeChecker = shape => {
     for {
       rdf <- getRDF
-      val subjects = preds.map(rdf.triplesWithPredicate(_).map(_.subj).toSeq).flatten
-      val nodesShapes = subjects.map(n => nodeShape(n, shape)).toList
+      subjects = preds.map(rdf.triplesWithPredicate(_).map(_.subj).toSeq).flatten
+      nodesShapes = subjects.map(n => nodeShape(n, shape)).toList
       ts <- checkAll(nodesShapes)
       t <- combineTypings(ts)
     } yield t
@@ -137,8 +137,8 @@ case class Validator(schema: Schema) {
   def checkTargetObjectsOf(preds: Seq[IRI]): ShapeChecker = shape => {
     for {
       rdf <- getRDF
-      val objects = preds.map(rdf.triplesWithPredicate(_).map(_.obj).toSeq).flatten
-      val nodesShapes = objects.map(n => nodeShape(n, shape)).toList
+      objects = preds.map(rdf.triplesWithPredicate(_).map(_.obj).toSeq).flatten
+      nodesShapes = objects.map(n => nodeShape(n, shape)).toList
       ts <- checkAll(nodesShapes)
       t <- combineTypings(ts)
     } yield t
@@ -153,8 +153,8 @@ case class Validator(schema: Schema) {
       //      val r = checkAll(cs.map(c => c(Attempt(NodeShape(node, shape), None))(node)))
       for {
         current <- getTyping
-        val attempt = Attempt(NodeShape(node, shape), None)
-        val comp = checkAll(cs.map(c => c(attempt)(node)))
+        attempt = Attempt(NodeShape(node, shape), None)
+        comp = checkAll(cs.map(c => c(attempt)(node)))
         ts <- runLocal(comp, _.addType(node, shape))
         t <- combineTypings(ts)
         t1 <- if (shape.closed)
@@ -221,9 +221,9 @@ case class Validator(schema: Schema) {
   def component2PropertyChecker(c: Component): PropertyChecker =
     (attempt, predicate) => for {
       rdf <- getRDF
-      val node = attempt.node
-      val os = rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
-      val check: Check[ShapeTyping] = c match {
+      node = attempt.node
+      os = rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
+      check: Check[ShapeTyping] = c match {
         case ShapeComponent(s)   => checkValues(os, shapeComponentChecker(s)(attempt))
         case ClassComponent(c)   => checkValues(os, classComponentChecker(c)(attempt))
         case Datatype(d)         => checkValues(os, datatypeChecker(d)(attempt))
@@ -350,10 +350,14 @@ case class Validator(schema: Schema) {
     pattern.findFirstIn(n.getLexicalForm).isDefined
   }
 
-  def equals(p: IRI): NodeChecker = comparison(p, "equals", equalsError, equalsNode)
-  def disjoint(p: IRI): NodeChecker = comparison(p, "disjoint", disjointError, disjointNode)
-  def lessThan(p: IRI): NodeChecker = comparison(p, "lessThan", lessThanError, lessThanNode)
-  def lessThanOrEquals(p: IRI): NodeChecker = comparison(p, "lessThanOrEquals", lessThanOrEqualsError, lessThanOrEqualNode)
+  def equals(p: IRI): NodeChecker =
+    comparison(p, "equals", equalsError, equalsNode)
+  def disjoint(p: IRI): NodeChecker =
+    comparison(p, "disjoint", disjointError, disjointNode)
+  def lessThan(p: IRI): NodeChecker =
+    comparison(p, "lessThan", lessThanError, lessThanNode)
+  def lessThanOrEquals(p: IRI): NodeChecker =
+    comparison(p, "lessThanOrEquals", lessThanOrEqualsError, lessThanOrEqualNode)
 
   // TODO: Maybe add a check to see if the nodes are comparable
   // With current definition, if nodes are not comparable, always returns false without raising any error...
@@ -363,8 +367,8 @@ case class Validator(schema: Schema) {
                  cond: (RDFNode, RDFNode) => Boolean): NodeChecker =
     attempt => node => for {
       rdf <- getRDF
-      val subject = attempt.node
-      val vs = rdf.triplesWithSubjectPredicate(subject, p).map(_.obj)
+      subject = attempt.node
+      vs = rdf.triplesWithSubjectPredicate(subject, p).map(_.obj)
       t <- condition(vs.forall(cond(node, _)), attempt,
         errorMaker(node, attempt, p, vs),
         s"$node satisfies $name $p with values ${vs})")

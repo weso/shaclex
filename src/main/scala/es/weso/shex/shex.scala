@@ -18,6 +18,12 @@ case class Schema(
   lazy val prefixMap: Map[Prefix,IRI] =
     prefixes.getOrElse(Map())
 
+  def qualify(iri: IRI): String =
+    Schema.qualify(iri,prefixes.getOrElse(Map()))
+
+  def getShape(label: ShapeLabel): Option[ShapeExpr] = 
+    shapes.getOrElse(Map()).get(label)
+
 }
 
 case class Prefix(s: String)

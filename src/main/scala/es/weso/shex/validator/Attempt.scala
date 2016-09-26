@@ -1,8 +1,7 @@
-package es.weso.shacl
+package es.weso.shex.validator
 
 import es.weso.rdf.nodes._
-import cats._
-import cats.syntax.show._
+
 /**
  * Represents current validation attempt
  * It contains the node and a shape 
@@ -10,8 +9,6 @@ import cats.syntax.show._
  */
 case class Attempt(nodeShape: NodeShape, path: Option[IRI]) {
   def node = nodeShape.node
-  
-  def shapeIRI = nodeShape.shape.id
   
   def predicate: Option[IRI] = path 
 
