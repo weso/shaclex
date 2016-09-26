@@ -89,9 +89,22 @@ case class Validator(schema: Schema) {
   def optCheck[A,B](c: Option[A],
                     check: A => Check[B],
                     default: => Check[B]
-  ): Check[B] = ???
+  ): Check[B] = c.fold(default)(check(_))
 
-  def checkNodeKind(node: RDFNode)(nk: NodeKind): CheckTyping = ???
+  def checkNodeKind(node: RDFNode)(nk: NodeKind): CheckTyping = nk match {
+    case IRIKind =>  cond(node.isIRI, attempt, errStr, s"$node is an IRI")
+    case _ => throw new Exception(s"Unimplemented nodeKind $nk")
+  }
+
+  def cond(
+    condition: Boolean,
+    attempt: Attempt,
+    error: ViolationError,
+    evidence: String): CheckTyping = for {
+    _ <- validateCheck(condition, error)
+    newTyping <- addEvidence(attempt.nodeShape, evidence)
+  } yield newTyping
+
 
   def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)

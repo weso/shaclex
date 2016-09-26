@@ -609,14 +609,13 @@ object Validator {
   def empty = Validator(schema = Schema.empty)
 
   /* def runCheck[A](c: Check[A], rdf: RDFReader): Xor[NonEmptyList[ViolationError],List[(A,Evidences)]] = {
-   val initial : ShapeTyping = Typing.empty
-   
+   val initial : ShapeTyping = Typing.empty 
    val r = c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
    r
  } */
-  
+
   type ShapeTyping = Typing[RDFNode,Shape,ViolationError,String]
- 
+
 /*  type Comput = Fx.fx6[
     Reader[RDFReader,?], 
     Reader[ShapeTyping,?],
@@ -626,12 +625,12 @@ object Validator {
     Eval] */
 
  type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,Evidences)]]
-  
- def isOK[A](r: Result[A]): Boolean = 
-    r.isRight && r.toList.isEmpty == false  
-  
+
+ def isOK[A](r: Result[A]): Boolean =
+    r.isRight && r.toList.isEmpty == false
+
 // type Check[A] = Eff[Comput,A]
- 
+
 
 }
 
