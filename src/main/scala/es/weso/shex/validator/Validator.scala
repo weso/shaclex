@@ -17,7 +17,7 @@ case class Validator(schema: Schema) {
   import Validator._
 
   object MyChecker extends Checker {
-  
+
     type Config = RDFReader
     type Env = ShapeTyping
     type Err = ViolationError
