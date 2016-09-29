@@ -96,8 +96,14 @@ case class Validator(schema: Schema) {
   ): Check[B] = c.fold(default)(check(_))
 
   def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = nk match {
-    case IRIKind =>  cond(node.isIRI, attempt, msgErr(s"$node is not an IRI"), s"$node is an IRI")
-    case _ => throw new Exception(s"Unimplemented nodeKind $nk")
+    case IRIKind =>
+      cond(node.isIRI, attempt, msgErr(s"$node is not an IRI"), s"$node is an IRI")
+    case BNodeKind =>
+      cond(node.isBNode, attempt, msgErr(s"$node is not a BlankNode"), s"$node is a BlankNode")
+    case NonLiteralKind =>
+      cond(! node.isLiteral, attempt, msgErr(s"$node is a literal but should be a NonLiteral"), s"$node is NonLiteral")
+    case LiteralKind =>
+      cond(node.isLiteral, attempt, msgErr(s"$node is not an Literal"), s"$node is a Literal")
   }
 
   def cond(

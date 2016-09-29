@@ -17,6 +17,7 @@ object NodeShape {
    import es.weso.shex.implicits.showShEx._
 
    def show(ns: NodeShape) = s"[${ns.node},${Show[ShapeLabel].show(ns.shape)}]"
+
  }
 
 }

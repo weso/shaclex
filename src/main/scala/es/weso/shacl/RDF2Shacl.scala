@@ -12,13 +12,13 @@ import cats._, data._
 import cats.implicits._
 import SHACLPrefixes._
 
-object RDF2Shacl 
+object RDF2Shacl
     extends Logging
     with RDFParser {
 
   implicit val applicativeRDFParser = new Applicative[RDFParser] {
     def pure[A](x: A) = (n,rdf) => Success(x)
-    
+
     def ap[A,B](ff:RDFParser[A => B])(fa:RDFParser[A]): RDFParser[B] = (n,f) => {
       fa(n,f) match {
         case Success(a) => ff(n,f) match {
@@ -29,11 +29,11 @@ object RDF2Shacl
       }
     }
   }
-  // Keep track of parsed shapes 
+  // Keep track of parsed shapes
   val parsedShapes = collection.mutable.Map[RDFNode,Shape]()
-  
+
   /**
-   * Parses RDF content and obtains a SHACL Schema and a PrefixMap 
+   * Parses RDF content and obtains a SHACL Schema and a PrefixMap
    */
   def getShacl(rdf: RDFReader): Try[(Schema, PrefixMap)] = {
     parsedShapes.clear()
@@ -275,14 +275,14 @@ object RDF2Shacl
       filterSuccess(cs).map(_.toList)
     }
   }
-  
+
   def nodeKind: RDFParser[Component] = (n,rdf) => {
     for {
       os <- objectsFromPredicate(sh_nodeKind)(n,rdf)
       nk <- parseNodeKind(os)
     } yield nk
   }
-  
+
   def parseNodeKind(os: Set[RDFNode]): Try[Component] = {
     os.size match {
       case 0 => fail("no objects of nodeKind property")

@@ -123,7 +123,7 @@ case class Validator(schema: Schema) {
       t <- combineTypings(ts)
     } yield t
   }
-  
+
   def checkTargetSubjectsOf(preds: Seq[IRI]): ShapeChecker = shape => {
     for {
       rdf <- getRDF
@@ -133,7 +133,7 @@ case class Validator(schema: Schema) {
       t <- combineTypings(ts)
     } yield t
   }
-  
+
   def checkTargetObjectsOf(preds: Seq[IRI]): ShapeChecker = shape => {
     for {
       rdf <- getRDF
@@ -143,10 +143,10 @@ case class Validator(schema: Schema) {
       t <- combineTypings(ts)
     } yield t
   }
-  
-  def findNodesInClass(cls: RDFNode, rdf: RDFReader): List[RDFNode] = 
+
+  def findNodesInClass(cls: RDFNode, rdf: RDFReader): List[RDFNode] =
     rdf.getSHACLInstances(cls).toList
-  
+
   def nodeShape: NodeShapeChecker = {
     case (node, shape) => {
       val cs = shape.constraints.map(checkConstraint).toList
