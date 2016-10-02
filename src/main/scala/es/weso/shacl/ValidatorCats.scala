@@ -27,7 +27,8 @@ case class Validator(schema: Schema) {
       def empty: Env = Typing.empty
     }
     implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
-      def log(msg: String): Log = ???
+      def log(msg: String): Log =
+        throw new Exception(s"Not implemented logCanLog. Msg: $msg")
     }
     implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
       def combine(l1: Log, l2: Log): Log = l1 ++ l2
