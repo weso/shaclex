@@ -37,6 +37,7 @@ lazy val commonSettings = Seq(
   , "io.circe" %% "circe-core" % circeVersion
   , "io.circe" %% "circe-generic" % circeVersion
   , "io.circe" %% "circe-parser" % circeVersion
+  , "com.github.nikita-volkov" % "sext" % "0.2.4"
   )
 )
 

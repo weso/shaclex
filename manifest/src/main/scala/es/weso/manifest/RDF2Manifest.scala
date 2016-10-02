@@ -78,8 +78,8 @@ trait RDF2Manifest
      name <- stringFromPredicate(mf_name)(n,rdf)
      actionNode <- objectFromPredicate(mf_action)(n,rdf)
      action <- action(actionNode,rdf)
-     maybeResultNode <- optional(objectFromPredicate(mf_result))(n,rdf)
-     result <- maybeResult(maybeResultNode,rdf)
+     resultNodes <- objectsFromPredicate(mf_result)(n,rdf)
+     results <- parseList(resultNodes,result,rdf)
      statusIri <- iriFromPredicate(mf_status)(n,rdf)
      specRef <- optional(iriFromPredicate(sht_specRef))(n,rdf)
    } yield
@@ -87,10 +87,14 @@ trait RDF2Manifest
         entryType = entryType,
         name = name,
         action = action,
-        result = result,
+        results = results,
         status = Status(statusIri),
         specRef = specRef
     )
+ }
+
+ def parseList[A](xs: Set[RDFNode], p: RDFParser[A], rdf: RDFReader): Try[Set[A]] = {
+   Try(xs.map(n => p(n,rdf)).map(_.get))
  }
 
  def fail[A](str: String): Try[A] =
@@ -111,6 +115,56 @@ trait RDF2Manifest
    }
  }
 
+
+ def action: RDFParser[ManifestAction] = { (n,rdf) =>
+   for {
+     schema <- optional(iriFromPredicate(sht_schema))(n,rdf)
+     schemaFormatIRI <- optional(iriFromPredicate(sht_schema_format))(n,rdf)
+     schemaFormat <- mapOptional(schemaFormatIRI,iriSchemaFormat2str)
+     data <- optional(iriFromPredicate(sht_data))(n,rdf)
+     dataFormatIri <- optional(iriFromPredicate(sht_data_format))(n,rdf)
+     dataFormat <- mapOptional(dataFormatIri,iriDataFormat2str)
+     schemaOutputFormat <- optional(iriFromPredicate(sht_schema_output_format))(n,rdf)
+     node <- optional(oneOfPredicates(Seq(sht_node,sht_focus)))(n,rdf)
+     shape <- optional(iriFromPredicate(sht_shape))(n,rdf)
+   } yield
+       ManifestAction(
+           schema = schema,
+           schemaFormat = schemaFormat,
+           data = data,
+           dataFormat = dataFormat,
+           schemaOutputFormat = schemaOutputFormat,
+           node = node,
+           shape = shape
+           )
+ }
+
+/* def maybeResult: (Option[RDFNode],RDFReader) => Try[Result] = { (m,rdf) =>{
+   println(s"Parsing maybe result...$m")
+   m match {
+     case None => Success(EmptyResult)
+     case Some(resultNode) => result(resultNode,rdf)
+   }
+  }
+ } */
+
+ def result: RDFParser[Result] = { (n,rdf) => {
+   println(s"Parsing result...$n")
+   n match {
+     case BooleanLiteral(b) => Success(BooleanResult(b))
+     case iri:IRI =>
+       if (noType(iri,rdf)) Success(IRIResult(iri))
+       else compoundResult(iri,rdf)
+     case bNode: BNodeId => compoundResult(bNode,rdf)
+     case _ => fail("Unexpected type of result " + n)
+   }
+  }
+ }
+
+ def compoundResult: RDFParser[Result] = ???
+
+ def noType(n: RDFNode, rdf: RDFReader): Boolean = ???
+
  def mapOptional[A,B](optA: Option[A], fn: A => Try[B]): Try[Option[B]] = {
    optA match {
      case None => Success(None)
@@ -128,47 +182,9 @@ trait RDF2Manifest
    oneOf(ps)
  }
 
- def action: RDFParser[ManifestAction] = { (n,rdf) =>
-   for {
-     schema <- optional(iriFromPredicate(sht_schema))(n,rdf)
-     schemaFormatIRI <- optional(iriFromPredicate(sht_schema_format))(n,rdf)
-     schemaFormat <- mapOptional(schemaFormatIRI,iriSchemaFormat2str)
-     data <- optional(iriFromPredicate(sht_data))(n,rdf)
-     dataFormatIri <- optional(iriFromPredicate(sht_data_format))(n,rdf)
-     dataFormat <- mapOptional(dataFormatIri,iriDataFormat2str)
-     schemaOutputFormat <- optional(iriFromPredicate(sht_schema_output_format))(n,rdf)
-     node <- optional(oneOfPredicates(Seq(sht_node,sht_focus)))(n,rdf)
-     shape <- optional(iriFromPredicate(sht_shape))(n,rdf)
-     // TODO: Result
-   } yield
-       ManifestAction(
-           schema = schema,
-           schemaFormat = schemaFormat,
-           data = data,
-           dataFormat = dataFormat,
-           schemaOutputFormat = schemaOutputFormat,
-           node = node,
-           shape = shape
-           )
- }
-
- def maybeResult: (Option[RDFNode],RDFReader) => Try[Result] = { (m,rdf) =>
-   m match {
-     case None => Success(EmptyResult)
-     case Some(resultNode) => result(resultNode,rdf)
-   }
- }
-
- def result: RDFParser[Result] = { (n,rdf) =>
-   n match {
-     case BooleanLiteral(b) => Success(BooleanResult(b))
-     case iri:IRI => Success(IRIResult(iri))
-     case _ => fail("Unexpected type of result " + n)
-   }
- }
-
  // TODO
- def includes(derefIncludes: Boolean): RDFParser[List[(IRI,Option[Manifest])]] = { (n,rdf) =>
+ def includes(derefIncludes: Boolean):
+     RDFParser[List[(IRI,Option[Manifest])]] = { (n,rdf) =>
    Success(List())
  }
 

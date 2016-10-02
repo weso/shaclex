@@ -10,6 +10,7 @@ object ManifestPrefixes {
   lazy val dc = IRI("http://purl.org/dc/elements/1.1/")
   lazy val dawgt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
   lazy val rdfs = IRI("http://www.w3.org/2000/01/rdf-schema#")
+
   lazy val mf_Manifest = mf.add("Manifest")
   lazy val mf_entries = mf.add("entries")
   lazy val mf_include = mf.add("include")
@@ -17,9 +18,9 @@ object ManifestPrefixes {
   lazy val mf_action = mf.add("action")
   lazy val mf_result = mf.add("result")
   lazy val mf_status = mf.add("status")
+
   lazy val rdfs_label = rdfs.add("label")
   lazy val rdfs_comment = rdfs.add("comment")
-  
   lazy val sht_proposed = sht.add("proposed")
   lazy val sht_approved = sht.add("approved")
   lazy val sht_rejected = sht.add("rejected")
@@ -41,6 +42,5 @@ object ManifestPrefixes {
   lazy val sht_ConvertSchemaSyntax = sht.add("ConvertSchemaSyntax")
   lazy val sht_SHACLC = sht.add("SHACLC")
   lazy val sht_TURTLE = sht.add("TURTLE")
-  
-  
+
 }

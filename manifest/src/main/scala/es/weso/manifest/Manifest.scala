@@ -12,7 +12,7 @@ case class Entry(
     entryType: EntryType,
     name: String,
     action: ManifestAction,
-    result: Result,
+    results: Set[Result],
     status: Status,
     specRef: Option[IRI]
     )
