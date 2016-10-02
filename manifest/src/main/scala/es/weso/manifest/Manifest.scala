@@ -2,21 +2,21 @@ package es.weso.manifest
 import es.weso.rdf.nodes._
 
 case class Manifest(
-    label: Option[String], 
+    label: Option[String],
     comment: Option[String],
     entries: List[Entry],
     includes: List[(IRI, Option[Manifest])]
     )
-    
+
 case class Entry(
     entryType: EntryType,
-    name: String, 
+    name: String,
     action: ManifestAction,
     result: Result,
     status: Status,
     specRef: Option[IRI]
-    ) 
-    
+    )
+
 sealed trait EntryType
 final case object Validate extends EntryType
 final case object MatchNodeShape extends EntryType
@@ -26,7 +26,6 @@ final case object WellFormedSchema extends EntryType
 final case object NonWellFormedSchema extends EntryType
 final case object ConvertSchemaSyntax extends EntryType
 
-    
 case class ManifestAction(
     schema: Option[IRI],
     schemaFormat: Option[String],
@@ -39,13 +38,12 @@ case class ManifestAction(
   def setSchema(iri: IRI): ManifestAction = {
     this.copy(schema = Some(iri))
   }
-  
+
   def setData(iri: IRI): ManifestAction = {
     this.copy(data = Some(iri))
   }
-  
 }
-    
+
 object ManifestAction {
 
   def apply(): ManifestAction = {
@@ -58,7 +56,7 @@ object ManifestAction {
         shape = None)
   }
 }
-    
+
 sealed trait Result {
 
   def asBoolean: Option[Boolean] = {
@@ -67,27 +65,45 @@ sealed trait Result {
       case _ => None
     }
   }
-} 
 
-final case object ValidResult 
-    extends Result
+  val isValid: Boolean
+}
+
+final case object ValidResult
+    extends Result {
+  override val isValid = true
+}
+
 final case class NotValidResult(
-    errors: Set[ErrorCondition]
-    ) extends Result
+    errors: Set[ResultError]
+) extends Result {
+  override val isValid = false
+}
+
 final case class BooleanResult(
     value: Boolean
-    ) extends Result
+    ) extends Result {
+  override val isValid = value
+}
+
 final case class IRIResult(
     value: IRI
-    ) extends Result
-final case object EmptyResult extends Result
-    
+    ) extends Result {
+  override val isValid = false
+}
 
-final case class ErrorCondition(
-    root: Option[IRI], 
-    predicate: Option[IRI],
-    subject: Option[IRI],
-    obj: Option[IRI]
+final case object EmptyResult
+    extends Result {
+  override val isValid = false
+}
+
+final case class ResultError(
+    errorType: Option[IRI],
+    focusNode: Option[IRI],
+    path: Option[IRI],
+    severity: Option[IRI],
+    sourceConstraintComponent: Option[IRI],
+    value: Option[RDFNode]
     )
 
 case class Status(value: IRI)
