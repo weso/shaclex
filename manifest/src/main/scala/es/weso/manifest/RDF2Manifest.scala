@@ -258,23 +258,19 @@ trait RDF2Manifest
   }
 
   override def objectFromPredicateOptional(p:IRI): RDFParser[Option[RDFNode]] = { (n,rdf) => {
-    println(s"object from predicate optional $p for node $n")
     optional(objectFromPredicate(p))(n,rdf)
    }
   }
 
   def iriFromPredicateOptional(p:IRI): RDFParser[Option[IRI]] = { (n,rdf) => {
-    println(s"object from predicate optional $p for node $n")
     optional(iriFromPredicate(p))(n,rdf)
    }
   }
 
   override def optional[A](parser:RDFParser[A]): RDFParser[Option[A]] = { (n,rdf) => {
-    println(s"optional on node...$n")
     parser(n,rdf) match {
       case Success(v) => Success(Some(v))
       case Failure(e) => {
-        println(s"Failed with exception $e")
         Success(None)
       }
     }
