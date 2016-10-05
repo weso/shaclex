@@ -10,6 +10,8 @@ object ManifestPrefixes {
   lazy val dc = IRI("http://purl.org/dc/elements/1.1/")
   lazy val dawgt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
   lazy val rdfs = IRI("http://www.w3.org/2000/01/rdf-schema#")
+  lazy val rdf = IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+  lazy val sh = IRI("http://www.w3.org/ns/shacl#")
 
   lazy val mf_Manifest = mf.add("Manifest")
   lazy val mf_entries = mf.add("entries")
@@ -19,8 +21,19 @@ object ManifestPrefixes {
   lazy val mf_result = mf.add("result")
   lazy val mf_status = mf.add("status")
 
+  lazy val rdf_type = rdf + "type"
+
+  lazy val sh_focusNode = sh + "focusNode"
+  lazy val sh_path = sh + "path"
+  lazy val sh_severity = sh + "severity"
+  lazy val sh_sourceConstraintComponent  = sh + "sourceConstraintComponent"
+  lazy val sh_sourceShape  = sh + "sourceConstraintComponent"
+  lazy val sh_value  = sh + "value"
+  lazy val sh_result  = sh + "result"
+
   lazy val rdfs_label = rdfs.add("label")
   lazy val rdfs_comment = rdfs.add("comment")
+  
   lazy val sht_proposed = sht.add("proposed")
   lazy val sht_approved = sht.add("approved")
   lazy val sht_rejected = sht.add("rejected")
@@ -33,9 +46,16 @@ object ManifestPrefixes {
   lazy val sht_node = sht.add("node")
   lazy val sht_focus = sht.add("focus")
   lazy val sht_shape = sht.add("shape")
+  lazy val sht_details = sht + "details"
+  lazy val sht_pair = sht + "pair"
+  lazy val sht_validationReport = sht + "validationReport"
+  lazy val sht_validatedPairs = sht + "validatedPairs"
+  lazy val sht_Valid = sht + "Valid"
+  lazy val sht_NotValid = sht + "NotValid"
   lazy val sht_Validate = sht.add("Validate")
   lazy val sht_ValidationTest = sht.add("ValidationTest")
   lazy val sht_ValidationFailure = sht.add("ValidationFailure")
+
   lazy val sht_WellFormedSchema = sht.add("WellFormedSchema")
   lazy val sht_NonWellFormedSchema = sht.add("NonWellFormedSchema")
   lazy val sht_MatchNodeShape = sht.add("MatchNodeShape")

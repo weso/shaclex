@@ -12,7 +12,7 @@ case class Entry(
     entryType: EntryType,
     name: String,
     action: ManifestAction,
-    results: Set[Result],
+    result: Result,
     status: Status,
     specRef: Option[IRI]
     )
@@ -69,16 +69,23 @@ sealed trait Result {
   val isValid: Boolean
 }
 
-final case object ValidResult
-    extends Result {
+final case class ValidResult(
+ validatedPairs: List[ValidPair]
+) extends Result {
   override val isValid = true
 }
 
 final case class NotValidResult(
-    errors: Set[ResultError]
+    report: ValidationReport,
+    validatedPairs: Set[ValidPair]
 ) extends Result {
   override val isValid = false
 }
+
+case class ValidPair(
+  node: RDFNode,
+  shape: RDFNode
+)
 
 final case class BooleanResult(
     value: Boolean
@@ -94,16 +101,19 @@ final case class IRIResult(
 
 final case object EmptyResult
     extends Result {
-  override val isValid = false
+  override val isValid = true
 }
 
-final case class ResultError(
+final case class ValidationReport(violationErrors: Set[ViolationError])
+
+final case class ViolationError(
     errorType: Option[IRI],
     focusNode: Option[IRI],
     path: Option[IRI],
     severity: Option[IRI],
     sourceConstraintComponent: Option[IRI],
+    sourceShape: Option[IRI],
     value: Option[RDFNode]
     )
 
-case class Status(value: IRI)
+final case class Status(value: IRI)

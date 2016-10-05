@@ -10,7 +10,7 @@ class RDF2ManifestTest extends
     it("Read example manifest") {
       val fileName = "manifest/src/test/resources/manifest1.ttl"
       RDF2Manifest.read(fileName,"") match {
-        case Failure(e) => fail(s"Error reading $fileName: $e")
+        case Failure(e) => fail(s"Error reading $fileName\n$e")
         case Success(mf) => info(s"Manifest successfully read. ${mf.treeString}")
       }
     }

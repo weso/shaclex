@@ -50,13 +50,8 @@ trait RDF2Manifest
           )
  }
 
- def entries:RDFParser[Seq[Entry]] = { (n,rdf) => {
-   for {
-     es <- rdfListForPredicate(mf_entries)(n,rdf)
-     entries <- group(entry,es)(n,rdf)
-   } yield entries
- }
- }
+ def entries:RDFParser[Seq[Entry]] =
+   parsePropertyList(mf_entries, entry)
 
  def getEntryType(node: RDFNode): Try[EntryType] = {
    node match {
@@ -78,27 +73,20 @@ trait RDF2Manifest
      name <- stringFromPredicate(mf_name)(n,rdf)
      actionNode <- objectFromPredicate(mf_action)(n,rdf)
      action <- action(actionNode,rdf)
-     resultNodes <- objectsFromPredicate(mf_result)(n,rdf)
-     results <- parseList(resultNodes,result,rdf)
+     resultNode <- objectFromPredicate(mf_result)(n,rdf)
+     result <- result(resultNode,rdf)
      statusIri <- iriFromPredicate(mf_status)(n,rdf)
      specRef <- optional(iriFromPredicate(sht_specRef))(n,rdf)
    } yield
-    Entry(
-        entryType = entryType,
-        name = name,
-        action = action,
-        results = results,
-        status = Status(statusIri),
-        specRef = specRef
-    )
+     Entry(entryType = entryType,
+      name = name,
+      action = action,
+      result = result,
+      status = Status(statusIri),
+      specRef = specRef
+     )
  }
 
- def parseList[A](xs: Set[RDFNode], p: RDFParser[A], rdf: RDFReader): Try[Set[A]] = {
-   Try(xs.map(n => p(n,rdf)).map(_.get))
- }
-
- def fail[A](str: String): Try[A] =
-   Failure(throw new Exception(str))
 
  def iriDataFormat2str(iri: IRI): Try[String] = {
    iri match {
@@ -118,12 +106,12 @@ trait RDF2Manifest
 
  def action: RDFParser[ManifestAction] = { (n,rdf) =>
    for {
-     schema <- optional(iriFromPredicate(sht_schema))(n,rdf)
-     schemaFormatIRI <- optional(iriFromPredicate(sht_schema_format))(n,rdf)
-     schemaFormat <- mapOptional(schemaFormatIRI,iriSchemaFormat2str)
      data <- optional(iriFromPredicate(sht_data))(n,rdf)
+     schema <- iriFromPredicateOptional(sht_schema)(n,rdf)
      dataFormatIri <- optional(iriFromPredicate(sht_data_format))(n,rdf)
      dataFormat <- mapOptional(dataFormatIri,iriDataFormat2str)
+     schemaFormatIRI <- optional(iriFromPredicate(sht_schema_format))(n,rdf)
+     schemaFormat <- mapOptional(schemaFormatIRI,iriSchemaFormat2str)
      schemaOutputFormat <- optional(iriFromPredicate(sht_schema_output_format))(n,rdf)
      node <- optional(oneOfPredicates(Seq(sht_node,sht_focus)))(n,rdf)
      shape <- optional(iriFromPredicate(sht_shape))(n,rdf)
@@ -149,7 +137,6 @@ trait RDF2Manifest
  } */
 
  def result: RDFParser[Result] = { (n,rdf) => {
-   println(s"Parsing result...$n")
    n match {
      case BooleanLiteral(b) => Success(BooleanResult(b))
      case iri:IRI =>
@@ -161,11 +148,84 @@ trait RDF2Manifest
   }
  }
 
- def compoundResult: RDFParser[Result] = ???
+ def compoundResult: RDFParser[Result] = (n,rdf) => {
+  iriFromPredicate(rdf_type)(n,rdf) match {
+    case Success(iri) => iri match {
+      case `sht_NotValid` => for {
+        detailsNode <- objectFromPredicate(sht_details)(n,rdf)
+        validationReport <- parsePropertyValue(sht_validationReport,validationReport)(detailsNode, rdf)
+        validatedPairs <- parsePropertyValue(sht_validatedPairs, validatedPairs)(detailsNode, rdf)
+        } yield NotValidResult(validationReport, validatedPairs)
+      case `sht_Valid` => Success(ValidResult(List()))
+      case _ => fail(s"Unsupporte type of compound result: $iri")
+    }
+    case Failure(e) => fail(s"Couldn't obtain rdf:type of node: $n")
+  }
+ }
 
- def noType(n: RDFNode, rdf: RDFReader): Boolean = ???
+ def validatedPairs: RDFParser[Set[ValidPair]] =
+   parsePropertyValues(sht_pair, parsePair)
 
- def mapOptional[A,B](optA: Option[A], fn: A => Try[B]): Try[Option[B]] = {
+ def parsePair: RDFParser[ValidPair] = (n,rdf) => for {
+   node <- objectFromPredicate(sht_node)(n,rdf)
+   shape <- objectFromPredicate(sht_shape)(n,rdf)
+ } yield ValidPair(node,shape)
+
+ def validationReport: RDFParser[ValidationReport] = (n,rdf) =>
+   parsePropertyValues(sh_result, violationError)(n,rdf).
+   map(ValidationReport(_))
+
+ def violationError: RDFParser[ViolationError] = (n,rdf) => for {
+   errorType <- optional(iriFromPredicate(rdf_type))(n,rdf)
+   focusNode <- optional(iriFromPredicate(sh_focusNode))(n,rdf)
+   path <- optional(iriFromPredicate(sh_path))(n,rdf)
+   severity <- optional(iriFromPredicate(sh_severity))(n,rdf)
+   scc <- optional(iriFromPredicate(sh_sourceConstraintComponent))(n,rdf)
+   sourceShape <- optional(iriFromPredicate(sh_sourceShape))(n,rdf)
+   value <- optional(objectFromPredicate(sh_value))(n,rdf)
+ } yield ViolationError(errorType,focusNode,path,severity,scc,sourceShape,value)
+
+ def noType(n: RDFNode, rdf: RDFReader): Boolean = {
+   val types = objectsFromPredicate(rdf_type)(n,rdf)
+   types.getOrElse(Set()).isEmpty
+ }
+
+
+ // TODO
+ def includes(derefIncludes: Boolean): RDFParser[List[(IRI,Option[Manifest])]] = { (n,rdf) =>
+   Success(List())
+ }
+
+   def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n,rdf) => for {
+   value <- objectFromPredicate(pred)(n,rdf)
+   result <- parser(value,rdf)
+ } yield result
+
+ def parsePropertyValues[A](pred: IRI, parser: RDFParser[A]): RDFParser[Set[A]] = (n,rdf) => for {
+   values <- objectsFromPredicate(pred)(n,rdf)
+   results <- parseSet(values,parser,rdf)
+ } yield results
+
+ def parsePropertyList[A](
+   pred: IRI,
+   parser: RDFParser[A]): RDFParser[List[A]] = (n,rdf) => for {
+   ls <- rdfListForPredicate(pred)(n,rdf)
+   vs <- parseList(ls,parser,rdf)
+ } yield vs
+
+ def parseList[A](xs: List[RDFNode],
+                  parser: RDFParser[A],
+                  rdf: RDFReader): Try[List[A]] = {
+   Try(xs.map(n => parser(n,rdf)).map(_.get))
+ }
+
+ def parseSet[A](xs: Set[RDFNode],
+                 parser: RDFParser[A],
+                 rdf: RDFReader): Try[Set[A]] = {
+   Try(xs.map(n => parser(n,rdf)).map(_.get))
+ }
+
+   def mapOptional[A,B](optA: Option[A], fn: A => Try[B]): Try[Option[B]] = {
    optA match {
      case None => Success(None)
      case Some(x) => {
@@ -182,12 +242,44 @@ trait RDF2Manifest
    oneOf(ps)
  }
 
- // TODO
- def includes(derefIncludes: Boolean):
-     RDFParser[List[(IRI,Option[Manifest])]] = { (n,rdf) =>
-   Success(List())
- }
+ def fail[A](str: String): Try[A] =
+   Failure(new Exception(str))
 
+ /**
+  * Override this method to provide more info
+  */
+ override def objectFromPredicate(p: IRI): RDFParser[RDFNode] = { (n, rdf) =>
+    val ts = rdf.triplesWithSubjectPredicate(n, p)
+    ts.size match {
+      case 0 => fail(s"objectFromPredicate: Not found triples with subject $n and predicate $p \nRDF: ${rdf.serialize("TURTLE")}")
+      case 1 => Success(ts.head.obj)
+      case _ => fail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
+    }
+  }
+
+  override def objectFromPredicateOptional(p:IRI): RDFParser[Option[RDFNode]] = { (n,rdf) => {
+    println(s"object from predicate optional $p for node $n")
+    optional(objectFromPredicate(p))(n,rdf)
+   }
+  }
+
+  def iriFromPredicateOptional(p:IRI): RDFParser[Option[IRI]] = { (n,rdf) => {
+    println(s"object from predicate optional $p for node $n")
+    optional(iriFromPredicate(p))(n,rdf)
+   }
+  }
+
+  override def optional[A](parser:RDFParser[A]): RDFParser[Option[A]] = { (n,rdf) => {
+    println(s"optional on node...$n")
+    parser(n,rdf) match {
+      case Success(v) => Success(Some(v))
+      case Failure(e) => {
+        println(s"Failed with exception $e")
+        Success(None)
+      }
+    }
+  }
+ }
 }
 
 object RDF2Manifest extends RDF2Manifest {

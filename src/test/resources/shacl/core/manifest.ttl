@@ -24,19 +24,35 @@
    	  sht:data <example1.ttl> ;
 	] ;
 	mf:result [
-      rdf:type sh:ValidationResult ;
-      sh:focusNode ex:InvalidResource1 ;
-      sh:path ex:dateProperty ;
-      sh:severity sh:Violation ;
-      sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
-      sh:value "2011-01-01"^^xsd:dateTime ;
-	] ;
-    mf:result [
-      rdf:type sh:ValidationResult ;
-      sh:focusNode ex:InvalidResource1 ;
-      sh:path ex:integerProperty ;
-      sh:severity sh:Violation ;
-      sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
-      sh:value 11.1 ;
-	] ;
+      rdf:type sht:NotValid ;
+      sht:details [
+        sht:validationReport [
+         a sh:ValidationReport ;
+         sh:result [
+          a sh:ValidationResult;
+          sh:focusNode ex:InvalidResource1 ;
+           sh:path ex:dateProperty ;
+           sh:severity sh:Violation ;
+          sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
+          sh:sourceShape ex:TestShape;
+          sh:value "2011-01-01"^^xsd:dateTime ;
+	    ] ;
+        sh:result [
+         a sh:ValidationResult ;
+         sh:focusNode ex:InvalidResource1 ;
+         sh:path ex:integerProperty ;
+         sh:severity sh:Violation ;
+         sh:sourceShape ex:TestShape ;
+         sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
+         sh:value 11.1 ;
+	    ] ;
+      ];
+      sht:validatedPairs [
+       sht:pair [
+         sht:node ex:ValidResource ;
+         sht:shape ex:TestShape
+       ];
+      ];
+     ];
+    ];
 	mf:status sht:proposed.

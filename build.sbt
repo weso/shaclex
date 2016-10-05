@@ -5,7 +5,8 @@ lazy val shaclex =
   (project in file(".")).
   settings(publishSettings:_*).
   settings(commonSettings:_*).
-  aggregate(manifest)
+  aggregate(manifest).
+  dependsOn(manifest)
 
 
 lazy val manifest =
