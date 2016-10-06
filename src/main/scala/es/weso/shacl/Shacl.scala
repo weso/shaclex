@@ -1,5 +1,6 @@
 package es.weso.shacl
 import es.weso.rdf.nodes._
+import es.weso.rdf.PrefixMap
 import util._
 import SHACLPrefixes._
 import es.weso.shacl.converter.Shacl2RDF
@@ -8,9 +9,12 @@ object Shacl {
   case object Unbounded
   lazy val defaultMin = 0
   lazy val defaultMax = Unbounded
+  lazy val defaultFormat = "TURTLE"
 }
 
-case class Schema(shapes: Seq[Shape]) {
+case class Schema(
+  pm: PrefixMap,
+  shapes: Seq[Shape]) {
 
   /**
    * Get the shape associated to an IRI
@@ -240,7 +244,11 @@ case object IRIOrLiteral extends NodeKindType {
 
 // Companion objects
 object Schema {
-  val empty = Schema(shapes=Seq())
+  val empty =
+    Schema(
+      pm = SHACLPrefixes.defaultPrefixMap,
+      shapes=Seq()
+    )
 }
 
 object Shape {

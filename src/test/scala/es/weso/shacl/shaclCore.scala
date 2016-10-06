@@ -20,6 +20,7 @@ class ShaclCore extends
   val shaclFolder = conf.getString("shaclCore")
   val fileName = shaclFolder + "/manifest.ttl"
 
+
 describe("Validate shacl Core") {
   RDF2Manifest.read(fileName,"") match {
     case Failure(e) => println(s"Error reading manifest file:$e")
@@ -36,7 +37,19 @@ def processManifest(m: Manifest): Unit = {
 
 def processEntry(e: ManifestEntry): Unit = {
   it(s"Should check entry ${e.name}") {
+    val schema = getSchema(e.action)
     info("Processing entry")
+  }
+}
+
+def getSchema(a: ManifestAction): Try[Schema] = {
+  val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
+  data match {
+    case None => Schema.empty
+    case Some(uri) => for {
+      rdf <- RDFAsJenaModel.fromURI(uri, dataFormat)
+      schema <- RDF2Shacl.getShacl(rdf)
+    } yield schema
   }
 }
 

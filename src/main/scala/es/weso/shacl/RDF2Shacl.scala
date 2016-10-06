@@ -35,12 +35,12 @@ object RDF2Shacl
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap
    */
-  def getShacl(rdf: RDFReader): Try[(Schema, PrefixMap)] = {
+  def getShacl(rdf: RDFReader): Try[Schema] = {
     parsedShapes.clear()
     val pm = rdf.getPrefixMap
     for {
       shapes <- shapes(rdf)
-    } yield (Schema(shapes), pm)
+    } yield (Schema(pm,shapes))
   }
 
   def shapes(rdf: RDFReader): Try[Seq[Shape]] = {

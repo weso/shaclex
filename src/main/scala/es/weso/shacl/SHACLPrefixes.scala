@@ -1,6 +1,7 @@
 package es.weso.shacl
 
 import es.weso.rdf.nodes.IRI
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.PREFIXES._
 
 object SHACLPrefixes {
@@ -10,14 +11,14 @@ object SHACLPrefixes {
   }
 
   lazy val sh = IRI("http://www.w3.org/ns/shacl#")
-  
+
   lazy val sh_IRI = sh + "IRI"
   lazy val sh_Literal = sh + "Literal"
   lazy val sh_BlankNode = sh + "BNode"
   lazy val sh_IRIOrLiteral = sh + "IRIOrLiteral"
   lazy val sh_BlankNodeOrIRI = sh +  "BlankNodeOrIRI"
   lazy val sh_BlankNodeOrLiteral = sh +  "BlankNodeOrLiteral"
-  
+
   lazy val sh_Shape = sh + "Shape"
   lazy val sh_property = sh + "property"
   lazy val sh_predicate = sh + "predicate"
@@ -55,14 +56,20 @@ object SHACLPrefixes {
   lazy val sh_in = sh + "in"
   lazy val sh_name = sh + "name"
   lazy val sh_description = sh + "description"
-  
+
   lazy val sh_Schema = sh + "Schema"
   lazy val sh_targetNode = sh + "targetNode"
   lazy val sh_targetClass = sh + "targetClass"
   lazy val sh_targetSubjectsOf = sh + "targetSubjectsOf"
   lazy val sh_targetObjectsOf = sh + "targetObjectsOf"
-  
+
   lazy val sh_text = sh + "text"
-  
+
+  lazy val defaultPrefixMap = PrefixMap(
+    Map("sh" -> sh,
+        "rdf" -> rdf,
+        "xsd" -> xsd,
+        "rdfs" -> rdfs)
+  )
 
 }

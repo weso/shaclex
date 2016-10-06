@@ -154,5 +154,5 @@ describe("RDf2Shacl Syntax") {
     pc.components should contain only(MinCount(1))
   }
 }
-  
+
 }
