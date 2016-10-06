@@ -3,6 +3,7 @@ package es.weso.shex.converter
 import es.weso._
 import es.weso.shacl._
 import es.weso.rdf.nodes._
+import es.weso.rdf.PrefixMap
 import cats._
 import cats.data._
 import cats.implicits._
@@ -11,7 +12,16 @@ import es.weso.converter._
 object ShEx2Shacl extends Converter {
 
   def shex2Shacl(schema: shex.Schema): Result[shacl.Schema] =
-    getShaclShapes(schema).map(shapes => shacl.Schema(shapes))
+    getShaclShapes(schema).map(
+      shapes => shacl.Schema(
+        pm = PrefixMap(cnvPrefixMap(schema.prefixMap)),
+        shapes = shapes
+      )
+    )
+
+  def cnvPrefixMap(pm: Map[shex.Prefix,IRI]): Map[String,IRI] = {
+    pm.map{ case (prefix,value) => (prefix.s,value) }
+  }
 
   def getShaclShapes(schema: shex.Schema): Result[Seq[shacl.Shape]] = {
     val shapesMap: Map[shex.ShapeLabel,shex.ShapeExpr] = schema.shapes.getOrElse(Map())

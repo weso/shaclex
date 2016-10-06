@@ -4,6 +4,7 @@ import es.weso.shacl._
 import es.weso.rdf.nodes._
 import org.scalatest._
 import es.weso.shacl.converter._
+import es.weso.rdf.PrefixMap
 
 class shex2shaclTest extends FunSpec with Matchers with EitherValues {
 
@@ -18,8 +19,10 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
          ))
       )
 
-      val shaclSchema: shacl.Schema = 
-        shacl.Schema(Seq(shacl.Shape.empty.copy(
+      val shaclSchema: shacl.Schema =
+        shacl.Schema(
+          pm = PrefixMap.empty,
+          shapes = Seq(shacl.Shape.empty.copy(
           id = Some(IRI("http://example.org/S")),
           constraints = Seq(
             NodeConstraint(
@@ -47,14 +50,16 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
          ))
       )
 
-      val shaclSchema: shacl.Schema = 
-        shacl.Schema(Seq(shacl.Shape.empty.copy(
-          id = Some(IRI("http://example.org/S")),
-          constraints = Seq(
-            NodeConstraint(
+      val shaclSchema: shacl.Schema =
+        shacl.Schema(
+          pm = PrefixMap.empty,
+          shapes = Seq(shacl.Shape.empty.copy(
+            id = Some(IRI("http://example.org/S")),
+            constraints = Seq(
+             NodeConstraint(
               List(NodeKind(BlankNodeKind))
-            ))
-        )))
+             ))
+          )))
 
       val r = Shacl2ShEx.shacl2ShEx(shaclSchema)
       r.fold(

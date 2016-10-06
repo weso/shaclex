@@ -7,9 +7,9 @@ import es.weso.rdf._
 import util._
 import Validator._
 
-class ShapeValidatorTest extends 
+class ShapeValidatorTest extends
   FunSpec with Matchers with TryValues with OptionValues {
-  
+
 describe("Shapes") {
     val ex = IRI("http://example.org/")
     val str = """|@prefix : <http://example.org/>
@@ -21,7 +21,7 @@ describe("Shapes") {
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
-      (schema,pm) <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.getShacl(rdf)
     } yield (rdf,schema)
     val (rdf,schema) = attempt.success.value
     val s = ex + "S"

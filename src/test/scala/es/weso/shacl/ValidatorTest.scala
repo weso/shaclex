@@ -7,10 +7,10 @@ import es.weso.rdf._
 import util._
 import Validator._
 
-class ValidatorTest extends 
-  FunSpec with Matchers with TryValues with OptionValues 
+class ValidatorTest extends
+  FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
-  
+
 describe("Validator scope Nodes") {
 
   it("should be able to get the target nodes to validate") {
@@ -23,7 +23,7 @@ describe("Validator scope Nodes") {
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
-      (schema,pm) <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.getShacl(rdf)
     } yield (rdf,schema)
     val (rdf,schema) = attempt.success.value
     val S = ex + "S"
@@ -33,7 +33,7 @@ describe("Validator scope Nodes") {
     val z = ex + "z"
     val s = Shape.empty.copy(id = Some(S), targets = Seq(TargetNode(x),TargetNode(y)))
     val t = Shape.empty.copy(id = Some(T), targets = Seq(TargetNode(z)))
-    val targetNodes = Validator(schema).targetNodes 
+    val targetNodes = Validator(schema).targetNodes
     targetNodes.size should be(3)
     targetNodes should contain (x,s)
     targetNodes should contain (y,s)
@@ -45,7 +45,7 @@ describe("Validator scope Nodes") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; 
+                 |:S a sh:Shape;
                  |   sh:targetNode :x ;
                  |   sh:property [ sh:predicate :p ;
                  |                 sh:minCount 1
@@ -57,7 +57,7 @@ describe("Validator scope Nodes") {
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
-      (schema,pm) <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.getShacl(rdf)
     } yield (rdf,schema)
     val (rdf,schema) = attempt.success.value
     val S = ex + "S"
@@ -69,7 +69,7 @@ describe("Validator scope Nodes") {
     val pc = PropertyConstraint(id = None,predicate = p,
             components= Seq(MinCount(1)))
     val s = Shape.empty.copy(
-        id = Some(S), 
+        id = Some(S),
         targets = List(TargetNode(x)),
         constraints = List(pc))
     val validator = Validator(schema)
@@ -94,7 +94,7 @@ describe("minCount") {
     val s = Shape.empty
     checked.isOK should be(true)
   }
-/*  
+/*
  it("validates minCount(1) when there are 2") {
   val ex = IRI("http://example.org/")
   val str = s"""|@prefix : $ex

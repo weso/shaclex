@@ -8,7 +8,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.PREFIXES._
 import es.weso.utils.TryUtils._
-import cats._, data._
+import cats._
 import cats.implicits._
 import SHACLPrefixes._
 

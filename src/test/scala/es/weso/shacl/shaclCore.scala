@@ -11,6 +11,7 @@ import util._
 import Validator._
 import es.weso.utils.MyFileUtils._
 import es.weso.manifest.{Entry => ManifestEntry,_}
+import java.net._
 
 class ShaclCore extends
   FunSpec with Matchers with TryValues with OptionValues
@@ -44,12 +45,15 @@ def processEntry(e: ManifestEntry): Unit = {
 
 def getSchema(a: ManifestAction): Try[Schema] = {
   val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
-  data match {
-    case None => Schema.empty
-    case Some(uri) => for {
-      rdf <- RDFAsJenaModel.fromURI(uri, dataFormat)
+  a.data match {
+    case None => Success(Schema.empty)
+    case Some(iri) => {
+      println(s"iri: $iri")
+for {
+      rdf <- RDFAsJenaModel.fromFile(new File(shaclFolder + "/" + iri), dataFormat)
       schema <- RDF2Shacl.getShacl(rdf)
     } yield schema
+    }
   }
 }
 
@@ -57,9 +61,8 @@ def validate(str: String): Unit = {
   RDFAsJenaModel.fromChars(str,"TURTLE") match {
     case Failure(e) => fail(s"Error: $e\nCannot parse as RDF. String: \n$str")
     case Success(rdf) => RDF2Shacl.getShacl(rdf) match {
-      case Failure(e) => fail(s"Error: $e\nCannot get Schema from RDF. String: \n${rdf.serialize("TURTLE")}")
-      case Success(pair) => {
-        val (schema,pm) = pair
+      case Failure(e) => fail(s"Error: $e\nCannot get Schema. RDF:\n${rdf.serialize("TURTLE")}")
+      case Success(schema) => {
         val validator = Validator(schema)
         val result = validator.validateAll(rdf)
         if (result.isOK) info("Valid")

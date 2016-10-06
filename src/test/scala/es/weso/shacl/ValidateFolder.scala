@@ -38,8 +38,7 @@ def validate(str: String): Unit = {
     case Failure(e) => fail(s"Error: $e\nCannot parse as RDF. String: \n$str")
     case Success(rdf) => RDF2Shacl.getShacl(rdf) match {
       case Failure(e) => fail(s"Error: $e\nCannot get Schema from RDF. String: \n${rdf.serialize("TURTLE")}")
-      case Success(pair) => {
-        val (schema,pm) = pair
+      case Success(schema) => {
         val validator = Validator(schema)
         val result = validator.validateAll(rdf)
         if (result.isOK) info("Valid")

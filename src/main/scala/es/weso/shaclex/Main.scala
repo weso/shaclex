@@ -4,19 +4,17 @@ import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import es.weso.shacl._
 import es.weso.rdf.jena.RDFAsJenaModel
-import org.apache.jena.riot._
 import scala.concurrent.duration._
 import org.apache.log4j._
 import es.weso.utils.FileUtils
-import es.weso.utils.TryUtils
 import util._
-import es.weso.rdf.{ PrefixMap, RDFReader }
 import java.nio.file._
 import es.weso.shacl.RDF2Shacl
+import es.weso.rdf.RDFReader
 import java.io.File
 
 object Main extends App {
-  
+
   lazy val log = LogManager.getRootLogger
   val appenders = log.getAllAppenders
   val appender: ConsoleAppender = log.getAppender("stdout").asInstanceOf[ConsoleAppender]
@@ -25,7 +23,7 @@ object Main extends App {
   appender.setThreshold(error)
 
   override def main(args: Array[String]): Unit = {
-    
+
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
     val startTime = System.nanoTime()
@@ -33,15 +31,15 @@ object Main extends App {
 
     val validateOptions = for {
       rdf <- getRDFReader(opts)
-      (schema,pm) <- getSchema(opts,rdf)
-    } yield (rdf,schema,pm)
+      schema <- getSchema(opts,rdf)
+    } yield (rdf,schema)
 
     validateOptions match {
-      case Success((rdf,schema,pm)) => {
+      case Success((rdf,schema)) => {
         if (opts.show()) {
           println("Schema:" + schema.serialize("TURTLE"))
         }
-        
+
         val validator = Validator(schema)
         val validated = validator.validateAll(rdf)
         println(s"Result: ${validated.show}")
@@ -89,37 +87,37 @@ object Main extends App {
       val path = Paths.get(opts.data())
       RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
     } else {
-      log.info("RDF Data option not specified") 
+      log.info("RDF Data option not specified")
       Success(RDFAsJenaModel.empty)
     }
   }
-  
-   def getSchema(opts: MainOpts, rdf: RDFReader): Try[(Schema,PrefixMap)] = {
+
+  def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
     if (opts.shacl.isDefined) {
       val path = Paths.get(opts.shacl())
       for {
         shaclRdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.shaclFormat())
-        (schema,pm) <- extractSchema(rdf)
-      } yield (schema,pm)
+        schema <- extractSchema(rdf)
+      } yield schema
     } else {
       log.info("Schema not specified. Extracting schema from data")
       extractSchema(rdf)
     }
   }
 
-  def getShacl(file: File, format: String): Try[(Schema,PrefixMap)] = {
+  def getShacl(file: File, format: String): Try[Schema] = {
     format match {
       case "TURTLE" => for {
         rdf <- RDFAsJenaModel.fromFile(file,format)
-        (schema,pm) <- extractSchema(rdf)
-      } yield (schema,pm)
-      case _ => Failure(throw new Exception("Unsupported format: " + format))
+        schema <- extractSchema(rdf)
+      } yield (schema)
+      case _ => Failure(new Exception("Unsupported format: " + format))
     }
   }
-  
-  def extractSchema(rdf:RDFReader): Try[(Schema,PrefixMap)] = {
+
+  def extractSchema(rdf:RDFReader): Try[Schema] = {
     RDF2Shacl.getShacl(rdf)
   }
 
 }
-    
+

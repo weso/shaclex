@@ -19,12 +19,12 @@ object Shacl2RDF {
     val rdf: RDFAsJenaModel = toRDF(shacl,RDFAsJenaModel.empty)
     Success(rdf.serialize(format))
   }
-  
+
   def toRDF(shacl: Schema, initial: RDFAsJenaModel): RDFAsJenaModel = {
     val result = schema(shacl).run(initial)
     result.value._1
   }
-  
+
   def schema(shacl: Schema): RDFSaver[Unit] = {
     val rs = shacl.shapes.toList.map(shape(_))
     for {
@@ -35,7 +35,7 @@ object Shacl2RDF {
       _ <- rs.sequence
     } yield ()
   }
-  
+
   def shape(shape: Shape): RDFSaver[RDFNode] = for {
     shapeNode <- makeId(shape.id)
     _ <- targets(shapeNode, shape.targets)
@@ -43,42 +43,41 @@ object Shacl2RDF {
     _ <- closed(shapeNode, shape.closed)
     _ <- ignoredProperties(shapeNode, shape.ignoredProperties)
   } yield shapeNode
-  
-  
+
   def makeId(v: Option[IRI]): RDFSaver[RDFNode] = v match {
     case None => for {
       bNode <- createBNode()
       _ <- addTriple(bNode,rdf_type,sh_Shape)
     } yield(bNode)
-    case Some(iri) =>  
+    case Some(iri) =>
       addTriple(iri,rdf_type,sh_Shape) >> State.pure(iri)
   }
-  
-  def targets(id: RDFNode, ts: Seq[Target]): RDFSaver[Unit] = 
+
+  def targets(id: RDFNode, ts: Seq[Target]): RDFSaver[Unit] =
     saveList(ts.toList, target(id))
-    
+
   def target(id: RDFNode)(t: Target): RDFSaver[Unit] = t match {
     case TargetNode(node) => addTriple(id,sh_targetNode,node)
     case TargetClass(node) => addTriple(id,sh_targetClass,node)
     case TargetSubjectsOf(node) => addTriple(id,sh_targetSubjectsOf,node)
     case TargetObjectsOf(node) => addTriple(id,sh_targetObjectsOf,node)
   }
-  
-  def constraints(id: RDFNode, ts: Seq[Constraint]): RDFSaver[Unit] = 
+
+  def constraints(id: RDFNode, ts: Seq[Constraint]): RDFSaver[Unit] =
     saveList(ts.toList, constraint(id))
-    
-  def closed(id: RDFNode, b: Boolean): RDFSaver[Unit] = 
-    addTriple(id, sh_closed, BooleanLiteral(b))        
-    
+
+  def closed(id: RDFNode, b: Boolean): RDFSaver[Unit] =
+    addTriple(id, sh_closed, BooleanLiteral(b))
+
   def ignoredProperties(id: RDFNode, ignored: List[IRI]): RDFSaver[Unit] =
     if (!ignored.isEmpty) {
-      for { 
+      for {
         nodeList <- saveToRDFList(ignored,(iri: IRI) => State.pure(iri))
         _ <- addTriple(id,sh_ignoredProperties,nodeList)
       } yield ()
-    } else 
+    } else
       State.pure(())
-    
+
   def constraint(id: RDFNode)(t: Constraint): RDFSaver[Unit] = t match {
     case PropertyConstraint(i,pred,cs) => for {
       node <- makeId(i)
@@ -87,9 +86,9 @@ object Shacl2RDF {
       _ <- saveList(cs.toList, component(node))
     } yield ()
     case pc: PathPropertyConstraint => ???
-    case NodeConstraint(cs) => saveList(cs, component(id)) 
+    case NodeConstraint(cs) => saveList(cs, component(id))
   }
-  
+
   def component(id: RDFNode)(c: Component): RDFSaver[Unit] = c match {
     case ClassComponent(v) => addTriple(id, sh_class, v)
     case Datatype(iri) => addTriple(id, sh_datatype, iri)
@@ -107,8 +106,8 @@ object Shacl2RDF {
                                case Some(f) => addTriple(id,sh_flags,StringLiteral(f))
                                case None => State.pure(())
                              })
-    case Stem(s) => addTriple(id,sh_stem,StringLiteral(s))                             
-    case UniqueLang(b) => addTriple(id,sh_uniqueLang,BooleanLiteral(b))                             
+    case Stem(s) => addTriple(id,sh_stem,StringLiteral(s))
+    case UniqueLang(b) => addTriple(id,sh_uniqueLang,BooleanLiteral(b))
     case Equals(p) => addTriple(id,sh_equals,p)
     case Disjoint(p) => addTriple(id,sh_disjoint,p)
     case LessThan(p) => addTriple(id,sh_lessThan,p)
@@ -139,14 +138,13 @@ object Shacl2RDF {
       nodeLs <- saveToRDFList(vs, (v: Value) => State.pure(v.rdfNode))
       _ <- addTriple(id,sh_in,nodeLs)
     } yield ()
-    
+
   }
-  
-  
-  def saveList[A](ls: List[A], f: A => RDFSaver[Unit]): RDFSaver[Unit] = { 
+
+  def saveList[A](ls: List[A], f: A => RDFSaver[Unit]): RDFSaver[Unit] = {
     ls.map(f(_)).sequence.map(_ => ())
   }
-  
+
   def saveToRDFList[A](ls: List[A], f: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = ls match {
     case Nil => State.pure(rdf_nil)
     case x :: xs => for {
@@ -157,18 +155,17 @@ object Shacl2RDF {
       _ <- addTriple(bNode,rdf_rest,rest)
     } yield bNode
   }
-  
-  def addTriple(s: RDFNode, p: IRI, o: RDFNode): RDFSaver[Unit] = 
+
+  def addTriple(s: RDFNode, p: IRI, o: RDFNode): RDFSaver[Unit] =
     State.modify(_.addTriple(RDFTriple(s,p,o)))
-  
-  def addPrefix(alias: String, value: String): RDFSaver[Unit] = 
+
+  def addPrefix(alias: String, value: String): RDFSaver[Unit] =
     State.modify(_.addPrefix(alias,value))
 
   def createBNode(): RDFSaver[RDFNode] = for {
     rdf <- State.get[RDFAsJenaModel]
-    val (bNode,newRdf) = rdf.createBNode
+    (bNode,newRdf) = rdf.createBNode
     _ <- State.set[RDFAsJenaModel](newRdf)
   } yield bNode
-    
-  
+
 }

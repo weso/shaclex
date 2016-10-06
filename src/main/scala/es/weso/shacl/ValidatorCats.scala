@@ -482,9 +482,9 @@ case class Validator(schema: Schema) {
     println(s"Checking closed ${node} ${ignoredProperties}, ${allowedProperties}")
     for {
       rdf <- getRDF
-      val neighbours = rdf.triplesWithSubject(node)
-      val predicates = neighbours.map(_.pred).toList
-      val notAllowed = predicates.diff(ignoredProperties).diff(allowedProperties)
+      neighbours = rdf.triplesWithSubject(node)
+      predicates = neighbours.map(_.pred).toList
+      notAllowed = predicates.diff(ignoredProperties).diff(allowedProperties)
       t <- condition(notAllowed.isEmpty, attempt,
         closedError(node, attempt, allowedProperties, ignoredProperties, notAllowed),
         s"Passes closed condition with predicates $predicates and ignoredProperties $ignoredProperties")
