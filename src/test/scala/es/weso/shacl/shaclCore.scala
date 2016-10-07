@@ -2,6 +2,7 @@ package es.weso.shacl
 
 import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
+import java.nio.file.Paths
 import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -10,7 +11,7 @@ import scala.io.Source
 import util._
 import Validator._
 import es.weso.utils.MyFileUtils._
-import es.weso.manifest.{Entry => ManifestEntry, _}
+import es.weso.manifest.{Entry => ManifestEntry, Result => ManifestResult, _}
 import java.net._
 
 class ShaclCore extends FunSpec with Matchers with TryValues with OptionValues
@@ -19,9 +20,10 @@ class ShaclCore extends FunSpec with Matchers with TryValues with OptionValues
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclCore")
   val fileName = shaclFolder + "/manifest.ttl"
+  val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
 
   describe(s"Validate shacl Core from manifest file located at $fileName") {
-    RDF2Manifest.read(fileName, shaclFolder) match {
+    RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI)) match {
       case Failure(e) => println(s"Error reading manifest file:$e")
       case Success(m) => {
         processManifest(m)
@@ -36,39 +38,37 @@ class ShaclCore extends FunSpec with Matchers with TryValues with OptionValues
 
   def processEntry(e: ManifestEntry): Unit = {
     it(s"Should check entry ${e.name}") {
-      val schema = getSchema(e.action)
-      info("Processing entry")
+      getSchemaRdf(e.action) match {
+        case Failure(f) => fail(s"Error processing Entry: $e \n $f")
+        case Success((schema,rdf)) => validate(schema,rdf,e.result)
+      }
     }
   }
 
-  def getSchema(a: ManifestAction): Try[Schema] = {
+  def getSchemaRdf(a: ManifestAction): Try[(Schema,RDFReader)] = {
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
     a.data match {
-      case None => Success(Schema.empty)
+      case None => Success(Schema.empty, RDFAsJenaModel.empty)
       case Some(iri) => {
         println(s"iri: ${iri.str}")
         for {
           rdf <- RDFAsJenaModel.fromURI(iri.str, dataFormat)
           schema <- RDF2Shacl.getShacl(rdf)
-        } yield schema
+        } yield (schema,rdf)
       }
     }
   }
 
-  def validate(str: String): Unit = {
-    RDFAsJenaModel.fromChars(str, "TURTLE") match {
-      case Failure(e) => fail(s"Error: $e\nCannot parse as RDF. String: \n$str")
-      case Success(rdf) => RDF2Shacl.getShacl(rdf) match {
-        case Failure(e) => fail(s"Error: $e\nCannot get Schema. RDF:\n${rdf.serialize("TURTLE")}")
-        case Success(schema) => {
-          val validator = Validator(schema)
-          val result = validator.validateAll(rdf)
-          if (result.isOK) info("Valid")
-          else fail(s"Not valid\n${result.show}")
-        }
-
-      }
-    }
+  def validate(schema: Schema, rdf: RDFReader, expectedResult: ManifestResult): Unit = {
+     val validator = Validator(schema)
+     val result = validator.validateAll(rdf)
+     expectedResult match {
+       case NotValidResult(report,pairs) => {
+         if (result.isOK) fail(s"Valid when expected to be not valid\n${result.show}\nExpected result: $report")
+         else info(s"Not valid as expected: $result")
+       }
+       case _ => fail(s"Unsupported manifest result $result")
+     }
   }
 
 }

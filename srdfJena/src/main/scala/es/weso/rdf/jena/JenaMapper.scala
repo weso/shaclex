@@ -79,7 +79,7 @@ object JenaMapper {
 
   def jenaNode2RDFNode(r: JenaRDFNode): RDFNode = {
     if (r.isURIResource()) {
-      println(s"jenaNode2RDFNode: URI = ${r.asResource().getURI()}")
+      // println(s"jenaNode2RDFNode: URI = ${r.asResource().getURI()}")
       IRI(r.asResource().getURI)
     } else if (r.isAnon) {
       BNodeId(r.asResource().getId.getLabelString)
