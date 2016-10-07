@@ -5,15 +5,25 @@ lazy val shaclex =
   (project in file(".")).
   settings(publishSettings:_*).
   settings(commonSettings:_*).
-  aggregate(manifest).
-  dependsOn(manifest)
+  aggregate(manifest,srdfJena).
+  dependsOn(manifest,srdfJena)
 
 
 lazy val manifest =
   project.in(file("manifest")).
   settings(commonSettings: _*).
+  dependsOn(srdfJena).
   settings(
     // other settings
+  )
+
+lazy val srdfJena =
+  project.in(file("srdfJena")).
+  settings(commonSettings: _*).
+  settings(
+    libraryDependencies ++= Seq(
+      "org.apache.jena" % "jena-arq" % "3.1.0"
+    )
   )
 
 lazy val commonSettings = Seq(
@@ -31,7 +41,7 @@ lazy val commonSettings = Seq(
   , "org.typelevel" %% "cats" % "0.7.2"
   , "com.lihaoyi" %% "pprint" % "0.4.1"
   , "org.atnos" %% "eff-cats" % "2.0.0-RC2-20160814085121-d925e69"
-  , "es.weso" % "srdf-jena_2.11" % "0.0.8"
+  , "es.weso" % "srdf-jvm_2.11" % "0.0.9"
   , "es.weso" % "validating_2.11" % "0.0.16"
   , "es.weso" % "weso_utils_2.11" % "0.0.15"
   , "org.specs2" %% "specs2-core" % "3.8.4" % "test"

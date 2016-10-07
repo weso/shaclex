@@ -280,10 +280,10 @@ trait RDF2Manifest
 
 object RDF2Manifest extends RDF2Manifest {
 
- def read(fileName: String, base: String): Try[Manifest] = {
+ def read(fileName: String, format: String, base: Option[String]): Try[Manifest] = {
    for {
      cs <- getContents(fileName)
-     rdf <- RDFAsJenaModel.fromChars(cs, "TURTLE", Some(base))
+     rdf <- RDFAsJenaModel.fromChars(cs, format, base)
      mfs <- rdf2Manifest(rdf, false)
      if mfs.size == 1
    } yield mfs.head

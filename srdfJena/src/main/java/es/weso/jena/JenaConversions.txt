@@ -1,0 +1,21 @@
+package es.weso.jena;
+
+import com.hp.hpl.jena.rdf.model.*;
+
+/**
+  * Jena Conversions to avoid problem with overloading
+  */
+public class JenaConversions {
+ 
+	public StmtIterator triplesWithSubject(Resource subject, Model model) {
+		return model.listStatements(subject,null,(RDFNode) null);
+	}
+	
+/*	public StmtIterator triplesWithPredicate(Property predicate, Model model) {
+		return model.listStatements((Resource) null,predicate,(RDFNode) null);
+	}
+
+	public StmtIterator triplesWithObject(RDFNode obj, Model model) {
+		return model.listStatements((Resource) null,null,obj);
+	} */
+}
