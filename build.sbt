@@ -11,7 +11,7 @@ lazy val shaclex =
 lazy val shacl =
   project.in(file("shacl")).
   settings(commonSettings: _*).
-  dependsOn(srdfJena,utils).
+  dependsOn(srdfJena,manifest,utils).
   settings(
     //
   )
@@ -19,7 +19,7 @@ lazy val shacl =
 lazy val shex =
   project.in(file("shex")).
   settings(commonSettings: _*).
-  dependsOn(srdfJena,utils).
+  dependsOn(srdfJena,utils % "test -> test; compile -> compile").
   settings(antlr4Settings: _*).
   settings(
     antlr4GenListener in Antlr4 := true,

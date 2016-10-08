@@ -62,5 +62,6 @@
 	a sht:Validate ;
 	mf:name "Example with datatype and valid resource" ;
 	mf:action [ sht:data <example-002.ttl> ; ] ;
-	mf:result true
-	mf:status sht:proposed.
+	mf:result true ;
+	mf:status sht:proposed
+    .

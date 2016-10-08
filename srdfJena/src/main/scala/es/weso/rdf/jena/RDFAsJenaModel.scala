@@ -45,7 +45,7 @@ case class RDFAsJenaModel(model: Model)
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
       val baseURI = base.getOrElse("")
-      println(s"Reading RDF with base $baseURI")
+      println(s"...parse: Reading RDF with base $baseURI")
       RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       Success(RDFAsJenaModel(m))
     } catch {
@@ -236,6 +236,7 @@ object RDFAsJenaModel {
 
   def fromChars(cs: CharSequence, format: String, base: Option[String] = None): Try[RDFAsJenaModel] = {
     try {
+      println("Reading RDF from chars...")
       RDFAsJenaModel.empty.parse(cs, format, base)
     } catch {
       case e: Exception => Failure(throw new Exception("Exception reading  " + formatLines(cs.toString) + "\n " + e.getMessage))
