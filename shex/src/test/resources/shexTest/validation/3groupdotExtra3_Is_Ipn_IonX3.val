@@ -1,0 +1,69 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/s",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "EachOfSolutions",
+    "solutions": [
+      {
+        "type": "EachOfSolution",
+        "expressions": [
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p1",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://a.example/o1"
+              ]
+            },
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/s",
+                "predicate": "http://a.example/p1",
+                "object": "http://a.example/o1"
+              }
+            ]
+          },
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p2",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://a.example/o2"
+              ]
+            },
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/s",
+                "predicate": "http://a.example/p2",
+                "object": "http://a.example/o2"
+              }
+            ]
+          },
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p3",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://a.example/o3"
+              ]
+            },
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/s",
+                "predicate": "http://a.example/p3",
+                "object": "http://a.example/o3"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

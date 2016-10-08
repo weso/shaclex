@@ -1,0 +1,48 @@
+@prefix : <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+:ClosedIssueShape
+	a sh:Shape ;
+	sh:constraint [
+  	    a sh:OrConstraint ;
+		sh:shapes (
+		 [ sh:property [
+				sh:predicate :resolution  ;
+				sh:valueShape :ResolutionShape ;
+				sh:minCount 1 ;
+			]
+		 ]
+		 [	sh:property [
+			  sh:predicate :rejection ;
+			  sh:valueShape :RejectionShape ;
+			  sh:minCount 1 ;
+			]
+		 ]
+		)
+		] ;
+.
+
+:NotClosedIssueShape 
+  a sh:Shape ;
+  sh:constraint [
+   a sh:NotConstraint;
+   sh:shape :ClosedIssueShape
+  ] .
+
+	
+:RejectionShape 
+	a sh:Shape ;
+    sh:property [
+		sh:predicate rdf:type ;
+		sh:hasValue :RejectionShape ;
+	] .
+	
+:ResolutionShape 
+	a sh:Shape ;
+    sh:property [
+		sh:predicate rdf:type ;
+		sh:hasValue :ResolutionShape ;
+	] .

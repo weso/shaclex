@@ -5,8 +5,29 @@ lazy val shaclex =
   (project in file(".")).
   settings(publishSettings:_*).
   settings(commonSettings:_*).
-  aggregate(manifest,srdfJena).
-  dependsOn(manifest,srdfJena)
+  aggregate(shacl,shex,manifest,srdfJena,utils).
+  dependsOn(shacl,shex,manifest,srdfJena,utils)
+
+lazy val shacl =
+  project.in(file("shacl")).
+  settings(commonSettings: _*).
+  dependsOn(srdfJena,utils).
+  settings(
+    //
+  )
+
+lazy val shex =
+  project.in(file("shex")).
+  settings(commonSettings: _*).
+  dependsOn(srdfJena,utils).
+  settings(antlr4Settings: _*).
+  settings(
+    antlr4GenListener in Antlr4 := true,
+    antlr4GenVisitor in Antlr4 := true,
+    antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % "4.5",
+    antlr4PackageName in Antlr4 := Some("es.weso.shex.parser")
+  )
+
 
 
 lazy val manifest =
@@ -26,11 +47,19 @@ lazy val srdfJena =
     )
   )
 
+lazy val utils =
+  project.in(file("utils")).
+  settings(commonSettings: _*).
+  settings(
+  )
+
 lazy val commonSettings = Seq(
   organization := "es.weso",
   version := "0.0.4",
   scalaVersion := "2.11.8",
+  scalaOrganization := "org.typelevel",
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
+  antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
   libraryDependencies ++= Seq(
     "org.rogach" %% "scallop" % "2.0.1"
   , "com.typesafe" % "config" % "1.3.0"
@@ -72,7 +101,7 @@ autoCompilerPlugins := true
 addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary)
 
 // to get types like Reader[String, ?] (with more than one type parameter) correctly inferred
-addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.2.0" cross CrossVersion.full)
+//addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.2.0" cross CrossVersion.full)
 
 // addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0" cross CrossVersion.full)
 
@@ -168,7 +197,9 @@ lazy val publishSettings = Seq(
   "-Yno-adapted-args",
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
-  "-Xfuture"
+  "-Xfuture",
+  "-Ypartial-unification", // enable fix for SI-2712
+  "-Yliteral-types"       // enable SIP-23 implementation
   )
 )
 

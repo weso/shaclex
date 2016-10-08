@@ -1,0 +1,17 @@
+@prefix ex: <http://example.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix inst: <http://example.org/instance#> .
+
+inst:Issue
+	a ex:Issue ;
+	ex:state ex:unassigned ;
+	ex:reportedBy inst:User .
+
+inst:User
+	a foaf:Person ;
+	foaf:name "Bob Smith" ;
+	foaf:mbox <mailto:bob@example.org> ;
+	foaf:mbox <mailto:rs@example.org> .
+

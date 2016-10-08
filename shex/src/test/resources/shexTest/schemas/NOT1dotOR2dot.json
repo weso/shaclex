@@ -1,0 +1,36 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        {
+	  "type": "ShapeNot",
+          "shapeExpr": {
+            "type": "Shape",
+            "expression": {
+              "type": "TripleConstraint",
+              "predicate": "http://a.example/p1"
+            }
+	  }
+        },
+        {
+          "type": "Shape",
+          "expression": {
+            "type": "EachOf",
+            "expressions": [
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://a.example/p1"
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://a.example/p2"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "type": "AST",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "ASTshape",
+      "expression": {
+        "type":"EachOf", "conjuncts": [
+          {
+            "type": "TripleConstraint", "inverse": false, "negated": false,
+            "predicate": "http://a.example/p1"
+          },
+          {
+            "type": "TripleConstraint", "inverse": false, "negated": false,
+            "predicate": "http://a.example/p1"
+          },
+          {
+            "type":"Choice", "disjuncts": [
+              {
+                "type":"EachOf", "conjuncts": 
+                [
+                  {
+                    "type": "TripleConstraint", "inverse": false, "negated": false,
+                    "predicate": "http://a.example/p1"
+                  },
+                  {
+                    "type":"Choice", "disjuncts": [
+                      {
+                        "type":"EachOf", "conjuncts":
+                        [
+                          {
+                            "type": "TripleConstraint", "inverse": false, "negated": false,
+                            "predicate": "http://a.example/p1"
+                          },
+                          {
+                            "type":"Choice", "disjuncts": [
+                              {
+                                "type": "TripleConstraint", "inverse": false, "negated": false,
+                                "predicate": "http://a.example/p1"
+                              }, { "type": "Epsilon" }
+                            ]
+                          }
+                        ]
+                      }, { "type": "Epsilon" }
+                    ]
+                  }
+                ]
+              },
+              { "type": "Epsilon" }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

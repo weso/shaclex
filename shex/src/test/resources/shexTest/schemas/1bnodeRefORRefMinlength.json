@@ -1,0 +1,43 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "ShapeOr",
+          "shapeExprs": [
+            {
+              "type": "ShapeAnd",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "nodeKind": "bnode"
+                },
+                {
+                  "type": "ShapeRef",
+                  "reference": "http://a.example/S1"
+                }
+              ]
+            },
+            {
+              "type": "ShapeAnd",
+              "shapeExprs": [
+                {
+                  "type": "ShapeRef",
+                  "reference": "http://a.example/S1"
+                },
+                {
+                  "type": "NodeConstraint",
+                  "minlength": 5
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

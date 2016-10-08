@@ -1,0 +1,66 @@
+{
+  "type": "Schema",
+  "prefixes": {
+    "": "http://a.example/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "shapes": {
+    "file:///home/eric/checkouts/shexSpec/shexTest/validation/S": {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/a",
+            "valueExpr": {
+              "type": "ValueClass",
+              "values": [
+                "\"1\"^^http://www.w3.org/2001/XMLSchema#integer"
+              ]
+            }
+          },
+          {
+            "type": "SomeOf",
+            "expressions": [
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://a.example/a",
+                "valueExpr": {
+                  "type": "ValueClass",
+                  "values": [
+                    "\"2\"^^http://www.w3.org/2001/XMLSchema#integer"
+                  ]
+                },
+                "min": 1,
+                "max": "*"
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://a.example/a",
+                "valueExpr": {
+                  "type": "ValueClass",
+                  "values": [
+                    "\"3\"^^http://www.w3.org/2001/XMLSchema#integer"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/a",
+            "valueExpr": {
+              "type": "ValueClass",
+              "values": [
+                "\"4\"^^http://www.w3.org/2001/XMLSchema#integer"
+              ]
+            },
+            "min": 0,
+            "max": "*"
+          }
+        ]
+      }
+    }
+  }
+}

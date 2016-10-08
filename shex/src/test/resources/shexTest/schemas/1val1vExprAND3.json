@@ -1,0 +1,32 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "ShapeAnd",
+          "shapeExprs": [
+            {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "minlength": 4
+            },
+            {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "maxlength": 5
+            },
+            {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "pattern": "^(ab)+"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

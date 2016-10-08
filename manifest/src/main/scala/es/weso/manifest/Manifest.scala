@@ -104,7 +104,10 @@ final case object EmptyResult
   override val isValid = true
 }
 
-final case class ValidationReport(violationErrors: Set[ViolationError])
+final case class ValidationReport(violationErrors: Set[ViolationError]) {
+  def failingNodes: Set[IRI] =
+    violationErrors.map(_.focusNode).flatten
+}
 
 final case class ViolationError(
     errorType: Option[IRI],

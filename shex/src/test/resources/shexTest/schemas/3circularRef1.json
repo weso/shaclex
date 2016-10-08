@@ -1,0 +1,46 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p1"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p2",
+            "valueExpr": { "type": "ShapeRef", "reference": "http://a.example/S2" },
+            "min": 0, "max": 1
+          }
+        ]
+      }
+    },
+    "http://a.example/S2": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p3",
+        "valueExpr": { "type": "ShapeRef", "reference": "http://a.example/S3" }
+      }
+    },
+    "http://a.example/S3": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p4",
+        "valueExpr": { "type": "ShapeRef", "reference": "http://a.example/S1" }
+      }
+    },
+    "http://a.example/S4": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p5"
+      }
+    }
+  }
+}

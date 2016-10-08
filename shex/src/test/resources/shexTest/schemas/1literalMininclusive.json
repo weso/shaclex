@@ -1,0 +1,16 @@
+{
+  "type": "Schema",
+  "shapes":{
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": { "type": "NodeConstraint",
+                   "nodeKind": "literal",
+                   "mininclusive": 5
+                 }
+      }
+    }
+  }
+}

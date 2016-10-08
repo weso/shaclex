@@ -1,0 +1,19 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/S": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "http://a.example/Sext"
+        }
+      }
+    },
+    "http://a.example/Sext": {
+      "type": "ShapeExternal"
+    }
+  }
+}

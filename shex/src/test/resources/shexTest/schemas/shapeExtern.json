@@ -1,0 +1,8 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/Sext": {
+      "type": "ShapeExternal"
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{ "type": "ShapeTest",
+  "node": "x",
+  "shape": "S",
+  "solution": {
+    "type": "EachOfSolutions",
+    "solutions": [
+      {
+        "type": "EachOfSolution",
+        "expressions": [
+          {
+            "type": "EachOfSolutions",
+            "solutions": [
+              {
+                "type": "EachOfSolution",
+                "expressions": [
+                  {
+                    "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
+                    "solutions": [
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "\"1\"" }
+                    ]
+                  },
+                  {
+                    "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
+                    "solutions": [
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/b", "object": "\"1\"" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "EachOfSolution",
+                "expressions": [
+                  {
+                    "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
+                    "solutions": [
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "\"2\"" }
+                    ]
+                  },
+                  {
+                    "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
+                    "solutions": [
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/b", "object": "\"2\"" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "EachOfSolution",
+                "expressions": [
+                  {
+                    "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
+                    "solutions": [
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "\"3\"" }
+                    ]
+                  },
+                  {
+                    "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
+                    "solutions": [
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/b", "object": "\"3\"" }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "min": 2,
+            "max": 5
+          },
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/c",
+            "solutions": [
+              { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/c", "object": "\"1\"" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

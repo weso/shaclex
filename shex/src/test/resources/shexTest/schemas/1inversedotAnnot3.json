@@ -1,0 +1,18 @@
+{
+  "type": "Schema",
+  "shapes":{
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "inverse": true,
+        "predicate": "http://a.example/p1",
+        "annotations": [
+           { "type": "Annotation", "predicate": "http://a.example/annot1", "object": "\"1\"" },
+           { "type": "Annotation", "predicate": "http://a.example/annot2", "object": "\"2\"" },
+           { "type": "Annotation", "predicate": "http://a.example/annot3", "object": "\"3\"" }
+        ]
+      }
+    }
+  }
+}

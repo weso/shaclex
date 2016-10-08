@@ -1,0 +1,92 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/n1",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "EachOfSolutions",
+    "solutions": [
+      {
+        "type": "EachOfSolution",
+        "expressions": [
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p1",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/n1",
+                "predicate": "http://a.example/p1",
+                "object": "\"X\""
+              }
+            ]
+          },
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p2",
+            "valueExpr": {
+              "type": "ShapeRef",
+              "reference": "http://a.example/S2"
+            },
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/n1",
+                "predicate": "http://a.example/p2",
+                "object": "http://a.example/n2",
+                "referenced": {
+                  "type": "ShapeTest",
+                  "node": "http://a.example/n2",
+                  "shape": "http://a.example/S2",
+                  "solution": {
+                    "type": "TripleConstraintSolutions",
+                    "predicate": "http://a.example/p3",
+                    "valueExpr": {
+                      "type": "ShapeRef",
+                      "reference": "http://a.example/S3"
+                    },
+                    "solutions": [
+                      {
+                        "type": "TestedTriple",
+                        "subject": "http://a.example/n2",
+                        "predicate": "http://a.example/p3",
+                        "object": "http://a.example/n3",
+                        "referenced": {
+                          "type": "ShapeTest",
+                          "node": "http://a.example/n3",
+                          "shape": "http://a.example/S3",
+                          "solution": {
+                            "type": "TripleConstraintSolutions",
+                            "predicate": "http://a.example/p4",
+                            "valueExpr": {
+                              "type": "ShapeRef",
+                              "reference": "http://a.example/S1"
+                            },
+                            "solutions": [
+                              {
+                                "type": "TestedTriple",
+                                "subject": "http://a.example/n3",
+                                "predicate": "http://a.example/p4",
+                                "object": "http://a.example/n1",
+                                "referenced": {
+                                  "type": "Recursion",
+                                  "node": "http://a.example/n1",
+                                  "shape": "http://a.example/S1"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "min": 0,
+            "max": 1
+          }
+        ]
+      }
+    ]
+  }
+}

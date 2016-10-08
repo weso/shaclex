@@ -1,0 +1,4 @@
+PREFIX : <http://a.example/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<S> { :a [1], (:a [2]+ | :a [3]), :a [4]* }

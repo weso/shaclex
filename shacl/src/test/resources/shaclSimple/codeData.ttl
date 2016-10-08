@@ -1,0 +1,18 @@
+@prefix : <http://example.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+:good1 :code "AB", "13" .
+:good2 :code "AB" , 23 .
+
+:bad1 :code "AB" , 23, 12 .
+:bad2 :code :x, :y .
+:bad3 :code "AB", "XY" .
+:bad4 :code "AB" .
+
+
+:Item sh:scopeNode :good1, :good2 .
+:NoItem sh:scopeNode :bad1, :bad2, :bad3, :bad4 .
+
+

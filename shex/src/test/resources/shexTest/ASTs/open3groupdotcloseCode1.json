@@ -1,0 +1,32 @@
+{
+  "type": "AST",
+  "shapes": {
+    "http://a.example/S1": {
+      "type": "ASTshape",
+      "expression": {
+        "type": "SemActs",
+        "expression":
+        {
+          "type": "EachOf",
+          "conjuncts": [
+            {
+              "type": "TripleConstraint", "inverse": false, "negated": false,
+              "predicate": "http://a.example/p1"
+            },
+            {
+              "type": "TripleConstraint", "inverse": false, "negated": false,
+              "predicate": "http://a.example/p2"
+            },
+            {
+              "type": "TripleConstraint", "inverse": false, "negated": false,
+              "predicate": "http://a.example/p3"
+            }
+          ]
+        },
+        "semActs": [
+          { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(\"group semAct\") "}
+        ]
+      }
+    }
+  }
+}

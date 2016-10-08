@@ -17,6 +17,7 @@ class RDFAsJenaModelTest
     extends FunSpec
     with JenaBased
     with Matchers {
+
   describe("Checking base") {
       val conf: Config = ConfigFactory.load()
       val shaclFolder = conf.getString("shaclCore")

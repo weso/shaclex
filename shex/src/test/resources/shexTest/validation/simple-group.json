@@ -1,0 +1,31 @@
+{
+  "type": "Schema",
+  "prefixes": {
+    "": "http://a.example/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "shapes": {
+    "file:///home/eric/checkouts/shexSpec/shexTest/validation/S": {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/a",
+            "valueExpr": {
+              "type": "ValueClass"
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/b",
+            "valueExpr": {
+              "type": "ValueClass"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

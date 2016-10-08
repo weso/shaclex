@@ -1,0 +1,24 @@
+{
+  "type": "Schema",
+  "shapes":{
+    "http://a.example/S1": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "NodeConstraint", "values": [
+            { "type": "StemRange",
+              "stem": { "type": "Wildcard" },
+              "exclusions": [
+                "http://a.example/v1",
+                "http://a.example/v2",
+                "http://a.example/v3"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

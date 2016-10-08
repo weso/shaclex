@@ -1,0 +1,3 @@
+PREFIX : <http://a.example/>
+
+<S> { ( :a ., :b . )?, :c . }
