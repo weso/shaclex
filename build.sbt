@@ -5,8 +5,8 @@ lazy val shaclex =
   project.in(file(".")).
   settings(publishSettings:_*).
   settings(commonSettings:_*).
-  aggregate(shacl,shex,manifest,srdfJena,utils).
-  dependsOn(shacl,shex,manifest,srdfJena,utils).
+  aggregate(shacl,shex,manifest,srdfJena,srdf,utils).
+  dependsOn(shacl,shex,manifest,srdfJena,srdf,utils).
   settings(
     libraryDependencies ++=
       Seq(
@@ -25,6 +25,7 @@ lazy val shacl =
    libraryDependencies ++=
      Seq(
        "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
+     , "com.typesafe" % "config" % "1.3.0" % Test
      , "org.typelevel" %% "cats" % catsVersion
      )
   )
@@ -42,7 +43,8 @@ lazy val shex =
     antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % "4.5",
     antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
     libraryDependencies ++= Seq(
-      "ch.qos.logback" %  "logback-classic" % "1.1.7"
+      "com.typesafe" % "config" % "1.3.0" % Test
+    , "ch.qos.logback" %  "logback-classic" % "1.1.7"
     , "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
     , "io.circe" %% "circe-core" % circeVersion
     , "io.circe" %% "circe-generic" % circeVersion
@@ -70,15 +72,24 @@ lazy val manifest =
   settings(commonSettings: _*).
   dependsOn(srdfJena, utils).
   settings(
-    // other settings
+    libraryDependencies ++= Seq(
+      "com.typesafe" % "config" % "1.3.0" % Test
+    , "com.github.nikita-volkov" % "sext" % "0.2.4"
+    )
   )
+
+lazy val srdf =
+  project.in(file("srdf")).
+  settings(commonSettings: _*)
 
 lazy val srdfJena =
   project.in(file("srdfJena")).
+  dependsOn(srdf).
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.apache.jena" % "jena-arq" % "3.1.0"
+      "com.typesafe" % "config" % "1.3.0" % Test
+    , "org.apache.jena" % "jena-arq" % "3.1.0"
     )
   )
 
@@ -103,13 +114,13 @@ lazy val commonSettings = Seq(
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
   antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
   libraryDependencies ++= Seq(
-    "com.typesafe" % "config" % "1.3.0" % Test
-  , "org.scalactic" %% "scalactic" % "3.0.0"
+//    "com.typesafe" %%% "config" % "1.3.0" % Test
+    "org.scalactic" %% "scalactic" % "3.0.0"
   , "org.scalatest" %% "scalatest" % "3.0.0" % Test
 //  , "com.lihaoyi" %% "pprint" % "0.4.1"
-  , "es.weso" % "srdf-jvm_2.11" % "0.0.9"
+//  , "es.weso" % "srdf-jvm_2.11" % "0.0.9"
 //  , "es.weso" % "weso_utils_2.11" % "0.0.15"
-  , "com.github.nikita-volkov" % "sext" % "0.2.4"
+//  , "com.github.nikita-volkov" %%% "sext" % "0.2.4"
   )
 )
 
