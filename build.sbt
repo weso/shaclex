@@ -93,6 +93,12 @@ lazy val srdfJena =
     )
   )
 
+lazy val converter =
+  project.in(file("converter")).
+  settings(commonSettings: _*).
+  dependsOn(shex,shacl)
+
+
 lazy val utils =
   project.in(file("utils")).
   settings(commonSettings: _*).

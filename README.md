@@ -6,6 +6,7 @@ RDF Data Shapes Implementation. This project contains an implementation of
 
 
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex)
+[![Build Status](https://travis-ci.org/labra/shaclex.svg?branch=master)](https://travis-ci.org/labra/shaclex)
 
 ## Introduction
 
