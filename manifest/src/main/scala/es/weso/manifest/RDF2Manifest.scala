@@ -7,12 +7,11 @@ import es.weso.rdf._
 import ManifestPrefixes._
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.PrefixMap
-import es.weso.utils.IO._
 import es.weso.rdf.parser.RDFParser
-import es.weso.utils.TryUtils._
-import es.weso.utils.ConsoleDebugger
 import es.weso.rdf.jena.RDFAsJenaModel
 import java.io.File
+import es.weso.utils.FileUtils._
+import es.weso.utils.TryUtils._
 
 
 case class RDF2ManifestException(msg:String)
@@ -25,7 +24,6 @@ trait RDF2Manifest
      rdf: RDFReader,
      derefIncludes: Boolean
      ): Try[Seq[Manifest]] = {
-    ConsoleDebugger.debugStep("RDF2Manifest")
     val candidates = subjectsWithType(mf_Manifest,rdf).toSeq
     val maybeManifests = candidates.map {
       case node => manifest(derefIncludes)(node,rdf)

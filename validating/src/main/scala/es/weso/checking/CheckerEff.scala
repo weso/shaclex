@@ -1,0 +1,115 @@
+package es.weso.checking
+import cats._, data._
+import cats.implicits._
+import org.atnos.eff._
+import org.atnos.eff.all._
+import org.atnos.eff.syntax.all._
+import scala.Left
+import scala.Right
+
+abstract class CheckerEff extends Checker {
+  type Config
+  type Env
+  type Err
+  type Log
+  implicit val envMonoid: Monoid[Env]
+  implicit val logMonoid: Monoid[Log]
+
+  type Comp = Fx.fx4[Reader[Config, ?], Reader[Env, ?], Writer[Log, ?], Xor[Err, ?]]
+  type Check[A] = Eff[Comp, A]
+
+  def getConfig: Check[Config] = ask[Comp, Config]
+
+  def getEnv: Check[Env] = ask[Comp, Env]
+
+  def addLog(log: Log): Check[Unit] =
+    tell[Comp, Log](log)
+
+/*  def logStr(msg: String): Check[Unit] = {
+    addLog(CanLog[Log].log(msg))
+  } */
+
+  def local[A](f: Env => Env)(c: Check[A]): Check[A] =
+    c.modifyReader(f)
+
+  def ok[A](x: A): Check[A] =
+    pure(x)
+
+  def err[A](e: Err): Check[A] =
+    left[Comp, Err, A](e)
+
+  def orElse[A](c1: Check[A], c2: => Check[A]): Check[A] =
+    c1.catchLeft((e: Err) => c2)
+
+  def checkSome[A](cs: List[Check[A]], errorIfNone: Err): Check[A] = {
+    lazy val z: Check[A] = err(errorIfNone)
+    def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
+    cs.foldRight(z)(comb)
+  }
+
+  def attempt[A](c: Check[A]): Check[Either[Err, A]] = {
+    val r = c.flatMap(v => {
+      val either: Either[Err, A] = Right(v)
+      pure(either)
+    })
+    r.catchLeft((e: Err) => {
+      val either: Either[Err, A] = Left(e)
+      pure(either)
+    })
+  }
+
+  def cond[A, B](c: Check[A], thenPart: A => Check[B], elsePart: Err => Check[B]): Check[B] =
+    attempt(c).flatMap(_.fold(elsePart(_), thenPart(_)))
+
+  def checkList[A, B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
+    checkAll(ls.map(check))
+  }
+
+  def checkAll[A](xs: List[Check[A]]): Check[List[A]] = xs.sequence
+
+  def validateCheck(condition: Boolean, e: Err): Check[Unit] = {
+    if (condition) Monad[Check].pure(())
+    else err(e)
+  }
+
+  override def run[A](c: Check[A])(config: Config)(env: Env): (Log, Either[Err, A]) = {
+    val strFold = new LeftFold[Log, Log] {
+      type S = Log
+      val init: S = Monoid[Log].empty
+      def fold(a: Log, s: S): S = s |+| a
+      def finalize(s: S): Log = s
+    }
+    c.runEither.runReader(env).runReader(config).runWriterFold(strFold).run.swap
+  }
+
+}
+
+// Example implementation for testing purposes
+object CheckerEffStr extends CheckerEff {
+  type Err = String
+  type Config = Map[String, String]
+  type Env = Map[String, Int]
+  type Log = List[String]
+
+  implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
+    def combine(e1: Env, e2: Env) = e1 |+| e2
+    def empty = Map()
+  }
+/*  implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
+    def log(str: String) = List(str)
+  } */
+  implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
+    def combine(l1: Log, l2: Log) = l1 ++ l2
+    def empty = List()
+  }
+
+/*  def c0: Config = Map[String, String]()
+  def e0: Env = Map[String, Int]()
+  def run0[A](c: Check[A]): (Either[Err, A], List[Log]) =
+    c.runEither.runReader(e0).runReader(c0).runWriter.run
+
+  def c1: Check[Int] = logStr("one") >> ok(1)
+  def c2: Check[Int] = logStr("two") >> ok(2)
+  def e: Check[Int] = logStr("err") >> err("Err") */
+
+}

@@ -13,7 +13,7 @@ trait SchemaMatchers {
          map(shape => shape.id).
          filter(_.isDefined).
          map(_.get).toSet
-         
+
       MatchResult(
         iris == shapeIDs,
         s"Schema $schema + has IDs $iris which is different to expected $shapeIDs",
@@ -21,8 +21,8 @@ trait SchemaMatchers {
       )
     }
   }
-  
-  def constainShapes(shapeIDs: Set[IRI]) = 
+
+  def constainShapes(shapeIDs: Set[IRI]) =
     new ContainShapesMatcher(shapeIDs)
 
 }

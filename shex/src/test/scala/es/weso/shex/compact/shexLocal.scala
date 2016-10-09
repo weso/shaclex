@@ -3,7 +3,7 @@ import org.scalatest._
 import com.typesafe.config._
 import cats.implicits._
 import es.weso.json._
-import es.weso.utils.MyFileUtils._
+import es.weso.utils.FileUtils._
 import scala.io._
 import java.io.File
 import es.weso.shex.compact.Parser._

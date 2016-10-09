@@ -49,7 +49,7 @@ case class RDFAsJenaModel(model: Model)
       RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       Success(RDFAsJenaModel(m))
     } catch {
-      case e: Exception => Failure(throw new Exception("Exception parsing char sequence: " + e.getMessage))
+      case e: Exception => Failure(new Exception(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs" ))
     }
   }
 

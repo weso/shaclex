@@ -1,0 +1,27 @@
+package es.weso.validating2
+import cats._, data._
+import org.atnos.eff._, all._
+import org.atnos.eff.syntax.all._
+
+trait Checked {
+  type S // State 
+  type E // Errors
+  type C // Context
+
+  // With this import we use list for non determinism 
+  import cats.instances.list._
+
+  type ResultR[A] =  Xor[NonEmptyList[E],List[(A,S)]]
+  
+  def isOK[A](r: ResultR[A]): Boolean = 
+    r.isRight && r.toList.isEmpty == false  
+  
+ type Comput =  Fx.fx5[Reader[C,?],State[S,?],Choose,Validate[E,?],Eval]
+
+ type Check[A] = Eff[Comput,A]
+
+ def runner[A](ctx: C, state: S, c: Check[A]) =
+   c.runReader(ctx).runState(state).runChoose.runNel.runEval.run
+  
+ val c1 : Check[Int] = pure(1)
+}

@@ -16,7 +16,7 @@ case class Validator(schema: Schema) {
   import es.weso.checking._
   import Validator._
 
-  object MyChecker extends Checker {
+  object MyChecker extends CheckerCats {
     type Config = RDFReader
     type Env = ShapeTyping
     type Err = ViolationError
@@ -26,10 +26,10 @@ case class Validator(schema: Schema) {
       def combine(e1: Env, e2: Env): Env = e1.combineTyping(e2)
       def empty: Env = Typing.empty
     }
-    implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
+/*    implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
       def log(msg: String): Log =
         throw new Exception(s"Not implemented logCanLog. Msg: $msg")
-    }
+    } */
     implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
       def combine(l1: Log, l2: Log): Log = l1 ++ l2
       def empty: Log = List()

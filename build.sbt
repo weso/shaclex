@@ -2,38 +2,73 @@ import sbt._
 import sbt.Keys._
 
 lazy val shaclex =
-  (project in file(".")).
+  project.in(file(".")).
   settings(publishSettings:_*).
   settings(commonSettings:_*).
   aggregate(shacl,shex,manifest,srdfJena,utils).
-  dependsOn(shacl,shex,manifest,srdfJena,utils)
+  dependsOn(shacl,shex,manifest,srdfJena,utils).
+  settings(
+    libraryDependencies ++=
+      Seq(
+       "org.rogach" %% "scallop" % "2.0.1"
+      )
+  )
 
 lazy val shacl =
   project.in(file("shacl")).
   settings(commonSettings: _*).
-  dependsOn(srdfJena,manifest,utils).
+  dependsOn(srdfJena,
+            manifest,
+            utils,
+            validating).
   settings(
-    //
+   libraryDependencies ++=
+     Seq(
+       "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
+     , "org.typelevel" %% "cats" % catsVersion
+     )
   )
 
 lazy val shex =
   project.in(file("shex")).
   settings(commonSettings: _*).
-  dependsOn(srdfJena,utils % "test -> test; compile -> compile").
+  dependsOn(srdfJena,
+            utils % "test -> test; compile -> compile",
+            validating).
   settings(antlr4Settings: _*).
   settings(
     antlr4GenListener in Antlr4 := true,
     antlr4GenVisitor in Antlr4 := true,
     antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % "4.5",
-    antlr4PackageName in Antlr4 := Some("es.weso.shex.parser")
+    antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
+    libraryDependencies ++= Seq(
+      "ch.qos.logback" %  "logback-classic" % "1.1.7"
+    , "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
+    , "io.circe" %% "circe-core" % circeVersion
+    , "io.circe" %% "circe-generic" % circeVersion
+    , "io.circe" %% "circe-parser" % circeVersion
+    )
   )
 
+lazy val validating =
+  project.in(file("validating")).
+  settings(commonSettings: _*).
+  dependsOn(srdfJena,utils % "test -> test; compile -> compile").
+  settings(antlr4Settings: _*).
+  settings(
+   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0"),
+   addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0"),
+   libraryDependencies ++= Seq(
+     "org.atnos" %% "eff-cats" % effCatsVersion
+   , "org.typelevel" %% "cats" % catsVersion
+   )
+  )
 
 
 lazy val manifest =
   project.in(file("manifest")).
   settings(commonSettings: _*).
-  dependsOn(srdfJena).
+  dependsOn(srdfJena, utils).
   settings(
     // other settings
   )
@@ -51,6 +86,13 @@ lazy val utils =
   project.in(file("utils")).
   settings(commonSettings: _*).
   settings(
+    libraryDependencies ++= Seq(
+      "org.atnos" %% "eff-cats" % effCatsVersion
+    , "io.circe" %% "circe-core" % circeVersion
+    , "io.circe" %% "circe-generic" % circeVersion
+    , "io.circe" %% "circe-parser" % circeVersion
+    , "org.typelevel" %% "cats" % catsVersion
+    )
   )
 
 lazy val commonSettings = Seq(
@@ -61,49 +103,31 @@ lazy val commonSettings = Seq(
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
   antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
   libraryDependencies ++= Seq(
-    "org.rogach" %% "scallop" % "2.0.1"
-  , "com.typesafe" % "config" % "1.3.0"
-  , "org.slf4j" % "slf4j-simple" % "1.7.21"
-  , "log4j" % "log4j" % "1.2.17"
-  , "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
-  , "org.scalatest" %% "scalatest" % "3.0.0"
-  , "org.typelevel" %% "cats" % "0.7.2"
-  , "com.lihaoyi" %% "pprint" % "0.4.1"
-  , "org.atnos" %% "eff-cats" % "2.0.0-RC2-20160814085121-d925e69"
+    "com.typesafe" % "config" % "1.3.0" % Test
+  , "org.scalactic" %% "scalactic" % "3.0.0"
+  , "org.scalatest" %% "scalatest" % "3.0.0" % Test
+//  , "com.lihaoyi" %% "pprint" % "0.4.1"
   , "es.weso" % "srdf-jvm_2.11" % "0.0.9"
-  , "es.weso" % "validating_2.11" % "0.0.16"
-  , "es.weso" % "weso_utils_2.11" % "0.0.15"
-  , "org.specs2" %% "specs2-core" % "3.8.4" % "test"
-  , "io.circe" %% "circe-core" % circeVersion
-  , "io.circe" %% "circe-generic" % circeVersion
-  , "io.circe" %% "circe-parser" % circeVersion
+//  , "es.weso" % "weso_utils_2.11" % "0.0.15"
   , "com.github.nikita-volkov" % "sext" % "0.2.4"
   )
 )
 
 name := "shaclex"
 
+// Versions of common packages
 lazy val circeVersion = "0.5.1"
-
-antlr4Settings
-
-antlr4GenListener in Antlr4 := true
-
-antlr4GenVisitor in Antlr4 := true
-
-antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % "4.5"
-
-antlr4PackageName in Antlr4 := Some("es.weso.shex.parser")
-
-autoCompilerPlugins := true
+lazy val effCatsVersion = "2.0.0-RC11"
+lazy val catsVersion = "0.7.2"
 
 // to write types like Reader[String, ?]
-addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary)
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0")
 
 // to get types like Reader[String, ?] (with more than one type parameter) correctly inferred
 //addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.2.0" cross CrossVersion.full)
 
 // addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0" cross CrossVersion.full)
+// addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0")
 
 // Needed by simulacrum
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
@@ -115,9 +139,9 @@ enablePlugins(WindowsPlugin)
 
 // general package information
 maintainer := "Jose Emilio Labra Gayo <labra@uniovi.es>"
-packageSummary in Linux := "shaclex"
-packageSummary in Windows := "shaclex"
-packageDescription := "shaclex"
+packageSummary in Linux := name.value
+packageSummary in Windows := name.value
+packageDescription := name.value
 
 // wix build information
 wixProductId := "39b564d5-d381-4282-ada9-87244c76e14b"

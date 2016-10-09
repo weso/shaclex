@@ -10,11 +10,13 @@ import es.weso.rdf._
 import scala.io.Source
 import util._
 import Validator._
-import es.weso.utils.MyFileUtils._
+import es.weso.utils.FileUtils._
 import es.weso.manifest.{Entry => ManifestEntry, Result => ManifestResult, _}
 import java.net._
 
-class ShaclCore extends FunSpec with Matchers with TryValues with OptionValues
+class ShaclCore
+    extends FunSpec with Matchers with TryValues with OptionValues
+
   with SchemaMatchers {
 
   val conf: Config = ConfigFactory.load()

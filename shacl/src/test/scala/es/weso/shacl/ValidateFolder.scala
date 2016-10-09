@@ -9,7 +9,7 @@ import es.weso.rdf._
 import scala.io.Source
 import util._
 import Validator._
-import es.weso.utils.MyFileUtils._
+import es.weso.utils.FileUtils._
 
 class ValidateFolder extends
   FunSpec with Matchers with TryValues with OptionValues

@@ -2,10 +2,11 @@ package es.weso.shaclex
 
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
+import com.typesafe.scalalogging._
+import org.slf4j.LoggerFactory
 import es.weso.shacl._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
-import org.apache.log4j._
 import es.weso.utils.FileUtils
 import util._
 import java.nio.file._
@@ -15,12 +16,7 @@ import java.io.File
 
 object Main extends App {
 
-  lazy val log = LogManager.getRootLogger
-  val appenders = log.getAllAppenders
-  val appender: ConsoleAppender = log.getAppender("stdout").asInstanceOf[ConsoleAppender]
-  val error = Level.ERROR
-  log.setLevel(error)
-  appender.setThreshold(error)
+  val log = Logger(LoggerFactory.getLogger("name"))
 
   override def main(args: Array[String]): Unit = {
 

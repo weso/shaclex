@@ -1,8 +1,9 @@
 package es.weso.utils
-import java.io.File
+import java.io._
 import scala.io._
+import util._
 
-object MyFileUtils {
+object FileUtils {
 
   def getFilesFromFolderWithExt(
     path: String,
@@ -24,6 +25,51 @@ object MyFileUtils {
   def splitExtension(str: String): (String, String) = {
     val splits = str.split('.')
     (splits.init.mkString("."), splits.last)
+  }
+
+ /**
+   * Ensures to close a file.
+   * Follows the [[https://wiki.scala-lang.org/display/SYGN/Loan Loan pattern]]
+   */
+  def using[A <: { def close(): Unit }, B](resource: A)(f: A => B): B = {
+    try {
+      f(resource)
+    } finally {
+      resource.close()
+    }
+  }
+
+  /**
+   * Gets the contents of a file
+   *
+   * @param filaName name of the file
+   *
+   */
+  def getContents(fileName: String): Try[CharSequence] = {
+    try {
+      using(Source.fromFile(fileName)) { source =>
+        Success(source.getLines.mkString("\n"))
+      }
+    } catch {
+      case e: FileNotFoundException => {
+        Failure(e)
+      }
+      case e: IOException => {
+        Failure(e)
+      }
+    }
+  }
+
+    /**
+   * Write contents to a file
+   *
+   * @param name name of the file
+   * @param contents contents to write to the file
+   */
+  def writeFile(name: String, contents: String): Unit = {
+    import java.nio.file._
+    val path = Paths.get(name)
+    Files.write(path, contents.getBytes)
   }
 
 }
