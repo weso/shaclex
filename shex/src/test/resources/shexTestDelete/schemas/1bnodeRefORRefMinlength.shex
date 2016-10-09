@@ -1,3 +1,0 @@
-<http://a.example/S1> {
-   <http://a.example/p1> BNODE @<http://a.example/S1> OR @<http://a.example/S1> MINLENGTH 5
-}

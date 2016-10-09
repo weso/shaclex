@@ -1,9 +1,0 @@
-{
-  "type": "Schema",
-  "shapes": {
-    "http://a.example/S1": {
-      "nodeKind": "bnode",
-      "type": "NodeConstraint"
-    }
-  }
-}

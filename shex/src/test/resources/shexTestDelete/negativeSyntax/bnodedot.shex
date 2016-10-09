@@ -1,4 +1,0 @@
-# source TurtleTests/turtle-syntax-bad-blank-label-dot-end.ttl
-_:IssueShape. {
-   <http://a.example/p1> .
-}

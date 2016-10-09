@@ -1,2 +1,0 @@
-PREFIX : <http://a.example/#>
-<S> { :p1 ., :p2 . }

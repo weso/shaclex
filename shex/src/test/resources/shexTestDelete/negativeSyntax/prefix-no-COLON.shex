@@ -1,3 +1,0 @@
-# PREFIX without COLON
-# source: turtle-syntax-bad-prefix-05.ttl
-PREFIX ex <http://a.example/>

@@ -1,3 +1,0 @@
-# PREFIX without PNAME_NS .
-# source: turtle-syntax-bad-prefix-04.ttl
-PREFIX <http://a.example/>

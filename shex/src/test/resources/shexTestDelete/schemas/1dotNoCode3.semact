@@ -1,3 +1,0 @@
-%<http://shex.io/extensions/Test/#a>{ print(s) %}
-%<http://shex.io/extensions/Test/#b>{ print(p) %}
-%<http://shex.io/extensions/Test/#c>{ print(o) %}

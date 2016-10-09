@@ -1,4 +1,0 @@
-# source: bareword_double.ttl
-<http://a.example/S1> {
-   <http://a.example/p1> [0e0]
-}

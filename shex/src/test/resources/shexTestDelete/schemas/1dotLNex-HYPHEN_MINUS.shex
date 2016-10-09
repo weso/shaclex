@@ -1,6 +1,0 @@
-# source: HYPHEN_MINUS_in_localName.ttl
-PREFIX ex: <http://a.example/>
-
-ex:S1 {
-   ex:p1- .
-}

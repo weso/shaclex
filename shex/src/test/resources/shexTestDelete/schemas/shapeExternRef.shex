@@ -1,4 +1,0 @@
-<http://a.example/S> {
-  <http://a.example/p1> @<http://a.example/Sext>
-}
-<http://a.example/Sext> EXTERNAL

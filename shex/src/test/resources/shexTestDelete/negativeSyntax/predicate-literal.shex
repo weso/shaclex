@@ -1,5 +1,0 @@
-# literal predicate
-# source: turtle-syntax-bad-struct-05.ttl
-<http://a.example/IssueShape> {
-   "p1" .
-}

@@ -1,2 +1,0 @@
-<http://a.example/s1>  <http://a.example/p1> <http://a.example/v1> .
-<http://a.example/s1>  <http://a.example/p1> <http://a.example/v2> .

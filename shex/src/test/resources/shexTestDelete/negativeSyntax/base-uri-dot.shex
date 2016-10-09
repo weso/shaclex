@@ -1,3 +1,0 @@
-# FULL STOP used after BASE
-# source: TurtleTests/turtle-syntax-bad-base-03.ttl
-BASE <http://www.w3.org/2013/TurtleTests/> .
