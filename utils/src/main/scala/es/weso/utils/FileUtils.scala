@@ -70,6 +70,7 @@ object FileUtils {
     import java.nio.file._
     val path = Paths.get(name)
     Files.write(path, contents.getBytes)
+    ()
   }
 
 }

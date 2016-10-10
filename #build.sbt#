@@ -10,6 +10,7 @@ lazy val shaclex =
   dependsOn(shacl,shex,manifest,srdfJena,srdf,utils,converter).
   settings(
     name := "shaclex",
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(app),
     libraryDependencies ++=
       Seq(
        "org.rogach" %% "scallop" % "2.0.1"

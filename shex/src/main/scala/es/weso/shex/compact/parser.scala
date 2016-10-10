@@ -178,7 +178,7 @@ object Parser {
         iri <- visitIri(ctx.iri())
         code <- optBuilder(ctx.CODE()).map(opt => opt.map(_.getText()))
         str <- optMapBuilder(code,cleanCode)
-     } yield SemAct(iri,str)   
+     } yield SemAct(iri,str)
 
    override def visitStart(
      ctx: StartContext):
@@ -187,7 +187,7 @@ object Parser {
        for {
          shapeExpr <- visitShapeExpression(ctx.shapeExpression())
          semActs <- visitSemanticActions(ctx.semanticActions())
-       } yield Some(shapeExpr,semActs)
+       } yield Some((shapeExpr,semActs))
      } else
        ok(None)
    }

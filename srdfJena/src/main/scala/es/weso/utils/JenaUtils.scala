@@ -312,13 +312,12 @@ object JenaUtils {
     val qexec = QueryExecutionFactory.create(query, model)
     qexec.execConstruct
   }
-  
- 
+
   /*
    * Convert a model to a String
    */
   def model2Str(
-		  model: Model, 
+		  model: Model,
 		  syntax: String = Turtle) : String = {
     val strWriter = new StringWriter
     model.write(strWriter,syntax)
@@ -329,10 +328,11 @@ object JenaUtils {
    * Write a model to a file
    */
   def model2File(
-		  model: Model, 
+		  model: Model,
 		  fileName : String,
 		  syntax: String = Turtle) : Unit = {
     model.write(new FileOutputStream(fileName),syntax)
+    ()
   }
 
 /* def getValuesOfType(r: Resource, m: Model) : Set[Resource] = {

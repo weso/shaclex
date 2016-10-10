@@ -223,7 +223,7 @@ def encodeOptFieldAsMap[A](name: String, m: Option[A])(implicit encoder: Encoder
 
 def field[A: Encoder](name: String, v: A): Option[(String, Json)] = {
   val encoder = implicitly[Encoder[A]]
-  Some(name, encoder(v))
+  Some((name, encoder(v)))
 }
 
 def optField[A: Encoder](name: String, m: Option[A]): Option[(String,Json)] = {

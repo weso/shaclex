@@ -31,7 +31,7 @@ abstract class RDFNode {
 
 case class BNodeId(id: String) extends RDFNode {
   
-  @deprecated 
+  // @deprecated 
   def newBNodeId: BNodeId = {
     val n = id.drop(1).toInt + 1
     BNodeId("b" + n)
