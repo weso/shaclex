@@ -3,7 +3,8 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
-import org.slf4j.LoggerFactory
+//import org.slf4j.LoggerFactory
+
 import es.weso.shacl._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
@@ -14,20 +15,19 @@ import es.weso.shacl.RDF2Shacl
 import es.weso.rdf.RDFReader
 import java.io.File
 
-object Main extends App {
-
-  val log = Logger(LoggerFactory.getLogger("name"))
+object Main extends App with LazyLogging {
 
   override def main(args: Array[String]): Unit = {
 
-    val opts = new MainOpts(args, errorDriver)
-    opts.verify()
-    val startTime = System.nanoTime()
+   val opts = new MainOpts(args, errorDriver)
+   opts.verify()
+
+   val startTime = System.nanoTime()
 
 
-    val validateOptions = for {
+   val validateOptions = for {
       rdf <- getRDFReader(opts)
-      schema <- getSchema(opts,rdf)
+      schema <- getShaclSchema(opts,rdf)
     } yield (rdf,schema)
 
     validateOptions match {
@@ -43,6 +43,7 @@ object Main extends App {
         if (opts.outputFile.get.isDefined) {
           val fileName = opts.outputFile.get.get
           val str = "" //TODO: str should contain the generated report
+          logger.info("Not implemented file report generation yet")
           FileUtils.writeFile(fileName, str)
         }
 
@@ -68,14 +69,16 @@ object Main extends App {
   }
 
   private def errorDriver(e: Throwable, scallop: Scallop) = e match {
-    case Help(s) =>
+    case Help(s) => {
       println("Help: " + s)
       scallop.printHelp
       sys.exit(0)
-    case _ =>
+    }
+    case _ => {
       println("Error: %s".format(e.getMessage))
       scallop.printHelp
       sys.exit(1)
+    }
   }
 
   def getRDFReader(opts: MainOpts): Try[RDFReader] = {
@@ -83,20 +86,20 @@ object Main extends App {
       val path = Paths.get(opts.data())
       RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
     } else {
-      log.info("RDF Data option not specified")
+      logger.info("RDF Data option not specified")
       Success(RDFAsJenaModel.empty)
     }
   }
 
-  def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
-    if (opts.shacl.isDefined) {
-      val path = Paths.get(opts.shacl())
+  def getShaclSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
+    if (opts.schema.isDefined) {
+      val path = Paths.get(opts.schema())
       for {
-        shaclRdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.shaclFormat())
+        shaclRdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.schemaFormat())
         schema <- extractSchema(rdf)
       } yield schema
     } else {
-      log.info("Schema not specified. Extracting schema from data")
+      logger.info("Schema not specified. Extracting schema from data")
       extractSchema(rdf)
     }
   }

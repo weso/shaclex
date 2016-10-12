@@ -1,41 +1,54 @@
 import sbt._
 import sbt.Keys._
+import sbtunidoc.Plugin.UnidocKeys._
+import com.typesafe.sbt.SbtGit.GitKeys._
 
 lazy val shaclex =
   project.in(file(".")).
   settings(unidocSettings: _*).
   settings(publishSettings:_*).
   settings(commonSettings:_*).
-  aggregate(shacl,shex,manifest,srdfJena,srdf,utils,converter).
-  dependsOn(shacl,shex,manifest,srdfJena,srdf,utils,converter).
+  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter).
+  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter).
   settings(
     name := "shaclex",
+    unidocProjectFilter in (ScalaUnidoc, unidoc) :=
+      inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++=
       Seq(
-       "org.rogach" %% "scallop" % "2.0.1"
+        "ch.qos.logback" %  "logback-classic" % logbackVersion
+      , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
+      , "org.rogach" %% "scallop" % "2.0.2"
       )
   )
 
+lazy val schema =
+  project.in(file("modules/schema")).
+  settings(commonSettings: _*).
+  dependsOn(shex, shacl)
+
+
 lazy val shacl =
-  project.in(file("shacl")).
+  project.in(file("modules/shacl")).
   settings(commonSettings: _*).
   dependsOn(srdfJena,
             manifest,
             utils,
+            typing,
             validating).
   settings(
    libraryDependencies ++=
      Seq(
-       "org.slf4s" % "slf4s-api_2.11" % "1.7.13"
-     , "com.typesafe" % "config" % "1.3.0" % Test
+       "com.typesafe" % "config" % "1.3.0" % Test
      , "org.typelevel" %% "cats" % catsVersion
      )
   )
 
 lazy val shex =
-  project.in(file("shex")).
+  project.in(file("modules/shex")).
   settings(commonSettings: _*).
   dependsOn(srdfJena,
+            typing,
             utils % "test -> test; compile -> compile",
             validating).
   settings(antlr4Settings: _*).
@@ -46,31 +59,21 @@ lazy val shex =
     antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % "1.3.0" % Test
-    , "ch.qos.logback" %  "logback-classic" % "1.1.7"
-    , "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
+    , "ch.qos.logback" %  "logback-classic" % logbackVersion
+    , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
     , "io.circe" %% "circe-core" % circeVersion
     , "io.circe" %% "circe-generic" % circeVersion
     , "io.circe" %% "circe-parser" % circeVersion
     )
   )
 
-lazy val validating =
-  project.in(file("validating")).
+lazy val converter =
+  project.in(file("modules/converter")).
   settings(commonSettings: _*).
-  dependsOn(srdfJena,utils % "test -> test; compile -> compile").
-  settings(antlr4Settings: _*).
-  settings(
-   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0"),
-   addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0"),
-   libraryDependencies ++= Seq(
-     "org.atnos" %% "eff-cats" % effCatsVersion
-   , "org.typelevel" %% "cats" % catsVersion
-   )
-  )
-
+  dependsOn(shex,shacl)
 
 lazy val manifest =
-  project.in(file("manifest")).
+  project.in(file("modules/manifest")).
   settings(commonSettings: _*).
   dependsOn(srdfJena, utils).
   settings(
@@ -81,28 +84,33 @@ lazy val manifest =
   )
 
 lazy val srdf =
-  project.in(file("srdf")).
+  project.in(file("modules/srdf")).
   settings(commonSettings: _*)
 
 lazy val srdfJena =
-  project.in(file("srdfJena")).
+  project.in(file("modules/srdfJena")).
   dependsOn(srdf).
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "com.typesafe" % "config" % "1.3.0" % Test
+      "ch.qos.logback" %  "logback-classic" % logbackVersion
+    , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
+    , "com.typesafe" % "config" % "1.3.0" % Test
     , "org.apache.jena" % "jena-arq" % "3.1.0"
     )
   )
 
-lazy val converter =
-  project.in(file("converter")).
+lazy val typing =
+  project.in(file("modules/typing")).
   settings(commonSettings: _*).
-  dependsOn(shex,shacl)
-
+  settings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats" % catsVersion
+    )
+  )
 
 lazy val utils =
-  project.in(file("utils")).
+  project.in(file("modules/utils")).
   settings(commonSettings: _*).
   settings(
     libraryDependencies ++= Seq(
@@ -113,6 +121,22 @@ lazy val utils =
     , "org.typelevel" %% "cats" % catsVersion
     )
   )
+
+lazy val validating =
+  project.in(file("modules/validating")).
+  settings(commonSettings: _*).
+  dependsOn(srdfJena,
+            utils % "test -> test; compile -> compile").
+  settings(antlr4Settings: _*).
+  settings(
+   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0"),
+   addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0"),
+   libraryDependencies ++= Seq(
+     "org.atnos" %% "eff-cats" % effCatsVersion
+   , "org.typelevel" %% "cats" % catsVersion
+   )
+  )
+
 
 lazy val commonSettings = Seq(
   organization := "es.weso",
@@ -126,6 +150,29 @@ lazy val commonSettings = Seq(
   )
 )
 
+def noDocProjects: Seq[ProjectReference] = Seq[ProjectReference](
+ //  benchmark,
+ validating
+)
+
+lazy val docSettings = unidocSettings ++ Seq(
+  scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
+    "-groups",
+    "-implicits",
+    "-doc-source-url", scmInfo.value.get.browseUrl + "/tree/master€{FILE_PATH}.scala",
+    "-sourcepath", baseDirectory.in(LocalRootProject).value.getAbsolutePath
+  ),
+  git.remoteRepo := "git@github.com:labra/shaclex.git",
+  includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.svg" | "*.js" | "*.swf" | "*.yml" | "*.md"
+)
+
+
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+
 name := "shaclex"
 
 // Versions of common packages
@@ -134,6 +181,8 @@ lazy val effCatsVersion = "2.0.0-RC11"
 lazy val catsVersion = "0.7.2"
 lazy val scalaTestVersion = "3.0.0"
 lazy val scalacticVersion = "3.0.0"
+lazy val logbackVersion = "1.1.7"
+lazy val loggingVersion = "3.5.0"
 
 // to write types like Reader[String, ?]
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0")
