@@ -52,20 +52,37 @@ abstract class CheckerCats extends Checker {
     v <- MonadError[Check, Err].attempt(c)
   } yield v.toEither
 
-  def cond[A,B](c: Check[A], thenPart: A => Check[B], elsePart: Err => Check[B]): Check[B] = 
+  def cond[A,B](
+    c: Check[A],
+    thenPart: A => Check[B],
+    elsePart: Err => Check[B]): Check[B] =
     attempt(c).flatMap(_.fold(elsePart(_),thenPart(_)))
-  
+
   def checkList[A,B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
     checkAll(ls.map(check))
   }
-  
+
   def checkAll[A](xs: List[Check[A]]): Check[List[A]] = xs.sequence
+
+  /*  def optCheck[A,B](
+    x: Option[A],
+    f: => A => Check[B]): Check[Option[B]] = x match {
+    case None => ok(None)
+    case Some(v) => f(v).map(Some(_))
+  } */
+
+   def optCheck[A,B](
+     c: Option[A],
+     check: A => Check[B],
+     default: => Check[B]
+  ): Check[B] = c.fold(default)(check(_))
+
 
   def validateCheck(condition: Boolean, e: Err): Check[Unit] = {
     if (condition) Monad[Check].pure(())
     else err(e)
   }
-  
+
   //implicit val monadCheck = implicitly[Monad[Check]]
   lazy val mWriterEC = implicitly[Monad[WriterEC]]
 

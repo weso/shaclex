@@ -7,7 +7,7 @@ import es.weso.utils.FileUtils._
 import scala.io._
 import java.io.File
 import es.weso.shex.compact.Parser._
-import es.weso.shex.compact.printer._
+import es.weso.shex.compact.Printer._
 import es.weso.shex.implicits.eqShEx._
 import cats._, data._
 import implicits._

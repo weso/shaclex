@@ -7,6 +7,17 @@ case class InfoNode(
     hasShapes: Seq[(ShapeLabel,Explanation)],
     hasNoShapes: Seq[(ShapeLabel,Explanation)]) {
 
+  def show(pm: PrefixMap): String = {
+    val sb = new StringBuilder
+    for ((s,e) <- hasShapes) {
+      sb ++= ("+" + s.str + " " + e.str)
+    }
+    for ((s,e) <- hasNoShapes) {
+      sb ++= ("-" + s.str + " " + e.str)
+    }
+    sb.toString
+  }
+  
 /*  def toHTML(pm: PrefixMap): String = {
     val sb = new StringBuilder
     sb ++= "<ul class=\"positiveShapes\">"

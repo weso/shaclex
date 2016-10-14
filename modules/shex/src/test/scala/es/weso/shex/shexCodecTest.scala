@@ -31,14 +31,14 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
     }
 
   }
-  
+
   describe("Shape Label") {
    codecValueTest[IRI](IRI("x"))
    codecValueTest[ShapeLabel](IRILabel(IRI("http://example.org/")))
    codecValueTest[ShapeLabel](BNodeLabel(BNodeId("x")))
   }
 
-  
+
   describe("Max codec") {
    codecValueTest[Max](IntMax(5))
    codecValueTest[Max](Star)

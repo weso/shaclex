@@ -11,6 +11,7 @@ case class Result(
     sols.size == 1 && sols.head.isEmpty
   }
 
+
 /*  def toHTML(cut: Int = 1, schema:Schema): String = {
     val sb = new StringBuilder
     val pm = schema.pm
@@ -41,15 +42,41 @@ case class Result(
     sb.toString
   }
 
-   def printNumber(n: Int, cut: Int): String = {
+  }
+ */
+
+  lazy val cut = 1 // TODO maybe remove concept of cut
+
+  def printNumber(n: Int, cut: Int): String = {
     if (n == 1 && cut == 1) ""
     else n.toString
   }
- */
+  
+  def show(pm: PrefixMap): String = {
+    val sb = new StringBuilder
+    if (isValid) {
+      if (noSolutions(solutions)) {
+        "No solutions found"
+      } else {
+     for ((solution, n) <- solutions zip (1 to cut)) {
+      sb ++= "Result " + printNumber(n, cut)
+      sb ++= solution.show(pm)
+     }
+     }
+    }
+    else
+      sb ++= errors.map(_.show(pm)).mkString("\n")
+    sb.toString
+ }
+
 }
 
 object Result {
-  def empty = Result(isValid = true, message = "", solutions = Seq(), errors=Seq())
+  def empty =
+    Result(isValid = true,
+           message = "",
+           solutions = Seq(),
+           errors=Seq())
 
   def errStr(str: String) = Result(isValid = false, message = str, solutions = Seq(), errors = Seq())
 

@@ -21,9 +21,9 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
 
   def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shacl.NodeShape,String)]]): Result =
     Result(isValid = r.isOK,
-           message="",
-           solutions=r.results.map(cnvShapeTyping(_)),
-           errors=r.errors.map(cnvViolationError(_))
+           message = if (r.isOK) "Valid" else "Not valid",
+           solutions = r.results.map(cnvShapeTyping(_)),
+           errors = r.errors.map(cnvViolationError(_))
     )
 
   def cnvShapeTyping(t: ShapeTyping): Solution = {
@@ -34,23 +34,39 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
     r: Map[Shape,TypingResult[ViolationError,String]]
   ): InfoNode = {
     val (oks,bads) = r.toSeq.partition(_._2.isOK)
-    def cnvShapeResult(
-      p:(Shape,TypingResult[ViolationError,String])
-    ): (ShapeLabel,Explanation) = {
-      val shapeLabel = p._1.id match {
-        case Some(iri) => schema.pm.qualify(iri)
-        case None => throw new Exception("Unimplemented cnvResult with None")
-      }
-      ???
-    }
-
     InfoNode(oks.map(cnvShapeResult(_)),
              bads.map(cnvShapeResult(_))
     )
   }
 
+    def cnvShapeResult(
+      p:(Shape,TypingResult[ViolationError,String])
+    ): (ShapeLabel,Explanation) = {
+      val shapeLabel = p._1.id match {
+        case Some(iri) => ShapeLabel(schema.pm.qualify(iri))
+        case None => ShapeLabel("?")
+      }
+      val explanation = Explanation(cnvTypingResult(p._2))
+    (shapeLabel,explanation)
+    }
 
-  def cnvViolationError(v: ViolationError): ErrorInfo = ???
+  def cnvTypingResult(result: TypingResult[ViolationError,String]): String = {
+    result.t.fold(
+      es => "Errors: " +
+           es.map(_.message.getOrElse("")).toList.mkString("\n")
+    , rs => "OK. Evidences:" +
+           rs.map(" " + _).mkString("\n")
+    )
+  }
+
+  def cnvViolationError(v: ViolationError): ErrorInfo = {
+    val pm = schema.pm
+    ErrorInfo(
+      pm.qualify(v.id) +
+        " FocusNode: " + schema.pm.qualify(v.focusNode) + " " +
+        v.message.getOrElse("")
+    )
+  }
 
   override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
     throw new Exception("Not implemented validateNodesShape for SHACLex yet")

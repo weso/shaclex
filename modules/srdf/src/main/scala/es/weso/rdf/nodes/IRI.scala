@@ -51,7 +51,7 @@ object IRI {
       case _: URISyntaxException => None
     }
   }
-  
+
   def fromString(str: String): Option[IRI] = {
     unapply(str)
   }

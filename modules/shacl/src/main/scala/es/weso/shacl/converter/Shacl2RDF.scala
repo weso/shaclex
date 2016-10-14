@@ -7,7 +7,7 @@ import es.weso.rdf._
 import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
 import es.weso.shacl.SHACLPrefixes._
-import es.weso.rdf.PREFIXES._
+import es.weso.rdf.PREFIXES.{sh => _, _}
 import es.weso.rdf.jena._
 import es.weso.shacl._
 

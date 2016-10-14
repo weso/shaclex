@@ -11,6 +11,7 @@ object PREFIXES {
   lazy val rdf = IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
   lazy val owl = IRI("http://www.w3.org/2002/07/owl#")
   lazy val rdfs = IRI("http://www.w3.org/2000/01/rdf-schema#")
+  lazy val sh = IRI("http://www.w3.org/ns/shacl#")
 
   lazy val xsd_string = xsd.add("string")
   lazy val xsd_integer = xsd.add("integer")
@@ -22,10 +23,14 @@ object PREFIXES {
   lazy val rdf_first = rdf.add("first")
   lazy val rdf_rest = rdf.add("rest")
   lazy val rdf_langString = rdf.add("langString")
-  
+
 
   private val basicMap: Map[String, IRI] =
-    Map("rdf" -> rdf, "xsd" -> xsd, "rdfs" -> rdfs, "owl" -> owl
+    Map("rdf" -> rdf,
+        "xsd" -> xsd,
+        "rdfs" -> rdfs,
+        "owl" -> owl,
+        "sh" -> sh
     )
 
 }

@@ -5,7 +5,8 @@ import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
 //import org.slf4j.LoggerFactory
 
-import es.weso.shacl._
+// import es.weso.shacl._
+import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
 import es.weso.utils.FileUtils
@@ -24,21 +25,21 @@ object Main extends App with LazyLogging {
 
    val startTime = System.nanoTime()
 
-
    val validateOptions = for {
       rdf <- getRDFReader(opts)
-      schema <- getShaclSchema(opts,rdf)
+      schema <- getSchema(opts,rdf)
     } yield (rdf,schema)
 
     validateOptions match {
       case Success((rdf,schema)) => {
+        logger.info(s"Starting validation of $rdf with $schema")
         if (opts.show()) {
           println("Schema:" + schema.serialize("TURTLE"))
         }
 
-        val validator = Validator(schema)
-        val validated = validator.validateAll(rdf)
-        println(s"Result: ${validated.show}")
+        val result = schema.validate(rdf)
+        logger.info(s"Plain result: ${result}")
+        logger.info(s"Result shown: ${result.show(schema.pm)}")
 
         if (opts.outputFile.get.isDefined) {
           val fileName = opts.outputFile.get.get
@@ -84,27 +85,32 @@ object Main extends App with LazyLogging {
   def getRDFReader(opts: MainOpts): Try[RDFReader] = {
     if (opts.data.isDefined) {
       val path = Paths.get(opts.data())
-      RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
+      val rdf = RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
+      logger.info(s"RDF obtained: $rdf")
+      rdf
     } else {
       logger.info("RDF Data option not specified")
       Success(RDFAsJenaModel.empty)
     }
   }
 
-  def getShaclSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
+  def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
     if (opts.schema.isDefined) {
+      logger.info(s"Schema specified: Extracting schema from ${opts.schema()}")
       val path = Paths.get(opts.schema())
-      for {
-        shaclRdf <- RDFAsJenaModel.fromFile(path.toFile(),opts.schemaFormat())
-        schema <- extractSchema(rdf)
-      } yield schema
+      val schema = Schemas.fromFile(path.toFile(),
+                       opts.schemaFormat(),
+                       opts.engine(),
+                       None)
+      logger.info(s"Schema $schema")
+      schema
     } else {
       logger.info("Schema not specified. Extracting schema from data")
-      extractSchema(rdf)
+      Schemas.fromRDF(rdf, opts.engine())
     }
   }
 
-  def getShacl(file: File, format: String): Try[Schema] = {
+  /*def getShacl(file: File, format: String): Try[Schema] = {
     format match {
       case "TURTLE" => for {
         rdf <- RDFAsJenaModel.fromFile(file,format)
@@ -112,11 +118,11 @@ object Main extends App with LazyLogging {
       } yield (schema)
       case _ => Failure(new Exception("Unsupported format: " + format))
     }
-  }
+  }*/
 
-  def extractSchema(rdf:RDFReader): Try[Schema] = {
+/*  def extractSchema(rdf:RDFReader): Try[Schema] = {
     RDF2Shacl.getShacl(rdf)
-  }
+  } */
 
 }
 

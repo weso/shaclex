@@ -10,7 +10,7 @@ import es.weso.rdf._
 /**
  * Convert Abstract syntax to ShEx Compact syntax
  */
-object printer {
+object Printer {
 
   type Doc = Document
 

@@ -2,6 +2,7 @@ package es.weso.shex
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
+import util._
 
 case class Schema(
     prefixes: Option[PrefixMap],
@@ -25,6 +26,12 @@ case class Schema(
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
     shapes.getOrElse(Map()).get(label)
 
+  lazy val shapesMap: Map[ShapeLabel,ShapeExpr] =
+    shapes.getOrElse(Map())
+
+  def labels: List[ShapeLabel] = {
+    shapesMap.keys.toList
+  }
 }
 
 abstract sealed trait ShapeExpr
@@ -69,8 +76,15 @@ case class Shape(
     inherit: Option[ShapeLabel],
     semActs: Option[List[SemAct]]
 ) extends ShapeExpr {
-  def isVirtual: Boolean = virtual.getOrElse(Shape.defaultVirtual)
-  def isClosed: Boolean = closed.getOrElse(Shape.defaultClosed)
+
+  def isVirtual: Boolean =
+    virtual.getOrElse(Shape.defaultVirtual)
+
+  def isClosed: Boolean =
+    closed.getOrElse(Shape.defaultClosed)
+
+  def extras = extra.getOrElse(List())
+
 }
 
 object Shape{
@@ -216,9 +230,11 @@ case class TripleConstraint(
     annotations: Option[List[Annotation]]
     ) extends TripleExpr {
  lazy val inverse = optInverse.getOrElse(false)
+ lazy val direct = !inverse
  lazy val negated = optNegated.getOrElse(false)
  lazy val min = optMin.getOrElse(Cardinality.defaultMin)
  lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+
 }
 
 object TripleConstraint {
@@ -241,6 +257,11 @@ abstract sealed trait Max {
       case IntMax(v) => v.toString
       case Star => "*"
     }
+  
+  def biggerThanOrEqual(x: Int) = this match {
+    case IntMax(v) => v >= x
+    case Star => true
+  }
 }
 case object Star extends Max
 case class IntMax(v: Int) extends Max
@@ -251,12 +272,62 @@ case object BNodeKind extends NodeKind
 case object NonLiteralKind extends NodeKind
 case object LiteralKind extends NodeKind
 
-abstract sealed trait ShapeLabel
+abstract sealed trait ShapeLabel {
+  def qualifiedShow(pm: PrefixMap): String = this match {
+    case IRILabel(iri) => pm.qualifyIRI(iri)
+    case BNodeLabel(bn) => bn.toString
+  }
+}
 case class IRILabel(iri: IRI) extends ShapeLabel
 case class BNodeLabel(bnode: BNodeId) extends ShapeLabel
 
 object Schema {
+
   def empty: Schema =
     Schema(None,None,None,None,None)
 
+  def fromString(cs: CharSequence,
+                 format: String,
+                 base: Option[String] = None): Try[Schema] = {
+    format match {
+      case "SHEXC" => {
+        import compact.Parser.parseSchema
+        parseSchema(cs.toString) match {
+        case Left(e) => Failure(new Exception(e))
+        case Right(schema) => Success(schema)
+      }
+      }
+      case "SHEXJ" =>{
+//        import io.circe._
+        import io.circe.parser._
+//        import io.circe.syntax._
+        import es.weso.shex.implicits.decoderShEx._
+        decode[Schema](cs.toString).
+          fold(e => Failure(new Exception(e.toString)),
+               s => Success(s))
+      }
+      case _ =>
+        Failure(
+          new Exception(s"Not implemented ShEx parser for format $format")
+        )
+    }
+  }
+
+  def serialize(schema: Schema, format: String): String = {
+    format match {
+      case "SHEXC" => {
+        import compact.Printer._
+        print(schema)
+      }
+      case "SHEXJ" => {
+        import io.circe._
+        import io.circe.parser._
+        import io.circe.syntax._
+        import es.weso.shex.implicits.encoderShEx._
+        schema.asJson.spaces4
+      }
+      case _ =>
+        s"Not implemented conversion to $format. Schema: $schema"
+    }
+  }
 }

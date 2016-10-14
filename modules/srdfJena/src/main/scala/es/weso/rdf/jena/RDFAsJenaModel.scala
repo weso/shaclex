@@ -262,7 +262,7 @@ object RDFAsJenaModel {
   }
 
   def availableFormats: List[String] = {
-    RDFLanguages.getRegisteredLanguages().map(_.getName).toList
+    RDFLanguages.getRegisteredLanguages().map(_.getName).toList.distinct
   }
 
 

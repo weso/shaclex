@@ -49,12 +49,18 @@ case class PrefixMap(pm: Map[Prefix, IRI]) {
     pm.map(cnv).mkString("\n")
   }
 
+  def qualify(node: RDFNode): String =
+    node match {
+      case iri: IRI => qualifyIRI(iri)
+      case _ => node.toString
+    }
+
   /**
     * If prefixMap contains a: -> http://example.org/
     * then qualify(IRI("http://example.org/x")) = "a:x"
     * else <http://example.org/x>
     */
-  def qualify(iri: IRI): String = {
+  def qualifyIRI(iri: IRI): String = {
       def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
         iri.str.startsWith(p._2.str)
       }
@@ -74,7 +80,10 @@ object PrefixMap {
     pm.addPrefix(prefix, iri)
 
   def qualify(iri: IRI, pm: PrefixMap): String =
-    pm.qualify(iri)
+    pm.qualifyIRI(iri)
+
+  def qualify(node: RDFNode, pm: PrefixMap): String =
+    pm.qualify(node)
 
 }
 

@@ -62,15 +62,6 @@ case class Validator(schema: Schema) {
     schema.targetNodeShapes
   }
 
-  // Fails if there is any error
-  def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    implicit def showPair = new Show[(ShapeTyping, Evidences)] {
-      def show(e: (ShapeTyping, Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences: ${e._2}"
-      }
-    }
-    runCheck(checkSchemaAll(schema), rdf)
-  }
 
   def runCheck[A: Show](c: Check[A], rdf: RDFReader): CheckResult[ViolationError, A, Log] = {
     val initial: ShapeTyping = Typing.empty
@@ -167,9 +158,12 @@ case class Validator(schema: Schema) {
 
   def checkConstraint(c: Constraint): NodeChecker = {
     c match {
-      case pc: PropertyConstraint     => checkPropertyConstraint(pc)
-      case pc: PathPropertyConstraint => throw new Exception(s"Non-implemented PathProperty Constraints yet: $pc")
-      case nc: NodeConstraint         => checkNodeConstraint(nc)
+      case pc: PropertyConstraint     =>
+        checkPropertyConstraint(pc)
+      case pc: PathPropertyConstraint =>
+        throw new Exception(s"Non-implemented PathProperty Constraints yet: $pc")
+      case nc: NodeConstraint         =>
+        checkNodeConstraint(nc)
     }
   }
 
@@ -514,7 +508,10 @@ case class Validator(schema: Schema) {
     } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
   }
 
-  def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
+  def addNotEvidence(
+    nodeShape: NodeShape,
+    e: ViolationError,
+    msg: String): Check[ShapeTyping] = {
     val node = nodeShape.node
     val shape = nodeShape.shape
     for {
@@ -522,7 +519,7 @@ case class Validator(schema: Schema) {
       _ <- addLog(List((nodeShape, msg)))
     } yield t.addNotEvidence(node, shape, e)
   }
-  
+
   def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
@@ -589,7 +586,7 @@ case class Validator(schema: Schema) {
 
   // TODO
   // Define a more general method?
-  // This method should validate some of the nodes/shapes not raising a whole error if one fails, 
+  // This method should validate some of the nodes/shapes not raising a whole error if one fails,
   // but collecting the good ones and the errors...
   def checkAny(xs: Seq[Check[(RDFNode, Shape)]]): Check[Seq[(RDFNode, Shape)]] = {
     val zero: Check[Seq[(RDFNode, Shape)]] = ok(Seq())
@@ -603,6 +600,16 @@ case class Validator(schema: Schema) {
     xs.foldRight(zero)(next)
   }
 
+  // Fails if there is any error
+  def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
+    implicit def showPair = new Show[(ShapeTyping, Evidences)] {
+      def show(e: (ShapeTyping, Evidences)): String = {
+        s"Typing: ${e._1}\n Evidences: ${e._2}"
+      }
+    }
+    runCheck(checkSchemaAll(schema), rdf)
+  }
+
 }
 
 object Validator {
@@ -610,7 +617,7 @@ object Validator {
   def empty = Validator(schema = Schema.empty)
 
   /* def runCheck[A](c: Check[A], rdf: RDFReader): Xor[NonEmptyList[ViolationError],List[(A,Evidences)]] = {
-   val initial : ShapeTyping = Typing.empty 
+   val initial : ShapeTyping = Typing.empty
    val r = c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
    r
  } */

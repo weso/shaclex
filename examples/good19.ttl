@@ -5,10 +5,10 @@
 
 :S	a sh:Shape; a rdfs:Class ;
     sh:targetSubjectsOf :p ;
-    sh:targetObjectsOf :q ; 
+    sh:targetObjectsOf :q ;
 	sh:property [ sh:predicate :r; sh:datatype xsd:string; sh:minCount 1 ];
  .
-	
+
 :x :p "1"; :r "Hi" .
 :y :q :z .
 :z :r "xxx" .
