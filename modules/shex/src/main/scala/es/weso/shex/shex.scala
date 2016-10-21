@@ -314,7 +314,7 @@ object Schema {
   }
 
   def serialize(schema: Schema, format: String): String = {
-    format match {
+    format.toUpperCase match {
       case "SHEXC" => {
         import compact.Printer._
         print(schema)

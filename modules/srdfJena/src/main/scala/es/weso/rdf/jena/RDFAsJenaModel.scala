@@ -167,7 +167,7 @@ case class RDFAsJenaModel(model: Model)
 
   override def addPrefixMap(pm: PrefixMap): RDFAsJenaModel = {
     val map: Map[String, String] = pm.pm.map {
-      case (Prefix(str), iri) => (removeLastColon(str), iri.str) }
+      case (Prefix(str), iri) => (str, iri.str) }
     model.setNsPrefixes(map)
     this
   }

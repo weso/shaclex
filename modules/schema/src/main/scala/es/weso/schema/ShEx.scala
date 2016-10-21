@@ -146,7 +146,7 @@ case class ShEx(schema: ShExSchema) extends Schema {
   }*/
 
   override def serialize(format: String): Try[String] = {
-    if (formats.contains(format))
+    if (formats.contains(format.toUpperCase()))
       Success(ShExSchema.serialize(schema, format))
     else
       Failure(

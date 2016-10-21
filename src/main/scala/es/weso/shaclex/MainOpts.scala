@@ -69,13 +69,21 @@ class MainOpts(
     noshort = true
     )
 
-  val show = toggle("show",
+  val showSchema = toggle("showSchema",
     prefix = "no-",
     default = Some(false),
-    descrYes = "show report",
-    descrNo = "don't show report",
+    descrYes = "show schema",
+    descrNo = "don't show schema",
     noshort = true
     )
+
+  val showData = toggle("showData",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show data",
+    descrNo = "don't show data",
+    noshort = true
+  )
 
   val outputFile = opt[String]("outputFile",
     default = None,

@@ -21,12 +21,16 @@ object Printer {
     writer.toString
   }
 
+  def comb(d1:Doc,d2:Doc): Doc =
+    if (d1 == none) d2
+    else d1 :/: d2
+
   def schemaDoc(s: Schema): Document = {
-    prefixesDoc(s.prefixes) :/:
-    baseDoc(s.base) :/:
-    startActsDoc(s.prefixMap)(s.startActs) :/:
-    startDoc(s.prefixMap)(s.start) :/:
-    shapesDoc(s.shapes, s.prefixMap)
+    comb(prefixesDoc(s.prefixes),
+    comb(baseDoc(s.base),
+    comb(startActsDoc(s.prefixMap)(s.startActs),
+    comb(startDoc(s.prefixMap)(s.start),
+          shapesDoc(s.shapes, s.prefixMap)))))
   }
 
   def prefixesDoc(ps: Option[PrefixMap]): Document =

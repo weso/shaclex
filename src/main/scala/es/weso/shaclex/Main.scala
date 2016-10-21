@@ -32,9 +32,14 @@ object Main extends App with LazyLogging {
 
     validateOptions match {
       case Success((rdf,schema)) => {
-        logger.info(s"Starting validation of $rdf with $schema")
-        if (opts.show()) {
-          println("Schema:" + schema.serialize("TURTLE"))
+        if (opts.showData()) {
+          println(s"Data(${opts.dataFormat()}):\n${rdf.serialize(opts.dataFormat())}")
+        }
+        if (opts.showSchema()) {
+          schema.serialize(opts.schemaFormat()) match {
+            case Success(str) => println(s"Schema(${opts.schemaFormat()}):\n$str")
+            case Failure(e) => println(s"Error showing schema $schema: $e")
+          }
         }
 
         val result = schema.validate(rdf)

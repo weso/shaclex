@@ -114,7 +114,10 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = s match{
     case ShapeOr(ss) => errStr(s"Not implemented ShapeOr $attempt")
-    case ShapeAnd(ss) => errStr(s"Not implemented ShapeAnd $attempt")
+    case ShapeAnd(ss) => for {
+      ts <- checkAll(ss.map(se => checkNodeShapeExpr(attempt,node,se)))
+      t <- combineTypings(ts)
+    } yield t
     case ShapeNot(s) => errStr(s"Not implemented ShapeNot $attempt")
     case nc: NodeConstraint => checkNodeConstraint(attempt,node,nc)
     case s: Shape => checkShape(attempt,node,s)
