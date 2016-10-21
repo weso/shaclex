@@ -38,8 +38,7 @@ object Main extends App with LazyLogging {
         }
 
         val result = schema.validate(rdf)
-        logger.info(s"Plain result: ${result}")
-        logger.info(s"Result shown: ${result.show(schema.pm)}")
+        logger.info(s"Result: ${result.show(schema.pm)}")
 
         if (opts.outputFile.get.isDefined) {
           val fileName = opts.outputFile.get.get

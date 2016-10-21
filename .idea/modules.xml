@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter.iml" filepath="$PROJECT_DIR$/.idea/modules/converter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/converter-build.iml" filepath="$PROJECT_DIR$/.idea/modules/converter-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/manifest.iml" filepath="$PROJECT_DIR$/.idea/modules/manifest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/manifest-build.iml" filepath="$PROJECT_DIR$/.idea/modules/manifest-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/schema.iml" filepath="$PROJECT_DIR$/.idea/modules/schema.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/schema-build.iml" filepath="$PROJECT_DIR$/.idea/modules/schema-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shacl.iml" filepath="$PROJECT_DIR$/.idea/modules/shacl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shacl-build.iml" filepath="$PROJECT_DIR$/.idea/modules/shacl-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shaclex.iml" filepath="$PROJECT_DIR$/.idea/modules/shaclex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shaclex-build.iml" filepath="$PROJECT_DIR$/.idea/modules/shaclex-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shex.iml" filepath="$PROJECT_DIR$/.idea/modules/shex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shex-build.iml" filepath="$PROJECT_DIR$/.idea/modules/shex-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/srdf.iml" filepath="$PROJECT_DIR$/.idea/modules/srdf.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/srdf-build.iml" filepath="$PROJECT_DIR$/.idea/modules/srdf-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/srdfJena.iml" filepath="$PROJECT_DIR$/.idea/modules/srdfJena.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/srdfJena-build.iml" filepath="$PROJECT_DIR$/.idea/modules/srdfJena-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/typing.iml" filepath="$PROJECT_DIR$/.idea/modules/typing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/typing-build.iml" filepath="$PROJECT_DIR$/.idea/modules/typing-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utils.iml" filepath="$PROJECT_DIR$/.idea/modules/utils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utils-build.iml" filepath="$PROJECT_DIR$/.idea/modules/utils-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validating.iml" filepath="$PROJECT_DIR$/.idea/modules/validating.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validating-build.iml" filepath="$PROJECT_DIR$/.idea/modules/validating-build.iml" />
+    </modules>
+  </component>
+</project>

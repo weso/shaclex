@@ -4,14 +4,19 @@ import es.weso.rdf.nodes._
 import es.weso.shex.parser._
 import org.antlr.v4.runtime._
 import org.antlr.v4.runtime.tree._
+import com.typesafe.scalalogging._
 import collection.JavaConverters._
 import cats._, data._
 import cats.implicits._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 import ShExDocParser.{StringContext => ShExStringContext, _}
+import org.antlr.v4.runtime.atn.ATNConfigSet
+import org.antlr.v4.runtime.dfa.DFA
+import org.antlr.v4.runtime._
+import java.util
 
-object Parser {
+object Parser extends LazyLogging {
 
   type S[A] = State[BuilderState,A]
   type Builder[A] = EitherT[S,String,A]
@@ -84,11 +89,51 @@ object Parser {
     val lexer: ShExDocLexer = new ShExDocLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
     val parser: ShExDocParser = new ShExDocParser(tokens)
-    if (parser.getNumberOfSyntaxErrors > 0) {
-      Left("Syntax errors appeared")
+
+    var errors = new scala.collection.mutable.Queue[String]
+
+    val errorListener = new ANTLRErrorListener {
+      override def reportContextSensitivity(recognizer: Parser,
+                                            dfa: DFA,
+                                            startIndex: Int,
+                                            stopIndex: Int,
+                                            prediction: Int,
+                                            configs: ATNConfigSet): Unit = {
+
+      }
+      override def reportAmbiguity(recognizer: Parser,
+                                   dfa: DFA,
+                                   startIndex: Int,
+                                   stopIndex: Int,
+                                   exact: Boolean,
+                                   ambigAlts: util.BitSet,
+                                   configs: ATNConfigSet): Unit = {       }
+
+      override def reportAttemptingFullContext(recognizer: Parser,
+                                               dfa: DFA,
+                                               startIndex: Int,
+                                               stopIndex: Int,
+                                               conflictingAlts: util.BitSet,
+                                               configs: ATNConfigSet): Unit = {       }
+      override def syntaxError(recognizer: Recognizer[_, _],
+                               offendingSymbol: scala.Any,
+                               line: Int,
+                               charPositionInLine: Int,
+                               msg: String, e: RecognitionException): Unit = {
+        val str = s"Error ${errors.length} line $line:$charPositionInLine $msg"
+        errors += str
+      }
+    }
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(errorListener)
+    parser.removeErrorListeners()
+    parser.addErrorListener(errorListener)
+
+    val maker = new SchemaMaker()
+    val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]
+    if (errors.length > 0) {
+      Left(errors.mkString("\n"))
     } else {
-      val maker = new SchemaMaker()
-      val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]
       run(builder)._2
     }
   }

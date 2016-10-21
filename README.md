@@ -15,16 +15,24 @@ This is an experimental implementation of SHACL and ShEx. Both are implemented u
 
 ## Installation and compilation
 
-The projects uses [sbt](http://www.scala-sbt.org/).  
+The projects uses [sbt](http://www.scala-sbt.org/) for compilation.
+
+* `sbt test` compiles and runs the tests
+
 
 ## Usage
 
-It is possible to run sample programs by just:
+Once compiled, the program can be run as a command line tool. 
+It is possible to run the program inside `sbt` as:
+
+Validates using SHACL (default engine)
+```
+sbt run -d examples/good1.ttl
+```
 
 ```
-sbt "run -d examples/good1.ttl"
+sbt run -e ShEx -s examples/shex/good1.shex --schemaFormat ShExC -d examples/shex/good1.ttl
 ```
-
 ## More information
 
 * [ShExcala](http://labra.github.io/ShExcala/): Previous Shape Expressions implementation

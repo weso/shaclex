@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="1.8">
+      <module name="converter" target="1.8" />
+      <module name="manifest" target="1.8" />
+      <module name="schema" target="1.8" />
+      <module name="shacl" target="1.8" />
+      <module name="shaclex" target="1.8" />
+      <module name="shex" target="1.8" />
+      <module name="srdf" target="1.8" />
+      <module name="srdfJena" target="1.8" />
+      <module name="typing" target="1.8" />
+      <module name="utils" target="1.8" />
+      <module name="validating" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-Xlint" />
+  </component>
+</project>

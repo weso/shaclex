@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaSbtSettings">
+    <option name="customVMEnabled" value="true" />
+    <option name="customVMPath" value="C:\compi\jdk18" />
+    <option name="linkedExternalProjectsSettings">
+      <SbtProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="jdk" value="1.8" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/modules/converter" />
+            <option value="$PROJECT_DIR$/modules/converter/project" />
+            <option value="$PROJECT_DIR$/modules/manifest" />
+            <option value="$PROJECT_DIR$/modules/manifest/project" />
+            <option value="$PROJECT_DIR$/modules/schema" />
+            <option value="$PROJECT_DIR$/modules/schema/project" />
+            <option value="$PROJECT_DIR$/modules/shacl" />
+            <option value="$PROJECT_DIR$/modules/shacl/project" />
+            <option value="$PROJECT_DIR$/modules/shex" />
+            <option value="$PROJECT_DIR$/modules/shex/project" />
+            <option value="$PROJECT_DIR$/modules/srdf" />
+            <option value="$PROJECT_DIR$/modules/srdf/project" />
+            <option value="$PROJECT_DIR$/modules/srdfJena" />
+            <option value="$PROJECT_DIR$/modules/srdfJena/project" />
+            <option value="$PROJECT_DIR$/modules/typing" />
+            <option value="$PROJECT_DIR$/modules/typing/project" />
+            <option value="$PROJECT_DIR$/modules/utils" />
+            <option value="$PROJECT_DIR$/modules/utils/project" />
+            <option value="$PROJECT_DIR$/modules/validating" />
+            <option value="$PROJECT_DIR$/modules/validating/project" />
+            <option value="$PROJECT_DIR$/project" />
+          </set>
+        </option>
+        <option name="resolveJavadocs" value="true" />
+        <option name="sbtVersion" value="0.13.13-RC2" />
+      </SbtProjectSettings>
+    </option>
+  </component>
+</project>

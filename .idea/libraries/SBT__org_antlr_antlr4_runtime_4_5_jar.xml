@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: org.antlr:antlr4-runtime:4.5:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.antlr/antlr4-runtime/jars/antlr4-runtime-4.5.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.antlr/antlr4-runtime/docs/antlr4-runtime-4.5-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.antlr/antlr4-runtime/srcs/antlr4-runtime-4.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

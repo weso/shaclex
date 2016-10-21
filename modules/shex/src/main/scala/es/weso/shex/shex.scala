@@ -289,7 +289,7 @@ object Schema {
   def fromString(cs: CharSequence,
                  format: String,
                  base: Option[String] = None): Try[Schema] = {
-    format match {
+    format.toUpperCase match {
       case "SHEXC" => {
         import compact.Parser.parseSchema
         parseSchema(cs.toString) match {

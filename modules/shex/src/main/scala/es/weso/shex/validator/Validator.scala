@@ -47,6 +47,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       def show(t: ShapeTyping): String = t.toString
     }
   }
+
   type ShapeChecker = ShapeExpr => CheckTyping
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
 
@@ -71,11 +72,11 @@ case class Validator(schema: Schema) extends LazyLogging {
   ): Check[List[(RDFNode,ShapeLabel)]] = {
     checkAll(rdf.triplesWithPredicate(sh_targetNode).
       map(t => (t.obj,mkShapeLabel(t.subj))).
-      toList.map(checkPair2)
+      toList.map(checkPair2nd)
     )
   }
 
-  def checkPair2[A,B](p: (A,Check[B])): Check[(A,B)] = for {
+  def checkPair2nd[A,B](p: (A,Check[B])): Check[(A,B)] = for {
     v <- p._2
   } yield (p._1,v)
 

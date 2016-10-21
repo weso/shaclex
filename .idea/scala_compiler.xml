@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <profile name="SBT 1" modules="validating">
+      <plugins>
+        <plugin path="C:\Users\Labra\.ivy2\cache\org.wartremover\wartremover_2.11\jars\wartremover_2.11-1.1.1.jar" />
+        <plugin path="C:\Users\Labra\.ivy2\cache\org.spire-math\kind-projector_2.11\jars\kind-projector_2.11-0.9.0.jar" />
+        <plugin path="C:\Users\Labra\.ivy2\cache\com.milessabin\si2712fix-plugin_2.11.8\jars\si2712fix-plugin_2.11.8-1.2.0.jar" />
+      </plugins>
+    </profile>
+    <profile name="SBT 2" modules="shaclex">
+      <plugins>
+        <plugin path="C:\Users\Labra\.ivy2\cache\org.wartremover\wartremover_2.11\jars\wartremover_2.11-1.1.1.jar" />
+        <plugin path="C:\Users\Labra\.ivy2\cache\org.spire-math\kind-projector_2.11\jars\kind-projector_2.11-0.9.0.jar" />
+      </plugins>
+    </profile>
+    <profile name="SBT 3" modules="converter,manifest,schema,shacl,shex,srdf,srdfJena,typing,utils">
+      <plugins>
+        <plugin path="C:\Users\Labra\.ivy2\cache\org.wartremover\wartremover_2.11\jars\wartremover_2.11-1.1.1.jar" />
+      </plugins>
+    </profile>
+  </component>
+</project>
