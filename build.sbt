@@ -48,9 +48,10 @@ lazy val shex =
   project.in(file("modules/shex")).
   settings(commonSettings: _*).
   dependsOn(srdfJena,
-            typing,
-            utils % "test -> test; compile -> compile",
-            validating).
+    typing,
+    utils % "test -> test; compile -> compile",
+    validating,
+    rbe).
   settings(antlr4Settings: _*).
   settings(
     antlr4GenListener in Antlr4 := true,
