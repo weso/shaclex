@@ -7,11 +7,12 @@ import cats.implicits._
 import util.matching._
 import showShacl._
 import es.weso.typing._
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * This validator is implemented directly in Scala using cats library
  */
-case class Validator(schema: Schema) {
+case class Validator(schema: Schema) extends LazyLogging {
 
   import es.weso.checking._
   import Validator._
@@ -381,7 +382,7 @@ case class Validator(schema: Schema) {
   def or(shapes: Seq[Shape]): NodeChecker = attempt => node => {
     val shapesList = shapes.toList
     val rs = shapesList.map(s => {
-      println(s"Checking $node with ${s.showId}")
+      logger.info(s"Checking $node with ${s.showId}")
       nodeShape(node, s)
     })
     for {
@@ -473,7 +474,6 @@ case class Validator(schema: Schema) {
   }
 
   def checkClosed(ignoredProperties: List[IRI], allowedProperties: List[IRI]): NodeChecker = attempt => node => {
-    println(s"Checking closed ${node} ${ignoredProperties}, ${allowedProperties}")
     for {
       rdf <- getRDF
       neighbours = rdf.triplesWithSubject(node)

@@ -49,16 +49,19 @@ class MainOpts(
     noshort = true
   )
 
-  def showLs(ls: List[String]): String =
-    ls.mkString(",")
-
-  def isMemberOf(ls: List[String])(x: String): Boolean =
-    ls contains (x.toUpperCase)
 
   val engine = opt[String]("engine",
     default = Some(defaultEngine),
     descr = s"Engine. Default ($defaultEngine). Possible values: ${showLs(engines)}",
     validate = isMemberOf(engines)
+  )
+
+  val validate = toggle("validate",
+    prefix = "no-",
+    default = Some(true),
+    descrYes = "validate data against schema",
+    descrNo = "don't validate",
+    noshort = true
   )
 
   val explain = toggle("explain",
@@ -68,6 +71,14 @@ class MainOpts(
     descrNo = "don't show extra info",
     noshort = true
     )
+
+  val showResult = toggle("showResult",
+    prefix = "no-",
+    default = Some(true),
+    descrYes = "show result of validation",
+    descrNo = "don't show result",
+    noshort = true
+  )
 
   val showSchema = toggle("showSchema",
     prefix = "no-",
@@ -91,6 +102,25 @@ class MainOpts(
     short = 'f'
     )
 
+  val outSchemaFormat = opt[String]("outSchemaFormat",
+    default = None,
+    descr = "schema format to show",
+    noshort = true
+  )
+
+  val cnvEngine = opt[String]("cnvEngine",
+    default = None,
+    descr = "convert schema to schema in another engine",
+    noshort = true,
+    validate = isMemberOf(engines)
+  )
+
+  val outDataFormat = opt[String]("outDataFormat",
+    default = None,
+    descr = "data format to show",
+    noshort = true
+  )
+
   val time = toggle("time",
     prefix = "no-",
     default = Some(false),
@@ -99,5 +129,12 @@ class MainOpts(
     short = 't')
 
   override protected def onError(e: Throwable) = onError(e, builder)
+
+  // Some utils...
+  def showLs(ls: List[String]): String =
+    ls.mkString(",")
+
+  def isMemberOf(ls: List[String])(x: String): Boolean =
+    ls contains (x.toUpperCase)
 
 }

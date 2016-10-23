@@ -86,6 +86,20 @@ lazy val manifest =
 lazy val srdf =
   project.in(file("modules/srdf")).
   settings(commonSettings: _*)
+  
+lazy val rbe =
+  project.in(file("modules/rbe")).
+  dependsOn(validating).
+  settings(commonSettings: _*).
+  settings(
+   libraryDependencies ++= 
+     Seq(
+      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+   , "org.typelevel" %% "cats" % catsVersion
+	 , "es.weso" % "weso_utils_2.11" % "0.0.15" 
+	 )
+  )
+  
 
 lazy val srdfJena =
   project.in(file("modules/srdfJena")).

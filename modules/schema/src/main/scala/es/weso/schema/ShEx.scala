@@ -36,7 +36,7 @@ case class ShEx(schema: ShExSchema) extends Schema {
   }
 
   def cnvResult(
-    r: Map[es.weso.shex.ShapeLabel,TypingResult[ViolationError,String]]
+    r: Map[ShapeType,TypingResult[ViolationError,String]]
   ): InfoNode = {
     val (oks,bads) = r.toSeq.partition(_._2.isOK)
     InfoNode(oks.map(cnvShapeResult(_)),
@@ -45,11 +45,12 @@ case class ShEx(schema: ShExSchema) extends Schema {
   }
 
     def cnvShapeResult(
-      p:(es.weso.shex.ShapeLabel,TypingResult[ViolationError,String])
+      p:(ShapeType,TypingResult[ViolationError,String])
     ): (ShapeLabel,Explanation) = {
-      val shapeLabel = p._1 match {
-        case IRILabel(iri) => ShapeLabel(schema.prefixMap.qualify(iri))
-        case BNodeLabel(bn) => ShapeLabel(bn.id)
+      val shapeLabel = p._1.label match {
+        case Some(IRILabel(iri)) => ShapeLabel(schema.prefixMap.qualify(iri))
+        case Some(BNodeLabel(bn)) => ShapeLabel(bn.id)
+        case None => ShapeLabel(s"Anonymous shape ${p._1.shape}")
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)

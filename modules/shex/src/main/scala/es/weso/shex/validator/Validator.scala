@@ -76,11 +76,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     )
   }
 
-  def checkPair2nd[A,B](p: (A,Check[B])): Check[(A,B)] = for {
-    v <- p._2
-  } yield (p._1,v)
-
-
   def mkShapeLabel(n: RDFNode): Check[ShapeLabel] = {
     n match {
       case i:IRI => ok(IRILabel(i))
@@ -91,39 +86,83 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
+  def getShape(label: ShapeLabel): Check[ShapeExpr] =
+    schema.getShape(label) match {
+      case None => errStr[ShapeExpr](s"Can't find shape $label is Schema:\n${schema.show}")
+      case Some(shape) => ok(shape)
+    }
 
-  def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping =
+  def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
+    logger.info(s"nodeLabel. Node: $node Label: $label")
     for {
       typing <- getTyping
-      newTyping <- if (typing.getOkValues(node).contains(label))
+      newTyping <- if (typing.hasType(node, label))
         ok(typing)
-      else if (typing.getFailedValues(node).contains(label)) {
+      else if (typing.hasNoType(node, label)) {
         errStr[ShapeTyping](s"Failed because $node doesn't match shape $label")
-      } else schema.getShape(label) match {
-        case None =>
-          errStr[ShapeTyping](s"Can't find shape $label is Schema:\n${schema.show}")
-        case Some(shape) => {
-          val attempt = Attempt(NodeShape(node,label),None)
-          runLocal(checkNodeShapeExpr(attempt, node, shape), _.addType(node, label))
-        }
-      }
+      } else for {
+        shapeExpr <- getShape(label)
+        shapeType = ShapeType(shapeExpr, Some(label))
+        attempt = Attempt(NodeShape(node, shapeType), None)
+        t <- runLocal(checkNodeShapeExpr(attempt, node, shapeExpr), _.addType(node, shapeType))
+      } yield t
     } yield newTyping
+  }
 
   def errStr[A](msg: String): Check[A] =
     err[A](ViolationError.msgErr(msg))
 
-  def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = s match{
-    case ShapeOr(ss) => errStr(s"Not implemented ShapeOr $attempt")
-    case ShapeAnd(ss) => for {
-      ts <- checkAll(ss.map(se => checkNodeShapeExpr(attempt,node,se)))
-      t <- combineTypings(ts)
-    } yield t
-    case ShapeNot(s) => errStr(s"Not implemented ShapeNot $attempt")
-    case nc: NodeConstraint => checkNodeConstraint(attempt,node,nc)
-    case s: Shape => checkShape(attempt,node,s)
-    case s: ShapeRef => errStr(s"Not implemented ShapeRef $attempt")
-    case s: ShapeExternal => errStr(s"Not implemented ShapeExternal $attempt")
+  def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
+    logger.info(s"Attempt: $attempt, node: $node shapeExpr: $s")
+    s match{
+      case ShapeOr(ses) => checkOr(attempt,node,ses)
+      case ShapeAnd(ses) => checkAnd(attempt,node,ses)
+      case ShapeNot(s) => checkNot(attempt,node,s)
+      case nc: NodeConstraint => checkNodeConstraint(attempt,node,nc)
+      case s: Shape => checkShape(attempt,node,s)
+      case ShapeRef(ref) => checkRef(attempt,node,ref)
+      case s: ShapeExternal => errStr(s"Not implemented ShapeExternal $attempt")
+    }
   }
+
+  def checkAnd(attempt: Attempt,
+               node: RDFNode,
+               ses:List[ShapeExpr]): CheckTyping = for {
+    ts <- checkAll(ses.map(se => checkNodeShapeExpr(attempt,node,se)))
+    t <- combineTypings(ts)
+  } yield t
+
+  def checkOr(attempt: Attempt,
+               node: RDFNode,
+               ses:List[ShapeExpr]): CheckTyping = {
+    val vs = ses.map(se => checkNodeShapeExpr(attempt,node,se))
+    for {
+      t1 <- checkSome(vs,ViolationError.msgErr(s"None of the alternatives of OR($ses) is valid for node $node"))
+      t2 <- addEvidence(attempt.nodeShape, s"$node passes OR")
+      t3 <- combineTypings(Seq(t1, t2))
+    } yield t3
+  }
+
+  def checkNot(attempt: Attempt,
+               node: RDFNode,
+               s: ShapeExpr): CheckTyping = {
+    val parentShape = attempt.nodeShape.shape
+    val check: CheckTyping = checkNodeShapeExpr(attempt, node, s)
+    val handleError: ViolationError => Check[ShapeTyping] = e => for {
+      t1 <- addNotEvidence(NodeShape(node, ShapeType(s, None)), e,
+        s"$node doesn't satisfy ${s}. Negation declared in ${parentShape}. Error: $e")
+      t2 <- addEvidence(attempt.nodeShape, s"$node satisfies not(${s})")
+      t <- combineTypings(List(t1, t2))
+    } yield t
+    val handleNotError: ShapeTyping => Check[ShapeTyping] = t =>
+      errStr(s"Failed NOT($s) because node $node satisfies it")
+    cond(check, handleNotError, handleError)
+  }
+
+  def checkRef(attempt: Attempt,
+               node: RDFNode,
+               ref:ShapeLabel): CheckTyping =
+    checkNodeLabel(node,ref)
 
   def checkNodeConstraint(attempt: Attempt,
                           node: RDFNode,
@@ -134,21 +173,26 @@ case class Validator(schema: Schema) extends LazyLogging {
   } yield t1
 
 
-  def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = nk match {
-    case IRIKind =>
-      cond(node.isIRI, attempt,
-           msgErr(s"$node is not an IRI"), s"$node is an IRI")
-    case BNodeKind =>
-      cond(node.isBNode, attempt,
-           msgErr(s"$node is not a BlankNode"), s"$node is a BlankNode")
-    case NonLiteralKind =>
-      cond(! node.isLiteral, attempt,
-           msgErr(s"$node is a literal but should be a NonLiteral"),
-           s"$node is NonLiteral")
-    case LiteralKind =>
-      cond(node.isLiteral, attempt,
-           msgErr(s"$node is not an Literal"),
-           s"$node is a Literal")
+  def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = {
+    logger.info(s"NodeKind $node $nk")
+    nk match {
+      case IRIKind => {
+        logger.info(s"checking if $node is an IRI")
+        checkCond(node.isIRI, attempt,
+          msgErr(s"$node is not an IRI"), s"$node is an IRI")
+      }
+      case BNodeKind =>
+        checkCond(node.isBNode, attempt,
+          msgErr(s"$node is not a BlankNode"), s"$node is a BlankNode")
+      case NonLiteralKind =>
+        checkCond(! node.isLiteral, attempt,
+          msgErr(s"$node is a literal but should be a NonLiteral"),
+          s"$node is NonLiteral")
+      case LiteralKind =>
+        checkCond(node.isLiteral, attempt,
+          msgErr(s"$node is not an Literal"),
+          s"$node is a Literal")
+    }
   }
 
   def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping =
@@ -173,16 +217,17 @@ def checkTripleConstraint(
     node: RDFNode)
     (t: TripleConstraint): CheckTyping = for {
   rdf <- getRDF
-  directTriples = rdf.triplesWithSubjectPredicate(node,t.predicate)
-  inverseTriples = rdf.triplesWithPredicateObject(t.predicate,node)
-  noTriples = directTriples.size
-  t <- cond(noTriples >= t.min && t.max.biggerThanOrEqual(noTriples),
+  triples =
+    if (t.direct) rdf.triplesWithSubjectPredicate(node,t.predicate)
+    else rdf.triplesWithPredicateObject(t.predicate,node)
+  noTriples = triples.size
+  t <- checkCond(noTriples >= t.min && t.max.biggerThanOrEqual(noTriples),
            attempt,
            msgErr(s"Number of triples with predicate ${t.predicate}=$noTriples not in (${t.min},${t.max})"),
            s"No. of triples with predicate ${t.predicate}= $noTriples between (${t.min},${t.max})")
  } yield t
 
- def cond(
+ def checkCond(
     condition: Boolean,
     attempt: Attempt,
     error: ViolationError,

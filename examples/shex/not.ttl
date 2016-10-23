@@ -1,0 +1,7 @@
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
+
+:x1 :q :z .
+:x2 :p :y .
+
+:S sh:targetNode :x1 .

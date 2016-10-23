@@ -56,13 +56,21 @@ abstract class CheckerCats extends Checker {
     c: Check[A],
     thenPart: A => Check[B],
     elsePart: Err => Check[B]): Check[B] =
-    attempt(c).flatMap(_.fold(elsePart(_),thenPart(_)))
+   attempt(c).flatMap(_.fold(elsePart(_),thenPart(_)))
 
   def checkList[A,B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
     checkAll(ls.map(check))
   }
 
   def checkAll[A](xs: List[Check[A]]): Check[List[A]] = xs.sequence
+
+  def checkPair1st[A,B](p: (Check[A],B)): Check[(A,B)] = for {
+    v <- p._1
+  } yield (v,p._2)
+
+  def checkPair2nd[A,B](p: (A,Check[B])): Check[(A,B)] = for {
+    v <- p._2
+  } yield (p._1,v)
 
   /*  def optCheck[A,B](
     x: Option[A],

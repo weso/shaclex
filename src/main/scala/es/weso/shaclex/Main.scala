@@ -33,22 +33,34 @@ object Main extends App with LazyLogging {
     validateOptions match {
       case Success((rdf,schema)) => {
         if (opts.showData()) {
-          println(s"Data(${opts.dataFormat()}):\n${rdf.serialize(opts.dataFormat())}")
+          // If not specified uses the input schema format
+          val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
+          println(rdf.serialize(outDataFormat))
         }
         if (opts.showSchema()) {
-          schema.serialize(opts.schemaFormat()) match {
-            case Success(str) => println(s"Schema(${opts.schemaFormat()}):\n$str")
-            case Failure(e) => println(s"Error showing schema $schema: $e")
+          // If not specified uses the input schema format
+          val outSchemaFormat = opts.outSchemaFormat.getOrElse(opts.schemaFormat())
+          schema.serialize(outSchemaFormat) match {
+            case Success(str) => println(str)
+            case Failure(e) => println(s"Error showing schema $schema with format $outSchemaFormat: $e")
           }
         }
 
-        val result = schema.validate(rdf)
-        logger.info(s"Result: ${result.show(schema.pm)}")
+        val result = if (opts.validate()) {
+          schema.validate(rdf)
+        } else
+          Result.empty
 
-        if (opts.outputFile.get.isDefined) {
-          val fileName = opts.outputFile.get.get
-          val str = "" //TODO: str should contain the generated report
-          logger.info("Not implemented file report generation yet")
+        if (opts.validate() && opts.showResult()) {
+          println(s"Result: \n${result.show(schema.pm)}")
+        }
+
+        if (opts.cnvEngine.isDefined) {
+          println("Conversion between engines don't implemented yet")
+        }
+        if (opts.outputFile.isDefined) {
+          val fileName = opts.outputFile()
+          val str = result.show(schema.pm)
           FileUtils.writeFile(fileName, str)
         }
 
@@ -90,7 +102,6 @@ object Main extends App with LazyLogging {
     if (opts.data.isDefined) {
       val path = Paths.get(opts.data())
       val rdf = RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
-      logger.info(s"RDF obtained: $rdf")
       rdf
     } else {
       logger.info("RDF Data option not specified")
@@ -100,33 +111,17 @@ object Main extends App with LazyLogging {
 
   def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
     if (opts.schema.isDefined) {
-      logger.info(s"Schema specified: Extracting schema from ${opts.schema()}")
       val path = Paths.get(opts.schema())
       val schema = Schemas.fromFile(path.toFile(),
                        opts.schemaFormat(),
                        opts.engine(),
                        None)
-      logger.info(s"Schema $schema")
       schema
     } else {
       logger.info("Schema not specified. Extracting schema from data")
       Schemas.fromRDF(rdf, opts.engine())
     }
   }
-
-  /*def getShacl(file: File, format: String): Try[Schema] = {
-    format match {
-      case "TURTLE" => for {
-        rdf <- RDFAsJenaModel.fromFile(file,format)
-        schema <- extractSchema(rdf)
-      } yield (schema)
-      case _ => Failure(new Exception("Unsupported format: " + format))
-    }
-  }*/
-
-/*  def extractSchema(rdf:RDFReader): Try[Schema] = {
-    RDF2Shacl.getShacl(rdf)
-  } */
 
 }
 

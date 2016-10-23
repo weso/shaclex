@@ -7,32 +7,38 @@ import es.weso.shex._
 
 
 case class ShapeTyping(
-  t: Typing[RDFNode, ShapeLabel, ViolationError, String]
+  t: Typing[RDFNode, ShapeType, ViolationError, String]
 ) {
 
-  def getOkValues(node: RDFNode): Set[ShapeLabel] =
+  def getOkValues(node: RDFNode): Set[ShapeType] =
     t.getOkValues(node)
 
-  def getFailedValues(node: RDFNode): Set[ShapeLabel] =
+  def getFailedValues(node: RDFNode): Set[ShapeType] =
     t.getFailedValues(node)
 
-  def addType(node: RDFNode, label: ShapeLabel): ShapeTyping =
-    ShapeTyping(t.addType(node,label))
+  // TODO Review these definitions in case of anonymous shapes...
+  def hasType(node: RDFNode, label: ShapeLabel): Boolean = {
+    ! getOkValues(node).filter(_.hasLabel(label)).isEmpty
+  }
 
-  def addEvidence(node: RDFNode, label: ShapeLabel, evidence: String): ShapeTyping =
-    ShapeTyping(t.addEvidence(node,label,evidence))
+  def hasNoType(node: RDFNode, label: ShapeLabel): Boolean = {
+    ! getFailedValues(node).filter(_.hasLabel(label)).isEmpty
+  }
 
-  def addNotEvidence(node: RDFNode, label: ShapeLabel, err: ViolationError): ShapeTyping =
-    ShapeTyping(t.addNotEvidence(node,label,err))
+  def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping =
+    ShapeTyping(t.addType(node,shapeType))
+
+  def addEvidence(node: RDFNode, shapeType: ShapeType, evidence: String): ShapeTyping =
+    ShapeTyping(t.addEvidence(node,shapeType,evidence))
+
+  def addNotEvidence(node: RDFNode, shapeType: ShapeType, err: ViolationError): ShapeTyping =
+    ShapeTyping(t.addNotEvidence(node,shapeType,err))
 
 }
 
 object ShapeTyping {
   implicit lazy val showRDFNode: Show[RDFNode] = new Show[RDFNode] {
     def show(n: RDFNode) = s"$n"
-  }
-  implicit lazy val showShapeLabel: Show[ShapeLabel] = new Show[ShapeLabel] {
-    def show(n: ShapeLabel) = s"$n"
   }
 
   implicit def showShapeTyping = new Show[ShapeTyping] {
@@ -44,7 +50,7 @@ object ShapeTyping {
   implicit def monoidShapeTyping = new Monoid[ShapeTyping] {
 
     override def empty: ShapeTyping =
-      ShapeTyping(Typing.empty[RDFNode,ShapeLabel,ViolationError,String])
+      ShapeTyping(Typing.empty[RDFNode,ShapeType,ViolationError,String])
     override def combine(t1: ShapeTyping,
       t2: ShapeTyping): ShapeTyping =
       ShapeTyping(t1.t.combineTyping(t2.t))
