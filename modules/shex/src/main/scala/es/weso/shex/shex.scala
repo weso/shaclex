@@ -2,6 +2,7 @@ package es.weso.shex
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
+import es.weso.utils.MapUtils._
 import util._
 
 case class Schema(
@@ -190,7 +191,10 @@ case class Wildcard() extends StemValue
 case class SemAct(name: IRI, code: Option[String])
 
 
-abstract sealed trait TripleExpr
+abstract sealed trait TripleExpr {
+
+  def paths: Map[Path,Int]
+}
 
 case class EachOf(
     expressions: List[TripleExpr],
@@ -201,6 +205,8 @@ case class EachOf(
 ) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+  override def paths: Map[Path,Int] =
+    combineMaps(expressions.map(_.paths))
 }
 
 
@@ -213,11 +219,15 @@ case class SomeOf(
 ) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+  override def paths: Map[Path,Int] =
+    combineMaps(expressions.map(_.paths))
 }
 
-
 case class Inclusion(include: ShapeLabel)
-  extends TripleExpr
+  extends TripleExpr {
+ override def paths: Map[Path,Int] =
+   throw new Exception("Inclusion: paths not implemented yet")
+}
 
 case class TripleConstraint(
     optInverse: Option[Boolean],
@@ -234,7 +244,9 @@ case class TripleConstraint(
  lazy val negated = optNegated.getOrElse(false)
  lazy val min = optMin.getOrElse(Cardinality.defaultMin)
  lazy val max = optMax.getOrElse(Cardinality.defaultMax)
-
+ override def paths: Map[Path,Int] =
+   if (direct) Map(Direct(predicate) -> 1)
+   else Map(Inverse(predicate) -> 1)
 }
 
 object TripleConstraint {
