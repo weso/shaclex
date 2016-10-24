@@ -97,7 +97,6 @@ lazy val rbe =
      Seq(
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
    , "org.typelevel" %% "cats" % catsVersion
-	 , "es.weso" % "weso_utils_2.11" % "0.0.15" 
 	 )
   )
   

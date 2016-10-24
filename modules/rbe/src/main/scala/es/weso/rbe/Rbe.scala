@@ -2,7 +2,6 @@ package es.weso.rbe
 
 import es.weso.collection._
 import interval._
-import es.weso.utils._
 import IntOrUnbounded._
 
 /**
@@ -70,9 +69,7 @@ sealed trait Rbe[+A] {
   def derivBag[U >: A](bag: Bag[U], open: Boolean, controlled: Seq[U]): Rbe[U] = {
     val e: Rbe[U] = this
     def f(x: U, rest: Rbe[U]): Rbe[U] = {
-      ConsoleDebugger.debugStep(s"DerivBag. step: x: $x, rest: $rest")
       val r = rest.deriv(x,open,controlled)
-      ConsoleDebugger.debugStep(s"DerivBag. deriv($x)($rest) = $r")
       r
     }
     bag.toSeq.foldRight(e)(f)
@@ -176,7 +173,7 @@ sealed trait Rbe[+A] {
           Empty
         else 
           Fail(s"Unexpected $x doesn't match empty, open: $open, controlled: $controlled") 
-      case s@Symbol(a,m,n) => {
+      case s@Symbol(_,_,_) => {
        derivSymbol(x,s,open,controlled)
       }  
       case And(e1,e2) => {

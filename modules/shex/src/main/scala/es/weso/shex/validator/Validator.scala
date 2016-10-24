@@ -9,6 +9,8 @@ import cats.implicits._
 import es.weso.shex.implicits.showShEx._
 import ViolationError._
 import es.weso.rdf.PREFIXES._
+import es.weso.shex.validator.table._
+
 /**
  * ShEx validator
  */
@@ -204,13 +206,23 @@ case class Validator(schema: Schema) extends LazyLogging {
   def checkTripleExpr(
     attempt: Attempt,
     node: RDFNode)
-    (t: TripleExpr): CheckTyping = t match {
+    (t: TripleExpr): CheckTyping = for {
+    rdf <- getRDF
+    cTable = CTable.mkTable(t)
+    neighs = getNeighs(node,rdf)
+  } yield ???
+
+  def getNeighs(node: RDFNode, rdf: RDFReader): List[(Path,RDFNode)] = {
+    ???
+  }
+
+/*    t match {
     case e: EachOf => errStr(s"Not implemented eachOf $attempt $node")
     case s: SomeOf => errStr(s"Not implemented eachOf $attempt $node")
     case i: Inclusion => errStr(s"Not implemented inclusion $attempt $node")
     case tc: TripleConstraint =>
       checkTripleConstraint(attempt,node)(tc)
-  }
+  } */
 
 def checkTripleConstraint(
     attempt: Attempt,
