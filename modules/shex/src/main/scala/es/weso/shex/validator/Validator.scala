@@ -214,30 +214,23 @@ case class Validator(schema: Schema) extends LazyLogging {
     (t: TripleExpr): CheckTyping = for {
     rdf <- getRDF
     (cTable,rbe) = CTable.mkTable(t)
-    neighs = getNeighs(node,rdf)
-    allCandidates = candidates(neighs,cTable)
-//    (candidates,rest) = allCandidates.partition{case (_,s) => !s.isEmpty }
+    neighs = {
+      logger.info(s"cTable: $cTable")
+      logger.info(s"rbe: $rbe")
+      getNeighs(node,rdf)
+    }
+    allCandidates = {
+      logger.info(s"neighs $neighs")
+      candidates(neighs,cTable)
+    }
+/*    (candidates,rest) = allCandidates.partition{case (_,s) => !s.isEmpty }
+    x = {
+      println(s"Candidates $candidates")
+      1
+    } */
+   } yield
+       throw new Exception("Not implemented checkTripleExpr")
 
-  } yield ???
-
-  /**
-    * transpose(List(("A",List(1,2)), ("B",List(2,3)),("C",List(4)))) =
-    *    List(List(("A",1),("B",2),("C",4)),
-    *         List(("A",1),("B",3),("C",4)),
-    *         List(("A",2),("B",2),("C",4)),
-    *         List(("A",2),("B",3),("C",4)))
-    * @param ls
-    * @tparam A
-    * @tparam B
-    * @return
-    */
-  def transpose[A,B](ls: List[(A,List[B])]): List[List[(A,B)]] = {
-    val as: List[A] = ls.map(_._1)
-    val sequences: List[List[B]] = ls.map(_._2).sequence
-    for {
-      s <- sequences
-    } yield as.zip(s)
-  }
 
   type Neighs = List[(Path,RDFNode)]
   type Candidates = List[(RDFNode,Set[ConstraintRef])]

@@ -4,13 +4,12 @@ import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
 //import org.slf4j.LoggerFactory
-
 // import es.weso.shacl._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
 import es.weso.utils.FileUtils
-import util._
+import scala.util._
 import java.nio.file._
 import es.weso.shacl.RDF2Shacl
 import es.weso.rdf.RDFReader

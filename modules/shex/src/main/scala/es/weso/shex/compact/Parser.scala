@@ -356,7 +356,7 @@ object Parser extends LazyLogging {
 
   override def visitIriRange(
     ctx: IriRangeContext): Builder[ValueSetValue] = {
-      ???
+      throw new Exception("Visit IRI range")
     }
 
     override def visitLiteral(
@@ -696,12 +696,13 @@ object Parser extends LazyLogging {
 
   override def visitMultiElementGroup(
     ctx: MultiElementGroupContext): Builder[TripleExpr] = {
-      ???
+
+      throw new Exception(s"visitMultiElementGroup $ctx")
   }
 
   override def visitMultiElementSomeOf(
     ctx: MultiElementSomeOfContext): Builder[TripleExpr] = {
-      ???
+    throw new Exception("visitMultiElementSomeOf")
   }
 
   override def visitNonLiteralKind(ctx: NonLiteralKindContext): Builder[NodeKind] = {
@@ -722,7 +723,7 @@ object Parser extends LazyLogging {
         iri <- visitIri(ctx.iri())
        } yield IRILabel(iri)
      } else {
-       ??? // BNodeLabel(visitBlankNode(ctx.blankNode()))
+       throw new Exception(s"visitShapeLabel $ctx")
      }
    }
 
@@ -762,7 +763,7 @@ object Parser extends LazyLogging {
    }
 
    override def visitBlankNode(ctx: BlankNodeContext): BNodeId = {
-     ???
+     throw new Exception("visitBlankNode")
    }
 
    def getPrefixes(ds: List[Directive]): Map[Prefix,IRI] = {

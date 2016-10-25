@@ -5,8 +5,8 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.{Schema => ShExSchema, _}
 import es.weso.shex.validator._
 import es.weso.shex._
-import util._
 import es.weso.typing._
+import scala.util._
 
 case class ShEx(schema: ShExSchema) extends Schema {
   override def name = "ShEx"
