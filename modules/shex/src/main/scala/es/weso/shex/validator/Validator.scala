@@ -3,13 +3,18 @@ import com.typesafe.scalalogging.LazyLogging
 import es.weso.shex._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
+import es.weso.collection.Bag
+import es.weso.collection.Bag._
+import es.weso.rbe.Rbe
 // import util.matching._
 import es.weso.shex.implicits.showShEx._
 import ViolationError._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.validator.table._
+import es.weso.shex.Path._
 
 /**
  * ShEx validator
@@ -208,12 +213,56 @@ case class Validator(schema: Schema) extends LazyLogging {
     node: RDFNode)
     (t: TripleExpr): CheckTyping = for {
     rdf <- getRDF
-    cTable = CTable.mkTable(t)
+    (cTable,rbe) = CTable.mkTable(t)
     neighs = getNeighs(node,rdf)
+    allCandidates = candidates(neighs,cTable)
+//    (candidates,rest) = allCandidates.partition{case (_,s) => !s.isEmpty }
+
   } yield ???
 
-  def getNeighs(node: RDFNode, rdf: RDFReader): List[(Path,RDFNode)] = {
-    ???
+  /**
+    * transpose(List(("A",List(1,2)), ("B",List(2,3)),("C",List(4)))) =
+    *    List(List(("A",1),("B",2),("C",4)),
+    *         List(("A",1),("B",3),("C",4)),
+    *         List(("A",2),("B",2),("C",4)),
+    *         List(("A",2),("B",3),("C",4)))
+    * @param ls
+    * @tparam A
+    * @tparam B
+    * @return
+    */
+  def transpose[A,B](ls: List[(A,List[B])]): List[List[(A,B)]] = {
+    val as: List[A] = ls.map(_._1)
+    val sequences: List[List[B]] = ls.map(_._2).sequence
+    for {
+      s <- sequences
+    } yield as.zip(s)
+  }
+
+  type Neighs = List[(Path,RDFNode)]
+  type Candidates = List[(RDFNode,Set[ConstraintRef])]
+  type BagCRef = Bag[ConstraintRef]
+
+  def candidates(neighs: Neighs, table: CTable): Candidates = {
+   neighs.map {
+     case (path, node) => (node, table.paths.get(path).getOrElse(Set()))
+    }
+  }
+
+
+  def getNeighs(node: RDFNode, rdf: RDFReader): Neighs = {
+    val outgoing: List[(Path,RDFNode)] = rdf.triplesWithSubject(node).
+      map(t => (Direct(t.pred),t.obj)).toList
+    val incoming: List[(Path,RDFNode)] = rdf.triplesWithObject(node).
+      map(t => (Inverse(t.pred),t.obj)).toList
+
+/*    implicit def orderingPathNode: Ordering[(Path,RDFNode)] = new Ordering[(Path,RDFNode)] {
+      import es.weso.shex.Path._
+      override def compare(pn1: (Path,RDFNode), pn2: (Path,RDFNode)): Int = {
+        Ordering[Path].compare(pn1._1,pn2._1) // TODO...it ignores RDFNodes...
+      }
+    } */
+    outgoing ++ incoming
   }
 
 /*    t match {

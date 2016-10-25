@@ -21,6 +21,11 @@ case class CTable(constraints: ConstraintsMap,
 
  def addPath(p: Path, n: ConstraintRef): PathsMap =
    paths.updated(p, paths.get(p).getOrElse(Set()) + n)
+
+ lazy val isAmbiguous: Boolean = {
+   paths.values.map(_.size).exists(_ > 1)
+ }
+
 }
 
 object CTable {

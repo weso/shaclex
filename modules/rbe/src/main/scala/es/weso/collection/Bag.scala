@@ -69,7 +69,7 @@ trait Bag[A] {
   def from(t: Traversable[A]): Bag[A] = {
     t.foldLeft(this)((s, a) => s.insert(a))
   }
-  
+
  def toSeq: Seq[A] = {
     def generate(x: A,n: Int): Seq[A] = {
       (1 to n).map(_ => x)
