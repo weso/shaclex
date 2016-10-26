@@ -8,13 +8,17 @@ import data._
 import cats.implicits._
 import es.weso.collection.Bag
 import es.weso.collection.Bag._
-import es.weso.rbe.Rbe
+import es.weso.rbe.interval.IntervalChecker
+import es.weso.rbe.{BagChecker, Rbe}
+import es.weso.utils.SeqUtils
 // import util.matching._
 import es.weso.shex.implicits.showShEx._
 import ViolationError._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.validator.table._
 import es.weso.shex.Path._
+import es.weso.utils.SeqUtils._
+import es.weso.shex.validator.table._
 
 /**
  * ShEx validator
@@ -25,6 +29,9 @@ case class Validator(schema: Schema) extends LazyLogging {
   import Validator._
 
   lazy val sh_targetNode = sh + "targetNode"
+
+  lazy val ignoredPathsClosed : List[Path] =
+    List(Inverse(sh_targetNode))
 
   object MyChecker extends CheckerCats {
 
@@ -202,59 +209,119 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
-  def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping =
-   // TODO: virtual, extra, etc....
-   for {
-   t <- optCheck(s.expression,checkTripleExpr(attempt,node),getTyping)
-  } yield t
+  def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
+    val tripleExpr = s.tripleExpr
+    for {
+      neighs <- getNeighs(node)
+      tableRbe <- mkTable(tripleExpr)
+      (cTable,rbe) = tableRbe
+      bagChecker = IntervalChecker(rbe)
+      csRest <- calculateCandidates(neighs,cTable)
+      (candidates,rest) = csRest
+      _ <- checkRests(rest,s.extraPaths,s.isClosed,ignoredPathsClosed)
+      typing <- checkCandidates(attempt,bagChecker,cTable)(candidates)
+//      t <- optCheck(s.expression, checkTripleExpr(attempt, node), getTyping)
+    } yield typing
+  }
 
-  def checkTripleExpr(
-    attempt: Attempt,
-    node: RDFNode)
-    (t: TripleExpr): CheckTyping = for {
-    rdf <- getRDF
-    (cTable,rbe) = CTable.mkTable(t)
-    neighs = {
-      logger.info(s"cTable: $cTable")
-      logger.info(s"rbe: $rbe")
-      getNeighs(node,rdf)
-    }
-    allCandidates = {
-      logger.info(s"neighs $neighs")
-      candidates(neighs,cTable)
-    }
-/*    (candidates,rest) = allCandidates.partition{case (_,s) => !s.isEmpty }
-    x = {
-      println(s"Candidates $candidates")
-      1
-    } */
-   } yield
-       throw new Exception("Not implemented checkTripleExpr")
+  def checkRests(rests: List[(Path,RDFNode)],
+                extras: List[Path],
+                isClosed: Boolean,
+                ignoredPathsClosed: List[Path]
+               ): Check[Unit] = for {
+    _ <- checkAll(rests.map(checkRest(_, extras, isClosed, ignoredPathsClosed)))
+  } yield ()
 
+  def checkRest(rest: (Path,RDFNode),
+                extras: List[Path],
+                isClosed: Boolean,
+                ignoredPathsClosed: List[Path]
+                ): Check[Unit] = {
+    val restPath = rest._1
+    println(s"Checking rest $restPath, closed?: $isClosed, extras: $extras, ignored: $ignoredPathsClosed")
+    if (isClosed) {
+      if (ignoredPathsClosed.contains(restPath) || extras.contains(restPath)) {
+        ok(())
+      } else {
+        errStr(s"Closed shape. But triple $restPath is not in $ignoredPathsClosed or $extras")
+      }
+    } else ok(())
+  }
 
   type Neighs = List[(Path,RDFNode)]
-  type Candidates = List[(RDFNode,Set[ConstraintRef])]
-  type BagCRef = Bag[ConstraintRef]
+  type Arc = (Path,RDFNode)
+  type Candidates = List[(Arc,Set[ConstraintRef])]
+  type CandidateLine = List[(Arc,ConstraintRef)]
+  type NoCandidates = List[Arc]
+  type Bag_ = Bag[ConstraintRef]
+  type Rbe_ = Rbe[ConstraintRef]
+  type BagChecker_ = BagChecker[ConstraintRef]
 
-  def candidates(neighs: Neighs, table: CTable): Candidates = {
-   neighs.map {
-     case (path, node) => (node, table.paths.get(path).getOrElse(Set()))
+  def mkTable(t: TripleExpr): Check[(CTable,Rbe_)] =
+    ok(CTable.mkTable(t))
+
+  /**
+    * Calculates the sequence of candidates
+    * Example: Neighs (p,x1),(p,x2),(q,x2),(r,x3)
+    *   Table: { constraints: C1 -> IRI, C2 -> ., paths: p -> List(C1,C2), q -> C1 }
+    *   Result: x1
+    * @param neighs
+    * @param table
+    * @return a tuple (cs,rs) where cs is the list of candidates and rs is the nodes that didn't match any
+    */
+  def calculateCandidates(neighs: Neighs, table: CTable): Check[(Candidates, NoCandidates)] = {
+   val ls = neighs.map {
+     case arc@(path, node) => (arc, table.paths.get(path).getOrElse(Set()))
+   }
+   if (ls.isEmpty) {
+     errStr(s"No candidates match. Neighs: $neighs, Table: $table")
+   } else {
+     val (cs,rs) = ls.partition{case (_,s) => !s.isEmpty}
+     ok((cs, rs.map { case (arc, _) => arc }))
+   }
+  }
+
+  def checkCandidates(attempt: Attempt, bagChecker:BagChecker_, table: CTable)(cs: Candidates): CheckTyping = {
+    val as: List[CandidateLine] = SeqUtils.transpose(cs)
+    val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
+    checkSome(checks,ViolationError.msgErr(s"No candidate matched from $cs"))
+  }
+
+  def checkCandidateLine(attempt: Attempt, bagChecker: BagChecker_, table: CTable)(cl: CandidateLine): CheckTyping = {
+    println(s"Check candidate line: $cl. Rbe: ${bagChecker.rbe}")
+
+    val bag = Bag.toBag(cl.map(_._2))
+    println(s"Bag: $bag")
+    // parameter open=false because open has been checked before
+    bagChecker.check(bag,false) match {
+      case Right(_) => {
+        println(s"RBE matches candidate line: $cl")
+        val nodeShapes: List[(RDFNode,ShapeExpr)] =
+          filterOptions(cl.map{ case (arc,cref) => {
+            val (path,node) = arc
+            (node,table.getShapeExpr(cref))
+          }})
+        println(s"Pending node shapes $nodeShapes")
+        val checkNodeShapes: List[CheckTyping] =
+          nodeShapes.map{ case (node,shapeExpr) =>
+            checkNodeShapeExpr(attempt,node,shapeExpr)
+          }
+        for {
+          ts <- checkAll(checkNodeShapes)
+          t <- combineTypings(ts)
+        } yield t
+      }
+      case Left(err) => errStr(s"Doesn't match Rbe ${bagChecker.rbe} with bag $bag. Err: $err")
     }
   }
 
-
-  def getNeighs(node: RDFNode, rdf: RDFReader): Neighs = {
+  def getNeighs(node: RDFNode): Check[Neighs] = for {
+    rdf <- getRDF
+  } yield {
     val outgoing: List[(Path,RDFNode)] = rdf.triplesWithSubject(node).
       map(t => (Direct(t.pred),t.obj)).toList
     val incoming: List[(Path,RDFNode)] = rdf.triplesWithObject(node).
       map(t => (Inverse(t.pred),t.obj)).toList
-
-/*    implicit def orderingPathNode: Ordering[(Path,RDFNode)] = new Ordering[(Path,RDFNode)] {
-      import es.weso.shex.Path._
-      override def compare(pn1: (Path,RDFNode), pn2: (Path,RDFNode)): Int = {
-        Ordering[Path].compare(pn1._1,pn2._1) // TODO...it ignores RDFNodes...
-      }
-    } */
     outgoing ++ incoming
   }
 

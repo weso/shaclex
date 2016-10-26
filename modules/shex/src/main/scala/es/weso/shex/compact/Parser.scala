@@ -534,10 +534,56 @@ object Parser extends LazyLogging {
 
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
-      // TODO: qualifiers
+      qualifiers <- visitList(visitQualifier,ctx.qualifier())// TODO: qualifiers
       tripleExpr <- visitSomeOfShape(ctx.someOfShape())
-    } yield Shape.empty.copy(expression = tripleExpr)
+    } yield {
+      val closed =
+        if (qualifiers.contains(Closed))
+          Some(true)
+        else
+          Some(false)
+      val ls: List[IRI] = qualifiers.map(_.getExtras).flatten
+      val extras: Option[List[IRI]] =
+        if (ls.isEmpty) None
+        else Some(ls)
+      // TODO: Rest of qualifiers Virtual, inherit
+      Shape.empty.copy(
+        closed = closed,
+        extra = extras,
+        expression = tripleExpr
+      )
+    }
   }
+
+  override def visitQualifier(ctx: QualifierContext): Builder[Qualifier] = {
+    ctx match {
+      case _ if (isDefined(ctx.KW_CLOSED())) => ok(Closed)
+      case _ if (isDefined(ctx.includeSet())) =>
+        visitIncludeSet(ctx.includeSet())
+      case _ if (isDefined(ctx.inclPropertySet())) =>
+        visitInclPropertySet(ctx.inclPropertySet())
+    }
+  }
+
+  override def visitIncludeSet(ctx: IncludeSetContext): Builder[Qualifier] = {
+    throw new Exception("not implemented IncludeSet yet")
+  }
+
+  override def visitInclPropertySet(ctx: InclPropertySetContext): Builder[Qualifier] = for {
+    ls <- visitList(visitPredicate, ctx.predicate())
+  } yield Extra(ls)
+
+  sealed trait Qualifier {
+    def getExtras: List[IRI] = {
+      this match {
+        case Extra(iris) => iris
+        case _ => List()
+      }
+    }
+  }
+  case class Extra(iris: List[IRI]) extends Qualifier
+  case class Include(label: ShapeLabel) extends Qualifier
+  case object Closed extends Qualifier
 
   override def visitSomeOfShape(
     ctx: SomeOfShapeContext): Builder[Option[TripleExpr]] = {
@@ -695,10 +741,9 @@ object Parser extends LazyLogging {
   }
 
   override def visitMultiElementGroup(
-    ctx: MultiElementGroupContext): Builder[TripleExpr] = {
-
-      throw new Exception(s"visitMultiElementGroup $ctx")
-  }
+    ctx: MultiElementGroupContext): Builder[TripleExpr] = for {
+     ses <- visitList(visitUnaryShape, ctx.unaryShape())
+  } yield EachOf(ses, None, None, None, None)
 
   override def visitMultiElementSomeOf(
     ctx: MultiElementSomeOfContext): Builder[TripleExpr] = {

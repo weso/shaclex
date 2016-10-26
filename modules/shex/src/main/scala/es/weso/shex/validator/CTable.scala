@@ -9,8 +9,15 @@ object table {
   type ConstraintsMap = Map[ConstraintRef,Option[ShapeExpr]]
   type PathsMap = Map[Path,Set[ConstraintRef]]
   type ResultPair = (CTable,Rbe[ConstraintRef])
+
   case class ConstraintRef(n: Int) extends AnyVal {
     override def toString(): String = s"C$n"
+  }
+
+  implicit lazy val orderingConstraintRef = new Ordering[ConstraintRef] {
+    def compare(c1: ConstraintRef, c2: ConstraintRef): Int = {
+      Ordering[Int].compare(c1.n,c2.n)
+    }
   }
 
   // Constraints table
@@ -21,6 +28,10 @@ case class CTable(constraints: ConstraintsMap,
 
  def addPath(p: Path, n: ConstraintRef): PathsMap =
    paths.updated(p, paths.get(p).getOrElse(Set()) + n)
+
+ def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
+   constraints.get(cref).flatten
+ }
 
  lazy val isAmbiguous: Boolean = {
    paths.values.map(_.size).exists(_ > 1)

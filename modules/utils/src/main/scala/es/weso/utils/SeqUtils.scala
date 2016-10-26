@@ -16,12 +16,20 @@ object SeqUtils {
     * @tparam B
     * @return
     */
-  def transpose[A,B](ls: List[(A,List[B])]): List[List[(A,B)]] = {
+  def transpose[A,B](ls: List[(A,Set[B])]): List[List[(A,B)]] = {
     val as: List[A] = ls.map(_._1)
-    val sequences: List[List[B]] = ls.map(_._2).sequence
+    val sequences: List[List[B]] = ls.map(_._2.toList).sequence
     for {
       s <- sequences
     } yield as.zip(s)
+  }
+
+  def filterOptions[A,B](ls: List[(A,Option[B])]): List[(A,B)] = {
+    def cnv(p: (A,Option[B])): Option[(A,B)] = p._2 match {
+      case None => None
+      case Some(v) => Some((p._1, v))
+    }
+    ls.map(cnv).flatten
   }
 
 }

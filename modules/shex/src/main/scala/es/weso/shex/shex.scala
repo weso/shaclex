@@ -72,7 +72,7 @@ object NodeConstraint {
 case class Shape(
     virtual:Option[Boolean],
     closed: Option[Boolean],
-    extra: Option[List[IRI]],
+    extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
     expression: Option[TripleExpr],
     inherit: Option[ShapeLabel],
     semActs: Option[List[SemAct]]
@@ -84,7 +84,11 @@ case class Shape(
   def isClosed: Boolean =
     closed.getOrElse(Shape.defaultClosed)
 
-  def extras = extra.getOrElse(List())
+  // Converts IRIs to direct paths
+  def extraPaths =
+    extra.getOrElse(List()).map(Direct(_))
+
+  def tripleExpr = expression.getOrElse(TripleExpr.any)
 
 }
 
@@ -192,6 +196,11 @@ case class SemAct(name: IRI, code: Option[String])
 
 
 abstract sealed trait TripleExpr
+
+object TripleExpr {
+  lazy val any : TripleExpr =
+    throw new Exception("Not implemented Any yet")
+}
 
 case class EachOf(
     expressions: List[TripleExpr],

@@ -13,8 +13,7 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
 
   lazy val derivChecker = DerivChecker(rbe)
 
-  def check(bag: Bag[A], open: Boolean):
-  Matched[Bag[A]] = {
+  def check(bag: Bag[A], open: Boolean): Matched[Bag[A]] = {
     if (rbe.containsRepeats) {
       derivChecker.check(bag, open)
     } else {
