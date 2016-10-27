@@ -21,8 +21,12 @@ case class Schema(
   lazy val prefixMap: PrefixMap =
     prefixes.getOrElse(PrefixMap.empty)
 
-  def qualify(iri: IRI): String =
-    prefixMap.qualify(iri)
+  def qualify(node: RDFNode): String =
+    prefixMap.qualify(node)
+
+  def qualify(label: ShapeLabel): String =
+    label.qualifiedShow(prefixMap)
+
 
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
     shapes.getOrElse(Map()).get(label)
@@ -332,8 +336,8 @@ object Schema {
   def serialize(schema: Schema, format: String): String = {
     format.toUpperCase match {
       case "SHEXC" => {
-        import compact.Printer._
-        print(schema)
+        import compact.CompactShow._
+        showSchema(schema)
       }
       case "SHEXJ" => {
         import io.circe._

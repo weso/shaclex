@@ -1,74 +1,46 @@
 package es.weso.shex.validator
+import cats._
+import data._
+import implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.shex._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import cats._
-import data._
-import cats.implicits._
 import es.weso.collection.Bag
-import es.weso.collection.Bag._
 import es.weso.rbe.interval.IntervalChecker
 import es.weso.rbe.{BagChecker, Rbe}
 import es.weso.utils.SeqUtils
-// import util.matching._
 import es.weso.shex.implicits.showShEx._
 import ViolationError._
 import es.weso.rdf.PREFIXES._
-import es.weso.shex.validator.table._
-import es.weso.shex.Path._
 import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
+import ShExChecker._
+import es.weso.shex.compact.CompactShow
+
 
 /**
  * ShEx validator
  */
 case class Validator(schema: Schema) extends LazyLogging {
 
-  import es.weso.checking._
-  import Validator._
+  type ShapeChecker = ShapeExpr => CheckTyping
+  type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
+  type CheckTyping = Check[ShapeTyping]
+  type NodeChecker = Attempt => RDFNode => CheckTyping
+  type Neighs = List[(Path,RDFNode)]
+  type Arc = (Path,RDFNode)
+  type Candidates = List[(Arc,Set[ConstraintRef])]
+  type CandidateLine = List[(Arc,ConstraintRef)]
+  type NoCandidates = List[Arc]
+  type Bag_ = Bag[ConstraintRef]
+  type Rbe_ = Rbe[ConstraintRef]
+  type BagChecker_ = BagChecker[ConstraintRef]
 
   lazy val sh_targetNode = sh + "targetNode"
 
   lazy val ignoredPathsClosed : List[Path] =
     List(Inverse(sh_targetNode))
-
-  object MyChecker extends CheckerCats {
-
-    type Config = RDFReader
-    type Env = ShapeTyping
-    type Err = ViolationError
-    type Evidence = (NodeShape, String)
-    type Log = List[Evidence]
-
-    import ShapeTyping._
-    implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
-      def combine(e1: Env, e2: Env): Env = e1 |+| e2
-      def empty: Env = Monoid[ShapeTyping].empty
-    }
-/*    implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
-      def log(msg: String): Log =
-        throw new Exception("Not implemented logCanlog")
-    } */
-    implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
-      def combine(l1: Log, l2: Log): Log = l1 ++ l2
-      def empty: Log = List()
-    }
-    implicit val logShow: Show[Log] = new Show[Log] {
-      def show(l: Log): String = l.map { case (ns, msg) => s"${ns}: $msg" }.mkString("\n")
-    }
-    implicit val typingShow: Show[ShapeTyping] = new Show[ShapeTyping] {
-      def show(t: ShapeTyping): String = t.toString
-    }
-  }
-
-  type ShapeChecker = ShapeExpr => CheckTyping
-  type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
-
-  import MyChecker._
-
-  type CheckTyping = Check[ShapeTyping]
-  type NodeChecker = Attempt => RDFNode => CheckTyping
 
   def checkTargetNodeDeclarations: CheckTyping = for {
     rdf <- getRDF
@@ -95,28 +67,28 @@ case class Validator(schema: Schema) extends LazyLogging {
       case i:IRI => ok(IRILabel(i))
       case b:BNodeId => ok(BNodeLabel(b))
       case _ => {
-        errStr(s"mkShapeLabel: Node $n can't be a shape")
+        errStr(s"mkShapeLabel: Node ${n.show} can't be a shape")
       }
     }
   }
 
   def getShape(label: ShapeLabel): Check[ShapeExpr] =
     schema.getShape(label) match {
-      case None => errStr[ShapeExpr](s"Can't find shape $label is Schema:\n${schema.show}")
+      case None => errStr[ShapeExpr](s"Can't find shape ${label.show} is Schema:\n${schema.show}")
       case Some(shape) => ok(shape)
     }
 
   def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
-    logger.info(s"nodeLabel. Node: $node Label: $label")
+    logger.info(s"nodeLabel. Node: ${node.show} Label: ${label.show}")
     for {
       typing <- getTyping
       newTyping <- if (typing.hasType(node, label))
         ok(typing)
       else if (typing.hasNoType(node, label)) {
-        errStr[ShapeTyping](s"Failed because $node doesn't match shape $label")
+        errStr[ShapeTyping](s"Failed because ${node.show} doesn't match shape ${label.show}")
       } else for {
         shapeExpr <- getShape(label)
-        shapeType = ShapeType(shapeExpr, Some(label))
+        shapeType = ShapeType(shapeExpr, Some(label), schema)
         attempt = Attempt(NodeShape(node, shapeType), None)
         t <- runLocal(checkNodeShapeExpr(attempt, node, shapeExpr), _.addType(node, shapeType))
       } yield t
@@ -127,7 +99,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     err[A](ViolationError.msgErr(msg))
 
   def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
-    logger.info(s"Attempt: $attempt, node: $node shapeExpr: $s")
+    logger.info(s"${attempt.show}, node: ${node.show}, shapeExpr: ${CompactShow.showShapeExpr(s, schema.prefixMap)}")
     s match{
       case ShapeOr(ses) => checkOr(attempt,node,ses)
       case ShapeAnd(ses) => checkAnd(attempt,node,ses)
@@ -135,7 +107,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       case nc: NodeConstraint => checkNodeConstraint(attempt,node,nc)
       case s: Shape => checkShape(attempt,node,s)
       case ShapeRef(ref) => checkRef(attempt,node,ref)
-      case s: ShapeExternal => errStr(s"Not implemented ShapeExternal $attempt")
+      case s: ShapeExternal => errStr(s"Not implemented ShapeExternal ${attempt.show}")
     }
   }
 
@@ -163,7 +135,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     val parentShape = attempt.nodeShape.shape
     val check: CheckTyping = checkNodeShapeExpr(attempt, node, s)
     val handleError: ViolationError => Check[ShapeTyping] = e => for {
-      t1 <- addNotEvidence(NodeShape(node, ShapeType(s, None)), e,
+      t1 <- addNotEvidence(NodeShape(node, ShapeType(s, None, schema)), e,
         s"$node doesn't satisfy ${s}. Negation declared in ${parentShape}. Error: $e")
       t2 <- addEvidence(attempt.nodeShape, s"$node satisfies not(${s})")
       t <- combineTypings(List(t1, t2))
@@ -188,24 +160,24 @@ case class Validator(schema: Schema) extends LazyLogging {
 
 
   def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = {
-    logger.info(s"NodeKind $node $nk")
+    logger.info(s"NodeKind ${node.show} ${nk.show}")
     nk match {
       case IRIKind => {
-        logger.info(s"checking if $node is an IRI")
+        logger.info(s"checking if ${node.show} is an IRI")
         checkCond(node.isIRI, attempt,
-          msgErr(s"$node is not an IRI"), s"$node is an IRI")
+          msgErr(s"${node.show} is not an IRI"), s"${node.show} is an IRI")
       }
       case BNodeKind =>
         checkCond(node.isBNode, attempt,
-          msgErr(s"$node is not a BlankNode"), s"$node is a BlankNode")
+          msgErr(s"${node.show} is not a BlankNode"), s"${node.show} is a BlankNode")
       case NonLiteralKind =>
         checkCond(! node.isLiteral, attempt,
-          msgErr(s"$node is a literal but should be a NonLiteral"),
-          s"$node is NonLiteral")
+          msgErr(s"${node.show} is a literal but should be a NonLiteral"),
+          s"${node.show} is NonLiteral")
       case LiteralKind =>
         checkCond(node.isLiteral, attempt,
-          msgErr(s"$node is not an Literal"),
-          s"$node is a Literal")
+          msgErr(s"${node.show} is not an Literal"),
+          s"${node.show} is a Literal")
     }
   }
 
@@ -238,24 +210,15 @@ case class Validator(schema: Schema) extends LazyLogging {
                 ignoredPathsClosed: List[Path]
                 ): Check[Unit] = {
     val restPath = rest._1
-    println(s"Checking rest $restPath, closed?: $isClosed, extras: $extras, ignored: $ignoredPathsClosed")
     if (isClosed) {
       if (ignoredPathsClosed.contains(restPath) || extras.contains(restPath)) {
         ok(())
       } else {
-        errStr(s"Closed shape. But triple $restPath is not in $ignoredPathsClosed or $extras")
+        errStr(s"Closed shape. But rest ${restPath.show} is not in $ignoredPathsClosed or $extras")
       }
     } else ok(())
   }
 
-  type Neighs = List[(Path,RDFNode)]
-  type Arc = (Path,RDFNode)
-  type Candidates = List[(Arc,Set[ConstraintRef])]
-  type CandidateLine = List[(Arc,ConstraintRef)]
-  type NoCandidates = List[Arc]
-  type Bag_ = Bag[ConstraintRef]
-  type Rbe_ = Rbe[ConstraintRef]
-  type BagChecker_ = BagChecker[ConstraintRef]
 
   def mkTable(t: TripleExpr): Check[(CTable,Rbe_)] =
     ok(CTable.mkTable(t))
@@ -274,7 +237,7 @@ case class Validator(schema: Schema) extends LazyLogging {
      case arc@(path, node) => (arc, table.paths.get(path).getOrElse(Set()))
    }
    if (ls.isEmpty) {
-     errStr(s"No candidates match. Neighs: $neighs, Table: $table")
+     errStr(s"No candidates match. Neighs: ${neighs.show}, Table: ${table.show}")
    } else {
      val (cs,rs) = ls.partition{case (_,s) => !s.isEmpty}
      ok((cs, rs.map { case (arc, _) => arc }))
@@ -288,20 +251,15 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   def checkCandidateLine(attempt: Attempt, bagChecker: BagChecker_, table: CTable)(cl: CandidateLine): CheckTyping = {
-    println(s"Check candidate line: $cl. Rbe: ${bagChecker.rbe}")
-
     val bag = Bag.toBag(cl.map(_._2))
-    println(s"Bag: $bag")
     // parameter open=false because open has been checked before
     bagChecker.check(bag,false) match {
       case Right(_) => {
-        println(s"RBE matches candidate line: $cl")
         val nodeShapes: List[(RDFNode,ShapeExpr)] =
           filterOptions(cl.map{ case (arc,cref) => {
             val (path,node) = arc
             (node,table.getShapeExpr(cref))
           }})
-        println(s"Pending node shapes $nodeShapes")
         val checkNodeShapes: List[CheckTyping] =
           nodeShapes.map{ case (node,shapeExpr) =>
             checkNodeShapeExpr(attempt,node,shapeExpr)
@@ -325,14 +283,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     outgoing ++ incoming
   }
 
-/*    t match {
-    case e: EachOf => errStr(s"Not implemented eachOf $attempt $node")
-    case s: SomeOf => errStr(s"Not implemented eachOf $attempt $node")
-    case i: Inclusion => errStr(s"Not implemented inclusion $attempt $node")
-    case tc: TripleConstraint =>
-      checkTripleConstraint(attempt,node)(tc)
-  } */
-
 def checkTripleConstraint(
     attempt: Attempt,
     node: RDFNode)
@@ -344,8 +294,8 @@ def checkTripleConstraint(
   noTriples = triples.size
   t <- checkCond(noTriples >= t.min && t.max.biggerThanOrEqual(noTriples),
            attempt,
-           msgErr(s"Number of triples with predicate ${t.predicate}=$noTriples not in (${t.min},${t.max})"),
-           s"No. of triples with predicate ${t.predicate}= $noTriples between (${t.min},${t.max})")
+           msgErr(s"Number of triples with predicate ${t.predicate.show}=$noTriples not in (${t.min},${t.max})"),
+           s"No. of triples with predicate ${t.predicate.show}= $noTriples between (${t.min},${t.max})")
  } yield t
 
  def checkCond(
@@ -404,6 +354,34 @@ def checkTripleConstraint(
     }
   }
 
+  implicit lazy val showShapeLabel = new Show[ShapeLabel] {
+    override def show(lbl: ShapeLabel): String = {
+      lbl match {
+        case IRILabel(iri) => Show[RDFNode].show(iri)
+        case BNodeLabel(bnode) => Show[RDFNode].show(bnode)
+      }
+    }
+  }
+
+  implicit lazy val showPath = new Show[Path] {
+    override def show(p: Path): String = {
+      p match {
+        case Direct(iri) => schema.qualify(iri)
+        case Inverse(iri) => "^" + schema.qualify(iri)
+      }
+    }
+  }
+
+  implicit lazy val showAttempt = new Show[Attempt] {
+    override def show(a: Attempt): String = {
+      val showPath: String = a.path match {
+        case None => ""
+        case Some(p) => ", path: " + p.show
+      }
+      s"Attempt: node: ${a.node.show}, shape: ${a.shape.show}${showPath}"
+    }
+  }
+
   lazy val emptyTyping: ShapeTyping =
     Monoid[ShapeTyping].empty
 
@@ -411,7 +389,7 @@ def checkTripleConstraint(
   def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
     implicit def showPair = new Show[(ShapeTyping, Evidences)] {
       def show(e: (ShapeTyping, Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences: ${e._2}"
+        s"Typing: ${e._1}\n Evidences:\n${e._2}"
       }
     }
     runCheck(checkTargetNodeDeclarations, rdf)

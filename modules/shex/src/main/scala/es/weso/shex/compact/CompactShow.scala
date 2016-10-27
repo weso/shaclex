@@ -6,26 +6,34 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import annotation.tailrec
 import es.weso.rdf._
+import es.weso.utils.SeqUtils.intersperse
 
 /**
  * Convert Abstract syntax to ShEx Compact syntax
  */
-object Printer {
+object CompactShow {
 
   type Doc = Document
 
-  def print(schema: Schema): String = {
-    val doc = schemaDoc(schema)
+  def showSchema(schema: Schema): String = {
+    doc2String(schemaDoc(schema))
+  }
+
+  def showShapeExpr(shapeExpr: ShapeExpr, pm: PrefixMap): String = {
+    doc2String(shapeExprDoc(pm)(shapeExpr))
+  }
+
+  def doc2String(doc: Doc): String = {
     val writer = new java.io.StringWriter
     doc.format(1, writer)
     writer.toString
   }
 
-  def comb(d1:Doc,d2:Doc): Doc =
+  private def comb(d1:Doc,d2:Doc): Doc =
     if (d1 == none) d2
     else d1 :/: d2
 
-  def schemaDoc(s: Schema): Document = {
+  private def schemaDoc(s: Schema): Document = {
     comb(prefixesDoc(s.prefixes),
     comb(baseDoc(s.base),
     comb(startActsDoc(s.prefixMap)(s.startActs),
@@ -33,7 +41,7 @@ object Printer {
           shapesDoc(s.shapes, s.prefixMap)))))
   }
 
-  def prefixesDoc(ps: Option[PrefixMap]): Document =
+  private def prefixesDoc(ps: Option[PrefixMap]): Document =
     ps match {
       case None => empty
       case Some(pm) =>
@@ -44,35 +52,35 @@ object Printer {
       )
     }
 
-  def prefixDoc(p: Prefix): Document =
+  private def prefixDoc(p: Prefix): Document =
     str(p.str)
 
-  def unqualifiedIriDoc(iri: IRI): Document =
+  private def unqualifiedIriDoc(iri: IRI): Document =
     str("<") :: str(iri.str) :: str(">")
 
-  def baseDoc(b: Option[IRI]): Document =
+  private def baseDoc(b: Option[IRI]): Document =
     optDoc(b, (iri: IRI) =>
       str("base") :: space :: unqualifiedIriDoc(iri)
     )
 
-  def startActsDoc(pm: PrefixMap)(s: Option[List[SemAct]]): Document =
+  private def startActsDoc(pm: PrefixMap)(s: Option[List[SemAct]]): Document =
     optDoc(s,semActsDoc(pm))
 
-  def semActsDoc(pm: PrefixMap)(ls: List[SemAct]): Doc =
+  private def semActsDoc(pm: PrefixMap)(ls: List[SemAct]): Doc =
     listDocSep(ls,semActDoc(pm), newline)
 
-  def semActDoc(pm: PrefixMap)(s: SemAct): Doc =
+  private def semActDoc(pm: PrefixMap)(s: SemAct): Doc =
     str("%") :: iriDoc(pm)(s.name) :: s.code.fold(str("%"))(codeDoc(_))
 
-  def codeDoc(c: String): Doc =
+  private def codeDoc(c: String): Doc =
     str("{") :: str(c) :: str("%}")
 
-  def startDoc(pm:PrefixMap)(s: Option[ShapeExpr]): Document =
+  private def startDoc(pm:PrefixMap)(s: Option[ShapeExpr]): Document =
     optDoc(s, (v: ShapeExpr) =>
       str("start") :: space :: eq :: space :: shapeExprDoc(pm)(v)
     )
 
-  def shapesDoc(
+  private def shapesDoc(
     s: Option[Map[ShapeLabel, ShapeExpr]],
     pm: PrefixMap
   ): Document =
@@ -83,16 +91,16 @@ object Printer {
           shapeExprDoc(pm))
     )
 
-  def shapeLabelDoc(pm: PrefixMap)(l: ShapeLabel): Document =
+  private def shapeLabelDoc(pm: PrefixMap)(l: ShapeLabel): Document =
     l match {
       case IRILabel(iri) => str(pm.qualify(iri))
       case BNodeLabel(b) => str(b.toString)
     }
 
-  def iriDoc(pm: PrefixMap)(iri: IRI): Doc =
+  private def iriDoc(pm: PrefixMap)(iri: IRI): Doc =
     str(pm.qualify(iri))
 
-  def shapeExprDoc(pm: PrefixMap)(se: ShapeExpr): Document =
+  private def shapeExprDoc(pm: PrefixMap)(se: ShapeExpr): Document =
     se match {
       case ShapeOr(es) =>
         listDocIntersperse(es,shapeExprDoc(pm),keyword("OR"))
@@ -110,13 +118,13 @@ object Printer {
         str("EXTERNAL")
     }
 
-  def nodeConstraintDoc(pm: PrefixMap)(nc: NodeConstraint): Document =
+  private def nodeConstraintDoc(pm: PrefixMap)(nc: NodeConstraint): Document =
     optDoc(nc.nodeKind,nodeKindDoc) ::
     optDoc(nc.datatype, datatypeDoc(pm)) ::
     listDocSep(nc.xsFacets, xsFacetDoc, space) ::
     optDoc(nc.values, valueSetDoc(pm))
 
-  def nodeKindDoc(nc: NodeKind): Document =
+  private def nodeKindDoc(nc: NodeKind): Document =
     nc match {
       case IRIKind => keyword("IRI")
       case BNodeKind => keyword("BNode")
@@ -124,10 +132,10 @@ object Printer {
       case LiteralKind => keyword("Literal")
     }
 
-  def datatypeDoc(pm: PrefixMap)(d: IRI): Document =
+  private def datatypeDoc(pm: PrefixMap)(d: IRI): Document =
     iriDoc(pm)(d)
 
-  def xsFacetDoc(f: XsFacet): Document =
+  private def xsFacetDoc(f: XsFacet): Document =
     f match {
       case Length(v) => f.fieldName :: space :: text(v.toString)
       case MinLength(v) => f.fieldName :: space :: text(v.toString)
@@ -141,29 +149,29 @@ object Printer {
       case FractionDigits(n) => f.fieldName :: space :: text(n.toString)
     }
 
-  def numericDoc(n: NumericLiteral): Document =
+  private def numericDoc(n: NumericLiteral): Document =
     str("TODO: NumericLiteral")
 
-  def valueSetDoc(pm: PrefixMap)(vs: List[ValueSetValue]): Document =
+  private def valueSetDoc(pm: PrefixMap)(vs: List[ValueSetValue]): Document =
     keyword("[") ::
     listDocSep(vs, valueDoc(pm), space) ::
     keyword("]")
 
   // TODO
-  def escape(str: String): String = {
+  private def escape(str: String): String = {
     str.map(escapeChar(_)).flatten.mkString
   }
 
-  def escapeChar(c: Char): List[Char] =
+  private def escapeChar(c: Char): List[Char] =
     c match {
       // case '\"' => List('\\','\"')
       case _ => List(c)
     }
 
-  def stringDoc(str: String): Document =
+  private def stringDoc(str: String): Document =
     text("\"") :: text(escape(str)) :: text("\"")
 
-  def valueDoc(pm: PrefixMap)(v: ValueSetValue): Document =
+  private def valueDoc(pm: PrefixMap)(v: ValueSetValue): Document =
     v match {
       case IRIValue(iri) => iriDoc(pm)(iri)
       case StringValue(str) => stringDoc(str)
@@ -173,7 +181,7 @@ object Printer {
       case StemRange(stem,exclusions) => str("TODO: StemRange")
     }
 
-  def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Document =
+  private def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Document =
     dt.iri match {
       case `xsd_boolean` => booleanDoc(dt.s)
       case `xsd_integer` => integerDoc(dt.s)
@@ -182,16 +190,15 @@ object Printer {
       case _ => stringDoc(dt.s) :: str("^^") :: iriDoc(pm)(dt.iri)
     }
 
-  def booleanDoc(s: String): Document = text(s)
+  private def booleanDoc(s: String): Document = text(s)
 
-  def integerDoc(s: String): Document = text(s.toString)
+  private def integerDoc(s: String): Document = text(s.toString)
 
-  def decimalDoc(s: String): Document = text(s.toString)
+  private def decimalDoc(s: String): Document = text(s.toString)
 
-  def doubleDoc(s: String): Document = text(s.toString)
+  private def doubleDoc(s: String): Document = text(s.toString)
 
-
-  def shapeDoc(pm: PrefixMap)(s: Shape): Document = {
+  private def shapeDoc(pm: PrefixMap)(s: Shape): Document = {
     optDocConst(s.virtual,keyword("VIRTUAL")) ::
     optDocConst(s.closed,keyword("CLOSED")) ::
     optDoc(s.extra,extraDoc(pm))::
@@ -202,10 +209,10 @@ object Printer {
     optDoc(s.semActs,semActsDoc(pm))
   }
 
-  def extraDoc(pm: PrefixMap)(ls: List[IRI]): Document =
+  private def extraDoc(pm: PrefixMap)(ls: List[IRI]): Document =
     keyword("EXTRA") :: listDocSep(ls, iriDoc(pm), space)
 
-  def tripleExprDoc(pm: PrefixMap)(t: TripleExpr): Document =
+  private def tripleExprDoc(pm: PrefixMap)(t: TripleExpr): Document =
     t match {
       case e: EachOf => eachOfDoc(pm)(e)
       case e: SomeOf => someOfDoc(pm)(e)
@@ -213,19 +220,19 @@ object Printer {
       case t: TripleConstraint => tripleConstraintDoc(pm)(t)
     }
 
-  def eachOfDoc(pm: PrefixMap)(e: EachOf): Document =
+  private def eachOfDoc(pm: PrefixMap)(e: EachOf): Document =
     listDocIntersperse(e.expressions,tripleExprDoc(pm),keyword(";")) ::
     cardinalityDoc(e.optMin,e.optMax) ::
     optDoc(e.semActs,semActsDoc(pm)) ::
     optDoc(e.annotations, annotationsDoc(pm))
 
-  def someOfDoc(pm: PrefixMap)(e: SomeOf): Document =
+  private def someOfDoc(pm: PrefixMap)(e: SomeOf): Document =
       listDocIntersperse(e.expressions,tripleExprDoc(pm),keyword("|")) ::
       cardinalityDoc(e.optMin,e.optMax) ::
       optDoc(e.semActs,semActsDoc(pm)) ::
       optDoc(e.annotations, annotationsDoc(pm))
 
-  def tripleConstraintDoc(pm: PrefixMap)(t: TripleConstraint): Document =
+  private def tripleConstraintDoc(pm: PrefixMap)(t: TripleConstraint): Document =
     optDocConst(t.optInverse, str("^")) ::
     optDocConst(t.optNegated, str("!")) ::
     iriDoc(pm)(t.predicate) :: space ::
@@ -234,37 +241,37 @@ object Printer {
     optDoc(t.semActs,semActsDoc(pm)) ::
     optDoc(t.annotations, annotationsDoc(pm))
 
-  def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Document =
+  private def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Document =
     str("todo: Annotations")
 
-  def cardinalityDoc(min: Option[Int], max: Option[Max]): Document =
+  private def cardinalityDoc(min: Option[Int], max: Option[Max]): Document =
     str(s" {${min.getOrElse(1)},${max.getOrElse(IntMax(1)).show}}")
 
-  def listDocSep[A](
+  private def listDocSep[A](
     xs: Seq[A],
     toDoc: A => Document,
     sep: Document
   ): Document = xs.foldLeft(empty: Document)(
       (d: Document, x: A) => d :: sep :: toDoc(x))
 
-  def listDocIntersperse[A](s: Seq[A],
+  private def listDocIntersperse[A](s: Seq[A],
     toDoc: A => Document,
     sep: Document
   ): Document =
     flatten(intersperse(sep,s.toList.map(toDoc(_))))
 
-  def flatten(ls: List[Doc]): Doc =
+  private def flatten(ls: Seq[Doc]): Doc =
     ls.foldLeft(empty:Document)(
       (d1,d2) => d1 :: d2
     )
 
-  def pairDoc[A, B](doc1: A => Doc,
+  private def pairDoc[A, B](doc1: A => Doc,
     sep: Doc,
     doc2: B => Doc)(pair: (A, B)): Document = {
     doc1(pair._1) :: sep :: doc2(pair._2)
   }
 
-  def mapDocWithSeps[A, B](
+  private def mapDocWithSeps[A, B](
     m: Map[A, B],
     beforeKey: Document,
     betweenKeyValue: Document,
@@ -280,28 +287,18 @@ object Printer {
     )
   }
 
-  def optDoc[A](x: Option[A], f: A => Doc): Doc =
+  private def optDoc[A](x: Option[A], f: A => Doc): Doc =
     x.fold(none)(f(_))
 
-  def optDocConst[A](x: Option[A], c: Doc): Doc =
+  private def optDocConst[A](x: Option[A], c: Doc): Doc =
     x.fold(none)(_ => c)
 
-  def eq = str("=")
+  private def eq = str("=")
 
-  def space: Document = str(" ")
-  def keyword(s: String): Document = str(s) :: space
-  def none: Doc = empty
-  def newline: Doc = break
-  def str(str: String): Document = text(str)
+  private def space: Document = str(" ")
+  private def keyword(s: String): Document = str(s) :: space
+  private def none: Doc = empty
+  private def newline: Doc = break
+  private def str(str: String): Document = text(str)
 
-  // TODO: search if this method is already defined elsewhere...
-  def intersperse[A](a: A, xs: List[A]): List[A] = {
-    @tailrec
-    def intersperse0(accum: List[A], rest: List[A]): List[A] = rest match {
-      case Nil => accum
-      case x :: Nil => x :: accum
-      case h :: t => intersperse0(a :: h :: accum, t)
-    }
-    intersperse0(Nil, xs).reverse
-  }
 }

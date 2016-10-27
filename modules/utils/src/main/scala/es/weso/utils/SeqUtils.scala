@@ -1,6 +1,9 @@
 package es.weso.utils
-import cats._, data._
+import cats._
+import data._
 import implicits._
+
+import scala.annotation.tailrec
 
 object SeqUtils {
 
@@ -30,6 +33,24 @@ object SeqUtils {
       case Some(v) => Some((p._1, v))
     }
     ls.map(cnv).flatten
+  }
+
+  /**
+    * Similar to Haskel's intersperse
+    * intersperse(",",List("A","B","C") = "A,B,C"
+    * @param a
+    * @param xs
+    * @tparam A
+    * @return
+    */
+  def intersperse[A](a: A, xs: Seq[A]): Seq[A] = {
+    @tailrec
+    def intersperse0(accum: Seq[A], rest: Seq[A]): Seq[A] = rest match {
+      case Nil => accum
+      case x :: Nil => x +: accum
+      case h :: t => intersperse0(a +: h +: accum, t)
+    }
+    intersperse0(Nil, xs).reverse
   }
 
 }

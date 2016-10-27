@@ -164,7 +164,7 @@ object Parser extends LazyLogging {
     }
    }
 
-   type Start = Option[(ShapeExpr, List[SemAct])]
+   type Start = Option[ShapeExpr]
    type NotStartAction = Either[Start,(ShapeLabel,ShapeExpr)]
 
    override def visitStatement(
@@ -185,9 +185,9 @@ object Parser extends LazyLogging {
          s <- visitStart(ctx.start())
        } yield Left(s)
      }
-    case _ if (isDefined(ctx.shape())) =>
+    case _ if (isDefined(ctx.shapeExprDecl())) =>
        for {
-        s <- visitShape(ctx.shape())
+        s <- visitShapeExprDecl(ctx.shapeExprDecl())
       } yield Right(s)
    }
 
@@ -233,12 +233,12 @@ object Parser extends LazyLogging {
 
    override def visitStart(
      ctx: StartContext):
-       Builder[Option[(ShapeExpr,List[SemAct])]] = {
+       Builder[Option[(ShapeExpr)]] = {
      if (isDefined(ctx)) {
        for {
          shapeExpr <- visitShapeExpression(ctx.shapeExpression())
-         semActs <- visitSemanticActions(ctx.semanticActions())
-       } yield Some((shapeExpr,semActs))
+         // semActs <- visitSemanticActions(ctx.semanticActions())
+       } yield Some((shapeExpr))
      } else
        ok(None)
    }
@@ -249,50 +249,82 @@ object Parser extends LazyLogging {
      r.sequence
    }
 
-   override def visitShape(ctx: ShapeContext): Builder[(ShapeLabel,ShapeExpr)] =
+   override def visitShapeExprDecl(ctx: ShapeExprDeclContext): Builder[(ShapeLabel,ShapeExpr)] =
     for {
      label <- visitShapeLabel(ctx.shapeLabel())
      shapeExpr <- obtainShapeExpr(ctx)
      _ <- addShape(label,shapeExpr)
    } yield (label,shapeExpr)
 
-   def obtainShapeExpr(ctx: ShapeContext): Builder[ShapeExpr] =
+   def obtainShapeExpr(ctx: ShapeExprDeclContext): Builder[ShapeExpr] =
      if (isDefined(ctx.KW_EXTERNAL())) {
        ok(ShapeExternal()) // TODO: What happens if there are semantic actions after External??
      } else
       // TODO: Obtain stringFacet*
        visitShapeExpression(ctx.shapeExpression())
 
-   override def visitShapeExpression(
-     ctx: ShapeExpressionContext):
-       Builder[ShapeExpr] =
-         visitShapeDisjunction(ctx.shapeDisjunction())
+   override def visitShapeExpression(ctx: ShapeExpressionContext): Builder[ShapeExpr] =
+     visitShapeOr(ctx.shapeOr())
 
-   override def visitShapeDisjunction(
-           ctx: ShapeDisjunctionContext):
+   override def visitInlineShapeExpression(
+     ctx: InlineShapeExpressionContext): Builder[ShapeExpr] =
+         visitInlineShapeOr(ctx.inlineShapeOr())
+
+   override def visitInlineShapeOr(
+           ctx: InlineShapeOrContext):
              Builder[ShapeExpr] = for {
       shapes <- {
         val r: List[Builder[ShapeExpr]] =
-          ctx.shapeConjunction().asScala.map(visitShapeConjunction(_)).toList
+          ctx.inlineShapeAnd().asScala.map(visitInlineShapeAnd(_)).toList
         r.sequence
       }
    } yield if (shapes.length == 1) shapes.head
         else ShapeOr(shapes)
 
-   override def visitShapeConjunction(
-           ctx: ShapeConjunctionContext):
+   override def visitInlineShapeAnd(
+                               ctx: InlineShapeAndContext):
+   Builder[ShapeExpr] = { for {
+     shapes <- {
+       val r: List[Builder[ShapeExpr]] =
+         ctx.inlineShapeNot().asScala.map(visitInlineShapeNot(_)).toList
+       r.sequence
+     }
+   } yield if (shapes.length == 1) shapes.head
+   else ShapeAnd(shapes)
+   }
+
+   override def visitInlineShapeNot(
+                               ctx: InlineShapeNotContext):
+   Builder[ShapeExpr] = for {
+     shapeAtom <- visitInlineShapeAtom(ctx.inlineShapeAtom())
+   } yield if (isDefined(ctx.negation()))
+     ShapeNot(shapeAtom)
+   else shapeAtom
+
+   override def visitShapeOr(ctx: ShapeOrContext):
+   Builder[ShapeExpr] = for {
+     shapes <- {
+       val r: List[Builder[ShapeExpr]] =
+         ctx.shapeAnd().asScala.map(visitShapeAnd(_)).toList
+       r.sequence
+     }
+   } yield if (shapes.length == 1) shapes.head
+   else ShapeOr(shapes)
+
+   override def visitShapeAnd(
+           ctx: ShapeAndContext):
              Builder[ShapeExpr] = { for {
      shapes <- {
        val r: List[Builder[ShapeExpr]] =
-         ctx.negShapeAtom().asScala.map(visitNegShapeAtom(_)).toList
+         ctx.shapeNot().asScala.map(visitShapeNot(_)).toList
        r.sequence
      }
    } yield if (shapes.length == 1) shapes.head
         else ShapeAnd(shapes)
    }
 
-   override def visitNegShapeAtom(
-           ctx: NegShapeAtomContext):
+   override def visitShapeNot(
+           ctx: ShapeNotContext):
              Builder[ShapeExpr] = for {
     shapeAtom <- visitShapeAtom(ctx.shapeAtom())
   } yield if (isDefined(ctx.negation()))
@@ -303,32 +335,22 @@ object Parser extends LazyLogging {
      ctx: ShapeAtomContext):
        Builder[ShapeExpr] = {
     ctx match {
-      case s: ShapeAtomLiteralContext =>
-       for {
-        xsFacets <- visitList(visitXsFacet,s.xsFacet())
-      } yield NodeConstraint.nodeKind(LiteralKind).copy(
-        xsFacets = xsFacets
-      )
-      case s: ShapeAtomNonLiteralContext => for {
-        nodeKind <- visitNonLiteralKind(s.nonLiteralKind())
-        stringFacets <- visitList(visitStringFacet,s.stringFacet())
-      } yield NodeConstraint.nodeKind(nodeKind).copy(
-        xsFacets = stringFacets
-      ) // Todo add "shapeOrRef?"
-
-      case s: ShapeAtomDataTypeContext =>
-       for {
-         datatype <- visitDatatype(s.datatype())
-         xsFacets <- visitList(visitXsFacet,s.xsFacet())
-      } yield NodeConstraint.datatype(datatype).copy(
-        xsFacets = xsFacets
-      )
+/*
 
       case s: ShapeAtomGroupContext =>
        visitShapeAtomGroup(s)
 
       case s: ShapeAtomValueSetContext =>
        visitValueSet(s.valueSet())
+*/
+      case s: ShapeAtomNodeConstraintContext =>
+        for {
+          nk <- visitNodeConstraint(s.nodeConstraint())
+          // TODO: Check shapeOrRef?
+        } yield nk
+
+      case s: ShapeAtomShapeOrRefContext =>
+        visitShapeOrRef(s.shapeOrRef())
 
       case s: ShapeAtomShapeExpressionContext =>
       err("Not implemented ShapeAtomShapeExpression")
@@ -339,15 +361,63 @@ object Parser extends LazyLogging {
     }
    }
 
+   def visitNodeConstraint(ctx: NodeConstraintContext): Builder[NodeConstraint] = {
+     ctx match {
+       case s: NodeConstraintLiteralContext =>
+         for {
+           xsFacets <- visitList(visitXsFacet,s.xsFacet())
+         } yield NodeConstraint.nodeKind(LiteralKind).copy(
+           xsFacets = xsFacets
+         )
+       case s: NodeConstraintNonLiteralContext =>
+         for {
+         nodeKind <- visitNonLiteralKind(s.nonLiteralKind())
+         stringFacets <- visitList(visitStringFacet,s.stringFacet())
+       } yield NodeConstraint.nodeKind(nodeKind).copy(
+         xsFacets = stringFacets
+       ) // Todo add "shapeOrRef?"
+       case s: NodeConstraintDatatypeContext =>
+         for {
+           datatype <- visitDatatype(s.datatype())
+           xsFacets <- visitList(visitXsFacet,s.xsFacet())
+         } yield NodeConstraint.datatype(datatype).copy(
+           xsFacets = xsFacets
+         )
+       case c: NodeConstraintValueSetContext =>
+         err("NodeConstraintValueSetContext")
+       case c: NodeConstraintFacetContext =>
+         err("NodeConstraintFacetContext")
+     }
+   }
+
+   def visitInlineShapeAtom(ctx: InlineShapeAtomContext): Builder[ShapeExpr] = {
+     ctx match {
+       case s: InlineShapeAtomNodeConstraintContext =>
+         for {
+           nk <- visitNodeConstraint(s.nodeConstraint())
+         // TODO: Check shapeOrRef?
+         } yield nk
+
+       case s: InlineShapeAtomShapeOrRefContext =>
+         visitInlineShapeOrRef(s.inlineShapeOrRef())
+
+       case s: InlineShapeAtomShapeExpressionContext =>
+         err("Not implemented InlineShapeAtomShapeExpression")
+
+       case s: InlineShapeAtomAnyContext =>
+         err("Not implemented InlineShapeAtomAny")
+     }
+   }
+
    override def visitValueSet(
      ctx: ValueSetContext): Builder[ShapeExpr] = {
       for {
-        vs <- visitList(visitValue, ctx.value())
+        vs <- visitList(visitValueSetValue, ctx.valueSetValue())
       } yield NodeConstraint.valueSet(vs)
    }
 
-   override def visitValue(
-     ctx: ValueContext): Builder[ValueSetValue] = {
+   override def visitValueSetValue(
+     ctx: ValueSetValueContext): Builder[ValueSetValue] = {
        if (isDefined(ctx.iriRange()))
         visitIriRange(ctx.iriRange())
         else
@@ -503,18 +573,34 @@ object Parser extends LazyLogging {
      visitIri(ctx.iri())
    }
 
-   override def visitShapeAtomLiteral(ctx: ShapeAtomLiteralContext): Builder[ShapeExpr] = {
+   override def visitNodeConstraintLiteral(ctx: NodeConstraintLiteralContext): Builder[ShapeExpr] = {
      ok(NodeConstraint.nodeKind(LiteralKind)) // TODO: xsFacet*
    }
 
-   override def visitShapeAtomNonLiteral(ctx: ShapeAtomNonLiteralContext): Builder[ShapeExpr] = {
+   override def visitNodeConstraintNonLiteral(ctx: NodeConstraintNonLiteralContext): Builder[ShapeExpr] = {
      visitNonLiteralKind(ctx.nonLiteralKind()).map(nk => NodeConstraint.nodeKind(nk))  // TODO: xsFacet*
    }
 
-   override def visitShapeAtomGroup(ctx: ShapeAtomGroupContext): Builder[ShapeExpr] =
+/*   override def visitNodeConstraintGroup(ctx: NodeConstraintGroupContext): Builder[ShapeExpr] =
      for {
       shapeOrRef <- visitShapeOrRef(ctx.shapeOrRef())
-    } yield shapeOrRef
+    } yield shapeOrRef */
+
+   override def visitInlineShapeOrRef(ctx: InlineShapeOrRefContext): Builder[ShapeExpr] = ctx match {
+     case _ if (isDefined(ctx.inlineShapeDefinition())) =>
+       visitInlineShapeDefinition(ctx.inlineShapeDefinition())
+     case _ if (isDefined(ctx.shapeLabel())) =>
+       visitShapeLabel(ctx.shapeLabel()).map(ShapeRef(_))
+     case _ if (isDefined(ctx.ATPNAME_NS())) => {
+       val nameNS = ctx.ATPNAME_NS().getText().tail
+       resolve(nameNS).map(iri => ShapeRef(IRILabel(iri)))
+     }
+     case _ if (isDefined(ctx.ATPNAME_LN())) => {
+       val nameLN = ctx.ATPNAME_LN().getText().tail
+       resolve(nameLN).map(iri => ShapeRef(IRILabel(iri)))
+     }
+     case _ => err(s"internal Error: visitShapeOrRef. Unknown $ctx")
+   }
 
   override def visitShapeOrRef(ctx: ShapeOrRefContext): Builder[ShapeExpr] = ctx match {
     case _ if (isDefined(ctx.shapeDefinition())) =>
@@ -531,6 +617,29 @@ object Parser extends LazyLogging {
     }
     case _ => err(s"internal Error: visitShapeOrRef. Unknown $ctx")
   }
+
+   override def visitInlineShapeDefinition(ctx: InlineShapeDefinitionContext): Builder[ShapeExpr] = {
+     for {
+       qualifiers <- visitList(visitQualifier,ctx.qualifier())// TODO: qualifiers
+       tripleExpr <- visitSomeOfShape(ctx.someOfShape())
+     } yield {
+       val closed =
+         if (qualifiers.contains(Closed))
+           Some(true)
+         else
+           Some(false)
+       val ls: List[IRI] = qualifiers.map(_.getExtras).flatten
+       val extras: Option[List[IRI]] =
+         if (ls.isEmpty) None
+         else Some(ls)
+       // TODO: Rest of qualifiers Virtual, inherit
+       Shape.empty.copy(
+         closed = closed,
+         extra = extras,
+         expression = tripleExpr
+       )
+     }
+   }
 
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
@@ -560,8 +669,8 @@ object Parser extends LazyLogging {
       case _ if (isDefined(ctx.KW_CLOSED())) => ok(Closed)
       case _ if (isDefined(ctx.includeSet())) =>
         visitIncludeSet(ctx.includeSet())
-      case _ if (isDefined(ctx.inclPropertySet())) =>
-        visitInclPropertySet(ctx.inclPropertySet())
+      case _ if (isDefined(ctx.extraPropertySet())) =>
+        visitExtraPropertySet(ctx.extraPropertySet())
     }
   }
 
@@ -569,7 +678,7 @@ object Parser extends LazyLogging {
     throw new Exception("not implemented IncludeSet yet")
   }
 
-  override def visitInclPropertySet(ctx: InclPropertySetContext): Builder[Qualifier] = for {
+  override def visitExtraPropertySet(ctx: ExtraPropertySetContext): Builder[Qualifier] = for {
     ls <- visitList(visitPredicate, ctx.predicate())
   } yield Extra(ls)
 
@@ -629,7 +738,7 @@ object Parser extends LazyLogging {
     ctx: TripleConstraintContext): Builder[TripleExpr] =
     for {
       predicate <- visitPredicate(ctx.predicate())
-      shapeExpr <- visitShapeExpression(ctx.shapeExpression())
+      shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
     } yield
         TripleConstraint.

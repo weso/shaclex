@@ -7,7 +7,7 @@ import es.weso.utils.FileUtils._
 import scala.io._
 import java.io.File
 import es.weso.shex.compact.Parser._
-import es.weso.shex.compact.Printer._
+import es.weso.shex.compact.CompactShow._
 import es.weso.shex.implicits.eqShEx._
 import cats._, data._
 import implicits._
@@ -37,7 +37,7 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
     parseSchema(str) match {
       case Left(str) => fail(s"Parsing error: $str")
       case Right(schema) => {
-        val newStr = print(schema)
+        val newStr = showSchema(schema)
         parseSchema(newStr) match {
           case Left(e) =>
             fail(s"$str\n-- parsed as schema:\n${newStr}, but previous string doesn't parse\nError: $e")

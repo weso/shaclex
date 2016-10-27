@@ -9,6 +9,7 @@ import es.weso.rdf.nodes._
  */
 case class Attempt(nodeShape: NodeShape, path: Option[IRI]) {
   def node = nodeShape.node
+  def shape = nodeShape.shape
 
   def predicate: Option[IRI] = path
 

@@ -1,6 +1,9 @@
 prefix : <http://example.org/>
 prefix sh: <http://www.w3.org/ns/shacl#>
 
-:x1 :p :y ; :p :z; :q :z; :r 1 .
+:x1 :p :y ;
+    :p [:p :z];
+    :q :z;
+    :r 1 .
 
 :S sh:targetNode :x1 .
