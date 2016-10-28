@@ -13,35 +13,35 @@ prefix org: <http://www.w3.org/ns/org#>
 
 :Country {
   rdfs:label xsd:string
-, wf:iso2 xsd:string
+; wf:iso2 xsd:string
 }
 
 :DataSet {
   a [ qb:DataSet ]
-, qb:structure [ wf:DSD ]
-, rdfs:label xsd:string
-, qb:slice @:Slice*
-, dct:publisher @:Organization
+; qb:structure [ wf:DSD ]
+; rdfs:label xsd:string
+; qb:slice @:Slice*
+; dct:publisher @:Organization
 }
 
 :Slice {
   a [ qb:Slice ]
-, qb:sliceStructure [ wf:sliceByYear ]
-, qb:observation @:Observation*
-, cex:indicator @:Indicator
+; qb:sliceStructure [ wf:sliceByYear ]
+; qb:observation @:Observation*
+; cex:indicator @:Indicator
 }
 
 :Observation {
- a [ qb:Observation ]
-, a [ wf:Observation ]
-, cex:value xsd:float
-, rdfs:label xsd:string ?
-, dct:issued xsd:dateTime
-, dct:publisher [ wf:WebFoundation ] ?
-, qb:dataSet @:DataSet
-, cex:ref-area @:Country 
-, cex:indicator @:Indicator
-, ( cex:computation @:Computation
+  a [ qb:Observation ]
+; a [ wf:Observation ]
+; cex:value xsd:float
+; rdfs:label xsd:string ?
+; dct:issued xsd:dateTime
+; dct:publisher [ wf:WebFoundation ] ?
+; qb:dataSet @:DataSet
+; cex:ref-area @:Country 
+; cex:indicator @:Indicator
+; ( cex:computation @:Computation
   | wf:source IRI
   )
 }
@@ -54,12 +54,12 @@ prefix org: <http://www.w3.org/ns/org#>
  a [ wf:PrimaryIndicator 
      wf:SecondaryIndicator
    ]
-, rdfs:label xsd:string
-, wf:provider @:Organization
+; rdfs:label xsd:string
+; wf:provider @:Organization
 }
 
 :Organization CLOSED EXTRA a {
   a [ org:Organization ]
-, rdfs:label xsd:string
-, foaf:homepage IRI
+; rdfs:label xsd:string
+; foaf:homepage IRI
 }

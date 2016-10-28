@@ -92,7 +92,10 @@ case class Validator(schema: Schema) extends LazyLogging {
         attempt = Attempt(NodeShape(node, shapeType), None)
         t <- runLocal(checkNodeShapeExpr(attempt, node, shapeExpr), _.addType(node, shapeType))
       } yield t
-    } yield newTyping
+    } yield {
+      logger.info(s"Result of nodeLabel. Node: ${node.show} Label: ${label.show}: $newTyping")
+      newTyping
+    }
   }
 
   def errStr[A](msg: String): Check[A] =
@@ -156,8 +159,26 @@ case class Validator(schema: Schema) extends LazyLogging {
   for {
     _ <- getTyping
     t1 <- optCheck(s.nodeKind, checkNodeKind(attempt,node), getTyping)
-  } yield t1
+    t2 <- optCheck(s.values, checkValues(attempt,node), getTyping)
+    t3 <- optCheck(s.datatype, checkDatatype(attempt,node), getTyping)
+    t4 <- checkXsFacets(attempt, node)(s.xsFacets)
+    t <- combineTypings(List(t1,t2,t3,t4))
+  } yield t
 
+  def checkValues(attempt: Attempt, node: RDFNode)(values: List[ValueSetValue]): CheckTyping = {
+    logger.info(s"Values ${node.show} ${values}...TODO!!")
+    getTyping
+  }
+
+  def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
+    logger.info(s"Datatype ${node.show} ${datatype}...TODO!!")
+    getTyping
+  }
+
+  def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
+    logger.info(s"Facets ${node.show} ${xsFacets}...TODO!!")
+    getTyping
+  }
 
   def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = {
     logger.info(s"NodeKind ${node.show} ${nk.show}")

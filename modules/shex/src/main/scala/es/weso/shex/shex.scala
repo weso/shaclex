@@ -41,6 +41,10 @@ case class Schema(
 
 abstract sealed trait ShapeExpr
 
+object ShapeExpr {
+  def any: ShapeExpr = NodeConstraint.empty
+}
+
 case class ShapeOr(shapeExprs: List[ShapeExpr]) extends ShapeExpr
 
 case class ShapeAnd(shapeExprs: List[ShapeExpr]) extends ShapeExpr
