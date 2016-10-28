@@ -22,11 +22,10 @@ import es.weso.shex.compact.CompactShow
 /**
  * ShEx validator
  */
-case class Validator(schema: Schema) extends LazyLogging {
+case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogging {
 
   type ShapeChecker = ShapeExpr => CheckTyping
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
-  type CheckTyping = Check[ShapeTyping]
   type NodeChecker = Attempt => RDFNode => CheckTyping
   type Neighs = List[(Path,RDFNode)]
   type Arc = (Path,RDFNode)
@@ -98,9 +97,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
-  def errStr[A](msg: String): Check[A] =
-    err[A](ViolationError.msgErr(msg))
-
   def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
     logger.info(s"${attempt.show}, node: ${node.show}, shapeExpr: ${CompactShow.showShapeExpr(s, schema.prefixMap)}")
     s match{
@@ -166,8 +162,12 @@ case class Validator(schema: Schema) extends LazyLogging {
   } yield t
 
   def checkValues(attempt: Attempt, node: RDFNode)(values: List[ValueSetValue]): CheckTyping = {
-    logger.info(s"Values ${node.show} ${values}...TODO!!")
-    getTyping
+    val cs: List[CheckTyping] =
+      values.map(v => ValueChecker(schema).checkValue(attempt,node)(v))
+    for {
+      _ <- checkSome(cs, ViolationError.msgErr(s"${node.show} doesn't belong to set ${values}"))
+      t <- getTyping
+    } yield t
   }
 
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
@@ -319,89 +319,6 @@ def checkTripleConstraint(
            s"No. of triples with predicate ${t.predicate.show}= $noTriples between (${t.min},${t.max})")
  } yield t
 
- def checkCond(
-    condition: Boolean,
-    attempt: Attempt,
-    error: ViolationError,
-    evidence: String): CheckTyping = for {
-    _ <- validateCheck(condition, error)
-    newTyping <- addEvidence(attempt.nodeShape, evidence)
-  } yield newTyping
-
-  def addEvidence(nodeShape: NodeShape, msg: String): Check[ShapeTyping] = {
-    for {
-      t <- getTyping
-      _ <- addLog(List((nodeShape, msg)))
-    } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
-  }
-
-  def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
-    val node = nodeShape.node
-    val shape = nodeShape.shape
-    for {
-      t <- getTyping
-      _ <- addLog(List((nodeShape, msg)))
-    } yield t.addNotEvidence(node, shape, e)
-  }
-
-
-  def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
-    local(f)(c)
-
-  def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
-
-  def getTyping: Check[ShapeTyping] = getEnv // ask[Comput,ShapeTyping]
-
-  def combineTypings(ts: Seq[ShapeTyping]): Check[ShapeTyping] = {
-    ok(ShapeTyping.combineTypings(ts))
-  }
-
-  def runCheck[A: Show](
-    c: Check[A],
-    rdf: RDFReader
-  ): CheckResult[ViolationError, A, Log] = {
-    val initial: ShapeTyping = Monoid[ShapeTyping].empty
-    val r = run(c)(rdf)(initial)
-    CheckResult(r)
-  }
-
-  implicit lazy val showRDFNode = new Show[RDFNode] {
-    override def show(n: RDFNode): String = {
-      n match {
-        case i: IRI => schema.qualify(i)
-        case l: Literal => l.getLexicalForm
-        case b: BNodeId => "_:" + b.getLexicalForm
-      }
-    }
-  }
-
-  implicit lazy val showShapeLabel = new Show[ShapeLabel] {
-    override def show(lbl: ShapeLabel): String = {
-      lbl match {
-        case IRILabel(iri) => Show[RDFNode].show(iri)
-        case BNodeLabel(bnode) => Show[RDFNode].show(bnode)
-      }
-    }
-  }
-
-  implicit lazy val showPath = new Show[Path] {
-    override def show(p: Path): String = {
-      p match {
-        case Direct(iri) => schema.qualify(iri)
-        case Inverse(iri) => "^" + schema.qualify(iri)
-      }
-    }
-  }
-
-  implicit lazy val showAttempt = new Show[Attempt] {
-    override def show(a: Attempt): String = {
-      val showPath: String = a.path match {
-        case None => ""
-        case Some(p) => ", path: " + p.show
-      }
-      s"Attempt: node: ${a.node.show}, shape: ${a.shape.show}${showPath}"
-    }
-  }
 
   lazy val emptyTyping: ShapeTyping =
     Monoid[ShapeTyping].empty
@@ -415,6 +332,7 @@ def checkTripleConstraint(
     }
     runCheck(checkTargetNodeDeclarations, rdf)
   }
+
 
 }
 

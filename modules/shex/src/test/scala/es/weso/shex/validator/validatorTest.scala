@@ -38,7 +38,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
       case Failure(e) => fail(s"Can't parse $rdfStr as RDF. Error: $e")
       case Success(rdf) => {
         val check = v.checkNodeLabel(node, label)
-        val r = v.runCheck(check, rdf)
+        val r = ShExChecker.runCheck(check, rdf)
         if (r.isOK) info("OK")
         else {
           fail(s"Failed\n$r")
@@ -57,7 +57,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
       case Failure(e) => fail(s"Can't parse $rdfStr as RDF. Error: $e")
       case Success(rdf) => {
         val check = v.checkNodeLabel(node, label)
-        val r = v.runCheck(check, rdf)
+        val r = ShExChecker.runCheck(check, rdf)
         if (r.isOK) fail(s"Validated when expected to fail\n$r")
         else {
           info(s"Failed as expected\n$r")

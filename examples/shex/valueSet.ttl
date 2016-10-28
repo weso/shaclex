@@ -5,7 +5,8 @@ prefix sh: <http://www.w3.org/ns/shacl#>
 :x2 :p "a" .
 :x3 :p 1, "a" .
 :x4 :p 1; :q "b" .
-:bad1 :p 3 .
+# :bad1 :p 3 .
 
-:S sh:targetNode :x1, :x2, :x3, :x4, :bad1 .
+:S sh:targetNode :x1 # , :x2, :x3, :x4
+  .
 # :NotS sh:targetNode :bad1 .
