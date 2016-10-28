@@ -153,21 +153,21 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                           node: RDFNode,
                           s: NodeConstraint): CheckTyping =
   for {
-    _ <- getTyping
     t1 <- optCheck(s.nodeKind, checkNodeKind(attempt,node), getTyping)
     t2 <- optCheck(s.values, checkValues(attempt,node), getTyping)
     t3 <- optCheck(s.datatype, checkDatatype(attempt,node), getTyping)
     t4 <- checkXsFacets(attempt, node)(s.xsFacets)
     t <- combineTypings(List(t1,t2,t3,t4))
-  } yield t
+  } yield {
+    logger.info(s"after checking node constraint: ${attempt.show} ${node.show}: $t")
+    t
+  }
 
   def checkValues(attempt: Attempt, node: RDFNode)(values: List[ValueSetValue]): CheckTyping = {
+    logger.info(s"valueSet(${node.show},$values) ")
     val cs: List[CheckTyping] =
       values.map(v => ValueChecker(schema).checkValue(attempt,node)(v))
-    for {
-      _ <- checkSome(cs, ViolationError.msgErr(s"${node.show} doesn't belong to set ${values}"))
-      t <- getTyping
-    } yield t
+    checkSome(cs, ViolationError.msgErr(s"${node.show} doesn't belong to set ${values}"))
   }
 
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
