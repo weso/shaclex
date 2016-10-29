@@ -2,4 +2,4 @@ prefix : <http://example.org/>
 
 :S { :p [1 "a"]+ }
 
-:NotS NOT :S 
+:NotS NOT @:S

@@ -270,3 +270,8 @@ fragment W:('w'|'W');
 fragment X:('x'|'X');
 fragment Y:('y'|'Y');
 fragment Z:('z'|'Z');
+
+// This should be the LAST lexer rule in your grammar
+UNKNOWN_CHAR
+    :   .
+    ;

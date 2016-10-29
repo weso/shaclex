@@ -1,0 +1,3 @@
+prefix : <p>
+:S NOT @:T
+:T NOT .

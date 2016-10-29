@@ -9,7 +9,8 @@ import es.weso.shex.ViolationError._
 import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
 
-case class ValueChecker(schema: Schema) extends ShowValidator(schema) with LazyLogging {
+case class ValueChecker(schema: Schema)
+  extends ShowValidator(schema) with LazyLogging {
 
   def checkValue(attempt: Attempt,
                  node: RDFNode)(value: ValueSetValue): CheckTyping = {
@@ -18,27 +19,37 @@ case class ValueChecker(schema: Schema) extends ShowValidator(schema) with LazyL
       case IRIValue(iri) => node match {
         case i: IRI =>
           checkCond(iri == i,attempt,
-            msgErr(s"${node.show} is not ${i.show}"),
+            msgErr(s"${node.show} != ${i.show}"),
             s"${node.show} == ${i.show}")
         case _ => errStr(s"${node.show} != ${iri.show}")
       }
-/*      case StringValue(s) => node match {
-        case DatatypeLiteral(str,d) => ok(d == xsd_string && s == str)
-        case StringLiteral(str) => ok(s == str)
-        case _ => ok(false)
+      case StringValue(s) => node match {
+        case l:Literal => checkCond(s == l.getLexicalForm && l.dataType == xsd_string,attempt,
+          msgErr(s"${node.show} != ${l}"),
+          s"${node.show} == ${l}")
+        case _ => errStr(s"${node.show} != ${value}")
        }
       case DatatypeString(s,iri) => node match {
-        case l: Literal => ok(l.dataType == iri && l.getLexicalForm == s)
-        case _ => ok(false)
+        case l: Literal =>
+          checkCond(s == l.getLexicalForm && iri == l.dataType,attempt,
+            msgErr(s"${node.show} != ${l}"),
+            s"${node.show} == ${l}")
+        case _ => errStr(s"${node.show} != ${value}")
       }
       case LangString(s,lang) => node match {
-        case LangLiteral(str,l) => ok(s == str && l == lang)
-        case _ => ok(false)
+        case LangLiteral(str,l) =>
+          checkCond(s == str && lang == l,attempt,
+          msgErr(s"${node.show} != ${value}"),
+          s"${node.show} == ${value}")
+        case _ => errStr(s"${node.show} != ${value}")
       }
       case Stem(stem) => errStr(s"Not implemented stem: $stem")
-      case StemRange(stem,exclusions) => errStr(s"Not implemented stem range: $stem $exclusions") */
+      case StemRange(stem,exclusions) => errStr(s"Not implemented stem range: $stem $exclusions")
 
-      case _ => errStr(s"Not implemented checkValue: $value")
+      case _ => {
+        logger.error(s"Not implemented checkValue: $value")
+        errStr(s"Not implemented checkValue: $value")
+      }
     }
   }
 }

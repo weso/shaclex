@@ -122,8 +122,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                ses:List[ShapeExpr]): CheckTyping = {
     val vs = ses.map(se => checkNodeShapeExpr(attempt,node,se))
     for {
-      t1 <- checkSome(vs,ViolationError.msgErr(s"None of the alternatives of OR($ses) is valid for node $node"))
-      t2 <- addEvidence(attempt.nodeShape, s"$node passes OR")
+      t1 <- checkSome(vs,ViolationError.msgErr(s"None of the alternatives of OR($ses) is valid for node ${node.show}"))
+      t2 <- addEvidence(attempt.nodeShape, s"${node.show} passes OR")
       t3 <- combineTypings(Seq(t1, t2))
     } yield t3
   }
@@ -135,12 +135,12 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     val check: CheckTyping = checkNodeShapeExpr(attempt, node, s)
     val handleError: ViolationError => Check[ShapeTyping] = e => for {
       t1 <- addNotEvidence(NodeShape(node, ShapeType(s, None, schema)), e,
-        s"$node doesn't satisfy ${s}. Negation declared in ${parentShape}. Error: $e")
-      t2 <- addEvidence(attempt.nodeShape, s"$node satisfies not(${s})")
+        s"${node.show} doesn't satisfy ${s.show}. Negation declared in ${parentShape.show}. Error: $e")
+      t2 <- addEvidence(attempt.nodeShape, s"${node.show} satisfies not(${{s.show}})")
       t <- combineTypings(List(t1, t2))
     } yield t
     val handleNotError: ShapeTyping => Check[ShapeTyping] = t =>
-      errStr(s"Failed NOT($s) because node $node satisfies it")
+      errStr(s"Failed NOT(${s.show}) because node ${node.show} satisfies it")
     cond(check, handleNotError, handleError)
   }
 
@@ -172,12 +172,22 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
     logger.info(s"Datatype ${node.show} ${datatype}...TODO!!")
-    getTyping
+    node match {
+      case l: Literal =>
+        checkCond(l.dataType == datatype, attempt,
+          msgErr(s"${node.show} doesn't have datatype ${datatype.show}"),
+          s"${node.show} has datatype ${datatype.show}")
+      case _ => errStr(
+        s"${attempt} ${node.show} doesn't have datatype ${datatype.show} because it is not a literal"
+       )
+    }
   }
 
   def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
-    logger.info(s"Facets ${node.show} ${xsFacets}...TODO!!")
-    getTyping
+    if (xsFacets.isEmpty) getTyping
+    else {
+      errStr(s"xsFacets not implemented yet ${xsFacets}")
+    }
   }
 
   def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = {
@@ -203,6 +213,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
+    logger.info(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
     val tripleExpr = s.tripleExpr
     for {
       neighs <- getNeighs(node)
@@ -212,7 +223,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       csRest <- calculateCandidates(neighs,cTable)
       (candidates,rest) = csRest
       _ <- checkRests(rest,s.extraPaths,s.isClosed,ignoredPathsClosed)
-      typing <- checkCandidates(attempt,bagChecker,cTable)(candidates)
+      typing <- {
+        logger.info(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
+        checkCandidates(attempt,bagChecker,cTable)(candidates)
+      }
 //      t <- optCheck(s.expression, checkTripleExpr(attempt, node), getTyping)
     } yield typing
   }
@@ -265,13 +279,24 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
    }
   }
 
-  def checkCandidates(attempt: Attempt, bagChecker:BagChecker_, table: CTable)(cs: Candidates): CheckTyping = {
+  def checkCandidates(attempt: Attempt,
+                      bagChecker:BagChecker_,
+                      table: CTable)(cs: Candidates): CheckTyping = {
     val as: List[CandidateLine] = SeqUtils.transpose(cs)
-    val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
-    checkSome(checks,ViolationError.msgErr(s"No candidate matched from $cs"))
+    logger.info(s"Candidate lines: $as")
+    if (as.length == 1) {
+      // Deterministic
+      checkCandidateLine(attempt, bagChecker, table)(as.head)
+    } else {
+      logger.warn(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}" )
+      val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
+      checkSome(checks, ViolationError.msgErr(s"No candidate matched $cs"))
+    }
   }
 
-  def checkCandidateLine(attempt: Attempt, bagChecker: BagChecker_, table: CTable)(cl: CandidateLine): CheckTyping = {
+  def checkCandidateLine(attempt: Attempt,
+                         bagChecker: BagChecker_,
+                         table: CTable)(cl: CandidateLine): CheckTyping = {
     val bag = Bag.toBag(cl.map(_._2))
     // parameter open=false because open has been checked before
     bagChecker.check(bag,false) match {
@@ -290,7 +315,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
           t <- combineTypings(ts)
         } yield t
       }
-      case Left(err) => errStr(s"Doesn't match Rbe ${bagChecker.rbe} with bag $bag. Err: $err")
+      case Left(err) =>
+        errStr(s"${attempt.show} Candidate line ${cl.show} doesn't match regular expression\nBag ${bag} doesn't match Rbe ${bagChecker.rbe}\nErr: $err")
     }
   }
 
@@ -333,6 +359,17 @@ def checkTripleConstraint(
     runCheck(checkTargetNodeDeclarations, rdf)
   }
 
+  implicit lazy val showCandidateLine = new Show[CandidateLine] {
+    override def show(cl: CandidateLine): String = {
+      def showPair(pair: (Arc, ConstraintRef)): String =
+        s"${pair._1.show}->${pair._2.toString}"
+
+      def sepByComma(cs: List[String]): String =
+        SeqUtils.intersperse(",",cs).toList.mkString("")
+
+      s"${sepByComma(cl.map(showPair(_)))}"
+    }
+  }
 
 }
 

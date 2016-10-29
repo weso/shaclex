@@ -48,6 +48,13 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
+  def checkSome[A](cs: List[Check[A]])
+                  (implicit ev: Monoid[Err]): Check[A] = {
+    lazy val z: Check[A] = err(ev.empty)
+    def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
+    cs.foldRight(z)(comb)
+  }
+
   def attempt[A](c: Check[A]): Check[Either[Err, A]] = for {
     v <- MonadError[Check, Err].attempt(c)
   } yield v.toEither

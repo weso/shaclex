@@ -104,15 +104,15 @@ object Parser extends LazyLogging {
                                line: Int,
                                charPositionInLine: Int,
                                msg: String, e: RecognitionException): Unit = {
-        val str = s"Error ${errors.length} line $line:$charPositionInLine $msg"
+        val str = s"Error at $line:$charPositionInLine $msg\nRule index: ${e.getCtx.getRuleIndex}\nContext text: ${e.getCtx.getText}"
         errors += str
       }
     }
 
-    lexer.removeErrorListeners()
-    lexer.addErrorListener(errorListener)
-    parser.removeErrorListeners()
-    parser.addErrorListener(errorListener)
+     // lexer.removeErrorListeners()
+     lexer.addErrorListener(errorListener)
+     // parser.removeErrorListeners()
+     parser.addErrorListener(errorListener)
 
     val maker = new SchemaMaker()
     val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]

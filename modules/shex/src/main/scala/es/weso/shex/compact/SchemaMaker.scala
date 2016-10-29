@@ -389,13 +389,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     visitIri(ctx.iri())
   }
 
-  override def visitIri(ctx: IriContext): Builder[IRI] = {
-    if (isDefined(ctx.IRIREF())) {
-      ok(extractIRIfromIRIREF(ctx.IRIREF().getText))
-    } else {
-      val prefixedName = visitPrefixedName(ctx.prefixedName())
-      resolve(prefixedName)
-    }
+  override def visitIri(ctx: IriContext): Builder[IRI] =
+    if (isDefined(ctx.IRIREF())) for {
+      base <- getBase
+    } yield
+       extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+   else {
+    val prefixedName = visitPrefixedName(ctx.prefixedName())
+    resolve(prefixedName)
   }
 
   def resolve(prefixedName: String): Builder[IRI] = {
@@ -429,10 +430,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
         shapeOrRef <- visitShapeOrRef(ctx.shapeOrRef())
       } yield shapeOrRef */
 
-  def extractIRIfromIRIREF(d: String): IRI = {
+  def extractIRIfromIRIREF(d: String, base: Option[IRI]): IRI = {
     val iriRef = "^<(.*)>$".r
     d match {
-      case iriRef(i) => IRI(i)
+      case iriRef(i) => {
+        // TODO: Check base declaration
+        base match {
+          case None => IRI(i)
+          case Some(b) => b + i
+        }
+      }
     }
   }
 
@@ -802,8 +809,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     }
   }
 
+  // TODO: Resolve base taking into account previous base declarations ?
   override def visitBaseDecl(ctx: BaseDeclContext): Builder[IRI] = {
-    val baseIri = extractIRIfromIRIREF(ctx.IRIREF().getText)
+    val baseIri = extractIRIfromIRIREF(ctx.IRIREF().getText, None)
     for {
       _ <- addBase(baseIri)
     } yield baseIri
@@ -826,7 +834,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
 
   override def visitPrefixDecl(ctx: PrefixDeclContext): Builder[(Prefix, IRI)] = {
     val prefix = Prefix(ctx.PNAME_NS().getText)
-    val iri = extractIRIfromIRIREF(ctx.IRIREF().getText)
+    // TODO Resolve prefix declarations taking into account base?
+    val iri = extractIRIfromIRIREF(ctx.IRIREF().getText, None)
     for {
       _ <- addPrefix(prefix, iri)
     } yield (prefix, iri)
