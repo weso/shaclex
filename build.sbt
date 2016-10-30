@@ -22,6 +22,7 @@ lazy val shaclex =
       )
   )
 
+
 lazy val schema =
   project.in(file("modules/schema")).
   settings(commonSettings: _*).
@@ -44,8 +45,11 @@ lazy val shacl =
      )
   )
 
+lazy val compatTest = config("compat") extend (Test) describedAs("Tests that check compatibility (some may fail)")
+
 lazy val shex =
   project.in(file("modules/shex")).
+  configs(compatTest).
   settings(commonSettings: _*).
   dependsOn(srdfJena,
     typing,
@@ -53,6 +57,7 @@ lazy val shex =
     validating,
     rbe).
   settings(antlr4Settings: _*).
+  settings(inConfig(compatTest)(Defaults.testSettings): _*).
   settings(
     antlr4GenListener in Antlr4 := true,
     antlr4GenVisitor in Antlr4 := true,
@@ -67,6 +72,7 @@ lazy val shex =
     , "io.circe" %% "circe-parser" % circeVersion
     )
   )
+
 
 lazy val converter =
   project.in(file("modules/converter")).

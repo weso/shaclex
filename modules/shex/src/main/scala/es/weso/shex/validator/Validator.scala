@@ -171,7 +171,6 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
-    logger.info(s"Datatype ${node.show} ${datatype}...TODO!!")
     node match {
       case l: Literal =>
         checkCond(l.dataType == datatype, attempt,
@@ -186,7 +185,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
     if (xsFacets.isEmpty) getTyping
     else {
-      errStr(s"xsFacets not implemented yet ${xsFacets}")
+      FacetChecker(schema).checkFacets(attempt,node)(xsFacets)
     }
   }
 

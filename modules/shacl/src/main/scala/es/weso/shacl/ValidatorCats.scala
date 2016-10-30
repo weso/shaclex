@@ -8,6 +8,7 @@ import util.matching._
 import showShacl._
 import es.weso.typing._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.utils.RegexUtils._
 
 /**
  * This validator is implemented directly in Scala using cats library
@@ -332,19 +333,16 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   def pattern(p: String, flags: Option[String]): NodeChecker = attempt => node => for {
     pattern <- getRegex(p, flags)
-    t <- condition(regexMatch(pattern, node), attempt,
+    t <- condition(regexMatch(pattern, node.getLexicalForm), attempt,
       patternError(node, attempt, p, flags),
       s"$node satisfies pattern '$p'${flags.getOrElse("")})")
   } yield t
 
-  // TODO: Use xerces implementation of XPath regex instead of Scala's builtin
-  def getRegex(p: String, flags: Option[String]): Check[Regex] = {
-    ok(new Regex(p))
-  }
-
-  def regexMatch(pattern: Regex, n: RDFNode): Boolean = {
-    pattern.findFirstIn(n.getLexicalForm).isDefined
-  }
+  def getRegex(p: String, flags: Option[String]): Check[Regex] =
+    makeRegex(p,flags) match {
+      case Left(str) => throw new Exception("Not implemented getRegex error handler")
+      case Right(regex) => ok(regex)
+    }
 
   def equals(p: IRI): NodeChecker =
     comparison(p, "equals", equalsError, equalsNode)

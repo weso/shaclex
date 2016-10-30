@@ -22,6 +22,12 @@ object FileUtils {
     }
   }
 
+  def getFileFromFolderWithExt(path: String,
+                               name: String,
+                               ext: String): File = {
+    new File(path + "/" + name + "." + ext)
+  }
+
   def splitExtension(str: String): (String, String) = {
     val splits = str.split('.')
     (splits.init.mkString("."), splits.last)
