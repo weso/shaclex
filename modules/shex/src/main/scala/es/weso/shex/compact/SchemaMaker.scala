@@ -533,8 +533,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       err(s"visitStringLength: Unknown value for $ctx")
   }
 
-  override def visitNumericFacet(
-                                  ctx: NumericFacetContext): Builder[XsFacet] = {
+  sealed trait NumericRange
+  case object MinInclusive extends NumericRange
+  case object MinExclusive extends NumericRange
+  case object MaxInclusive extends NumericRange
+  case object MaxExclusive extends NumericRange
+
+  override def visitNumericFacet(ctx: NumericFacetContext): Builder[XsFacet] = {
+
     err("not implemented numeric facet yet")
   }
 
@@ -773,17 +779,23 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = {
-    if (isDefined(ctx.iri())) {
-      for {
-        iri <- visitIri(ctx.iri())
-      } yield IRILabel(iri)
-    } else {
-      throw new Exception(s"visitShapeLabel $ctx")
+    ctx match {
+      case _ if (isDefined(ctx.iri())) => {
+        for {
+           iri <- visitIri(ctx.iri())
+        } yield IRILabel(iri)
+       }
+      case _ if (isDefined(ctx.blankNode())) => {
+        for {
+          bNode <- visitBlankNode(ctx.blankNode())
+        } yield BNodeLabel(bNode)
+      }
+      case _ => throw new Exception("visitShapeLabel, no IRI and no BNode")
     }
   }
 
-  override def visitBlankNode(ctx: BlankNodeContext): BNodeId = {
-    throw new Exception("visitBlankNode")
+  override def visitBlankNode(ctx: BlankNodeContext): Builder[BNodeId] = {
+    ok(BNodeId(ctx.BLANK_NODE_LABEL().getText()))
   }
 
   def getPrefixes(ds: List[Directive]): Map[Prefix, IRI] = {

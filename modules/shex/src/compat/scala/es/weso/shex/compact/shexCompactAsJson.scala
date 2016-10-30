@@ -30,7 +30,6 @@ class shexCompactAsJson extends FunSpec with JsonTest with Matchers with EitherV
         val str = Source.fromFile(file)("UTF-8").mkString
         Schema.fromString(str,"SHEXC",None) match {
           case Success(schema) => {
-            info(s"Parsed ${file.getName}")
             val (name,ext) = splitExtension(file.getName)
             // TODO: Check that parsed file equals schema file
           }
