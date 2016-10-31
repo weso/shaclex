@@ -1,19 +1,17 @@
 package es.weso.shex.compact
-import org.scalatest.{EitherValues, FunSpec, Matchers, _}
-import com.typesafe.config.{Config, ConfigFactory, _}
+
 import java.io.File
 
-import scala.io._
-import es.weso.shex.implicits.showShEx._
-import es.weso.shex.compact.Parser._
-import cats.implicits._
-import es.weso.json.{JsonTest, _}
-import es.weso.utils.FileUtils._
+import com.typesafe.config.{Config, ConfigFactory}
+import es.weso.json.JsonTest
 import es.weso.shex._
+import es.weso.utils.FileUtils._
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 
+import scala.io._
 import scala.util.{Failure, Success}
 
-class shexCompactAsJson extends FunSpec with JsonTest with Matchers with EitherValues {
+class OnlySyntax extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
