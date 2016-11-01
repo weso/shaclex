@@ -312,15 +312,24 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     throw new Exception("Visit IRI range")
   }
 
-  override def visitLiteral(
-                             ctx: LiteralContext): Builder[ValueSetValue] = {
-    if (isDefined(ctx.rdfLiteral()))
-      visitRdfLiteral(ctx.rdfLiteral())
-    else if (isDefined(ctx.numericLiteral()))
-      visitNumericLiteral(ctx.numericLiteral())
-    else if (isDefined(ctx.booleanLiteral()))
-      visitBooleanLiteral(ctx.booleanLiteral())
-    else err(s"visitLiteral: Unknown ${ctx}")
+  override def visitLiteral(ctx: LiteralContext): Builder[ValueSetValue] = {
+    ctx match {
+      case _ if isDefined(ctx.rdfLiteral()) => visitRdfLiteral(ctx.rdfLiteral())
+      case _ if isDefined(ctx.numericLiteral()) => for {
+        nl <- visitNumericLiteral(ctx.numericLiteral())
+        v <- numericLiteral2ValueObject(nl)
+      } yield v
+      case _ if isDefined(ctx.booleanLiteral()) => visitBooleanLiteral(ctx.booleanLiteral())
+      case _ => err(s"visitLiteral: Unknown ${ctx}")
+    }
+  }
+
+  private def numericLiteral2ValueObject(nl: NumericLiteral): Builder[ValueSetValue] = {
+    nl match {
+      case NumericInt(n) => ok(ObjectValue.intValue(n))
+      case NumericDouble(d) => ok(ObjectValue.doubleValue(d))
+      case NumericDecimal(d) => ok(ObjectValue.decimalValue(d))
+    }
   }
 
   override def visitRdfLiteral(
@@ -442,18 +451,18 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       }
     }
   }
-
-  override def visitNumericLiteral(
-                                    ctx: NumericLiteralContext): Builder[ValueSetValue] = {
-    if (isDefined(ctx.INTEGER())) {
-      getInteger(ctx.INTEGER().getText()).map(ObjectValue.intValue(_))
+  override def visitNumericLiteral(ctx: NumericLiteralContext): Builder[NumericLiteral] = {
+    ctx match {
+      case _ if (isDefined(ctx.INTEGER())) =>
+        ok(NumericInt(Integer.parseInt(ctx.INTEGER().getText)))
+      case _ if (isDefined(ctx.DECIMAL())) =>
+        ok(NumericDecimal(BigDecimal(ctx.DECIMAL().getText)))
+      case _ if (isDefined(ctx.DOUBLE())) => {
+        val str = ctx.DOUBLE().getText
+        ok(NumericDecimal(str.toDouble))
+      }
+      case _ => err("Unknown ctx in numericLiteral")
     }
-    else if (isDefined(ctx.DECIMAL())) {
-      getDecimal(ctx.DECIMAL().getText()).map(ObjectValue.decimalValue(_))
-    }
-    else if (isDefined(ctx.DOUBLE())) {
-      getDouble(ctx.DOUBLE().getText()).map(ObjectValue.doubleValue(_))
-    } else err(s"visitNumericLiteral: Unknown $ctx")
   }
 
   def getInteger(str: String): Builder[Int] = {
@@ -534,14 +543,58 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   }
 
   sealed trait NumericRange
-  case object MinInclusive extends NumericRange
-  case object MinExclusive extends NumericRange
-  case object MaxInclusive extends NumericRange
-  case object MaxExclusive extends NumericRange
+  case object NRMinInclusive extends NumericRange
+  case object NRMinExclusive extends NumericRange
+  case object NRMaxInclusive extends NumericRange
+  case object NRMaxExclusive extends NumericRange
+
+  sealed trait NumericLength
+  case object TotalDigits extends NumericLength
+  case object FractionDigits extends NumericLength
+
 
   override def visitNumericFacet(ctx: NumericFacetContext): Builder[XsFacet] = {
+    ctx match {
+      case _ if isDefined(ctx.numericRange()) => for {
+        nr <- visitNumericRange(ctx.numericRange())
+        v <- if (isDefined(ctx.numericLiteral())) {
+               visitNumericLiteral(ctx.numericLiteral())
+             } else for {
+               lexicalForm <- visitString(ctx.string())
+               datatype <- visitDatatype(ctx.datatype())
+               numericLiteral <- makeNumericLiteral(lexicalForm,datatype)
+             } yield numericLiteral
+        nf <- makeNumericFacet(nr, v)
+      } yield nf
+      case _ => err("not implemented numeric length yet")
+    }
+  }
 
-    err("not implemented numeric facet yet")
+  override def visitNumericRange(ctx: NumericRangeContext): Builder[NumericRange] = {
+    ctx match {
+      case _ if isDefined(ctx.KW_MININCLUSIVE()) => ok(NRMinInclusive)
+      case _ if isDefined(ctx.KW_MINEXCLUSIVE()) => ok(NRMinExclusive)
+      case _ if isDefined(ctx.KW_MAXINCLUSIVE()) => ok(NRMaxInclusive)
+      case _ if isDefined(ctx.KW_MAXEXCLUSIVE()) => ok(NRMaxExclusive)
+    }
+  }
+
+  def makeNumericLiteral(lexicalForm: String, datatype: IRI): Builder[NumericLiteral] = {
+    datatype match {
+      case `xsd_integer` => err(s"Not implemented integer conversion yet")
+      case `xsd_decimal` => err(s"Not implemented decimal conversion yet")
+      case `xsd_double` => err(s"Not implemented double conversion yet")
+      case _ => err(s"Numeric Literal applied to unknown datatype $datatype")
+    }
+  }
+
+  def makeNumericFacet(nr: NumericRange, nl: NumericLiteral): Builder[NumericFacet] = {
+    nr match {
+      case NRMinInclusive => ok(MinInclusive(nl))
+      case NRMinExclusive => ok(MinExclusive(nl))
+      case NRMaxInclusive => ok(MaxInclusive(nl))
+      case NRMaxExclusive => ok(MaxExclusive(nl))
+    }
   }
 
   override def visitNodeConstraintLiteral(ctx: NodeConstraintLiteralContext): Builder[ShapeExpr] = {

@@ -1,12 +1,14 @@
 package es.weso.shex.implicits
 
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.nodes._
 import es.weso.shex._
 import es.weso.rdf._
 
-object eqShEx {
+object eqShEx extends LazyLogging {
 
   implicit lazy val eqIRI = new Eq[IRI] {
     final def eqv(n1: IRI, n2: IRI): Boolean = (n1, n2) match {
@@ -102,8 +104,8 @@ object eqShEx {
 
   implicit lazy val eqTripleConstraint: Eq[TripleConstraint] = new Eq[TripleConstraint] {
     final def eqv(s1: TripleConstraint, s2: TripleConstraint): Boolean = {
-      println(s"Comparing triple constraints $s1 and $s2")
-      println(s"Min/max (${s1.min}/${s1.max}) and (${s2.min}/${s2.max})")
+      // println(s"Comparing triple constraints $s1 and $s2")
+      // println(s"Min/max (${s1.min}/${s1.max}) and (${s2.min}/${s2.max})")
 
     s1.inverse === s2.inverse &&
     s1.negated === s2.negated &&
@@ -134,7 +136,7 @@ object eqShEx {
   implicit lazy val eqNodeConstraint: Eq[NodeConstraint] = new Eq[NodeConstraint] {
 
     final def eqv(n1: NodeConstraint, n2: NodeConstraint): Boolean = {
-      println(s"Testing eq on nodeConstraints\n$n1\n$n2")
+      // logger.info(s"Testing eq on nodeConstraints\n$n1\n$n2")
       n1.nodeKind === n2.nodeKind &&
       n1.datatype === n2.datatype &&
       n1.xsFacets.toSet === n2.xsFacets.toSet &&
