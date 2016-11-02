@@ -66,15 +66,25 @@ object NodeConstraint {
           values = None
       )
 
-  def nodeKind(nk: NodeKind): NodeConstraint =
-    NodeConstraint.empty.copy(nodeKind = Some(nk))
+  def nodeKind(nk: NodeKind, facets: List[XsFacet]): NodeConstraint =
+    NodeConstraint.empty.copy(
+      nodeKind = Some(nk),
+      xsFacets = facets
+    )
 
-  def datatype(dt: IRI): NodeConstraint =
-    NodeConstraint.empty.copy(datatype = Some(dt))
+  def datatype(dt: IRI,
+               facets: List[XsFacet]): NodeConstraint =
+    NodeConstraint.empty.copy(
+     datatype = Some(dt),
+     xsFacets = facets
+    )
 
-  def valueSet(vs: List[ValueSetValue]): NodeConstraint =
-    NodeConstraint.empty.copy(values = Some(vs))
-
+  def valueSet(vs: List[ValueSetValue],
+               facets: List[XsFacet]): NodeConstraint =
+    NodeConstraint.empty.copy(
+      values = Some(vs),
+      xsFacets = facets
+  )
 }
 
 case class Shape(
@@ -187,6 +197,16 @@ object ObjectValue {
       DatatypeString(d.toString, xsd_double)
   def decimalValue(d: BigDecimal): ObjectValue =
       DatatypeString(d.toString, xsd_decimal)
+  def literalValue(l: Literal): ObjectValue =
+    l match {
+      case DatatypeLiteral(lex,dt) => DatatypeString(lex,dt)
+      case IntegerLiteral(n) => intValue(n)
+      case DecimalLiteral(d) => decimalValue(d)
+      case DoubleLiteral(d) => doubleValue(d)
+      case StringLiteral(s) => DatatypeString(s,xsd_string)
+      case BooleanLiteral(b) => if (b) trueValue else falseValue
+      case LangLiteral(lex,lang) => LangString(lex,lang.lang)
+    }
 }
 
 case class Stem(stem: IRI) extends ValueSetValue

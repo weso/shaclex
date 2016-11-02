@@ -245,33 +245,28 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       case s: NodeConstraintLiteralContext =>
         for {
           xsFacets <- visitList(visitXsFacet, s.xsFacet())
-        } yield NodeConstraint.nodeKind(LiteralKind).copy(
-          xsFacets = xsFacets
-        )
+        } yield NodeConstraint.nodeKind(LiteralKind,xsFacets)
       case s: NodeConstraintNonLiteralContext =>
         for {
           nodeKind <- visitNonLiteralKind(s.nonLiteralKind())
           stringFacets <- visitList(visitStringFacet, s.stringFacet())
-        } yield NodeConstraint.nodeKind(nodeKind).copy(
-          xsFacets = stringFacets
-        ) // Todo add "shapeOrRef?"
+        } yield NodeConstraint.nodeKind(nodeKind, stringFacets)
       case s: NodeConstraintDatatypeContext =>
         for {
           datatype <- visitDatatype(s.datatype())
           xsFacets <- visitList(visitXsFacet, s.xsFacet())
-        } yield NodeConstraint.datatype(datatype).copy(
-          xsFacets = xsFacets
-        )
+        } yield NodeConstraint.datatype(datatype, xsFacets)
       case c: NodeConstraintValueSetContext =>
         for {
          vs <- visitValueSet(c.valueSet())
          xsFacets <- visitList(visitXsFacet, c.xsFacet())
-        } yield NodeConstraint.valueSet(vs).copy(
-            xsFacets = xsFacets
-        )
+        } yield NodeConstraint.valueSet(vs, xsFacets)
 
-      case c: NodeConstraintFacetContext =>
-        err("NodeConstraintFacetContext")
+      case c: NodeConstraintFacetContext => for {
+        facets <- visitList(visitXsFacet, c.xsFacet)
+      } yield NodeConstraint.empty.copy(
+        xsFacets = facets
+      )
     }
   }
 
@@ -309,7 +304,27 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
 
   override def visitIriRange(
                               ctx: IriRangeContext): Builder[ValueSetValue] = {
-    throw new Exception("Visit IRI range")
+    ctx match {
+      case _ if isDefined(ctx.iri()) => for {
+        iri <- visitIri(ctx.iri())
+        exclusions <-
+           if (isDefined(ctx.exclusion()))
+            visitList(visitExclusion,ctx.exclusion()).map(Some(_))
+           else ok(None)
+      } yield StemRange(IRIStem(iri), exclusions)
+      case _ => for {
+        exclusions <- visitList(visitExclusion, ctx.exclusion())
+      } yield StemRange(Wildcard(),Some(exclusions))
+    }
+  }
+
+  override def visitExclusion(ctx: ExclusionContext): Builder[ValueSetValue] = for {
+    iri <- visitIri(ctx.iri())
+  } yield {
+    // TODO: Detect if the rule has a ~ at the end:
+    //   exclusion       : '-' iri '~'? ;
+    println(s"Exclusion count: ${ctx.getChildCount}")
+    IRIValue(iri)
   }
 
   override def visitLiteral(ctx: LiteralContext): Builder[ValueSetValue] = {
@@ -422,7 +437,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   def splitPrefix(str: String): (String, String) = {
     if (str contains ':') {
       val (prefix, name) = str.splitAt(str.lastIndexOf(':'))
-      (prefix + ":", name.tail)
+      (prefix, name.tail)
     } else {
       ("", str)
     }
@@ -430,8 +445,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
 
   override def visitPrefixedName(ctx: PrefixedNameContext): String =
     ctx match {
-      case _ if (isDefined(ctx.PNAME_LN())) => ctx.PNAME_LN().getText()
-      case _ if (isDefined(ctx.PNAME_LN())) => ctx.PNAME_LN().getText()
+      case _ if isDefined(ctx.PNAME_LN()) => ctx.PNAME_LN().getText()
+      case _ if isDefined(ctx.PNAME_NS()) => ctx.PNAME_NS().getText()
     }
 
   /*   override def visitNodeConstraintGroup(ctx: NodeConstraintGroupContext): Builder[ShapeExpr] =
@@ -509,6 +524,13 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
                        ls: java.util.List[A]): Builder[List[B]] =
     ls.asScala.toList.map(visitFn(_)).sequence
 
+  def visitOpt[A,B](visitFn: A => Builder[B],
+                  v: A): Builder[Option[B]] =
+    if (isDefined(v)) visitFn(v).map(Some(_))
+    else ok(None)
+
+
+
   override def visitXsFacet(ctx: XsFacetContext): Builder[XsFacet] =
     ctx match {
       case _ if (isDefined(ctx.stringFacet())) =>
@@ -549,8 +571,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   case object NRMaxExclusive extends NumericRange
 
   sealed trait NumericLength
-  case object TotalDigits extends NumericLength
-  case object FractionDigits extends NumericLength
+  case object NLTotalDigits extends NumericLength
+  case object NLFractionDigits extends NumericLength
 
 
   override def visitNumericFacet(ctx: NumericFacetContext): Builder[XsFacet] = {
@@ -566,7 +588,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
              } yield numericLiteral
         nf <- makeNumericFacet(nr, v)
       } yield nf
-      case _ => err("not implemented numeric length yet")
+      case _ if isDefined(ctx.numericLength()) => for {
+        nl <- visitNumericLength(ctx.numericLength())
+        n <- getInteger(ctx.INTEGER().getText)
+        numLength <- makeNumericLength(nl,n)
+      } yield numLength
+      case _ => err("VisitNumericFacet. Unknown state for ctx")
     }
   }
 
@@ -579,12 +606,25 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     }
   }
 
+  override def visitNumericLength(ctx: NumericLengthContext): Builder[NumericLength] = {
+    ctx match {
+      case _ if isDefined(ctx.KW_TOTALDIGITS()) => ok(NLTotalDigits)
+      case _ if isDefined(ctx.KW_FRACTIONDIGITS()) => ok(NLFractionDigits)
+    }
+  }
+
   def makeNumericLiteral(lexicalForm: String, datatype: IRI): Builder[NumericLiteral] = {
     datatype match {
-      case `xsd_integer` => err(s"Not implemented integer conversion yet")
-      case `xsd_decimal` => err(s"Not implemented decimal conversion yet")
-      case `xsd_double` => err(s"Not implemented double conversion yet")
-      case _ => err(s"Numeric Literal applied to unknown datatype $datatype")
+      case `xsd_integer` => for {
+        n <- getInteger(lexicalForm)
+      } yield NumericInt(n)
+      case `xsd_decimal` => for {
+        d <- getDecimal(lexicalForm)
+      } yield NumericDecimal(d)
+      case `xsd_double` => for {
+        d <- getDouble(lexicalForm)
+      } yield NumericDouble(d)
+      case _ => err(s"Numeric Literal '$lexicalForm' applied to unknown datatype $datatype ")
     }
   }
 
@@ -597,13 +637,22 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     }
   }
 
-  override def visitNodeConstraintLiteral(ctx: NodeConstraintLiteralContext): Builder[ShapeExpr] = {
-    ok(NodeConstraint.nodeKind(LiteralKind)) // TODO: xsFacet*
+  def makeNumericLength(nr: NumericLength, n: Int): Builder[NumericFacet] = {
+    nr match {
+      case NLTotalDigits => ok(TotalDigits(n))
+      case NLFractionDigits => ok(FractionDigits(n))
+    }
   }
+  override def
+    visitNodeConstraintLiteral(ctx: NodeConstraintLiteralContext): Builder[ShapeExpr] = for {
+    facets <- visitList(visitXsFacet, ctx.xsFacet())
+  } yield NodeConstraint.nodeKind(LiteralKind, facets)
 
-  override def visitNodeConstraintNonLiteral(ctx: NodeConstraintNonLiteralContext): Builder[ShapeExpr] = {
-    visitNonLiteralKind(ctx.nonLiteralKind()).map(nk => NodeConstraint.nodeKind(nk)) // TODO: xsFacet*
-  }
+  override def
+     visitNodeConstraintNonLiteral(ctx: NodeConstraintNonLiteralContext): Builder[ShapeExpr] = for {
+    nk <- visitNonLiteralKind(ctx.nonLiteralKind())
+    facets <- visitList(visitStringFacet,ctx.stringFacet())
+  } yield NodeConstraint.nodeKind(nk, facets)
 
   override def visitNonLiteralKind(ctx: NonLiteralKindContext): Builder[NodeKind] = {
     ctx match {
@@ -723,19 +772,24 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     }
   }
 
-  override def visitUnaryShape(
-                                ctx: UnaryShapeContext): Builder[TripleExpr] = {
+  override def
+    visitUnaryShape(ctx: UnaryShapeContext): Builder[TripleExpr] =
     ctx match {
-      case _ if (isDefined(ctx.tripleConstraint())) =>
-        // TODO: productionLabel?
-        visitTripleConstraint(ctx.tripleConstraint())
       case _ if (isDefined(ctx.include())) =>
         visitInclude(ctx.include())
-      case _ if (isDefined(ctx.encapsulatedShape())) =>
-        visitEncapsulatedShape(ctx.encapsulatedShape())
-      case _ => err(s"visitGroupShape: unknown $ctx")
-    }
+      case _  => for {
+        pl <- visitOpt(visitProductionLabel, ctx.productionLabel())
+        te <- if (isDefined(ctx.bracketedTripleExpr()))
+                visitBracketedTripleExpr(ctx.bracketedTripleExpr())
+        else if (isDefined(ctx.tripleConstraint()))
+                 visitTripleConstraint(ctx.tripleConstraint())
+             else err(s"visitUnaryShape: unknown $ctx")
+    } yield te
   }
+
+  // TODO: Where should I put ProductionLabels ?
+  override def visitProductionLabel(ctx: ProductionLabelContext): Builder[Unit] =
+    ok(())
 
   override def visitTripleConstraint(
                                       ctx: TripleConstraintContext): Builder[TripleExpr] =
@@ -811,10 +865,79 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     err("Not implemented include yet")
   }
 
-  override def visitEncapsulatedShape(
-                                       ctx: EncapsulatedShapeContext): Builder[TripleExpr] = {
-    err("Not implemented encapsulatedShape yet")
-  }
+  override def
+     visitBracketedTripleExpr(ctx: BracketedTripleExprContext): Builder[TripleExpr] =
+   for {
+    tripleExpr <- visitInnerShape(ctx.innerShape())
+    cardinality <- getCardinality(ctx.cardinality())
+    annotations <- visitList(visitAnnotation, ctx.annotation())
+    semActs <- visitSemanticActions(ctx.semanticActions())
+  } yield extendTripleExpr(tripleExpr,cardinality,annotations,semActs)
+
+  def extendTripleExpr(te: TripleExpr,
+                       cardinality: Cardinality,
+                       anns: List[Annotation],
+                       sActs: List[SemAct]): TripleExpr =
+    te match {
+      case tc: TripleConstraint => tc.copy(
+        optMin = cardinality._1,
+        optMax = cardinality._2,
+        annotations =
+          if (anns.isEmpty) None
+          else Some(anns),
+        semActs =
+          if (sActs.isEmpty) None
+          else Some(sActs)
+      )
+      case eo: EachOf => eo.copy(
+        optMin = cardinality._1,
+        optMax = cardinality._2,
+        annotations =
+          if (anns.isEmpty) None
+          else Some(anns),
+        semActs =
+          if (sActs.isEmpty) None
+          else Some(sActs)
+      )
+      case so: SomeOf => so.copy(
+        optMin = cardinality._1,
+        optMax = cardinality._2,
+        annotations =
+          if (anns.isEmpty) None
+          else Some(anns),
+        semActs =
+          if (sActs.isEmpty) None
+          else Some(sActs)
+      )
+      case i: Inclusion =>
+        // TODO: Check how to extend include
+        i
+    }
+
+  override def visitAnnotation(ctx: AnnotationContext):
+     Builder[Annotation] = for {
+    pred <- visitPredicate(ctx.predicate())
+    obj <- if (isDefined(ctx.iri())) {
+      visitIri(ctx.iri()).map{ iri => {
+        val o : ObjectValue = IRIValue(iri)
+        o
+      } }
+    } else {
+       visitLiteral(ctx.literal()).map(v => v match {
+         case o: ObjectValue => o
+         case _ => throw new Exception(s"Unknown value in annotation $v")
+       }
+       )
+      }
+    } yield Annotation(pred,obj)
+
+
+  override def visitInnerShape(ctx: InnerShapeContext): Builder[TripleExpr] =
+    ctx match {
+      case _ if isDefined(ctx.multiElementGroup()) => visitMultiElementGroup(ctx.multiElementGroup())
+      case _ if isDefined(ctx.multiElementSomeOf()) => visitMultiElementSomeOf(ctx.multiElementSomeOf())
+      case _ => err("visitInnerShape. Unknown alternative")
+    }
 
   override def visitSingleElementGroup(
                                         ctx: SingleElementGroupContext): Builder[TripleExpr] = {
@@ -822,13 +945,21 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   }
 
   override def visitMultiElementGroup(
-                                       ctx: MultiElementGroupContext): Builder[TripleExpr] = for {
+                                       ctx: MultiElementGroupContext): Builder[TripleExpr] =
+   for {
     ses <- visitList(visitUnaryShape, ctx.unaryShape())
-  } yield EachOf(ses, None, None, None, None)
+  } yield ses.length match {
+    case 1 => ses.head
+    case _ => EachOf(expressions = ses, None,None,None,None)
+  }
 
-  override def visitMultiElementSomeOf(
-                                        ctx: MultiElementSomeOfContext): Builder[TripleExpr] = {
-    throw new Exception("visitMultiElementSomeOf")
+  override def
+     visitMultiElementSomeOf(ctx: MultiElementSomeOfContext):
+        Builder[TripleExpr] = for {
+    groups <- visitList(visitGroupShape, ctx.groupShape)
+  } yield groups.length match {
+    case 1 => groups.head
+    case _ => SomeOf(expressions = groups, None,None,None,None)
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = {
@@ -848,8 +979,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   }
 
   override def visitBlankNode(ctx: BlankNodeContext): Builder[BNodeId] = {
-    ok(BNodeId(ctx.BLANK_NODE_LABEL().getText()))
+    ok(BNodeId(removeUnderscore(ctx.BLANK_NODE_LABEL().getText())))
   }
+
+  def removeUnderscore(str: String): String =
+    str.drop(2)
 
   def getPrefixes(ds: List[Directive]): Map[Prefix, IRI] = {
     def comb(rest: Map[Prefix, IRI], x: Directive): Map[Prefix, IRI] = {
@@ -898,7 +1032,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
      } */
 
   override def visitPrefixDecl(ctx: PrefixDeclContext): Builder[(Prefix, IRI)] = {
-    val prefix = Prefix(ctx.PNAME_NS().getText)
+    val prefix = Prefix(ctx.PNAME_NS().getText.init)
     // TODO Resolve prefix declarations taking into account base?
     val iri = extractIRIfromIRIREF(ctx.IRIREF().getText, None)
     for {

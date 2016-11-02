@@ -21,7 +21,7 @@ import scala.util.{Failure, Success}
 
 class CompareSchemasSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name = "startCode1"
+  val name = "startInline"
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 
@@ -40,7 +40,7 @@ class CompareSchemasSingle extends FunSpec with JsonTest with Matchers with Eith
                 if (Eq[Schema].eqv(schema,expectedSchema)) {
                   info("Schemas are equal")
                 } else {
-                  fail(s"Schemas are different. Parsed:\n${schema}\n-----Expected:\n${expectedSchema}")
+                  fail(s"Schemas are different. Parsed:\n${schema}\n-----Expected:\n${expectedSchema}\nParsed as Json:\n${schema.asJson.spaces2}\nExpected as Json:\n${expectedSchema.asJson.spaces2}")
                 }
             }
           }

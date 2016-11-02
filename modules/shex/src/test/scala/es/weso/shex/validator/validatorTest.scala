@@ -11,7 +11,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
   describe("ShEx validator") {
     val schema =
       Schema.empty.copy(shapes = Some(
-        Map(IRILabel(IRI("s")) -> NodeConstraint.nodeKind(IRIKind))
+        Map(IRILabel(IRI("s")) -> NodeConstraint.nodeKind(IRIKind, List()))
       )
     )
     val rdfStr = """|prefix : <http://example.org/>

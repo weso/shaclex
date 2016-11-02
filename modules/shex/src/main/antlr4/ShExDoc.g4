@@ -54,10 +54,10 @@ groupShape      : singleElementGroup
 				;
 singleElementGroup : unaryShape ';'? ;
 multiElementGroup : unaryShape (';' unaryShape)+ ';'? ;
-unaryShape      : productionLabel? (tripleConstraint | encapsulatedShape)
+unaryShape      : productionLabel? (tripleConstraint | bracketedTripleExpr)
 				| include
 				;
-encapsulatedShape  : '(' innerShape ')' cardinality? annotation* semanticActions ;
+bracketedTripleExpr  : '(' innerShape ')' cardinality? annotation* semanticActions ;
 shapeAtom		: nodeConstraint shapeOrRef?    # shapeAtomNodeConstraint
 				| shapeOrRef                    # shapeAtomShapeOrRef
 				| '(' shapeExpression ')'		# shapeAtomShapeExpression
