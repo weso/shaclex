@@ -87,6 +87,7 @@ object NodeConstraint {
   )
 }
 
+// TODO: Review if shapes should have annotations
 case class Shape(
     virtual:Option[Boolean],
     closed: Option[Boolean],

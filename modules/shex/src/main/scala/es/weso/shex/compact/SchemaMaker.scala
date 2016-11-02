@@ -2,6 +2,7 @@ package es.weso.shex.compact
 import java.util
 
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.Prefix
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
@@ -19,7 +20,7 @@ import scala.collection.JavaConverters._
 /**
   * Visits the AST and builds the corresponding ShEx abstract syntax
   */
-class SchemaMaker extends ShExDocBaseVisitor[Any] {
+class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   type Start = Option[ShapeExpr]
   type NotStartAction = Either[Start, (ShapeLabel, ShapeExpr)]
@@ -631,6 +632,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       case `xsd_double` => for {
         d <- getDouble(lexicalForm)
       } yield NumericDouble(d)
+      case `xsd_float` => for {  // TODO: Check if floats and doubles are equivalent
+        d <- getDouble(lexicalForm)
+      } yield NumericDouble(d)
       case _ => err(s"Numeric Literal '$lexicalForm' applied to unknown datatype $datatype ")
     }
   }
@@ -705,7 +709,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitSomeOfShape(ctx.someOfShape())
-    } yield makeShape(qualifiers,tripleExpr,List())
+      shape <- makeShape(qualifiers,tripleExpr,List())
+    } yield shape
   }
 
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
@@ -713,13 +718,31 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitSomeOfShape(ctx.someOfShape())
       semActs <- visitSemanticActions(ctx.semanticActions())
-    } yield makeShape(qualifiers,tripleExpr,semActs)
+      anns <- visitList(visitAnnotation,ctx.annotation())
+      // newTripleExpr <- addAnnotations(tripleExpr,anns)
+      shape <- makeShape(qualifiers,tripleExpr,semActs)
+    } yield shape
   }
+
+  // TODO: Maybe remove the following method
+  def addAnnotations(maybeTe: Option[TripleExpr],
+                     anns: List[Annotation]):
+      Builder[Option[TripleExpr]] =
+    maybeTe match {
+      case None => ok(None)
+      case Some(te) => if (anns.isEmpty) ok(maybeTe)
+      else te match {
+        case t: TripleConstraint => ok(Some(t.copy(annotations = Some(anns))))
+        case so: SomeOf => ok(Some(so.copy(annotations = Some(anns))))
+        case eo: EachOf => ok(Some(eo.copy(annotations = Some(anns))))
+        case _ => err(s"Can't add annotations $anns to $te")
+      }
+    }
 
   def makeShape(
                  qualifiers: List[Qualifier],
                  tripleExpr: Option[TripleExpr],
-                 semActs: List[SemAct]): ShapeExpr = {
+                 semActs: List[SemAct]): Builder[ShapeExpr] = {
     val containsClosed =
       if (qualifiers.contains(Closed))
         Some(true)
@@ -729,16 +752,19 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     val extras: Option[List[IRI]] =
       if (ls.isEmpty) None
       else Some(ls)
-    // TODO: Rest of qualifiers Virtual, inherit
-    Shape.empty.copy(
+    val inheritList = qualifiers.map(_.getIncluded).flatten
+    val shape = Shape.empty.copy(
       closed = containsClosed,
       extra = extras,
       expression = tripleExpr,
       semActs = if (semActs.isEmpty) None else Some(semActs)
     )
+    inheritList.length match {
+      case 0 => ok(shape)
+      case 1 => ok(shape.copy(inherit = Some(inheritList.head)))
+      case _ => err(s"Inherit list $inheritList has more than one shapeLabel")
+    }
   }
-
-
 
   override def visitQualifier(ctx: QualifierContext): Builder[Qualifier] = {
     ctx match {
@@ -750,9 +776,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     }
   }
 
-  override def visitIncludeSet(ctx: IncludeSetContext): Builder[Qualifier] = {
-    throw new Exception("not implemented IncludeSet yet")
-  }
+  override def
+    visitIncludeSet(ctx: IncludeSetContext):
+       Builder[Qualifier] = for {
+    sl <- visitList(visitShapeLabel,ctx.shapeLabel())
+  } yield Include(sl)
 
   override def visitExtraPropertySet(ctx: ExtraPropertySetContext): Builder[Qualifier] = for {
     ls <- visitList(visitPredicate, ctx.predicate())
@@ -813,8 +841,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
       semActs <- visitSemanticActions(ctx.semanticActions())
+      anns <- visitList(visitAnnotation,ctx.annotation())
     } yield {
-      println(s"Semacts: $semActs")
       TripleConstraint.
         emptyPred(predicate).copy(
         optInverse = sense.optInverse,
@@ -822,6 +850,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
         valueExpr = Some(shapeExpr),
         optMin = cardinality._1,
         optMax = cardinality._2,
+        annotations = if (anns.isEmpty) None
+        else Some(anns),
         semActs =
           if (semActs.isEmpty) None
           else Some(semActs)
@@ -853,8 +883,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       } else ok((None, None))
   }
 
-  override def visitRepeatCardinality(
-                                       ctx: RepeatCardinalityContext): Builder[Cardinality] = {
+  override def
+    visitRepeatCardinality(ctx: RepeatCardinalityContext
+                          ): Builder[Cardinality] = {
     visitRepeatRange(ctx.repeatRange())
   }
 
@@ -897,9 +928,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   }
 
   override def visitInclude(
-                             ctx: IncludeContext): Builder[TripleExpr] = {
-    err("Not implemented include yet")
-  }
+                             ctx: IncludeContext): Builder[TripleExpr] =
+    for {
+    lbl <- visitShapeLabel(ctx.shapeLabel())
+  } yield Inclusion(lbl)
 
   override def
      visitBracketedTripleExpr(ctx: BracketedTripleExprContext): Builder[TripleExpr] =
@@ -1083,11 +1115,17 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
         case _ => List()
       }
     }
+    def getIncluded: List[ShapeLabel] = {
+      this match {
+        case Include(labels) => labels
+        case _ => List()
+      }
+    }
   }
 
   case class Extra(iris: List[IRI]) extends Qualifier
 
-  case class Include(label: ShapeLabel) extends Qualifier
+  case class Include(labels: List[ShapeLabel]) extends Qualifier
 
   case object Closed extends Qualifier
 
