@@ -1,5 +1,6 @@
 package es.weso.shex.compact
 import java.util
+
 import cats.implicits._
 import es.weso.rdf.Prefix
 import es.weso.rdf.nodes._
@@ -8,6 +9,7 @@ import es.weso.shex._
 import es.weso.shex.parser.ShExDocBaseVisitor
 import es.weso.shex.compact.Parser._
 import org.antlr.v4.runtime._
+import org.antlr.v4.runtime.tree.ParseTree
 // import org.antlr.v4.runtime.atn.ATNConfigSet
 // import org.antlr.v4.runtime.dfa.DFA
 import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
@@ -61,9 +63,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
       visitNotStartAction(ctx.notStartAction()).map(_ => ())
   }
 
-  override def visitNotStartAction(
-                                    ctx: NotStartActionContext
-                                  ): Builder[NotStartAction] = if (ctx == null) ok(Left(None))
+  override def
+    visitNotStartAction(ctx: NotStartActionContext
+      ): Builder[NotStartAction] =
+  if (ctx == null) ok(Left(None))
   else ctx match {
     case _ if (isDefined(ctx.start())) => {
       for {
@@ -90,17 +93,21 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     if (isDefined(ctx)) {
       for {
         shapeExpr <- visitShapeExpression(ctx.shapeExpression())
+        _ <- updateStart(Some(shapeExpr))
       // semActs <- visitSemanticActions(ctx.semanticActions())
-      } yield Some((shapeExpr))
+      } yield {
+        Some(shapeExpr)
+      }
     } else
       ok(None)
   }
 
-  override def visitSemanticActions(ctx: SemanticActionsContext): Builder[List[SemAct]] = {
-    val r: List[Builder[SemAct]] =
-      ctx.codeDecl().asScala.map(visitCodeDecl(_)).toList
-    r.sequence
-  }
+  override def visitSemanticActions(ctx: SemanticActionsContext): Builder[List[SemAct]] =
+    for {
+    ls <- visitList(visitCodeDecl, ctx.codeDecl())
+  } yield {
+      ls
+    }
 
   override def visitCodeDecl(
                               ctx: CodeDeclContext): Builder[SemAct] =
@@ -698,17 +705,21 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitSomeOfShape(ctx.someOfShape())
-    } yield makeShape(qualifiers,tripleExpr)
+    } yield makeShape(qualifiers,tripleExpr,List())
   }
 
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitSomeOfShape(ctx.someOfShape())
-    } yield makeShape(qualifiers,tripleExpr)
+      semActs <- visitSemanticActions(ctx.semanticActions())
+    } yield makeShape(qualifiers,tripleExpr,semActs)
   }
 
-  def makeShape(qualifiers: List[Qualifier], tripleExpr: Option[TripleExpr]): ShapeExpr = {
+  def makeShape(
+                 qualifiers: List[Qualifier],
+                 tripleExpr: Option[TripleExpr],
+                 semActs: List[SemAct]): ShapeExpr = {
     val containsClosed =
       if (qualifiers.contains(Closed))
         Some(true)
@@ -722,7 +733,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
     Shape.empty.copy(
       closed = containsClosed,
       extra = extras,
-      expression = tripleExpr
+      expression = tripleExpr,
+      semActs = if (semActs.isEmpty) None else Some(semActs)
     )
   }
 
@@ -791,19 +803,43 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] {
   override def visitProductionLabel(ctx: ProductionLabelContext): Builder[Unit] =
     ok(())
 
+
+
   override def visitTripleConstraint(
                                       ctx: TripleConstraintContext): Builder[TripleExpr] =
     for {
+      sense <- visitSenseFlags(ctx.senseFlags())
       predicate <- visitPredicate(ctx.predicate())
       shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
-    } yield
+      semActs <- visitSemanticActions(ctx.semanticActions())
+    } yield {
+      println(s"Semacts: $semActs")
       TripleConstraint.
         emptyPred(predicate).copy(
+        optInverse = sense.optInverse,
+        optNegated = sense.optNegated,
         valueExpr = Some(shapeExpr),
         optMin = cardinality._1,
-        optMax = cardinality._2
+        optMax = cardinality._2,
+        semActs =
+          if (semActs.isEmpty) None
+          else Some(semActs)
       )
+    }
+  case class Sense(optInverse: Option[Boolean],
+                   optNegated: Option[Boolean])
+
+  override def visitSenseFlags(ctx: SenseFlagsContext): Builder[Sense] = {
+    if (isDefined(ctx)) {
+      val ls: List[String] = ctx.children.asScala.toList.map(_.getText)
+      val optInverse = if (ls.contains("^")) Some(true) else None
+      val optNegated = if (ls.contains("!")) Some(true) else None
+      ok(Sense(optInverse, optNegated))
+    } else
+      ok(Sense(None, None))
+  }
+
 
   def getCardinality(
                       ctx: CardinalityContext): Builder[Cardinality] = {
