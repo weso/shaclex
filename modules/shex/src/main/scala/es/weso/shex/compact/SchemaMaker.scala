@@ -232,8 +232,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case s: ShapeAtomNodeConstraintContext =>
         for {
           nk <- visitNodeConstraint(s.nodeConstraint())
-        // TODO: Check shapeOrRef?
-        } yield nk
+          sr <- visitOpt(visitShapeOrRef, s.shapeOrRef())
+        } yield sr match {
+          case None => nk
+          case Some(s) => ShapeAnd(List(nk,s))
+        }
 
       case s: ShapeAtomShapeOrRefContext =>
         visitShapeOrRef(s.shapeOrRef())
@@ -283,11 +286,20 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case s: InlineShapeAtomNodeConstraintContext =>
         for {
           nk <- visitNodeConstraint(s.nodeConstraint())
-        // TODO: Check shapeOrRef?
-        } yield nk
+          sr <- visitOpt(visitInlineShapeOrRef, s.inlineShapeOrRef())
+        } yield sr match {
+          case None => nk
+          case Some(s) => ShapeAnd(List(nk,s))
+        }
 
       case s: InlineShapeAtomShapeOrRefContext =>
-        visitInlineShapeOrRef(s.inlineShapeOrRef())
+        for {
+         sr <- visitInlineShapeOrRef(s.inlineShapeOrRef())
+          nk <- visitOpt(visitNodeConstraint,s.nodeConstraint())
+        } yield nk match {
+          case None => sr
+          case Some(n) => ShapeAnd(List(sr,n))
+        }
 
       case s: InlineShapeAtomShapeExpressionContext =>
         visitShapeExpression(s.shapeExpression())
@@ -894,7 +906,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     for {
       min <- visitMin_range(ctx.min_range())
       max <- visitMax_range(ctx.max_range())
-    } yield (min, max)
+    } yield {
+      val effectiveMax =
+        if (min.isDefined && !max.isDefined) min.map(IntMax(_))
+        else max
+      (min, effectiveMax)
+    }
   }
 
   override def visitMin_range(

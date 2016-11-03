@@ -21,7 +21,7 @@ import scala.util.{Failure, Success}
 
 class CompareSchemasSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name = "1floatMininclusivexsd-float"
+  val name = "1focusLength-dot"
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 

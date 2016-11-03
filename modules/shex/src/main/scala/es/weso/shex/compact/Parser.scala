@@ -1,5 +1,6 @@
 package es.weso.shex.compact
 
+import java.io.{FileInputStream, InputStreamReader}
 import java.util
 
 import cats._
@@ -13,9 +14,8 @@ import es.weso.shex._
 import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
 import es.weso.shex.parser._
 import org.antlr.v4.runtime._
-import org.antlr.v4.runtime.atn.ATNConfigSet
-import org.antlr.v4.runtime.dfa.DFA
-import scala.collection.JavaConverters._
+import java.nio.charset.StandardCharsets
+import java.io.{Reader => JavaReader}
 
 object Parser extends LazyLogging {
 
@@ -72,50 +72,39 @@ object Parser extends LazyLogging {
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
     val parser: ShExDocParser = new ShExDocParser(tokens)
 
-    var errors = new scala.collection.mutable.Queue[String]
-
-    val errorListener = new ANTLRErrorListener {
-      override def reportContextSensitivity(recognizer: Parser,
-                                            dfa: DFA,
-                                            startIndex: Int,
-                                            stopIndex: Int,
-                                            prediction: Int,
-                                            configs: ATNConfigSet): Unit = {
-
-      }
-
-      override def reportAmbiguity(recognizer: Parser,
-                                   dfa: DFA,
-                                   startIndex: Int,
-                                   stopIndex: Int,
-                                   exact: Boolean,
-                                   ambigAlts: util.BitSet,
-                                   configs: ATNConfigSet): Unit = {}
-
-      override def reportAttemptingFullContext(recognizer: Parser,
-                                               dfa: DFA,
-                                               startIndex: Int,
-                                               stopIndex: Int,
-                                               conflictingAlts: util.BitSet,
-                                               configs: ATNConfigSet): Unit = {}
-
-      override def syntaxError(recognizer: Recognizer[_, _],
-                               offendingSymbol: scala.Any,
-                               line: Int,
-                               charPositionInLine: Int,
-                               msg: String, e: RecognitionException): Unit = {
-        val str = s"Error at $line:$charPositionInLine $msg\nRule index: ${e.getCtx.getRuleIndex}\nContext text: ${e.getCtx.getText}"
-        errors += str
-      }
-    }
-
-     // lexer.removeErrorListeners()
+    val errorListener = new ParserErrorListener
+    // lexer.removeErrorListeners()
+    // parser.removeErrorListeners()
      lexer.addErrorListener(errorListener)
-     // parser.removeErrorListeners()
      parser.addErrorListener(errorListener)
 
     val maker = new SchemaMaker()
     val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]
+    val errors = errorListener.getErrors
+    if (errors.length > 0) {
+      Left(errors.mkString("\n"))
+    } else {
+      run(builder)._2
+    }
+  }
+
+  def parseSchemaFromFile(fileName: String): Either[String, Schema] = {
+    val is = new FileInputStream(fileName);
+    val r: JavaReader = new InputStreamReader(is, StandardCharsets.UTF_8); // e.g., eu
+    val input: ANTLRInputStream = new ANTLRInputStream(r)
+    val lexer: ShExDocLexer = new ShExDocLexer(input)
+    val tokens: CommonTokenStream = new CommonTokenStream(lexer)
+    val parser: ShExDocParser = new ShExDocParser(tokens)
+
+    val errorListener = new ParserErrorListener
+    // lexer.removeErrorListeners()
+    // parser.removeErrorListeners()
+    lexer.addErrorListener(errorListener)
+    parser.addErrorListener(errorListener)
+
+    val maker = new SchemaMaker()
+    val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]
+    val errors = errorListener.getErrors
     if (errors.length > 0) {
       Left(errors.mkString("\n"))
     } else {
