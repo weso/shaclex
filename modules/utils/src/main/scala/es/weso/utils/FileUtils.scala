@@ -1,7 +1,10 @@
 package es.weso.utils
 import java.io._
+
 import scala.io._
 import util._
+
+import scala.util.{Failure, Success, Try}
 
 object FileUtils {
 
@@ -53,7 +56,7 @@ object FileUtils {
    */
   def getContents(fileName: String): Try[CharSequence] = {
     try {
-      using(Source.fromFile(fileName)) { source =>
+      using(Source.fromFile(fileName)("UTF-8")) { source =>
         Success(source.getLines.mkString("\n"))
       }
     } catch {
@@ -66,6 +69,21 @@ object FileUtils {
     }
   }
 
+  def getStream(fileName: String): Try[InputStreamReader] = {
+    try {
+      using(Source.fromFile(fileName)("UTF-8")) { source => {
+        Success(source.reader())
+       }
+      }
+    } catch {
+      case e: FileNotFoundException => {
+        Failure(e)
+      }
+      case e: IOException => {
+        Failure(e)
+      }
+    }
+  }
     /**
    * Write contents to a file
    *

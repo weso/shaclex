@@ -4,12 +4,16 @@ import com.typesafe.config._
 import cats.implicits._
 import es.weso.json._
 import es.weso.utils.FileUtils._
+
 import scala.io._
 import java.io.File
+
 import es.weso.shex.compact.Parser._
 import es.weso.shex.compact.CompactShow._
 import es.weso.shex.implicits.eqShEx._
-import cats._, data._
+import cats._
+import data._
+import es.weso.utils.FileUtils
 import implicits._
 
 class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
@@ -35,7 +39,7 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
   def checkParseDeparse(str: String) = {
     import es.weso.shex.implicits.eqShEx.eq
     parseSchema(str) match {
-      case Left(str) => fail(s"Parsing error: $str")
+      case Left(s) => fail(s"Parsing error: $s\n-------String:\n$str")
       case Right(schema) => {
         val newStr = showSchema(schema)
         parseSchema(newStr) match {

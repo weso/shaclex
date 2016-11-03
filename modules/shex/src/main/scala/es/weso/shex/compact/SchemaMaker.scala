@@ -325,7 +325,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitIriRange(
                               ctx: IriRangeContext): Builder[ValueSetValue] = {
     ctx match {
-      case _ if isDefined(ctx.iri()) => for {
+      case _ if isDefined(ctx.iri()) => // Rule: iri ('~' exclusion*)?
+        if (ctx.getChildCount == 1)   // Only iri
+          for {
+          iri <- visitIri(ctx.iri())
+        } yield IRIValue(iri)
+        else for {  // iri '~' exclusion*
         iri <- visitIri(ctx.iri())
         exclusions <-
            if (isDefined(ctx.exclusion()))

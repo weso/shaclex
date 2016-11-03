@@ -21,7 +21,7 @@ import scala.util.{Failure, Success}
 
 class CompareSchemasSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name = "1focusLength-dot"
+  val name = "0focusBNODE"
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 

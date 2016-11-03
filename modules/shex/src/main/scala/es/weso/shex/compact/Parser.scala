@@ -1,6 +1,6 @@
 package es.weso.shex.compact
 
-import java.io.{FileInputStream, InputStreamReader}
+import java.io.{ByteArrayInputStream, FileInputStream, InputStream, InputStreamReader, Reader => JavaReader}
 import java.util
 
 import cats._
@@ -15,7 +15,10 @@ import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
 import es.weso.shex.parser._
 import org.antlr.v4.runtime._
 import java.nio.charset.StandardCharsets
-import java.io.{Reader => JavaReader}
+
+import es.weso.utils.FileUtils
+
+import scala.util.{Failure, Success}
 
 object Parser extends LazyLogging {
 
@@ -67,31 +70,30 @@ object Parser extends LazyLogging {
     updateState(s => s.copy(prefixMap = s.prefixMap.addPrefix(prefix, iri)))
 
   def parseSchema(str: String): Either[String, Schema] = {
-    val input: ANTLRInputStream = new ANTLRInputStream(str)
-    val lexer: ShExDocLexer = new ShExDocLexer(input)
-    val tokens: CommonTokenStream = new CommonTokenStream(lexer)
-    val parser: ShExDocParser = new ShExDocParser(tokens)
-
-    val errorListener = new ParserErrorListener
-    // lexer.removeErrorListeners()
-    // parser.removeErrorListeners()
-     lexer.addErrorListener(errorListener)
-     parser.addErrorListener(errorListener)
-
-    val maker = new SchemaMaker()
-    val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]
-    val errors = errorListener.getErrors
-    if (errors.length > 0) {
-      Left(errors.mkString("\n"))
-    } else {
-      run(builder)._2
-    }
+    val UTF8_BOM = "\uFEFF"
+    val s =
+      if (str.startsWith(UTF8_BOM)) {
+        logger.info("BOM detected and removed")
+        str.substring(1)
+      }
+      else str
+    val reader: JavaReader =
+      new InputStreamReader(new
+          ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
+    logger.info(s"str:\n$s")
+    parseSchemaReader(reader)
   }
 
   def parseSchemaFromFile(fileName: String): Either[String, Schema] = {
-    val is = new FileInputStream(fileName);
-    val r: JavaReader = new InputStreamReader(is, StandardCharsets.UTF_8); // e.g., eu
-    val input: ANTLRInputStream = new ANTLRInputStream(r)
+    FileUtils.getStream(fileName) match {
+      case Success(reader) => parseSchemaReader(reader)
+      case Failure(err) => Left(s"Exception reading $fileName: $err")
+    }
+
+  }
+
+  def parseSchemaReader(reader: JavaReader): Either[String, Schema] = {
+    val input: ANTLRInputStream = new ANTLRInputStream(reader)
     val lexer: ShExDocLexer = new ShExDocLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
     val parser: ShExDocParser = new ShExDocParser(tokens)
