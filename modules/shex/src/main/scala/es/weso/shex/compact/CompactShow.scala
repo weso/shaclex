@@ -54,7 +54,7 @@ object CompactShow {
     }
 
   private def prefixDoc(p: Prefix): Document =
-    str(p.str)
+    str(p.str + ":")
 
   private def unqualifiedIriDoc(iri: IRI): Document =
     str("<") :: str(iri.str) :: str(">")

@@ -67,7 +67,7 @@ object encoderShEx {
         List(optField("inverse", a.optInverse),
              optField("negated", a.optNegated),
              field("predicate", a.predicate),
-             optField("valueExpr", a.valueExpr),
+             optFieldIfNotDefault("valueExpr", a.valueExpr, ShapeExpr.any),
              optField("min", a.optMin),
              optField("max", a.optMax),
              optField("semActs", a.semActs),
@@ -107,8 +107,8 @@ implicit lazy val encodeNodeConstraint: Encoder[NodeConstraint] = new Encoder[No
 implicit lazy val encodeShape: Encoder[Shape] = new Encoder[Shape] {
   final def apply(a: Shape): Json =
     mkObjectTyped("Shape",
-        List(optField("virtual",a.virtual),
-             optField("closed",a.closed),
+        List(optFieldIfNotDefault("virtual",a.virtual,Shape.defaultVirtual),
+             optFieldIfNotDefault("closed",a.closed,Shape.defaultClosed),
              optField("extra",a.extra),
              optField("expression",a.expression),
              optField("inherit",a.inherit),
@@ -233,6 +233,18 @@ def optField[A: Encoder](name: String, m: Option[A]): Option[(String,Json)] = {
     case Some(v) => field(name,v)
   }
 }
+
+  def optFieldIfNotDefault[A: Encoder]
+    (name: String,
+     m: Option[A],
+     default: A): Option[(String,Json)] = {
+    m match {
+      case None => None
+      case Some(v) =>
+        if (v == default) None
+        else field(name,v)
+    }
+  }
 
 def optFieldMap[A: KeyEncoder, B: Encoder](name: String, m: Option[Map[A,B]]): Option[(String,Json)] = {
   m match {

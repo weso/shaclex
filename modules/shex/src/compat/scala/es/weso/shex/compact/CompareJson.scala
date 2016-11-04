@@ -32,7 +32,9 @@ class CompareJson extends FunSpec with JsonTest with Matchers with EitherValues 
   }
 
   describe("Parsing Schemas from ShEx") {
+    var failedNames = List[String]()
     for(file <- getCompactFiles(schemasFolder)) {
+      val name = file.getName
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
         Schema.fromString(str,"SHEXC",None) match {
@@ -44,14 +46,15 @@ class CompareJson extends FunSpec with JsonTest with Matchers with EitherValues 
               case Xor.Left(err) => fail(s"Error parsing $jsonFile: $err")
               case Xor.Right(json) =>
                 if (json.equals(schema.asJson)) {
-                 info("Jsons are equal")
                 } else {
-               fail(s"Json's are different. Parsed:\n${schema.asJson.spaces4}\n-----Expected:\n${json.spaces4}")
+               failedNames = failedNames ++ List(name)
+               fail(s"Json's are different") // Parsed:\n${schema.asJson.spaces2}\n-----Expected:\n${json.spaces2}")
             }
           }}
           case Failure(err) => fail(s"Parsing error: $err")
         }
       }
     }
+    info(s"Failed names:\n${failedNames.mkString("\n")}")
   }
 }

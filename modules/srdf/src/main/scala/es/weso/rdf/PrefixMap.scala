@@ -67,7 +67,7 @@ case class PrefixMap(pm: Map[Prefix, IRI]) {
 
       pm.find(startsWithPredicate) match {
         case None => "<" ++ iri.str ++ ">"
-        case Some(p) => p._1.str + iri.str.stripPrefix(p._2.str)
+        case Some(p) => p._1.str + ":" + iri.str.stripPrefix(p._2.str)
       }
   }
 

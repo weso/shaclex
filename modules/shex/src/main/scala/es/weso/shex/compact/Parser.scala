@@ -63,12 +63,17 @@ object Parser extends LazyLogging {
   def updateStart(s: Start): Builder[Unit] =
     updateState(_.copy(start = s))
 
-  def addShape(label: ShapeLabel, expr: ShapeExpr): Builder[Unit] =
+  def addShape(label: ShapeLabel, expr: ShapeExpr): Builder[Unit] = {
     updateState(s => s.copy(shapesMap = s.shapesMap + (label -> expr)))
+  }
 
-  def addPrefix(prefix: Prefix, iri: IRI): Builder[Unit] =
-    updateState(s => s.copy(prefixMap = s.prefixMap.addPrefix(prefix, iri)))
-
+  def addPrefix(prefix: Prefix, iri: IRI): Builder[Unit] = {
+    updateState(s => {
+      val newS = s.copy(prefixMap = s.prefixMap.addPrefix(prefix, iri))
+      logger.info(s"Updating prefix map. New prefix map=${newS.prefixMap}")
+      newS
+    })
+  }
   def parseSchema(str: String): Either[String, Schema] = {
     val UTF8_BOM = "\uFEFF"
     val s =
@@ -104,7 +109,7 @@ object Parser extends LazyLogging {
     lexer.addErrorListener(errorListener)
     parser.addErrorListener(errorListener)
 
-    val maker = new SchemaMaker()
+    val maker = new SchemaMaker() // new DebugSchemaMaker()
     val builder = maker.visit(parser.shExDoc()).asInstanceOf[Builder[Schema]]
     val errors = errorListener.getErrors
     if (errors.length > 0) {

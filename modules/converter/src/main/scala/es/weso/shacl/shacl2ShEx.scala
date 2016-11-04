@@ -58,8 +58,8 @@ object Shacl2ShEx extends Converter {
   
   def cnvComponent(c: shacl.Component): Result[shex.NodeConstraint] = {
     c match {
-      case shacl.NodeKind(shacl.IRIKind) => ok(shex.NodeConstraint.nodeKind(shex.IRIKind))
-      case shacl.NodeKind(shacl.BlankNodeKind) => ok(shex.NodeConstraint.nodeKind(shex.BNodeKind))
+      case shacl.NodeKind(shacl.IRIKind) => ok(shex.NodeConstraint.nodeKind(shex.IRIKind, List()))
+      case shacl.NodeKind(shacl.BlankNodeKind) => ok(shex.NodeConstraint.nodeKind(shex.BNodeKind, List()))
       case _ => err(s"cnvComponent: Unimplemented $c")
     }
   }

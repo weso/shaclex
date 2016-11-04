@@ -443,10 +443,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       base <- getBase
     } yield
        extractIRIfromIRIREF(ctx.IRIREF().getText, base)
-   else {
-    val prefixedName = visitPrefixedName(ctx.prefixedName())
-    resolve(prefixedName)
-  }
+   else for {
+    prefixedName <- visitPrefixedName(ctx.prefixedName())
+    iri <- resolve(prefixedName)
+  } yield iri
 
   def resolve(prefixedName: String): Builder[IRI] = {
     val (prefix, local) = splitPrefix(prefixedName)
@@ -468,11 +468,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def visitPrefixedName(ctx: PrefixedNameContext): String =
-    ctx match {
-      case _ if isDefined(ctx.PNAME_LN()) => ctx.PNAME_LN().getText()
-      case _ if isDefined(ctx.PNAME_NS()) => ctx.PNAME_NS().getText()
-    }
+  override def visitPrefixedName(ctx: PrefixedNameContext): Builder[String] = {
+    ok(ctx.getText())
+/*    ctx match {
+      case _ if isDefined(ctx.PNAME_LN()) => ok(ctx.PNAME_LN().getText())
+      case _ if isDefined(ctx.PNAME_NS()) => ok(ctx.PNAME_NS().getText())
+      case _ => err("visitPrefixedName: Unknown value")
+    } */
+  }
 
   /*   override def visitNodeConstraintGroup(ctx: NodeConstraintGroupContext): Builder[ShapeExpr] =
        for {
@@ -540,19 +543,6 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       ok(DatatypeString("false", xsd_boolean))
   }
 
-  def isDefined[A](x: A): Boolean =
-    if (x != null) true
-    else false
-
-  def visitList[A, B](
-                       visitFn: A => Builder[B],
-                       ls: java.util.List[A]): Builder[List[B]] =
-    ls.asScala.toList.map(visitFn(_)).sequence
-
-  def visitOpt[A,B](visitFn: A => Builder[B],
-                  v: A): Builder[Option[B]] =
-    if (isDefined(v)) visitFn(v).map(Some(_))
-    else ok(None)
 
 
 
@@ -1150,5 +1140,18 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   case class Include(labels: List[ShapeLabel]) extends Qualifier
 
   case object Closed extends Qualifier
+
+  // Some generic utils
+
+  def isDefined[A](x: A): Boolean = x != null
+
+  def visitList[A, B](visitFn: A => Builder[B],
+                      ls: java.util.List[A]): Builder[List[B]] =
+    ls.asScala.toList.map(visitFn(_)).sequence
+
+  def visitOpt[A,B](visitFn: A => Builder[B],
+                    v: A): Builder[Option[B]] =
+    if (isDefined(v)) visitFn(v).map(Some(_))
+    else ok(None)
 
 }
