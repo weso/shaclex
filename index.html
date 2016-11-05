@@ -3,7 +3,8 @@
 <head>
 <title>shaclex</title>
 <link rel="stylesheet" media="screen" href="javascript/lib/jquery-ui.min.css">
-<link rel="stylesheet" media="screen" href='javascript/lib/prettify.css'></script>
+<link rel="stylesheet" media="screen" href='javascript/lib/prettify.css' />
+
 
 <script type='text/javascript' src='javascript/lib/jquery.min.js'></script>
 <script type='text/javascript' src='javascript/lib/jquery-ui.min.js'></script>
@@ -21,17 +22,18 @@
 	 width="100px" height="100px" 
 	 alt="Shexcala logo" />
 
-<h1>shaclex - SHACL implementation based on Shape Expressions</h1>
+<h1>shaclex - SHACL/ShEx implementation</h1>
 </header>
 
 <section>
 <h2 id="intro">Introduction</h2>
 <p>shaclex is an implementation of 
- <a href="https://w3c.github.io/data-shapes/shacl/">SHACL</a> based on <a href="http://shex.io/">Shape Expressions</a>.
+ <a href="https://w3c.github.io/data-shapes/shacl/">SHACL</a> and <a href="http://shex.io/">ShEx</a> using a
+    purely functional approach based on Monads.
 </p>
 
 <p>shaclex is implemented in Scala which means that it can be used
- in any JVM environment.</p>
+ in any JVM environment. </p>
  
 <p>We are currently working on adapting the implementation to ScalaJS so it 
  could also be run within Javascript environments</p> 
@@ -40,8 +42,14 @@
  as a jar library that can be invoked from Scala or Java programs.</p>
  
 <p>It is being used in <a href="http://rdfshape.weso.es">RDFShape</a> online validator tool</p>
+<ul>
+    <li><a href="https://github.com/labra/shaclex/issues/2">SHACL Features</a></li>
+    <li><a href="https://github.com/labra/shaclex/issues/4">ShEx Features</a></li>
+    <li><a href="https://github.com/labra/shaclex/issues">List of issues</a></li>
+</ul>
 
-More information is available at <a href="https://github.com/labra/shaclex/wiki">shaclex wiki</a>.
+    More information is available at <a href="https://github.com/labra/shaclex/wiki">shaclex wiki</a>.
+
 
 </section>
 <section>
@@ -56,10 +64,10 @@ More information is available at <a href="https://github.com/labra/shaclex/wiki"
  <a href="https://github.com/labra/bin-shexcala/raw/master/binaries/shexcala.msi">Windows installer</a>
 </li> -->
 
-<li>Latest release (binary jar): 
+<!--<li>Latest release (binary jar):
  <a href="https://bintray.com/labra/maven/shaclex">Jars and Javadocs</a>.
  These jars can be used with Maven or SBT (see instructions).
-</li> 
+</li> -->
 
 <li>Source code: <a href="https://github.com/labra/shaclex">Github project</a></li>
 <li><a href="latest/api">ScalaDoc</a></li>
@@ -181,6 +189,7 @@ March 23-27, 2015, Brussels, Belgium,
 </footer>
 <script src="javascript/lang-turtle.js" type="text/javascript"></script>
 <script src="javascript/lang-shex.js" type="text/javascript"></script>
+</section>
 </body>
 </html>
 
