@@ -6,12 +6,15 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 lazy val shaclex =
   project.in(file(".")).
   settings(unidocSettings: _*).
-  settings(publishSettings:_*).
   settings(commonSettings:_*).
-  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter).
-  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter).
+  settings(publishSettings:_*).
+  enablePlugins(BuildInfoPlugin).
+  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating).
+  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating).
   settings(
     name := "shaclex",
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "buildinfo",
     unidocProjectFilter in (ScalaUnidoc, unidoc) :=
       inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++=
@@ -26,12 +29,14 @@ lazy val shaclex =
 lazy val schema =
   project.in(file("modules/schema")).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   dependsOn(shex, shacl)
 
 
 lazy val shacl =
   project.in(file("modules/shacl")).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   dependsOn(srdfJena,
             manifest,
             utils,
@@ -51,7 +56,9 @@ lazy val shex =
   project.in(file("modules/shex")).
   configs(compatTest).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   dependsOn(srdfJena,
+    srdf,
     typing,
     utils % "test -> test; compile -> compile",
     validating,
@@ -76,12 +83,14 @@ lazy val shex =
 
 lazy val converter =
   project.in(file("modules/converter")).
+  settings(publishSettings: _*).
   settings(commonSettings: _*).
   dependsOn(shex,shacl)
 
 lazy val manifest =
   project.in(file("modules/manifest")).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   dependsOn(srdfJena, utils).
   settings(
     libraryDependencies ++= Seq(
@@ -92,12 +101,14 @@ lazy val manifest =
 
 lazy val srdf =
   project.in(file("modules/srdf")).
-  settings(commonSettings: _*)
-  
+  settings(commonSettings: _*).
+  settings(publishSettings: _*)
+
 lazy val rbe =
   project.in(file("modules/rbe")).
   dependsOn(validating).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   settings(
    libraryDependencies ++= 
      Seq(
@@ -111,6 +122,7 @@ lazy val srdfJena =
   project.in(file("modules/srdfJena")).
   dependsOn(srdf).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
       "ch.qos.logback" %  "logback-classic" % logbackVersion
@@ -123,6 +135,7 @@ lazy val srdfJena =
 lazy val typing =
   project.in(file("modules/typing")).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats" % catsVersion
@@ -132,6 +145,7 @@ lazy val typing =
 lazy val utils =
   project.in(file("modules/utils")).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
       "org.atnos" %% "eff-cats" % effCatsVersion
@@ -145,6 +159,7 @@ lazy val utils =
 lazy val validating =
   project.in(file("modules/validating")).
   settings(commonSettings: _*).
+  settings(publishSettings: _*).
   dependsOn(srdfJena,
             utils % "test -> test; compile -> compile").
   settings(antlr4Settings: _*).
@@ -160,7 +175,7 @@ lazy val validating =
 
 lazy val commonSettings = Seq(
   organization := "es.weso",
-  version := "0.0.4",
+  version := "0.0.52",
   scalaVersion := "2.11.8",
   scalaOrganization := "org.typelevel",
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
@@ -254,7 +269,7 @@ bintrayRepository in bintray := "weso-releases"
 
 bintrayOrganization in bintray := Some("weso")
 
-licenses += ("MPL-2.0", url("http://opensource.org/licenses/MPL-2.0"))
+// licenses += ("MPL-2.0", url("http://opensource.org/licenses/MPL-2.0"))
 
 resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
 
@@ -290,7 +305,7 @@ lazy val publishSettings = Seq(
   "-feature",
   "-language:_",
   "-unchecked",
-  "-Xfatal-warnings",
+//  "-Xfatal-warnings",
   "-Xlint",
   "-Yinline-warnings",
   "-Yno-adapted-args",
