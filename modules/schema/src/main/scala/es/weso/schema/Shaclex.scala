@@ -8,10 +8,12 @@ import es.weso.shacl._
 import util._
 import es.weso.typing._
 
+import scala.util.{Failure, Try}
+
 case class Shaclex(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
 
-  override def formats = RDFAsJenaModel.availableFormats
+  override def formats = DataFormats.formatNames
 
   override def validate(rdf: RDFReader) : Result = {
     val validator = Validator(schema)

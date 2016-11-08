@@ -12,7 +12,7 @@ lazy val shEx = ShEx.empty
 lazy val shaclex = Shaclex.empty
 // lazy val shacl_tq = Shacl_TQ.empty
 
-val availableSchemas: List[Schema] = List(shaclex, shEx) // shEx,shaclex) //,shacl_tq)
+val availableSchemas: List[Schema] = List(shEx, shaclex) // shEx,shaclex) //,shacl_tq)
 val defaultSchema : Schema = shaclex
 val defaultSchemaName: String = defaultSchema.name
 val defaultSchemaFormat: String = defaultSchema.defaultFormat

@@ -5,6 +5,8 @@ import util._
 import SHACLPrefixes._
 import es.weso.shacl.converter.Shacl2RDF
 
+import scala.util.{Success, Try}
+
 object Shacl {
   case object Unbounded
   lazy val defaultMin = 0

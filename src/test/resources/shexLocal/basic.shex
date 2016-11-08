@@ -1,2 +1,2 @@
-prefix : <>
-:S IRI
+prefix ex: <http://example.org>
+ex:S IRI

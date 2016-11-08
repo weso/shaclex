@@ -77,6 +77,23 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case Some(shape) => ok(shape)
     }
 
+  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
+    logger.info(s"nodeShape. Node: ${node.show} Label: ${shapeName}")
+    for {
+      shapeLabel <- getShapeLabel(shapeName)
+      r <- checkNodeLabel(node,shapeLabel)
+    } yield r
+  }
+
+  def getShapeLabel(str: String): Check[ShapeLabel] = {
+    // TODO prevent errors in str unqualify in case of prefix:value
+    val label = IRILabel(IRI(str))
+    if (schema.labels contains label) ok(label)
+    else {
+      errStr(s"Schema doesn't contain label '$str'. Available labels: ${schema.labels}")
+    }
+  }
+
   def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
     logger.info(s"nodeLabel. Node: ${node.show} Label: ${label.show}")
     for {
@@ -356,6 +373,15 @@ def checkTripleConstraint(
       }
     }
     runCheck(checkTargetNodeDeclarations, rdf)
+  }
+
+  def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): CheckResult[ViolationError, ShapeTyping, Log] = {
+    implicit def showPair = new Show[(ShapeTyping, Evidences)] {
+      def show(e: (ShapeTyping, Evidences)): String = {
+        s"Typing: ${e._1}\n Evidences:\n${e._2}"
+      }
+    }
+    runCheck(checkNodeShapeName(node,shape), rdf)
   }
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {

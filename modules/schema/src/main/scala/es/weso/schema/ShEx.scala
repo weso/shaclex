@@ -70,7 +70,9 @@ case class ShEx(schema: ShExSchema) extends Schema {
   }
 
   override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
-    throw new Exception("Unimplemented validateNodeShape")
+    val validator = Validator(schema)
+    val r = validator.validateNodeShape(rdf,node,shape)
+    cnvResult(r)
 /*    val matcher = ShExMatcher(schema,rdf)
     val pm = schema.pm
     val maybeLabel = pm.qname(shape).map(lbl => ShExLabel.mkLabel(lbl)).flatten

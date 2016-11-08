@@ -1,5 +1,5 @@
 package es.weso.shacl.converter
-import util._
+import scala.util._
 import cats._
 import cats.data._
 import cats.implicits._
