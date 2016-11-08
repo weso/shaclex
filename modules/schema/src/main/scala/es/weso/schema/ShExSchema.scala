@@ -4,14 +4,14 @@ import implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shex.{Schema => ShExSchema, _}
+import es.weso.shex.{Schema => Schema_, _}
 import es.weso.shex.validator._
 import es.weso.shex._
 import es.weso.typing._
 import scala.util._
 import es.weso.shex.implicits.showShEx.{showShapeLabel}
 
-case class ShEx(schema: ShExSchema) extends Schema {
+case class ShExSchema(schema: Schema_) extends Schema {
   override def name = "ShEx"
 
   override def formats =
@@ -50,10 +50,10 @@ case class ShEx(schema: ShExSchema) extends Schema {
 
     def cnvShapeResult(
       p:(ShapeType,TypingResult[ViolationError,String])
-    ): (ShapeLabel,Explanation) = {
+    ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.label match {
-        case Some(lbl) => ShapeLabel(lbl.show)
-        case None => ShapeLabel("<Unknown label>")
+        case Some(lbl) => SchemaLabel(lbl.show)
+        case None => SchemaLabel("<Unknown label>")
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
@@ -73,19 +73,16 @@ case class ShEx(schema: ShExSchema) extends Schema {
   }
 
   override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
-    val validator = Validator(schema)
-    val r = validator.validateNodeShape(rdf,node,shape)
-    cnvResult(r)
-/*    val matcher = ShExMatcher(schema,rdf)
-    val pm = schema.pm
-    val maybeLabel = pm.qname(shape).map(lbl => ShExLabel.mkLabel(lbl)).flatten
-    maybeLabel match {
-      case Some(lbl) => {
-        val r = matcher.match_node_label(node)(lbl)
-        validationResult2Result(r)
+    val pm = schema.prefixMap
+    pm.qname(shape) match {
+      case None => Result.errStr(s"Can't form IRI from shape '$shape")
+      case Some(iri) => {
+        val label = IRILabel(iri)
+        val validator = Validator(schema)
+        val r = validator.validateNodeShape(rdf,node,shape)
+        cnvResult(r)
       }
-      case None => Result.errStr(s"Cannot make label from shape $shape")
-    } */
+    }
   }
 
   override def validateNodeAllShapes(node: IRI, rdf: RDFReader) : Result = {
@@ -139,8 +136,8 @@ case class ShEx(schema: ShExSchema) extends Schema {
     (ShapeLabel(lbl.toString),Explanation(""))
   } */
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema] = {
-    ShEx.fromString(cs,format,base)
+  override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShExSchema] = {
+    ShExSchema.fromString(cs,format,base)
   }
 
   override def fromRDF(rdf: RDFReader): Try[Schema] =
@@ -153,14 +150,14 @@ case class ShEx(schema: ShExSchema) extends Schema {
 
   override def serialize(format: String): Try[String] = {
     if (formats.contains(format.toUpperCase()))
-      Success(ShExSchema.serialize(schema, format))
+      Success(Schema_.serialize(schema, format))
     else
       Failure(
         new Exception(
           s"Can't serialize to format $format. Supported formats=$formats"))
   }
 
-  override def empty: Schema = ShEx.empty
+  override def empty: ShExSchema = ShExSchema.empty
 
   override def shapes: List[String] = {
     val pm = schema.prefixMap
@@ -171,11 +168,13 @@ case class ShEx(schema: ShExSchema) extends Schema {
 
 }
 
-object ShEx {
-  def empty: ShEx = ShEx(schema = ShExSchema.empty)
+object ShExSchema {
+  def empty: ShExSchema = ShExSchema(schema = Schema_.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShEx] = {
-    ShExSchema.fromString(cs,format,base).map(p => ShEx(p))
+  def fromString(cs: CharSequence,
+                 format: String,
+                 base: Option[String]): Try[ShExSchema] = {
+    Schema_.fromString(cs,format,base).map(p => ShExSchema(p))
   }
 
 }

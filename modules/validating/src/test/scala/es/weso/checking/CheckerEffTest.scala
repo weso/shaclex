@@ -3,6 +3,7 @@ import org.scalatest._
 import cats._, data._
 import cats.implicits._
 
+/*
 class CheckerEffTest extends FunSpec with Matchers with OptionValues {
 
     import CheckerEffStr._
@@ -103,3 +104,4 @@ class CheckerEffTest extends FunSpec with Matchers with OptionValues {
  }
 }
 
+*/

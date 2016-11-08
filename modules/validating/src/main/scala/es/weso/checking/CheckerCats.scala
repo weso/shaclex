@@ -151,7 +151,6 @@ object CheckerCatsStr extends CheckerCats {
   // I need to add the following line so Check can act as a Monad...
   implicit val monadWriter = mWriterEC
 
-  /*
   def c0: Config = Map[String, String]()
   def e0: Env = Map[String, Int]()
   def run0[A](c: Check[A]): (Log, Either[Err, A]) =
@@ -160,5 +159,9 @@ object CheckerCatsStr extends CheckerCats {
   def c1: Check[Int] = logStr("one") >> ok(1)
   def c2: Check[Int] = logStr("two") >> ok(2)
   def e: Check[Int] = logStr("err") >> err("Err")
-   */
+
+  def logStr(msg: String): Check[Unit] = {
+    addLog(List(msg))
+  }
 }
+

@@ -1,15 +1,18 @@
 package es.weso.schema
 import java.io.File
+
 import util._
 import es.weso.rdf.RDFReader
+
 import scala.io._
+import scala.util.{Failure, Success, Try}
 
 object Schemas {
 
 type SchemaParser = (CharSequence,String,Option[String]) => Try[Schema]
 
-lazy val shEx = ShEx.empty
-lazy val shaclex = Shaclex.empty
+lazy val shEx = ShExSchema.empty
+lazy val shaclex = ShaclexSchema.empty
 // lazy val shacl_tq = Shacl_TQ.empty
 
 val availableSchemas: List[Schema] = List(shEx, shaclex) // shEx,shaclex) //,shacl_tq)

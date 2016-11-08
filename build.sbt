@@ -3,6 +3,31 @@ import sbt.Keys._
 import sbtunidoc.Plugin.UnidocKeys._
 import com.typesafe.sbt.SbtGit.GitKeys._
 
+name := "shaclex"
+
+lazy val shaclexVersion = "0.0.53"
+
+// Versions of common packages
+lazy val circeVersion = "0.5.1"
+lazy val effCatsVersion = "2.0.0-RC11"
+lazy val catsVersion = "0.7.2"
+lazy val scalaTestVersion = "3.0.0"
+lazy val scalacticVersion = "3.0.0"
+lazy val logbackVersion = "1.1.7"
+lazy val loggingVersion = "3.5.0"
+
+lazy val commonSettings = Seq(
+  organization := "es.weso",
+  scalaVersion := "2.11.8",
+  version := shaclexVersion,
+  scalaOrganization := "org.typelevel",
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
+  libraryDependencies ++= Seq(
+      "org.scalactic" %% "scalactic" % scalacticVersion
+    , "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+  )
+)
+
 lazy val shaclex =
   project.in(file(".")).
   settings(unidocSettings: _*).
@@ -173,17 +198,6 @@ lazy val validating =
   )
 
 
-lazy val commonSettings = Seq(
-  organization := "es.weso",
-  version := "0.0.52",
-  scalaVersion := "2.11.8",
-  scalaOrganization := "org.typelevel",
-  javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
-  libraryDependencies ++= Seq(
-    "org.scalactic" %% "scalactic" % scalacticVersion
-  , "org.scalatest" %% "scalatest" % scalaTestVersion % Test
-  )
-)
 
 def noDocProjects: Seq[ProjectReference] = Seq[ProjectReference](
  //  benchmark,
@@ -208,16 +222,6 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-name := "shaclex"
-
-// Versions of common packages
-lazy val circeVersion = "0.5.1"
-lazy val effCatsVersion = "2.0.0-RC11"
-lazy val catsVersion = "0.7.2"
-lazy val scalaTestVersion = "3.0.0"
-lazy val scalacticVersion = "3.0.0"
-lazy val logbackVersion = "1.1.7"
-lazy val loggingVersion = "3.5.0"
 
 // to write types like Reader[String, ?]
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0")

@@ -10,7 +10,7 @@ import es.weso.typing._
 
 import scala.util.{Failure, Try}
 
-case class Shaclex(schema: ShaclSchema) extends Schema {
+case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
 
   override def formats = DataFormats.formatNames
@@ -44,10 +44,10 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
 
     def cnvShapeResult(
       p:(Shape,TypingResult[ViolationError,String])
-    ): (ShapeLabel,Explanation) = {
+    ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.id match {
-        case Some(iri) => ShapeLabel(schema.pm.qualify(iri))
-        case None => ShapeLabel("?")
+        case Some(iri) => SchemaLabel(schema.pm.qualify(iri))
+        case None => SchemaLabel("?")
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
@@ -87,13 +87,13 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
     for {
       rdf <- RDFAsJenaModel.fromChars(cs,format,base)
       schema <- RDF2Shacl.getShacl(rdf)
-    } yield Shaclex(schema)
+    } yield ShaclexSchema(schema)
   }
 
   override def fromRDF(rdf: RDFReader): Try[Schema] = {
     for {
       schema <- RDF2Shacl.getShacl(rdf)
-    } yield Shaclex(schema)
+    } yield ShaclexSchema(schema)
   }
 
   override def serialize(format: String): Try[String] = {
@@ -103,7 +103,7 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
       Failure(new Exception(s"Format $format not supported to serialize $name. Supported formats=$formats"))
   }
 
-  override def empty: Schema = Shaclex.empty
+  override def empty: Schema = ShaclexSchema.empty
 
   override def shapes: List[String] = {
     schema.shapes.map(_.id).filter(_.isDefined).map(_.get).map(_.toString).toList
@@ -112,14 +112,14 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
   override def pm: PrefixMap = PrefixMap.empty // TODO: Improve this to add pm to Shaclex
 }
 
-object Shaclex {
-  def empty: Shaclex = Shaclex(schema = ShaclSchema.empty)
+object ShaclexSchema {
+  def empty: ShaclexSchema = ShaclexSchema(schema = ShaclSchema.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Shaclex] = {
+  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShaclexSchema] = {
     for {
       rdf <- RDFAsJenaModel.fromChars(cs,format,base)
       schema <- RDF2Shacl.getShacl(rdf)
-    } yield Shaclex(schema)
+    } yield ShaclexSchema(schema)
   }
 
 }

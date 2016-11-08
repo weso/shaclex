@@ -1,5 +1,4 @@
 package es.weso.schema
-import ShapeLabel._
 import Explanation._
 import es.weso.rdf.PrefixMap
 import cats._, data._
@@ -7,8 +6,8 @@ import implicits._
 import es.weso.shex.implicits.showShEx
 
 case class InfoNode(
-    hasShapes: Seq[(ShapeLabel,Explanation)],
-    hasNoShapes: Seq[(ShapeLabel,Explanation)],
+    hasShapes: Seq[(SchemaLabel,Explanation)],
+    hasNoShapes: Seq[(SchemaLabel,Explanation)],
     pm: PrefixMap
     ) {
   override def toString: String = show
