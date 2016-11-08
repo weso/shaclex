@@ -1,4 +1,5 @@
 package es.weso.schema
+import cats.Show
 import es.weso.rdf.PrefixMap
 
 case class Result(
@@ -11,6 +12,22 @@ case class Result(
     sols.size == 1 && sols.head.isEmpty
   }
 
+  def show: String = {
+    val sb = new StringBuilder
+    if (isValid) {
+      if (noSolutions(solutions)) {
+        "No solutions found"
+      } else {
+        for ((solution, n) <- solutions zip (1 to cut)) {
+          sb ++= "Result " + printNumber(n, cut)
+          sb ++= solution.show
+        }
+      }
+    }
+    else
+      sb ++= errors.map(_.show).mkString("\n")
+    sb.toString
+  }
 
 /*  def toHTML(cut: Int = 1, schema:Schema): String = {
     val sb = new StringBuilder
@@ -52,22 +69,6 @@ case class Result(
     else n.toString
   }
   
-  def show(pm: PrefixMap): String = {
-    val sb = new StringBuilder
-    if (isValid) {
-      if (noSolutions(solutions)) {
-        "No solutions found"
-      } else {
-     for ((solution, n) <- solutions zip (1 to cut)) {
-      sb ++= "Result " + printNumber(n, cut)
-      sb ++= solution.show(pm)
-     }
-     }
-    }
-    else
-      sb ++= errors.map(_.show(pm)).mkString("\n")
-    sb.toString
- }
 
 }
 
@@ -80,4 +81,7 @@ object Result {
 
   def errStr(str: String) = Result(isValid = false, message = str, solutions = Seq(), errors = Seq())
 
+  implicit val showResult = new Show[Result] {
+    override def show(r: Result): String = r.show
+  }
 }

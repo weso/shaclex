@@ -27,7 +27,7 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
     )
 
   def cnvShapeTyping(t: ShapeTyping): Solution = {
-    Solution(t.getMap.mapValues(cnvResult))
+    Solution(t.getMap.mapValues(cnvResult),schema.pm)
   }
 
   def cnvResult(
@@ -35,7 +35,8 @@ case class Shaclex(schema: ShaclSchema) extends Schema {
   ): InfoNode = {
     val (oks,bads) = r.toSeq.partition(_._2.isOK)
     InfoNode(oks.map(cnvShapeResult(_)),
-             bads.map(cnvShapeResult(_))
+             bads.map(cnvShapeResult(_)),
+      schema.pm
     )
   }
 

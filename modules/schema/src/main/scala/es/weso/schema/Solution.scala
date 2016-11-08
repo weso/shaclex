@@ -1,21 +1,26 @@
 package es.weso.schema
+import cats._, data._
+import implicits._
 import es.weso.rdf.nodes._
-// import scala.xml.Utility.escape
 import es.weso.rdf.PrefixMap
-// import es.weso.utils.PrefixMapUtils._
 
-case class Solution(map: Map[RDFNode,InfoNode]) {
+case class Solution
+  (map: Map[RDFNode,InfoNode],
+   pm: PrefixMap
+  ) {
 
-  def show(pm: PrefixMap): String = {
-   val sb = new StringBuilder
-   sb ++= "Solution\n"
-   for (pair <- map.toSeq) {
+  override def toString: String = show
+
+  def show: String = {
+    val sb = new StringBuilder
+    sb ++= "Solution\n"
+    for (pair <- map.toSeq) {
       val (node,info) = pair
-      sb ++= ( showNode(node, pm) + " " +
-               showInfo(info, pm) + "\n" )
+      sb ++= ( pm.qualify(node) + " " + info.show + "\n" )
     }
     sb.toString
   }
+
 /*  def toHTML(pm: PrefixMap): String = {
     val sb = new StringBuilder
     sb ++= "<h2>Solution</h2>"
@@ -38,16 +43,16 @@ case class Solution(map: Map[RDFNode,InfoNode]) {
     s"<code>${escape(str)}</code>"
   }
  */
-
-  def showNode(node: RDFNode, pm: PrefixMap): String = {
-    pm.qualify(node)
-  }
-
-  def showInfo(i: InfoNode, pm: PrefixMap): String =
-    i.show(pm)
-
   def isEmpty : Boolean = {
     map.isEmpty
   }
 
+}
+
+object Solution {
+  implicit val showSolution = new Show[Solution] {
+    override def show(s: Solution): String = {
+     s.show
+   }
+  }
 }

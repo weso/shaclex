@@ -5,4 +5,4 @@ base <http://example.org/>
 <S> { :p xsd:date }
 <NotS> NOT @<S>
 <T> { :p :myType }
-<NotT> NOT @<S>
+<NotT> NOT @<T>

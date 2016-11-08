@@ -51,7 +51,7 @@ object Main extends App with LazyLogging {
           Result.empty
 
         if (opts.validate() && opts.showResult()) {
-          println(s"Result: \n${result.show(schema.pm)}")
+          println(s"Result: \n${result.show}")
         }
 
         if (opts.cnvEngine.isDefined) {
@@ -59,7 +59,7 @@ object Main extends App with LazyLogging {
         }
         if (opts.outputFile.isDefined) {
           val fileName = opts.outputFile()
-          val str = result.show(schema.pm)
+          val str = result.show
           FileUtils.writeFile(fileName, str)
         }
 

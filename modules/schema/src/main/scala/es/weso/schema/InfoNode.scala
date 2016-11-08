@@ -2,22 +2,38 @@ package es.weso.schema
 import ShapeLabel._
 import Explanation._
 import es.weso.rdf.PrefixMap
+import cats._, data._
+import implicits._
+import es.weso.shex.implicits.showShEx
 
 case class InfoNode(
     hasShapes: Seq[(ShapeLabel,Explanation)],
-    hasNoShapes: Seq[(ShapeLabel,Explanation)]) {
+    hasNoShapes: Seq[(ShapeLabel,Explanation)],
+    pm: PrefixMap
+    ) {
+  override def toString: String = show
 
-  def show(pm: PrefixMap): String = {
+  def show: String = {
     val sb = new StringBuilder
     for ((s,e) <- hasShapes) {
-      sb ++= ("+" + s.str + " " + e.str)
+      sb ++= ("+" + s.show + " " + e.str)
     }
     for ((s,e) <- hasNoShapes) {
-      sb ++= ("-" + s.str + " " + e.str)
+      sb ++= ("-" + s.show + " " + e.str)
     }
     sb.toString
   }
-  
+}
+
+object InfoNode {
+
+  implicit val showInfoNode = new Show[InfoNode] {
+    override def show(n: InfoNode): String = {
+      n.show
+    }
+  }
+
+
 /*  def toHTML(pm: PrefixMap): String = {
     val sb = new StringBuilder
     sb ++= "<ul class=\"positiveShapes\">"

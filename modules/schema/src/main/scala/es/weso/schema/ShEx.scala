@@ -1,4 +1,6 @@
 package es.weso.schema
+import cats._, data._
+import implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -7,6 +9,7 @@ import es.weso.shex.validator._
 import es.weso.shex._
 import es.weso.typing._
 import scala.util._
+import es.weso.shex.implicits.showShEx.{showShapeLabel}
 
 case class ShEx(schema: ShExSchema) extends Schema {
   override def name = "ShEx"
@@ -32,7 +35,7 @@ case class ShEx(schema: ShExSchema) extends Schema {
     )
 
   def cnvShapeTyping(st: ShapeTyping): Solution = {
-    Solution(st.t.getMap.mapValues(cnvResult))
+    Solution(st.t.getMap.mapValues(cnvResult), schema.prefixMap)
   }
 
   def cnvResult(
@@ -40,7 +43,8 @@ case class ShEx(schema: ShExSchema) extends Schema {
   ): InfoNode = {
     val (oks,bads) = r.toSeq.partition(_._2.isOK)
     InfoNode(oks.map(cnvShapeResult(_)),
-             bads.map(cnvShapeResult(_))
+             bads.map(cnvShapeResult(_)),
+             schema.prefixMap
     )
   }
 
@@ -48,9 +52,8 @@ case class ShEx(schema: ShExSchema) extends Schema {
       p:(ShapeType,TypingResult[ViolationError,String])
     ): (ShapeLabel,Explanation) = {
       val shapeLabel = p._1.label match {
-        case Some(IRILabel(iri)) => ShapeLabel(schema.prefixMap.qualify(iri))
-        case Some(BNodeLabel(bn)) => ShapeLabel(bn.id)
-        case None => ShapeLabel(s"Anonymous shape ${p._1.shape}")
+        case Some(lbl) => ShapeLabel(lbl.show)
+        case None => ShapeLabel("<Unknown label>")
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
