@@ -95,7 +95,7 @@ object table {
           val symbol = Symbol(cref, tc.min, max2IntOrUnbounded(tc.max))
           println(s"Making table for tc $tc. Negated: ${tc.negated}")
           (newTable,
-            if (tc.negated) Repeat(symbol,0,0)
+            if (tc.negated) symbol.copy(m = IntLimit(0))
             else symbol)
         }
       }

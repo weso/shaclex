@@ -2,4 +2,4 @@ prefix : <http://example.org/>
 
 start = @:S
 
-:S { !:p . }
+:S { :p [2 3] }

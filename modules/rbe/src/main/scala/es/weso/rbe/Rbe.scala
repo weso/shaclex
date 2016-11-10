@@ -199,9 +199,11 @@ sealed trait Rbe[+A] {
         mkAnd(d, Star(e))
       }
       case Repeat(e,_,IntLimit(0)) => {
-        lazy val d = e.deriv(x,open,controlled)
-        if (d.nullable) Fail(s"Max cardinality 0 but deriv. of $e/$x = $d and nullable")
-        else mkAnd(d,e)
+        val d = e.deriv(x,open,controlled)
+        d match {
+          case f: Fail => Empty
+          case _ => Fail(s"Max cardinality 0 but deriv. of $e/$x = $d and nullable")
+        }
       }
       case Repeat(e,m,n) => {
         lazy val d = e.deriv(x,open,controlled)
