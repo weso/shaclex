@@ -59,25 +59,26 @@ trait RDFReader {
 
   /**
    * Set of RDFTriples that contain a node as subject
-   * @param node
+   * @param n node
    */
   def triplesWithSubject(n: RDFNode): Set[RDFTriple]
 
   /**
    * Set of RDFTriples that contain a node as predicate
-   * @param node
+   * @param p predicate
    */
   def triplesWithPredicate(p: IRI): Set[RDFTriple]
 
   /**
    * Set of RDFTriples that contain a node as object
-   * @param node
+   * @param n node
    */
   def triplesWithObject(n: RDFNode): Set[RDFTriple]
 
   /**
    * Set of RDFTriples that contain a node as predicate with some object
-   * @param node
+   * @param p predicate
+   * @param o object
    */
   def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple]
 
@@ -87,7 +88,7 @@ trait RDFReader {
 
   /**
    * Set of RDFTriples that contain a node as subject and a given Predicate
-   * @param node
+   * @param s
    */
   def triplesWithSubjectPredicate(s: RDFNode, p: IRI): Set[RDFTriple] = {
     triplesWithSubject(s).filter(t => t.hasPredicate(p))

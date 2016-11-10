@@ -1,4 +1,7 @@
 package es.weso.shex.validator
+import cats._,data._
+import implicits._
+
 
 case class Evidences(ls: List[(NodeShape,String)]) {
   def addEvidence(ns: NodeShape, msg:String): Evidences = {
@@ -11,6 +14,15 @@ case class Evidences(ls: List[(NodeShape,String)]) {
 
 object Evidences {
   def initial = Evidences(List())
+
+  implicit def showEvidences = new Show[Evidences] {
+    // TODO: Improve this...
+    def show(e: Evidences): String = {
+      e.ls.toString
+    }
+  }
+
+
 }
 
     

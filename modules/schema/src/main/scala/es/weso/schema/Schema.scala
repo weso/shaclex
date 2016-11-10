@@ -19,9 +19,7 @@ abstract class Schema {
 
  def validateNodeShape(node: IRI, label: String, rdf: RDFReader): Result
 
- def validateNodeAllShapes(node: IRI, rdf: RDFReader): Result
-
- def validateAllNodesAllShapes(rdf: RDFReader): Result
+ def validateNodeStart(node: IRI, rdf: RDFReader): Result
 
  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema]
 

@@ -15,6 +15,7 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
 
   def check(bag: Bag[A], open: Boolean): Matched[Bag[A]] = {
     if (rbe.containsRepeats) {
+      // TODO: Check if Repeat(X,0,0) could be treated specially
       derivChecker.check(bag, open)
     } else {
       if (!open && extraSymbols(bag).isEmpty == false)
@@ -22,9 +23,9 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
       else if (IntervalChecker.interval(rbe, bag).contains(1))
         Right(bag)
       else
-      // Question: Check using derivatives to obtain better error message
+      // In case of fail, check using derivatives to obtain better error message
       // TODO: Could it be optimized knowing that it will fail?
-        derivChecker.check(bag, open)
+      derivChecker.check(bag, open)
     }
   }
 
@@ -37,6 +38,7 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
 object IntervalChecker {
 
   def interval[A](rbe: Rbe[A], bag: Bag[A]): Interval = {
+    println(s"Interval of $rbe with $bag")
     rbe match {
       case Fail(_) => Interval(1, 0)
       case Empty => Interval(0, Unbounded)

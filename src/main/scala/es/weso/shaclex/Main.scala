@@ -3,6 +3,7 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
+import es.weso.rdf.nodes.IRI
 //import org.slf4j.LoggerFactory
 // import es.weso.shacl._
 import es.weso.schema._
@@ -45,22 +46,48 @@ object Main extends App with LazyLogging {
           }
         }
 
-        val result = if (opts.validate()) {
-          schema.validate(rdf)
-        } else
-          Result.empty
+        val trigger: String = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
 
-        if (opts.validate() && opts.showResult()) {
-          println(s"Result: \n${result.show}")
+        val result: Either[String,Result] =
+          ValidationTrigger.findTrigger(
+            trigger,
+            opts.node.toOption,
+            opts.shapeLabel.toOption,
+           rdf.getPrefixMap()).fold(
+            str => Left(str),
+            trigger => trigger match {
+              case TargetDeclarations => Right(schema.validate(rdf))
+              case NodeShape(node,shape) => node match {
+                case iri: IRI => {
+                  println(s"Validating...nodeShape($iri,$shape)")
+                  Right(schema.validateNodeShape(iri, shape, rdf))
+                }
+                case _ => Left(s"Unsupported NodeShape validation for $node")
+              }
+              case NodeStart(node) => node match {
+                case iri: IRI => Right(schema.validateNodeStart(iri,rdf))
+                case _ => Left(s"Unsupported NodeShape validation for $node")
+              }
+              case _ => Left(s"Unsupported trigger $trigger")
+            }
+          )
+
+        result match {
+          case Left(str) => println(s"Error: $str")
+          case Right(r) => {
+            if (opts.showResult()) {
+              println(s"Result: \n${r.show}")
+            }
+            if (opts.outputFile.isDefined) {
+              val fileName = opts.outputFile()
+              val str = r.show
+              FileUtils.writeFile(fileName, str)
+            }
+          }
         }
 
         if (opts.cnvEngine.isDefined) {
           println("Conversion between engines don't implemented yet")
-        }
-        if (opts.outputFile.isDefined) {
-          val fileName = opts.outputFile()
-          val str = result.show
-          FileUtils.writeFile(fileName, str)
         }
 
         if (opts.time()) {

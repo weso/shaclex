@@ -18,6 +18,8 @@ import es.weso.shex.validator.table._
 import ShExChecker._
 import es.weso.shex.compact.CompactShow
 
+import scala.util.{Failure, Success}
+
 
 /**
  * ShEx validator
@@ -85,12 +87,34 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     } yield r
   }
 
+  def checkNodeStart(node: RDFNode): CheckTyping =
+    schema.start match {
+      case None => errStr(s"checkin node $node against start declaration of schema. No start declaration found")
+      case Some(shape) => {
+        logger.info(s"nodeStart. Node: ${node.show}")
+        val shapeType = ShapeType(shape, None, schema)
+        val attempt = Attempt(NodeShape(node, shapeType), None)
+        checkNodeShapeExpr(attempt,node,shape)
+    }
+  }
+
+
   def getShapeLabel(str: String): Check[ShapeLabel] = {
-    // TODO prevent errors in str unqualify in case of prefix:value
-    val label = IRILabel(IRI(str))
-    if (schema.labels contains label) ok(label)
-    else {
-      errStr(s"Schema doesn't contain label '$str'. Available labels: ${schema.labels}")
+    logger.info(s"getShapeLabel. Label: ${str}")
+    val maybeIRI: Either[String,IRI] =
+       IRI.mkIRI(str) match {
+           case Success(iri) => Right(iri)
+           case Failure(e) => Left(s"Can't get shape label from $str. Bad formed IRI")
+         }
+    maybeIRI match {
+      case Right(iri) =>{
+        val label = IRILabel(IRI(str))
+        if (schema.labels contains label) ok(label)
+        else {
+          errStr(s"Schema doesn't contain label '$str'. Available labels: ${schema.labels}")
+        }
+      }
+      case Left(str) => errStr(str)
     }
   }
 
@@ -314,6 +338,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                          bagChecker: BagChecker_,
                          table: CTable)(cl: CandidateLine): CheckTyping = {
     val bag = Bag.toBag(cl.map(_._2))
+    println(s"Bag: $bag, rbe: ${bagChecker.rbe}")
     // parameter open=false because open has been checked before
     bagChecker.check(bag,false) match {
       case Right(_) => {
@@ -346,7 +371,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     outgoing ++ incoming
   }
 
-def checkTripleConstraint(
+/*def checkTripleConstraint(
     attempt: Attempt,
     node: RDFNode)
     (t: TripleConstraint): CheckTyping = for {
@@ -360,28 +385,22 @@ def checkTripleConstraint(
            msgErr(s"Number of triples with predicate ${t.predicate.show}=$noTriples not in (${t.min},${t.max})"),
            s"No. of triples with predicate ${t.predicate.show}= $noTriples between (${t.min},${t.max})")
  } yield t
-
+*/
 
   lazy val emptyTyping: ShapeTyping =
     Monoid[ShapeTyping].empty
 
   // Fails if there is any error
   def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    implicit def showPair = new Show[(ShapeTyping, Evidences)] {
-      def show(e: (ShapeTyping, Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences:\n${e._2}"
-      }
-    }
     runCheck(checkTargetNodeDeclarations, rdf)
   }
 
   def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): CheckResult[ViolationError, ShapeTyping, Log] = {
-    implicit def showPair = new Show[(ShapeTyping, Evidences)] {
-      def show(e: (ShapeTyping, Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences:\n${e._2}"
-      }
-    }
     runCheck(checkNodeShapeName(node,shape), rdf)
+  }
+
+  def validateNodeStart(rdf: RDFReader, node: IRI): CheckResult[ViolationError, ShapeTyping, Log] = {
+     runCheck(checkNodeStart(node), rdf)
   }
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {

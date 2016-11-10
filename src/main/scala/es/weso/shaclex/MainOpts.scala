@@ -4,6 +4,7 @@ import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.schema.ValidationTrigger
 
 
 class MainOpts(
@@ -16,6 +17,8 @@ class MainOpts(
   lazy val dataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase).distinct
   lazy val schemaFormats = Schemas.availableFormats.map(_.toUpperCase).distinct
   lazy val defaultSchemaFormat = "TURTLE"
+  lazy val defaultTrigger = ValidationTrigger.default.name
+  lazy val triggerModes = ValidationTrigger.triggerValues.map(_._1.toUpperCase).distinct
 
   banner("""| shaclex: SHACL processor
             | Options:
@@ -49,19 +52,16 @@ class MainOpts(
     noshort = true
   )
 
-
   val engine = opt[String]("engine",
     default = Some(defaultEngine),
     descr = s"Engine. Default ($defaultEngine). Possible values: ${showLs(engines)}",
     validate = isMemberOf(engines)
   )
 
-  val validate = toggle("validate",
-    prefix = "no-",
-    default = Some(true),
-    descrYes = "validate data against schema",
-    descrNo = "don't validate",
-    noshort = true
+  val trigger = opt[String]("trigger",
+    default = Some(defaultTrigger),
+    descr = s"Trigger mode. Default ($defaultTrigger). Possible values: ${showLs(triggerModes)}",
+    validate = isMemberOf(triggerModes)
   )
 
   val explain = toggle("explain",
@@ -121,12 +121,25 @@ class MainOpts(
     noshort = true
   )
 
+  val node = opt[String]("node",
+    short = 'n',
+    default = None,
+    required = false,
+    descr = "Node to validate")
+
+  val shapeLabel = opt[String]("shape",
+    short = 'l',
+    default = None,
+    required = false,
+    descr = "Label (IRI) of Shape in Schema")
+
   val time = toggle("time",
     prefix = "no-",
     default = Some(false),
     descrYes = "show time",
     descrNo = "don't show time",
     short = 't')
+
 
   override protected def onError(e: Throwable) = onError(e, builder)
 

@@ -160,7 +160,7 @@ case class RDFAsJenaModel(model: Model)
   override def getPrefixMap: PrefixMap = {
     PrefixMap(
       model.getNsPrefixMap.toMap.map {
-        case (alias, iri) => (Prefix(alias + ":"), IRI(iri))
+        case (alias, iri) => (Prefix(alias), IRI(iri))
       }
     )
   }

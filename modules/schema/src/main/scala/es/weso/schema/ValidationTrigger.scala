@@ -1,5 +1,7 @@
 package es.weso.schema
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
+
 import util._
 
 abstract class ValidationTrigger {
@@ -20,119 +22,90 @@ abstract class ValidationTrigger {
 /**
  * Validates only scope declarations
  */
-case object ScopeDeclarations extends ValidationTrigger {
-  override def explain = "Only scope node declarations"
-
+case object TargetDeclarations extends ValidationTrigger {
+  override def explain = "Only SHACL target declarations"
   override def maybeFocusNode = None
   override def maybeShape = None
-
-  override def name = "ScopeDeclarations"
-
-}
-
-/**
- * Validates all nodes against all shapes
- *
- */
-case object AllNodesAllShapes extends ValidationTrigger {
-  override def explain = "All nodes in data against all shapes"
-  override def maybeFocusNode = None
-  override def maybeShape = None
-  override def name = "AllNodesAllShapes"
-}
-
-/**
- * Validates a node against all shapes
- *
- */
-case class NodeAllShapes(node: RDFNode) extends ValidationTrigger {
-  override def explain = "A node with all shapes"
-  override def maybeFocusNode = Some(node.toString)
-  override def maybeShape = None
-  override def name = "NodeAllShapes"
+  override def name = "TargetDecls"
 }
 
 /**
  * Validates a node against a specific shape
  */
-case class NodeShape(node: RDFNode, shape: String) extends ValidationTrigger {
+case class NodeShape(node: IRI, shape: String) extends ValidationTrigger {
   override def explain = "A node with a shape"
   override def maybeFocusNode = Some(node.toString)
   override def maybeShape = Some(shape)
   override def name = "NodeShape"
 }
 
+
 /**
- * Validates all nodes against a specific shape
- */
-case class AllNodesShape(shape: String) extends ValidationTrigger {
-  override def explain = "All nodes with a shape"
-  override def maybeFocusNode = None
-  override def maybeShape = Some(shape)
-  override def name = "AllNodesShape"
+  * Validates a nodes against the start shape
+  */
+case class NodeStart(node: RDFNode) extends ValidationTrigger {
+  override def explain = "Nodes agains start shape"
+  override def maybeFocusNode = Some(node.toString)
+  override def maybeShape = None
+  override def name = "NodeStart"
 }
 
 object ValidationTrigger {
 
- lazy val default: ValidationTrigger = ScopeDeclarations
-
- // Validation Trigger constructors (could replace by apply)
- def nodeAllShapes(node: String): ValidationTrigger =
-   NodeAllShapes(IRI(node))
-
- // Validation Trigger constructors (could replace by apply)
- def allNodesShape(shape: String): ValidationTrigger =
-   AllNodesShape(shape)
-
+ lazy val default: ValidationTrigger = TargetDeclarations
 
  def nodeShape(node: String, shape: String): ValidationTrigger =
    NodeShape(IRI(node), shape)
 
- lazy val scopeDeclarations: ValidationTrigger = ScopeDeclarations
+ lazy val targetDeclarations: ValidationTrigger = TargetDeclarations
 
- lazy val allNodesAllShapes: ValidationTrigger = AllNodesAllShapes
-
- def fromOptIRI(optIRI: Option[String]): ValidationTrigger = {
-   optIRI match {
-     case None => default
-     case Some(iri) => nodeAllShapes(iri)
+ def findTrigger(name: String,
+                 node: Option[String],
+                 shape: Option[String],
+                 pm: PrefixMap = PrefixMap.empty): Either[String,ValidationTrigger] = {
+   (name.toUpperCase,node,shape) match {
+     case ("TARGETDECLS",_,_) => Right(TargetDeclarations)
+     case ("NODESHAPE",Some(node),Some(shape)) => {
+       val eitherNode = removeLTGT(node,pm)
+       val eitherShape = removeLTGT(shape,pm)
+       (eitherNode,eitherShape) match {
+         case (Right(iriNode),Right(iriShape)) => Right(NodeShape(iriNode,iriShape.str))
+         case (Left(e), Right(_)) => Left(e)
+         case (Right(_), Left(e)) => Left(e)
+         case (Left(e1),Left(e2)) => Left(e1 + "\n" + e2)
+       }
+     }
+     case ("NODESTART",Some(node),_) => {
+       removeLTGT(node,pm).right.map(NodeStart(_))
+     }
+     case _ =>
+       Left(s"Cannot understand trigger mode\ntrigger = $name, node: $node, shape: $shape")
    }
  }
 
- def findTrigger(name: String, node: Option[String], shape: Option[String]): Try[ValidationTrigger] = {
-   (name,node,shape) match {
-     case ("ScopeDeclarations",_,_) => Success(ScopeDeclarations)
-     case ("AllNodesAllShapes",_,_) => Success(AllNodesAllShapes)
-     case ("NodeShape",Some(node),Some(shape)) => {
-       val iri = removeLTGT(node)
-       Success(NodeShape(iri,shape))
-     }
-     case ("NodeAllShapes",Some(node),_) => {
-       val iri = removeLTGT(node)
-       Success(NodeAllShapes(iri))
-     }
-     case ("AllNodesShape",_,Some(shape)) => Success(AllNodesShape(shape))
-     case _ => Failure(
-       new RuntimeException(s"Cannot understand trigger mode. trigger = $name, node: $node, shape: $shape"))
-   }
- }
-
- /**
+ /*
   * Remove < and > from string...if it is: "<http://example.org> -> http://example.org"
   */
- def removeLTGT(str: String): RDFNode = {
-   val pattern = "<(.*)>".r
+ def removeLTGT(str: String, pm: PrefixMap): Either[String,IRI] = {
+   val iriPattern = "<(.*)>".r
    str match {
-     case pattern(c) => IRI(c)
+     case iriPattern(c) => Right(IRI(c))
+     case _ => pm.qname(str) match {
+       case None =>
+         Left(s"Can't obtain IRI from $str. Available prefixes: ${pm.prefixes.mkString(",")}")
+       case Some(iri) =>
+         Right(iri)
+       }
    }
  }
 
  def triggerValues: List[(String,String)] = {
-   val allNodesShape = AllNodesShape("")
-   val nodeAllShapes = NodeAllShapes(IRI(""))
-   val nodeShape = NodeShape(IRI(""),"")
-   val ls = List(ScopeDeclarations, AllNodesAllShapes, allNodesShape, nodeAllShapes,nodeShape)
-   ls.map(vt => (vt.name,vt.explain))
+   List(
+     TargetDeclarations,
+     NodeShape(IRI(""),""),
+     NodeStart(IRI(""))).map(
+      vt => (vt.name,vt.explain)
+     )
  }
 
 }

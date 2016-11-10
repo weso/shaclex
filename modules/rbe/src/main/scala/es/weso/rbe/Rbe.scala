@@ -82,13 +82,17 @@ sealed trait Rbe[+A] {
     this match {
       case Fail(_) => false
       case Empty => true
+      case Symbol(_,0,IntLimit(0)) => false
       case Symbol(_,0,_) => true
       case Symbol(_,_,_) => false
       case And(e1,e2) => e1.nullable && e2.nullable
       case Or(e1,e2) => e1.nullable || e2.nullable
       case Star(e) => true
       case Plus(e) => false
-      case Repeat(e,m,n) => m == 0 || e.nullable
+//      case Repeat(e,0,IntLimit(0)) => false // e.nullable ?
+      case Repeat(e,0,_) => e.nullable
+      case Repeat(e,_,_) => false
+
     }
   }
   
@@ -193,6 +197,11 @@ sealed trait Rbe[+A] {
       case Plus(e) => {
         val d = e.deriv(x,open,controlled)
         mkAnd(d, Star(e))
+      }
+      case Repeat(e,_,IntLimit(0)) => {
+        lazy val d = e.deriv(x,open,controlled)
+        if (d.nullable) Fail(s"Max cardinality 0 but deriv. of $e/$x = $d and nullable")
+        else mkAnd(d,e)
       }
       case Repeat(e,m,n) => {
         lazy val d = e.deriv(x,open,controlled)

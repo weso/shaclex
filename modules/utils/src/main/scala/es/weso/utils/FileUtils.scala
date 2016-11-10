@@ -49,9 +49,30 @@ object FileUtils {
   }
 
   /**
+    * Gets the contents of a file
+    *
+    * @param file file
+    *
+    */
+  def getContents(file: File): Try[CharSequence] = {
+    try {
+      using(Source.fromFile(file)("UTF-8")) { source =>
+        Success(source.getLines.mkString("\n"))
+      }
+    } catch {
+      case e: FileNotFoundException => {
+        Failure(e)
+      }
+      case e: IOException => {
+        Failure(e)
+      }
+    }
+  }
+
+  /**
    * Gets the contents of a file
    *
-   * @param filaName name of the file
+   * @param fileName name of the file
    *
    */
   def getContents(fileName: String): Try[CharSequence] = {

@@ -1,10 +1,10 @@
 package es.weso.shex.validator
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
 import es.weso.typing._
 import es.weso.rdf.nodes._
 import es.weso.shex._
-
 
 case class ShapeTyping(
   t: Typing[RDFNode, ShapeType, ViolationError, String]
@@ -26,37 +26,52 @@ case class ShapeTyping(
   }
 
   def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping =
-    ShapeTyping(t.addType(node,shapeType))
+    this.copy(t = t.addType(node,shapeType))
 
   def addEvidence(node: RDFNode, shapeType: ShapeType, evidence: String): ShapeTyping =
-    ShapeTyping(t.addEvidence(node,shapeType,evidence))
+    this.copy(t = t.addEvidence(node,shapeType,evidence))
 
   def addNotEvidence(node: RDFNode, shapeType: ShapeType, err: ViolationError): ShapeTyping =
-    ShapeTyping(t.addNotEvidence(node,shapeType,err))
+    this.copy(t = t.addNotEvidence(node,shapeType,err))
 
+  override def toString = showShapeTyping
+
+  def showShapeTyping : String = {
+    import ShapeTyping._
+    t.show
+  }
 }
 
 object ShapeTyping {
+
   implicit lazy val showRDFNode: Show[RDFNode] = new Show[RDFNode] {
     def show(n: RDFNode) = s"$n"
   }
 
   implicit def showShapeTyping = new Show[ShapeTyping] {
     override def show(t: ShapeTyping): String = {
-      s"ShapeTyping: $t"
+      t.showShapeTyping
     }
   }
 
   implicit def monoidShapeTyping = new Monoid[ShapeTyping] {
-
     override def empty: ShapeTyping =
       ShapeTyping(Typing.empty[RDFNode,ShapeType,ViolationError,String])
+
     override def combine(t1: ShapeTyping,
       t2: ShapeTyping): ShapeTyping =
       ShapeTyping(t1.t.combineTyping(t2.t))
+
   }
 
   def combineTypings(ts: Seq[ShapeTyping]): ShapeTyping = {
     ShapeTyping(Typing.combineTypings(ts.map(_.t)))
   }
+
+  implicit def showPair = new Show[(ShapeTyping, Evidences)] {
+    def show(e: (ShapeTyping, Evidences)): String = {
+      s"Typing: ${e._1.show}\n Evidences:\n${e._2.show}"
+    }
+  }
+
 }

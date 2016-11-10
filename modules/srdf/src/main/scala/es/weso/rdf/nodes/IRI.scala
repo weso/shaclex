@@ -1,6 +1,8 @@
 package es.weso.rdf.nodes
 
-import java.net.{ URISyntaxException, URI }
+import java.net.{URI, URISyntaxException}
+
+import scala.util.Try
 
 case class IRI(uri: URI) extends RDFNode {
 
@@ -39,18 +41,20 @@ case class IRI(uri: URI) extends RDFNode {
 }
 
 object IRI {
+  /**
+    * Unsafe can raise an exception if the URI is not well formed
+    * @param str
+    * @return
+    */
   def apply(str: String): IRI = {
-    // Todo: Capture exceptions to provide better error messages?
     IRI(new URI(str))
   }
 
-  def unapply(str: String): Option[IRI] = {
-    try {
-      Some(IRI(new URI(str)))
-    } catch {
-      case _: URISyntaxException => None
-    }
-  }
+  def mkIRI(str: String): Try[IRI] =
+    Try(IRI(new URI(str)))
+
+  def unapply(str: String): Option[IRI] =
+    mkIRI(str).toOption
 
   def fromString(str: String): Option[IRI] = {
     unapply(str)

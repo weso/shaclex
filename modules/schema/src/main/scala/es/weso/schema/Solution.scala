@@ -6,7 +6,8 @@ import es.weso.rdf.PrefixMap
 
 case class Solution
   (map: Map[RDFNode,InfoNode],
-   pm: PrefixMap
+   nodeMap: PrefixMap,
+   schemaMap: PrefixMap
   ) {
 
   override def toString: String = show
@@ -16,7 +17,7 @@ case class Solution
     sb ++= "Solution\n"
     for (pair <- map.toSeq) {
       val (node,info) = pair
-      sb ++= ( pm.qualify(node) + " " + info.show + "\n" )
+      sb ++= ( nodeMap.qualify(node) + " " + info.show + "\n" )
     }
     sb.toString
   }

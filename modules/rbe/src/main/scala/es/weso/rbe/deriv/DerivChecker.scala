@@ -6,6 +6,7 @@ case class DerivChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
   
   def check(bag:Bag[A], open: Boolean): Either[String, Bag[A]] = {
     val d = rbe.derivBag(bag, open, rbe.symbols)
+    println(s"Deriv of $rbe against $bag = $d")
     if (d.nullable) Right(bag)
     else {
       d match {

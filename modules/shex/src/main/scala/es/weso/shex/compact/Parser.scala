@@ -60,8 +60,10 @@ object Parser extends LazyLogging {
     EitherT.liftT[S, String, Unit](StateT.modify(fn))
   }
 
-  def updateStart(s: Start): Builder[Unit] =
+  def updateStart(s: Start): Builder[Unit] = {
+    logger.info(s"New start: $s")
     updateState(_.copy(start = s))
+  }
 
   def addShape(label: ShapeLabel, expr: ShapeExpr): Builder[Unit] = {
     updateState(s => s.copy(shapesMap = s.shapesMap + (label -> expr)))

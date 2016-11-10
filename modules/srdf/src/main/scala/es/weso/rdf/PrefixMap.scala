@@ -26,7 +26,9 @@ case class PrefixMap(pm: Map[Prefix, IRI]) {
     str.indexOf(":") match {
       case (-1) => Some(IRI(str))
       case n => {
-        val (alias, localname) = str.splitAt(n)
+        val (alias, colonLocalname) = str.splitAt(n)
+        val localname = colonLocalname.drop(1)
+        println(s"Alias: '$alias', localName: '$localname'")
         getIRI(alias).map(iri => iri.add(localname))
       }
     }
@@ -44,31 +46,38 @@ case class PrefixMap(pm: Map[Prefix, IRI]) {
 
   override def toString: String = {
     def cnv(pair: (Prefix, IRI)): String = {
-      pair._1.str + ": " + pair._2 + "\n"
+      pair._1.str + ": " + pair._2 + "|"
     }
     pm.map(cnv).mkString("\n")
   }
+
+  def qualifyIRI(iri: IRI): String =
+    qualifyString(iri.str)
 
   def qualify(node: RDFNode): String =
     node match {
       case iri: IRI => qualifyIRI(iri)
       case _ => node.toString
-    }
+  }
 
   /**
     * If prefixMap contains a: -> http://example.org/
-    * then qualify(IRI("http://example.org/x")) = "a:x"
+    * then qualify("http://example.org/x") = "a:x"
     * else <http://example.org/x>
     */
-  def qualifyIRI(iri: IRI): String = {
+  def qualifyString(str: String): String = {
       def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
-        iri.str.startsWith(p._2.str)
+        str.startsWith(p._2.str)
       }
 
       pm.find(startsWithPredicate) match {
-        case None => "<" ++ iri.str ++ ">"
-        case Some(p) => p._1.str + ":" + iri.str.stripPrefix(p._2.str)
+        case None => "<" ++ str ++ ">"
+        case Some(p) => p._1.str + ":" + str.stripPrefix(p._2.str)
       }
+  }
+
+  def prefixes: List[String] = {
+    pm.keySet.map(_.str).toList
   }
 
 }

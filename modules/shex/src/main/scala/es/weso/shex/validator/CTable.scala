@@ -83,6 +83,7 @@ object table {
         }
         case i: Inclusion =>
           throw new Exception("CTable: Not implemented table generation for inclusion")
+
         case tc: TripleConstraint => {
           val newElems = current.elems + 1
           val cref = ConstraintRef(newElems)
@@ -91,7 +92,11 @@ object table {
             constraints = current.constraints + (cref -> tc.valueExpr),
             paths = current.addPath(tc.path, cref)
           )
-          (newTable, Symbol(cref, tc.min, max2IntOrUnbounded(tc.max)))
+          val symbol = Symbol(cref, tc.min, max2IntOrUnbounded(tc.max))
+          println(s"Making table for tc $tc. Negated: ${tc.negated}")
+          (newTable,
+            if (tc.negated) Repeat(symbol,0,0)
+            else symbol)
         }
       }
     }

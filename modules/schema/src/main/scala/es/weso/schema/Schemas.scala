@@ -3,6 +3,7 @@ import java.io.File
 
 import util._
 import es.weso.rdf.RDFReader
+import es.weso.utils.FileUtils
 
 import scala.io._
 import scala.util.{Failure, Success, Try}
@@ -47,11 +48,10 @@ def fromFile(
   file: File,
   format: String,
   schemaName: String,
-  base: Option[String] = None): Try[Schema] = {
-  fromString(Source.fromFile(file).getLines.mkString,
-    format, schemaName, base
-  )
-}
+  base: Option[String] = None): Try[Schema] = for {
+  cs <- FileUtils.getContents(file)
+  schema <- fromString(cs, format, schemaName, base)
+} yield schema
 
 def fromString(
   cs: CharSequence,

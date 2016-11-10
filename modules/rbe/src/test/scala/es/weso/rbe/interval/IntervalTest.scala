@@ -12,7 +12,7 @@ import org.scalatest.Matchers._
 import es.weso.rbe.deriv._
 import org.scalacheck._
 
-/*class IntervalTest extends FunSpec with Matchers with GeneratorDrivenPropertyChecks {
+class IntervalTest extends FunSpec with Matchers with BagMatchers {
   
   describe("Intervals calculation") {
 
@@ -244,40 +244,12 @@ import org.scalacheck._
     matchBag(And(Repeat(And(Symbol("a", 1, 1), Symbol("b", 1, 1)), 1, Unbounded),Symbol("c",1,1)), Bag.toBag(List("a", "b", "a", "b", "c")))
     noMatchBag(And(Repeat(And(Symbol("a", 1, 1), Symbol("b", 1, 1)), 1, Unbounded),Symbol("c",1,1)), Bag.toBag(List("a", "b", "a", "b", "b", "c")))
     matchBag(And(Repeat(And(Symbol("a", 1, 1), Symbol("b", 1, 1)), 1, Unbounded),Symbol("c",1,1)), Bag.toBag(List("a", "b", "a", "b", "c","d")))
+    noMatchBag(Repeat(Symbol("a", 1, 1), 0, 0), Bag.toBag(List("a")))
+    matchBag(Repeat(Symbol("a", 1, 1), 0, 0), Bag.toBag(List("b")))
+    noMatchBag(Repeat(Or(Symbol("a", 1, 1),Symbol("b",1,1)), 0, 0), Bag.toBag(List("a")))
+    noMatchBag(Repeat(Or(Symbol("a", 1, 1),Symbol("b",1,1)), 0, 0), Bag.toBag(List("b")))
+    matchBag(Repeat(Or(Symbol("a", 1, 1),Symbol("b",1,1)), 0, 0), Bag.toBag(List("c")))
   }
 
-  def matchBag[A](rbe: Rbe[A], bag: Bag[A], open: Boolean = true) = {
-    it(s"${rbe} should match ${bag}. Open: $open") {
-      val checker = IntervalChecker(rbe)
-      checker.check(bag, open).isRight should be(true)
-    }
-  }
 
-  def noMatchBag[A](rbe: Rbe[A], bag: Bag[A], open: Boolean = true) = {
-    it(s"${rbe} should not match ${bag}. Open: $open") {
-      val checker = IntervalChecker(rbe)
-      checker.check(bag, open).isRight should be(false)
-    }
-  }
-
-  def equalInterval[A](rbe: Rbe[A], bag: Bag[A], expected: Interval) = {
-    it(s"Interval of ${bag} with ${rbe} should be ${expected}") {
-      IntervalChecker.interval(rbe,bag) should be(expected)
-    }
-  }
-
-  def containsBag[A](rbe: Rbe[A], bag: Bag[A], open: Boolean = true) = {
-    it(s"${rbe} should contain ${bag}. Open: $open") {
-      val checker = IntervalChecker(rbe)
-      checker.check(bag, open).isRight should be(true)
-    }
-  }
-  
-  def notContainsBag[A](rbe: Rbe[A], bag: Bag[A], open: Boolean = true) = {
-    it(s"${rbe} should not contain ${bag}, Open: $open") {
-      val checker = IntervalChecker(rbe)
-      checker.check(bag, open).isRight should be(false)
-    }
-  }
-
-}*/
+}

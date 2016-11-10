@@ -21,21 +21,23 @@ case class ShExSchema(schema: Schema_) extends Schema {
   override def validate(rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
-    cnvResult(r)
+    cnvResult(r, rdf)
   }
 
   def cnvResult(
     r: CheckResult[ViolationError, ShapeTyping,
-                   List[(es.weso.shex.validator.NodeShape,String)]]
-  ): Result =
+                   List[(es.weso.shex.validator.NodeShape,String)]],
+    rdf: RDFReader): Result =
     Result(isValid = r.isOK,
            message = if (r.isOK) "Valid" else "Not valid",
-           solutions = r.results.map(cnvShapeTyping(_)),
+           solutions = r.results.map(cnvShapeTyping(_,rdf)),
            errors = r.errors.map(cnvViolationError(_))
     )
 
-  def cnvShapeTyping(st: ShapeTyping): Solution = {
-    Solution(st.t.getMap.mapValues(cnvResult), schema.prefixMap)
+  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
+    Solution(st.t.getMap.mapValues(cnvResult),
+    rdf.getPrefixMap(),
+    schema.prefixMap)
   }
 
   def cnvResult(
@@ -52,8 +54,8 @@ case class ShExSchema(schema: Schema_) extends Schema {
       p:(ShapeType,TypingResult[ViolationError,String])
     ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.label match {
-        case Some(lbl) => SchemaLabel(lbl.show)
-        case None => SchemaLabel("<Unknown label>")
+        case Some(lbl) => SchemaLabel(lbl.show, schema.prefixMap)
+        case None => SchemaLabel("<Unknown label>",schema.prefixMap)
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
@@ -73,31 +75,17 @@ case class ShExSchema(schema: Schema_) extends Schema {
   }
 
   override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
-    val pm = schema.prefixMap
-    pm.qname(shape) match {
-      case None => Result.errStr(s"Can't form IRI from shape '$shape")
-      case Some(iri) => {
-        val label = IRILabel(iri)
-        val validator = Validator(schema)
-        val r = validator.validateNodeShape(rdf,node,shape)
-        cnvResult(r)
-      }
-    }
+    val validator = Validator(schema)
+    val r = validator.validateNodeShape(rdf,node,shape)
+    cnvResult(r,rdf)
   }
 
-  override def validateNodeAllShapes(node: IRI, rdf: RDFReader) : Result = {
-    throw new Exception("Unimplemented validateNodeAllShapes")
-/*    val matcher = ShExMatcher(schema,rdf)
-    val r = matcher.match_node_AllLabels(node)
-    validationResult2Result(r) */
+  override def validateNodeStart(node: IRI, rdf: RDFReader) : Result = {
+    val validator = Validator(schema)
+    val r = validator.validateNodeStart(rdf,node)
+    cnvResult(r,rdf)
   }
 
-  override def validateAllNodesAllShapes(rdf: RDFReader) : Result = {
-        throw new Exception("Unimplemented validateNodeAllShapes")
-/*    val matcher = ShExMatcher(schema,rdf)
-    val r = matcher.matchAllNodes_AllLabels
-    validationResult2Result(r) */
-  }
 
 /*  def hasSolutions(rs: Seq[Map[RDFNode,(Seq[ShExLabel],Seq[ShExLabel])]]): Boolean = {
     if (rs.size == 0) false

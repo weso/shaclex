@@ -18,18 +18,21 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def validate(rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
-    cnvResult(r)
+    cnvResult(r,rdf)
   }
 
-  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shacl.NodeShape,String)]]): Result =
+  def cnvResult(r:CheckResult[ViolationError, ShapeTyping, List[(es.weso.shacl.NodeShape,String)]],
+                rdf: RDFReader): Result =
     Result(isValid = r.isOK,
            message = if (r.isOK) "Valid" else "Not valid",
-           solutions = r.results.map(cnvShapeTyping(_)),
+           solutions = r.results.map(cnvShapeTyping(_,rdf)),
            errors = r.errors.map(cnvViolationError(_))
     )
 
-  def cnvShapeTyping(t: ShapeTyping): Solution = {
-    Solution(t.getMap.mapValues(cnvResult),schema.pm)
+  def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): Solution = {
+    Solution(t.getMap.mapValues(cnvResult),
+      rdf.getPrefixMap(),
+      schema.pm)
   }
 
   def cnvResult(
@@ -46,8 +49,8 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       p:(Shape,TypingResult[ViolationError,String])
     ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.id match {
-        case Some(iri) => SchemaLabel(schema.pm.qualify(iri))
-        case None => SchemaLabel("?")
+        case Some(iri) => SchemaLabel(schema.pm.qualify(iri),schema.pm)
+        case None => SchemaLabel("<Unknown label>",schema.pm)
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
@@ -75,12 +78,8 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     throw new Exception("Not implemented validateNodesShape for SHACLex yet")
   }
 
-  override def validateNodeAllShapes(node: IRI, rdf: RDFReader) : Result = {
-    throw new Exception("Not implemented validateNodesAllShapes for SHACLex yet")
-  }
-
-  override def validateAllNodesAllShapes(rdf: RDFReader) : Result = {
-    throw new Exception("Not implemented validateAllNodesAllShapes for SHACL yet")
+  override def validateNodeStart(node: IRI, rdf: RDFReader) : Result = {
+    throw new Exception("Unimplemented nodeStart")
   }
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema] = {
