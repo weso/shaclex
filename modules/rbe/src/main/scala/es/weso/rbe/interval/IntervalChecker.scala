@@ -20,12 +20,17 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
     } else {
       if (!open && extraSymbols(bag).isEmpty == false)
         Left(s"$rbe doesn't match bag $bag. Open: $open, Extra symbols: ${extraSymbols(bag)}")
-      else if (IntervalChecker.interval(rbe, bag).contains(1))
-        Right(bag)
-      else
-      // In case of fail, check using derivatives to obtain better error message
-      // TODO: Could it be optimized knowing that it will fail?
-      derivChecker.check(bag, open)
+      else {
+        val interval = IntervalChecker.interval(rbe, bag)
+        if (interval.contains(1))
+          Right(bag)
+        else
+        // In case of fail, check using derivatives to obtain better error message
+        // TODO: Could it be optimized knowing that it will fail?
+        // derivChecker.check(bag, open)
+          Left(s"Interval checker failed with value $interval")
+
+      }
     }
   }
 

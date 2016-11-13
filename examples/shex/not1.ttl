@@ -1,0 +1,12 @@
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
+
+:x1 :p 1 .  # It fails...but maybe, it shouldn't ?
+:x2 :p 1; :q 7 . # OK
+:x3 :p 1; :q 4 . # Must fail
+:x4 :p 2; :q 5 . # Must fail
+:x5 :p 1, 2; :q 5; :r 1 . # Must fail
+:x6 :p 1, 2; :q 8; :r 1 . # OK
+
+:NotS sh:targetNode :x3, :x4, :x5, :x1 .
+:S sh:targetNode :x2, :x6 .

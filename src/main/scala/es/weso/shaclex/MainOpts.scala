@@ -19,6 +19,8 @@ class MainOpts(
   lazy val defaultSchemaFormat = "TURTLE"
   lazy val defaultTrigger = ValidationTrigger.default.name
   lazy val triggerModes = ValidationTrigger.triggerValues.map(_._1.toUpperCase).distinct
+  lazy val resultFormats = Result.availableResultFormats
+  lazy val defaultResultFormat = Result.defaultResultFormat
 
   banner("""| shaclex: SHACL processor
             | Options:
@@ -106,6 +108,13 @@ class MainOpts(
     default = None,
     descr = "schema format to show",
     noshort = true
+  )
+
+  val outResultFormat = opt[String]("outResultFormat",
+    default = Some(defaultResultFormat),
+    descr = "format to show result",
+    noshort = true,
+    validate = isMemberOf(resultFormats)
   )
 
   val cnvEngine = opt[String]("cnvEngine",

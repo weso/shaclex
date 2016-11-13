@@ -59,35 +59,34 @@ object Main extends App with LazyLogging {
               case TargetDeclarations => Right(schema.validate(rdf))
               case NodeShape(node,shape) => node match {
                 case iri: IRI => {
-                  println(s"Validating...nodeShape($iri,$shape)")
+                  logger.info(s"Validating nodeShape($iri,$shape)")
                   Right(schema.validateNodeShape(iri, shape, rdf))
                 }
                 case _ => Left(s"Unsupported NodeShape validation for $node")
               }
               case NodeStart(node) => node match {
                 case iri: IRI => Right(schema.validateNodeStart(iri,rdf))
-                case _ => Left(s"Unsupported NodeShape validation for $node")
+                case _ => Left(s"Unsupported NodeStart validation for $node")
               }
               case _ => Left(s"Unsupported trigger $trigger")
             }
           )
 
         result match {
-          case Left(str) => println(s"Error: $str")
+          case Left(str) => logger.error(s"Error: $str")
           case Right(r) => {
+            val resultSerialized = r.serialize(opts.outResultFormat())
             if (opts.showResult()) {
-              println(s"Result: \n${r.show}")
+              println(resultSerialized)
             }
             if (opts.outputFile.isDefined) {
-              val fileName = opts.outputFile()
-              val str = r.show
-              FileUtils.writeFile(fileName, str)
+              FileUtils.writeFile(opts.outputFile(), resultSerialized)
             }
           }
         }
 
         if (opts.cnvEngine.isDefined) {
-          println("Conversion between engines don't implemented yet")
+          logger.error("Conversion between engines don't implemented yet")
         }
 
         if (opts.time()) {
@@ -98,7 +97,7 @@ object Main extends App with LazyLogging {
 
       }
       case Failure(e) => {
-        println("Exception: " + e.getMessage())
+        logger.error("Exception: " + e.getMessage())
       }
     }
 

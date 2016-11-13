@@ -8,9 +8,9 @@ name := "shaclex"
 lazy val shaclexVersion = "0.0.53"
 
 // Versions of common packages
-lazy val circeVersion = "0.5.1"
-lazy val effCatsVersion = "2.0.0-RC11"
-lazy val catsVersion = "0.7.2"
+lazy val circeVersion = "0.6.0"
+lazy val effCatsVersion = "2.0.0-RC18"
+lazy val catsVersion = "0.8.1"
 lazy val scalaTestVersion = "3.0.0"
 lazy val scalacticVersion = "3.0.0"
 lazy val logbackVersion = "1.1.7"
@@ -263,7 +263,7 @@ resolvers += Resolver.sonatypeRepo("releases")
 
 resolvers += Resolver.bintrayRepo("labra", "maven")
 
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
+// EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
 
 // Publishing settings to BinTray
 

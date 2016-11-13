@@ -1,6 +1,10 @@
 package es.weso.schema
 import cats.Show
 import es.weso.rdf.PrefixMap
+import io.circe.JsonObject._
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.syntax._
 
 case class Result(
     isValid: Boolean,
@@ -29,7 +33,40 @@ case class Result(
     sb.toString
   }
 
-/*  def toHTML(cut: Int = 1, schema:Schema): String = {
+  def toJson: Json = {
+    implicit val encodeSolution: Encoder[Solution] = new Encoder[Solution] {
+      final def apply(a: Solution): Json = Json.fromJsonObject(
+        singleton("type",Json.fromString("Solution"))
+      )
+    }
+
+    implicit val encodeErrorInfo: Encoder[ErrorInfo] = new Encoder[ErrorInfo] {
+      final def apply(a: ErrorInfo): Json = Json.fromJsonObject(
+        singleton("type",Json.fromString("ErrorInfo"))
+      )
+    }
+
+    implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
+      final def apply(a: Result): Json = {
+        val details: Json = if (isValid) {
+          solutions.toList.asJson
+        } else {
+          errors.toList.asJson
+        }
+        Json.fromJsonObject(JsonObject.empty.
+          add("valid",Json.fromBoolean(isValid)).
+          add("type",Json.fromString("Result")).
+          add("details",details))
+      }
+    }
+    this.asJson
+  }
+
+  def toJsonString2spaces: String =
+    toJson.spaces2
+
+
+  /*  def toHTML(cut: Int = 1, schema:Schema): String = {
     val sb = new StringBuilder
     val pm = schema.pm
     if (isValid) {
@@ -68,7 +105,12 @@ case class Result(
     if (n == 1 && cut == 1) ""
     else n.toString
   }
-  
+
+  def serialize(format: String): String = format.toUpperCase match {
+    case Result.TEXT => show
+    case Result.JSON => toJsonString2spaces
+    case _ => s"Unsupported format to serialize result: $format, $this"
+  }
 
 }
 
@@ -84,4 +126,10 @@ object Result {
   implicit val showResult = new Show[Result] {
     override def show(r: Result): String = r.show
   }
+
+  lazy val TEXT = "TEXT"
+  lazy val JSON = "JSON"
+  lazy val availableResultFormats = List(TEXT, JSON).map(_.toUpperCase)
+  lazy val defaultResultFormat = availableResultFormats.head
+
 }

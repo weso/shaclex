@@ -13,7 +13,7 @@ import es.weso.rbe.deriv._
 import org.scalacheck._
 
 class IntervalTest extends FunSpec with Matchers with BagMatchers {
-  
+
   describe("Intervals calculation") {
 
     val emptyBag: Bag[String] = Bag.toBag(List())

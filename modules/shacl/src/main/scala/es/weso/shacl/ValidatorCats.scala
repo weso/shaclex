@@ -630,7 +630,7 @@ object Validator {
     Validate[ViolationError, ?],
     Eval] */
 
- type Result[A] =  Xor[NonEmptyList[ViolationError],List[(A,Evidences)]]
+ type Result[A] =  Either[NonEmptyList[ViolationError],List[(A,Evidences)]]
 
  def isOK[A](r: Result[A]): Boolean =
     r.isRight && r.toList.isEmpty == false

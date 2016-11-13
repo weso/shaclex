@@ -263,6 +263,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       csRest <- calculateCandidates(neighs,cTable)
       (candidates,rest) = csRest
       _ <- checkRests(rest,s.extraPaths,s.isClosed,ignoredPathsClosed)
+      // TODO: if open extend candidates with negative constraint references otherwise??
       typing <- {
         logger.info(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
         checkCandidates(attempt,bagChecker,cTable)(candidates)
@@ -421,7 +422,7 @@ object Validator {
 
   def empty = Validator(schema = Schema.empty)
 
-  type Result[A] = Xor[NonEmptyList[ViolationError], List[(A, Evidences)]]
+  type Result[A] = Either[NonEmptyList[ViolationError], List[(A, Evidences)]]
 
   def isOK[A](r: Result[A]): Boolean =
     r.isRight && r.toList.isEmpty == false

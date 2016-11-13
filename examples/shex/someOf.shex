@@ -1,0 +1,5 @@
+prefix : <http://example.org/>
+
+:S { :p . | (:q .; :r .) }
+
+:NotS NOT @:S

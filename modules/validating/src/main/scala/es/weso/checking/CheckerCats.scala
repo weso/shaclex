@@ -57,7 +57,7 @@ abstract class CheckerCats extends Checker {
 
   def attempt[A](c: Check[A]): Check[Either[Err, A]] = for {
     v <- MonadError[Check, Err].attempt(c)
-  } yield v.toEither
+  } yield v
 
   def cond[A,B](
     c: Check[A],
