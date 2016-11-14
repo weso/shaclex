@@ -59,6 +59,27 @@ abstract class CheckerCats extends Checker {
     v <- MonadError[Check, Err].attempt(c)
   } yield v
 
+  /**
+    * Returns the list of values whose computation is successful
+    * @param ls list of values
+    * @param check computation to check for each value
+    * @tparam A type of values
+    * @tparam B type returned by computation
+    * @return a computation with a list of pairs for whom the computation was successful
+    */
+  def filterSuccess[A,B](ls: List[A], check: A => Check[B]): Check[List[(A,B)]] = {
+    val zero: Check[List[(A,B)]] = ok(List())
+    def comb(rest: Check[List[(A,B)]], current: A): Check[List[(A,B)]] = for {
+      rs <- rest
+      c <- attempt(check(current))
+    } yield c match {
+      case Left(err) => rs
+      case Right(b) => (current,b) +: rs
+    }
+    ls.foldLeft(zero)(comb)
+  }
+
+
   def cond[A,B](
     c: Check[A],
     thenPart: A => Check[B],

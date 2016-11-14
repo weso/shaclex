@@ -15,7 +15,7 @@ object table {
 
   trait CheckExpr
   case class Pos(se: ShapeExpr) extends CheckExpr
-//  case class Neg(se: ShapeExpr) extends CheckExpr
+  case class Neg(se: ShapeExpr) extends CheckExpr
 
   case class ConstraintRef(n: Int) extends AnyVal {
     override def toString(): String = s"C$n"
@@ -40,7 +40,7 @@ object table {
     def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
       constraints.get(cref).map(ce => ce match {
         case Pos(se) => se
-        // case Neg(se) => ShapeNot(se)
+        case Neg(se) => ShapeNot(se)
       })
     }
 
@@ -103,12 +103,12 @@ object table {
         case tc: TripleConstraint => {
           val newElems = current.elems + 1
           val cref = ConstraintRef(newElems)
-          val valueExpr: CheckExpr = /*if (tc.negated) {
+          val valueExpr: CheckExpr = if (tc.negated) {
             tc.valueExpr match {
               case Some(se) => Neg(se)
               case None => Neg(ShapeExpr.any)
             }
-          } else */ tc.valueExpr match {
+          } else tc.valueExpr match {
             case Some(se) => Pos(se)
             case None => Pos(ShapeExpr.any)
           }
