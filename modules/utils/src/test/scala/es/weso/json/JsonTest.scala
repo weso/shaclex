@@ -11,11 +11,11 @@ trait JsonTest extends FunSpec {
   
   def shouldDecodeEncodeEqual[A: Encoder: Decoder: Show](str: String): Unit = {
     parse(str) match {
-      case Xor.Left(e) => fail(s"Cannot obtain Json from string. Error $e\nContents:\n$str")
-      case Xor.Right(json) => {
+      case Left(e) => fail(s"Cannot obtain Json from string. Error $e\nContents:\n$str")
+      case Right(json) => {
         json.as[A] match {
-          case Xor.Left(e) => fail(s"Cannot obtain Schema from Json. Error $e\nJson:\n${json.show}")
-          case Xor.Right(v) => {
+          case Left(e) => fail(s"Cannot obtain Schema from Json. Error $e\nJson:\n${json.show}")
+          case Right(v) => {
             val jsonEncoded = v.asJson
             if (json.equals(jsonEncoded)) {
               ()

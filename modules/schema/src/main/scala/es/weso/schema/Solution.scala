@@ -1,11 +1,16 @@
 package es.weso.schema
-import cats._, data._
+import cats._
+import data._
 import implicits._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PrefixMap
+import io.circe.JsonObject._
+import io.circe._
+import io.circe.syntax._
+import InfoNode._
 
 case class Solution
-  (map: Map[RDFNode,InfoNode],
+  (nodes: Map[RDFNode,InfoNode],
    nodeMap: PrefixMap,
    schemaMap: PrefixMap
   ) {
@@ -15,13 +20,21 @@ case class Solution
   def show: String = {
     val sb = new StringBuilder
     sb ++= "Solution\n"
-    for (pair <- map.toSeq) {
+    for (pair <- nodes.toSeq) {
       val (node,info) = pair
       sb ++= ( nodeMap.qualify(node) + " " + info.show + "\n" )
     }
     sb.toString
   }
 
+  def toJson: Json = {
+    val jsonMap: Json = Json.fromJsonObject(JsonObject.fromMap(
+      nodes.map{ case (node,info) => (nodeMap.qualify(node), info.asJson) }
+    ))
+    Json.fromJsonObject(
+      singleton("type",Json.fromString("Solution")).add("solution",jsonMap)
+    )
+  }
 /*  def toHTML(pm: PrefixMap): String = {
     val sb = new StringBuilder
     sb ++= "<h2>Solution</h2>"
@@ -45,7 +58,7 @@ case class Solution
   }
  */
   def isEmpty : Boolean = {
-    map.isEmpty
+    nodes.isEmpty
   }
 
 }
@@ -56,4 +69,10 @@ object Solution {
      s.show
    }
   }
+
+  implicit val encodeSolution: Encoder[Solution] = new Encoder[Solution] {
+    final def apply(a: Solution): Json =
+      a.toJson
+  }
+
 }

@@ -18,15 +18,15 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
     it ("Should parse prefix") {
      val str = "pepe"
      parsePrefix(str) match {
-      case Xor.Right(p) => info(s"Parsed ok as $p")
-      case Xor.Left(e) => fail(s"Error parsing $str: $e") 
+      case Right(p) => info(s"Parsed ok as $p")
+      case Left(e) => fail(s"Error parsing $str: $e")
      }
     }
    it ("Should parse lang string") {
      val str = "\"pepe\"@es"
      parseLang(str) match {
-      case Xor.Right(p) => info(s"Parsed ok as $p")
-      case Xor.Left(e) => fail(s"Error parsing $str: $e") 
+      case Right(p) => info(s"Parsed ok as $p")
+      case Left(e) => fail(s"Error parsing $str: $e")
      }
     }
 
@@ -71,10 +71,10 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
     it(s"Should encode and decode ${v.show}") {
      val str = v.asJson.spaces4
      val result = decode[A](str)
-     if (result === v.right)
+     if (result === Right(v))
        info(s"Encoded as $str")
      else
-       fail(s"Encoded value $v as $str was not equal to ${v.right}. Result: ${result}")
+       fail(s"Encoded value $v as $str was not equal to ${Right(v)}. Result: ${result}")
     }
   }
 

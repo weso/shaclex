@@ -79,10 +79,10 @@ sealed trait Rbe[+A] {
    * Checks if a rbe is nullable
    */
   lazy val nullable: Boolean = {
-    this match {
+    val r = this match {
       case Fail(_) => false
       case Empty => true
-      case Symbol(_,0,IntLimit(0)) => false
+      case Symbol(_,0,IntLimit(0)) => true
       case Symbol(_,0,_) => true
       case Symbol(_,_,_) => false
       case And(e1,e2) => e1.nullable && e2.nullable
@@ -90,10 +90,11 @@ sealed trait Rbe[+A] {
       case Star(e) => true
       case Plus(e) => false
 //      case Repeat(e,0,IntLimit(0)) => false // e.nullable ?
-      case Repeat(e,0,_) => e.nullable
-      case Repeat(e,_,_) => false
-
+      case Repeat(e,0,_) => true //
+      case Repeat(e,_,_) => e.nullable
     }
+    println(s"$this nullable?: $r")
+    r
   }
   
   
@@ -198,7 +199,7 @@ sealed trait Rbe[+A] {
         val d = e.deriv(x,open,controlled)
         mkAnd(d, Star(e))
       }
-      case Repeat(e,_,IntLimit(0)) => {
+      case Repeat(e,0,IntLimit(0)) => {
         val d = e.deriv(x,open,controlled)
         d match {
           case f: Fail => Empty
@@ -207,7 +208,12 @@ sealed trait Rbe[+A] {
       }
       case Repeat(e,m,n) => {
         lazy val d = e.deriv(x,open,controlled)
-        mkAnd(d,mkRange(e, math.max(m - 1, 0), n minusOne))
+        println(s"Repeat: deriv of $e/$x = $d")
+        lazy val rest = mkRange(e, math.max(m - 1, 0), n minusOne)
+        println(s"Repeat: rest $rest")
+        val r = mkAnd(d,rest)
+        println(s"Repeat: and: $r")
+        r
       }
     }
   }

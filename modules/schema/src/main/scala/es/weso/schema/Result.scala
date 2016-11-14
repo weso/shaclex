@@ -34,17 +34,6 @@ case class Result(
   }
 
   def toJson: Json = {
-    implicit val encodeSolution: Encoder[Solution] = new Encoder[Solution] {
-      final def apply(a: Solution): Json = Json.fromJsonObject(
-        singleton("type",Json.fromString("Solution"))
-      )
-    }
-
-    implicit val encodeErrorInfo: Encoder[ErrorInfo] = new Encoder[ErrorInfo] {
-      final def apply(a: ErrorInfo): Json = Json.fromJsonObject(
-        singleton("type",Json.fromString("ErrorInfo"))
-      )
-    }
 
     implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
       final def apply(a: Result): Json = {
