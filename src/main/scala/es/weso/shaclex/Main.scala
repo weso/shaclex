@@ -75,7 +75,7 @@ object Main extends App with LazyLogging {
         result match {
           case Left(str) => logger.error(s"Error: $str")
           case Right(r) => {
-            val resultSerialized = r.serialize(opts.outResultFormat())
+            val resultSerialized = r.serialize(opts.resultFormat())
             if (opts.showResult()) {
               println(resultSerialized)
             }

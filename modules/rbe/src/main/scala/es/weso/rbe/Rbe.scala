@@ -6,20 +6,20 @@ import IntOrUnbounded._
 
 /**
  * This trait defines Single Occurrence Regular Bag Expressions (Rbe)
- * 
- * == Further info == 
- * 
+ *
+ * == Further info ==
+ *
  * The algorithm to check that a Rbe contains a bag is PTIME
  * The algorithm has been described in [1] and is based on intervals
- * 
- * [1] Complexity and Expressiveness of ShEx for RDF, 
+ *
+ * [1] Complexity and Expressiveness of ShEx for RDF,
  *     S. Staworko, I. Boneva, J. Labra, S. Hym, E. Prud'hommeaux, H. Solbrig
- * 
+ *
  */
 sealed trait Rbe[+A] {
-  
+
   /**
-   * Checks if a RBE contains repetitions 
+   * Checks if a RBE contains repetitions
    */
   lazy val containsRepeats: Boolean = {
     this match {
@@ -36,7 +36,7 @@ sealed trait Rbe[+A] {
 
   /**
    * Symbols that contains this rbe
-   * 
+   *
    * Example: {{{
    * symbols(Or(And(Symbol("a",1,3),Symbol("b",1,1)),Symbol("b",2,3))) == Seq("a","b")
    * }}}
@@ -53,14 +53,14 @@ sealed trait Rbe[+A] {
       case Repeat(v,_,_) => v.symbols
     }
   }
-  
+
   /**
-   * Checks that there are no symbols in common with a bag 
+   * Checks that there are no symbols in common with a bag
    */
   def noSymbolsInBag[U >: A](bag: Bag[U]): Boolean = {
     this.symbols.forall(x => bag.multiplicity(x) == 0)
   }
-  
+
   /**
    * Derivative over a bag of symbols
    * @param open allows extra symbols
@@ -73,8 +73,8 @@ sealed trait Rbe[+A] {
       r
     }
     bag.toSeq.foldRight(e)(f)
-  } 
-  
+  }
+
   /**
    * Checks if a rbe is nullable
    */
@@ -89,15 +89,15 @@ sealed trait Rbe[+A] {
       case Or(e1,e2) => e1.nullable || e2.nullable
       case Star(e) => true
       case Plus(e) => false
-//      case Repeat(e,0,IntLimit(0)) => false // e.nullable ?
+      // case Repeat(e,0,IntLimit(0)) => true
       case Repeat(e,0,_) => true //
       case Repeat(e,_,_) => e.nullable
     }
     println(s"$this nullable?: $r")
     r
   }
-  
-  
+
+
    private def mkAnd[U >: A](r1: => Rbe[U], r2: => Rbe[U]): Rbe[U]= {
     val r = (r1, r2) match {
       case (Empty, e2) => e2
@@ -108,7 +108,7 @@ sealed trait Rbe[+A] {
     }
     r
   }
-   
+
   private def mkRange[U >: A](e: Rbe[U], m: Int, n: IntOrUnbounded): Rbe[U] = {
     if (m < 0) Fail("Range with negative lower bound = " + m)
     else if (m > n) Fail("Range with lower bound " + m + " bigger than upper bound " + n)
@@ -122,7 +122,7 @@ sealed trait Rbe[+A] {
       }
     }
   }
-   
+
   private def mkRangeSymbol[U >: A](x: U, m: Int, n: IntOrUnbounded): Rbe[U] = {
     if (m < 0) Fail("Range with negative lower bound = " + m)
     else if (m > n) Fail("Range with lower bound " + m + " bigger than upper bound " + n)
@@ -145,18 +145,18 @@ sealed trait Rbe[+A] {
     }
     r
   }
-  
+
   private def mkRepeat[U >: A](r: => Rbe[U], m: Int, n: IntOrUnbounded): Rbe[U]= {
     Repeat(r,m,n)
   }
-  
+
   private def derivSymbol[U >: A](x: U, s: Symbol[U], open: Boolean, controlled: Seq[U]): Rbe[U] = {
     if (x == s.a) {
-      if (s.m == IntLimit(0)) 
+      if (s.m == IntLimit(0))
         Fail(s"Found $x but max. cardinality is 0. Current deriv: $s")
-      else 
+      else
         mkRangeSymbol(s.a, math.max(s.n - 1, 0), s.m minusOne)
-    } 
+    }
     else if (open && !(controlled contains x)) {
       this
     } else {
@@ -172,15 +172,15 @@ sealed trait Rbe[+A] {
    */
   def deriv[U >: A](x: U, open: Boolean, controlled: Seq[U]) : Rbe[U] = {
     this match {
-      case f@Fail(_) => f 
-      case Empty => 
-        if (open && !(controlled contains x)) 
+      case f@Fail(_) => f
+      case Empty =>
+        if (open && !(controlled contains x))
           Empty
-        else 
-          Fail(s"Unexpected $x doesn't match empty, open: $open, controlled: $controlled") 
+        else
+          Fail(s"Unexpected $x doesn't match empty, open: $open, controlled: $controlled")
       case s@Symbol(_,_,_) => {
        derivSymbol(x,s,open,controlled)
-      }  
+      }
       case And(e1,e2) => {
         lazy val d1 = e1.deriv(x,open,controlled)
         lazy val d2 = e2.deriv(x,open,controlled)
@@ -201,10 +201,8 @@ sealed trait Rbe[+A] {
       }
       case Repeat(e,0,IntLimit(0)) => {
         val d = e.deriv(x,open,controlled)
-        d match {
-          case f: Fail => Empty
-          case _ => Fail(s"Max cardinality 0 but deriv. of $e/$x = $d and nullable")
-        }
+        if (d.nullable) Fail(s"Cardinality 0,0 but deriv. of $e/$x = $d is nullable")
+        else Empty
       }
       case Repeat(e,m,n) => {
         lazy val d = e.deriv(x,open,controlled)
@@ -217,8 +215,8 @@ sealed trait Rbe[+A] {
       }
     }
   }
-  
-} 
+
+}
 
 
 /**
@@ -237,7 +235,7 @@ case object Empty extends Rbe[Nothing]
 case class Symbol[+A](a: A, n: Int, m: IntOrUnbounded) extends Rbe[A]
 
 /**
- * And(v1,v2) represents both v1 and v2 
+ * And(v1,v2) represents both v1 and v2
  */
 case class And[A](v1: Rbe[A], v2: Rbe[A]) extends Rbe[A]
 
@@ -260,4 +258,3 @@ case class Plus[A](v: Rbe[A]) extends Rbe[A]
  * Repeat(v,n,m) represents between n and m apperances of v
  */
 case class Repeat[A](v: Rbe[A], n: Int, m: IntOrUnbounded) extends Rbe[A]
-

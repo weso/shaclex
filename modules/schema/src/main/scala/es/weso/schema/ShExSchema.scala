@@ -55,7 +55,7 @@ case class ShExSchema(schema: Schema_) extends Schema {
     ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.label match {
         case Some(lbl) => SchemaLabel(lbl.show, schema.prefixMap)
-        case None => SchemaLabel("<Unknown label>",schema.prefixMap)
+        case None => SchemaLabel("_",schema.prefixMap)
       }
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
@@ -64,14 +64,14 @@ case class ShExSchema(schema: Schema_) extends Schema {
   def cnvTypingResult(result: TypingResult[ViolationError,String]): String = {
     result.t.fold(
       es => "Errors: " +
-           es.toList.mkString("\n")
-    , rs => "OK. Evidences:" +
-           rs.map(" " + _).mkString("\n")
+           es.toList.mkString(",")
+    , rs => "Evidences:" +
+           rs.map(" " + _).mkString(",")
     )
   }
 
   def cnvViolationError(v: ViolationError): ErrorInfo = {
-    ErrorInfo(v.msg)
+    ErrorInfo(v.show)
   }
 
   override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {

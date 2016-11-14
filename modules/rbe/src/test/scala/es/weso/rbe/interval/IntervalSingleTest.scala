@@ -8,7 +8,8 @@ class IntervalSingleTest extends FunSpec with BagMatchers {
 
   describe("Single test") {
 //    noMatchBag(Repeat(Symbol("a", 1, 1), 0, 0), Bag.toBag(List("a")))
-    matchBag(Repeat(Symbol("a", 1, 1), 1, Unbounded), Bag.toBag(List("a", "c")))
+   matchBag(Repeat(Symbol("a", 1, 1), 0, 0), Bag.toBag(List("b")))
+
   }
 
 }

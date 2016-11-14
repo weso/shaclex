@@ -110,7 +110,7 @@ class MainOpts(
     noshort = true
   )
 
-  val outResultFormat = opt[String]("outResultFormat",
+  val resultFormat = opt[String]("resultFormat",
     default = Some(defaultResultFormat),
     descr = "format to show result",
     noshort = true,

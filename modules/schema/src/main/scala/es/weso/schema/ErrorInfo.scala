@@ -4,8 +4,8 @@ import cats.Show
 import io.circe.JsonObject._
 import io.circe.{Encoder, Json}
 
-case class ErrorInfo(str: String) {
-  def show: String = "Error: " + " " + str
+case class ErrorInfo(msg: String) {
+  def show: String = msg
 }
 
 object ErrorInfo {
@@ -16,8 +16,7 @@ object ErrorInfo {
   implicit val encodeErrorInfo: Encoder[ErrorInfo] = new Encoder[ErrorInfo] {
     final def apply(e: ErrorInfo): Json = Json.fromJsonObject(
       singleton("type",Json.fromString("ErrorInfo")).
-        add("error", Json.fromString(e.str))
+        add("error",Json.fromString(e.msg))
     )
   }
-
 }
