@@ -1,7 +1,9 @@
 # shaclex
 
-RDF Data Shapes Implementation. This project contains an implementation of
-[SHACL](http://w3c.github.io/data-shapes/shacl/) and of
+SHACL and SHEX Implementation.
+
+This project contains an implementation of
+[SHACL](http://w3c.github.io/data-shapes/shacl/) and
 [ShEx](http://www.shex.io)
 
 
@@ -10,7 +12,7 @@ RDF Data Shapes Implementation. This project contains an implementation of
 
 ## Introduction
 
-This project contains an implementation of SHACL and ShEx. 
+This project contains an implementation of SHACL and ShEx.
 
 Both are implemented using the same underlying mechanism which is based
  on a purely functional approach.
@@ -24,7 +26,7 @@ The projects uses [sbt](http://www.scala-sbt.org/) for compilation.
 
 ## Usage
 
-Once compiled, the program can be run as a command line tool. 
+Once compiled, the program can be run as a command line tool.
 It is possible to run the program inside `sbt` as:
 
 Validates using SHACL (default engine)
@@ -38,19 +40,21 @@ sbt run -e ShEx -s examples/shex/good1.shex --schemaFormat ShExC -d examples/she
 
 ## Implementation details
 
-* The engine is based on Monads
-* The Compact syntax parser  
+* The engine is based on Monads using the [cats library](http://typelevel.org/cats/)
+* The ShEx compact syntax parser  
   is implemented using the following [Antlr grammar](https://github.com/shexSpec/grammar/blob/master/ShExDoc.g4) (previous versions used Scala Parser Combinators)
   which is based on this [grammar](https://github.com/shexSpec/shex.js/blob/master/doc/bnf)
 * JSON encoding and decoding uses the Json structure [defined here](https://shexspec.github.io/spec/) and is implemented using [Circe](https://github.com/travisbrown/circe)  
 
 ## More information
 
-* [ShExcala](http://labra.github.io/ShExcala/): Previous Shape Expressions implementation
+This project is a continuation of [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only. In this project the underlying validation computation is based on Monad transformers.
 
 ## Author
 
 * [Jose Emilio Labra Gayo](http://www.di.uniovi.es/~labra)
 
+## Contribution
 
-
+Contributions are greatly appreciated. Please fork this repository and open a
+pull request to add more features or [submit issues](https://github.com/labra/shaclex/issues)

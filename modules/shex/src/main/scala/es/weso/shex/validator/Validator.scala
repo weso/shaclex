@@ -310,62 +310,23 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     * @return a tuple (cs,rs) where cs is the list of candidates and rs is the nodes that didn't match any
     */
   def calculateCandidates(neighs: Neighs,
-                          table: CTable): Check[(Candidates, NoCandidates)] = for {
-    lines <- neighs.map(constraints(_,table)).sequence
-  } yield {
-    val r: List[List[(ConstraintRef,ShapeTyping)]] = lines
-    ???
-  }
-
-  // TODO: Generate a stream to avoid generating all the results
-  def constraints(neigh: Neigh, table: CTable): Check[List[(ConstraintRef,ShapeTyping)]] = {
-    val (path,node) = neigh
-    def checker: ConstraintRef => Check[ShapeTyping] = c => {
-      table.getShapeExpr(c) match {
-        case None => errStr(s"Not found constraint $c in table $table")
-        case Some(se) => {
-          val attempt: Attempt = Attempt(NodeShape(node,ShapeType(se,schema)),None)
-          checkNodeShapeExpr(attempt,node,se)
-        }
-      }
-    }
-    table.paths.get(path) match {
-      case None => ok(List())
-      case Some(cs) => filterSuccess(cs.toList,checker)
+                          table: CTable): Check[(Candidates, NoCandidates)] = {
+    val candidates = neighs2Candidates(neighs,table)
+    if (candidates.isEmpty) {
+      errStr(s"No candidates match. Neighs: ${neighs.show}, Table: ${table.show}")
+    } else {
+      val (cs,rs) = candidates.partition{case (_,s) => !s.isEmpty}
+      ok((cs, rs.map { case (arc, _) => arc }))
     }
   }
 
-
-  /*{
-   val ls: List[((Path,RDFNode),Set[ConstraintRef])] = neighs.map {
-     case arc@(path, node) => (arc, filterOutNegatives(table.paths.get(path), node, table))
-   }
-   if (ls.isEmpty) {
-     errStr(s"No candidates match. Neighs: ${neighs.show}, Table: ${table.show}")
-   } else {
-     val (cs,rs) = ls.partition{case (_,s) => !s.isEmpty}
-     ok((cs, rs.map { case (arc, _) => arc }))
-   }
-  } */
-
-  def filterOutNegatives(cs: Option[Set[ConstraintRef]],
-                         node: RDFNode,
-                         table: CTable): Set[ConstraintRef] = cs match {
-    case None => Set()
-    case Some(cs) => cs.filter(c => {
-      table.constraints.get(c) match {
-        case Some(Pos(se)) => true
-        case Some(Neg(se)) => {
-          // val r = checkNodeShapeExpr(node,se)
-          false
-        }
-        case v => {
-          logger.error(s"filterOutNegatives: Unknown value $v for constraint $c in table $table. Node: $node")
-          false
-        }
-      }
-    })
+  def neighs2Candidates(neighs: Neighs,
+                    table: CTable): List[(Arc,Set[ConstraintRef])] = {
+    neighs.map {
+      case arc@(path, node) => (arc, table.paths.get(path).getOrElse(Set()))
+    }
   }
+
 
   def checkCandidates(attempt: Attempt,
                       bagChecker:BagChecker_,
@@ -378,7 +339,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     } else {
       logger.warn(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}" )
       val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
-      checkSome(checks, ViolationError.msgErr(s"No candidate matched $cs"))
+      checkSome(checks, ViolationError.msgErr(s"No candidate matched $cs. Attempt: ${attempt.nodeShape}"))
     }
   }
 

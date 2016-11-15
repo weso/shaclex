@@ -7,6 +7,17 @@ import scala.annotation.tailrec
 
 object SeqUtils {
 
+  def zipN[A](s: List[List[A]]): List[List[A]] = {
+    def f(x: List[A], rest: List[List[A]]): List[List[A]] = {
+      if (x.isEmpty) rest
+      else for {
+        v <- x
+        r <- rest
+      } yield v :: r
+    }
+    s.foldRight(List(List[A]()))(f)
+  }
+
   /**
     * transpose(List(("A",List(1,2)), ("B",List(2,3)),("C",List(4)))) =
     *    List(List(("A",1),("B",2),("C",4)),

@@ -8,5 +8,5 @@ prefix sh: <http://www.w3.org/ns/shacl#>
 :x5 :p 1, 2; :q 5; :r 1 . # Must fail
 :x6 :p 1, 2; :q 8; :r 1 . # OK
 
-# :NotS sh:targetNode :x3, :x4, :x5, :x1 .
-:S sh:targetNode :x2 . # :x6 .
+:NotS sh:targetNode :x3, :x4, :x5 .
+:S sh:targetNode :x1, :x2 , :x6 .

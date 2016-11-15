@@ -48,4 +48,56 @@ class SeqUtilsTest extends FunSpec with Matchers {
       intersperse(c, xs) should be(expected)
     }
   }
+
+  describe("zipN") {
+    it(s"should zipN [[1,2],[4],[5,6]]") {
+      val xs = List(List("1", "2"), List("4"), List("5", "6"))
+      val expected =
+        List(List("1", "4", "5"),
+          List("1", "4", "6"),
+          List("2", "4", "5"),
+          List("2", "4", "6"))
+      zipN(xs) should be(expected)
+    }
+    it(s"should zipN [[1,2],[4],[5,6,7]]") {
+      val xs = List(List("1", "2"), List("4"), List("5", "6","7"))
+      val expected =
+        List(List("1", "4", "5"),
+          List("1", "4", "6"),
+          List("1", "4", "7"),
+          List("2", "4", "5"),
+          List("2", "4", "6"),
+          List("2", "4", "7")
+        )
+      zipN(xs) should be(expected)
+    }
+    it(s"should zipN [[]]") {
+      val xs = List(List())
+      val expected =
+        List(List())
+      zipN(xs) should be(expected)
+    }
+    it(s"should zipN [[],[],[],[]]") {
+      val xs = List(List(), List(), List(), List())
+      val expected =
+        List(List())
+      zipN(xs) should be(expected)
+    }
+    it(s"should zipN [[1],[],[5,6],[]]") {
+      val xs = List(List("1"), List(), List("5", "6"), List())
+      val expected =
+        List(List("1", "5"),
+          List("1", "6"))
+      zipN(xs) should be(expected)
+    }
+    it(s"should zipN [[1,2],[],[5,6]]") {
+      val xs = List(List("1", "2"), List(), List("5", "6"))
+      val expected =
+        List(List("1", "5"),
+          List("1", "6"),
+          List("2", "5"),
+          List("2", "6"))
+      zipN(xs) should be(expected)
+    }
+  }
 }

@@ -2,8 +2,23 @@ prefix : <http://example.org/>
 prefix foaf: <http://xmlns.com/foaf/0.1/>
 prefix sh: <http://www.w3.org/ns/shacl#>
 
-:x1 foaf:name "John"; foaf:shoeSize 34; foaf:homepage "http://john.com" . # Fails
-:x2 foaf:givenName "John"; foaf:familyName "Smith";
-    foaf:shoeSize 34; foaf:homepage "http://john.com" . # Fails
+:x1 # Should Fail
+    foaf:name "John";
+    foaf:shoeSize 34;
+    foaf:homepage "http://john.com" .
 
-:S sh:targetNode :x2 .
+:x2 # Should pass
+    foaf:givenName "John"; foaf:familyName "Smith";
+    foaf:shoeSize 34;
+    foaf:homepage "http://john.com" .
+
+:x3 # Should fail (no familyName)
+    foaf:givenName "John";
+    foaf:shoeSize 34;
+    foaf:homepage "http://john.com" .
+
+
+# :S sh:targetNode :x2 .
+# :S sh:targetNode :x1 .
+# :S sh:targetNode :x3 .
+:NotS sh:targetNode :x3 .

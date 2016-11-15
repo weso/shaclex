@@ -121,7 +121,7 @@ object table {
           )
           val posSymbol = Symbol(cref, tc.min, max2IntOrUnbounded(tc.max))
           val symbol = if (tc.negated) {
-            Repeat(posSymbol, 0, IntLimit(0))
+            Repeat(posSymbol, 0, IntLimit(1))
           } else posSymbol
           println(s"Making table for tc $tc. Negated: ${tc.negated}. Symbol: $symbol")
           (newTable,symbol)

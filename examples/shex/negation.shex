@@ -9,3 +9,5 @@ start = @:S
      foaf:shoeSize .;
     ( foaf:homepage . ; ! foaf:name . )? # no foaf:homepage if there's a foaf:name.
 }
+
+:NotS NOT @:S 

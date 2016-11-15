@@ -227,26 +227,43 @@ object CompactShow {
       case t: TripleConstraint => tripleConstraintDoc(pm)(t)
     }
 
-  private def eachOfDoc(pm: PrefixMap)(e: EachOf): Document =
-    listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";")) ::
-      cardinalityDoc(e.optMin, e.optMax) ::
-      optDoc(e.semActs, semActsDoc(pm)) ::
-      optDoc(e.annotations, annotationsDoc(pm))
-
-  private def someOfDoc(pm: PrefixMap)(e: SomeOf): Document =
-    listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword("|")) ::
-      cardinalityDoc(e.optMin, e.optMax) ::
-      optDoc(e.semActs, semActsDoc(pm)) ::
-      optDoc(e.annotations, annotationsDoc(pm))
+  private def eachOfDoc(pm: PrefixMap)(e: EachOf): Document = {
+    val kernel = if (Cardinality.isDefault(e.min, e.max)) {
+      listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";"))
+    } else {
+      openParen ::
+        listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";")) ::
+      closeParen ::
+      cardinalityDoc(e.optMin, e.optMax)
+    }
+    kernel ::
+    optDoc(e.semActs, semActsDoc(pm)) ::
+    optDoc(e.annotations, annotationsDoc(pm))
+  }
+  private def someOfDoc(pm: PrefixMap)(e: SomeOf): Document = {
+    val kernel = if (Cardinality.isDefault(e.min, e.max)) {
+      listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword("|"))
+    } else {
+      openParen ::
+        listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword("|")) ::
+        closeParen ::
+        cardinalityDoc(e.optMin, e.optMax)
+    }
+    kernel ::
+    optDoc(e.semActs, semActsDoc(pm)) ::
+    optDoc(e.annotations, annotationsDoc(pm))
+  }
 
   private def tripleConstraintDoc(pm: PrefixMap)(t: TripleConstraint): Document =
     optDocConst(t.optInverse, str("^")) ::
       optDocConst(t.optNegated, str("!")) ::
       iriDoc(pm)(t.predicate) :: space ::
       optDoc(t.valueExpr, shapeExprDoc(pm)) ::
-      cardinalityDoc(t.optMin, t.optMax) ::
+      ( if (Cardinality.isDefault(t.min,t.max)) none
+        else cardinalityDoc(t.optMin, t.optMax))::
       optDoc(t.semActs, semActsDoc(pm)) ::
       optDoc(t.annotations, annotationsDoc(pm))
+
 
   private def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Document =
     str("todo: Annotations")
@@ -311,7 +328,8 @@ object CompactShow {
   private def newline: Doc = break
 
   private def dot: Document = text(".")
-
+  private def openParen: Document = text("(")
+  private def closeParen: Document = text(")")
   private def str(str: String): Document = text(str)
 
 }
