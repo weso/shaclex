@@ -27,6 +27,10 @@ val availableFormats: List[String] = {
   availableSchemas.map(_.formats).flatten.distinct
 }
 
+val availableTriggerModes: List[String] = {
+    ValidationTrigger.triggerValues.map(_._1)
+  }
+
 def lookupSchema(schemaName: String): Try[Schema] = {
   if (schemaName == "") Success(defaultSchema)
   else {

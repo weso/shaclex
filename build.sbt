@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.54"
+lazy val shaclexVersion = "0.0.55"
 
 // Versions of common packages
 lazy val circeVersion = "0.6.0"

@@ -1,5 +1,7 @@
 package es.weso.schema
-import cats._, data._
+import cats._
+import com.typesafe.scalalogging.LazyLogging
+import data._
 import implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
@@ -8,10 +10,11 @@ import es.weso.shex.{Schema => Schema_, _}
 import es.weso.shex.validator._
 import es.weso.shex._
 import es.weso.typing._
-import scala.util._
-import es.weso.shex.implicits.showShEx.{showShapeLabel}
 
-case class ShExSchema(schema: Schema_) extends Schema {
+import scala.util._
+import es.weso.shex.implicits.showShEx.showShapeLabel
+
+case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   override def name = "ShEx"
 
   override def formats =
@@ -128,8 +131,10 @@ case class ShExSchema(schema: Schema_) extends Schema {
     ShExSchema.fromString(cs,format,base)
   }
 
-  override def fromRDF(rdf: RDFReader): Try[Schema] =
-    Failure(new Exception("Not implemented get ShEx from RDF yet"))
+  override def fromRDF(rdf: RDFReader): Try[Schema] = {
+    logger.warn("Not implemented conversion from RDF. Returns empty Schema")
+    Success(ShExSchema.empty)
+  }
   /*{
     for {
       schema <- RDF2Schema.rdf2Schema(rdf)

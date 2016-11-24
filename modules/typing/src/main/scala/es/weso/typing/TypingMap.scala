@@ -3,11 +3,7 @@ import cats._, data._
 import cats.implicits._
 import TypingResult._
 
-case class TypingMap[
-  Key: Show,
-  Value: Show,
-  Err: Show,
-  Evidence: Show](
+case class TypingMap[Key, Value, Err, Evidence](
     m: Map[Key, Map[Value,TypingResult[Err,Evidence]]])
     extends Typing[Key,Value,Err,Evidence] {
 

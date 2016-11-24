@@ -40,20 +40,12 @@ object Typing {
   /**
     *  Creates an empty typing
     **/
-  def empty[Key: Show,
-    Value: Show,
-    Err: Show,
-    Evidence: Show
-  ]: Typing[Key,Value,Err,Evidence] = {
+  def empty[Key,Value,Err,Evidence]: Typing[Key,Value,Err,Evidence] = {
     val m: Map[Key, Map[Value,TypingResult[Err,Evidence]]] = Map()
     TypingMap(m)
   }
 
-  def combineTypings[
-    Key:Show,
-    Value: Show,
-    Err: Show,
-    Evidence: Show](
+  def combineTypings[Key,Value,Err,Evidence](
         ts: Seq[Typing[Key,Value,Err,Evidence]]): Typing[Key,Value,Err,Evidence] = {
     val zero : Typing[Key,Value,Err,Evidence] = Typing.empty
     ts.foldLeft(zero)(_.combineTyping(_))

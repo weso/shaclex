@@ -34,6 +34,9 @@ case class ShapeTyping(
   def addNotEvidence(node: RDFNode, shapeType: ShapeType, err: ViolationError): ShapeTyping =
     this.copy(t = t.addNotEvidence(node,shapeType,err))
 
+  def getMap: Map[RDFNode,Map[ShapeType,TypingResult[ViolationError,String]]] =
+    t.getMap
+
   override def toString = showShapeTyping
 
   def showShapeTyping : String = {
@@ -43,6 +46,11 @@ case class ShapeTyping(
 }
 
 object ShapeTyping {
+
+  def emptyShapeTyping: ShapeTyping = {
+    val emptyTyping: Typing[RDFNode, ShapeType, ViolationError, String] = Typing.empty
+    ShapeTyping(emptyTyping)
+  }
 
   implicit lazy val showRDFNode: Show[RDFNode] = new Show[RDFNode] {
     def show(n: RDFNode) = s"$n"
@@ -55,13 +63,11 @@ object ShapeTyping {
   }
 
   implicit def monoidShapeTyping = new Monoid[ShapeTyping] {
-    override def empty: ShapeTyping =
-      ShapeTyping(Typing.empty[RDFNode,ShapeType,ViolationError,String])
+    override def empty: ShapeTyping = emptyShapeTyping
 
     override def combine(t1: ShapeTyping,
       t2: ShapeTyping): ShapeTyping =
       ShapeTyping(t1.t.combineTyping(t2.t))
-
   }
 
   def combineTypings(ts: Seq[ShapeTyping]): ShapeTyping = {
