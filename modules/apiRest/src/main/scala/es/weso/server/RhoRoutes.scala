@@ -10,6 +10,7 @@ import scala.util.{Failure, Success}
 
 
 class RhoRoutes extends RhoService {
+  val api = GET / "api/v1"
   // This is needed for the routes that return json4s `JValues`
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
@@ -18,15 +19,21 @@ class RhoRoutes extends RhoService {
   object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")
 
   "Just a friendly hello route" **
-    GET / "hello" |>> { () => Ok("Hello world!") }
+    api / "hello" |>> { () => Ok("Hello world!") }
 
   "Validate" **
-    GET / "validate" +?
+    api / "validate" +?
       param[String]("data") &
-      param[String]("schema") |>> { (data: String, schema: String) => {
-    val schemaFormat = "SHEXC"
-    val dataFormat = "TURTLE"
-    val schemaEngine = "SHEX"
+      param[String]("dataFormat") &
+      param[String]("schema") &
+      param[String]("schemaFormat") &
+      param[String]("schemaEngine") |>> {
+       (data: String,
+        dataFormat: String,
+        schema: String,
+        schemaFormat: String,
+        schemaEngine: String
+       ) => {
     Schemas.fromString(schema, schemaFormat, schemaEngine, None) match {
       case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schema")
       case Success(schema) => {

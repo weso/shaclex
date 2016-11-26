@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Shaclex</title>
+</head>
+<body>
+<form action="/api/v1/validate" method="get">
+    <textarea rows="20" cols="70" name="schema" placeholder="schema"></textarea>
+    <input name="schemaEngine" value="SHEX" />
+    <input name="schemaFormat" value="SHEXC" />
+    <textarea rows="20" cols="70" name="data" placeholder="data"></textarea>
+    <input name="dataFormat" value="TURTLE" />
+    <button type="submit">Validate</button>
+</form>
+</body>
+</html>

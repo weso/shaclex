@@ -11,7 +11,6 @@ import org.log4s.getLogger
 import scala.util.Properties.envOrNone
 import scalaz.concurrent.Task
 
-
 class ShaclexServer(host: String, port: Int) {
   private val logger = getLogger
   private val pool   = Executors.newCachedThreadPool()
