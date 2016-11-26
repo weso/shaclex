@@ -29,13 +29,25 @@ The projects uses [sbt](http://www.scala-sbt.org/) for compilation.
 Once compiled, the program can be run as a command line tool.
 It is possible to run the program inside `sbt` as:
 
-Validates using SHACL (default engine)
-```
-sbt run -d examples/good1.ttl
-```
+Example validating SHACL:
 
 ```
-sbt run -e ShEx -s examples/shex/good1.shex --schemaFormat ShExC -d examples/shex/good1.ttl
+sbt "run -d examples/shacl/good1.ttl --engine ShaClex"
+```
+
+Example validating ShEx:
+
+```
+sbt "run -e ShEx -s examples/shex/good1.shex --schemaFormat ShExC -d examples/shex/good1.ttl"
+```
+
+It is usually faster to run the `sbt` command, which opens the interactive `sbt` shell and inside that shell, execute 
+the different commands. 
+
+```
+$ sbt
+... several information about loading libraries
+sbt> run -d examples/shacl/good1.ttl --engine ShaClex  
 ```
 
 ## Implementation details

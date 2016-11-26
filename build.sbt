@@ -7,14 +7,19 @@ name := "shaclex"
 
 lazy val shaclexVersion = "0.0.55"
 
+cancelable in Global := true
+reStartArgs := Seq("--server")
+
 // Versions of common packages
-lazy val circeVersion = "0.6.0"
-lazy val effCatsVersion = "2.0.0-RC18"
-lazy val catsVersion = "0.8.1"
+lazy val circeVersion     = "0.6.0"
+lazy val effCatsVersion   = "2.0.0-RC18"
+lazy val catsVersion      = "0.8.1"
 lazy val scalaTestVersion = "3.0.0"
 lazy val scalacticVersion = "3.0.0"
-lazy val logbackVersion = "1.1.7"
-lazy val loggingVersion = "3.5.0"
+lazy val logbackVersion   = "1.1.7"
+lazy val loggingVersion   = "3.5.0"
+lazy val http4sVersion    = "0.14.11a"
+lazy val rhoVersion       = "0.12.0a"
 
 lazy val commonSettings = Seq(
   organization := "es.weso",
@@ -34,8 +39,8 @@ lazy val shaclex =
   settings(commonSettings:_*).
   settings(publishSettings:_*).
   enablePlugins(BuildInfoPlugin).
-  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating).
-  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating).
+  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,apiRest).
+  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,apiRest).
   settings(
     name := "shaclex",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
@@ -105,6 +110,21 @@ lazy val shex =
     )
   )
 
+lazy val apiRest =
+  project.in(file("modules/apiRest")).
+  settings(commonSettings: _*).
+  settings(publishSettings: _*).
+  dependsOn(schema,srdf,srdfJena).
+  enablePlugins(SbtTwirl).
+  settings(
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "rho-swagger" % rhoVersion,
+      "org.http4s" %% "http4s-dsl" % http4sVersion,
+      "org.http4s" %% "http4s-blaze-server" % http4sVersion,
+      "org.http4s" %% "http4s-blaze-client" % http4sVersion,
+      "org.http4s" %% "http4s-twirl" % http4sVersion
+    )
+  )
 
 lazy val converter =
   project.in(file("modules/converter")).
@@ -228,8 +248,8 @@ addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0")
 
 // Binary packaging
 enablePlugins(SbtNativePackager)
-enablePlugins(JavaAppPackaging)
 enablePlugins(WindowsPlugin)
+enablePlugins(JavaAppPackaging)
 
 // general package information
 maintainer := "Jose Emilio Labra Gayo <labra@uniovi.es>"
@@ -253,13 +273,14 @@ test in assembly := {}
 assemblyJarName in assembly := "shaclex.jar"
 
 resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
+resolvers += Resolver.sonatypeRepo("releases")
+resolvers += Resolver.sonatypeRepo("snapshots")
 
 //resolvers += "Sonatype OSS Snapshots" at
 //  "https://oss.sonatype.org/content/repositories/snapshots"
 
 // resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
 
-resolvers += Resolver.sonatypeRepo("releases")
 
 resolvers += Resolver.bintrayRepo("labra", "maven")
 

@@ -4,6 +4,7 @@ import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
 import es.weso.rdf.nodes.IRI
+import es.weso.server._
 //import org.slf4j.LoggerFactory
 // import es.weso.shacl._
 import es.weso.schema._
@@ -22,6 +23,10 @@ object Main extends App with LazyLogging {
 
    val opts = new MainOpts(args, errorDriver)
    opts.verify()
+
+    if (opts.server()) {
+      ShaclexServer.main(args)
+    }
 
    val startTime = System.nanoTime()
 

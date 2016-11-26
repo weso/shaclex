@@ -142,6 +142,13 @@ class MainOpts(
     required = false,
     descr = "Label (IRI) of Shape in Schema")
 
+  val server = toggle("server",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "server mode",
+    descrNo = "command line mode",
+    noshort = true)
+
   val time = toggle("time",
     prefix = "no-",
     default = Some(false),

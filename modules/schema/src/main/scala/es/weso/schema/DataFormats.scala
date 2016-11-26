@@ -23,6 +23,7 @@ object DataFormats {
   }
 
   def default = TURTLE
+  def defaultFormatName = TURTLE.name
 
   lazy val toList: List[String] = availableFormats.map(_.name).toList
 
