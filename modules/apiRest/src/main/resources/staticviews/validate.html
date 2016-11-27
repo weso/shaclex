@@ -5,12 +5,14 @@
     <title>API Shaclex</title>
 </head>
 <body>
+<h1>Validate RDF Data</h1>
 <form action="/api/v1/validate" method="get">
     <textarea rows="20" cols="70" name="schema" placeholder="schema"></textarea>
-    <input name="schemaEngine" value="SHEX" />
-    <input name="schemaFormat" value="SHEXC" />
+    <input name="schemaEngine" value="SHEX" placeholder="SHEX"/>
+    <input name="schemaFormat" value="SHEXC" placeholder="SHEXC"/>
+    <hr/>
     <textarea rows="20" cols="70" name="data" placeholder="data"></textarea>
-    <input name="dataFormat" value="TURTLE" />
+    <input name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
     <button type="submit">Validate</button>
 </form>
 </body>

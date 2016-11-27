@@ -4,7 +4,9 @@ import java.util.concurrent.Executors
 
 import org.http4s._
 import org.http4s.rho.swagger.SwaggerSupport
+import org.http4s.rho.swagger.models.Info
 import org.http4s.server.blaze._
+import org.http4s.server.middleware.CORS
 import org.http4s.server.{Server, ServerApp, ServerBuilder}
 import org.log4s.getLogger
 
@@ -18,19 +20,19 @@ class ShaclexServer(host: String, port: Int) {
   logger.info(s"Starting Http4s-blaze example on '$host:$port'")
 
   // build our routes
-  def rhoRoutes = new RhoRoutes().toService(SwaggerSupport())
+  def rhoRoutes: HttpService = new RhoRoutes().toService(SwaggerSupport(
+    apiPath="swagger3.json",
+    apiInfo=Info(title="SHACLEX API", version="0.0.1")
+  ))
 
-  // our routes can be combinations of any HttpService, regardless of where they come from
-  val routes = Service.withFallback(rhoRoutes)(new Routes().service)
+  val routes = CORS(Service.withFallback(rhoRoutes)(new Routes().service))
 
-  // Add some logging to the service
   val service: HttpService = routes.local { req =>
     val path = req.uri.path
     logger.info(s"${req.remoteAddr.getOrElse("null")} -> ${req.method}: $path")
     req
   }
 
-  // Construct the blaze pipeline.
   def build(): ServerBuilder =
     BlazeBuilder
       .bindHttp(port, host)

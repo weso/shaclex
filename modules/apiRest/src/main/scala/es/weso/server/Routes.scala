@@ -29,15 +29,15 @@ class Routes {
   private val views   = cachedResource(Config("/staticviews", "/"))
   private val swagger = cachedResource(Config("/swagger", "/swagger"))
 
-  object DataParam extends QueryParamDecoderMatcher[String]("data")
+/*  object DataParam extends QueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
   object SchemaParam extends QueryParamDecoderMatcher[String]("schema")
   object SchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("schemaFormat")
   object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")
-
+*/
   val service: HttpService = HttpService {
 
-    case request @ ( GET | POST) -> Root / API / "validate" :?
+  /*  case request @ ( GET | POST) -> Root / API / "validate" :?
       DataParam(data) +&
         DataFormatParam(optDataFormat) +&
         SchemaParam(schema) +&
@@ -60,18 +60,25 @@ class Routes {
           }
         }
       }
-  }
+  } */
 
+  // Contents on /static are mapped to /static
   case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r)
 
-    case r @ GET -> _ if r.pathInfo.startsWith("/swagger") => swagger(r)
+  // Contents on /swagger are directly mapped to /swagger
+  case r @ GET -> _ if r.pathInfo.startsWith("/swagger/") => swagger(r)
 
-    case r @ GET -> _ if r.pathInfo.endsWith("/") =>
+  // case r @ GET -> _ if r.pathInfo.startsWith("/swagger.json") => views(r)
+
+  // When accessing to a folder (ends by /) append index.html
+  case r @ GET -> _ if r.pathInfo.endsWith("/") =>
       service(r.withPathInfo(r.pathInfo + "index.html"))
 
-    case r @ GET -> _ =>
+  case r @ GET -> _ =>
       val rr = if (r.pathInfo.contains('.')) r else r.withPathInfo(r.pathInfo + ".html")
       views(rr)
+
+
   }
 
   private def cachedResource(config: Config): HttpService = {

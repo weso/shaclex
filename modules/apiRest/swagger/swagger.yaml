@@ -1,0 +1,48 @@
+# Example YAML to get you started quickly.
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+
+# This is your document metadata
+info:
+  version: "0.0.1"
+  title: SHACLEX API
+
+# Describe your paths here
+paths:
+  # This is a path endpoint. Change it.
+  /validate:
+    # This is a HTTP operation
+    get:
+      # Describe this verb here. Note: you can use markdown
+      description: 
+        Validate RDF data with a Schema
+      parameters:
+        # An example parameter that is in query and is required
+        -
+          name: data
+          in: query
+          description: Schema string
+          required: true
+          type: string
+        -
+          name: schema
+          in: query
+          description: Schema string
+          required: true
+          type: string
+      # Expected responses for this operation:
+      responses:
+        # Response code
+        200:
+          description: Successful response
+          schema:
+            title: Result
+            type: object
+            properties: 
+                type:
+                  type: string
+                valid:
+                  type: boolean
+                details:
+                  type: object

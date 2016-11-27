@@ -1,0 +1,149 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "0.0.1",
+        "title": "SHACLEX API",
+        "contact": {
+            "name": "Jose Emilio Labra Gayo (WESO Research group)",
+            "url": "http://www.weso.es"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "host": "shaclex.herokuapp.com",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http"
+    ],
+    "paths": {
+        "/schema/formats": {
+            "get": {
+                "description": "Return available schema formats",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "title": "List of formats",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data/formats": {
+            "get": {
+                "description": "Return available data formats",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "title": "List of formats",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data/check": {
+            "get": {
+                "description": "Check syntax of RDF Data",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "title": "Result of data check",
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/schema/check": {
+            "get": {
+                "description": "Check syntax of Schema",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "title": "Result of Schema check",
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/validate": {
+            "get": {
+                "description": "Validate RDF data with a Schema",
+                "parameters": [
+                    {
+                        "name": "data",
+                        "in": "query",
+                        "description": "Schema string",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "dataFormat",
+                        "in": "query",
+                        "description": "Name of RDF Data format (example: Turtle)",
+                        "required": false,
+                        "type": "string",
+                        "default": "TURTLE"
+                    },
+                    {
+                        "name": "schema",
+                        "in": "query",
+                        "description": "Schema string",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "schemaFormat",
+                        "in": "query",
+                        "description": "Name of Schema format (example: ShExC, Turtle, etc...)",
+                        "required": false,
+                        "type": "string",
+                        "default": "SHEXC"
+                    },
+                    {
+                        "name": "schemaEngine",
+                        "in": "query",
+                        "description": "Name of Schema Engine (example: ShEx, Shaclex, ...)",
+                        "required": false,
+                        "type": "string",
+                        "default": "SHEX"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "title": "Result",
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "valid": {
+                                    "type": "boolean"
+                                },
+                                "details": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

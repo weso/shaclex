@@ -21,7 +21,7 @@ lazy val loggingVersion   = "3.5.0"
 lazy val http4sVersion    = "0.14.11a"
 lazy val rhoVersion       = "0.12.0a"
 
-herokuAppName in Compile := "stormy-dusk-3915"
+herokuAppName in Compile := "shaclex"
 
 herokuJdkVersion in Compile := "1.8"
 
@@ -130,6 +130,7 @@ lazy val apiRest =
       "org.http4s" %% "http4s-dsl" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
+      "org.http4s" %% "http4s-circe" % http4sVersion,
       "org.http4s" %% "http4s-twirl" % http4sVersion
     )
   )
