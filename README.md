@@ -45,6 +45,8 @@ Example:
 sbt "run -e ShEx -s examples/shex/good1.shex --schemaFormat ShExC -d examples/shex/good1.ttl"
 ```
 
+### Interactive mode with `sbt` 
+
 It is usually faster to run the `sbt` command, which opens the interactive `sbt` shell and inside that shell, execute 
 the different commands. 
 
@@ -53,6 +55,18 @@ $ sbt
 ... several information about loading libraries
 sbt> run -d examples/shacl/good1.ttl --engine ShaClex  
 ```
+
+### Binary mode
+
+The fastest way to run Shaclex is to compile the code and generate a binary. 
+The following command:
+
+```
+$ sbt universal:packageBin  
+```
+ 
+generates a binary.
+
 
 ### Server mode
 
