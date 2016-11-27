@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Available Options</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/app.css">
+
+    <script src="static/js/angular.js"></script>
+    <script src="static/js/angular-route.js"></script>
+    <script src="static/js/angular-resource.js"></script>
+
+    <script src="static/js/app.js"></script>
+    <script src="static/js/controllers.js"></script>
+    <script src="static/js/services.js"></script>
+</head>
+<body>
+<div class="page-header row-fluid">
+<h1>Available options</h1>
+</div>
+<div class="span2" ng-controller="navController">
+    <ul class="nav nav-list">
+        <li ng-class="navClass('dataFormats')"><a href="/api/v1/data/formats">Available RDF Data formats</a></li>
+        <li ng-class="navClass('defaultDataFormat')"><a href="/api/v1/data/formats/default">Default Data format</a></li>
+        <li ng-class="navClass('schemaFormats')"><a href="/api/v1/schema/formats">Available schema formats</a></li>
+        <li ng-class="navClass('defaultSchemaFormat')"><a href="/api/v1/schema/formats/default">Default schema formats</a></li>
+        <li ng-class="navClass('schemaEngines')"><a href="/api/v1/schema/engines">Available Schema Engines</a></li>
+        <li ng-class="navClass('triggerModes')"><a href="/api/v1/schema/triggerModes">Available Trigger modes</a></li>
+    </ul>
+</div>
+
+</body>
+</html>

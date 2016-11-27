@@ -3,16 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>API Shaclex</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/app.css">
+
+    <script src="static/js/angular.js"></script>
+    <script src="static/js/angular-route.js"></script>
+    <script src="static/js/angular-resource.js"></script>
+
+    <script src="static/js/app.js"></script>
+    <script src="static/js/controllers.js"></script>
+    <script src="static/js/services.js"></script>
 </head>
 <body>
+<div class="page-header row-fluid">
 <h1>Validate RDF Data</h1>
+</div>
 <form action="/api/v1/validate" method="get">
-    <textarea rows="20" cols="70" name="schema" placeholder="schema"></textarea>
-    <input name="schemaEngine" value="SHEX" placeholder="SHEX"/>
-    <input name="schemaFormat" value="SHEXC" placeholder="SHEXC"/>
-    <hr/>
-    <textarea rows="20" cols="70" name="data" placeholder="data"></textarea>
-    <input name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
+
+    <label for="schema">Schema</label>
+    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
+
+    <label for="schemaEngine">Schema Engine</label>
+    <input id="schemaEngine" name="schemaEngine" value="SHEX" placeholder="Schema engine"/>
+
+    <label for="schemaFormat">Schema Format</label>
+    <input id="schemaFormat" name="schemaFormat" value="SHEXC" placeholder="Schema format"/>
+
+<hr/>
+    <label for="trigger">Trigger mode:</label>
+    <input id="trigger" name="triggerMode" value="TARGETDECLS" placeholder="trigger mode"/>
+
+    <label for="node">Node</label>
+    <input id="node" name="node" value="" placeholder="node"/>
+
+    <label for="shape">Shape</label>
+    <input id="shape" name="shape" value="" placeholder="shape label"/>
+
+<hr/>
+    <label for="data">RDF Data</label>
+    <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
+
+    <label for="dataFormat">Data format</label>
+    <input id="dataFormat" name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
+
     <button type="submit">Validate</button>
 </form>
 </body>

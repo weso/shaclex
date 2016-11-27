@@ -15,6 +15,16 @@ abstract class Schema {
   */
  def formats: Seq[String]
 
+ def validateWithTrigger
+   (rdf: RDFReader,
+    trigger: ValidationTrigger): Result = {
+  trigger match {
+   case TargetDeclarations => validate(rdf)
+   case NodeShape(node,shape) => validateNodeShape(node,shape,rdf)
+   case NodeStart(node) => validateNodeStart(node,rdf)
+  }
+ }
+
  def validate(rdf: RDFReader): Result
 
  def validateNodeShape(node: IRI, label: String, rdf: RDFReader): Result

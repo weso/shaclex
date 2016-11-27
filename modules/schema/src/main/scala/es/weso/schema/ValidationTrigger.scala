@@ -43,7 +43,7 @@ case class NodeShape(node: IRI, shape: String) extends ValidationTrigger {
 /**
   * Validates a nodes against the start shape
   */
-case class NodeStart(node: RDFNode) extends ValidationTrigger {
+case class NodeStart(node: IRI) extends ValidationTrigger {
   override def explain = "Nodes agains start shape"
   override def maybeFocusNode = Some(node.toString)
   override def maybeShape = None

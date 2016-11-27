@@ -3,7 +3,8 @@ package es.weso.server
 import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.schema.{DataFormats, Schemas}
+import es.weso.schema.{DataFormats, Schemas, ValidationTrigger}
+import io.circe.Json
 import org.http4s.dsl._
 import org.http4s.websocket.WebsocketBits._
 import org.http4s.HttpService
@@ -37,7 +38,7 @@ class Routes {
 */
   val service: HttpService = HttpService {
 
-  /*  case request @ ( GET | POST) -> Root / API / "validate" :?
+      /*  case request @ ( GET | POST) -> Root / API / "validate" :?
       DataParam(data) +&
         DataFormatParam(optDataFormat) +&
         SchemaParam(schema) +&

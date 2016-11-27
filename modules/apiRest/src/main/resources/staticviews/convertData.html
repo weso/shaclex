@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Shaclex - Convert data</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/app.css">
+
+    <script src="static/js/angular.js"></script>
+    <script src="static/js/angular-route.js"></script>
+    <script src="static/js/angular-resource.js"></script>
+
+    <script src="static/js/app.js"></script>
+    <script src="static/js/controllers.js"></script>
+    <script src="static/js/services.js"></script>
+</head>
+<body>
+<div class="page-header row-fluid">
+<h1>Parse & Convert RDF Data</h1>
+</div>
+<form action="/api/v1/data/convert" method="get">
+    <label for="data">RDF Data</label>
+    <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
+
+    <label for="dataFormat">Data Format</label>
+    <input id="dataFormat" name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
+
+    <label for="resultFormat">Result Format</label>
+    <input id="resultFormat" name="resultFormat" value="TURTLE" placeholder="TURTLE"/>
+
+    <button type="submit">Convert</button>
+</form>
+</body>
+</html>

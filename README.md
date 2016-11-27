@@ -65,8 +65,13 @@ The following command:
 $ sbt universal:packageBin  
 ```
  
-generates a binary.
+generates the file:
+ 
+```
+target/universal/shaclex-N.N.N.zip
+``` 
 
+which contains the compressed binary code. 
 
 ### Server mode
 

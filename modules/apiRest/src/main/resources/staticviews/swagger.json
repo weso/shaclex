@@ -17,10 +17,218 @@
     "schemes": [
         "http"
     ],
+    "tags": [
+        {
+            "name": "APIRest",
+            "description": "Shaclex REST API"
+        }
+    ],
     "paths": {
-        "/schema/formats": {
+      "/data/convert": {
+        "get": {
+          "tags": [
+            "APIRest"
+          ],
+          "summary": "Convert data formats",
+          "description": "Check syntax of RDF Data",
+          "parameters": [
+            {
+              "name": "data",
+              "in": "query",
+              "description": "Data string",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "dataFormat",
+              "in": "query",
+              "description": "Name of RDF Data format (example: Turtle)",
+              "required": false,
+              "type": "string",
+              "default": "TURTLE"
+            },
+            {
+              "name": "resultFormat",
+              "in": "query",
+              "description": "Name of target RDF Data format (example: Turtle)",
+              "required": false,
+              "type": "string",
+              "default": "TURTLE"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "title": "Result of data conversion",
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "/schema/convert": {
+        "get": {
+          "tags": [
+            "APIRest"
+          ],
+          "summary": "Parse & convert Schemas",
+          "description": "Parse & convert Schemas",
+          "parameters": [
+            {
+              "name": "schema",
+              "in": "query",
+              "description": "Schema string",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "schemaFormat",
+              "in": "query",
+              "description": "Name of Schema format (example: ShExC)",
+              "required": false,
+              "type": "string",
+              "default": "ShExC"
+            },
+            {
+              "name": "schemaEngine",
+              "in": "query",
+              "description": "Name of Schema Engine (example: ShEx)",
+              "required": false,
+              "type": "string",
+              "default": "ShEx"
+            },
+            {
+              "name": "resultFormat",
+              "in": "query",
+              "description": "Name of target Schema format (example: SHACL)",
+              "required": false,
+              "type": "string",
+              "default": "SHACL"
+            },
+            {
+              "name": "resultEngine",
+              "in": "query",
+              "description": "Name of target Schema Engine (example: SHACLEX)",
+              "required": false,
+              "type": "string",
+              "default": "SHACLEX"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "title": "Result of Schema conversion",
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "/validate": {
+        "get": {
+          "tags": [
+            "APIRest"
+          ],
+          "summary": "Validate RDF Data with a Schema",
+          "description": "Validate RDF data with a Schema",
+          "parameters": [
+            {
+              "name": "data",
+              "in": "query",
+              "description": "Schema string",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "dataFormat",
+              "in": "query",
+              "description": "Name of RDF Data format (example: Turtle)",
+              "required": false,
+              "type": "string",
+              "default": "TURTLE"
+            },
+            {
+              "name": "schema",
+              "in": "query",
+              "description": "Schema string",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "schemaFormat",
+              "in": "query",
+              "description": "Name of Schema format (example: ShExC, Turtle, etc...)",
+              "required": false,
+              "type": "string",
+              "default": "SHEXC"
+            },
+            {
+              "name": "schemaEngine",
+              "in": "query",
+              "description": "Name of Schema Engine (example: ShEx, Shaclex, ...)",
+              "required": false,
+              "type": "string",
+              "default": "SHEX"
+            },
+            {
+              "name": "triggerMode",
+              "in": "query",
+              "description": "Validation trigger mode (example: TargetDecls, NodeStart, NodeShape",
+              "required": false,
+              "type": "string",
+              "default": "TARGETDECLS"
+            },
+            {
+              "name": "node",
+              "in": "query",
+              "description": "Node to validate",
+              "required": false,
+              "type": "string",
+              "default": ""
+            },
+            {
+              "name": "shape",
+              "in": "query",
+              "description": "Shape Label to check",
+              "required": false,
+              "type": "string",
+              "default": ""
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "title": "Result",
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "valid": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/schema/formats": {
             "get": {
+                "tags": [
+                    "APIRest"
+                ],
+                "summary": "Return available schema formats",
                 "description": "Return available schema formats",
+                "produces": [
+                    "application/json"
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -35,8 +243,78 @@
                 }
             }
         },
+      "/schema/engines/default": {
+        "get": {
+          "tags": [
+            "APIRest"
+          ],
+          "summary": "Return default schema engine",
+          "description": "Return default schema engine",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "title": "Default schema engine",
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "/schema/formats/default": {
+        "get": {
+          "tags": [
+            "APIRest"
+          ],
+          "summary": "Return default schema format",
+          "description": "Return default schema format",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "title": "Default schema format",
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "/schema/triggerModes": {
+            "get": {
+                "tags": [
+                    "APIRest"
+                ],
+                "summary": "Return available trigger modes",
+                "description": "Return available trigger modes",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "title": "List of trigger modes",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/data/formats": {
             "get": {
+                "tags": [
+                    "APIRest"
+                ],
+                "summary": "Return available data formats",
                 "description": "Return available data formats",
                 "responses": {
                     "200": {
@@ -52,98 +330,26 @@
                 }
             }
         },
-        "/data/check": {
-            "get": {
-                "description": "Check syntax of RDF Data",
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "title": "Result of data check",
-                            "type": "object"
-                        }
-                    }
-                }
+      "/data/formats/default": {
+        "get": {
+          "tags": [
+            "APIRest"
+          ],
+          "summary": "Return default data format",
+          "description": "Return default data format",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response",
+              "schema": {
+                "title": "Default data format",
+                "type": "string"
+              }
             }
-        },
-        "/schema/check": {
-            "get": {
-                "description": "Check syntax of Schema",
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "title": "Result of Schema check",
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
-        "/validate": {
-            "get": {
-                "description": "Validate RDF data with a Schema",
-                "parameters": [
-                    {
-                        "name": "data",
-                        "in": "query",
-                        "description": "Schema string",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "dataFormat",
-                        "in": "query",
-                        "description": "Name of RDF Data format (example: Turtle)",
-                        "required": false,
-                        "type": "string",
-                        "default": "TURTLE"
-                    },
-                    {
-                        "name": "schema",
-                        "in": "query",
-                        "description": "Schema string",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "schemaFormat",
-                        "in": "query",
-                        "description": "Name of Schema format (example: ShExC, Turtle, etc...)",
-                        "required": false,
-                        "type": "string",
-                        "default": "SHEXC"
-                    },
-                    {
-                        "name": "schemaEngine",
-                        "in": "query",
-                        "description": "Name of Schema Engine (example: ShEx, Shaclex, ...)",
-                        "required": false,
-                        "type": "string",
-                        "default": "SHEX"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "title": "Result",
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string"
-                                },
-                                "valid": {
-                                    "type": "boolean"
-                                },
-                                "details": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     }
 }
