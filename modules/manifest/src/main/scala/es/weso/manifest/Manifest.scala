@@ -32,7 +32,7 @@ case class ManifestAction(
     data: Option[IRI],
     dataFormat: Option[String],
     schemaOutputFormat: Option[IRI],
-    triggerMode: Option[String],
+    triggerMode: Option[IRI],
     node: Option[IRI],
     shape: Option[IRI]
     ) {

@@ -111,6 +111,7 @@ trait RDF2Manifest
      schemaFormatIRI <- optional(iriFromPredicate(sht_schema_format))(n,rdf)
      schemaFormat <- mapOptional(schemaFormatIRI,iriSchemaFormat2str)
      schemaOutputFormat <- optional(iriFromPredicate(sht_schema_output_format))(n,rdf)
+     triggerMode <- optional(iriFromPredicate(sht_triggerMode))(n,rdf)
      node <- optional(oneOfPredicates(Seq(sht_node,sht_focus)))(n,rdf)
      shape <- optional(iriFromPredicate(sht_shape))(n,rdf)
    } yield
@@ -119,6 +120,7 @@ trait RDF2Manifest
            schemaFormat = schemaFormat,
            data = data,
            dataFormat = dataFormat,
+           triggerMode = triggerMode,
            schemaOutputFormat = schemaOutputFormat,
            node = node,
            shape = shape
