@@ -32,6 +32,7 @@ case class ManifestAction(
     data: Option[IRI],
     dataFormat: Option[String],
     schemaOutputFormat: Option[IRI],
+    triggerMode: Option[String],
     node: Option[IRI],
     shape: Option[IRI]
     ) {
@@ -52,6 +53,7 @@ object ManifestAction {
         data = None,
         dataFormat = None,
         schemaOutputFormat = None,
+        triggerMode = None,
         node = None,
         shape = None)
   }
