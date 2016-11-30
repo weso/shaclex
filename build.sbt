@@ -8,6 +8,7 @@ name := "shaclex"
 lazy val shaclexVersion = "0.0.55"
 
 cancelable in Global := true
+fork := true
 reStartArgs := Seq("--server")
 
 // Versions of common packages

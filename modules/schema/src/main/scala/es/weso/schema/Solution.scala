@@ -17,6 +17,13 @@ case class Solution
 
   override def toString: String = show
 
+  def hasShapes(node: RDFNode): Seq[SchemaLabel] = {
+    nodes.get(node) match {
+      case Some(info) => info.hasShapes.map(_._1)
+      case None => Seq()
+    }
+  }
+
   def show: String = {
     val sb = new StringBuilder
     sb ++= "Solution\n"

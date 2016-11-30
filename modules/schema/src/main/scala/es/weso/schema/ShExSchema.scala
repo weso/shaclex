@@ -21,7 +21,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     List("SHEXC","SHEXJ") ++
     RDFAsJenaModel.availableFormats
 
-  override def validate(rdf: RDFReader) : Result = {
+  override def validateTargetDecls(rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
     cnvResult(r, rdf)

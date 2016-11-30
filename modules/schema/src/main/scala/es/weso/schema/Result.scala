@@ -1,6 +1,8 @@
 package es.weso.schema
 import cats.Show
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.PrefixMap
+import es.weso.rdf.nodes.RDFNode
 import io.circe.JsonObject._
 import io.circe._
 import io.circe.generic.auto._
@@ -10,10 +12,21 @@ case class Result(
     isValid: Boolean,
     message: String,
     solutions: Seq[Solution],
-    errors: Seq[ErrorInfo]) {
+    errors: Seq[ErrorInfo]) extends LazyLogging {
 
   def noSolutions(sols: Seq[Solution]): Boolean = {
     sols.size == 1 && sols.head.isEmpty
+  }
+
+  def solution: Either[String,Solution] = {
+    solutions.size match {
+      case 0 => Left("No solutions")
+      case 1 => Right(solutions.head)
+      case _ => {
+        logger.warn(s"More than one solution. Only consider the first one. Solutions:\n$solutions")
+        Right(solutions.head)
+      }
+    }
   }
 
   def show: String = {
@@ -99,6 +112,13 @@ case class Result(
     case Result.TEXT => show
     case Result.JSON => toJsonString2spaces
     case _ => s"Unsupported format to serialize result: $format, $this"
+  }
+
+  def hasShapes(node: RDFNode): Seq[SchemaLabel] = {
+    solution match {
+      case Left(str) => Seq()
+      case Right(s) => s.hasShapes(node)
+    }
   }
 
 }

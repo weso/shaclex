@@ -15,7 +15,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def formats = DataFormats.formatNames
 
-  override def validate(rdf: RDFReader) : Result = {
+  override def validateTargetDecls(rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
     cnvResult(r,rdf)

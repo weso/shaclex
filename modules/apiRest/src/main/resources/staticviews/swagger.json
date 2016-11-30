@@ -13,7 +13,7 @@
         }
     },
     "host": "shaclex.herokuapp.com",
-    "basePath": "/api/v1",
+    "basePath": "/api",
     "schemes": [
         "http"
     ],

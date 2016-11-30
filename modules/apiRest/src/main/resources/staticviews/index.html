@@ -1,35 +1,22 @@
 <!doctype html>
-<html lang="en" ng-app="phonecatApp">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Shaclex</title>
-    <link rel="stylesheet" href="static/css/app.css">
-    <link rel="stylesheet" href="static/css/bootstrap.css">
-
-    <script src="static/js/angular.js"></script>
-    <script src="static/js/angular-route.js"></script>
-    <script src="static/js/angular-resource.js"></script>
-
-    <script src="static/js/app.js"></script>
-    <script src="static/js/controllers.js"></script>
-    <script src="static/js/services.js"></script>
+    <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-<div class="page-header row-fluid">
     <div class="span8"><h1>Shaclex</h1></div>
-</div>
 
-<div class="span2" ng-controller="navController">
-    <ul class="nav nav-list">
-        <li ng-class="navClass('home')"><a href="#Home">Home</a></li>
-        <li ng-class="navClass('validate')"><a href="/validate">Validate</a></li>
-        <li ng-class="navClass('convertData')"><a href="/convertData">Parse & Convert RDF Data</a></li>
-        <li ng-class="navClass('convertSchema')"><a href="/convertSchema">Parse & Convert Schema</a></li>
-        <li ng-class="navClass('availableOptions')"><a href="/availableOptions">Available Options</a></li>
-        <li><a id = "swaggerId" href="">Api Docs</a></li>
-    </ul>
-</div>
-<div class="span10" ng-view></div>
+ <ul>
+     <li><a href="#Home">Home</a></li>
+     <li><a href="/validate">Validate</a></li>
+     <li><a href="/validateDataEmbedded">Validate data with Embedded Schema</a></li>
+     <li><a href="/convertData">Parse & Convert RDF Data</a></li>
+     <li><a href="/convertSchema">Parse & Convert Schema</a></li>
+     <li><a href="/availableOptions">Available Options</a></li>
+     <li><a id = "swaggerId" href="">Api Docs</a></li>
+ </ul>
 </body>
 </html>
 

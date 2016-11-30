@@ -91,7 +91,7 @@ class RhoRoutes extends RhoService {
       triggerMode,node,shape)
   }
 
-  "GET Validate" **
+/*  "GET Validate" **
     GET / api / "validate" +?
       param[String]("data") &
       param[String]("dataFormat") &
@@ -113,7 +113,7 @@ class RhoRoutes extends RhoService {
     validate(data,dataFormat,
       schema,schemaFormat,schemaEngine,
       triggerMode, node, shape)
-  }
+  } */
 
   "Convert RDF Data" **
     GET / api / "data/convert" +?

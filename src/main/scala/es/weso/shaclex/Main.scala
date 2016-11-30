@@ -53,41 +53,15 @@ object Main extends App with LazyLogging {
 
         val trigger: String = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
 
-        val result: Either[String,Result] =
-          ValidationTrigger.findTrigger(
-            trigger,
-            opts.node.toOption,
-            opts.shapeLabel.toOption,
-           rdf.getPrefixMap()).fold(
-            str => Left(str),
-            trigger => trigger match {
-              case TargetDeclarations => Right(schema.validate(rdf))
-              case NodeShape(node,shape) => node match {
-                case iri: IRI => {
-                  logger.info(s"Validating nodeShape($iri,$shape)")
-                  Right(schema.validateNodeShape(iri, shape, rdf))
-                }
-                case _ => Left(s"Unsupported NodeShape validation for $node")
-              }
-              case NodeStart(node) => node match {
-                case iri: IRI => Right(schema.validateNodeStart(iri,rdf))
-                case _ => Left(s"Unsupported NodeStart validation for $node")
-              }
-              case _ => Left(s"Unsupported trigger $trigger")
-            }
-          )
+        val result =
+          schema.validate(rdf,trigger,opts.node.toOption,opts.shapeLabel.toOption,rdf.getPrefixMap, schema.pm)
 
-        result match {
-          case Left(str) => logger.error(s"Error: $str")
-          case Right(r) => {
-            val resultSerialized = r.serialize(opts.resultFormat())
-            if (opts.showResult()) {
+        val resultSerialized = result.serialize(opts.resultFormat())
+        if (opts.showResult()) {
               println(resultSerialized)
-            }
-            if (opts.outputFile.isDefined) {
+        }
+        if (opts.outputFile.isDefined) {
               FileUtils.writeFile(opts.outputFile(), resultSerialized)
-            }
-          }
         }
 
         if (opts.cnvEngine.isDefined) {

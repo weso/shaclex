@@ -62,12 +62,14 @@ object ValidationTrigger {
  def findTrigger(name: String,
                  node: Option[String],
                  shape: Option[String],
-                 pm: PrefixMap = PrefixMap.empty): Either[String,ValidationTrigger] = {
+                 nodeMap: PrefixMap = PrefixMap.empty,
+                 shapeMap: PrefixMap = PrefixMap.empty
+                ): Either[String,ValidationTrigger] = {
    (name.toUpperCase,node,shape) match {
      case ("TARGETDECLS",_,_) => Right(TargetDeclarations)
      case ("NODESHAPE",Some(node),Some(shape)) => {
-       val eitherNode = removeLTGT(node,pm)
-       val eitherShape = removeLTGT(shape,pm)
+       val eitherNode = removeLTGT(node,nodeMap)
+       val eitherShape = removeLTGT(shape,shapeMap)
        (eitherNode,eitherShape) match {
          case (Right(iriNode),Right(iriShape)) => Right(NodeShape(iriNode,iriShape.str))
          case (Left(e), Right(_)) => Left(e)
@@ -76,7 +78,7 @@ object ValidationTrigger {
        }
      }
      case ("NODESTART",Some(node),_) => {
-       removeLTGT(node,pm).right.map(NodeStart(_))
+       removeLTGT(node,nodeMap).right.map(NodeStart(_))
      }
      case _ =>
        Left(s"Cannot understand trigger mode\ntrigger = $name, node: $node, shape: $shape")

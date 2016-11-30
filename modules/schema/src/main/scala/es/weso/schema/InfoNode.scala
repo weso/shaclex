@@ -14,6 +14,12 @@ case class InfoNode(
     hasNoShapes: Seq[(SchemaLabel,Explanation)],
     pm: PrefixMap
     ) {
+
+
+  def contains(label: SchemaLabel): Boolean = {
+    hasShapes.map(_._1).contains(label)
+  }
+
   override def toString: String = show
 
   def show: String = {

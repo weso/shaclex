@@ -5,7 +5,7 @@ import java.util.concurrent.Executors
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.{DataFormats, Schemas, ValidationTrigger}
 import io.circe.Json
-import org.http4s.dsl._
+import org.http4s.dsl.{QueryParamDecoderMatcher, _}
 import org.http4s.websocket.WebsocketBits._
 import org.http4s.HttpService
 import org.http4s.server.staticcontent
@@ -18,50 +18,67 @@ import scalaz.stream.{Exchange, Process, time}
 import scalaz.stream.async.topic
 
 class Routes {
-  val API = "api/v1"
+  val API = "api"
 
-  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
-
-  // Provides the message board for our websocket chat
-  private val chatTopic = topic[String]()
+//  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   // Get the static content
   private val static  = cachedResource(Config("/static", "/static"))
   private val views   = cachedResource(Config("/staticviews", "/"))
   private val swagger = cachedResource(Config("/swagger", "/swagger"))
 
-/*  object DataParam extends QueryParamDecoderMatcher[String]("data")
+  object DataParam extends QueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
-  object SchemaParam extends QueryParamDecoderMatcher[String]("schema")
+  object SchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
   object SchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("schemaFormat")
   object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")
-*/
+  object TriggerModeParam extends OptionalQueryParamDecoderMatcher[String]("triggerMode")
+  object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
+  object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
+  object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
+
   val service: HttpService = HttpService {
 
-      /*  case request @ ( GET | POST) -> Root / API / "validate" :?
-      DataParam(data) +&
-        DataFormatParam(optDataFormat) +&
-        SchemaParam(schema) +&
-        SchemaFormatParam(optSchemaFormat) +&
-        SchemaEngineParam(optSchemaEngine) => {
-      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-      val schemaFormat = optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
-      val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+    case GET -> Root / API / "test" :?
+      NameParam(name) => {
+      Ok(s"Hello ${name.getOrElse("World")}")
+    }
 
-      Schemas.fromString(schema,schemaFormat,schemaEngine,None) match {
-        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schema")
+    case request @ ( GET | POST) -> Root / API / "validate" :?
+      DataParam(data) +&
+      DataFormatParam(optDataFormat) +&
+      SchemaParam(optSchema) +&
+      SchemaFormatParam(optSchemaFormat) +&
+      SchemaEngineParam(optSchemaEngine) +&
+      TriggerModeParam(optTriggerMode) +&
+      NodeParam(optNode) +&
+      ShapeParam(optShape) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+      val schemaFormat = optSchema match {
+        case None => dataFormat
+        case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+      }
+      val schemaStr = optSchema match {
+        case None => data
+        case Some(schema) => schema
+      }
+      val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+
+      Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
+        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
         case Success(schema) => {
           RDFAsJenaModel.fromChars(data,dataFormat,None) match {
             case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
             case Success(rdf) => {
-              val result = schema.validate(rdf)
+              val result = schema.validate(rdf,triggerMode,optNode,optShape)
               val jsonResult = result.toJsonString2spaces
               Ok(jsonResult)
             }
           }
         }
       }
-  } */
+  }
 
   // Contents on /static are mapped to /static
   case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r)

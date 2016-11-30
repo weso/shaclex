@@ -19,13 +19,28 @@ abstract class Schema {
    (rdf: RDFReader,
     trigger: ValidationTrigger): Result = {
   trigger match {
-   case TargetDeclarations => validate(rdf)
+   case TargetDeclarations => validateTargetDecls(rdf)
    case NodeShape(node,shape) => validateNodeShape(node,shape,rdf)
    case NodeStart(node) => validateNodeStart(node,rdf)
   }
  }
 
- def validate(rdf: RDFReader): Result
+ def validate(rdf: RDFReader,
+              triggerMode: String,
+              node: Option[String],
+              shape: Option[String],
+              nodeMap: PrefixMap = PrefixMap.empty,
+              shapesMap: PrefixMap = PrefixMap.empty
+             ): Result = {
+  ValidationTrigger.findTrigger(triggerMode,node,shape,nodeMap,shapesMap) match {
+   case Left(err) =>
+    Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, node: $node,, shape: $shape, prefixMap: $pm")
+   case Right(trigger) =>
+    validateWithTrigger(rdf,trigger)
+  }
+ }
+
+ def validateTargetDecls(rdf: RDFReader): Result
 
  def validateNodeShape(node: IRI, label: String, rdf: RDFReader): Result
 

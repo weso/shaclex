@@ -45,18 +45,34 @@ object RDF2Shacl extends RDFParser {
   }
 
   def shape(node: RDFNode, rdf: RDFReader): Try[Shape] = {
-    val id = node match {
-      case iri: IRI => Some(iri)
-      case _ => None
+    if (parsedShapes.contains(node)) Success(parsedShapes(node))
+    else {
+      val maybeId = node match {
+        case iri: IRI => Some(iri)
+        case _ => None
+      }
+      val shape = Shape.empty
+      parsedShapes += (node -> shape)
+      for {
+        targets <- targets(node, rdf)
+        filters <- filters(node, rdf)
+        constraints <- constraints(node, rdf)
+        closed <- booleanFromPredicateOptional(sh_closed)(node, rdf)
+        ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(node, rdf)
+        ignoredIRIs <- fromEitherString(nodes2iris(ignoredNodes))
+      } yield {
+        val newShape = shape.copy(
+          id = maybeId,
+          targets = targets,
+          filters = filters,
+          constraints = constraints,
+          closed = closed.getOrElse(false),
+          ignoredProperties = ignoredIRIs
+        )
+        parsedShapes(node) = newShape
+        newShape
+      }
     }
-    for {
-      targets <- targets(node,rdf)
-      filters <- filters(node,rdf)
-      constraints <- constraints(node,rdf)
-      closed <- booleanFromPredicateOptional(sh_closed)(node,rdf)
-      ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(node,rdf)
-      ignoredIRIs <- fromEitherString(nodes2iris(ignoredNodes))
-     } yield Shape(id,targets, filters, constraints, closed.getOrElse(false),ignoredIRIs)
   }
 
 
