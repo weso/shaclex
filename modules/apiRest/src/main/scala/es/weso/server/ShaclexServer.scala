@@ -19,13 +19,6 @@ class ShaclexServer(host: String, port: Int) {
 
   logger.info(s"Starting Http4s-blaze example on '$host:$port'")
 
-  // build our routes
-  def rhoRoutes: HttpService = new RhoRoutes().toService(SwaggerSupport(
-    apiPath="swagger3.json",
-    apiInfo=Info(title="SHACLEX API generated from Rho", version="0.0.1")
-  ))
-
-//  val routes = CORS(Service.withFallback(rhoRoutes)(new Routes().service))
   val routes = CORS(new Routes().service)
   val service: HttpService = routes.local { req =>
     val path = req.uri.path

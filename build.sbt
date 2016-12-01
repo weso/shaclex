@@ -11,6 +11,8 @@ cancelable in Global := true
 fork := true
 reStartArgs := Seq("--server")
 
+parallelExecution in Test := false
+
 // Versions of common packages
 lazy val circeVersion     = "0.6.0"
 lazy val effCatsVersion   = "2.0.0-RC18"

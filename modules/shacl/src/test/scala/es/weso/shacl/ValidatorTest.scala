@@ -11,9 +11,9 @@ class ValidatorTest extends
   FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
-describe("Validator scope Nodes") {
+describe("Validator target Nodes") {
 
-  it("should be able to get the target nodes to validate") {
+  it("should be able to obtain the target nodes to validate") {
     val ex = IRI("http://example.org/")
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>

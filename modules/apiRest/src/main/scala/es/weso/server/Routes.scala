@@ -11,6 +11,7 @@ import org.http4s.HttpService
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 import org.http4s.server.websocket.WS
+import org.http4s.circe._
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
@@ -38,6 +39,40 @@ class Routes {
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
 
   val service: HttpService = HttpService {
+
+    case GET -> Root / API / "schema" / "engines" => {
+      val engines = Schemas.availableSchemaNames
+      val json = Json.fromValues(engines.map(str => Json.fromString(str)))
+      Ok(json)
+    }
+
+    case GET ->  Root / API / "schema" / "engines" / "default" => {
+      val schemaEngine = Schemas.defaultSchemaName
+      Ok(schemaEngine)
+    }
+
+    case  GET -> Root / API / "schema" / "formats" => {
+        val formats = Schemas.availableFormats
+        val json = Json.fromValues(formats.map(str => Json.fromString(str)))
+        Ok(json)
+      }
+
+     case  GET -> Root / API / "schema" / "triggerModes" => {
+        val triggerModes = ValidationTrigger.triggerValues.map(_._1)
+        val json = Json.fromValues(triggerModes.map(Json.fromString(_)))
+        Ok(json)
+      }
+
+    case GET -> Root / API / "data" / "formats" => {
+        val formats = DataFormats.formatNames
+        val json = Json.fromValues(formats.map(str => Json.fromString(str)))
+        Ok(json)
+      }
+
+    case GET -> Root / API / "schema" / "engines" / "default" => {
+        val schemaEngine = Schemas.defaultSchemaName
+        Ok(schemaEngine)
+      }
 
     case GET -> Root / API / "test" :?
       NameParam(name) => {
