@@ -4,14 +4,16 @@ import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.{DataFormats, Schemas, ValidationTrigger}
-import io.circe.Json
+import io.circe._, io.circe.generic.auto._, io.circe.parser._, io.circe.syntax._
 import org.http4s.dsl.{QueryParamDecoderMatcher, _}
 import org.http4s.websocket.WebsocketBits._
-import org.http4s.HttpService
+import org.http4s.{EntityEncoder, HttpService, LanguageTag}
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 import org.http4s.server.websocket.WS
+import org.http4s.headers._
 import org.http4s.circe._
+import org.http4s.MediaType._
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
@@ -74,9 +76,18 @@ class Routes {
         Ok(schemaEngine)
       }
 
-    case GET -> Root / API / "test" :?
-      NameParam(name) => {
-      Ok(s"Hello ${name.getOrElse("World")}")
+    case req @ GET -> Root / API / "test" :? NameParam(name) => {
+      val default = Ok(s"Hello ${name.getOrElse("World")}")
+      req.headers.get(`Accept-Language`) match {
+        case Some(al) => {
+          al match {
+            case _ if (al.satisfiedBy(LanguageTag("es"))) =>
+              Ok(s"Hola ${name.getOrElse("Mundo")}!")
+            case _ => default
+          }
+        }
+        case None => default
+      }
     }
 
     case request @ ( GET | POST) -> Root / API / "validate" :?
@@ -107,8 +118,12 @@ class Routes {
             case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
             case Success(rdf) => {
               val result = schema.validate(rdf,triggerMode,optNode,optShape)
-              val jsonResult = result.toJsonString2spaces
-              Ok(jsonResult)
+              val jsonResult = result.toJson
+              val validateResult =
+                ValidateResult(data,dataFormat,
+                  schemaStr,schemaFormat,schemaEngine,
+                  triggerMode,optNode,optShape,jsonResult).asJson
+              Ok(validateResult).withContentType(Some(`Content-Type`(`application/json`)))
             }
           }
         }
@@ -138,4 +153,7 @@ class Routes {
     val cachedConfig = config.copy(cacheStartegy = staticcontent.MemoryCache())
     staticcontent.resourceService(cachedConfig)
   }
+
+
+  case class VR(name: String)
 }
