@@ -4,10 +4,13 @@ import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.{DataFormats, Schemas, ValidationTrigger}
-import io.circe._, io.circe.generic.auto._, io.circe.parser._, io.circe.syntax._
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
 import org.http4s.dsl.{QueryParamDecoderMatcher, _}
 import org.http4s.websocket.WebsocketBits._
-import org.http4s.{EntityEncoder, HttpService, LanguageTag}
+import org.http4s.{EntityEncoder, HttpService, LanguageTag, Status}
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 import org.http4s.server.websocket.WS
@@ -123,7 +126,9 @@ class Routes {
                 ValidateResult(data,dataFormat,
                   schemaStr,schemaFormat,schemaEngine,
                   triggerMode,optNode,optShape,jsonResult).asJson
-              Ok(validateResult).withContentType(Some(`Content-Type`(`application/json`)))
+              Ok(validateResult)
+                .withContentType(Some(`Content-Type`(`application/json`)))
+                .withStatus(Status.Ok)
             }
           }
         }
