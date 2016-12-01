@@ -17,11 +17,13 @@ import org.http4s.server.websocket.WS
 import org.http4s.headers._
 import org.http4s.circe._
 import org.http4s.MediaType._
+import org.http4s.twirl._
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 import scalaz.stream.{Exchange, Process, time}
 import scalaz.stream.async.topic
+import es.weso._
 
 class Routes {
   val API = "api"
@@ -93,6 +95,34 @@ class Routes {
       }
     }
 
+    case req @ GET -> Root / API / "data" / "nodes" :?
+      DataParam(data) +&
+      DataFormatParam(optDataFormat) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      RDFAsJenaModel.fromChars(data,dataFormat,None) match {
+        case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
+        case Success(rdf) => {
+          val nodes: List[String] =
+            (rdf.subjects() ++ rdf.objects() ++ rdf.predicates()).map(_.toString).toList
+          Ok(html.nodes(nodes))
+        }
+      }
+    }
+
+/*    case req @ GET -> Root / API / "schema" / "shapes" :?
+      DataParam(data) +&
+        DataFormatParam(optDataFormat) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      RDFAsJenaModel.fromChars(data,dataFormat,None) match {
+        case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
+        case Success(rdf) => {
+          val nodes: List[String] =
+            (rdf.subjects() ++ rdf.objects() ++ rdf.predicates()).map(_.toString).toList
+          Ok(html.nodes(nodes))
+        }
+      }
+    }
+*/
     case request @ ( GET | POST) -> Root / API / "validate" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
@@ -159,6 +189,4 @@ class Routes {
     staticcontent.resourceService(cachedConfig)
   }
 
-
-  case class VR(name: String)
 }

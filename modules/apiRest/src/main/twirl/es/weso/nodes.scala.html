@@ -1,0 +1,15 @@
+@(nodes: List[String])
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Shaclex with Twirl template</title>
+</head>
+<body>
+<h1>API Shaclex</h1>
+<ul>
+    @for(node <- nodes) {
+      <li>Node: @{node}</li>
+    }
+</ul>
+</body>
+</html>
