@@ -143,18 +143,25 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   def nodeShape: NodeShapeChecker = {
     case (node, shape) => {
+      logger.debug(s"nodeShape(${node.show}, ${shape.show})")
       val cs = shape.constraints.map(checkConstraint).toList
       //      val r = checkAll(cs.map(c => c(Attempt(NodeShape(node, shape), None))(node)))
       for {
         current <- getTyping
         attempt = Attempt(NodeShape(node, shape), None)
-        comp = checkAll(cs.map(c => c(attempt)(node)))
+        comp = checkAll(cs.map(c => {
+          logger.info(s"nodeShape. checking $c with attempt ${attempt} and node ${node.show}")
+          c(attempt)(node)
+        }))
         ts <- runLocal(comp, _.addType(node, shape))
         t <- combineTypings(ts)
         t1 <- if (shape.closed)
           checkClosed(shape.ignoredProperties, shape.predicatesInPropertyConstraints)(attempt)(node)
         else ok(t)
-      } yield t1
+      } yield {
+        logger.debug(s"nodeShape(${node.show},${shape.show}) checked ok with typing: ${t1.show}")
+        t1
+      }
     }
   }
 
@@ -215,39 +222,41 @@ case class Validator(schema: Schema) extends LazyLogging {
     t <- combineTypings(ts)
   } yield t
 
-  def component2PropertyChecker(c: Component): PropertyChecker =
-    (attempt, predicate) => for {
-      rdf <- getRDF
-      node = attempt.node
-      os = rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
-      check: Check[ShapeTyping] = c match {
-        case ShapeComponent(s)   => checkValues(os, shapeComponentChecker(s)(attempt))
-        case ClassComponent(c)   => checkValues(os, classComponentChecker(c)(attempt))
-        case Datatype(d)         => checkValues(os, datatypeChecker(d)(attempt))
-        case NodeKind(k)         => checkValues(os, nodeKindChecker(k)(attempt))
-        case MinCount(n)         => minCount(n, os, attempt, predicate)
-        case MaxCount(n)         => maxCount(n, os, attempt, predicate)
-        case MinExclusive(n)     => checkValues(os, minExclusive(n)(attempt))
-        case MinInclusive(n)     => checkValues(os, minInclusive(n)(attempt))
-        case MaxInclusive(n)     => checkValues(os, maxInclusive(n)(attempt))
-        case MaxExclusive(n)     => checkValues(os, maxExclusive(n)(attempt))
-        case MinLength(n)        => checkValues(os, minLength(n)(attempt))
-        case MaxLength(n)        => checkValues(os, maxLength(n)(attempt))
-        case Pattern(p, flags)   => checkValues(os, pattern(p, flags)(attempt))
-        case UniqueLang(v)       => checkValues(os, unsupportedNodeChecker("UniqueLang")(attempt))
-        case Equals(p)           => checkValues(os, equals(p)(attempt))
-        case Disjoint(p)         => checkValues(os, disjoint(p)(attempt))
-        case LessThan(p)         => checkValues(os, lessThan(p)(attempt))
-        case LessThanOrEquals(p) => checkValues(os, lessThanOrEquals(p)(attempt))
-        case And(shapes)         => checkValues(os, and(shapes)(attempt))
-        case Or(shapes)          => checkValues(os, or(shapes)(attempt))
-        case Not(shape)          => checkValues(os, not(shape)(attempt))
-        case HasValue(v)         => checkValues(os, hasValue(v)(attempt))
-        case In(values)          => checkValues(os, inChecker(values)(attempt))
-        case _                   => throw new Exception(s"Unsupported check $c")
-      }
-      t <- check
-    } yield t
+  def component2PropertyChecker(c: Component): PropertyChecker = (attempt, predicate) => {
+      logger.debug(s"component2PropertyChecker: Attempt: $attempt, predicate: $predicate, component: $c")
+      for {
+        rdf <- getRDF
+        node = attempt.node
+        os = rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
+        check: Check[ShapeTyping] = c match {
+          case ShapeComponent(s) => checkValues(os, shapeComponentChecker(s)(attempt))
+          case ClassComponent(c) => checkValues(os, classComponentChecker(c)(attempt))
+          case Datatype(d) => checkValues(os, datatypeChecker(d)(attempt))
+          case NodeKind(k) => checkValues(os, nodeKindChecker(k)(attempt))
+          case MinCount(n) => minCount(n, os, attempt, predicate)
+          case MaxCount(n) => maxCount(n, os, attempt, predicate)
+          case MinExclusive(n) => checkValues(os, minExclusive(n)(attempt))
+          case MinInclusive(n) => checkValues(os, minInclusive(n)(attempt))
+          case MaxInclusive(n) => checkValues(os, maxInclusive(n)(attempt))
+          case MaxExclusive(n) => checkValues(os, maxExclusive(n)(attempt))
+          case MinLength(n) => checkValues(os, minLength(n)(attempt))
+          case MaxLength(n) => checkValues(os, maxLength(n)(attempt))
+          case Pattern(p, flags) => checkValues(os, pattern(p, flags)(attempt))
+          case UniqueLang(v) => checkValues(os, unsupportedNodeChecker("UniqueLang")(attempt))
+          case Equals(p) => checkValues(os, equals(p)(attempt))
+          case Disjoint(p) => checkValues(os, disjoint(p)(attempt))
+          case LessThan(p) => checkValues(os, lessThan(p)(attempt))
+          case LessThanOrEquals(p) => checkValues(os, lessThanOrEquals(p)(attempt))
+          case And(shapes) => checkValues(os, and(shapes)(attempt))
+          case Or(shapes) => checkValues(os, or(shapes)(attempt))
+          case Not(shape) => checkValues(os, not(shape)(attempt))
+          case HasValue(v) => checkValues(os, hasValue(v)(attempt))
+          case In(values) => checkValues(os, inChecker(values)(attempt))
+          case _ => throw new Exception(s"Unsupported check $c")
+        }
+        t <- check
+      } yield t
+  }
 
   def shapeComponentChecker(s: Shape): NodeChecker = attempt => node => for {
     typing <- getTyping
@@ -262,13 +271,16 @@ case class Validator(schema: Schema) extends LazyLogging {
     _ <- addEvidence(attempt.nodeShape, s"$node has shape ${s.id.getOrElse("?")}")
   } yield newTyping
 
-  def classComponentChecker(cls: RDFNode): NodeChecker = attempt => node => for {
-    rdf <- getRDF
-    t <- condition(rdf.hasSHACLClass(node, cls),
-      attempt,
-      classError(node, cls, attempt),
-      s"$node is in class $cls")
-  } yield t
+  def classComponentChecker(cls: RDFNode): NodeChecker = attempt => node => {
+    logger.debug(s"classChecker node: ${node.show} class ${cls.show}")
+    for {
+      rdf <- getRDF
+      t <- condition(rdf.hasSHACLClass(node, cls),
+        attempt,
+        classError(node, cls, attempt),
+        s"$node is in class $cls")
+    } yield t
+  }
 
   def nodeKindChecker(k: NodeKindType): NodeChecker = attempt => node =>
     k match {
@@ -378,14 +390,15 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   def or(shapes: Seq[Shape]): NodeChecker = attempt => node => {
+    logger.debug(s"or. Shapes $shapes, attempt: $attempt, node $node")
     val shapesList = shapes.toList
-    val rs = shapesList.map(s => {
-      logger.info(s"Checking $node with ${s.showId}")
+    val checks: List[CheckTyping] = shapesList.map(s => {
+      logger.debug(s"Inside or. checking $node with $s")
       nodeShape(node, s)
     })
     for {
       t0 <- getTyping
-      t1 <- checkSome(rs, orError(node, attempt, shapesList))
+      t1 <- checkSome(checks, orError(node, attempt, shapesList))
       t2 <- addEvidence(attempt.nodeShape, s"$node passes or(${shapes.map(_.showId).mkString(",")})")
       t3 <- combineTypings(Seq(t1, t2))
     } yield t3

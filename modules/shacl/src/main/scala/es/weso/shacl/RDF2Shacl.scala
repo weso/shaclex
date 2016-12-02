@@ -1,7 +1,6 @@
 package es.weso.shacl
-import scala.util.{ Failure, Success, Try }
-
-import es.weso.rdf.{ PrefixMap, RDFReader }
+import scala.util.{Failure, Success, Try}
+import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes._
 import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.PREFIXES._
@@ -9,8 +8,9 @@ import es.weso.utils.TryUtils._
 import cats._
 import cats.implicits._
 import SHACLPrefixes._
+import com.typesafe.scalalogging.LazyLogging
 
-object RDF2Shacl extends RDFParser {
+object RDF2Shacl extends RDFParser with LazyLogging {
 
   implicit val applicativeRDFParser = new Applicative[RDFParser] {
     def pure[A](x: A) = (n,rdf) => Success(x)
@@ -288,27 +288,42 @@ object RDF2Shacl extends RDFParser {
   }
 
   def nodeKind: RDFParser[Component] = (n,rdf) => {
+    logger.debug(s"Searching for nodeKind on ${n}")
     for {
       os <- objectsFromPredicate(sh_nodeKind)(n,rdf)
-      nk <- parseNodeKind(os)
-    } yield nk
+      nk <- {
+        logger.debug(s"Objects with nodeKind: $os")
+        parseNodeKind(os)
+      }
+    } yield {
+      logger.debug(s"Nodekind found: $nk")
+      nk
+    }
   }
 
   def parseNodeKind(os: Set[RDFNode]): Try[Component] = {
+    logger.debug(s"ParseNodeKind($os)")
     os.size match {
       case 0 => fail("no objects of nodeKind property")
       case 1 => {
         os.head match {
-          case `sh_IRI` => Success(NodeKind(IRIKind))
-          case `sh_BlankNode` => Success(NodeKind(BlankNodeKind))
-          case `sh_Literal` => Success(NodeKind(LiteralKind))
-          case `sh_BlankNodeOrLiteral` => Success(NodeKind(BlankNodeOrLiteral))
-          case `sh_BlankNodeOrIRI` => Success(NodeKind(BlankNodeOrIRI))
-          case `sh_IRIOrLiteral` => Success(NodeKind(IRIOrLiteral))
-          case x => {
-            fail(s"incorrect value of nodeKind property $x")
+          case nk: IRI => nk match {
+            case `sh_IRI` => Success(NodeKind(IRIKind))
+            case `sh_BlankNode` => Success(NodeKind(BlankNodeKind))
+            case `sh_Literal` => Success(NodeKind(LiteralKind))
+            case `sh_BlankNodeOrLiteral` => Success(NodeKind(BlankNodeOrLiteral))
+            case `sh_BlankNodeOrIRI` => Success(NodeKind(BlankNodeOrIRI))
+            case `sh_IRIOrLiteral` => Success(NodeKind(IRIOrLiteral))
+            case x => {
+              logger.error(s"incorrect value of nodeKind property $x")
+              fail(s"incorrect value of nodeKind property $x")
+            }
           }
+          case x => {
+            logger.error(s"incorrect value of nodeKind property $x")
+            fail(s"incorrect value of nodeKind property $x")
         }
+       }
       }
       case n => fail(s"objects of nodeKind property > 1. $os")
     }

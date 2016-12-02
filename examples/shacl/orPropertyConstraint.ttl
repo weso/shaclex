@@ -1,0 +1,17 @@
+@prefix : <http://example.org/>
+@prefix sh: <http://www.w3.org/ns/shacl#>
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+@prefix : <http://example.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+:S a sh:Shape;
+   sh:targetNode :x ;
+   sh:property [
+    sh:predicate :p ;
+    sh:or( [sh:class :t0] [sh:nodeKind sh:IRI] )
+   ]
+.
+
+:x :p [ a :t0 ] .
