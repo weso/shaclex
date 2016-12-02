@@ -149,10 +149,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       for {
         current <- getTyping
         attempt = Attempt(NodeShape(node, shape), None)
-        comp = checkAll(cs.map(c => {
-          logger.info(s"nodeShape. checking $c with attempt ${attempt} and node ${node.show}")
-          c(attempt)(node)
-        }))
+        comp = checkAll(cs.map(c => c(attempt)(node) ))
         ts <- runLocal(comp, _.addType(node, shape))
         t <- combineTypings(ts)
         t1 <- if (shape.closed)
@@ -207,13 +204,22 @@ case class Validator(schema: Schema) extends LazyLogging {
     } yield t
   }
 
+  // TODO: The following conversion is redundant and incomplete.
+  // Refactor the code to avoid this manual conversion
   def component2Checker(c: Component): NodeChecker = attempt => node => {
     c match {
       case NodeKind(k) => nodeKindChecker(k)(attempt)(node)
       case And(shapes) => and(shapes)(attempt)(node)
       case Or(shapes)  => or(shapes)(attempt)(node)
       case Not(shape)  => not(shape)(attempt)(node)
-      case _           => unsupportedNodeChecker(s"Node constraint: $c")(attempt)(node)
+      case ClassComponent(cls) => classComponentChecker(cls)(attempt)(node)
+      case Datatype(d) => datatypeChecker(d)(attempt)(node)
+      case In(ls) => inChecker(ls)(attempt)(node)
+//      case MinCount(m) => minCount(m)(attempt)(node)
+      case _           => {
+        logger.error(s"component2Checker: Unsupported component $c. Attempt: $attempt, node: $node")
+        unsupportedNodeChecker(s"Node constraint: $c")(attempt)(node)
+      }
     }
   }
 
