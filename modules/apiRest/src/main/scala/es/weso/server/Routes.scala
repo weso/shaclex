@@ -241,7 +241,7 @@ class Routes {
       }
     }
 
-    case request @ ( GET | POST) -> Root / API / "validate" :?
+    case req @ ( GET | POST) -> Root / API / "validate" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
       SchemaParam(optSchema) +&
@@ -270,13 +270,22 @@ class Routes {
             case Success(rdf) => {
               val result = schema.validate(rdf,triggerMode,optNode,optShape)
               val jsonResult = result.toJson
-              val validateResult =
+              val validationResult =
                 ValidateResult(data,dataFormat,
                   schemaStr,schemaFormat,schemaEngine,
-                  triggerMode,optNode,optShape,jsonResult).asJson
-              Ok(validateResult)
+                  triggerMode,optNode,optShape,jsonResult)
+              val default = Ok(validationResult.asJson)
                 .withContentType(Some(`Content-Type`(`application/json`)))
-                .withStatus(Status.Ok)
+              req.headers.get(`Accept`) match {
+                case Some(ah) => {
+                  logger.info(s"Accept header: $ah")
+                  val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
+                  if (hasHTML) {
+                    Ok(validationResult.toHTML).withContentType(Some(`Content-Type`(`text/html`)))
+                  } else default
+                }
+                case None => default
+              }
             }
           }
         }
