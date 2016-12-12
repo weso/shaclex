@@ -8,7 +8,7 @@
         "predicate": "http://a.example/p1",
         "valueExpr": { "type": "NodeConstraint",
                    "nodeKind": "bnode",
-                   "pattern": "^ab$"
+                   "pattern": "ab"
                  }
       }
     }

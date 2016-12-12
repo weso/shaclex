@@ -1,6 +1,6 @@
 <http://a.example/S1> {
-   <http://a.example/p1> LITERAL pattern "^ab"
-                      OR LITERAL pattern "cd"
-                      OR LITERAL pattern "ef$"
+   <http://a.example/p1> LITERAL pattern "ab.*"
+                      OR LITERAL pattern ".*cd.*"
+                      OR LITERAL pattern ".*ef"
 }
 

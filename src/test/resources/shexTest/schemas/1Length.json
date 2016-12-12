@@ -5,9 +5,10 @@
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
-        "inverse": true,
-        "negated": true,
-        "predicate": "http://a.example/p1"
+        "predicate": "http://a.example/p1",
+        "valueExpr": { "type": "NodeConstraint",
+                   "length": 5
+                 }
       }
     }
   }

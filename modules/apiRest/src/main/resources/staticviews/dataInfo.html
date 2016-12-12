@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Shaclex - Info about RDF data</title>
+    <link rel="stylesheet" href="static/css/app.css">
+
+</head>
+<body>
+<h1>Info about RDF Data</h1>
+<form action="/api/data/info" method="get">
+    <label for="data">RDF Data</label>
+    <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
+
+    <label for="dataFormat">Data Format</label>
+    <input id="dataFormat" name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
+
+    <button type="submit">Data Info</button>
+</form>
+</body>
+</html>

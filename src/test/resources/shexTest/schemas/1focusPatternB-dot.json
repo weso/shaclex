@@ -6,7 +6,7 @@
       "shapeExprs": [
         {
           "type": "NodeConstraint",
-          "pattern": "^abcdefghijklmnopqrs$"
+          "pattern": "abcdefghijklmnopqrs"
         },
         {
           "type": "Shape",

@@ -9,7 +9,7 @@
         "valueExpr": {
           "type": "NodeConstraint",
           "nodeKind": "literal",
-          "pattern": "^http://a.example/o1$"
+          "pattern": "http://a.example/o1"
         }
       }
     }

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Shaclex - Schema Info</title>
+    <link rel="stylesheet" href="static/css/app.css">
+
+</head>
+<body>
+<h1>Schema Info</h1>
+<form action="/api/schema/info" method="get">
+    <label for="schema">Schema</label>
+    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
+
+    <label for="schemaFormat">Schema Format</label>
+    <input id="schemaFormat" name="schemaFormat" value="ShExC" placeholder="ShExC"/>
+
+    <label for="schemaEngine">Schema Engine</label>
+    <input id="schemaEngine" name="schemaEngine" value="ShEx" placeholder="ShEx"/>
+
+    <button type="submit">Schema Info</button>
+</form>
+</body>
+</html>

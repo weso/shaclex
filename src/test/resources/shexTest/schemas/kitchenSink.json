@@ -279,7 +279,6 @@
               },
               {
                 "type": "TripleConstraint",
-                "negated": true,
                 "predicate": "http://ex.example/#misc",
                 "valueExpr": {
                   "type": "NodeConstraint",
@@ -313,7 +312,6 @@
                   {
                     "type": "TripleConstraint",
                     "inverse": true,
-                    "negated": true,
                     "predicate": "http://ex.example/#miscRef"
                   }
                 ]

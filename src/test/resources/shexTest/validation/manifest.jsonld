@@ -20,7 +20,7 @@
           "trait": [
             "Empty"
           ],
-          "comment": "<S> {  } on {  }",
+          "comment": "<S1> {  } on {  }",
           "status": "mf:proposed",
           "result": "0_dummy.val"
         },
@@ -38,7 +38,7 @@
           "trait": [
             "Empty"
           ],
-          "comment": "<S> {  } on { <s1> <p1> <o1> }",
+          "comment": "<S1> {  } on { <s1> <p1> <o1> }",
           "status": "mf:proposed",
           "result": "0_pass.val"
         },
@@ -54,9 +54,10 @@
           "extensionResults": [],
           "name": "0_otherbnode",
           "trait": [
+            "ToldBNode",
             "Empty"
           ],
-          "comment": "<S> {  } on { _:abcd <p1> <o1> }",
+          "comment": "<S1> {  } on { _:abcd <p1> <o1> }",
           "status": "mf:proposed",
           "result": "0abcd_pass.val"
         },
@@ -74,7 +75,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "<S> { <p1> . } on {  }",
+          "comment": "<S1> { <p1> . } on {  }",
           "status": "mf:proposed"
         },
         {
@@ -91,7 +92,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "<S> { <p1> . } on {  }",
+          "comment": "<S1> { <p1> . } on {  }",
           "status": "mf:proposed"
         },
         {
@@ -108,7 +109,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "<S> { <p1> . } on { <s> <p2> <o1> }",
+          "comment": "<S1> { <p1> . } on { <s> <p2> <o1> }",
           "status": "mf:proposed"
         },
         {
@@ -125,7 +126,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "<S> { <p1> . } on { <s> <p2> <o1> }",
+          "comment": "<S1> { <p1> . } on { <s> <p2> <o1> }",
           "status": "mf:proposed"
         },
         {
@@ -142,7 +143,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "<S> { <p1> . } on { <s1> <p1> <o1> }",
+          "comment": "<S1> { <p1> . } on { <s1> <p1> <o1> }",
           "status": "mf:proposed",
           "result": "1dot_pass.val"
         },
@@ -160,7 +161,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "<S> { <p1> . } on { <s1> <p1> <o1> }",
+          "comment": "<S1> { <p1> . } on { <s1> <p1> <o1> }",
           "status": "mf:proposed",
           "result": "1dot_pass.val"
         },
@@ -178,7 +179,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "PREFIX : <http://a.example/> <S> { :p1 ., } on { <s1> <p1> <o1> }",
+          "comment": "PREFIX : <http://a.example/> <S1> { :p1 ., } on { <s1> <p1> <o1> }",
           "status": "mf:proposed",
           "result": "1dot_pass.val"
         },
@@ -356,8 +357,8 @@
           "extensionResults": [],
           "name": "bnode1dot_fail-missing",
           "trait": [
-            "ToldBNode",
-            "TriplePattern"
+            "TriplePattern",
+            "ToldBNode"
           ],
           "comment": "<S> { <p1> . } on { <s> <p2> <o1> }",
           "status": "mf:proposed"
@@ -374,8 +375,8 @@
           "extensionResults": [],
           "name": "bnode1dot_pass-others_lexicallyEarlier",
           "trait": [
-            "ToldBNode",
-            "TriplePattern"
+            "TriplePattern",
+            "ToldBNode"
           ],
           "comment": "_:S1 { <p1> . } on { <s> <p0> <o0>; <p1> <o1> }",
           "status": "mf:proposed",
@@ -468,180 +469,6 @@
           "comment": "<S> { <p1> . } on { <s> <p1> <o1>; <p2> <o2> }",
           "status": "mf:proposed",
           "result": "1inversedot_pass.val"
-        },
-        {
-          "@id": "#1negateddot_pass-empty",
-          "@type": "sht:ValidationTest",
-          "action": {
-            "schema": "../schemas/1negateddot.shex",
-            "shape": "http://a.example/S1",
-            "data": "empty.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1negateddot_pass-empty",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on {  }",
-          "status": "mf:proposed",
-          "result": "1negateddot_pass.val"
-        },
-        {
-          "@id": "#1negateddot_pass-missing",
-          "@type": "sht:ValidationTest",
-          "action": {
-            "schema": "../schemas/1negateddot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip2_Io1.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1negateddot_pass-missing",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s> <p2> <o1> }",
-          "status": "mf:proposed",
-          "result": "1negateddot_pass.val"
-        },
-        {
-          "@id": "#1negateddot_fail-noOthers",
-          "@type": "sht:ValidationFailure",
-          "action": {
-            "schema": "../schemas/1negateddot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_Io1.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1negateddot_fail-noOthers",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s1> <p1> <o1> }",
-          "status": "mf:proposed"
-        },
-        {
-          "@id": "#1negateddot_fail-others_lexicallyEarlier",
-          "@type": "sht:ValidationFailure",
-          "action": {
-            "schema": "../schemas/1negateddot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip0_Io0;Ip1_Io1.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1negateddot_fail-others_lexicallyEarlier",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s> <p0> <o0>; <p1> <o1> }",
-          "status": "mf:proposed"
-        },
-        {
-          "@id": "#1negateddot_fail-others_lexicallyLater",
-          "@type": "sht:ValidationFailure",
-          "action": {
-            "schema": "../schemas/1negateddot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_Io1;Ip2_Io2.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1negateddot_fail-others_lexicallyLater",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s> <p1> <o1>; <p2> <o2> }",
-          "status": "mf:proposed"
-        },
-        {
-          "@id": "#1negatedinversedot_pass-empty",
-          "@type": "sht:ValidationTest",
-          "action": {
-            "schema": "../schemas/1negatedinversedot.shex",
-            "shape": "http://a.example/S1",
-            "data": "empty.ttl",
-            "focus": "http://a.example/o1"
-          },
-          "extensionResults": [],
-          "name": "1negatedinversedot_pass-empty",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on {  }",
-          "status": "mf:proposed",
-          "result": "1negatedinversedot_pass.val"
-        },
-        {
-          "@id": "#1negatedinversedot_pass-missing",
-          "@type": "sht:ValidationTest",
-          "action": {
-            "schema": "../schemas/1negatedinversedot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip2_Io1.ttl",
-            "focus": "http://a.example/o1"
-          },
-          "extensionResults": [],
-          "name": "1negatedinversedot_pass-missing",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s> <p2> <o1> }",
-          "status": "mf:proposed",
-          "result": "1negatedinversedot_pass.val"
-        },
-        {
-          "@id": "#1negatedinversedot_fail-noOthers",
-          "@type": "sht:ValidationFailure",
-          "action": {
-            "schema": "../schemas/1negatedinversedot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_Io1.ttl",
-            "focus": "http://a.example/o1"
-          },
-          "extensionResults": [],
-          "name": "1negatedinversedot_fail-noOthers",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s1> <p1> <o1> }",
-          "status": "mf:proposed"
-        },
-        {
-          "@id": "#1negatedinversedot_fail-others_lexicallyEarlier",
-          "@type": "sht:ValidationFailure",
-          "action": {
-            "schema": "../schemas/1negatedinversedot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip0_Io0;Ip1_Io1.ttl",
-            "focus": "http://a.example/o1"
-          },
-          "extensionResults": [],
-          "name": "1negatedinversedot_fail-others_lexicallyEarlier",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s> <p0> <o0>; <p1> <o1> }",
-          "status": "mf:proposed"
-        },
-        {
-          "@id": "#1negatedinversedot_fail-others_lexicallyLater",
-          "@type": "sht:ValidationFailure",
-          "action": {
-            "schema": "../schemas/1negatedinversedot.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_Io1;Ip2_Io2.ttl",
-            "focus": "http://a.example/o1"
-          },
-          "extensionResults": [],
-          "name": "1negatedinversedot_fail-others_lexicallyLater",
-          "trait": [
-            "TriplePattern"
-          ],
-          "comment": "<S> { !<p1> . } on { <s> <p1> <o1>; <p2> <o2> }",
-          "status": "mf:proposed"
         },
         {
           "@id": "#1Adot_pass",
@@ -893,7 +720,7 @@
           "action": {
             "schema": "../schemas/1datatype.shex",
             "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_Io1.ttl",
+            "data": "Is1_Ip1_Idt1.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
@@ -901,7 +728,24 @@
           "trait": [
             "Datatype"
           ],
-          "comment": "<S> { <p1> <dt1> } on <s> in { <s1> <p1> <o1> }",
+          "comment": "<S> { <p1> <dt1> } on <s> in { <s1> <p1> <dt1> }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1datatype_langString",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1datatype.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LabLTen.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1datatype_langString",
+          "trait": [
+            "Datatype"
+          ],
+          "comment": "<S> { <p1> <dt1> } on <s> in { <s1> <p1> 'ab'@en }",
           "status": "mf:proposed"
         },
         {
@@ -910,7 +754,7 @@
           "action": {
             "schema": "../schemas/1datatype.shex",
             "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_DEC1.345.ttl",
+            "data": "Is1_Ip1_DEC1_234.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
@@ -938,6 +782,24 @@
           "comment": "<S> { <p1> <dt1> } on <s> in { <s> <p1> 'ab'^^<dt1> }",
           "status": "mf:proposed",
           "result": "1datatype_pass.val"
+        },
+        {
+          "@id": "#1datatypelangString_pass",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1datatypelangString.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LabLTen.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1datatypelangString_pass",
+          "trait": [
+            "Datatype"
+          ],
+          "comment": "<S> { <p1> rdf:langString } on <s> in { <s> <p1> 'ab'@en }",
+          "status": "mf:proposed",
+          "result": "1datatypelangString_pass.val"
         },
         {
           "@id": "#1card2_fail0",
@@ -1993,7 +1855,7 @@
           "trait": [
             "NumericEquivalence"
           ],
-          "comment": "<S> { <p1> [0e0] } on { <s> <p1> 0e0 }",
+          "comment": "<S1> { <p1> [0e0] } on { <s> <p1> 0e0 }",
           "status": "mf:proposed",
           "result": "1val1DOUBLE_pass.val"
         },
@@ -2367,7 +2229,7 @@
           "action": {
             "schema": "../schemas/1datatypeLength.shex",
             "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_DEC1.345.ttl",
+            "data": "Is1_Ip1_DEC1_234.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
@@ -2431,27 +2293,28 @@
           "status": "mf:proposed"
         },
         {
-          "@id": "#1literalFractiondigits_fail-decimal-short",
-          "@type": "sht:ValidationFailure",
+          "@id": "#1literalFractiondigits_pass-decimal-short",
+          "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_DEC1_2345.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1literalFractiondigits_fail-decimal-short",
+          "name": "1literalFractiondigits_pass-decimal-short",
           "trait": [
             "FractionDigitsFacet"
           ],
           "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 5 } / { <s1> <p1> 1.2345 }",
-          "status": "mf:proposed"
+          "status": "mf:proposed",
+          "result": "1literalFractiondigits_pass-decimal-short.val"
         },
         {
           "@id": "#1literalFractiondigits_pass-decimal-equal",
           "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_DEC1_23456.ttl",
             "focus": "http://a.example/s1"
@@ -2466,28 +2329,10 @@
           "result": "1literalFractiondigits_pass-decimal-equal.val"
         },
         {
-          "@id": "#1literalFractiondigits_pass-float-equal",
-          "@type": "sht:ValidationTest",
-          "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_FLT1_23456.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1literalFractiondigits_pass-float-equal",
-          "trait": [
-            "FractionDigitsFacet"
-          ],
-          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 5 } / { <s1> <p1> \"1.23456\"^^xsd:floag }",
-          "status": "mf:proposed",
-          "result": "1literalFractiondigits_pass-float-equal.val"
-        },
-        {
           "@id": "#1literalFractiondigits_fail-decimal-long",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_DEC1_234567.ttl",
             "focus": "http://a.example/s1"
@@ -2501,44 +2346,185 @@
           "status": "mf:proposed"
         },
         {
-          "@id": "#1literalFractiondigits_fail-integer-short",
+          "@id": "#1literalFractiondigits_pass-decimal-equalLead",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits4.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC01_2345.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_pass-decimal-equalLead",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 4 } / { <s1> <p1> 01.2345 }",
+          "status": "mf:proposed",
+          "result": "1literalFractiondigits_pass-decimal-equalLead.val"
+        },
+        {
+          "@id": "#1literalFractiondigits_fail-decimal-longLead",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits4.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC01_23456.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_fail-decimal-longLead",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 4 } / { <s1> <p1> 01.23456 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalFractiondigits_pass-decimal-equalTrail",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits4.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC1_23450.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_pass-decimal-equalTrail",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 4 } / { <s1> <p1> 1.23450 }",
+          "status": "mf:proposed",
+          "result": "1literalFractiondigits_pass-decimal-equalTrail.val"
+        },
+        {
+          "@id": "#1literalFractiondigits_fail-decimal-longTrail",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits4.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC1_234560.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_fail-decimal-longTrail",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 4 } / { <s1> <p1> 1.234560 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalFractiondigits_pass-decimal-equalLeadTrail",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits4.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC01_23450.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_pass-decimal-equalLeadTrail",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 4 } / { <s1> <p1> 01.23450 }",
+          "status": "mf:proposed",
+          "result": "1literalFractiondigits_pass-decimal-equalLeadTrail.val"
+        },
+        {
+          "@id": "#1literalFractiondigits_fail-decimal-longLeadTrail",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits4.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC1_234560.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_fail-decimal-longLeadTrail",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 4 } / { <s1> <p1> 01.234560 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalFractiondigits_pass-integer-short",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_INT12345.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1literalFractiondigits_fail-integer-short",
+          "name": "1literalFractiondigits_pass-integer-short",
           "trait": [
             "FractionDigitsFacet"
           ],
           "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 5 } / { <s1> <p1> 12345 }",
-          "status": "mf:proposed"
+          "status": "mf:proposed",
+          "result": "1fractionTotaldigits_pass-integer-equal.val"
         },
         {
-          "@id": "#1literalFractiondigits_fail-xsd_integer-short",
-          "@type": "sht:ValidationFailure",
+          "@id": "#1literalFractiondigits_pass-xsd_integer-short",
+          "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_xsd-integer12345.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1literalFractiondigits_fail-xsd_integer-short",
+          "name": "1literalFractiondigits_pass-xsd_integer-short",
           "trait": [
             "FractionDigitsFacet"
           ],
           "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 5 } / { <s1> <p1> \"12345\"^^xsd:integer }",
+          "status": "mf:proposed",
+          "result": "1fractionTotaldigits_pass-integer-equal.val"
+        },
+        {
+          "@id": "#1literalFractiondigits_fail-float-equal",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_FLT1_23456.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_fail-float-equal",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 5 } / { <s1> <p1> \"1.23456\"^^xsd:float }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalFractiondigits_fail-double-equal",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalFractiondigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DBL4_5e0.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalFractiondigits_fail-double-equal",
+          "trait": [
+            "FractionDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL FRACTIONDIGITS 5 } / { <s1> <p1> 4.5e0 }",
           "status": "mf:proposed"
         },
         {
           "@id": "#1literalFractiondigits_fail-malformedxsd_decimal-1_23ab",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_malformedxsd-decimal1_23ab.ttl",
             "focus": "http://a.example/s1"
@@ -2555,7 +2541,7 @@
           "@id": "#1literalFractiondigits_fail-malformedxsd_decimal-1_2345ab",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_malformedxsd-decimal1_2345ab.ttl",
             "focus": "http://a.example/s1"
@@ -2572,7 +2558,7 @@
           "@id": "#1literalFractiondigits_fail-malformedxsd_integer-1_2345",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_malformedxsd-integer1_2345.ttl",
             "focus": "http://a.example/s1"
@@ -2589,7 +2575,7 @@
           "@id": "#1literalFractiondigits_fail-iri",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "BASE_Is1_Ip1_I12345.ttl",
             "focus": "http://a.example/s1"
@@ -2606,7 +2592,7 @@
           "@id": "#1literalFractiondigits_fail-bnode",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalFractiondigits.shex",
+            "schema": "../schemas/1literalFractiondigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_B12345.ttl",
             "focus": "http://a.example/s1"
@@ -2620,27 +2606,28 @@
           "status": "mf:proposed"
         },
         {
-          "@id": "#1literalTotaldigits_fail-decimal-short",
-          "@type": "sht:ValidationFailure",
+          "@id": "#1literalTotaldigits_pass-decimal-short",
+          "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_DEC1_234.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1literalTotaldigits_fail-decimal-short",
+          "name": "1literalTotaldigits_pass-decimal-short",
           "trait": [
             "TotalDigitsFacet"
           ],
-          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 1.2345 }",
-          "status": "mf:proposed"
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 1.234 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-decimal-short.val"
         },
         {
           "@id": "#1literalTotaldigits_pass-decimal-equal",
           "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_DEC1_2345.ttl",
             "focus": "http://a.example/s1"
@@ -2655,28 +2642,10 @@
           "result": "1literalTotaldigits_pass-decimal-equal.val"
         },
         {
-          "@id": "#1literalTotaldigits_pass-float-equal",
-          "@type": "sht:ValidationTest",
-          "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
-            "shape": "http://a.example/S1",
-            "data": "Is1_Ip1_FLT1_2345.ttl",
-            "focus": "http://a.example/s1"
-          },
-          "extensionResults": [],
-          "name": "1literalTotaldigits_pass-float-equal",
-          "trait": [
-            "TotalDigitsFacet"
-          ],
-          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> \"1.2345\"^^xsd:float }",
-          "status": "mf:proposed",
-          "result": "1literalTotaldigits_pass-float-equal.val"
-        },
-        {
           "@id": "#1literalTotaldigits_fail-decimal-long",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_DEC1_23456.ttl",
             "focus": "http://a.example/s1"
@@ -2690,10 +2659,115 @@
           "status": "mf:proposed"
         },
         {
+          "@id": "#1literalTotaldigits_pass-decimal-equalLead",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC01_2345.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-decimal-equalLead",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 01.2345 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-decimal-equalLead.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-decimal-longLead",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC01_23456.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-decimal-longLead",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 01.23456 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-decimal-equalTrail",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC1_23450.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-decimal-equalTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 1.23450 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-decimal-equalTrail.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-decimal-longTrail",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC1_234560.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-decimal-longTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 1.234560 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-decimal-equalLeadTrail",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC01_23450.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-decimal-equalLeadTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 01.23450 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-decimal-equalLeadTrail.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-decimal-longLeadTrail",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DEC1_234560.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-decimal-longLeadTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 01.234560 }",
+          "status": "mf:proposed"
+        },
+        {
           "@id": "#1literalTotaldigits_pass-integer-equal",
           "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_INT12345.ttl",
             "focus": "http://a.example/s1"
@@ -2708,27 +2782,220 @@
           "result": "1literalTotaldigits_pass-integer-equal.val"
         },
         {
-          "@id": "#1literalTotaldigits_fail-xsd_integer-short",
-          "@type": "sht:ValidationFailure",
+          "@id": "#1literalTotaldigits_pass-xsd_integer-short",
+          "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_xsd-integer1234.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1literalTotaldigits_fail-xsd_integer-short",
+          "name": "1literalTotaldigits_pass-xsd_integer-short",
           "trait": [
             "TotalDigitsFacet"
           ],
           "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> \"1234\"^^xsd:integer }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-integer-short.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-integer-equalLead",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT012345.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-integer-equalLead",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 012345 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-integer-equalLead.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-integer-longLead",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT0123456.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-integer-longLead",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 0123456 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-integer-equalTrail",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits6.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT123450.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-integer-equalTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 6 } / { <s1> <p1> 123450 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-integer-equalTrail.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-integer-longTrail",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits6.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT1234560.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-integer-longTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 6 } / { <s1> <p1> 1234560 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-integer-equalLeadTrail",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits6.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT0123450.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-integer-equalLeadTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 6 } / { <s1> <p1> 0123450 }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-integer-equalLeadTrail.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-integer-longLeadTrail",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits6.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT01234560.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-integer-longLeadTrail",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 6 } / { <s1> <p1> 01234560 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-byte-short",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits2.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_BYT5.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-byte-short",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 2 } / { <s1> <p1> 5^^xsd:byte }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-byte-short.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_pass-byte-equal",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits2.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_BYT64.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_pass-byte-equal",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 2 } / { <s1> <p1> 64^^xsd:byte }",
+          "status": "mf:proposed",
+          "result": "1literalTotaldigits_pass-byte-equal.val"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-byte-long",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits2.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_BYT128.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-byte-long",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 2 } / { <s1> <p1> 128^^xsd:byte }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-float-equal",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_FLT1_2345.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-float-equal",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> \"1.2345\"^^xsd:float }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalTotaldigits_fail-double-equal",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalTotaldigits5.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_DBL4_5e0.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalTotaldigits_fail-double-equal",
+          "trait": [
+            "TotalDigitsFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL TOTALDIGITS 5 } / { <s1> <p1> 4.5e0 }",
           "status": "mf:proposed"
         },
         {
           "@id": "#1literalTotaldigits_fail-malformedxsd_decimal-1_23ab",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_malformedxsd-decimal1_23ab.ttl",
             "focus": "http://a.example/s1"
@@ -2745,7 +3012,7 @@
           "@id": "#1literalTotaldigits_fail-malformedxsd_decimal-1_2345ab",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_malformedxsd-decimal1_2345ab.ttl",
             "focus": "http://a.example/s1"
@@ -2762,7 +3029,7 @@
           "@id": "#1literalTotaldigits_fail-malformedxsd_integer-1_2345",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_malformedxsd-integer1_2345.ttl",
             "focus": "http://a.example/s1"
@@ -2779,7 +3046,7 @@
           "@id": "#1literalTotaldigits_fail-iri",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "BASE_Is1_Ip1_I12345.ttl",
             "focus": "http://a.example/s1"
@@ -2796,7 +3063,7 @@
           "@id": "#1literalTotaldigits_fail-bnode",
           "@type": "sht:ValidationFailure",
           "action": {
-            "schema": "../schemas/1literalTotaldigits.shex",
+            "schema": "../schemas/1literalTotaldigits5.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_B12345.ttl",
             "focus": "http://a.example/s1"
@@ -6873,6 +7140,58 @@
           "status": "mf:proposed"
         },
         {
+          "@id": "#1Length_fail-lit-short",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1Length.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Labcd.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1Length_fail-lit-short",
+          "trait": [
+            "LengthFacet"
+          ],
+          "comment": "<S1> { <p1> LENGTH 5 } on { <s1> <p1> \"abcd\" }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1Length_pass-lit-equal",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1Length.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Labcde.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1Length_pass-lit-equal",
+          "trait": [
+            "LengthFacet"
+          ],
+          "comment": "<S1> { <p1> LENGTH 5 } on { <s1> <p1> \"abcde\" }",
+          "status": "mf:proposed",
+          "result": "1Length_pass-lit-equal.val"
+        },
+        {
+          "@id": "#1Length_fail-lit-long",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1Length.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Labcdef.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1Length_fail-lit-long",
+          "trait": [
+            "LengthFacet"
+          ],
+          "comment": "<S1> { <p1> LENGTH 5 } on { <s1> <p1> \"abcdef\" }",
+          "status": "mf:proposed"
+        },
+        {
           "@id": "#1literalLength_fail-lit-short",
           "@type": "sht:ValidationFailure",
           "action": {
@@ -6953,7 +7272,7 @@
           "extensionResults": [],
           "name": "1literalLength_fail-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> LITERAL LENGTH 5 } on { <s1> <p1> _:abcde }",
@@ -7040,7 +7359,7 @@
           "extensionResults": [],
           "name": "1iriLength_fail-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> IRI LENGTH 19 } on { <s1> <p1> _:abcde }",
@@ -7144,7 +7463,7 @@
           "extensionResults": [],
           "name": "1bnodeLength_fail-bnode-short",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE LENGTH 5 } on { <s1> <p1> _:abcd }",
@@ -7162,7 +7481,7 @@
           "extensionResults": [],
           "name": "1bnodeLength_pass-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE LENGTH 5 } on { <s1> <p1> _:abcde }",
@@ -7181,7 +7500,7 @@
           "extensionResults": [],
           "name": "1bnodeLength_fail-bnode-long",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE LENGTH 5 } on { <s1> <p1> _:abcdef }",
@@ -7302,7 +7621,7 @@
           "extensionResults": [],
           "name": "1nonliteralLength_fail-bnode-short",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL LENGTH 19 } on { <s1> <p1> _:abcd }",
@@ -7320,7 +7639,7 @@
           "extensionResults": [],
           "name": "1nonliteralLength_pass-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL LENGTH 19 } on { <s1> <p1> _:abcdefghijklmnopqrs }",
@@ -7339,7 +7658,7 @@
           "extensionResults": [],
           "name": "1nonliteralLength_fail-bnode-long",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL LENGTH 19 } on { <s1> <p1> _:abcdefghijklmnopqrst }",
@@ -7463,7 +7782,7 @@
           "extensionResults": [],
           "name": "1bnodeMinlength_fail-bnode-short",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE MINLENGTH 5 } on { <s1> <p1> _:abcd }",
@@ -7481,7 +7800,7 @@
           "extensionResults": [],
           "name": "1bnodeMinlength_pass-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE MINLENGTH 5 } on { <s1> <p1> _:abcde }",
@@ -7500,7 +7819,7 @@
           "extensionResults": [],
           "name": "1bnodeMinlength_pass-bnode-long",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE MINLENGTH 5 } on { <s1> <p1> _:abcdef }",
@@ -7572,7 +7891,7 @@
           "extensionResults": [],
           "name": "1nonliteralMinlength_fail-bnode-short",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL MINLENGTH 19 } on { <s1> <p1> _:abcd }",
@@ -7590,7 +7909,7 @@
           "extensionResults": [],
           "name": "1nonliteralMinlength_pass-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL MINLENGTH 19 } on { <s1> <p1> _:abcdefghijklmnopqrs }",
@@ -7609,7 +7928,7 @@
           "extensionResults": [],
           "name": "1nonliteralMinlength_pass-bnode-long",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL MINLENGTH 19 } on { <s1> <p1> _:abcdefghijklmnopqrst }",
@@ -7734,7 +8053,7 @@
           "extensionResults": [],
           "name": "1bnodeMaxlength_pass-bnode-short",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE MAXLENGTH 5 } on { <s1> <p1> _:abcd }",
@@ -7753,7 +8072,7 @@
           "extensionResults": [],
           "name": "1bnodeMaxlength_pass-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE MAXLENGTH 5 } on { <s1> <p1> _:abcde }",
@@ -7772,7 +8091,7 @@
           "extensionResults": [],
           "name": "1bnodeMaxlength_fail-bnode-long",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> BNODE MAXLENGTH 5 } on { <s1> <p1> _:abcdef }",
@@ -7843,7 +8162,7 @@
           "extensionResults": [],
           "name": "1nonliteralMaxlength_pass-bnode-short",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL MAXLENGTH 19 } on { <s1> <p1> _:abcd }",
@@ -7862,7 +8181,7 @@
           "extensionResults": [],
           "name": "1nonliteralMaxlength_pass-bnode-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL MAXLENGTH 19 } on { <s1> <p1> _:abcdefghijklmnopqrs }",
@@ -7881,7 +8200,7 @@
           "extensionResults": [],
           "name": "1nonliteralMaxlength_fail-bnode-long",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> { <p1> NONLITERAL MAXLENGTH 5 } on { <s1> <p1> _:abcdefghijklmnopqrst }",
@@ -7901,9 +8220,9 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab$\" } on { <s1> <p1> \"ab\" }",
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> \"ab\" }",
           "status": "mf:proposed",
-          "result": "1literalPattern_fail-lit-match.val"
+          "result": "1literalPattern_pass-lit-match.val"
         },
         {
           "@id": "#1literalPattern_fail-lit-short",
@@ -7919,7 +8238,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab$\" } on { <s1> <p1> \"a\" }",
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> \"a\" }",
           "status": "mf:proposed"
         },
         {
@@ -7936,7 +8255,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab$\" } on { <s1> <p1> \"abc\" }",
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> \"abc\" }",
           "status": "mf:proposed"
         },
         {
@@ -7953,7 +8272,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> LITERAL PATTERN \"^http://a.example/o1$\" } on { <s1> <p1> <o1> }",
+          "comment": "<S1> { <p1> LITERAL PATTERN \"http://a.example/o1\" } on { <s1> <p1> <o1> }",
           "status": "mf:proposed"
         },
         {
@@ -7970,8 +8289,44 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab$\" } on { <s1> <p1> _:ab }",
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> _:ab }",
           "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalPattern_pass-litEnd-match",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalPatternEnd.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LabEnd.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_pass-litEnd-match",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab$\" } on { <s1> <p1> \"ab$\" }",
+          "status": "mf:proposed",
+          "result": "1literalPattern_pass-litEnd-match.val"
+        },
+        {
+          "@id": "#1literalPattern_pass-StartlitEnd-match",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalStartPatternEnd.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LStartabEnd.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_pass-StartlitEnd-match",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab$\" } on { <s1> <p1> \"^ab$\" }",
+          "status": "mf:proposed",
+          "result": "1literalPattern_pass-StartlitEnd-match.val"
         },
         {
           "@id": "#1literalPatternabEnd_fail-bnode-match",
@@ -7991,6 +8346,126 @@
           "status": "mf:proposed"
         },
         {
+          "@id": "#1literalPattern_pass-Startlit-match",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1literalStartPattern.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LStartab.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_pass-Startlit-match",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab\" } on { <s1> <p1> \"^ab\" }",
+          "status": "mf:proposed",
+          "result": "1literalPattern_pass-Startlit-match.val"
+        },
+        {
+          "@id": "#1literalPattern_fail-Startlit-lit",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalStartPattern.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Lab.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_fail-Startlit-lit",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab\" } on { <s1> <p1> \"ab\" }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalPattern_fail-lit-Startlit",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalPattern.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LStartab.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_fail-lit-Startlit",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> \"^ab\" }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalPattern_fail-litEnd-lit",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalPatternEnd.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Lab.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_fail-litEnd-lit",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab$\" } on { <s1> <p1> \"ab\" }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalPattern_fail-lit-litEnd",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalPattern.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LabEnd.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_fail-lit-litEnd",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> \"ab$\" }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalPattern_fail-StartlitEnd-lit",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalStartPatternEnd.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Lab.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_fail-StartlitEnd-lit",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"^ab$\" } on { <s1> <p1> \"ab\" }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1literalPattern_fail-lit-StartlitEnd",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1literalPattern.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LStartabEnd.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1literalPattern_fail-lit-StartlitEnd",
+          "trait": [
+            "PaternFacet"
+          ],
+          "comment": "<S1> { <p1> LITERAL PATTERN \"ab\" } on { <s1> <p1> \"^ab$\" }",
+          "status": "mf:proposed"
+        },
+        {
           "@id": "#1iriPattern_pass-iri-match",
           "@type": "sht:ValidationTest",
           "action": {
@@ -8004,7 +8479,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> IRI PATTERN \"^http://a.example/o1$\" } on { <s1> <p1> <o1> }",
+          "comment": "<S1> { <p1> IRI PATTERN \"http://a.example/o1\" } on { <s1> <p1> <o1> }",
           "status": "mf:proposed",
           "result": "1iriPattern_pass-iri-match.val"
         },
@@ -8022,7 +8497,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> IRI PATTERN \"^http://a.example/o1$\" } on { <s1> <p1> <o> }",
+          "comment": "<S1> { <p1> IRI PATTERN \"http://a.example/o1\" } on { <s1> <p1> <o> }",
           "status": "mf:proposed"
         },
         {
@@ -8039,7 +8514,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> IRI PATTERN \"^http://a.example/o1$\" } on { <s1> <p1> <o1a> }",
+          "comment": "<S1> { <p1> IRI PATTERN \"http://a.example/o1\" } on { <s1> <p1> <o1a> }",
           "status": "mf:proposed"
         },
         {
@@ -8056,7 +8531,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> IRI PATTERN \"^http://a.example/o1$\" } on { <s1> <p1> \"o1\" }",
+          "comment": "<S1> { <p1> IRI PATTERN \"http://a.example/o1\" } on { <s1> <p1> \"o1\" }",
           "status": "mf:proposed"
         },
         {
@@ -8088,9 +8563,10 @@
           "extensionResults": [],
           "name": "1bnodePattern_pass-bnode-match",
           "trait": [
-            "PaternFacet"
+            "PaternFacet",
+            "LexicalBNode"
           ],
-          "comment": "<S1> { <p1> BNODE PATTERN \"^ab$\" } on { <s1> <p1> _:ab }",
+          "comment": "<S1> { <p1> BNODE PATTERN \"ab\" } on { <s1> <p1> _:ab }",
           "status": "mf:proposed",
           "result": "1bnodePattern_pass-bnode-match.val"
         },
@@ -8108,7 +8584,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> BNODE PATTERN \"^ab$\" } on { <s1> <p1> _:a }",
+          "comment": "<S1> { <p1> BNODE PATTERN \"ab\" } on { <s1> <p1> _:a }",
           "status": "mf:proposed"
         },
         {
@@ -8125,7 +8601,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> BNODE PATTERN \"^ab$\" } on { <s1> <p1> _:abc }",
+          "comment": "<S1> { <p1> BNODE PATTERN \"ab\" } on { <s1> <p1> _:abc }",
           "status": "mf:proposed"
         },
         {
@@ -8142,7 +8618,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> BNODE PATTERN \"^ab$\" } on { <s1> <p1> \"ab\" }",
+          "comment": "<S1> { <p1> BNODE PATTERN \"ab\" } on { <s1> <p1> \"ab\" }",
           "status": "mf:proposed"
         },
         {
@@ -8159,7 +8635,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> BNODE PATTERN \"^ab$\" } on { BASE <http://a.example/> <s1> <p1> <ab> }",
+          "comment": "<S1> { <p1> BNODE PATTERN \"ab\" } on { BASE <http://a.example/> <s1> <p1> <ab> }",
           "status": "mf:proposed"
         },
         {
@@ -8176,7 +8652,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> <ab> }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> <ab> }",
           "status": "mf:proposed",
           "result": "1nonliteralPattern_pass-iri-match.val"
         },
@@ -8194,7 +8670,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> <a> }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> <a> }",
           "status": "mf:proposed"
         },
         {
@@ -8211,7 +8687,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> <abc> }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> <abc> }",
           "status": "mf:proposed"
         },
         {
@@ -8228,7 +8704,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> \"ab\" }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> \"ab\" }",
           "status": "mf:proposed"
         },
         {
@@ -8243,9 +8719,10 @@
           "extensionResults": [],
           "name": "1nonliteralPattern_pass-bnode-match",
           "trait": [
-            "PaternFacet"
+            "PaternFacet",
+            "LexicalBNode"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> _:ab }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> _:ab }",
           "status": "mf:proposed",
           "result": "1nonliteralPattern_pass-bnode-match.val"
         },
@@ -8263,7 +8740,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> _:a }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> _:a }",
           "status": "mf:proposed"
         },
         {
@@ -8280,7 +8757,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> { <p1> NONLITERAL PATTERN \"ab$\" } on { <s1> <p1> _:abc }",
+          "comment": "<S1> { <p1> NONLITERAL PATTERN \".*ab\" } on { <s1> <p1> _:abc }",
           "status": "mf:proposed"
         },
         {
@@ -8295,6 +8772,7 @@
           "extensionResults": [],
           "name": "1val1dotMinusiri3_pass",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "<S> { <p1> [.-<v1>-<v2>-<v3>] } on { <s1> <p1> <o1> }",
@@ -8313,6 +8791,7 @@
           "extensionResults": [],
           "name": "1val1dotMinusiri3_v1",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "<S> { <p1> [.-<v1>-<v2>-<v3>] } on { <s1> <p1> <v1> }",
@@ -8330,6 +8809,7 @@
           "extensionResults": [],
           "name": "1val1dotMinusiri3_v2",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "<S> { <p1> [.-<v1>-<v2>-<v3>] } on { <s1> <p1> <v2> }",
@@ -8347,6 +8827,7 @@
           "extensionResults": [],
           "name": "1val1dotMinusiri3_v3",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "<S> { <p1> [.-<v1>-<v2>-<v3>] } on { <s> <p1> <v3> }",
@@ -8364,6 +8845,7 @@
           "extensionResults": [],
           "name": "1val1refvsMinusiri3_pass",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "$<vs1> = [.-<v1>-<v2>-<v3>] <S> { <p1> $<vs1> } on { <s1> <p1> <o1> }",
@@ -8382,6 +8864,7 @@
           "extensionResults": [],
           "name": "1val1refvsMinusiri3_v1",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "$<vs1> = [.-<v1>-<v2>-<v3>] <S> { <p1> $<vs1> } on { <s1> <p1> <v1> }",
@@ -8399,6 +8882,7 @@
           "extensionResults": [],
           "name": "1val1refvsMinusiri3_v2",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "$<vs1> = [.-<v1>-<v2>-<v3>] <S> { <p1> $<vs1> } on { <s1> <p1> <v2> }",
@@ -8416,6 +8900,7 @@
           "extensionResults": [],
           "name": "1val1refvsMinusiri3_v3",
           "trait": [
+            "Stem",
             "ValueSet"
           ],
           "comment": "$<vs1> = [.-<v1>-<v2>-<v3>] <S> { <p1> $<vs1> } on { <s> <p1> <v3> }",
@@ -9337,7 +9822,7 @@
           "trait": [
             "AndValueExpression"
           ],
-          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '^(ab)+' } on { <s1> <p1> 'abab' }",
+          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '(ab)+' } on { <s1> <p1> 'abab' }",
           "status": "mf:proposed",
           "result": "1val1vExprAND3_pass.val"
         },
@@ -9355,7 +9840,7 @@
           "trait": [
             "AndValueExpression"
           ],
-          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '^(ab)+' } on { <s1> <p1> 'ab' }",
+          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '(ab)+' } on { <s1> <p1> 'ab' }",
           "status": "mf:proposed"
         },
         {
@@ -9372,7 +9857,7 @@
           "trait": [
             "AndValueExpression"
           ],
-          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '^(ab)+' } on { <s1> <p1> 'ababab' }",
+          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '(ab)+' } on { <s1> <p1> 'ababab' }",
           "status": "mf:proposed"
         },
         {
@@ -9389,7 +9874,7 @@
           "trait": [
             "AndValueExpression"
           ],
-          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '^(ab)+' } on { <s1> <p1> 'baba' }",
+          "comment": "<S> { <p1> MINLENGTH 4 AND MAXLENGTH 5 AND ~ '(ab)+' } on { <s1> <p1> 'baba' }",
           "status": "mf:proposed"
         },
         {
@@ -10335,7 +10820,7 @@
           "trait": [
             "AndShapeShapeession"
           ],
-          "comment": "<S1> { <p1> minlength 4 } AND { <p1> maxlength 5 } AND { <p1> pattern '^(ab)+' } on { <s1> <p1> 'abab' }",
+          "comment": "<S1> { <p1> minlength 4 } AND { <p1> maxlength 5 } AND { <p1> pattern '(ab)+' } on { <s1> <p1> 'abab' }",
           "status": "mf:proposed",
           "result": "1val1vShapeANDRef3_pass.val"
         },
@@ -11578,7 +12063,7 @@
           "trait": [
             "Empty"
           ],
-          "comment": "<S> IRI {  } on { }",
+          "comment": "<S1> IRI {  } on { }",
           "status": "mf:proposed",
           "result": "0_pass-focus.val"
         },
@@ -11663,6 +12148,7 @@
           "extensionResults": [],
           "name": "0focusBNODE_other",
           "trait": [
+            "ToldBNode",
             "Empty"
           ],
           "comment": "<S> BNODE {  } on { _:abcd <p1> <o1> }",
@@ -11682,7 +12168,7 @@
           "name": "1focusIRI_dot_fail-bnodeFocusLabel",
           "trait": [
             "FocusConstraint",
-            "LexicalBnode",
+            "LexicalBNode",
             "ToldBNode"
           ],
           "comment": "<S> IRI { <p1> . } on <s> in { _:abcd <p1> <o1> }",
@@ -11719,7 +12205,7 @@
           "name": "1focusBNODE_dot_fail-iriFocusLabel-equal",
           "trait": [
             "FocusConstraint",
-            "LexicalBnode"
+            "LexicalBNode"
           ],
           "comment": "<S> BNODE { <p1> . } on <s> in { <s1> <p1> <o1> }",
           "status": "mf:proposed"
@@ -11736,8 +12222,8 @@
           "extensionResults": [],
           "name": "1focusBNODE_dot_pass",
           "trait": [
-            "ToldBNODE",
-            "FocusConstraint"
+            "FocusConstraint",
+            "ToldBNode"
           ],
           "comment": "<S> BNODE { <p1> . } on <s> in { _:abcdefghijklmnopqrs <p1> <o1> }",
           "status": "mf:proposed",
@@ -11830,7 +12316,7 @@
           "name": "1focusLength-dot_fail-bnode-short",
           "trait": [
             "FocusConstraint",
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet",
             "ToldBNode"
           ],
@@ -11850,7 +12336,7 @@
           "name": "1focusLength-dot_pass-bnode-equal",
           "trait": [
             "FocusConstraint",
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet",
             "ToldBNode"
           ],
@@ -11871,7 +12357,7 @@
           "name": "1focusLength-dot_fail-bnode-long",
           "trait": [
             "FocusConstraint",
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet",
             "ToldBNode"
           ],
@@ -11947,7 +12433,8 @@
           "name": "1focusMinLength-dot_fail-bnode-short",
           "trait": [
             "FocusConstraint",
-            "LengthFacet"
+            "LengthFacet",
+            "ToldBNode"
           ],
           "comment": "<S1> MINLENGTH 19 { <p1> . } on { _:abcd <p1> <o1> }",
           "status": "mf:proposed"
@@ -11965,7 +12452,9 @@
           "name": "1focusMinLength-dot_pass-bnode-equal",
           "trait": [
             "FocusConstraint",
-            "LengthFacet"
+            "LexicalBNode",
+            "LengthFacet",
+            "ToldBNode"
           ],
           "comment": "<S1> MINLENGTH 19 { <p1> . } on { _:abcdefghijklmnopqrs <p1> <o1> }",
           "status": "mf:proposed",
@@ -11984,7 +12473,8 @@
           "name": "1focusMinLength-dot_pass-bnode-long",
           "trait": [
             "FocusConstraint",
-            "LengthFacet"
+            "LengthFacet",
+            "ToldBNode"
           ],
           "comment": "<S1> MINLENGTH 19 { <p1> . } on { <s1a> <p1> <o1> }",
           "status": "mf:proposed",
@@ -12059,6 +12549,7 @@
           "name": "1focusMaxLength-dot_pass-bnode-short",
           "trait": [
             "FocusConstraint",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> MINLENGTH 19 { <p1> . } on { _:abcd <p1> <o1> }",
@@ -12078,6 +12569,7 @@
           "name": "1focusMaxLength-dot_pass-bnode-equal",
           "trait": [
             "FocusConstraint",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S1> MINLENGTH 19 { <p1> . } on { _:abcdefghijklmnopqrs <p1> <o1> }",
@@ -12150,7 +12642,7 @@
           "trait": [
             "PaternFacet"
           ],
-          "comment": "<S1> PATTERN \"^http://a.example/s1$\" { <p1> } on { <s1> <p1> <o1> }",
+          "comment": "<S1> PATTERN \"http://a.example/s1\" { <p1> } on { <s1> <p1> <o1> }",
           "status": "mf:proposed",
           "result": "1focus_dot_pass.val"
         },
@@ -12217,9 +12709,10 @@
           "extensionResults": [],
           "name": "1focusPatternB-dot_pass-bnode-match",
           "trait": [
-            "PaternFacet"
+            "PaternFacet",
+            "LexicalBNode"
           ],
-          "comment": "<S1> PATTERN \"^abcdefghijklmnopqrs$\" { <p1> } on { _:abcdefghijklmnopqrs <p1> <o1> }",
+          "comment": "<S1> PATTERN \"abcdefghijklmnopqrs\" { <p1> } on { _:abcdefghijklmnopqrs <p1> <o1> }",
           "status": "mf:proposed",
           "result": "1focusBNODE_dot_pass.val"
         },
@@ -12253,7 +12746,7 @@
           "name": "1focusIRILength_dot_fail-bnodeFocusLabel-equal",
           "trait": [
             "FocusConstraint",
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet",
             "ToldBNode"
           ],
@@ -12327,7 +12820,7 @@
           "extensionResults": [],
           "name": "1focusBNODELength_dot_fail-iriFocusLabel-equal",
           "trait": [
-            "LexicalBnode",
+            "LexicalBNode",
             "LengthFacet"
           ],
           "comment": "<S> BNODE LENGTH 19 { <p1> . } on <s> in { <s1> <p1> <o1> }",
@@ -12345,9 +12838,9 @@
           "extensionResults": [],
           "name": "1focusBNODELength_dot_fail-short",
           "trait": [
-            "ToldBNODE",
             "FocusConstraint",
-            "LengthFacet"
+            "LengthFacet",
+            "ToldBNode"
           ],
           "comment": "<S> BNODE LENGTH 19 { <p1> . } on <s> in { _:abcd <p1> <o1> }",
           "status": "mf:proposed"
@@ -12364,9 +12857,9 @@
           "extensionResults": [],
           "name": "1focusBNODELength_dot_pass",
           "trait": [
-            "ToldBNODE",
             "FocusConstraint",
-            "LengthFacet"
+            "LengthFacet",
+            "ToldBNode"
           ],
           "comment": "<S> BNODE LENGTH 19 { <p1> . } on <s> in { _:abcdefghijklmnopqrs <p1> <o1> }",
           "status": "mf:proposed",
@@ -12384,9 +12877,9 @@
           "extensionResults": [],
           "name": "1focusBNODELength_dot_fail-long",
           "trait": [
-            "ToldBNODE",
             "FocusConstraint",
-            "LengthFacet"
+            "LengthFacet",
+            "ToldBNode"
           ],
           "comment": "<S> BNODE LENGTH 19 { <p1> . } on <s> in { _:abcdefghijklmnopqrst <p1> <o1> }",
           "status": "mf:proposed"

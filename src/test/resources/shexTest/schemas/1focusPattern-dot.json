@@ -6,7 +6,7 @@
       "shapeExprs": [
         {
           "type": "NodeConstraint",
-          "pattern": "^http://a.example/s1$"
+          "pattern": "http://a.example/s1"
         },
         {
           "type": "Shape",

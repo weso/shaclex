@@ -207,12 +207,12 @@
                       "type": "ShapeAnd",
                       "shapeExprs": [
                         {
-                          "type":"ShapeRef",
-                          "reference":"http://all.example/S5"
-                        },
-                        {
 		          "type":"NodeConstraint",
                           "minlength":2,"maxlength":4
+                        },
+                        {
+                          "type":"ShapeRef",
+                          "reference":"http://all.example/S5"
                         }
                       ]
                     }
@@ -270,7 +270,7 @@
 			  },
 			  {
 			    "type":"TripleConstraint",
-			    "negated":true,"predicate":"http://all.example/iri",
+			    "predicate":"http://all.example/iri",
 			    "valueExpr":{
 			      "type":"NodeConstraint",
 			      "nodeKind":"literal"
@@ -292,7 +292,7 @@
 			"expressions":[
 			  {
 			    "type":"TripleConstraint",
-			    "inverse":true,"negated":true,"predicate":"http://all.example/bnode",
+			    "inverse":true,"predicate":"http://all.example/bnode",
 			    "min":1,"max":"*",
 			    "semActs": [
                               { "type": "SemAct", "name": "http://all.example/act1", "code": " code1 " }
@@ -300,7 +300,7 @@
 			  },
 			  {
 			    "type":"TripleConstraint",
-			    "inverse":true,"negated":true,"predicate":"http://all.example/literal",
+			    "inverse":true,"predicate":"http://all.example/literal",
 			    "min":1,"max":"*",
 			    "semActs": [
                               { "type": "SemAct", "name": "http://all.example/act1", "code": " code1 " }

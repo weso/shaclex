@@ -1,0 +1,25 @@
+{
+  "type": "Schema",
+  "shapes": {
+    "http://a.example/IssueShape": {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "valueExpr": {
+          "type": "ShapeAnd",
+          "shapeExprs": [
+            {
+              "type": "NodeConstraint",
+              "datatype": "http://a.example/dt1"
+            },
+            {
+              "type": "ShapeRef",
+              "reference": "http://a.example/IssueShape"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

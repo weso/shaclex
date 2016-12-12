@@ -55,7 +55,7 @@
         "valueExpr": {
           "type": "NodeConstraint",
           "nodeKind": "literal",
-          "pattern": "^(ab)+"
+          "pattern": "(ab)+"
         },
         "solutions": [
           {

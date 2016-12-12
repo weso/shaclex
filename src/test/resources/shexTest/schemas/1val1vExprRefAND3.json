@@ -14,7 +14,7 @@
     "http://a.example/vc3": {
       "type": "NodeConstraint",
       "nodeKind": "literal",
-      "pattern": "^(ab)+"
+      "pattern": "(ab)+"
     },
     "http://a.example/vc4": {
       "type": "ShapeAnd",

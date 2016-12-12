@@ -14,7 +14,7 @@
         } },
         { "type": "Shape", "expression": {
           "type": "TripleConstraint", "predicate": "http://a.example/p1",
-          "valueExpr": { "type": "NodeConstraint", "nodeKind": "literal", "pattern": "^(ab)+" }
+          "valueExpr": { "type": "NodeConstraint", "nodeKind": "literal", "pattern": "(ab)+" }
         } }
       ]
     }

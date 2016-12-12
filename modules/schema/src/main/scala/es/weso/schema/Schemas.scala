@@ -31,6 +31,9 @@ val availableTriggerModes: List[String] = {
     ValidationTrigger.triggerValues.map(_._1)
   }
 
+val defaultTriggerMode: String =
+  ValidationTrigger.default.name
+
 def lookupSchema(schemaName: String): Try[Schema] = {
   if (schemaName == "") Success(defaultSchema)
   else {

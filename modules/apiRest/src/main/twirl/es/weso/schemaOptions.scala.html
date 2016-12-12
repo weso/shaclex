@@ -1,0 +1,34 @@
+@(availableSchemaFormats: List[String],
+  defaultSchemaFormat: String,
+  availableSchemaEngines: List[String],
+  defaultSchemaEngine: String,
+  availableTriggerModes: List[String],
+  defaultTriggerMode: String
+)
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Schema Options</title>
+    <link rel="stylesheet" href="static/css/app.css">
+
+</head>
+<body>
+<h1>Schema options</h1>
+<dl>
+    <dt>Available schema formats</dt>
+    <dd>@for(schemaFormat <- availableSchemaFormats) { @{schemaFormat} } </dd>
+
+    <dt>Default schema formats</dt>
+    <dd>@defaultSchemaFormat</dd>
+
+    <dt>Available schema engines</dt>
+    <dd>@for(schemaEngine <- availableSchemaEngines) { @{schemaEngine} } </dd>
+
+    <dt>Available trigger modes</dt>
+    <dd>@for(triggerMode <- availableTriggerModes) { @{triggerMode} } </dd>
+
+</dl>
+</div>
+
+</body>
+</html>

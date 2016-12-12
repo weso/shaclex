@@ -26,12 +26,12 @@
               "type": "ShapeAnd",
               "shapeExprs": [
                 {
-                  "type": "ShapeRef",
-                  "reference": "http://a.example/S1"
-                },
-                {
                   "type": "NodeConstraint",
                   "minlength": 5
+                },
+                {
+                  "type": "ShapeRef",
+                  "reference": "http://a.example/S1"
                 }
               ]
             }

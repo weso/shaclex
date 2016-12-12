@@ -4,17 +4,17 @@
     "http://a.example/vc1": {
       "type": "NodeConstraint",
       "nodeKind": "literal",
-      "pattern": "^ab"
+      "pattern": "ab.*"
     },
     "http://a.example/vc2": {
       "type": "NodeConstraint",
       "nodeKind": "literal",
-      "pattern": "cd"
+      "pattern": ".*cd.*"
     },
     "http://a.example/vc3": {
       "type": "NodeConstraint",
       "nodeKind": "literal",
-      "pattern": "ef$"
+      "pattern": ".*ef"
     },
     "http://a.example/S1": {
       "type": "Shape",

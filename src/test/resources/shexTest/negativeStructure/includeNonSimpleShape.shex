@@ -1,0 +1,7 @@
+<http://a.example/S> {
+  &<http://a.example/S1>;
+  <http://a.example/p> .
+}
+
+<http://a.example/S1> [<http://a.example/s>]
+

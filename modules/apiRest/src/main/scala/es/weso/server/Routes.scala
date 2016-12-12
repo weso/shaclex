@@ -24,8 +24,12 @@ import scala.util.{Failure, Success}
 import scalaz.stream.{Exchange, Process, time}
 import scalaz.stream.async.topic
 import es.weso._
+import es.weso.rdf.PrefixMap
+import org.log4s.getLogger
 
 class Routes {
+
+  private val logger = getLogger
   val API = "api"
 
 //  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
@@ -37,15 +41,36 @@ class Routes {
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
+  object ResultDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("resultFormat")
   object SchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
   object SchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("schemaFormat")
   object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")
+  object ResultSchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("resultFormat")
+  object ResultSchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("resultEngine")
   object TriggerModeParam extends OptionalQueryParamDecoderMatcher[String]("triggerMode")
   object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
 
   val service: HttpService = HttpService {
+
+    // Web site
+    case req @ GET -> Root / "dataOptions" => {
+      Ok(html.dataOptions(DataFormats.formatNames.toList, DataFormats.defaultFormatName))
+    }
+
+    case req @ GET -> Root / "schemaOptions" => {
+      Ok(html.schemaOptions(
+        Schemas.availableFormats,
+        Schemas.defaultSchemaFormat,
+        Schemas.availableSchemaNames,
+        Schemas.defaultSchemaName,
+        Schemas.availableTriggerModes,
+        Schemas.defaultTriggerMode
+      ))
+    }
+
+    // API methods
 
     case GET -> Root / API / "schema" / "engines" => {
       val engines = Schemas.availableSchemaNames
@@ -95,7 +120,7 @@ class Routes {
       }
     }
 
-    case req @ GET -> Root / API / "data" / "nodes" :?
+    case req @ GET -> Root / API / "data" / "info" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
@@ -103,26 +128,119 @@ class Routes {
         case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
         case Success(rdf) => {
           val nodes: List[String] =
-            (rdf.subjects() ++ rdf.objects() ++ rdf.predicates()).map(_.toString).toList
-          Ok(html.nodes(nodes))
+          (
+            rdf.subjects() ++
+            rdf.objects() ++
+            rdf.predicates()).map(_.toString).toList
+          val jsonNodes : Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
+          val pm: Json = prefixMap2Json(rdf.getPrefixMap)
+          val result = DataInfoResult(data,dataFormat,jsonNodes,pm).asJson
+          Ok(result).
+            withContentType(Some(`Content-Type`(`application/json`))).
+            withStatus(Status.Ok)
         }
       }
     }
 
-/*    case req @ GET -> Root / API / "schema" / "shapes" :?
-      DataParam(data) +&
-        DataFormatParam(optDataFormat) => {
-      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-      RDFAsJenaModel.fromChars(data,dataFormat,None) match {
-        case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
-        case Success(rdf) => {
-          val nodes: List[String] =
-            (rdf.subjects() ++ rdf.objects() ++ rdf.predicates()).map(_.toString).toList
-          Ok(html.nodes(nodes))
+    case req @ GET -> Root / API / "schema" / "info" :?
+      SchemaParam(optSchema) +&
+      SchemaFormatParam(optSchemaFormat) +&
+      SchemaEngineParam(optSchemaEngine) => {
+      val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+      val schemaFormat = optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+      val schemaStr = optSchema match {
+        case None => ""
+        case Some(schema) => schema
+      }
+      Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
+        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
+        case Success(schema) => {
+          val shapes: List[String] = schema.shapes
+          val jsonShapes = Json.fromValues(shapes.map(Json.fromString(_)))
+          val pm: Json = prefixMap2Json(schema.pm)
+//          implicit val encoder: EntityEncoder[SchemaInfoResult] = ???
+          val result = SchemaInfoResult(schemaStr,schemaFormat,schemaEngine,jsonShapes, pm).asJson
+          Ok(result).
+            withContentType(Some(`Content-Type`(`application/json`))).
+            withStatus(Status.Ok)
         }
       }
     }
-*/
+
+    case req @ GET -> Root / API / "data" / "convert" :?
+      DataParam(data) +&
+      DataFormatParam(optDataFormat) +&
+      ResultDataFormatParam(optResultDataFormat) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      val resultDataFormat = optResultDataFormat.getOrElse(DataFormats.defaultFormatName)
+
+      RDFAsJenaModel.fromChars(data,dataFormat,None) match {
+        case Failure(e) => BadRequest(s"Error reading RDF Data: $e\nString: $data")
+        case Success(rdf) => {
+            val resultStr = rdf.serialize(resultDataFormat)
+            val result = DataConversionResult(data,dataFormat,resultDataFormat,resultStr)
+            val default = Ok(result.asJson)
+              .withContentType(Some(`Content-Type`(`application/json`)))
+            req.headers.get(`Accept`) match {
+              case Some(ah) => {
+                logger.info(s"Accept header: $ah")
+                val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
+                if (hasHTML) {
+                  Ok(result.toHTML).withContentType(Some(`Content-Type`(`text/html`)))
+                } else default
+              }
+              case None => default
+            }
+        }
+      }
+    }
+
+    case req @ GET -> Root / API / "schema" / "convert" :?
+      SchemaParam(optSchema) +&
+        SchemaFormatParam(optSchemaFormat) +&
+        SchemaEngineParam(optSchemaEngine) +&
+        ResultSchemaFormatParam(optResultSchemaFormat) +&
+        ResultSchemaEngineParam(optResultSchemaEngine) => {
+      val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+      val schemaFormat = optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+      val resultSchemaFormat = optResultSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+      val resultSchemaEngine = optResultSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+
+      val schemaStr = optSchema match {
+        case None => ""
+        case Some(schema) => schema
+      }
+      Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
+        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
+        case Success(schema) => {
+          if (schemaEngine.toUpperCase == resultSchemaEngine.toUpperCase) {
+            schema.serialize(resultSchemaFormat) match {
+              case Success(resultStr) => {
+                val result = SchemaConversionResult(schemaStr,schemaFormat,schemaEngine,
+                  resultSchemaFormat,resultSchemaEngine,resultStr)
+                val default = Ok(result.asJson)
+                  .withContentType(Some(`Content-Type`(`application/json`)))
+                req.headers.get(`Accept`) match {
+                  case Some(ah) => {
+                    logger.info(s"Accept header: $ah")
+                    val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
+                    if (hasHTML) {
+                      Ok(result.toHTML).withContentType(Some(`Content-Type`(`text/html`)))
+                    } else default
+                  }
+                  case None => default
+                }
+              }
+              case Failure(e) =>
+                BadRequest(s"Error serializing $schemaStr with $resultSchemaFormat/$resultSchemaEngine: $e")
+            }
+          } else {
+            BadRequest(s"Conversion between different schema engines not implemented yet: $schemaEngine/$resultSchemaEngine")
+          }
+        }
+      }
+    }
+
     case request @ ( GET | POST) -> Root / API / "validate" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
@@ -187,6 +305,11 @@ class Routes {
   private def cachedResource(config: Config): HttpService = {
     val cachedConfig = config.copy(cacheStartegy = staticcontent.MemoryCache())
     staticcontent.resourceService(cachedConfig)
+  }
+
+
+  def prefixMap2Json(pm: PrefixMap): Json = {
+    Json.fromFields(pm.pm.map{ case (prefix,iri) => (prefix.str, Json.fromString(iri.getLexicalForm))})
   }
 
 }

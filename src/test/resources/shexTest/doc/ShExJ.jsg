@@ -12,8 +12,8 @@
 
 Schema           { prefixes:{PREFIX->IRI}? base:IRI? startActs:[SemAct]? start:shapeExpr? shapes:{shapeLabel->shapeExpr}? }
 shapeExpr        = ShapeOr | ShapeAnd | ShapeNot | NodeConstraint | Shape | ShapeRef | ShapeExternal;
-ShapeAnd         { shapeExprs:[shapeExpr] }
 ShapeOr          { shapeExprs:[shapeExpr] }
+ShapeAnd         { shapeExprs:[shapeExpr] }
 ShapeNot         { shapeExpr:shapeExpr }
 Shape            { virtual:BOOL? closed:BOOL? extra:[IRI]? expression:tripleExpr? inherit:[shapeLabel]? semActs:[SemAct]? }
 ShapeExternal    {  }
@@ -25,7 +25,7 @@ SomeOf           { expressions:[tripleExpr] min:INTEGER? max:(INTEGER|"*")? semA
 Inclusion        { include:shapeLabel }
 TripleConstraint { inverse:BOOL? negated:BOOL? predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct]? annotations:[Annotation]? }
 NodeConstraint   { nodeKind:("iri"|"bnode"|"nonliteral"|"literal")? datatype:IRI? xsFacet* values:[valueSetValue]? }
-Annotation       { predicate:IRI object:IRI }
+Annotation       { predicate:IRI object:objectValue }
 
 xsFacet          = stringFacet | numericFacet ;
 stringFacet      = (length|minlength|maxlength):INTEGER | pattern:STRING ;
@@ -33,18 +33,38 @@ numericFacet     = (mininclusive|minexclusive|maxinclusive|maxexclusive):numeric
                  | (totaldigits|fractiondigits):INTEGER ;
 shapeLabel       = IRI|BNODE ;
 numericLiteral   = INTEGER|DECIMAL|DOUBLE ;
-valueSetValue    = IRI|STRING|DATATYPE_STRING|LANG_STRING|Stem|StemRange ;
-Stem             { stem:IRI } # !! obselete -- use StemRange
-StemRange        { stem:(IRI|Wildcard) exclusions:[valueSetValue]? }
+valueSetValue    = objectValue|Stem|StemRange ;
+objectValue      = IRI|RDFLiteral ;
+Stem             { stem:IRI } # StemRange with exclusions
+StemRange        { stem:(IRI|Wildcard) exclusions:[objectValue|Stem]? }
 Wildcard         {  }
+RDFLiteral       = SIMPLE_LITERAL|DATATYPE_LITERAL|LANG_LITERAL ;
 
-PREFIX           : "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-PNAME_NS>
-IRI              : "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-IRIREF>
-BNODE            : "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-BLANK_NODE_LABEL>
-BOOL             : "^(true"+"|false)$" # JSON boolean tokens
-INTEGER          : "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-INTEGER>
-DECIMAL          : "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-DECIMAL>
-DOUBLE           : "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-DOUBLE>
-STRING           : "^.*$" # '"' ([^"] | '\\' '"')* '"' # JSON string with '"' at beginning and end
-DATATYPE_STRING  : "^.*$" # '"' ([^"] | '\\' '"')* '"' '^^' IRI # JSON string with '"' at beginning, an unescaped '"' followed by '^^' and an IRI
-LANG_STRING      : "^.*$" # '"' ([^"] | '\\' '"')* '"' '@' "^.*$" # <http://www.w3.org/TR/turtle/#grammar-production-LANGTAG> # JSON string with '"' at beginning, an unescaped '"' followed by '@' and a Turtle LANGTAG
+# Terminals used in productions:
+PREFIX           : PN_PREFIX? ; # <http://www.w3.org/TR/turtle/#grammar-production-PNAME_NS> - ":"
+IRI              : (PN_CHARS | '.' | ':' | '/' | '\\' | '#' | '@' | '%' | '&' | UCHAR)* ; # <http://www.w3.org/TR/turtle/#grammar-production-IRIREF> - "<>"s
+BNODE            : '_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)? ; # <http://www.w3.org/TR/turtle/#grammar-production-BLANK_NODE_LABEL>
+BOOL             : "true" | "false" ; # JSON boolean tokens
+INTEGER          : [+-]? [0-9] + ; # <http://www.w3.org/TR/turtle/#grammar-production-INTEGER>
+DECIMAL          : [+-]? [0-9]* '.' [0-9] + ; # <http://www.w3.org/TR/turtle/#grammar-production-DECIMAL>
+DOUBLE           : [+-]? ([0-9] + '.' [0-9]* EXPONENT | '.' [0-9]+ EXPONENT | [0-9]+ EXPONENT) ; # <http://www.w3.org/TR/turtle/#grammar-production-DOUBLE>
+SIMPLE_LITERAL   : '"' ([^"\\\r\n] | '\\"')* '"' ; # JSON string with '"' at beginning and end
+DATATYPE_LITERAL : SIMPLE_LITERAL "^^" IRI ; # JSON string with '"' at beginning, an unescaped '"' followed by '^^' and an IRI
+LANG_LITERAL     : SIMPLE_LITERAL LANGTAG ; # JSON string with '"' at beginning, an unescaped '"' followed by '@' and a Turtle LANGTAG                   
+STRING           : .* ;
+
+# Terminals use only in other terminals:
+PN_PREFIX        : PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)? ;
+PN_CHARS_BASE    : [A-Z] | [a-z] | [\u00C0-\u00D6] | [\u00D8-\u00F6]
+                 | [\u00F8-\u02FF] | [\u0370-\u037D] | [\u037F-\u1FFF]
+                 | [\u200C-\u200D] | [\u2070-\u218F] | [\u2C00-\u2FEF]
+                 | [\u3001-\uD7FF] | [\uF900-\uFDCF] | [\uFDF0-\uFFFD]
+                 | [\u10000-\uEFFFF] ;
+PN_CHARS         : PN_CHARS_U | '-' | [0-9] | '\u00B7' | [\u0300-\u036F] | [\u203F-\u2040] ;
+PN_CHARS_U       : PN_CHARS_BASE | '_' ;
+UCHAR            : '\\u' HEX HEX HEX HEX
+                 | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX ;
+HEX              : [0-9] | [A-F] | [a-f] ;
+EXPONENT 	 : [eE] [+-]? [0-9]+ ;
+LANGTAG          : '@' [a-zA-Z] + ('-' [a-zA-Z0-9] +)* ;
+

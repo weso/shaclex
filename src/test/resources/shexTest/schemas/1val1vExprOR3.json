@@ -12,17 +12,17 @@
             {
               "type": "NodeConstraint",
               "nodeKind": "literal",
-              "pattern": "^ab"
+              "pattern": "ab.*"
             },
             {
               "type": "NodeConstraint",
               "nodeKind": "literal",
-              "pattern": "cd"
+              "pattern": ".*cd.*"
             },
             {
               "type": "NodeConstraint",
               "nodeKind": "literal",
-              "pattern": "ef$"
+              "pattern": ".*ef"
             }
           ]
         }
