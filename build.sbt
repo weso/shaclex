@@ -50,12 +50,11 @@ lazy val shaclex =
   settings(commonSettings:_*).
   settings(publishSettings:_*).
   enablePlugins(BuildInfoPlugin).
-  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,apiRest).
-  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,apiRest).
+  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server).
+  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server).
   settings(
-    name := "shaclex",
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "buildinfo",
+    buildInfoPackage := "es.weso.shaclex.buildinfo",
     unidocProjectFilter in (ScalaUnidoc, unidoc) :=
       inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++=
@@ -121,13 +120,16 @@ lazy val shex =
     )
   )
 
-lazy val apiRest =
-  project.in(file("modules/apiRest")).
+lazy val server =
+  project.in(file("modules/server")).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
+  enablePlugins(BuildInfoPlugin).
   dependsOn(schema,srdf,srdfJena).
   enablePlugins(SbtTwirl).
   settings(
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "es.weso.shaclex.buildinfo",
     libraryDependencies ++= Seq(
       "org.http4s" %% "rho-swagger" % rhoVersion,
       "org.http4s" %% "http4s-dsl" % http4sVersion,

@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+@(availableDataFormats: List[String],
+  currentDataFormat: String,
+  availableSchemaFormats: List[String],
+  currentSchemaFormat: String,
+  availableSchemaEngines: List[String],
+  currentSchemaEngine: String,
+  availableTriggerModes: List[String],
+  currentTriggerMode: String
+ )
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,21 +16,15 @@
 </head>
 <body>
 <h1>Validate RDF Data</h1>
-<form action="/api/validate" method="get">
+<form action="/api/validate" method="get" id="validate">
 
     <label for="schema">Schema</label>
     <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
 
-    <label for="schemaEngine">Schema Engine</label>
-    <input id="schemaEngine" name="schemaEngine" value="SHEX" placeholder="Schema engine"/>
-
-    <label for="schemaFormat">Schema Format</label>
-    <input id="schemaFormat" name="schemaFormat" value="SHEXC" placeholder="Schema format"/>
-
-<hr/>
-    <label for="trigger">Trigger mode:</label>
-    <input id="trigger" name="triggerMode" value="TARGETDECLS" placeholder="trigger mode"/>
-
+    @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
+    @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
+    <hr/>
+    @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
     <label for="node">Node</label>
     <input id="node" name="node" value="" placeholder="node"/>
 
@@ -33,8 +35,7 @@
     <label for="data">RDF Data</label>
     <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
 
-    <label for="dataFormat">Data format</label>
-    <input id="dataFormat" name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
+    @selectDataFormat("validate",availableDataFormats,currentDataFormat)
 
     <button type="submit">Validate</button>
 </form>

@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+@(availableSchemaFormats: List[String],
+ currentSchemaFormat: String,
+ availableSchemaEngines: List[String],
+ currentSchemaEngine: String
+)
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,15 +12,11 @@
 </head>
 <body>
 <h1>Schema Info</h1>
-<form action="/api/schema/info" method="get">
+<form action="/api/schema/info" method="get" id="info">
     <label for="schema">Schema</label>
     <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
-
-    <label for="schemaFormat">Schema Format</label>
-    <input id="schemaFormat" name="schemaFormat" value="ShExC" placeholder="ShExC"/>
-
-    <label for="schemaEngine">Schema Engine</label>
-    <input id="schemaEngine" name="schemaEngine" value="ShEx" placeholder="ShEx"/>
+    @selectSchemaFormat("info",availableSchemaFormats,currentSchemaFormat)
+    @selectSchemaEngine("info", availableSchemaEngines,currentSchemaEngine)
 
     <button type="submit">Schema Info</button>
 </form>

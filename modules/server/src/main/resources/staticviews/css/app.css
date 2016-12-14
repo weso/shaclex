@@ -14,3 +14,14 @@ h1 {
  font-family: monospace;
 }
 
+pre.data {
+ border: 1px blue;
+}
+
+pre.schema {
+ border: 1px cyan;
+}
+
+pre.result {
+ border: 1px black;
+}

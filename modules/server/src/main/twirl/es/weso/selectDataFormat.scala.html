@@ -1,0 +1,12 @@
+@( formId: String,
+   formats: List[String],
+   current: String
+)
+<label for="dataFormat">Data Format</label>
+<select id="dataFormat" form="@formId" name="dataFormat">
+ @for(d <- formats) {
+  <option value="@d"
+     @{if(d == current) { "selected" }}>@d
+  </option>
+ }
+</select>

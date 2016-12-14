@@ -1,7 +1,6 @@
 package es.weso.server
 
 import io.circe.Json
-
 import scala.xml.Utility.escape
 
 case class SchemaConversionResult
@@ -16,9 +15,12 @@ case class SchemaConversionResult
  def toHTML: String = {
   val sb = new StringBuilder
   sb ++= "<h1>Schema conversion result</h1>"
-  sb ++=s"<p>Source format: $schemaFormat/$schemaEngine. Target format: $resultSchemaFormat/$resultSchemaEngine"
-  sb ++=s"<pre>${escape(result)}</pre>"
-  sb ++=s"<p>Source schema: <details><pre>${escape(schema)}</pre></details>"
+  sb ++= s"<pre>${escape(result)}</pre>"
+  sb ++= s"<p>Source schema: <details>"
+  sb ++= s"<p>Source format: $schemaFormat/$schemaEngine</p>"
+  sb ++= s"<p>Target format: $resultSchemaFormat/$resultSchemaEngine</p>"
+  sb ++= s"<pre>${escape(schema)}</pre>"
+  sb ++= s"</details>"
   sb.toString
  }
 

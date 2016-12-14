@@ -26,6 +26,7 @@ import scalaz.stream.async.topic
 import es.weso._
 import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
+import es.weso.shaclex.buildinfo.BuildInfo._
 
 class Routes {
 
@@ -41,32 +42,107 @@ class Routes {
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
-  object ResultDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("resultFormat")
+  object TargetDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetDataFormat")
   object SchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
   object SchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("schemaFormat")
   object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")
-  object ResultSchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("resultFormat")
-  object ResultSchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("resultEngine")
+  object TargetSchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetSchemaFormat")
+  object TargetSchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("targetSchemaEngine")
   object TriggerModeParam extends OptionalQueryParamDecoderMatcher[String]("triggerMode")
   object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
+  val availableDataFormats = DataFormats.formatNames.toList
+  val defaultDataFormat = DataFormats.defaultFormatName
+  val availableSchemaFormats = Schemas.availableFormats
+  val defaultSchemaFormat = Schemas.defaultSchemaFormat
+  val availableSchemaEngines = Schemas.availableSchemaNames
+  val defaultSchemaEngine = Schemas.defaultSchemaName
+  val availableTriggerModes = Schemas.availableTriggerModes
+  val defaultTriggerMode = Schemas.defaultTriggerMode
 
   val service: HttpService = HttpService {
 
     // Web site
+    case req @ GET -> Root => {
+      Ok(html.index())
+    }
+
+    case req @ GET -> Root / "dataConversions" => {
+      Ok(html.dataConversions(
+        availableDataFormats,
+        defaultDataFormat))
+    }
+
+    case req @ GET -> Root / "dataInfo" => {
+      Ok(html.dataInfo(
+        availableDataFormats,
+        defaultDataFormat))
+    }
+
+    case req @ GET -> Root / "schemaConversions" => {
+      Ok(html.schemaConversions(
+        availableSchemaFormats,
+        defaultSchemaFormat,
+        availableSchemaEngines,
+        defaultSchemaEngine,
+        defaultSchemaFormat,
+        defaultSchemaEngine
+      ))
+    }
+
+    case req @ GET -> Root / "schemaInfo" => {
+      Ok(html.schemaInfo(
+        availableSchemaFormats,
+        defaultSchemaFormat,
+        availableSchemaEngines,
+        defaultSchemaEngine
+      ))
+    }
+
     case req @ GET -> Root / "dataOptions" => {
-      Ok(html.dataOptions(DataFormats.formatNames.toList, DataFormats.defaultFormatName))
+      Ok(html.dataOptions(
+        availableDataFormats,
+        defaultDataFormat)
+      )
     }
 
     case req @ GET -> Root / "schemaOptions" => {
       Ok(html.schemaOptions(
-        Schemas.availableFormats,
-        Schemas.defaultSchemaFormat,
-        Schemas.availableSchemaNames,
-        Schemas.defaultSchemaName,
-        Schemas.availableTriggerModes,
-        Schemas.defaultTriggerMode
+        availableSchemaFormats,
+        defaultSchemaFormat,
+        availableSchemaEngines,
+        defaultSchemaEngine,
+        availableTriggerModes,
+        defaultTriggerMode
+      ))
+    }
+
+    case req @ GET -> Root / "about" => {
+      Ok(html.about())
+    }
+
+    case req @ GET -> Root / "validate" => {
+      Ok(html.validate(
+        availableDataFormats,
+        defaultDataFormat,
+        availableSchemaFormats,
+        defaultSchemaFormat,
+        availableSchemaEngines,
+        defaultSchemaEngine,
+        availableTriggerModes,
+        defaultTriggerMode
+      ))
+    }
+
+    case req @ GET -> Root / "validateDataEmbedded" => {
+      Ok(html.validateDataEmbedded(
+        availableDataFormats,
+        defaultDataFormat,
+        availableSchemaEngines,
+        defaultSchemaEngine,
+        availableTriggerModes,
+        defaultTriggerMode
       ))
     }
 
@@ -170,7 +246,7 @@ class Routes {
     case req @ GET -> Root / API / "data" / "convert" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
-      ResultDataFormatParam(optResultDataFormat) => {
+      TargetDataFormatParam(optResultDataFormat) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       val resultDataFormat = optResultDataFormat.getOrElse(DataFormats.defaultFormatName)
 
@@ -199,8 +275,8 @@ class Routes {
       SchemaParam(optSchema) +&
         SchemaFormatParam(optSchemaFormat) +&
         SchemaEngineParam(optSchemaEngine) +&
-        ResultSchemaFormatParam(optResultSchemaFormat) +&
-        ResultSchemaEngineParam(optResultSchemaEngine) => {
+        TargetSchemaFormatParam(optResultSchemaFormat) +&
+        TargetSchemaEngineParam(optResultSchemaEngine) => {
       val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
       val schemaFormat = optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
       val resultSchemaFormat = optResultSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
@@ -281,7 +357,10 @@ class Routes {
                   logger.info(s"Accept header: $ah")
                   val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
                   if (hasHTML) {
-                    Ok(validationResult.toHTML).withContentType(Some(`Content-Type`(`text/html`)))
+                    val htmlStr = validationResult.toHTML
+                    logger.info("********* - HTML String:\n" + htmlStr)
+                    logger.info("********* - /HTML String")
+                    Ok(htmlStr).withContentType(Some(`Content-Type`(`text/html`)))
                   } else default
                 }
                 case None => default
@@ -300,9 +379,9 @@ class Routes {
 
   // case r @ GET -> _ if r.pathInfo.startsWith("/swagger.json") => views(r)
 
-  // When accessing to a folder (ends by /) append index.html
+  // When accessing to a folder (ends by /) append index.scala.html
   case r @ GET -> _ if r.pathInfo.endsWith("/") =>
-      service(r.withPathInfo(r.pathInfo + "index.html"))
+      service(r.withPathInfo(r.pathInfo + "index.scala.html"))
 
   case r @ GET -> _ =>
       val rr = if (r.pathInfo.contains('.')) r else r.withPathInfo(r.pathInfo + ".html")

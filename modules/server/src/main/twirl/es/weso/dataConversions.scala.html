@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+@(availableDataFormats: List[String],
+  currentDataFormat: String
+)
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,15 +10,12 @@
 </head>
 <body>
 <h1>Parse & Convert RDF Data</h1>
-<form action="/api/data/convert" method="get">
+<form action="/api/data/convert" method="get" id="convert">
     <label for="data">RDF Data</label>
     <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
 
-    <label for="dataFormat">Data Format</label>
-    <input id="dataFormat" name="dataFormat" value="TURTLE" placeholder="TURTLE"/>
-
-    <label for="resultFormat">Result Format</label>
-    <input id="resultFormat" name="resultFormat" value="TURTLE" placeholder="TURTLE"/>
+    @selectDataFormat("convert",availableDataFormats,currentDataFormat)
+    @selectTargetDataFormat("convert",availableDataFormats,currentDataFormat)
 
     <button type="submit">Convert</button>
 </form>

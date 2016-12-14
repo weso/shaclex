@@ -12,9 +12,11 @@ case class DataConversionResult
  def toHTML: String = {
   val sb = new StringBuilder
   sb ++= "<h1>Data conversion</h1>"
-  sb ++=s"<p>Source format: $dataFormat. Target format: $resultFormat"
   sb ++=s"<pre>${escape(result)}</pre>"
-  sb ++=s"<p>Data: <details><pre>${escape(data)}</pre></details>"
+  sb ++=s"<p>Data details: <details>"
+  sb ++=s"<p>Source format: $dataFormat. Target format: $resultFormat"
+  sb ++=s"<pre>${escape(data)}</pre>"
+  sb ++=s"</details>"
   sb.toString
  }
 
