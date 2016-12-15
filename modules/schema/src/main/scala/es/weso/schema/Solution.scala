@@ -36,7 +36,7 @@ case class Solution
 
   def toJson: Json = {
     val jsonMap: Json = Json.fromJsonObject(JsonObject.fromMap(
-      nodes.map{ case (node,info) => (nodeMap.qualify(node), info.asJson) }
+      nodes.map{ case (node,info) => (node.getLexicalForm, info.asJson) }
     ))
     Json.fromJsonObject(
       singleton("type",Json.fromString("Solution")).add("solution",jsonMap)

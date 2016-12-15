@@ -40,10 +40,15 @@ case class InfoNode(
 
   def toJson: Json = {
     val jsonPositive: Json = Json.fromJsonObject(
-      JsonObject.from(hasShapes.toList.map{case (label,e) => (label.show, Json.fromString(e.str))})
+      JsonObject.from(hasShapes.toList.map{
+        case (label,e) => {
+          println("===> Label: " + label.str + " showLabel: " + label.show)
+          (label.str, Json.fromString(e.str))
+        }
+      })
     )
     val jsonNegative: Json = Json.fromJsonObject(
-      JsonObject.from(hasNoShapes.toList.map{case (label,e) => (label.show, Json.fromString(e.str))})
+      JsonObject.from(hasNoShapes.toList.map{case (label,e) => (label.str, Json.fromString(e.str))})
     )
     Json.fromJsonObject{
      val obj = JsonObject.empty

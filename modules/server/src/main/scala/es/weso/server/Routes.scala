@@ -358,8 +358,6 @@ class Routes {
                   val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
                   if (hasHTML) {
                     val htmlStr = validationResult.toHTML
-                    logger.info("********* - HTML String:\n" + htmlStr)
-                    logger.info("********* - /HTML String")
                     Ok(htmlStr).withContentType(Some(`Content-Type`(`text/html`)))
                   } else default
                 }

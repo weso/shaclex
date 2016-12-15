@@ -20,6 +20,7 @@ class ShaclexServer(host: String, port: Int) {
   logger.info(s"Starting Http4s-blaze example on '$host:$port'")
 
   val routes = CORS(new Routes().service)
+
   val service: HttpService = routes.local { req =>
     val path = req.uri.path
     logger.info(s"${req.remoteAddr.getOrElse("null")} -> ${req.method}: $path")

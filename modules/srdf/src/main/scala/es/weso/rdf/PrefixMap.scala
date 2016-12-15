@@ -62,7 +62,7 @@ case class PrefixMap(pm: Map[Prefix, IRI]) {
 
   /**
     * If prefixMap contains a: -> http://example.org/
-    * then qualify("http://example.org/x") = "a:x"
+    * then qualifyString("http://example.org/x") = "a:x"
     * else <http://example.org/x>
     */
   def qualifyString(str: String): String = {

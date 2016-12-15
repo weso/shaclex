@@ -49,7 +49,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       p:(Shape,TypingResult[ViolationError,String])
     ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.id match {
-        case Some(iri) => SchemaLabel(schema.pm.qualify(iri),schema.pm)
+        case Some(iri) => SchemaLabel(iri.getLexicalForm,schema.pm)
         case None => SchemaLabel("<Unknown label>",schema.pm)
       }
       val explanation = Explanation(cnvTypingResult(p._2))
