@@ -83,6 +83,9 @@ lazy val shacl =
             typing,
             validating).
   settings(
+   logBuffered in Test := false,
+   parallelExecution in Test := false,
+   fork in Test := true,
    libraryDependencies ++=
      Seq(
        "com.typesafe" % "config" % "1.3.0" % Test
