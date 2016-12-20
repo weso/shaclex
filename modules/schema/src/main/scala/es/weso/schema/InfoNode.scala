@@ -3,11 +3,14 @@ import Explanation._
 import es.weso.rdf.PrefixMap
 import cats._
 import data._
+import es.weso.rdf.nodes.{IRI, RDFNode}
 import implicits._
 import es.weso.shex.implicits.showShEx
 import io.circe._
 import io.circe.JsonObject._
 import io.circe.syntax._
+import cats.syntax.either._
+import es.weso.json.DecoderUtils._
 
 case class InfoNode(
     hasShapes: Seq[(SchemaLabel,Explanation)],
@@ -40,12 +43,7 @@ case class InfoNode(
 
   def toJson: Json = {
     val jsonPositive: Json = Json.fromJsonObject(
-      JsonObject.from(hasShapes.toList.map{
-        case (label,e) => {
-          println("===> Label: " + label.str + " showLabel: " + label.show)
-          (label.str, Json.fromString(e.str))
-        }
-      })
+      JsonObject.from(hasShapes.toList.map{ case (label,e) => (label.str, Json.fromString(e.str))})
     )
     val jsonNegative: Json = Json.fromJsonObject(
       JsonObject.from(hasNoShapes.toList.map{case (label,e) => (label.str, Json.fromString(e.str))})
@@ -71,7 +69,39 @@ object InfoNode {
     final def apply(i: InfoNode): Json = i.toJson
   }
 
+  implicit val decodeInfoNode: Decoder[InfoNode] = new Decoder[InfoNode] {
+    final def apply(c: HCursor): Decoder.Result[InfoNode] = for {
+      hasShapes <- getPair(c.downField("hasShapes"))
+      hasNoShapes <- getPair(c.downField("hasNoShapes"))
+    // solutionMap <- decodeMap(c.downField("solution"))
+    } yield InfoNode(
+      hasShapes = hasShapes,
+      hasNoShapes = hasNoShapes,
+      PrefixMap.empty
+    )
+  }
 
+  def getPair(c: ACursor): Decoder.Result[Seq[(SchemaLabel,Explanation)]] =
+   if (c.fields.isDefined) {
+    val fields: Either[DecodingFailure, List[String]] = c.fields.toRight(DecodingFailure(s"getPair: no fields for $c", c.history))
+    for {
+      fs <- fields
+      rs <- fs.map(field => getSchemaLabelExplanation(field, c)).sequence
+    } yield rs.toSeq
+  } else {
+     val result: Either[DecodingFailure,Seq[(SchemaLabel,Explanation)]] = Right(Seq())
+     result
+   }
+
+  def getSchemaLabelExplanation(field: String,c : ACursor): Decoder.Result[(SchemaLabel,Explanation)] = {
+    for {
+      e <- c.downField(field).as[String]
+    } yield (SchemaLabel(field), Explanation(e))
+  }
+
+  implicit val rdfNodeKeyDecoder = new KeyDecoder[RDFNode] {
+    override def apply(key: String): Option[RDFNode] = Some(IRI(key))
+  }
 
   /*  def toHTML(pm: PrefixMap): String = {
       val sb = new StringBuilder

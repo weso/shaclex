@@ -7,6 +7,8 @@ import io.circe.JsonObject._
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
+import cats.syntax.either._
+import cats.instances.either._
 
 case class Result(
     isValid: Boolean,
@@ -58,11 +60,14 @@ case class Result(
         Json.fromJsonObject(JsonObject.empty.
           add("valid",Json.fromBoolean(isValid)).
           add("type",Json.fromString("Result")).
+          add("message",Json.fromString(message)).
           add("details",details))
       }
     }
     this.asJson
   }
+
+
 
   def toJsonString2spaces: String =
     toJson.spaces2
@@ -140,5 +145,23 @@ object Result {
   lazy val JSON = "JSON"
   lazy val availableResultFormats = List(TEXT, JSON).map(_.toUpperCase)
   lazy val defaultResultFormat = availableResultFormats.head
+
+  implicit val decodeResult: Decoder[Result] = Decoder.instance { c =>
+    for {
+      isValid <- c.get[Boolean]("valid")
+      message <- c.get[String]("message")
+      solutions <- if (isValid) {
+        for {
+          ls <- c.downField("details").as[List[Solution]]
+        } yield ls.toSeq
+      } else Right(Seq())
+      errors <- if (isValid) {
+        Right(Seq())
+      } else for {
+        ls <- c.downField("details").as[List[ErrorInfo]]
+      } yield ls.toSeq
+    } yield Result(isValid,message,solutions,errors)
+  }
+
 
 }

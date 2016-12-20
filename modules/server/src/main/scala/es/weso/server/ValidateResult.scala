@@ -2,12 +2,11 @@ package es.weso.server
 
 import io.circe.Json
 import cats.syntax.either._
-
+import es.weso.schema.{ErrorInfo, Result, Solution}
 import org.http4s._
 import org.http4s.circe._
+
 import scala.xml.Utility.escape
-
-
 import scala.xml.Utility.escape
 
 case class ValidateResult
@@ -51,19 +50,38 @@ case class ValidateResult
   sb.toString
  }
 
- def result2HTML(result: Json): String = {
-  val sb = new StringBuilder
-  val cursor = result.hcursor
-  val validMsg = cursor.get[Boolean]("valid") match {
-   case Left(e) => s"<p>Error in Result: $e</p>"
-   case Right(true) => {
-    sb ++= s"<p class='valid'>Valid</p>"
-    val solution = cursor.downField("details").downN(0).downField("solution").focus
-    solution match {
-      case Some(json) => sb ++= s"<pre>${escape(json.spaces2)}</pre>"
-      case None => sb ++= "Not found solution..."
+ def result2HTML(jsonResult: Json): String = {
+  jsonResult.as[Result].fold(
+   failure => s"Failure recovering result from ${jsonResult.spaces2}",
+   result => {
+    val sb = new StringBuilder
+    if (result.isValid) {
+     sb ++= s"<p class='valid'>Valid</p>"
+     for {s <- result.solutions} {
+      sb ++= solution2Html(s)
+     }
+    } else {
+     sb ++= s"<p class='notValid'>Not Valid</p>"
+     for (e <- result.errors) {
+      sb ++= errorInfo2Html(e)
+     }
     }
+    sb.toString
+   }
+  )
+ }
 
+/*    sb ++= s"Solution as Json: <pre>${escape(solution0.focus.getOrElse(Json.Null).spaces2)}"
+    val solutionNodes = solution0.fields.getOrElse(List())
+    sb ++= "<table><tr><td>Node</td><td>Shapes</td><td>Evidences</td></tr>"
+    for (node <- solutionNodes) {
+      val nodeCursor = solution0.downField(node)
+      val shapes = nodeCursor.downField("hasShapes").fields
+      for (shape <- shapes) {
+       sb ++= s"<tr><td>$node</td><td>$shape</td></tr>"
+      }
+    }
+    sb ++= "</table>"
    }
    case Right(false) => {
     sb ++= s"<p class='notValid'>Not valid</p>"
@@ -71,6 +89,20 @@ case class ValidateResult
    }
   }
   sb.toString
+ } */
+
+ def solution2Html(solution: Solution): String = {
+   val sb = new StringBuilder
+  sb ++= "<h3>Solution</h3>"
+  sb ++= s"<pre>${escape(solution.toString)}</pre>"
+  sb.toString
  }
 
+ def errorInfo2Html(e: ErrorInfo): String = {
+  val sb = new StringBuilder
+  sb ++= "<h3>Error</h3>"
+  sb ++= s"<pre>${escape(e.toString)}</pre>"
+  sb.toString
+ }
 }
+

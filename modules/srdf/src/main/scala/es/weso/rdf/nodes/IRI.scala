@@ -1,8 +1,9 @@
 package es.weso.rdf.nodes
 
 import java.net.{URI, URISyntaxException}
-
 import scala.util.Try
+import scala.util.matching.Regex
+import scala.util.Either._
 
 case class IRI(uri: URI) extends RDFNode {
 
@@ -59,5 +60,20 @@ object IRI {
   def fromString(str: String): Option[IRI] = {
     unapply(str)
   }
+
+  lazy val iriRegex: Regex = "^(.*)$".r
+
+  def parseIRI(str: String): Either[String, IRI] =
+    str match {
+      case iriRegex(i) => // TODO: Substitute by IRI.fromString(i)
+        try {
+          Right(IRI(i))
+        } catch {
+          case e: URISyntaxException =>
+            Left(s"Error trying to parse IRI: $e, '$str'")
+        }
+      case _ =>
+        Left(s"$str doesn't match IRI regex $iriRegex")
+    }
 
 }

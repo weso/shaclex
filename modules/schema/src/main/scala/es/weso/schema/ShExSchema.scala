@@ -61,7 +61,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
         case None => SchemaLabel("_",schema.prefixMap)
       }
       val explanation = Explanation(cnvTypingResult(p._2))
-    (shapeLabel,explanation)
+    (shapeLabel, explanation)
     }
 
   def cnvTypingResult(result: TypingResult[ViolationError,String]): String = {

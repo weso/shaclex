@@ -7,10 +7,13 @@ import io.circe.syntax._
 import cats.syntax.either._
 import cats.instances.either._
 import es.weso.rdf.nodes._
+import es.weso.rdf.nodes.IRI._
 import util.matching._
 import java.net.URISyntaxException
 import es.weso.shex._
 import es.weso.rdf._
+import es.weso.json.DecoderUtils._
+
 
 object decoderShEx {
 
@@ -301,44 +304,6 @@ object decoderShEx {
     } yield TripleConstraint(inverse, negated, predicate, valueExpr, min, max, semActs, annotations)
   }
 
-  // Utils...
-
-  def fixedFieldValue(c: HCursor, name: String, value: String): Decoder.Result[String] = {
-    val str: Decoder.Result[String] = c.downField(name).as[String]
-    str match {
-      case Left(e) => Left(e)
-      case Right(v) => if (v == value)
-        Either.right(v)
-      else
-        Either.left(DecodingFailure(s"Required $value for field $name but got $v", Nil))
-    }
-  }
-
-  def fieldDecode[A: Decoder](c: HCursor, name: String): Decoder.Result[A] =
-    c.downField(name).as[A]
-
-  def optFieldDecode[A: Decoder](c: HCursor, name: String): Decoder.Result[Option[A]] = {
-    val x = c.downField(name)
-    if (x.succeeded) {
-      x.as[A] match {
-        case Left(e) => Left(e)
-        case Right(v) => Right(Some(v))
-      }
-    }
-    else Either.right(None)
-  }
-
-  def optFieldDecodeMap[A: KeyDecoder, B: Decoder](c: HCursor, name: String): Decoder.Result[Option[Map[A, B]]] = {
-    val x = c.downField(name)
-    if (x.succeeded) {
-      x.as[Map[A, B]] match {
-        case Left(e) => Left(e)
-        case Right(v) => Right(Some(v))
-      }
-    }
-    else Either.right(None)
-  }
-
   def parsePrefix(str: String): Either[String, Prefix] =
     str match {
       case prefixRegex(p) => Either.right(Prefix(p))
@@ -360,23 +325,7 @@ object decoderShEx {
       case _               => Either.left(s"$str doesn't match IRI regex $iriRegex")
     }
 
-
-  def parseIRI(str: String): Either[String, IRI] =
-    str match {
-      case iriRegex(i) => // TODO: Substitute by IRI.fromString(i)
-        try {
-          Either.right(IRI(i))
-        } catch {
-           case _: URISyntaxException =>
-             Either.left(s"$str doesn't have the syntax of an URI")
-        }
-      case _ =>
-        Either.left(s"$str doesn't match IRI regex $iriRegex")
-    }
-
-
   lazy val prefixRegex: Regex = "^(.*)$".r // PN_PREFIX_STR.r
-  lazy val iriRegex: Regex = "^(.*)$".r
   lazy val bNodeRegex: Regex = "^_:(.*)$".r
   lazy val stringRegex: Regex = "^\"(.*)\"$".r
   lazy val langRegex: Regex = "^\"(.*)\"@(.*)$".r
