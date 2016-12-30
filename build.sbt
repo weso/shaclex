@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.56"
+lazy val shaclexVersion = "0.0.57"
 
 cancelable in Global := true
 fork := true
@@ -14,16 +14,18 @@ reStartArgs := Seq("--server")
 parallelExecution in Test := false
 
 // Versions of common packages
-lazy val circeVersion     = "0.6.0"
-lazy val effCatsVersion   = "2.0.0-RC18"
+lazy val circeVersion     = "0.6.1"
+lazy val effVersion       = "2.2.0"
 lazy val catsVersion      = "0.8.1"
-lazy val scalaTestVersion = "3.0.0"
-lazy val scalacticVersion = "3.0.0"
+lazy val scalaTestVersion = "3.0.1"
+lazy val scalacticVersion = "3.0.1"
 lazy val logbackVersion   = "1.1.7"
 lazy val loggingVersion   = "3.5.0"
-lazy val http4sVersion    = "0.14.11a"
-lazy val rhoVersion       = "0.12.0a"
-lazy val scalatagsVersion = "0.6.1"
+lazy val http4sVersion    = "0.15.2a"
+//lazy val rhoVersion       = "0.12.0a"
+lazy val scalatagsVersion = "0.6.2"
+lazy val kindProjectorVersion = "0.9.3"
+lazy val scallopVersion = "2.0.6"
 
 herokuAppName in Compile := "shaclex"
 
@@ -35,9 +37,9 @@ herokuProcessTypes in Compile := Map(
 
 lazy val commonSettings = Seq(
   organization := "es.weso",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.1",
   version := shaclexVersion,
-  scalaOrganization := "org.typelevel",
+//  scalaOrganization := "org.typelevel",
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
   libraryDependencies ++= Seq(
       "org.scalactic" %% "scalactic" % scalacticVersion
@@ -62,7 +64,7 @@ lazy val shaclex =
       Seq(
         "ch.qos.logback" %  "logback-classic" % logbackVersion
       , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
-      , "org.rogach" %% "scallop" % "2.0.2"
+      , "org.rogach" %% "scallop" % scallopVersion
       )
   )
 
@@ -135,7 +137,7 @@ lazy val server =
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "es.weso.shaclex.buildinfo",
     libraryDependencies ++= Seq(
-      "org.http4s" %% "rho-swagger" % rhoVersion,
+//      "org.http4s" %% "rho-swagger" % rhoVersion,
       "org.http4s" %% "http4s-dsl" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
@@ -212,7 +214,7 @@ lazy val utils =
   settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.atnos" %% "eff-cats" % effCatsVersion
+      "org.atnos" %% "eff" % effVersion
     , "io.circe" %% "circe-core" % circeVersion
     , "io.circe" %% "circe-generic" % circeVersion
     , "io.circe" %% "circe-parser" % circeVersion
@@ -228,10 +230,9 @@ lazy val validating =
             utils % "test -> test; compile -> compile").
   settings(antlr4Settings: _*).
   settings(
-   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0"),
-   addCompilerPlugin("com.milessabin" % "si2712fix-plugin_2.11.8" % "1.2.0"),
+   addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
    libraryDependencies ++= Seq(
-     "org.atnos" %% "eff-cats" % effCatsVersion
+     "org.atnos" %% "eff" % effVersion
    , "org.typelevel" %% "cats" % catsVersion
    )
   )
@@ -263,7 +264,7 @@ lazy val noPublishSettings = Seq(
 
 
 // to write types like Reader[String, ?]
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.0")
+addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion)
 
 // Binary packaging
 enablePlugins(SbtNativePackager)
