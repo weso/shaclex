@@ -8,6 +8,8 @@ import org.http4s.circe._
 
 import scala.xml.Utility.escape
 import scala.xml.Utility.escape
+import scalatags.Text.TypedTag
+import scalatags.Text.all._
 
 case class ValidateResult
  ( data: String,
@@ -92,16 +94,19 @@ case class ValidateResult
  } */
 
  def solution2Html(solution: Solution): String = {
-   val sb = new StringBuilder
-  sb ++= "<h3>Solution</h3>"
-  sb ++= s"<pre>${escape(solution.toString)}</pre>"
+  val sb =
+   div(h3(`class` := "solution")("Solution",
+       table(tr("Node")
+//       for (node <- solution.nodes) yield {
+//         tr(td("node"),td(node.toString))
+//       })
+      )))
   sb.toString
  }
 
  def errorInfo2Html(e: ErrorInfo): String = {
-  val sb = new StringBuilder
-  sb ++= "<h3>Error</h3>"
-  sb ++= s"<pre>${escape(e.toString)}</pre>"
+  val sb = div(h3("Error"),
+               pre(escape(e.toString)))
   sb.toString
  }
 }

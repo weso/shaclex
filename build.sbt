@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.55"
+lazy val shaclexVersion = "0.0.56"
 
 cancelable in Global := true
 fork := true
@@ -23,6 +23,7 @@ lazy val logbackVersion   = "1.1.7"
 lazy val loggingVersion   = "3.5.0"
 lazy val http4sVersion    = "0.14.11a"
 lazy val rhoVersion       = "0.12.0a"
+lazy val scalatagsVersion = "0.6.1"
 
 herokuAppName in Compile := "shaclex"
 
@@ -139,7 +140,8 @@ lazy val server =
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
       "org.http4s" %% "http4s-circe" % http4sVersion,
-      "org.http4s" %% "http4s-twirl" % http4sVersion
+      "org.http4s" %% "http4s-twirl" % http4sVersion,
+      "com.lihaoyi" %% "scalatags" % scalatagsVersion
     )
   )
 
