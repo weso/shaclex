@@ -352,13 +352,13 @@ lazy val publishSettings = Seq(
   "-unchecked",
 //  "-Xfatal-warnings",
   "-Xlint",
-  "-Yinline-warnings",
+//  "-Yinline-warnings",
   "-Yno-adapted-args",
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
   "-Xfuture",
-  "-Ypartial-unification", // enable fix for SI-2712
-  "-Yliteral-types"       // enable SIP-23 implementation
+  "-Ypartial-unification" // enable fix for SI-2712
+//  "-Yliteral-types"       // enable SIP-23 implementation
   )
 )
 
