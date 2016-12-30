@@ -389,7 +389,7 @@ class Routes {
   }
 
   private def cachedResource(config: Config): HttpService = {
-    val cachedConfig = config.copy(cacheStartegy = staticcontent.MemoryCache())
+    val cachedConfig = config.copy(cacheStrategy = staticcontent.MemoryCache())
     staticcontent.resourceService(cachedConfig)
   }
 

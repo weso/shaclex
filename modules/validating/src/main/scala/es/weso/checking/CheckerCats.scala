@@ -143,10 +143,10 @@ abstract class CheckerCats extends Checker {
     c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]]
 
   def readerEC2check[A](c: ReaderEC[A]): Check[A] =
-    writerEC2check(c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]])
+    ??? // writerEC2check(c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]])
 
   def writerEC2check[A](c: WriterEC[A]): Check[A] =
-    c.liftT[λ[(F[_], A) => EitherT[F, Err, A]]]
+    ??? // c.liftT[λ[(F[_], A) => EitherT[F, Err, A]]]
 
 }
 

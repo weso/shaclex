@@ -366,7 +366,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         } yield t
       }
       case Left(err) =>
-        errStr(s"${attempt.show} Candidate line ${cl.show} doesn't match regular expression\nBag ${bag} doesn't match Rbe ${bagChecker.rbe}\nErr: $err")
+        errStr(s"${attempt.show} Candidate line ${cl.toString} doesn't match regular expression\nBag ${bag} doesn't match Rbe ${bagChecker.rbe}\nErr: $err")
     }
   }
 

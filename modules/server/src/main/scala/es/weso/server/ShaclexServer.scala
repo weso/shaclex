@@ -3,8 +3,8 @@ package es.weso.server
 import java.util.concurrent.Executors
 
 import org.http4s._
-import org.http4s.rho.swagger.SwaggerSupport
-import org.http4s.rho.swagger.models.Info
+//import org.http4s.rho.swagger.SwaggerSupport
+//import org.http4s.rho.swagger.models.Info
 import org.http4s.server.blaze._
 import org.http4s.server.middleware.CORS
 import org.http4s.server.{Server, ServerApp, ServerBuilder}
