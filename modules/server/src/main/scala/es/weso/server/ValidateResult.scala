@@ -2,7 +2,7 @@ package es.weso.server
 
 import io.circe.Json
 import cats.syntax.either._
-import es.weso.schema.{ErrorInfo, Result, Solution}
+import es.weso.schema.{ErrorInfo, InfoNode, Result, Solution}
 import org.http4s._
 import org.http4s.circe._
 
@@ -60,12 +60,12 @@ case class ValidateResult
     if (result.isValid) {
      sb ++= s"<p class='valid'>Valid</p>"
      for {s <- result.solutions} {
-      sb ++= solution2Html(s)
+      sb ++= solution2Html(s).toString
      }
     } else {
      sb ++= s"<p class='notValid'>Not Valid</p>"
      for (e <- result.errors) {
-      sb ++= errorInfo2Html(e)
+      sb ++= errorInfo2Html(e).toString
      }
     }
     sb.toString
@@ -73,41 +73,44 @@ case class ValidateResult
   )
  }
 
-/*    sb ++= s"Solution as Json: <pre>${escape(solution0.focus.getOrElse(Json.Null).spaces2)}"
-    val solutionNodes = solution0.fields.getOrElse(List())
-    sb ++= "<table><tr><td>Node</td><td>Shapes</td><td>Evidences</td></tr>"
-    for (node <- solutionNodes) {
-      val nodeCursor = solution0.downField(node)
-      val shapes = nodeCursor.downField("hasShapes").fields
-      for (shape <- shapes) {
-       sb ++= s"<tr><td>$node</td><td>$shape</td></tr>"
-      }
-    }
-    sb ++= "</table>"
-   }
-   case Right(false) => {
-    sb ++= s"<p class='notValid'>Not valid</p>"
-    sb ++= s"<pre>${escape(result.spaces2)}</pre>"
-   }
-  }
-  sb.toString
- } */
+ type HTMLFragment = TypedTag[String]
 
- def solution2Html(solution: Solution): String = {
-  val sb =
-   div(h3(`class` := "solution")("Solution",
-       table(tr("Node")
-//       for (node <- solution.nodes) yield {
-//         tr(td("node"),td(node.toString))
-//       })
-      )))
-  sb.toString
+ def solution2Html(solution: Solution): HTMLFragment = {
+   div( h3(cls := "solution")("Solution"),
+    table(cls := "nodeInfoNode")
+     ( tr(td("Node"),td("Info")),
+       for ((node,infoNode) <- solution.nodes.toSeq) yield {
+         tr(td(node.getLexicalForm),td(infoNode2Html(infoNode)))
+       }
+    ))
  }
 
- def errorInfo2Html(e: ErrorInfo): String = {
-  val sb = div(h3("Error"),
-               pre(escape(e.toString)))
-  sb.toString
+ def infoNode2Html(infoNode: InfoNode): HTMLFragment = {
+  val hasShapes: Seq[HTMLFragment] =
+   for ((shape,explanation) <- infoNode.hasShapes) yield {
+     tr(
+       td("+ " + shape.str),
+       td(explanation.str)
+     )
+   }
+
+  val hasNoShapes: Seq[HTMLFragment] =
+    for ((shape,explanation) <- infoNode.hasNoShapes) yield {
+      tr(
+        td("- " + shape.str),
+        td(explanation.str)
+      )
+   }
+
+  table(cls := "infoNode")(
+   tr(td("Shape"),td("Explanation")),
+    hasShapes,
+    hasNoShapes
+  )
+ }
+
+ def errorInfo2Html(e: ErrorInfo): HTMLFragment = {
+  div(h3("Error"),pre(escape(e.toString)))
  }
 }
 
