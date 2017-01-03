@@ -1,5 +1,6 @@
 package es.weso.manifest
 import es.weso.rdf.nodes._
+import ManifestPrefixes._
 
 case class Manifest(
     label: Option[String],
@@ -8,23 +9,44 @@ case class Manifest(
     includes: List[(IRI, Option[Manifest])]
     )
 
+object Manifest {
+  def empty: Manifest = Manifest(None,None,List(),List())
+}
+
 case class Entry(
+    node: RDFNode,
     entryType: EntryType,
     name: String,
     action: ManifestAction,
     result: Result,
     status: Status,
     specRef: Option[IRI]
-    )
+)
 
-sealed trait EntryType
-final case object Validate extends EntryType
-final case object MatchNodeShape extends EntryType
-final case object ValidationTest extends EntryType
-final case object ValidationFailure extends EntryType
-final case object WellFormedSchema extends EntryType
-final case object NonWellFormedSchema extends EntryType
-final case object ConvertSchemaSyntax extends EntryType
+sealed trait EntryType {
+  def iri : IRI
+}
+final case object Validate extends EntryType {
+  override def iri = sht_Validate
+}
+final case object MatchNodeShape extends EntryType {
+  override def iri = sht_MatchNodeShape
+}
+final case object ValidationTest extends EntryType {
+  override def iri = sht_ValidationTest
+}
+final case object ValidationFailure extends EntryType {
+  override def iri = sht_ValidationFailure
+}
+final case object WellFormedSchema extends EntryType {
+  override def iri = sht_WellFormedSchema
+}
+final case object NonWellFormedSchema extends EntryType {
+  override def iri = sht_NonWellFormedSchema
+}
+final case object ConvertSchemaSyntax extends EntryType {
+  override def iri = sht_ConvertSchemaSyntax
+}
 
 case class ManifestAction(
     schema: Option[IRI],

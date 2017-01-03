@@ -108,7 +108,8 @@ lazy val shex =
     typing,
     utils % "test -> test; compile -> compile",
     validating,
-    rbe).
+    rbe, 
+    manifest).
   settings(antlr4Settings: _*).
   settings(inConfig(compatTest)(Defaults.testSettings): _*).
   settings(

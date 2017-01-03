@@ -32,8 +32,8 @@ class CompareJsonSingle extends FunSpec with JsonTest with Matchers with EitherV
             val jsonFile = schemasFolder + "/"+ name + ".json"
             val jsonStr = Source.fromFile(jsonFile)("UTF-8").mkString
             parse(jsonStr) match {
-              case Xor.Left(err) => fail(s"Error parsing $jsonFile: $err")
-              case Xor.Right(json) =>
+              case Left(err) => fail(s"Error parsing $jsonFile: $err")
+              case Right(json) =>
                 if (json.equals(schema.asJson)) {
                  info("Jsons are equal")
                 } else {

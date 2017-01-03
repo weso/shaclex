@@ -76,7 +76,8 @@ trait RDF2Manifest
      statusIri <- iriFromPredicate(mf_status)(n,rdf)
      specRef <- optional(iriFromPredicate(sht_specRef))(n,rdf)
    } yield
-     Entry(entryType = entryType,
+     Entry(node = n,
+      entryType = entryType,
       name = name,
       action = action,
       result = result,
@@ -287,11 +288,11 @@ object RDF2Manifest extends RDF2Manifest {
        getContents(fileName)
      }
      rdf <- {
-       println(s"Contents: $cs, format: $format, base: $base")
+       println(s"Contents: ${cs.length} chars, format: $format, base: $base")
        RDFAsJenaModel.fromChars(cs, format, base)
      }
      mfs <- {
-       println(s"Contents: $cs, format: $format, base: $base, rdf: $rdf")
+       println(s"Contents: ${cs.length} chars, format: $format, base: $base, rdf: ${rdf.model.size} triples")
        rdf2Manifest(rdf, false)
      }
      if mfs.size == 1

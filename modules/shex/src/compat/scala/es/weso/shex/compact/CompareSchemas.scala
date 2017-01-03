@@ -40,8 +40,8 @@ class CompareSchemas extends FunSpec with JsonTest with Matchers with EitherValu
             val jsonFile = schemasFolder + "/"+ name + ".json"
             val jsonStr = Source.fromFile(jsonFile)("UTF-8").mkString
             decode[Schema](jsonStr) match {
-              case Xor.Left(err) => fail(s"Error parsing $jsonFile: $err")
-              case Xor.Right(expectedSchema) =>
+              case Left(err) => fail(s"Error parsing $jsonFile: $err")
+              case Right(expectedSchema) =>
                 if (Eq[Schema].eqv(schema,expectedSchema)) {
                  info("Jsons are equal")
                 } else {
