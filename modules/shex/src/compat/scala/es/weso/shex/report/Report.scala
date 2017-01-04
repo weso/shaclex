@@ -149,10 +149,12 @@ case class Report(
       model.add(t, earl_subject, shaclex)
       model.add(t, earl_result, result)
       model.add(result, rdf_type, earlTestResult)
-      val outcome = if (r.passed) earl_passed
-      else earl_failed
+      val outcome =
+        if (r.passed) earl_passed
+        else earl_failed
       model.add(result, earl_outcome, outcome)
       model.add(result, dc_date, now)
+      model.add(result, dc_description, r.moreInfo)
     }
 
     model
