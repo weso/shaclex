@@ -105,9 +105,9 @@ object decoderShEx {
   }
 
   def getXsFacets(c: HCursor): Decoder.Result[List[XsFacet]] = {
-    val fields: List[String] = c.fields.getOrElse(List())
+    val fields: Vector[String] = c.fields.getOrElse(Vector[String]())
     val rs : List[Either[DecodingFailure, Option[XsFacet]]] =
-       fields.map(extractXsFacet(_, c))
+       fields.toList.map(extractXsFacet(_, c))
     sequenceEither(rs)
 //    val r: Xor[DecodingFailure, List[Option[XsFacet]]] = rs.sequence
     /*rs match {

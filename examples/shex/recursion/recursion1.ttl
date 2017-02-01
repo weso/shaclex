@@ -1,0 +1,9 @@
+PREFIX : <http://hl7.org/fhir/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix sh: <http://www.w3.org/ns/shacl#>
+
+:d :predd "final" ; :test :a ; :test2 :c .
+:a :subject   :c ; :prede    "final" .
+:c :subject   :a ; :predc    "final" .
+
+:D sh:targetNode :d .

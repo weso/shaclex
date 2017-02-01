@@ -65,9 +65,9 @@ object JsonDiff {
                s"json $json should be a string in order to compare with $v")
   }
 
-  private def checkArray(indent: Int)(json: Json)(v: List[Json]): String = {
+  private def checkArray(indent: Int)(json: Json)(v: Vector[Json]): String = {
     if (json.isArray) {
-      val array = json.asArray.get
+      val array: Vector[Json] = json.asArray.get
       val d = diffArrays(indent)(array,v)
       if (d == OK) {
         OK
@@ -122,7 +122,7 @@ object JsonDiff {
   }
 
   private def diffArrays(indent: Int)(
-    o1: List[Json], o2: List[Json]): String = {
+    o1: Vector[Json], o2: Vector[Json]): String = {
     if (o1.length == o2.length) {
       val zero = ""
       def cont: (((Json, Json), Int), String) => String = { (t, rest) =>

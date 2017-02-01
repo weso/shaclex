@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.57"
+lazy val shaclexVersion = "0.0.60"
 
 cancelable in Global := true
 fork := true
@@ -14,9 +14,9 @@ reStartArgs := Seq("--server")
 parallelExecution in Test := false
 
 // Versions of common packages
-lazy val circeVersion     = "0.6.1"
+lazy val circeVersion     = "0.7.0"
 lazy val effVersion       = "2.2.0"
-lazy val catsVersion      = "0.8.1"
+lazy val catsVersion      = "0.9.0"
 lazy val scalaTestVersion = "3.0.1"
 lazy val scalacticVersion = "3.0.1"
 lazy val logbackVersion   = "1.1.7"
@@ -52,12 +52,12 @@ lazy val shaclex =
   settings(unidocSettings: _*).
   settings(commonSettings:_*).
   settings(publishSettings:_*).
-  enablePlugins(BuildInfoPlugin).
+//  enablePlugins(BuildInfoPlugin).
   aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server).
   dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server).
   settings(
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "es.weso.shaclex.buildinfo",
+//    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+//    buildInfoPackage := "es.weso.shaclex.buildinfo",
     unidocProjectFilter in (ScalaUnidoc, unidoc) :=
       inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++=
@@ -131,12 +131,12 @@ lazy val server =
   project.in(file("modules/server")).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
-  enablePlugins(BuildInfoPlugin).
+ // enablePlugins(BuildInfoPlugin).
   dependsOn(schema,srdf,srdfJena).
   enablePlugins(SbtTwirl).
   settings(
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "es.weso.shaclex.buildinfo",
+  //  buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+  //  buildInfoPackage := "es.weso.shaclex.buildinfo",
     libraryDependencies ++= Seq(
 //      "org.http4s" %% "rho-swagger" % rhoVersion,
       "org.http4s" %% "http4s-dsl" % http4sVersion,
@@ -173,7 +173,7 @@ lazy val srdf =
 
 lazy val rbe =
   project.in(file("modules/rbe")).
-  dependsOn(validating).
+  dependsOn(validating, typing).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(
