@@ -12,6 +12,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 object RDF2Shacl extends RDFParser with LazyLogging {
 
+  // TODO: Move this declaration to RDFParser
   implicit val applicativeRDFParser = new Applicative[RDFParser] {
     def pure[A](x: A) = (n,rdf) => Success(x)
 
@@ -74,9 +75,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       }
     }
   }
-
-
-
 
   def targets: RDFParser[Seq[Target]] =
     combineAll(
