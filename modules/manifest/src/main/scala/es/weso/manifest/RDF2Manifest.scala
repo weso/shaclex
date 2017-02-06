@@ -243,9 +243,6 @@ trait RDF2Manifest
    oneOf(ps)
  }
 
- def fail[A](str: String): Try[A] =
-   Failure(new Exception(str))
-
  /**
   * Override this method to provide more info
   */

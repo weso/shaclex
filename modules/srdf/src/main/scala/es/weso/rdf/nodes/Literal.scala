@@ -89,6 +89,11 @@ case class BooleanLiteral(bool: Boolean) extends Literal {
   override def getLexicalForm = lexicalForm
 }
 
+object BooleanLiteral {
+  lazy val trueLiteral = BooleanLiteral(true)
+  lazy val falseLiteral = BooleanLiteral(false)
+}
+
 case class LangLiteral(lexicalForm: String, lang: Lang) extends Literal {
   lazy val dataType = RDFNode.LangStringDatatypeIRI
 

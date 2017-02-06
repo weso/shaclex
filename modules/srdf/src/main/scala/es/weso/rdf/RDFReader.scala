@@ -102,7 +102,7 @@ trait RDFReader {
    * Prefix map
    */
   def getPrefixMap(): PrefixMap
-  
+
   /**
    * `true` if `node rdf:type/rdfs:subClassOf* cls`
    */

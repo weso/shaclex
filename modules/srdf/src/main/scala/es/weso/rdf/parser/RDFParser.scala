@@ -2,6 +2,7 @@ package es.weso.rdf.parser
 
 import es.weso.rdf.nodes._
 import es.weso.rdf._
+
 import scala.util._
 import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
@@ -260,6 +261,43 @@ trait RDFParser {
   }
 
   /**
+   * Applies a list of parsers
+   * If a parser fails, it continues with the rest of the list
+   * @return the list of successful values that could be parsed
+   *
+   */
+  def anyOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
+    def comb(rest: RDFParser[Seq[A]], p: RDFParser[A]): RDFParser[Seq[A]] = (n,rdf) => {
+      p(n,rdf) match {
+        case Failure(_) => rest(n,rdf)
+        case Success(x) => {
+          for {
+            xs <- rest(n,rdf)
+          } yield (x +: xs)
+        }
+      }
+    }
+    val zero : RDFParser[Seq[A]] = (n,rdf) => Success(Seq())
+    ps.foldLeft(zero)(comb)
+  }
+
+  /**
+   * If a parser fails, it continues with the rest of the list
+   * @return the result of the first parser that succeeds of failure
+   *
+   */
+  def firstOf[A](ps:RDFParser[A]*): RDFParser[A] = {
+    def comb(rest: RDFParser[A], p: RDFParser[A]): RDFParser[A] = (n,rdf) => {
+      p(n,rdf) match {
+        case Failure(_) => rest(n,rdf)
+        case Success(x) => Success(x)
+      }
+    }
+    val zero : RDFParser[A] = (n,rdf) => fail("firstOf: none of the parsers succeeded")
+    ps.foldLeft(zero)(comb)
+  }
+
+  /**
    * Checks that exactly one of the parsers succeeds on the current node
    * 
    * @param parsers sequence of parsers 
@@ -285,9 +323,6 @@ trait RDFParser {
   }
 
  
-  private def fail[A](str: String): Try[A] = {
-    Failure(RDFParserException(str))
-  }
 
   // TODO: Move the following methods to some utils place
   def subjectsWithType(t: RDFNode, rdf: RDFReader): Set[RDFNode] = {
@@ -318,5 +353,9 @@ trait RDFParser {
  def hasPredicateWithSubject(n: RDFNode, p: IRI, rdf: RDFReader): Boolean = {
     rdf.triplesWithSubjectPredicate(n, p).size > 0
   }
+
+  def fail[A](str: String): Try[A] =
+    Failure(throw new Exception(str))
+
 
 }

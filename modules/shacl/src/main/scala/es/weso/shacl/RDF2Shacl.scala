@@ -191,7 +191,10 @@ object RDF2Shacl extends RDFParser with LazyLogging {
         pattern,
         equals, disjoint, lessThan, lessThanOrEquals,
         or, and, not,
-        shapeComponent, hasValue, in)
+        shapeComponent,
+        hasValue,
+        in
+    )
 
 
   def classComponent = parsePredicate(sh_class, ClassComponent)
@@ -353,27 +356,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   // TODO: Move these methods to SRDF project
 
-    /**
-   * Applies a list of parsers
-   * If a parser fails, it continues with the rest of the list
-   * @return the list of successful values that could be parsed
-   *
-   */
-  def anyOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
-    def comb(rest: RDFParser[Seq[A]], p: RDFParser[A]): RDFParser[Seq[A]] = (n,rdf) => {
-      p(n,rdf) match {
-        case Failure(_) => rest(n,rdf)
-        case Success(x) => {
-          for {
-            xs <- rest(n,rdf)
-          } yield (x +: xs)
-        }
-      }
-    }
-    val zero : RDFParser[Seq[A]] = (n,rdf) => Success(Seq())
-    ps.foldLeft(zero)(comb)
-  }
-
   /**
    * Combine a sequence of RDFParsers
    *
@@ -451,9 +433,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def fromEitherString[A](e: Either[String,A]): Try[A] =
     e.fold(str => fail(str),v => Success(v))
-
-  def fail[A](str: String): Try[A] =
-    Failure(throw new Exception(str))
 
   def noTarget: Seq[Target] = Seq()
   def noFilters: Seq[Shape] = Seq()

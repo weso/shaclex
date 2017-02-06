@@ -196,6 +196,7 @@ lazy val srdfJena =
     , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
     , "com.typesafe" % "config" % "1.3.0" % Test
     , "org.apache.jena" % "jena-arq" % "3.1.0"
+    , "org.typelevel" %% "cats" % catsVersion
     )
   )
 

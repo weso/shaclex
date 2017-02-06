@@ -265,5 +265,4 @@ object RDFAsJenaModel {
     RDFLanguages.getRegisteredLanguages().map(_.getName).toList.distinct
   }
 
-
 }
