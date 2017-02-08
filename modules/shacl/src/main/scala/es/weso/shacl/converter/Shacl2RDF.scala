@@ -136,3 +136,4 @@ class Shacl2RDF extends RDFSaver {
   }
 
 }
+

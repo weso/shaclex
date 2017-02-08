@@ -25,12 +25,10 @@ case class RDFParserException(msg: String)
 trait RDFParser {
 
   /**
-   * An RDFParser of values of type `a` takes an pointed node `RDFNode`
+   * An RDFParser of values of type `a` takes a pointed node `RDFNode`
    * and an `RDFReader` and tries to obtain a value of type `a` 
    */
   type RDFParser[a] = (RDFNode, RDFReader) => Try[a]
-
-
 
   /*
    * returns an RDFParser which returns the IRI associated with a predicate
@@ -108,9 +106,9 @@ trait RDFParser {
   def objectFromPredicate(p: IRI): RDFParser[RDFNode] = { (n, rdf) =>
     val ts = rdf.triplesWithSubjectPredicate(n, p)
     ts.size match {
-      case 0 => fail("objectFromPredicate: Not found triples with subject " + n + " and predicate " + p)
+      case 0 => parseFail("objectFromPredicate: Not found triples with subject " + n + " and predicate " + p)
       case 1 => Success(ts.head.obj)
-      case _ => fail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
+      case _ => parseFail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
     }
   }
 
@@ -163,9 +161,9 @@ trait RDFParser {
   def integerLiteralForPredicate(p: IRI): RDFParser[Integer] = { (n, rdf) =>
     val ts = rdf.triplesWithSubjectPredicate(n, p)
     ts.size match {
-      case 0 => fail("integerLiteralFromPredicate: Not found triples with subject " + n + " and predicate " + p)
+      case 0 => parseFail("integerLiteralFromPredicate: Not found triples with subject " + n + " and predicate " + p)
       case 1 => getIntegerLiteral(ts.head)
-      case _ => fail("integerLiteralFromPredicate: More than one value from predicate " + p + " on node " + n)
+      case _ => parseFail("integerLiteralFromPredicate: More than one value from predicate " + p + " on node " + n)
     }
   }
 
@@ -221,7 +219,7 @@ trait RDFParser {
    */
   def someOf[A](ps: Seq[RDFParser[A]]): RDFParser[A] = { (n, rdf) =>
     {
-      ps.foldLeft(fail("someOf: none of the RDFParsers passed")) {
+      ps.foldLeft(parseFail("someOf: none of the RDFParsers passed")) {
         case ((s: Try[A], parser)) =>
           s match {
             case Success(_) => s
@@ -267,9 +265,14 @@ trait RDFParser {
    *
    */
   def anyOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
+    println(s"AnyOf: $ps")
     def comb(rest: RDFParser[Seq[A]], p: RDFParser[A]): RDFParser[Seq[A]] = (n,rdf) => {
+      println(s"Trying first parser $p")
       p(n,rdf) match {
-        case Failure(_) => rest(n,rdf)
+        case Failure(_) => {
+          println(s"Failing...inside anyOf node: $n parser: $p")
+          rest(n,rdf)
+        }
         case Success(x) => {
           for {
             xs <- rest(n,rdf)
@@ -293,7 +296,7 @@ trait RDFParser {
         case Success(x) => Success(x)
       }
     }
-    val zero : RDFParser[A] = (n,rdf) => fail("firstOf: none of the parsers succeeded")
+    val zero : RDFParser[A] = (n,rdf) => parseFail("firstOf: none of the parsers succeeded")
     ps.foldLeft(zero)(comb)
   }
 
@@ -304,12 +307,12 @@ trait RDFParser {
    */
   def oneOf[A](parsers: Seq[RDFParser[A]]): RDFParser[A] = { (n, rdf) =>
     {
-      val r = parsers.foldLeft(fail("oneOf: none of the RDFParsers passed")) {
+      val r = parsers.foldLeft(parseFail("oneOf: none of the RDFParsers passed")) {
         case ((current: Try[A], parser)) =>
           current match {
             case Success(_) => {
               parser(n, rdf) match {
-                case Success(_) => fail("oneOf: More than one parser passes")
+                case Success(_) => parseFail("oneOf: More than one parser passes")
                 case Failure(_) => current
               }
             }
@@ -345,7 +348,7 @@ trait RDFParser {
     t.obj match {
       case l: IntegerLiteral => Success(l.int)
       // TODO: case l: DatatypeLiteral(lexicalForm,datatype) => ...
-      case _                 => fail("getIntegerLiteral: Object " + t.obj + " must be a literal")
+      case _                 => parseFail("getIntegerLiteral: Object " + t.obj + " must be a literal")
     }
   }
 
@@ -354,8 +357,8 @@ trait RDFParser {
     rdf.triplesWithSubjectPredicate(n, p).size > 0
   }
 
-  def fail[A](str: String): Try[A] =
-    Failure(throw new Exception(str))
+  def parseFail[A](str: String): Try[A] =
+    Failure(new Exception(str))
 
 
 }

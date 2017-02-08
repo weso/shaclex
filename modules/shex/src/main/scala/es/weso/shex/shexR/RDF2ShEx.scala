@@ -43,10 +43,8 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   def toLabel(node: RDFNode): Try[ShapeLabel] = node match {
     case i: IRI => Success(IRILabel(i))
     case b: BNodeId => Success(BNodeLabel(b))
-    case _ => fail(s"node $node must be an IRI or a BNode in order to be a ShapeLabel")
+    case _ => parseFail(s"node $node must be an IRI or a BNode in order to be a ShapeLabel")
   }
-
-
 
   def shapeExpr: RDFParser[ShapeExpr] = firstOf(
     shapeOr,
@@ -82,7 +80,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     case `sx_bnode` => Success(BNodeKind)
     case `sx_literal` => Success(LiteralKind)
     case `sx_nonliteral` => Success(NonLiteralKind)
-    case _ => fail(s"Expected nodekind, found: $n")
+    case _ => parseFail(s"Expected nodekind, found: $n")
   }
 
   def shape: RDFParser[Shape] = (n,rdf) => for {
@@ -97,12 +95,12 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     case BooleanLiteral.falseLiteral => Success(false)
     case DatatypeLiteral("true",xsd_boolean) => Success(true)
     case DatatypeLiteral("false",xsd_boolean) => Success(false)
-    case _ => fail(s"Expected boolean literal. Found $n")
+    case _ => parseFail(s"Expected boolean literal. Found $n")
   }
 
   def iri: RDFParser[IRI] = (n,rdf) => n match {
     case i: IRI => Success(i)
-    case _ => fail(s"Expected IRI, found $n")
+    case _ => parseFail(s"Expected IRI, found $n")
   }
 
   def shapeExternal: RDFParser[ShapeExternal] = (n,rdf) => for {
@@ -120,7 +118,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     obtained <- objectFromPredicate(rdf_type)(n,rdf)
     v <- if (obtained == expected) Success(true)
          else
-          fail(s"Type of node $n must be $expected but obtained $obtained")
+          parseFail(s"Type of node $n must be $expected but obtained $obtained")
   } yield v
 
   def arc[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = ???
@@ -131,7 +129,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
       case Success(os) => os.size match {
         case 0 => Success(None)
         case 1 => parser(os.head,rdf).map(Some(_))
-        case _ => fail(s"opt fails because $n has more than one value for pred $pred. Values: $os")
+        case _ => parseFail(s"opt fails because $n has more than one value for pred $pred. Values: $os")
       }
       case Failure(e) => Success(None)
     }

@@ -138,11 +138,11 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def mkTargetClass(n: RDFNode): Try[TargetClass] = Success(TargetClass(n))
   def mkTargetSubjectsOf(n: RDFNode): Try[TargetSubjectsOf] = n match {
     case i:IRI => Success(TargetSubjectsOf(i))
-    case _ => fail(s"targetSubjectsOf requires an IRI. Obtained $n")
+    case _ => parseFail(s"targetSubjectsOf requires an IRI. Obtained $n")
   }
   def mkTargetObjectsOf(n: RDFNode): Try[TargetObjectsOf] = n match {
     case i:IRI => Success(TargetObjectsOf(i))
-    case _ => fail(s"targetObjectsOf requires an IRI. Obtained $n")
+    case _ => parseFail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
 
   def filters: RDFParser[Seq[Shape]] = (n,rdf) => {
@@ -276,13 +276,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     n match {
       case i: IRI => Success(IRIValue(i))
       case l: Literal => Success(LiteralValue(l))
-      case _ => fail(s"Element $n must be a IRI or a Literal to be part of sh:in")
+      case _ => parseFail(s"Element $n must be a IRI or a Literal to be part of sh:in")
     }
   }
 
   def convert2Values[A](cs: List[Try[A]]): Try[List[A]] = {
     if (cs.isEmpty)
-      fail("The list of values associated with sh:in must not be empty")
+      parseFail("The list of values associated with sh:in must not be empty")
     else {
       filterSuccess(cs).map(_.toList)
     }
@@ -305,7 +305,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def parseNodeKind(os: Set[RDFNode]): Try[Component] = {
     logger.debug(s"ParseNodeKind($os)")
     os.size match {
-      case 0 => fail("no objects of nodeKind property")
+      case 0 => parseFail("no objects of nodeKind property")
       case 1 => {
         os.head match {
           case nk: IRI => nk match {
@@ -317,16 +317,16 @@ object RDF2Shacl extends RDFParser with LazyLogging {
             case `sh_IRIOrLiteral` => Success(NodeKind(IRIOrLiteral))
             case x => {
               logger.error(s"incorrect value of nodeKind property $x")
-              fail(s"incorrect value of nodeKind property $x")
+              parseFail(s"incorrect value of nodeKind property $x")
             }
           }
           case x => {
             logger.error(s"incorrect value of nodeKind property $x")
-            fail(s"incorrect value of nodeKind property $x")
+            parseFail(s"incorrect value of nodeKind property $x")
         }
        }
       }
-      case n => fail(s"objects of nodeKind property > 1. $os")
+      case n => parseFail(s"objects of nodeKind property > 1. $os")
     }
   }
 
@@ -382,7 +382,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     o <- objectFromPredicate(p)(n,rdf)
     r <- o match {
       case l: Literal => Success(l)
-      case _ => fail("Value of predicate must be a literal")
+      case _ => parseFail("Value of predicate must be a literal")
     }
   } yield r
 
@@ -390,7 +390,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     objectFromPredicateOptional(p)(n,rdf) match {
       case Success(None) => Success(None)
       case Success(Some(BooleanLiteral(b))) => Success(Some(b))
-      case Success(Some(o)) => fail(s"value of $p must be a boolean literal. Obtained $o")
+      case Success(Some(o)) => parseFail(s"value of $p must be a boolean literal. Obtained $o")
       case Failure(e) => Failure(e)
     }
   }
@@ -401,7 +401,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       case Success(ns) => {
         nodes2iris(ns.toList) match {
           case Right(iris) => Success(iris)
-          case Left(msg) => fail(msg)
+          case Left(msg) => parseFail(msg)
         }
       }
       case Failure(f) => Failure(f)
@@ -432,7 +432,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   def fromEitherString[A](e: Either[String,A]): Try[A] =
-    e.fold(str => fail(str),v => Success(v))
+    e.fold(str => parseFail(str),v => Success(v))
 
   def noTarget: Seq[Target] = Seq()
   def noFilters: Seq[Shape] = Seq()

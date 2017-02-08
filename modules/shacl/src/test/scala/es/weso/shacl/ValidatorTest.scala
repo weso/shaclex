@@ -25,6 +25,7 @@ describe("Validator target Nodes") {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (rdf,schema)
+    info(s"attempt: $attempt")
     val (rdf,schema) = attempt.success.value
     val S = ex + "S"
     val T = ex + "T"

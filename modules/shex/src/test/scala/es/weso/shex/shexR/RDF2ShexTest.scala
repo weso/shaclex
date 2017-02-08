@@ -23,7 +23,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         |
         |:schema a sx:Schema ;
         |  sx:shapes [ a sx:NodeConstraint ;
-        |              sx:nodeKind sx:IRI
+        |              sx:nodeKind sx:iri
         |            ] .
       """.
           stripMargin

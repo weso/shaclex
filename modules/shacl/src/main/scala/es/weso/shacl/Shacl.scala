@@ -53,7 +53,7 @@ case class Schema(
         Success(toString)
       }
       case _ =>
-        Shacl2RDF.serialize(this, format)
+        new Shacl2RDF {}.serialize(this, format)
     }
   }
 }

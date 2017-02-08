@@ -90,7 +90,7 @@ trait RDF2Manifest
  def iriDataFormat2str(iri: IRI): Try[String] = {
    iri match {
      case `sht_TURTLE` => Success("TURTLE")
-     case _ => fail("Unexpected schema format: " + iri)
+     case _ => parseFail("Unexpected schema format: " + iri)
    }
  }
 
@@ -98,7 +98,7 @@ trait RDF2Manifest
    iri match {
      case `sht_SHACLC` => Success("SHACLC")
      case `sht_TURTLE` => Success("TURTLE")
-     case _ => fail("Unexpected schema format: " + iri)
+     case _ => parseFail("Unexpected schema format: " + iri)
    }
  }
 
@@ -144,7 +144,7 @@ trait RDF2Manifest
        if (noType(iri,rdf)) Success(IRIResult(iri))
        else compoundResult(iri,rdf)
      case bNode: BNodeId => compoundResult(bNode,rdf)
-     case _ => fail("Unexpected type of result " + n)
+     case _ => parseFail("Unexpected type of result " + n)
    }
   }
  }
@@ -158,9 +158,9 @@ trait RDF2Manifest
         validatedPairs <- parsePropertyValue(sht_validatedPairs, validatedPairs)(detailsNode, rdf)
         } yield NotValidResult(validationReport, validatedPairs)
       case `sht_Valid` => Success(ValidResult(List()))
-      case _ => fail(s"Unsupporte type of compound result: $iri")
+      case _ => parseFail(s"Unsupporte type of compound result: $iri")
     }
-    case Failure(e) => fail(s"Couldn't obtain rdf:type of node: $n")
+    case Failure(e) => parseFail(s"Couldn't obtain rdf:type of node: $n")
   }
  }
 
@@ -249,9 +249,9 @@ trait RDF2Manifest
  override def objectFromPredicate(p: IRI): RDFParser[RDFNode] = { (n, rdf) =>
     val ts = rdf.triplesWithSubjectPredicate(n, p)
     ts.size match {
-      case 0 => fail(s"objectFromPredicate: Not found triples with subject $n and predicate $p \nRDF: ${rdf.serialize("TURTLE")}")
+      case 0 => parseFail(s"objectFromPredicate: Not found triples with subject $n and predicate $p \nRDF: ${rdf.serialize("TURTLE")}")
       case 1 => Success(ts.head.obj)
-      case _ => fail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
+      case _ => parseFail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
     }
   }
 

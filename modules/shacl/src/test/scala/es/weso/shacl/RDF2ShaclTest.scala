@@ -26,6 +26,7 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val s = ex + "S"
     val t = ex + "T"
+    info(s"Attempt: $attempt")
     attempt.success.value should constainShapes(Set(s,t))
   }
 
