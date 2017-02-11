@@ -14,10 +14,10 @@ trait ValidationAttempt {
 }
 
 case class ScopeNodeAttempt(
-    node: IRI, 
-    shape: Shape,
-    schema: Schema,
-    result: Seq[ViolationError]
+                             node: IRI,
+                             shape: NodeShape,
+                             schema: Schema,
+                             result: Seq[ViolationError]
 ) extends ValidationAttempt {
   
   override def isValid: Boolean = {
@@ -42,10 +42,10 @@ case class ScopeNodeAttempt(
 }
 
 case class ScopeClassAttempt (
-    cls: RDFNode,
-    shape: Shape,
-    schema: Schema,
-    result: Seq[ViolationError]
+                               cls: RDFNode,
+                               shape: NodeShape,
+                               schema: Schema,
+                               result: Seq[ViolationError]
 ) extends ValidationAttempt {
   
   override def isValid = false 

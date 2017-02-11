@@ -18,8 +18,8 @@ describe("Validator target Nodes") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:targetNode :x, :y .
-                 |:T a sh:Shape; sh:targetNode :z .
+                 |:S a sh:NodeShape; sh:targetNode :x, :y .
+                 |:T a sh:NodeShape; sh:targetNode :z .
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
@@ -32,8 +32,8 @@ describe("Validator target Nodes") {
     val x = ex + "x"
     val y = ex + "y"
     val z = ex + "z"
-    val s = Shape.empty.copy(id = Some(S), targets = Seq(TargetNode(x),TargetNode(y)))
-    val t = Shape.empty.copy(id = Some(T), targets = Seq(TargetNode(z)))
+    val s = NodeShape.empty.copy(id = Some(S), targets = Seq(TargetNode(x),TargetNode(y)))
+    val t = NodeShape.empty.copy(id = Some(T), targets = Seq(TargetNode(z)))
     val targetNodes = Validator(schema).targetNodes
     targetNodes.size should be(3)
     targetNodes should contain (x,s)
@@ -46,9 +46,9 @@ describe("Validator target Nodes") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape;
+                 |:S a sh:NodeShape;
                  |   sh:targetNode :x ;
-                 |   sh:property [ sh:predicate :p ;
+                 |   sh:property [ sh:path :p ;
                  |                 sh:minCount 1
                  |               ] .
                  |:x :p 1 .
@@ -67,9 +67,9 @@ describe("Validator target Nodes") {
     val good1 = ex + "good1"
     val good2 = ex + "good2"
     val bad1 = ex + "bad1"
-    val pc = PropertyConstraint(id = None,predicate = p,
+    val pc = PropertyShape(id = None,path = PredicatePath(p),
             components= Seq(MinCount(1)))
-    val s = Shape.empty.copy(
+    val s = NodeShape.empty.copy(
         id = Some(S),
         targets = List(TargetNode(x)),
         constraints = List(pc))
@@ -92,7 +92,7 @@ describe("minCount") {
     val p = ex + "p"
     val validator = Validator(Schema.empty)
     val checked = validator.validateAll(rdf)
-    val s = Shape.empty
+    val s = NodeShape.empty
     checked.isOK should be(true)
   }
 /*

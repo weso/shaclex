@@ -2,7 +2,7 @@ package es.weso.schema
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl.{Schema => ShaclSchema, _}
+import es.weso.shacl.{Schema => ShaclSchema, NodeShape => ShaclNodeShape, _}
 import es.weso.shacl.Validator._
 import es.weso.shacl._
 import util._
@@ -21,7 +21,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     cnvResult(r,rdf)
   }
 
-  def cnvResult(r:CheckResult[ViolationError, ShapeTyping, List[(es.weso.shacl.NodeShape,String)]],
+  def cnvResult(r:CheckResult[ViolationError, ShapeTyping, List[(es.weso.shacl.NodeShapePair,String)]],
                 rdf: RDFReader): Result =
     Result(isValid = r.isOK,
            message = if (r.isOK) "Valid" else "Not valid",
@@ -30,13 +30,13 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     )
 
   def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): Solution = {
-    Solution(t.getMap.mapValues(cnvResult),
+    Solution(t.getMap.mapValues(cnvResultNodeShape),
       rdf.getPrefixMap(),
       schema.pm)
   }
 
-  def cnvResult(
-    r: Map[Shape,TypingResult[ViolationError,String]]
+  def cnvResultNodeShape(
+    r: Map[ShaclNodeShape,TypingResult[ViolationError,String]]
   ): InfoNode = {
     val (oks,bads) = r.toSeq.partition(_._2.isOK)
     InfoNode(oks.map(cnvShapeResult(_)),
@@ -46,7 +46,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   }
 
     def cnvShapeResult(
-      p:(Shape,TypingResult[ViolationError,String])
+      p:(ShaclNodeShape,TypingResult[ViolationError,String])
     ): (SchemaLabel,Explanation) = {
       val shapeLabel = p._1.id match {
         case Some(iri) => SchemaLabel(iri.getLexicalForm,schema.pm)

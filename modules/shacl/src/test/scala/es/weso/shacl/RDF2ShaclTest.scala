@@ -17,8 +17,8 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape .
-                 |:T a sh:Shape .
+                 |:S a sh:NodeShape .
+                 |:T a sh:NodeShape .
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
@@ -35,8 +35,8 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:targetNode :n1 .
-                 |:T a sh:Shape .
+                 |:S a sh:NodeShape; sh:targetNode :n1 .
+                 |:T a sh:NodeShape .
                  |""".stripMargin
     val s = ex + "S"
     val t = ex + "T"
@@ -56,8 +56,8 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:targetNode :s1, :s2 .
-                 |:T a sh:Shape; sh:targetNode :t1 .
+                 |:S a sh:NodeShape; sh:targetNode :s1, :s2 .
+                 |:T a sh:NodeShape; sh:targetNode :t1 .
                  |""".stripMargin
     val S = ex + "S"
     val T = ex + "T"
@@ -77,7 +77,11 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:property [ sh:predicate :p; sh:nodeKind sh:IRI ] .
+                 |:S a sh:NodeShape;
+                 |   sh:property [
+                 |     sh:path :p;
+                 |     sh:nodeKind sh:IRI
+                 |     ] .
                  |""".stripMargin
     val S = ex + "S"
     val p = ex + "p"
@@ -87,9 +91,9 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyConstraint(
+    val p1 = PropertyShape(
         id = None,
-        predicate = p,
+        path = PredicatePath(p),
         components = Seq(NodeKind(IRIKind)))
     shape.propertyConstraints should contain only(p1)
   }
@@ -99,12 +103,13 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:property [
-                 |   sh:predicate :p;
-                 |   sh:nodeKind sh:IRI;
-                 |   sh:minCount 1;
-                 |   sh:maxCount 1
-                 |   ] .
+                 |:S a sh:NodeShape;
+                 |   sh:property [
+                 |    sh:path :p;
+                 |    sh:nodeKind sh:IRI;
+                 |    sh:minCount 1;
+                 |    sh:maxCount 1
+                 |    ] .
                  |""".stripMargin
     val S = ex + "S"
     val p = ex + "p"
@@ -114,7 +119,9 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyConstraint(id = None, predicate = p,
+    val p1 = PropertyShape(
+      id = None,
+      path = PredicatePath(p),
         components = Seq(
             NodeKind(IRIKind),
             MinCount(1),
@@ -132,9 +139,10 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:property [
-                 |   sh:predicate :p;
-                 |   sh:minCount 1
+                 |:S a sh:NodeShape;
+                 |   sh:property [
+                 |    sh:path :p;
+                 |    sh:minCount 1
                  |   ] .
                  |""".stripMargin
     val S = ex + "S"
@@ -145,8 +153,9 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyConstraint(id = None, predicate = p,
-        components = Seq(MinCount(1))
+    val p1 = PropertyShape(id = None,
+      path = PredicatePath(p),
+      components = Seq(MinCount(1))
         )
     shape.propertyConstraints.length should be(1)
     val pc = shape.propertyConstraints.head

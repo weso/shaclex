@@ -25,7 +25,7 @@ object ViolationError {
       message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, predicate: ${attempt.predicate.getOrElse(IRI(""))}"),
       sourceConstraint = attempt.shapeIRI)
 
-  def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) =
+  def failedNodeShape(node: RDFNode, shape: NodeShape, attempt: Attempt, msg: String) =
     basic("FailedNodeShape", node, attempt, msg)
 
   def classError(focusNode: RDFNode, cls: RDFNode, attempt: Attempt) =
@@ -100,13 +100,13 @@ object ViolationError {
   def iriOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) =
     basic("iriOrLiteralKindError", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
 
-  def notError(focusNode: RDFNode, attempt: Attempt, shape: Shape) =
+  def notError(focusNode: RDFNode, attempt: Attempt, shape: NodeShape) =
     basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
-  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
+  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
     basic("andError", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
+  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def hasValueError(focusNode: RDFNode, attempt: Attempt, value: Value) =

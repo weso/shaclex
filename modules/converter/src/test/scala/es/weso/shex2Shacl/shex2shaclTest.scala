@@ -22,7 +22,7 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
       val shaclSchema: shacl.Schema =
         shacl.Schema(
           pm = PrefixMap.empty,
-          shapes = Seq(shacl.Shape.empty.copy(
+          shapes = Seq(shacl.NodeShape.empty.copy(
           id = Some(IRI("http://example.org/S")),
           constraints = Seq(
             NodeConstraint(
@@ -53,7 +53,7 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
       val shaclSchema: shacl.Schema =
         shacl.Schema(
           pm = PrefixMap.empty,
-          shapes = Seq(shacl.Shape.empty.copy(
+          shapes = Seq(shacl.NodeShape.empty.copy(
             id = Some(IRI("http://example.org/S")),
             constraints = Seq(
              NodeConstraint(

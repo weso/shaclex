@@ -8,7 +8,7 @@ import cats.syntax.show._
  * It contains the node and a shape 
  * It may contain a predicate, path or nothing
  */
-case class Attempt(nodeShape: NodeShape, path: Option[IRI]) {
+case class Attempt(nodeShape: NodeShapePair, path: Option[IRI]) {
   def node = nodeShape.node
   
   def shapeIRI = nodeShape.shape.id

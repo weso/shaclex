@@ -32,7 +32,7 @@ object Shacl2ShEx extends Converter {
     xs.foldLeft(zero)(comb)
   }
 
-  def cnvShape(s: shacl.Shape): Result[shex.ShapeExpr] = {
+  def cnvShape(s: shacl.NodeShape): Result[shex.ShapeExpr] = {
     val rs = s.constraints.toList.map(cnvConstraint(_)).sequence
     rs.map(ses => ses.size match {
       case 1 => ses.head
@@ -41,7 +41,7 @@ object Shacl2ShEx extends Converter {
     })
   }
   
-  def cnvConstraint(c: shacl.Constraint): Result[shex.ShapeExpr] = 
+  def cnvConstraint(c: shacl.Shape): Result[shex.ShapeExpr] =
      c match {
     case nc: shacl.NodeConstraint => cnvNodeConstraint(nc)
     case _ => err(s"cnvConstraint: Unimplemented $c")

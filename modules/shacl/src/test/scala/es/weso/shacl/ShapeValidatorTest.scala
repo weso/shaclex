@@ -11,12 +11,15 @@ class ShapeValidatorTest extends
   FunSpec with Matchers with TryValues with OptionValues {
 
 describe("Shapes") {
+  it("Should validate single shape") {
     val ex = IRI("http://example.org/")
-    val str = """|@prefix : <http://example.org/>
+    val str ="""|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape; sh:scopeNode :x;
-                 |   sh:property [sh:predicate :p; sh:minCount 1] .
+                 |:S a sh:NodeShape;
+                 |   sh:targetNode :x;
+                 |   sh:property [sh:path :p;
+                 |   sh:minCount 1] .
                  |:x :p "a" .
                  |""".stripMargin
     val attempt = for {
@@ -29,6 +32,7 @@ describe("Shapes") {
     val shape = schema.shape(s).value
     val checker = validator.shapeChecker(shape)
 //    val result = checker.
-//    result.isRight should be(true)
+    //    result.isRight should be(true)
+    }
  }
 }

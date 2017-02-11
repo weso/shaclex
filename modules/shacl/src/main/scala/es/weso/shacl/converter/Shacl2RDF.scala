@@ -34,7 +34,7 @@ class Shacl2RDF extends RDFSaver {
     } yield ()
   }
 
-  def shape(shape: Shape): RDFSaver[RDFNode] = for {
+  def shape(shape: NodeShape): RDFSaver[RDFNode] = for {
     shapeNode <- makeShapeId(shape.id)
     _ <- targets(shapeNode, shape.targets)
     _ <- constraints(shapeNode, shape.constraints)
@@ -44,7 +44,7 @@ class Shacl2RDF extends RDFSaver {
 
   def makeShapeId(v: Option[IRI]): RDFSaver[RDFNode] = for {
     node <- makeId(v)
-    _ <- addTriple(node,rdf_type,sh_Shape)
+    _ <- addTriple(node,rdf_type,sh_NodeShape)
   } yield(node)
 
   def targets(id: RDFNode, ts: Seq[Target]): RDFSaver[Unit] =
@@ -57,7 +57,7 @@ class Shacl2RDF extends RDFSaver {
     case TargetObjectsOf(node) => addTriple(id,sh_targetObjectsOf,node)
   }
 
-  def constraints(id: RDFNode, ts: Seq[Constraint]): RDFSaver[Unit] =
+  def constraints(id: RDFNode, ts: Seq[Shape]): RDFSaver[Unit] =
     saveList(ts.toList, constraint(id))
 
   def closed(id: RDFNode, b: Boolean): RDFSaver[Unit] =
@@ -72,15 +72,20 @@ class Shacl2RDF extends RDFSaver {
     } else
       State.pure(())
 
-  def constraint(id: RDFNode)(t: Constraint): RDFSaver[Unit] = t match {
-    case PropertyConstraint(i,pred,cs) => for {
+  def constraint(id: RDFNode)(t: Shape): RDFSaver[Unit] = t match {
+    case PropertyShape(i,path,cs) => for {
       node <- makeShapeId(i)
+      pathNode <- makePath(path)
       _ <- addTriple(id, sh_property, node)
-      _ <- addTriple(node,sh_predicate,pred)
+      _ <- addTriple(node,sh_path,pathNode)
       _ <- saveList(cs.toList, component(node))
     } yield ()
-    case pc: PathPropertyConstraint => ???
     case NodeConstraint(cs) => saveList(cs, component(id))
+  }
+
+  def makePath(path: Path): RDFSaver[RDFNode] = path match {
+    case PredicatePath(iri) => State.pure(iri)
+    case _ => throw new Exception(s"Not implemented path yet: $path")
   }
 
   def component(id: RDFNode)(c: Component): RDFSaver[Unit] = c match {

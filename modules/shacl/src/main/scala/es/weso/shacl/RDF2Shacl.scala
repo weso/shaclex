@@ -27,7 +27,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
   // Keep track of parsed shapes
-  val parsedShapes = collection.mutable.Map[RDFNode,Shape]()
+  val parsedShapes = collection.mutable.Map[RDFNode,NodeShape]()
 
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap
@@ -40,19 +40,19 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     } yield (Schema(pm,shapes))
   }
 
-  def shapes(rdf: RDFReader): Try[Seq[Shape]] = {
-   val shape_nodes = subjectsWithType(sh_Shape, rdf)
+  def shapes(rdf: RDFReader): Try[Seq[NodeShape]] = {
+   val shape_nodes = subjectsWithType(sh_NodeShape, rdf)
    filterSuccess(shape_nodes.toSeq.map (node => shape(node,rdf)))
   }
 
-  def shape(node: RDFNode, rdf: RDFReader): Try[Shape] = {
+  def shape(node: RDFNode, rdf: RDFReader): Try[NodeShape] = {
     if (parsedShapes.contains(node)) Success(parsedShapes(node))
     else {
       val maybeId = node match {
         case iri: IRI => Some(iri)
         case _ => None
       }
-      val shape = Shape.empty
+      val shape = NodeShape.empty
       parsedShapes += (node -> shape)
       for {
         targets <- targets(node, rdf)
@@ -65,7 +65,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
         val newShape = shape.copy(
           id = maybeId,
           targets = targets,
-          filters = filters,
           constraints = constraints,
           closed = closed.getOrElse(false),
           ignoredProperties = ignoredIRIs
@@ -145,12 +144,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     case _ => parseFail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
 
-  def filters: RDFParser[Seq[Shape]] = (n,rdf) => {
+  def filters: RDFParser[Seq[NodeShape]] = (n, rdf) => {
     // Todo add support for sh:filter
     Success(Seq())
   }
 
-  def constraints: RDFParser[Seq[Constraint]] = {
+  def constraints: RDFParser[Seq[Shape]] = {
     combineAll(propertyConstraints, nodeConstraints)
   }
 
@@ -160,7 +159,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
    } yield cs.map(c => NodeConstraint(components = List(c)))
   }
 
-  def propertyConstraints: RDFParser[Seq[Constraint]] = (n,rdf) => {
+  def propertyConstraints: RDFParser[Seq[Shape]] = (n, rdf) => {
     val attempts = for {
       ps <- objectsFromPredicate(sh_property)(n,rdf)
     } yield {
@@ -170,13 +169,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     attempts.flatten
   }
 
-  def propertyConstraint: RDFParser[PropertyConstraint] = (n,rdf) => {
+  def propertyConstraint: RDFParser[PropertyShape] = (n, rdf) => {
     val id = if (n.isIRI) Some(n.toIRI) else None
     for {
-      predicate <- iriFromPredicate(sh_predicate)(n,rdf)
+      predicate <- iriFromPredicate(sh_path)(n,rdf)
       components <- components(n,rdf)
     } yield {
-      PropertyConstraint(id, predicate, components)
+      PropertyShape(id, PredicatePath(predicate), components)
     }
   }
 
@@ -251,7 +250,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
 
-  def getShape(node: RDFNode): RDFParser[Shape] = (n,rdf) =>
+  def getShape(node: RDFNode): RDFParser[NodeShape] = (n, rdf) =>
     if (parsedShapes.contains(node)) Success(parsedShapes(node))
     else shape(node,rdf)
 
@@ -435,7 +434,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     e.fold(str => parseFail(str),v => Success(v))
 
   def noTarget: Seq[Target] = Seq()
-  def noFilters: Seq[Shape] = Seq()
-  def noConstraints: Seq[Constraint] = Seq()
+  def noFilters: Seq[NodeShape] = Seq()
+  def noConstraints: Seq[Shape] = Seq()
 
 }

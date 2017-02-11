@@ -1,7 +1,7 @@
 package es.weso.shacl
 
-case class Evidences(ls: List[(NodeShape,String)]) {
-  def addEvidence(ns: NodeShape, msg:String): Evidences = {
+case class Evidences(ls: List[(NodeShapePair,String)]) {
+  def addEvidence(ns: NodeShapePair, msg:String): Evidences = {
     Evidences((ns,msg) :: ls)
   }
   

@@ -24,22 +24,22 @@ object ShEx2Shacl extends Converter {
     pm.pm.map{ case (prefix,value) => (prefix.str,value) }
   }
 
-  def getShaclShapes(schema: shex.Schema): Result[Seq[shacl.Shape]] = {
+  def getShaclShapes(schema: shex.Schema): Result[Seq[shacl.NodeShape]] = {
     val shapesMap: Map[shex.ShapeLabel,shex.ShapeExpr] = schema.shapes.getOrElse(Map())
-    val zero: Result[Seq[shacl.Shape]] = ok(Seq())
+    val zero: Result[Seq[shacl.NodeShape]] = ok(Seq())
     def comb(
-      rs: Result[Seq[shacl.Shape]],
-      pair: (shex.ShapeLabel,shex.ShapeExpr)): Result[Seq[shacl.Shape]] = {
+              rs: Result[Seq[shacl.NodeShape]],
+              pair: (shex.ShapeLabel,shex.ShapeExpr)): Result[Seq[shacl.NodeShape]] = {
       val (shapeLabel,shapeExpr) = pair
       val r1: Result[IRI] = schema.resolveShapeLabel(shapeLabel).toValidatedNel
-      val r2: Result[shacl.Shape] = cnvShapeExpr(shapeExpr, schema)
-      val r : Result[Shape] = (r1 |@| r2).map((iri,shape) => shape.addId(iri))
+      val r2: Result[shacl.NodeShape] = cnvShapeExpr(shapeExpr, schema)
+      val r : Result[NodeShape] = (r1 |@| r2).map((iri, shape) => shape.addId(iri))
       r.product(rs).map{ case (x,xs) => x +: xs }
     }
     shapesMap.foldLeft(zero)(comb)
   }
 
-  def cnvShapeExpr(se: shex.ShapeExpr, schema: shex.Schema): Result[shacl.Shape] =
+  def cnvShapeExpr(se: shex.ShapeExpr, schema: shex.Schema): Result[shacl.NodeShape] =
     se match {
       case s: shex.ShapeAnd => cnvShapeAnd(s,schema)
       case s: shex.ShapeOr => cnvShapeOr(s,schema)
@@ -50,35 +50,35 @@ object ShEx2Shacl extends Converter {
       case s: shex.ShapeExternal => err(s"mkShape: Not implemented $s")
     }
 
-  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.Shape] = {
+  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.NodeShape] = {
     shapeAnd.shapeExprs.
          map(cnvShapeExpr(_,schema)).
          sequence.
-         map(shapes => shacl.Shape.empty.copy(
+         map(shapes => shacl.NodeShape.empty.copy(
            constraints =
              Seq(NodeConstraint(List(And(shapes)))
             )))
   }
 
-  def cnvShapeOr(shapeOr: shex.ShapeOr, schema: shex.Schema): Result[shacl.Shape] = {
+  def cnvShapeOr(shapeOr: shex.ShapeOr, schema: shex.Schema): Result[shacl.NodeShape] = {
     shapeOr.shapeExprs.
          map(cnvShapeExpr(_,schema)).
          sequence.
-         map(shapes => shacl.Shape.empty.copy(
+         map(shapes => shacl.NodeShape.empty.copy(
            constraints =
              Seq(NodeConstraint(List(Or(shapes)))
             )))
   }
 
-  def cnvShapeNot(shapeNot: shex.ShapeNot, schema: shex.Schema): Result[shacl.Shape] = {
+  def cnvShapeNot(shapeNot: shex.ShapeNot, schema: shex.Schema): Result[shacl.NodeShape] = {
     cnvShapeExpr(shapeNot.shapeExpr,schema).
-       map(shape => shacl.Shape.empty.copy(
+       map(shape => shacl.NodeShape.empty.copy(
           constraints =
             Seq(NodeConstraint(List(Not(shape)))
           )))
   }
 
-  def cnvShape(shape: shex.Shape, schema: shex.Schema): Result[shacl.Shape] = {
+  def cnvShape(shape: shex.Shape, schema: shex.Schema): Result[shacl.NodeShape] = {
     // TODO: Error handling when virtual, inherit, extra, semActs are defined...
     shape.expression match {
      case None => err(s"No expression in shape $shape")
@@ -86,7 +86,7 @@ object ShEx2Shacl extends Converter {
     }
   }
 
-  def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema): Result[shacl.Shape] = {
+  def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema): Result[shacl.NodeShape] = {
     te match {
      case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf conversion")
      case e: shex.SomeOf => err(s"cnvTripleExpr: Not implemented SomeOf conversion")
@@ -95,24 +95,29 @@ object ShEx2Shacl extends Converter {
     }
   }
 
-  def cnvTripleConstraint(tc: shex.TripleConstraint, schema: shex.Schema): Result[shacl.Shape] = {
-    if (tc.inverse) err(s"cnvTripleConstraint: Not implemented inverse")
+  def cnvTripleConstraint(
+                           tc: shex.TripleConstraint,
+                           schema: shex.Schema
+                         ): Result[shacl.NodeShape] = {
+    if (tc.negated)
+      err(s"cnvTripleConstraint: Not implemented negated")
     else {
-     if (tc.negated) err(s"cnvTripleConstraint: Not implemented negated")
-     val pc: Result[PropertyConstraint] =
-       mkPropertyConstraint(tc.predicate,
+    val path = if (!tc.inverse) PredicatePath(tc.predicate)
+               else InversePath(tc.predicate)
+     val pc: Result[PropertyShape] =
+       mkPropertyShape(path,
          tc.valueExpr, tc.min, tc.max, schema)
-    ???
 //     ok(Shape.empty.copy(constraints = Seq(pc)))
-    }
+    ??? // pc
+   }
   }
 
- def mkPropertyConstraint(
-   predicate: IRI,
+ def mkPropertyShape(
+   path: Path,
    valueExpr: Option[shex.ShapeExpr],
    min: Int,
    max: shex.Max,
-   schema: shex.Schema): Result[PropertyConstraint] = {
+   schema: shex.Schema): Result[PropertyShape] = {
    val minComponent: List[Component] =
      if (min == Shacl.defaultMin) List()
      else List(MinCount(min))
@@ -123,16 +128,16 @@ object ShEx2Shacl extends Converter {
      }
 //     max.getOrElse(Max(1)).map
    val components = minComponent ++ maxComponent
-   ok(PropertyConstraint(None,predicate,components))
+   ok(PropertyShape(None,path,components))
  }
 
   def cnvNodeConstraint(
        nc: shex.NodeConstraint,
-       schema: shex.Schema): Result[shacl.Shape] = {
+       schema: shex.Schema): Result[shacl.NodeShape] = {
     val nkShape: Result[List[Component]] =
       nc.nodeKind.map(cnvNodeKind(_)).sequence.map(_.toList)
     nkShape.map(nks =>
-       shacl.Shape.empty.copy(
+       shacl.NodeShape.empty.copy(
          constraints = Seq(NodeConstraint(nks))))
   }
 
