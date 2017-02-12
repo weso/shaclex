@@ -105,7 +105,8 @@ case class RDFAsJenaModel(model: Model)
   override def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode] = {
     val jenaNode : JenaRDFNode = JenaMapper.rdfNode2JenaNode(node, model)
     val jenaPath: Path = JenaMapper.path2JenaPath(path,model)
-    JenaUtils.getValuesFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
+    val nodes = JenaUtils.getValuesFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
+    nodes
   }
 
   def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {

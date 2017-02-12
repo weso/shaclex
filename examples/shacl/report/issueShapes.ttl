@@ -7,31 +7,39 @@
 
 
 ex:IssueShape
-	a sh:Shape ;
-	sh:scopeClass ex:Issue;
+	a sh:NodeShape ;
+	sh:targetClass ex:Issue;
 	sh:property [
-		sh:predicate ex:state ;
+		sh:path ex:state ;
 		sh:in (ex:unassigned ex:assigned) ;
 		sh:minCount 1 ;
 		sh:maxCount 1 ;
 	] ;
 	sh:property [
-		sh:predicate ex:reportedBy ;
-		sh:valueShape ex:UserShape ;
+		sh:path ex:reportedBy ;
+		sh:node ex:UserShape ;
 		sh:minCount 1 ;
 		sh:maxCount 1 ;
 	] .
 
 ex:UserShape
-	a sh:Shape ;
+	a sh:NodeShape ;
 	sh:property [
-		sh:predicate foaf:name ;
+		sh:path foaf:name ;
 		sh:datatype xsd:string ;
 		sh:minCount 1 ;
 		sh:maxCount 1 ;
 	] ;
 	sh:property [
-		sh:predicate foaf:mbox ;
+		sh:path foaf:mbox ;
 		sh:nodeKind sh:IRI ;
 		sh:minCount 1 ;
 	] .
+	
+	
+ex:issue1 a ex:Issue ;
+  ex:state ex:assigned ;
+  ex:reportedBy ex:john .
+
+ex:john foaf:name "John" ;
+   foaf:mbox <mailto:john@gmail.com> .  

@@ -2,25 +2,25 @@
 @prefix sh: <http://www.w3.org/ns/shacl#>
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 
-:S a sh:Shape; 
+:S a sh:NodeShape; 
    sh:targetNode :x ;
    sh:property [
-     sh:predicate :t; 
-     sh:shape :T
+     sh:path :t; 
+     sh:node :T
    ]; 
    sh:property [
-     sh:predicate :u;
-     sh:shape :U
+     sh:path :u;
+     sh:node :U
    ] .
-:T a sh:Shape;
+:T a sh:NodeShape;
    sh:property [
-     sh:predicate :p; 
+     sh:path :p; 
      sh:datatype xsd:integer
    ] .
-:U a sh:Shape;
+:U a sh:NodeShape;
    sh:property [
-     sh:predicate :t; 
-     sh:shape :T
+     sh:path :t; 
+     sh:node :T
    ] .   
 
 :x :t :t1;

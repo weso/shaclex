@@ -7,6 +7,10 @@ import scala.util._
 import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.triples.RDFTriple
+import cats._
+import cats.data._
+import cats.implicits._
+
 
 /**
  * Exceptions raised by the RDFParser
@@ -241,8 +245,8 @@ trait RDFParser {
    ): RDFParser[Seq[A]] = { (_, rdf) =>
     {
       val empty: Seq[A] = List()
-      nodes.foldLeft(Success(empty)) {
-        case (s, node) => {
+      nodes.foldRight(Success(empty)) {
+        case (node, s) => {
           s match {
             case Success(rs) => {
               parser(node, rdf) match {
@@ -349,7 +353,94 @@ trait RDFParser {
     }
   }
 
- // TODO: This method could be removed
+/**
+ * Combine a sequence of RDFParsers
+ *
+ */
+  def combineAll[A](ps: RDFParser[Seq[A]]*): RDFParser[Seq[A]] = {
+    val zero : RDFParser[Seq[A]] = (_,_) => Success(Seq())
+    ps.foldLeft(zero)(combine)
+  }
+
+  def combine[A](p1: RDFParser[Seq[A]], p2: RDFParser[Seq[A]]): RDFParser[Seq[A]] = (n,rdf) => {
+    for {
+      vs1 <- p1(n,rdf)
+      vs2 <- p2(n,rdf)
+    } yield {
+      vs1 ++ vs2
+    }
+  }
+
+  def rdfListForPredicateOptional(p: IRI): RDFParser[List[RDFNode]] = (n,rdf) => for {
+    maybeLs <- optional(rdfListForPredicate(p))(n,rdf)
+  } yield maybeLs.fold(List[RDFNode]())(ls => ls)
+
+  def literalFromPredicate(p: IRI): RDFParser[Literal] = (n,rdf) => for {
+    o <- objectFromPredicate(p)(n,rdf)
+    r <- o match {
+      case l: Literal => Success(l)
+      case _ => parseFail("Value of predicate must be a literal")
+    }
+  } yield r
+
+  def booleanFromPredicate(p: IRI): RDFParser[Boolean] = (n,rdf) => for {
+    lit <- literalFromPredicate(p)(n,rdf)
+    b <- lit match {
+      case BooleanLiteral(bool) => Success(bool)
+      case _ => parseFail(s"Expected boolean for predicate $p but obtained $lit")
+    }
+  } yield b
+
+  def booleanFromPredicateOptional(p: IRI): RDFParser[Option[Boolean]] = (n,rdf) => {
+    objectFromPredicateOptional(p)(n,rdf) match {
+      case Success(None) => Success(None)
+      case Success(Some(BooleanLiteral(b))) => Success(Some(b))
+      case Success(Some(o)) => parseFail(s"value of $p must be a boolean literal. Obtained $o")
+      case Failure(e) => Failure(e)
+    }
+  }
+
+  def irisFromPredicate(p: IRI): RDFParser[List[IRI]] = (n,rdf) => {
+    val r = objectsFromPredicate(p)(n,rdf)
+    r match {
+      case Success(ns) => {
+        nodes2iris(ns.toList) match {
+          case Right(iris) => Success(iris)
+          case Left(msg) => parseFail(msg)
+        }
+      }
+      case Failure(f) => Failure(f)
+    }
+  }
+
+  def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = {
+    sequenceEither(ns.map(node2IRI(_)))
+  }
+
+  // Todo: Use "sequence" when I find why it gives a type error...
+  def sequenceEither[E,A](xs: List[Either[E,A]]): Either[E,List[A]] = {
+    val zero: Either[E,List[A]] = Either.right(List())
+    def next(r: Either[E,List[A]], x: Either[E,A]): Either[E,List[A]] =
+      x match {
+        case Left(e) => Left(e)
+        case Right(v) => r match {
+          case Left(e) => Left(e)
+          case Right(vs) => Right(v :: vs)
+        }
+      }
+    xs.foldLeft(zero)(next)
+  }
+
+  def node2IRI(node: RDFNode): Either[String,IRI] = node match {
+    case (i: IRI) => Right(i)
+    case _ => Left(s"$node is not an IRI\n")
+  }
+
+  def fromEitherString[A](e: Either[String,A]): Try[A] =
+    e.fold(str => parseFail(str),v => Success(v))
+
+
+  // TODO: This method could be removed
  def hasPredicateWithSubject(n: RDFNode, p: IRI, rdf: RDFReader): Boolean = {
     rdf.triplesWithSubjectPredicate(n, p).size > 0
   }

@@ -206,8 +206,8 @@ case class MaxInclusive(value: Literal) extends Component
 case class MinLength(value: Int) extends Component
 case class MaxLength(value: Int) extends Component
 case class Pattern(pattern: String, flags: Option[String]) extends Component
-case class Stem(v: String) extends Component
 case class UniqueLang(value: Boolean) extends Component
+case class LanguageIn(langs: List[String]) extends Component
 case class Equals(p: IRI) extends Component
 case class Disjoint(p: IRI) extends Component
 case class LessThan(p: IRI) extends Component
@@ -216,7 +216,7 @@ case class Or(shapes: List[NodeShape]) extends Component
 case class And(shapes: List[NodeShape]) extends Component
 case class Not(shape: NodeShape) extends Component
 case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component
-case class ShapeComponent(shape: NodeShape) extends Component
+case class NodeComponent(shape: NodeShape) extends Component
 case class HasValue(value: Value) extends Component
 case class In(list: List[Value]) extends Component
 

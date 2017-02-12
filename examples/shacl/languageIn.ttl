@@ -1,0 +1,22 @@
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+:S	a sh:NodeShape; 
+    sh:property [ 
+	 sh:path :p; 
+	 sh:languageIn ("es" "en") ;
+	] .
+ 
+:NoS a sh:NodeShape;
+     sh:not :S .
+
+:S   sh:targetNode :x .
+:NoS sh:targetNode :y .	 
+:x a :S ;
+   :p "hi"@en, "hola"@es .
+   
+:y a :S ;
+   :p "alo"@cn .
+   

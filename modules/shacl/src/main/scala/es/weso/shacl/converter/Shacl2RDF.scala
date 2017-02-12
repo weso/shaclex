@@ -136,8 +136,11 @@ class Shacl2RDF extends RDFSaver {
                                case Some(f) => addTriple(id,sh_flags,StringLiteral(f))
                                case None => State.pure(())
                              })
-    case Stem(s) => addTriple(id,sh_stem,StringLiteral(s))
     case UniqueLang(b) => addTriple(id,sh_uniqueLang,BooleanLiteral(b))
+    case LanguageIn(langs) => for {
+      ls <- saveToRDFList(langs,(lang: String) => State.pure(StringLiteral(lang)))
+      _ <- addTriple(id,sh_languageIn,ls)
+    } yield ()
     case Equals(p) => addTriple(id,sh_equals,p)
     case Disjoint(p) => addTriple(id,sh_disjoint,p)
     case LessThan(p) => addTriple(id,sh_lessThan,p)
@@ -159,9 +162,9 @@ class Shacl2RDF extends RDFSaver {
       nodeList <- saveToRDFList(ignoredPs,(iri: IRI) => State.pure(iri))
       _ <- addTriple(id,sh_ignoredProperties,nodeList)
     } yield ()
-    case ShapeComponent(s) => for {
+    case NodeComponent(s) => for {
       nodeS <- shape(s)
-      _ <- addTriple(id,sh_shape,nodeS)
+      _ <- addTriple(id,sh_node,nodeS)
     } yield ()
     case HasValue(v) => addTriple(id,sh_hasValue,v.rdfNode)
     case In(vs) => for {

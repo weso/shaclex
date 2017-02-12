@@ -3,15 +3,15 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-:S a sh:Shape; 
+:S a sh:NodeShape; 
    sh:targetNode :x ;
    sh:property [
-     sh:predicate :p; 
+     sh:path :p; 
      sh:minExclusive 10 ;
      sh:maxExclusive 20 
    ] ;
    sh:property [
-     sh:predicate :q; 
+     sh:path :q; 
      sh:minInclusive 10 ;
      sh:maxInclusive 20 
    ].

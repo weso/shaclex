@@ -57,7 +57,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       parsedShapes += (node -> shape)
       for {
         targets <- targets(node, rdf)
-        filters <- filters(node, rdf)
         constraints <- constraints(node, rdf)
         closed <- booleanFromPredicateOptional(sh_closed)(node, rdf)
         ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(node, rdf)
@@ -145,11 +144,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     case _ => parseFail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
 
-  def filters: RDFParser[Seq[NodeShape]] = (n, rdf) => {
-    // Todo add support for sh:filter
-    Success(Seq())
-  }
-
   def constraints: RDFParser[Seq[Shape]] = {
     combineAll(propertyConstraints, nodeConstraints)
   }
@@ -225,7 +219,9 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def sequencePath: RDFParser[SHACLPath] = (n,rdf) => for {
     pathNodes <- rdfList(n,rdf)
     paths <- group(parsePath,pathNodes)(n,rdf)
-  } yield SequencePath(paths)
+  } yield {
+    SequencePath(paths)
+  }
 
   def components: RDFParser[Seq[Component]] =
     anyOf(
@@ -235,10 +231,10 @@ object RDF2Shacl extends RDFParser with LazyLogging {
         minCount, maxCount,
         minExclusive, maxExclusive, minInclusive, maxInclusive,
         minLength, maxLength,
-        pattern,
+        pattern, languageIn, uniqueLang,
         equals, disjoint, lessThan, lessThanOrEquals,
         or, and, not,
-        shapeComponent,
+        nodeComponent,
         hasValue,
         in
     )
@@ -257,6 +253,18 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     pat <- stringFromPredicate(sh_pattern)(n,rdf)
     flags <- stringFromPredicateOptional(sh_flags)(n,rdf)
   } yield Pattern(pat,flags)
+
+  def languageIn : RDFParser[LanguageIn] = (n,rdf) => for {
+    rs <- rdfListForPredicate(sh_languageIn)(n,rdf)
+    ls <- rs.map(n => n match {
+      case StringLiteral(str) => Success(str)
+      case _ => parseFail(s"Expected to be a string literal but got $n")
+    }).sequence
+  } yield LanguageIn(ls)
+
+  def uniqueLang : RDFParser[UniqueLang] = (n,rdf) => for {
+    b <- booleanFromPredicate(sh_uniqueLang)(n,rdf)
+  } yield UniqueLang(b)
 
   def equals = parsePredicateComparison(sh_equals,Equals)
   def disjoint = parsePredicateComparison(sh_disjoint,Disjoint)
@@ -289,12 +297,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     ls.map(v => p(v)).sequence
   }
 
-  def shapeComponent: RDFParser[ShapeComponent] = (n,rdf) => {
+  def nodeComponent: RDFParser[NodeComponent] = (n, rdf) => {
     for {
-     nodeShape <- objectFromPredicate(sh_shape)(n,rdf)
+     nodeShape <- objectFromPredicate(sh_node)(n,rdf)
      s <- getShape(nodeShape)(n,rdf)
     } yield {
-      ShapeComponent(s)
+      NodeComponent(s)
     }
   }
 
@@ -336,21 +344,15 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   def nodeKind: RDFParser[Component] = (n,rdf) => {
-    logger.debug(s"Searching for nodeKind on ${n}")
     for {
       os <- objectsFromPredicate(sh_nodeKind)(n,rdf)
-      nk <- {
-        logger.debug(s"Objects with nodeKind: $os")
-        parseNodeKind(os)
-      }
+      nk <- parseNodeKind(os)
     } yield {
-      logger.debug(s"Nodekind found: $nk")
       nk
     }
   }
 
   def parseNodeKind(os: Set[RDFNode]): Try[Component] = {
-    logger.debug(s"ParseNodeKind($os)")
     os.size match {
       case 0 => parseFail("no objects of nodeKind property")
       case 1 => {
@@ -398,91 +400,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     iri <- iriFromPredicate(p)(n,rdf)
   } yield maker(iri)
 
-/////////////////////////////////////////////////////////
-
-
-  // TODO: Move these methods to SRDF project
-
-  /**
-   * Combine a sequence of RDFParsers
-   *
-   */
-  def combineAll[A](ps: RDFParser[Seq[A]]*): RDFParser[Seq[A]] = {
-    val zero : RDFParser[Seq[A]] = (_,_) => Success(Seq())
-    ps.foldLeft(zero)(combine)
-  }
-
-  def combine[A](p1: RDFParser[Seq[A]], p2: RDFParser[Seq[A]]): RDFParser[Seq[A]] = (n,rdf) => {
-    for {
-      vs1 <- p1(n,rdf)
-      vs2 <- p2(n,rdf)
-    } yield {
-      vs1 ++ vs2
-    }
-  }
-
-  def rdfListForPredicateOptional(p: IRI): RDFParser[List[RDFNode]] = for {
-    maybeLs <- optional(rdfListForPredicate(p))
-  } yield maybeLs.fold(List[RDFNode]())(ls => ls)
-
-  def literalFromPredicate(p: IRI): RDFParser[Literal] = (n,rdf) => for {
-    o <- objectFromPredicate(p)(n,rdf)
-    r <- o match {
-      case l: Literal => Success(l)
-      case _ => parseFail("Value of predicate must be a literal")
-    }
-  } yield r
-
-  def booleanFromPredicateOptional(p: IRI): RDFParser[Option[Boolean]] = (n,rdf) => {
-    objectFromPredicateOptional(p)(n,rdf) match {
-      case Success(None) => Success(None)
-      case Success(Some(BooleanLiteral(b))) => Success(Some(b))
-      case Success(Some(o)) => parseFail(s"value of $p must be a boolean literal. Obtained $o")
-      case Failure(e) => Failure(e)
-    }
-  }
-
-  def irisFromPredicate(p: IRI): RDFParser[List[IRI]] = (n,rdf) => {
-    val r = objectsFromPredicate(p)(n,rdf)
-    r match {
-      case Success(ns) => {
-        nodes2iris(ns.toList) match {
-          case Right(iris) => Success(iris)
-          case Left(msg) => parseFail(msg)
-        }
-      }
-      case Failure(f) => Failure(f)
-    }
-  }
-
-  def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = {
-    sequenceEither(ns.map(node2IRI(_)))
-  }
-
-  // Todo: Use "sequence" when I find why it gives a type error...
-  def sequenceEither[E,A](xs: List[Either[E,A]]): Either[E,List[A]] = {
-    val zero: Either[E,List[A]] = Either.right(List())
-    def next(r: Either[E,List[A]], x: Either[E,A]): Either[E,List[A]] =
-      x match {
-        case Left(e) => Left(e)
-        case Right(v) => r match {
-          case Left(e) => Left(e)
-          case Right(vs) => Right(v :: vs)
-        }
-      }
-    xs.foldLeft(zero)(next)
-  }
-
-  def node2IRI(node: RDFNode): Either[String,IRI] = node match {
-    case (i: IRI) => Right(i)
-    case _ => Left(s"$node is not an IRI\n")
-  }
-
-  def fromEitherString[A](e: Either[String,A]): Try[A] =
-    e.fold(str => parseFail(str),v => Success(v))
-
   def noTarget: Seq[Target] = Seq()
-  def noFilters: Seq[NodeShape] = Seq()
   def noConstraints: Seq[Shape] = Seq()
 
 }

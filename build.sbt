@@ -170,7 +170,13 @@ lazy val manifest =
 lazy val srdf =
   project.in(file("modules/srdf")).
   settings(commonSettings: _*).
-  settings(publishSettings: _*)
+  settings(publishSettings: _*).
+  settings(
+      libraryDependencies ++= Seq(
+        "org.typelevel" %% "cats" % catsVersion
+      )
+  )
+
 
 lazy val rbe =
   project.in(file("modules/rbe")).

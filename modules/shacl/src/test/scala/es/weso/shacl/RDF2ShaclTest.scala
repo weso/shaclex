@@ -4,7 +4,7 @@ import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
-import es.weso.rdf.path.PredicatePath
+import es.weso.rdf.path.{InversePath, PredicatePath}
 
 import util._
 
@@ -136,10 +136,10 @@ describe("RDf2Shacl Syntax") {
     pc.components should contain only(NodeKind(IRIKind), MinCount(1), MaxCount(1))
   }
 
-    it("should be able to get the property constraint with minCount cardinality only") {
-    val ex = IRI("http://example.org/")
-    val str = """|@prefix : <http://example.org/>
-                 |@prefix sh: <http://www.w3.org/ns/shacl#>
+  it("should be able to get the property constraint with minCount cardinality only") {
+    val ex = "http://example.org/"
+    val str = s"""|prefix : <$ex>
+                 |prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:NodeShape;
                  |   sh:property [
@@ -147,22 +147,45 @@ describe("RDf2Shacl Syntax") {
                  |    sh:minCount 1
                  |   ] .
                  |""".stripMargin
-    val S = ex + "S"
-    val p = ex + "p"
+    val S = IRI(ex) + "S"
+    val p = IRI(ex) + "p"
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyShape(id = None,
-      path = PredicatePath(p),
-      components = Seq(MinCount(1))
-        )
     shape.propertyConstraints.length should be(1)
     val pc = shape.propertyConstraints.head
     pc.id should be(None)
     pc.predicate should be(p)
+    pc.components should contain only(MinCount(1))
+  }
+
+  it("should be able to get a path") {
+    val ex = "http://example.org/"
+    val str = s"""|prefix : <$ex>
+                 |prefix sh: <http://www.w3.org/ns/shacl#>
+                 |
+                 |:S a sh:NodeShape;
+                 |   sh:property [
+                 |    sh:path [ sh:inversePath :p] ;
+                 |    sh:minCount 1
+                 |   ] .
+                 |""".stripMargin
+    val S = IRI(ex) + "S"
+    val p = IRI(ex) + "p"
+    val attempt = for {
+      rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
+      schema <- RDF2Shacl.getShacl(rdf)
+    } yield (schema)
+    val schema = attempt.success.value
+    val shape = schema.shape(S).value
+    val ip = InversePath(PredicatePath(p))
+    shape.propertyConstraints.length should be(1)
+    val pc = shape.propertyConstraints.head
+    pc.id should be(None)
+    pc.path should be(ip)
     pc.components should contain only(MinCount(1))
   }
 }

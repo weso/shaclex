@@ -3,6 +3,7 @@ package es.weso.shex.converter
 import es.weso._
 import es.weso.shacl._
 import es.weso.rdf.nodes._
+import es.weso.rdf.path._
 import es.weso.rdf.PrefixMap
 import cats._
 import cats.data._
@@ -103,7 +104,7 @@ object ShEx2Shacl extends Converter {
       err(s"cnvTripleConstraint: Not implemented negated")
     else {
     val path = if (!tc.inverse) PredicatePath(tc.predicate)
-               else InversePath(tc.predicate)
+               else InversePath(PredicatePath(tc.predicate))
      val pc: Result[PropertyShape] =
        mkPropertyShape(path,
          tc.valueExpr, tc.min, tc.max, schema)
@@ -113,7 +114,7 @@ object ShEx2Shacl extends Converter {
   }
 
  def mkPropertyShape(
-   path: Path,
+   path: SHACLPath,
    valueExpr: Option[shex.ShapeExpr],
    min: Int,
    max: shex.Max,

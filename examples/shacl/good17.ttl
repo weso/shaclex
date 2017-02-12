@@ -3,10 +3,13 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-:S	a sh:Shape ;
+:S	a sh:NodeShape ;
     sh:targetNode :x;
     sh:targetClass :P ; 
-	sh:property [ sh:predicate :p; sh:datatype xsd:string; sh:minCount 1 ];
+	sh:property [ 
+	 sh:path :p; 
+	 sh:datatype xsd:string; 
+	 sh:minCount 1 ];
  .
 	
 :x :p "1" .

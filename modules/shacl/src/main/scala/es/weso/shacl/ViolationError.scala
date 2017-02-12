@@ -2,12 +2,13 @@ package es.weso.shacl
 
 import es.weso.rdf.nodes._
 import SHACLPrefixes._
+import es.weso.rdf.path.{PredicatePath, SHACLPath}
 
 case class ViolationError(
     id: IRI,
     focusNode: RDFNode,
     subject: Option[RDFNode],
-    predicate: Option[RDFNode],
+    path: Option[SHACLPath],
     obj: Option[RDFNode],
     message: Option[String],
     sourceConstraint: Option[RDFNode]) {
@@ -20,9 +21,9 @@ object ViolationError {
     ViolationError(id = sh + suffix,
       focusNode = focusNode,
       subject = None,
-      predicate = attempt.predicate,
+      path = attempt.path,
       obj = None,
-      message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, predicate: ${attempt.predicate.getOrElse(IRI(""))}"),
+      message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, path: ${attempt.path.getOrElse(PredicatePath(IRI("")))}"),
       sourceConstraint = attempt.shapeIRI)
 
   def failedNodeShape(node: RDFNode, shape: NodeShape, attempt: Attempt, msg: String) =
@@ -60,6 +61,12 @@ object ViolationError {
 
   def patternError(focusNode: RDFNode, attempt: Attempt, p: String, flags: Option[String]) =
     basic("patternError", focusNode, attempt, s"pattern violation. Expected $focusNode to match '$p'${flags.getOrElse("")}")
+
+  def uniqueLangError(focusNode: RDFNode, attempt: Attempt, path: SHACLPath, vs: Seq[RDFNode]) =
+    basic("uniqueLangError", focusNode, attempt, s"uniqueLang violation. Expected $focusNode to have a unique language for path $path with values $vs")
+
+  def languageInError(focusNode: RDFNode, attempt: Attempt, langs: List[String]) =
+    basic("languageInError", focusNode, attempt, s"languageIn violation. Expected $focusNode to match 'languageIn(${langs.mkString(",")})'")
 
   def equalsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
     comparisonError("equals", focusNode, attempt, p, vs)

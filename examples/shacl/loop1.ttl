@@ -3,29 +3,29 @@
 @prefix : <http://example.org/>
 @prefix sh: <http://www.w3.org/ns/shacl#>
 
-:S a sh:Shape ;
+:S a sh:NodeShape ;
    sh:targetNode :x ;
    sh:property [
-     sh:predicate :p ;
+     sh:path :p ;
      sh:minCount 1 ;
      sh:maxCount 1 ;
    ] .
 
-:arrayShape a sh:Shape ;
+:arrayShape a sh:NodeShape ;
    sh:property [
-     sh:predicate rdf:first ;
+     sh:path rdf:first ;
      sh:minCount 1 ;
      sh:maxCount 1 ;
      sh:datatype xsd:string ;
    ] ;
 
    sh:property [
-     sh:predicate rdf:rest ;
+     sh:path rdf:rest ;
      sh:minCount 1 ;
      sh:maxCount 1 ;
      sh:or (
         [ sh:in rdf:nil ]
-        [ sh:shape :arrayShape ; ] # recursion
+        [ sh:node :arrayShape ; ] # recursion
       ) ;
    ] .
 

@@ -1,14 +1,14 @@
 @prefix : <http://example.org/>
 @prefix sh: <http://www.w3.org/ns/shacl#>
 
-:S a sh:Shape; 
+:S a sh:NodeShape; 
    sh:targetNode :x, :y, :z ;
    sh:property [
-     sh:predicate :p; 
+     sh:path :p; 
      sh:nodeKind sh:IRI
    ];
    sh:property [
-     sh:predicate :q; 
+     sh:path :q; 
      sh:nodeKind sh:Literal
    ] .
 

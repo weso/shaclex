@@ -2,12 +2,15 @@ package es.weso.shacl
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import ViolationError._
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
+
 import util.matching._
 import showShacl._
 import es.weso.typing._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.rdf.path.SHACLPath
 import es.weso.utils.RegexUtils._
 
 /**
@@ -52,7 +55,7 @@ case class Validator(schema: Schema) extends LazyLogging {
    * Checks that a node satisfies a shape
    */
   type CheckTyping = Check[ShapeTyping]
-  type PropertyChecker = (Attempt, IRI) => CheckTyping
+  type PropertyChecker = (Attempt, SHACLPath) => CheckTyping
   type NodeChecker = Attempt => RDFNode => CheckTyping
 
   /**
@@ -165,7 +168,7 @@ case class Validator(schema: Schema) extends LazyLogging {
   def checkConstraint(c: Shape): NodeChecker = {
     c match {
       case pc: PropertyShape  =>
-        checkPropertyConstraint(pc)
+        checkPropertyShape(pc)
       case nc: NodeConstraint =>
         checkNodeConstraint(nc)
     }
@@ -177,11 +180,11 @@ case class Validator(schema: Schema) extends LazyLogging {
     validateNodeCheckers(attempt, checkers)
   }
 
-  def checkPropertyConstraint(pc: PropertyShape): NodeChecker = attempt => _ => {
-    val predicate = pc.predicate
+  def checkPropertyShape(pc: PropertyShape): NodeChecker = attempt => _ => {
+    val path = pc.path
     val components = pc.components
     val propertyCheckers: Seq[PropertyChecker] = components.map(component2PropertyChecker)
-    validatePredicateCheckers(attempt, predicate, propertyCheckers)
+    validatePathCheckers(attempt, path, propertyCheckers)
   }
 
   def validateNodeCheckers(attempt: Attempt, cs: Seq[NodeChecker]): Check[ShapeTyping] = {
@@ -193,9 +196,9 @@ case class Validator(schema: Schema) extends LazyLogging {
     } yield t
   }
 
-  def validatePredicateCheckers(attempt: Attempt, p: IRI, cs: Seq[PropertyChecker]): Check[ShapeTyping] = {
-    val newAttempt = attempt.copy(path = Some(p))
-    val xs = cs.map(c => c(newAttempt, p)).toList
+  def validatePathCheckers(attempt: Attempt, path: SHACLPath, cs: Seq[PropertyChecker]): Check[ShapeTyping] = {
+    val newAttempt = attempt.copy(path = Some(path))
+    val xs = cs.map(c => c(newAttempt, path)).toList
     for {
       ts <- checkAll(xs)
       t <- combineTypings(ts)
@@ -226,19 +229,24 @@ case class Validator(schema: Schema) extends LazyLogging {
     t <- combineTypings(ts)
   } yield t
 
-  def component2PropertyChecker(c: Component): PropertyChecker = (attempt, predicate) => {
-      logger.debug(s"component2PropertyChecker: Attempt: $attempt, predicate: $predicate, component: $c")
+  def component2PropertyChecker(c: Component): PropertyChecker = (attempt, path) => {
+      logger.info(s"component2PropertyChecker: Attempt: $attempt, path: $path, component: $c")
       for {
         rdf <- getRDF
         node = attempt.node
-        os = rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
+        os = {
+          val objs = rdf.getValuesFromPath(node,path).toList
+          logger.info(s"Values of $node from path $path = $objs")
+          objs
+        }
+        // rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
         check: Check[ShapeTyping] = c match {
-          case ShapeComponent(s) => checkValues(os, shapeComponentChecker(s)(attempt))
+          case NodeComponent(s) => checkValues(os, nodeComponentChecker(s)(attempt))
           case ClassComponent(c) => checkValues(os, classComponentChecker(c)(attempt))
           case Datatype(d) => checkValues(os, datatypeChecker(d)(attempt))
           case NodeKind(k) => checkValues(os, nodeKindChecker(k)(attempt))
-          case MinCount(n) => minCount(n, os, attempt, predicate)
-          case MaxCount(n) => maxCount(n, os, attempt, predicate)
+          case MinCount(n) => minCount(n, os, attempt, path)
+          case MaxCount(n) => maxCount(n, os, attempt, path)
           case MinExclusive(n) => checkValues(os, minExclusive(n)(attempt))
           case MinInclusive(n) => checkValues(os, minInclusive(n)(attempt))
           case MaxInclusive(n) => checkValues(os, maxInclusive(n)(attempt))
@@ -246,7 +254,8 @@ case class Validator(schema: Schema) extends LazyLogging {
           case MinLength(n) => checkValues(os, minLength(n)(attempt))
           case MaxLength(n) => checkValues(os, maxLength(n)(attempt))
           case Pattern(p, flags) => checkValues(os, pattern(p, flags)(attempt))
-          case UniqueLang(v) => checkValues(os, unsupportedNodeChecker("UniqueLang")(attempt))
+          case UniqueLang(v) => uniqueLang(v, os, attempt, path)
+          case LanguageIn(langs) => checkValues(os, languageIn(langs)(attempt))
           case Equals(p) => checkValues(os, equals(p)(attempt))
           case Disjoint(p) => checkValues(os, disjoint(p)(attempt))
           case LessThan(p) => checkValues(os, lessThan(p)(attempt))
@@ -262,7 +271,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       } yield t
   }
 
-  def shapeComponentChecker(s: NodeShape): NodeChecker = attempt => node => for {
+  def nodeComponentChecker(s: NodeShape): NodeChecker = attempt => node => for {
     typing <- getTyping
     newTyping <- if (typing.getOkValues(node).contains(s))
       getTyping
@@ -359,6 +368,41 @@ case class Validator(schema: Schema) extends LazyLogging {
       case Left(str) => throw new Exception("Not implemented getRegex error handler")
       case Right(regex) => ok(regex)
     }
+
+  def uniqueLang(b: Boolean, os: Seq[RDFNode], attempt: Attempt, path: SHACLPath): Check[ShapeTyping] = if (b) {
+    val node = attempt.node
+    for {
+      t <- condition(checkUniqueLang(os), attempt,
+        uniqueLangError(node, attempt, path, os),
+        s"Checked uniqueLang(true) for path $path on node $node")
+    } yield t
+  } else getTyping
+
+  def checkUniqueLang(os: Seq[RDFNode]): Boolean = {
+    def getLanguageTag(n: RDFNode): Option[String] = {
+      n match {
+        case LangLiteral(_,l) => Some(l.lang)
+        case _ => None
+      }
+    }
+    val langs : Seq[String] = os.map(getLanguageTag).flatten
+
+    // If there are duplicated langs, the following condition fails
+    langs.distinct.size == langs.size
+  }
+
+  def languageIn(langs: List[String]): NodeChecker = attempt => node => for {
+    t <- condition(checkLangIn(node,langs), attempt,
+      languageInError(node, attempt, langs),
+      s"$node satisfies languageIn(${langs.mkString(",")})")
+  } yield t
+
+  def checkLangIn(node: RDFNode, langs: List[String]): Boolean = {
+    node match {
+      case LangLiteral(_,l) => langs.contains(l.lang)
+      case _ => false
+    }
+  }
 
   def equals(p: IRI): NodeChecker =
     comparison(p, "equals", equalsError, equalsNode)
@@ -472,20 +516,21 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"Checked $currentNode sh:in $values")
   }
 
-  def minCount(minCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[ShapeTyping] = {
+  def minCount(minCount: Int, os: Seq[RDFNode], attempt: Attempt, path: SHACLPath): Check[ShapeTyping] = {
+    logger.info(s"minCount $minCount, os: $os, attempt: $attempt, path: $path")
     val count = os.size
     val node = attempt.node
     condition(count >= minCount, attempt,
       minCountError(node, attempt, minCount, os.size),
-      s"Checked minCount($minCount) for predicate($predicate) on node $node")
+      s"Checked minCount($minCount) for path($path) on node $node")
   }
 
-  def maxCount(maxCount: Int, os: Seq[RDFNode], attempt: Attempt, predicate: IRI): Check[ShapeTyping] = {
+  def maxCount(maxCount: Int, os: Seq[RDFNode], attempt: Attempt, path: SHACLPath): Check[ShapeTyping] = {
     val count = os.size
     val node = attempt.node
     condition(count <= maxCount, attempt,
       maxCountError(node, attempt, maxCount, count),
-      s"Checked maxCount($maxCount) for predicate($predicate) on node $node")
+      s"Checked maxCount($maxCount) for path($path) on node $node")
   }
 
   def checkClosed(ignoredProperties: List[IRI], allowedProperties: List[IRI]): NodeChecker = attempt => node => {
