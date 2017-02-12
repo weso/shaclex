@@ -6,26 +6,38 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.rdf.model.ResourceRequiredException
 import org.apache.jena.rdf.model.Statement
+import org.apache.jena.sparql.syntax.ElementPathBlock
+// import org.apache.jena.arq.querybuilder.SelectBuilder
+import org.apache.jena.graph.{Triple => JenaTriple}
 import java.io.InputStreamReader
 import java.io.ByteArrayInputStream
+
 import org.apache.jena.query.Query
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import java.io.StringWriter
+
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Property
 import java.net.URI
 import java.net.URL
 import java.io.InputStream
 import java.io.FileOutputStream
+
 import org.apache.jena.atlas.AtlasException
 import org.apache.jena.riot.RiotException
 import org.apache.jena.query.ResultSet
 import org.apache.jena.rdf.model.Literal
 import org.apache.jena.rdf.model.ResourceFactory
-import util.{Try, Success => TrySuccess, Failure => TryFailure}
+
+import util.{Try, Failure => TryFailure, Success => TrySuccess}
 import scala.collection.JavaConverters._
 import org.apache.jena.query.ParameterizedSparqlString
+import org.apache.jena.sparql.core.{TriplePath, Var}
+import org.apache.jena.sparql.path.Path
+import org.apache.jena.sparql.syntax.ElementGroup
+import org.apache.jena.util.FileUtils
+import org.apache.jena.vocabulary.DC
 
 
 sealed abstract class ParserReport[+A,+B] 
@@ -38,10 +50,10 @@ final case class NotParsed[B](error: B)
 
 object JenaUtils {
 
-  lazy val RdfXML 		= "RDF/XML"
-  lazy val RdfXMLAbbr 	= "RDF/XML-ABBREV"
-  lazy val NTriple 		= "N-TRIPLE"
-  lazy val Turtle 		= "TURTLE"
+  lazy val RdfXML 		= FileUtils.langXML
+  lazy val RdfXMLAbbr 	= FileUtils.langXMLAbbrev
+  lazy val NTriple 		= FileUtils.langNTriple
+  lazy val Turtle 		= FileUtils.langTurtle
   lazy val TTL 			= "TTL"
   lazy val N3 			= "N3"
 
@@ -261,6 +273,25 @@ object JenaUtils {
     pss.setParam("n",n)
     pss.setParam("c",c)
     QueryExecutionFactory.create(pss.asQuery, model).execAsk
+  }
+
+
+  def getValuesFromPath(n:RDFNode, path: Path, model: Model): Seq[RDFNode] = {
+    // Build the following query:
+    // SELECT ?obj { ?n ?path ?obj }
+    val query: Query = QueryFactory.make()
+    query.setQuerySelectType()
+    val obj = Var.alloc("obj")
+    val e = new ElementPathBlock()
+    e.addTriple(new TriplePath(n.asNode, path, obj))
+    query.addResultVar(obj)
+    query.setQueryPattern(e)
+    // val pss : ParameterizedSparqlString = new ParameterizedSparqlString()
+    // pss.setCommandText("SELECT ?o { ?n ?path ?o . }")
+    // pss.setParam("n",n)
+//     pss.setParam("path",path)
+    val result = QueryExecutionFactory.create(query, model).execSelect
+    result.asScala.toSeq.map(qs => qs.get("obj"))
   }
 
   /**

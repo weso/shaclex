@@ -9,6 +9,7 @@ import cats._
 import cats.implicits._
 import SHACLPrefixes._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.rdf.path.{PredicatePath, RDFPath}
 
 object RDF2Shacl extends RDFParser with LazyLogging {
 
@@ -172,12 +173,41 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def propertyConstraint: RDFParser[PropertyShape] = (n, rdf) => {
     val id = if (n.isIRI) Some(n.toIRI) else None
     for {
-      predicate <- iriFromPredicate(sh_path)(n,rdf)
+      nodePath <- objectFromPredicate(sh_path)(n,rdf)
+      path <- parsePath(nodePath,rdf)
       components <- components(n,rdf)
     } yield {
-      PropertyShape(id, PredicatePath(predicate), components)
+      PropertyShape(id, path, components)
     }
   }
+
+  def parsePath: RDFParser[RDFPath] = (n,rdf) => {
+    println(s"Parsing path...$n")
+    n match {
+      case iri: IRI => Success(PredicatePath(iri))
+      case bnode: BNodeId => someOf(
+        List(inversePath,oneOrMorePath,zeroOrMorePath,zeroOrOnePath,alternativePath,sequencePath))(n,rdf)
+      case _ => parseFail(s"Unsupported value $n for path")
+    }
+  }
+
+  def inversePath: RDFParser[RDFPath] =
+    ??? // parseFail[RDFPath]("Unimplemented zeroOrOnePath")
+
+  def oneOrMorePath: RDFParser[RDFPath] =
+    ???
+
+  def zeroOrMorePath: RDFParser[RDFPath] =
+    ???
+
+  def alternativePath: RDFParser[RDFPath] =
+    ???
+
+  def zeroOrOnePath: RDFParser[RDFPath] =
+    ???
+
+  def sequencePath: RDFParser[RDFPath] =
+    ???
 
   def components: RDFParser[Seq[Component]] =
     anyOf(

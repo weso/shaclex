@@ -4,34 +4,30 @@ import org.apache.jena.query._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
+
 import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
 import scala.util.Try
 import es.weso.rdf.triples._
 import es.weso.rdf._
-import org.apache.jena.rdf.model.{
-  Model,
-  Resource,
-  Property,
-  Statement,
-  RDFNode => JenaRDFNode,
-  RDFReader => JenaRDFReader,
-  StmtIterator,
-  ModelFactory
-}
+import org.apache.jena.rdf.model.{Model, ModelFactory, Property, Resource, Statement, StmtIterator, RDFNode => JenaRDFNode, RDFReader => JenaRDFReader}
 import org.slf4j._
-import org.apache.jena.riot.{ Lang => JenaLang }
+import org.apache.jena.riot.{Lang => JenaLang}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import java.io._
+
 import scala.util._
 import java.io._
+
 import es.weso.rdf.jena.SPARQLQueries._
 import org.apache.jena.riot.RDFLanguages._
 import org.apache.jena.riot.RDFLanguages
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.PREFIXES._
+import es.weso.rdf.path.RDFPath
 import es.weso.utils.JenaUtils
+import org.apache.jena.sparql.path.Path
 
 case class RDFAsJenaModel(model: Model)
     extends RDFReader
@@ -103,6 +99,13 @@ case class RDFAsJenaModel(model: Model)
     val nJena : JenaRDFNode = JenaMapper.rdfNode2JenaNode(n, model)
     val cJena : JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model)
     JenaUtils.hasClass(nJena,cJena,model)
+  }
+
+
+  override def getValuesFromPath(node: RDFNode, path: RDFPath): Seq[RDFNode] = {
+    val jenaNode : JenaRDFNode = JenaMapper.rdfNode2JenaNode(node, model)
+    val jenaPath: Path = JenaMapper.path2JenaPath(path,model)
+    JenaUtils.getValuesFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
   }
 
   def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {

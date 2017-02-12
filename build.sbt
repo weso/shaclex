@@ -26,6 +26,7 @@ lazy val http4sVersion    = "0.15.2a"
 lazy val scalatagsVersion = "0.6.2"
 lazy val kindProjectorVersion = "0.9.3"
 lazy val scallopVersion = "2.0.6"
+lazy val jenaVersion = "3.1.1"
 
 herokuAppName in Compile := "shaclex"
 
@@ -195,7 +196,8 @@ lazy val srdfJena =
       "ch.qos.logback" %  "logback-classic" % logbackVersion
     , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
     , "com.typesafe" % "config" % "1.3.0" % Test
-    , "org.apache.jena" % "jena-arq" % "3.1.0"
+    , "org.apache.jena" % "jena-arq" % jenaVersion
+    , "org.apache.jena" % "jena-extras" % jenaVersion
     , "org.typelevel" %% "cats" % catsVersion
     )
   )

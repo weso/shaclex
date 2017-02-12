@@ -1,8 +1,10 @@
 package es.weso.shacl
 import es.weso.rdf.nodes._
 import es.weso.rdf.PrefixMap
+
 import util._
 import SHACLPrefixes._
+import es.weso.rdf.path.RDFPath
 import es.weso.shacl.converter.Shacl2RDF
 
 import scala.util.{Success, Try}
@@ -120,8 +122,6 @@ case class TargetClass(node: RDFNode) extends Target
 case class TargetSubjectsOf(pred: IRI) extends Target
 case class TargetObjectsOf(pred: IRI) extends Target
 
-
-
 sealed abstract class Shape {
   def isPropertyConstraint: Boolean
   def toPropertyConstraint: Option[PropertyShape] = None
@@ -130,7 +130,7 @@ sealed abstract class Shape {
 
 case class PropertyShape(
     id:Option[IRI],
-    path: Path,
+    path: RDFPath,
     components: Seq[Component]
 ) extends Shape {
   def isPropertyConstraint = true
@@ -256,24 +256,3 @@ object NodeShape {
   val empty = NodeShape(None,Seq(),Seq(),false,List())
 }
 
-sealed trait Path {
-  def predicate: Option[IRI]
-}
-case class PredicatePath(iri: IRI) extends Path {
-  override def predicate: Option[IRI] = Some(iri)
-}
-case class InversePath(iri: IRI) extends Path {
-  override def predicate: Option[IRI] = None
-}
-case class SequencePath(paths: Seq[Path]) extends Path {
-  override def predicate: Option[IRI] = None
-}
-case class AlternativePath(paths: Seq[Path]) extends Path {
-  override def predicate: Option[IRI] = None
-}
-case class ZeroOrMorePath(iri: Path) extends Path {
-  override def predicate: Option[IRI] = None
-}
-case class OneOrMorePath(iri: Path) extends Path {
-  override def predicate: Option[IRI] = None
-}

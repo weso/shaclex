@@ -1,24 +1,18 @@
 package es.weso.rdf.jena
 
 // TODO: Refactor this code
-import org.apache.jena.rdf.model.{
-  Model => JenaModel,
-  Statement,
-  StmtIterator,
-  ModelFactory,
-  RDFNode => JenaRDFNode,
-  Property,
-  Resource,
-  Literal,
-  AnonId
-}
+import org.apache.jena.rdf.model.{AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator, Model => JenaModel, RDFNode => JenaRDFNode}
 import es.weso.rdf.nodes._
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.PREFIXES._
+
 import scala.collection.JavaConversions._
 import com.typesafe.scalalogging._
+import es.weso.rdf.path._
+import org.apache.jena.sparql.path._
+
 import util._
 
 object JenaMapper {
@@ -120,7 +114,7 @@ object JenaMapper {
         }
         }
       }
-    } else throw new Exception("resource2RDFNode: unexpected type of resource")
+    } else throw new Exception(s"resource2RDFNode: unexpected type of resource: $r")
   }
 
   def property2IRI(p: Property): IRI = IRI(p.getURI)
@@ -189,4 +183,35 @@ object JenaMapper {
     model.listStatements(null, property, obj).toSet.toSet
   }
 
+  // TODO: Return Either[String,Path]
+  def path2JenaPath(path: RDFPath, model: JenaModel): Path = {
+    path match {
+      case PredicatePath(iri) => {
+        val prop = rdfNode2Property(iri,model)
+        new P_Link(prop.asNode)
+      }
+      case InversePath(iri) => {
+        val prop = rdfNode2Property(iri,model)
+        new P_Inverse(new P_Link(prop.asNode))
+      }
+      case SequencePath(paths) => {
+        val jenaPaths = paths.map(path => path2JenaPath(path,model))
+        def seq(p1: Path,p2: Path): Path = new P_Seq(p1,p2)
+        jenaPaths.reduce(seq)
+      }
+      case AlternativePath(paths) => {
+        val jenaPaths = paths.map(path => path2JenaPath(path,model))
+        def alt(p1: Path,p2: Path): Path = new P_Alt(p1,p2)
+        jenaPaths.reduce(alt)
+      }
+      case ZeroOrMorePath(path) => {
+        val jenaPath = path2JenaPath(path,model)
+        new P_ZeroOrMoreN(jenaPath)
+      }
+      case OneOrMorePath(path) => {
+        val jenaPath = path2JenaPath(path,model)
+        new P_OneOrMoreN(jenaPath)
+      }
+    }
+  }
 }

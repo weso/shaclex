@@ -1,5 +1,6 @@
 package es.weso.utils
 
+import org.apache.jena.sparql.path.{P_Link, P_OneOrMoreN}
 import org.scalatest._
 
 class JenaUtilsTest extends FunSpec with Matchers {
@@ -87,9 +88,37 @@ describe("getSHACLInstances") {
   JenaUtils.getSHACLInstances(_Dog, model) should contain only(dog1)
   JenaUtils.getSHACLInstances(_Any, model) shouldBe empty
  }
-  
+
+
 }
 
+ describe("getValuesFromPath") {
+  it("Validates parent") {
+   val ex = "http://example.org#"
+   val rdfStr = s"""|@prefix : <$ex> .
+                    |:homer :parent :bart .
+                    |:homer :parent :lisa .
+                    |:homer :parent :maggie .
+                    |:abraham :parent :homer .
+                    |:abraham :parent :herb .
+                    |""".stripMargin
+   val model = JenaUtils.parseFromString(rdfStr).get
+   val abraham = model.createResource(ex + "abraham")
+   val homer = model.createResource(ex + "homer")
+   val herb = model.createResource(ex + "herb")
+   val bart = model.createResource(ex + "bart")
+   val lisa = model.createResource(ex + "lisa")
+   val maggie = model.createResource(ex + "maggie")
+
+   val parent = model.createResource(ex + "parent")
+
+   val parent1 = new P_Link(parent.asNode)
+   val parentPlus = new P_OneOrMoreN(parent1)
+   JenaUtils.getValuesFromPath(abraham, parent1, model) should contain only(herb,homer)
+   JenaUtils.getValuesFromPath(abraham, parentPlus, model) should contain only(bart,lisa,maggie,herb,homer)
+
+  }
+ }
 
 
 }

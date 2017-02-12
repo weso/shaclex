@@ -2,6 +2,7 @@ package es.weso.shacl
 
 import org.scalatest._
 import es.weso.rdf.nodes._
+import es.weso.rdf.path.PredicatePath
 
 class AbstractSyntaxTest extends FunSpec with Matchers {
 

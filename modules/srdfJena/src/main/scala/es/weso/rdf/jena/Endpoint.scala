@@ -5,19 +5,21 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples._
 import es.weso.rdf.triples.RDFTriple
+
 import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
 import scala.util.Try
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import es.weso.rdf.path.RDFPath
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
 case class Endpoint(endpoint: String) extends RDFReader {
   // TODO: check that endpoint is a well formed URI
@@ -66,6 +68,9 @@ case class Endpoint(endpoint: String) extends RDFReader {
   override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
     throw new Exception(s"Undefined hasSHACL at Endpoint. Node: $n Class: $c") 
   }
+
+  override def getValuesFromPath(node: RDFNode, path: RDFPath) =
+    throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
 
 
   def rdfTriples(): Set[RDFTriple] = {

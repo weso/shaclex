@@ -3,6 +3,8 @@ package es.weso.rdf
 import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
+import es.weso.rdf.path.RDFPath
+
 import scala.util.Try
 
 /**
@@ -113,6 +115,12 @@ trait RDFReader {
    * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
    */
   def getSHACLInstances(cls: RDFNode): Seq[RDFNode]
+
+  /**
+  * return the values associated with a node by a path
+  * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
+  */
+  def getValuesFromPath(node: RDFNode, path: RDFPath): Seq[RDFNode]
 
 }
 

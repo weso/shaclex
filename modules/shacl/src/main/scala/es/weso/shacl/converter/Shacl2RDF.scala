@@ -9,6 +9,7 @@ import es.weso.rdf.nodes._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.rdf.PREFIXES.{sh => _, _}
 import es.weso.rdf.jena._
+import es.weso.rdf.path.{PredicatePath, RDFPath}
 import es.weso.shacl._
 
 class Shacl2RDF extends RDFSaver {
@@ -83,7 +84,7 @@ class Shacl2RDF extends RDFSaver {
     case NodeConstraint(cs) => saveList(cs, component(id))
   }
 
-  def makePath(path: Path): RDFSaver[RDFNode] = path match {
+  def makePath(path: RDFPath): RDFSaver[RDFNode] = path match {
     case PredicatePath(iri) => State.pure(iri)
     case _ => throw new Exception(s"Not implemented path yet: $path")
   }

@@ -4,22 +4,24 @@ import org.apache.jena.query._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
+
 import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
 import scala.util.Try
 import es.weso.rdf.triples._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import es.weso.rdf.path.RDFPath
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
 case class RDFFromWeb() extends RDFReader {
   type Rdf = RDFFromWeb
@@ -129,5 +131,9 @@ case class RDFFromWeb() extends RDFReader {
     } else
       throw new Exception("Unknown type of resource")
   }
+
+override def getValuesFromPath(node: RDFNode, path: RDFPath) =
+  throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
+
 
 }
