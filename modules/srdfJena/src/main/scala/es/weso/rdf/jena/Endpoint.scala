@@ -17,7 +17,7 @@ import org.slf4j._
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
-import es.weso.rdf.path.RDFPath
+import es.weso.rdf.path.SHACLPath
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
@@ -69,7 +69,7 @@ case class Endpoint(endpoint: String) extends RDFReader {
     throw new Exception(s"Undefined hasSHACL at Endpoint. Node: $n Class: $c") 
   }
 
-  override def getValuesFromPath(node: RDFNode, path: RDFPath) =
+  override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
     throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
 
 

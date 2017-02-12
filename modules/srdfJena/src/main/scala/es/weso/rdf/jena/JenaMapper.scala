@@ -184,15 +184,15 @@ object JenaMapper {
   }
 
   // TODO: Return Either[String,Path]
-  def path2JenaPath(path: RDFPath, model: JenaModel): Path = {
+  def path2JenaPath(path: SHACLPath, model: JenaModel): Path = {
     path match {
       case PredicatePath(iri) => {
         val prop = rdfNode2Property(iri,model)
         new P_Link(prop.asNode)
       }
-      case InversePath(iri) => {
-        val prop = rdfNode2Property(iri,model)
-        new P_Inverse(new P_Link(prop.asNode))
+      case InversePath(path) => {
+        val jenaPath = path2JenaPath(path,model)
+        new P_Inverse(jenaPath)
       }
       case SequencePath(paths) => {
         val jenaPaths = paths.map(path => path2JenaPath(path,model))
@@ -207,6 +207,10 @@ object JenaMapper {
       case ZeroOrMorePath(path) => {
         val jenaPath = path2JenaPath(path,model)
         new P_ZeroOrMoreN(jenaPath)
+      }
+      case ZeroOrOnePath(path) => {
+        val jenaPath = path2JenaPath(path,model)
+        new P_ZeroOrOne(jenaPath)
       }
       case OneOrMorePath(path) => {
         val jenaPath = path2JenaPath(path,model)

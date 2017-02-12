@@ -24,6 +24,11 @@ object SHACLPrefixes {
   lazy val sh_PropertyShape: IRI = sh + "PropertyShape"
   lazy val sh_property: IRI = sh + "property"
   lazy val sh_path: IRI = sh + "path"
+  lazy val sh_inversePath: IRI = sh + "inversePath"
+  lazy val sh_alternativePath: IRI = sh + "alternativePath"
+  lazy val sh_zeroOrMorePath: IRI = sh + "zeroOrMorePath"
+  lazy val sh_zeroOrOnePath: IRI = sh + "zeroOrOnePath"
+  lazy val sh_oneOrMorePath: IRI = sh + "oneOrMorePath"
 
   lazy val sh_class : IRI= sh + "class"
   lazy val sh_datatype : IRI= sh + "datatype"

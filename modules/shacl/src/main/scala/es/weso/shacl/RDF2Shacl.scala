@@ -9,7 +9,7 @@ import cats._
 import cats.implicits._
 import SHACLPrefixes._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.path.{PredicatePath, RDFPath}
+import es.weso.rdf.path._
 
 object RDF2Shacl extends RDFParser with LazyLogging {
 
@@ -181,33 +181,51 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
 
-  def parsePath: RDFParser[RDFPath] = (n,rdf) => {
-    println(s"Parsing path...$n")
+  def parsePath: RDFParser[SHACLPath] = (n, rdf) => {
     n match {
       case iri: IRI => Success(PredicatePath(iri))
       case bnode: BNodeId => someOf(
-        List(inversePath,oneOrMorePath,zeroOrMorePath,zeroOrOnePath,alternativePath,sequencePath))(n,rdf)
+        inversePath,
+        oneOrMorePath,
+        zeroOrMorePath,
+        zeroOrOnePath,
+        alternativePath,
+        sequencePath)(n,rdf)
       case _ => parseFail(s"Unsupported value $n for path")
     }
   }
 
-  def inversePath: RDFParser[RDFPath] =
-    ??? // parseFail[RDFPath]("Unimplemented zeroOrOnePath")
+  def inversePath: RDFParser[SHACLPath] = (n,rdf) => for {
+    pathNode <- objectFromPredicate(sh_inversePath)(n,rdf)
+    path <- parsePath(pathNode,rdf)
+  } yield InversePath(path)
 
-  def oneOrMorePath: RDFParser[RDFPath] =
-    ???
 
-  def zeroOrMorePath: RDFParser[RDFPath] =
-    ???
+  def oneOrMorePath: RDFParser[SHACLPath] = (n,rdf) => for {
+    pathNode <- objectFromPredicate(sh_oneOrMorePath)(n,rdf)
+    path <- parsePath(pathNode,rdf)
+  } yield OneOrMorePath(path)
 
-  def alternativePath: RDFParser[RDFPath] =
-    ???
+  def zeroOrMorePath: RDFParser[SHACLPath] = (n,rdf) => for {
+    pathNode <- objectFromPredicate(sh_zeroOrMorePath)(n,rdf)
+    path <- parsePath(pathNode,rdf)
+  } yield ZeroOrMorePath(path)
 
-  def zeroOrOnePath: RDFParser[RDFPath] =
-    ???
+  def zeroOrOnePath: RDFParser[SHACLPath] = (n,rdf) => for {
+    pathNode <- objectFromPredicate(sh_zeroOrOnePath)(n,rdf)
+    path <- parsePath(pathNode,rdf)
+  } yield ZeroOrOnePath(path)
 
-  def sequencePath: RDFParser[RDFPath] =
-    ???
+  def alternativePath: RDFParser[SHACLPath] = (n,rdf) => for {
+    pathNode <- objectFromPredicate(sh_alternativePath)(n,rdf)
+    pathNodes <- rdfList(pathNode,rdf)
+    paths <- group(parsePath,pathNodes)(n,rdf)
+  } yield AlternativePath(paths)
+
+  def sequencePath: RDFParser[SHACLPath] = (n,rdf) => for {
+    pathNodes <- rdfList(n,rdf)
+    paths <- group(parsePath,pathNodes)(n,rdf)
+  } yield SequencePath(paths)
 
   def components: RDFParser[Seq[Component]] =
     anyOf(

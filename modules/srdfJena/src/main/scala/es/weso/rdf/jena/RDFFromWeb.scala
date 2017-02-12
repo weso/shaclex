@@ -19,7 +19,7 @@ import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
-import es.weso.rdf.path.RDFPath
+import es.weso.rdf.path.SHACLPath
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
@@ -132,7 +132,7 @@ case class RDFFromWeb() extends RDFReader {
       throw new Exception("Unknown type of resource")
   }
 
-override def getValuesFromPath(node: RDFNode, path: RDFPath) =
+override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
   throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
 
 

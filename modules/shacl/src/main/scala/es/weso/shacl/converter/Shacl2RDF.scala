@@ -9,7 +9,7 @@ import es.weso.rdf.nodes._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.rdf.PREFIXES.{sh => _, _}
 import es.weso.rdf.jena._
-import es.weso.rdf.path.{PredicatePath, RDFPath}
+import es.weso.rdf.path._
 import es.weso.shacl._
 
 class Shacl2RDF extends RDFSaver {
@@ -84,8 +84,38 @@ class Shacl2RDF extends RDFSaver {
     case NodeConstraint(cs) => saveList(cs, component(id))
   }
 
-  def makePath(path: RDFPath): RDFSaver[RDFNode] = path match {
+  def makePath(path: SHACLPath): RDFSaver[RDFNode] = path match {
     case PredicatePath(iri) => State.pure(iri)
+    case InversePath(p) => for {
+        node <- createBNode
+        pathNode <- makePath(p)
+        _ <- addTriple(node,sh_inversePath,pathNode)
+    } yield node
+    case ZeroOrOnePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node,sh_zeroOrOnePath,pathNode)
+    } yield node
+    case ZeroOrMorePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node,sh_zeroOrMorePath,pathNode)
+    } yield node
+    case OneOrMorePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node,sh_oneOrMorePath,pathNode)
+    } yield node
+/*    case SequencePath(ps) => for {
+      node <- createBNode
+      pathNodes <- makePath(p)
+      _ <- addTriple(node,sh_oneOrMorePath,pathNode)
+    } yield node
+    case AlternativePath(ps) => for {
+      node <- createBNode
+      pathNodes <- makePath(p)
+      _ <- addTriple(node,sh_oneOrMorePath,pathNode)
+    } yield node */
     case _ => throw new Exception(s"Not implemented path yet: $path")
   }
 

@@ -217,7 +217,7 @@ trait RDFParser {
    * 
    * @param ps sequence of parsers
    */
-  def someOf[A](ps: Seq[RDFParser[A]]): RDFParser[A] = { (n, rdf) =>
+  def someOf[A](ps: RDFParser[A]*): RDFParser[A] = { (n, rdf) =>
     {
       ps.foldLeft(parseFail("someOf: none of the RDFParsers passed")) {
         case ((s: Try[A], parser)) =>
@@ -238,7 +238,7 @@ trait RDFParser {
   def group[A](
       parser: RDFParser[A], 
       nodes: Seq[RDFNode]
-   ): RDFParser[Seq[A]] = { (n, rdf) =>
+   ): RDFParser[Seq[A]] = { (_, rdf) =>
     {
       val empty: Seq[A] = List()
       nodes.foldLeft(Success(empty)) {
@@ -265,12 +265,9 @@ trait RDFParser {
    *
    */
   def anyOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
-    println(s"AnyOf: $ps")
     def comb(rest: RDFParser[Seq[A]], p: RDFParser[A]): RDFParser[Seq[A]] = (n,rdf) => {
-      println(s"Trying first parser $p")
       p(n,rdf) match {
         case Failure(_) => {
-          println(s"Failing...inside anyOf node: $n parser: $p")
           rest(n,rdf)
         }
         case Success(x) => {

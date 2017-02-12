@@ -25,7 +25,7 @@ import org.apache.jena.riot.RDFLanguages._
 import org.apache.jena.riot.RDFLanguages
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.PREFIXES._
-import es.weso.rdf.path.RDFPath
+import es.weso.rdf.path.SHACLPath
 import es.weso.utils.JenaUtils
 import org.apache.jena.sparql.path.Path
 
@@ -102,7 +102,7 @@ case class RDFAsJenaModel(model: Model)
   }
 
 
-  override def getValuesFromPath(node: RDFNode, path: RDFPath): Seq[RDFNode] = {
+  override def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode] = {
     val jenaNode : JenaRDFNode = JenaMapper.rdfNode2JenaNode(node, model)
     val jenaPath: Path = JenaMapper.path2JenaPath(path,model)
     JenaUtils.getValuesFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))

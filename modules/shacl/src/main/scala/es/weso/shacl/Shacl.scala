@@ -4,7 +4,7 @@ import es.weso.rdf.PrefixMap
 
 import util._
 import SHACLPrefixes._
-import es.weso.rdf.path.RDFPath
+import es.weso.rdf.path.SHACLPath
 import es.weso.shacl.converter.Shacl2RDF
 
 import scala.util.{Success, Try}
@@ -129,9 +129,9 @@ sealed abstract class Shape {
 }
 
 case class PropertyShape(
-    id:Option[IRI],
-    path: RDFPath,
-    components: Seq[Component]
+                          id:Option[IRI],
+                          path: SHACLPath,
+                          components: Seq[Component]
 ) extends Shape {
   def isPropertyConstraint = true
 
