@@ -130,6 +130,12 @@ class MainOpts(
     noshort = true
   )
 
+  val baseFolder = opt[String]("baseFolder",
+    default = None,
+    descr = "base folder",
+    short = 'b'
+  )
+
   val node = opt[String]("node",
     short = 'n',
     default = None,

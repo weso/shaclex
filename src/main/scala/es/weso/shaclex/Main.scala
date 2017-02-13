@@ -24,15 +24,21 @@ object Main extends App with LazyLogging {
    val opts = new MainOpts(args, errorDriver)
    opts.verify()
 
-    if (opts.server()) {
+   if (opts.server()) {
       ShaclexServer.main(args)
-    }
+   }
+
+   val baseFolder : Path = if (opts.baseFolder.isDefined) {
+     Paths.get(opts.baseFolder())
+   } else {
+     Paths.get(".")
+   }
 
    val startTime = System.nanoTime()
 
    val validateOptions = for {
-      rdf <- getRDFReader(opts)
-      schema <- getSchema(opts,rdf)
+      rdf <- getRDFReader(opts,baseFolder)
+      schema <- getSchema(opts,baseFolder,rdf)
     } yield (rdf,schema)
 
     validateOptions match {
@@ -102,9 +108,9 @@ object Main extends App with LazyLogging {
     }
   }
 
-  def getRDFReader(opts: MainOpts): Try[RDFReader] = {
+  def getRDFReader(opts: MainOpts, baseFolder: Path): Try[RDFReader] = {
     if (opts.data.isDefined) {
-      val path = Paths.get(opts.data())
+      val path = baseFolder.resolve(opts.data())
       val rdf = RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
       rdf
     } else {
@@ -113,9 +119,9 @@ object Main extends App with LazyLogging {
     }
   }
 
-  def getSchema(opts: MainOpts, rdf: RDFReader): Try[Schema] = {
+  def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Try[Schema] = {
     if (opts.schema.isDefined) {
-      val path = Paths.get(opts.schema())
+      val path = baseFolder.resolve(opts.schema())
       val schema = Schemas.fromFile(path.toFile(),
                        opts.schemaFormat(),
                        opts.engine(),
