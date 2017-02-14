@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.60"
+lazy val shaclexVersion = "0.0.61"
 
 cancelable in Global := true
 fork := true
@@ -203,7 +203,6 @@ lazy val srdfJena =
     , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
     , "com.typesafe" % "config" % "1.3.0" % Test
     , "org.apache.jena" % "jena-arq" % jenaVersion
-    , "org.apache.jena" % "jena-extras" % jenaVersion
     , "org.typelevel" %% "cats" % catsVersion
     )
   )

@@ -12,7 +12,7 @@ import es.weso.rdf.nodes._
 import scala.util.{Failure, Success, Try}
 
 /* Parses RDF into SHEx.
- * Follows ShExR definition: https://github.com/shexSpec/shexTest/blob/master/doc/ShExR.shex
+ * The parser follows ShExR definition: https://github.com/shexSpec/shexTest/blob/master/doc/ShExR.shex
  */
 trait RDF2ShEx extends RDFParser with LazyLogging {
 
@@ -107,45 +107,35 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     _ <- checkType(sx_ShapeExternal)(n,rdf)
   } yield ShapeExternal()
 
-  def semActList1Plus: RDFParser[List[SemAct]] = (n,rdf) => {
-    Success(List()) // TODO
-  }
-  def shapeExprList2Plus: RDFParser[List[ShapeExpr]] = (n,rdf) => {
-    Success(List()) // TODO
-  }
+  def semAct: RDFParser[SemAct] = (n,rdf) => for {
+    _ <- checkType(sx_SemAct)(n,rdf)
+    name <- iriFromPredicate(sx_name)(n,rdf)
+    code <- optional(stringFromPredicate(sx_code))(n,rdf)
+  } yield SemAct(name,code)
 
-  def checkType(expected: RDFNode): RDFParser[Boolean] = (n,rdf) => for {
-    obtained <- objectFromPredicate(rdf_type)(n,rdf)
-    v <- if (obtained == expected) Success(true)
-         else
-          parseFail(s"Type of node $n must be $expected but obtained $obtained")
-  } yield v
+  def tripleExpression: RDFParser[TripleExpr] =
+    someOf(tripleConstraint, someOf, eachOf)
 
-  def arc[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = ???
+  def tripleConstraint: RDFParser[TripleConstraint] = ???
+  def someOf: RDFParser[SomeOf] = ???
+  def eachOf: RDFParser[EachOf] = ???
+
+  def tripleExpressionList2Plus : RDFParser[List[TripleExpr]] = list2Plus(tripleExpression)
+
+  def semActList1Plus: RDFParser[List[SemAct]] = list1Plus(semAct)
+
+  def shapeExprList2Plus: RDFParser[List[ShapeExpr]] = list2Plus(shapeExpr)
+
+  def shapeExprList1Plus: RDFParser[List[ShapeExpr]] =
+    list1Plus(shapeExpr)
+
+    /*(n,rdf) => for {
+    se1 <- arc(rdf_first,shapeExpr)
+    ses <- arc(rdf_rest,shapeExprList1Plus)
+    Success(se1 +: ses)
+  }*/
 
 
-  def opt[A](pred: IRI, parser: RDFParser[A]): RDFParser[Option[A]] = (n,rdf) => {
-    objectsFromPredicate(pred)(n,rdf) match {
-      case Success(os) => os.size match {
-        case 0 => Success(None)
-        case 1 => parser(os.head,rdf).map(Some(_))
-        case _ => parseFail(s"opt fails because $n has more than one value for pred $pred. Values: $os")
-      }
-      case Failure(e) => Success(None)
-    }
-  }
 
-  def starWithNodes[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[(RDFNode, A)]] = (n,rdf) => {
-    for {
-      os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
-      vs : List[(RDFNode,A)] <- os.map(node => parser(node,rdf).map(v => (node,v))).sequence
-    } yield vs
-  }
-
-  def star[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[A]] = (n,rdf) =>
-    for {
-      os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
-      vs : List[A] <- os.map(node => parser(node,rdf)).sequence
-    } yield vs
 
 }

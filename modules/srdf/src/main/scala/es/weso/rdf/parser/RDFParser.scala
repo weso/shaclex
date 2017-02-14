@@ -413,6 +413,72 @@ trait RDFParser {
     }
   }
 
+  def opt[A](pred: IRI, parser: RDFParser[A]): RDFParser[Option[A]] = (n,rdf) => {
+    objectsFromPredicate(pred)(n,rdf) match {
+      case Success(os) => os.size match {
+        case 0 => Success(None)
+        case 1 => parser(os.head,rdf).map(Some(_))
+        case _ => parseFail(s"opt fails because $n has more than one value for pred $pred. Values: $os")
+      }
+      case Failure(e) => Success(None)
+    }
+  }
+
+  def starWithNodes[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[(RDFNode, A)]] = (n,rdf) => {
+    for {
+      os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
+      vs : List[(RDFNode,A)] <- os.map(node => parser(node,rdf).map(v => (node,v))).sequence
+    } yield vs
+  }
+
+  def star[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[A]] = (n,rdf) =>
+    for {
+      os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
+      vs : List[A] <- os.map(node => parser(node,rdf)).sequence
+    } yield vs
+
+  def checkType(expected: RDFNode): RDFParser[Boolean] = (n,rdf) => for {
+    obtained <- objectFromPredicate(rdf_type)(n,rdf)
+    v <- if (obtained == expected) Success(true)
+    else
+      parseFail(s"Type of node $n must be $expected but obtained $obtained")
+  } yield v
+
+  def condition(cond: RDFNode => Boolean, name: String): RDFParser[RDFNode] = (n,_) =>
+    if (cond(n)) Success(n)
+    else parseFail(s"Condition $name not satisfied on node $n")
+
+  def arc[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n,rdf) => for {
+    obj <- objectFromPredicate(pred)(n,rdf)
+    x <- parser(obj,rdf)
+  } yield x
+
+  /**
+  * Parses a list of values. The list must contain at least two values
+  */
+  def list2Plus[A](p:RDFParser[A]): RDFParser[List[A]] = (n,rdf) => for {
+    first <- arc(rdf_first,p)(n,rdf)
+    rest <- list1Plus(p)(n,rdf)
+  } yield first :: rest
+
+  /**
+  * Parses a list of values. The list must contain at least one value
+  */
+  def list1Plus[A](p: RDFParser[A]): RDFParser[List[A]] = list1PlusAux(p,List())
+
+  def list1PlusAux[A](p:RDFParser[A], visited: List[RDFNode]): RDFParser[List[A]] = (n,rdf) => for {
+    first <- arc(rdf_first, p)(n,rdf)
+    restNode <- objectFromPredicate(rdf_rest)(n,rdf)
+    rest <- if (restNode == rdf_nil) Success(List())
+     else if (visited contains restNode)
+      parseFail(s"list1Plus error parsing list with nodes pointing to itself. visitedNodes: $visited, node: $restNode")
+     else list1PlusAux(p,restNode :: visited)(restNode,rdf)
+  } yield first :: rest
+
+  def rdfNil[A]: RDFParser[List[A]] = (n,rdf) =>
+    if (n == rdf_nil) Success(List())
+    else parseFail(s"Expected rdf_nil but got $n")
+
   def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = {
     sequenceEither(ns.map(node2IRI(_)))
   }

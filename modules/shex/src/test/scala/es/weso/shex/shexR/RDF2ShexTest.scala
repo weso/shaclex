@@ -113,8 +113,36 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
       }
     }
 
+    it("Should parse schema with 2 shape expressions") {
+      val ex = "http://example.org/"
+      val rdfStr =
+        s"""|prefix : <$ex>
+            |prefix sx: <http://shex.io/ns/shex#>
+            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+            |:S a sx:Schema ;
+            |   sx:shapes [
+            |     a sx:Shape ;
+            |     sx:expression [
+            |       a sx:tripleConstraint;
+            |       sx:predicate :p ;
+            |       sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ]
+            |     ]
+         """.stripMargin
+      val result = for {
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
+        schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"),rdf)
+      } yield schemas
 
+      result match {
+        case Success(v) => v should be(None)
+        case Failure(e) => {
+          info(s"Failed $e")
+          fail(e)
+        }
+      }
+    }
   }
+
 
 
 
