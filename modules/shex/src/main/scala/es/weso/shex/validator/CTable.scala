@@ -82,7 +82,7 @@ object table {
             else Repeat(simplifiedRbe, e.min, max2IntOrUnbounded(e.max))
           (newTable,groupRbe)
         }
-        case e: SomeOf => {
+        case e: OneOf => {
           val zero: ResultPair = (current, Empty)
           def comb(pair: ResultPair, currentTe: TripleExpr): ResultPair = {
             val (currentTable, currentRbe) = pair

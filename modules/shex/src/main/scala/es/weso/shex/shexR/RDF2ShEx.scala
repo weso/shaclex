@@ -73,7 +73,8 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   def nodeConstraint: RDFParser[NodeConstraint] = (n,rdf) => for {
     _ <- checkType(sx_NodeConstraint)(n,rdf)
     nk <- opt(sx_nodeKind,nodeKind)(n,rdf)
-  } yield NodeConstraint(nk,None,List(),None)
+    datatype <- opt(sx_datatype, iri)(n,rdf)
+  } yield NodeConstraint(nk,datatype,List(),None)
 
   def nodeKind: RDFParser[NodeKind] = (n,rdf) => n match {
     case `sx_iri` => Success(IRIKind)
@@ -85,23 +86,11 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
 
   def shape: RDFParser[Shape] = (n,rdf) => for {
     _ <- checkType(sx_Shape)(n,rdf)
-    closed <- opt(sx_closed, booleanLiteral)(n,rdf)
+    closed <- opt(sx_closed, boolean)(n,rdf)
     extras <- star(sx_extra, iri)(n,rdf)
-    // TODO
-  } yield Shape(None,closed, if (extras.isEmpty) None else Some(extras), None, None,None)
-
-  def booleanLiteral : RDFParser[Boolean] = (n,rdf) => n match {
-    case BooleanLiteral.trueLiteral => Success(true)
-    case BooleanLiteral.falseLiteral => Success(false)
-    case DatatypeLiteral("true",xsd_boolean) => Success(true)
-    case DatatypeLiteral("false",xsd_boolean) => Success(false)
-    case _ => parseFail(s"Expected boolean literal. Found $n")
-  }
-
-  def iri: RDFParser[IRI] = (n,rdf) => n match {
-    case i: IRI => Success(i)
-    case _ => parseFail(s"Expected IRI, found $n")
-  }
+    expression <- opt(sx_expression, tripleExpression)(n,rdf)
+    semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
+  } yield Shape(None, closed, ls2Option(extras), expression, None, semActs)
 
   def shapeExternal: RDFParser[ShapeExternal] = (n,rdf) => for {
     _ <- checkType(sx_ShapeExternal)(n,rdf)
@@ -114,11 +103,62 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield SemAct(name,code)
 
   def tripleExpression: RDFParser[TripleExpr] =
-    someOf(tripleConstraint, someOf, eachOf)
+    someOf(tripleConstraint, oneOf, eachOf)
 
-  def tripleConstraint: RDFParser[TripleConstraint] = ???
-  def someOf: RDFParser[SomeOf] = ???
-  def eachOf: RDFParser[EachOf] = ???
+  def tripleConstraint: RDFParser[TripleConstraint] = (n,rdf) => for {
+    _ <- checkType(sx_TripleConstraint)(n,rdf)
+    optInverse <- opt(sx_inverse,boolean)(n,rdf)
+    optNegated <- opt(sx_negated,boolean)(n,rdf)
+    optMin <- opt(sx_min,integer)(n,rdf)
+    optMax <- opt(sx_max,max)(n,rdf)
+    predicate <- arc(sx_predicate,iri)(n,rdf)
+    valueExpr <- opt(sx_valueExpr,shapeExpr)(n,rdf)
+    semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
+    annotations <- star(sx_annotation,annotationParser)(n,rdf)
+  } yield TripleConstraint(optInverse,optNegated,predicate,valueExpr,optMin,optMax,semActs,
+    ls2Option(annotations)
+  )
+
+  def oneOf: RDFParser[OneOf] = (n, rdf) => for {
+    _ <- checkType(sx_OneOf)(n,rdf)
+    optMin <- opt(sx_min,integer)(n,rdf)
+    optMax <- opt(sx_max,max)(n,rdf)
+    expressions <- arc(sx_expressions,tripleExpressionList2Plus)(n,rdf)
+    semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
+    annotations <- star(sx_annotation,annotationParser)(n,rdf)
+  } yield OneOf(expressions,optMin,optMax,semActs,ls2Option(annotations))
+
+  def eachOf: RDFParser[EachOf] = (n, rdf) => for {
+    _ <- checkType(sx_EachOf)(n,rdf)
+    optMin <- opt(sx_min,integer)(n,rdf)
+    optMax <- opt(sx_max,max)(n,rdf)
+    expressions <- arc(sx_expressions,tripleExpressionList2Plus)(n,rdf)
+    semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
+    annotations <- star(sx_annotation,annotationParser)(n,rdf)
+  } yield EachOf(expressions,optMin,optMax,semActs,ls2Option(annotations))
+
+  def ls2Option[A](ls: List[A]): Option[List[A]] =
+    if (ls.isEmpty) None else Some(ls)
+
+  def annotationParser: RDFParser[Annotation] = (n,rdf) => for {
+   _ <- checkType(sx_Annotation)(n,rdf)
+   pred <- arc(sx_predicate, iri)(n,rdf)
+   obj <- arc(sx_object,objectValue)(n,rdf)
+  } yield Annotation(pred,obj)
+
+  def objectValue: RDFParser[ObjectValue] = (n,rdf) => n match {
+    case iri: IRI => Success(IRIValue(iri))
+    case StringLiteral(str) => Success(StringValue(str))
+    case DatatypeLiteral(str,iri)=> Success(DatatypeString(str,iri))
+    case LangLiteral(lex,lan) => Success(LangString(lex,lan.lang))
+    case _ => parseFail(s"Unexpected object value: $n must be an IRI or a Literal")
+  }
+
+  def max: RDFParser[Max] = (n,rdf) => n match {
+    case IntegerLiteral(n) => Success(IntMax(n))
+    case StringLiteral("*") => Success(Star)
+    case _ => parseFail(s"Unexpected node parsing max cardinality: $n")
+  }
 
   def tripleExpressionList2Plus : RDFParser[List[TripleExpr]] = list2Plus(tripleExpression)
 

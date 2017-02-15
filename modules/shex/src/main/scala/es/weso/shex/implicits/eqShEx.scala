@@ -77,7 +77,7 @@ object eqShEx extends LazyLogging {
   implicit lazy val eqTripleExpr: Eq[TripleExpr] = new Eq[TripleExpr] {
     final def eqv(s1: TripleExpr, s2: TripleExpr): Boolean = (s1,s2) match {
       case (e1: EachOf, e2: EachOf) => e1 === e2
-      case (e1: SomeOf, e2: SomeOf) => e1 === e2
+      case (e1: OneOf, e2: OneOf) => e1 === e2
       case (Inclusion(l1), Inclusion(l2)) => l1 === l2
       case (t1: TripleConstraint, t2: TripleConstraint) => t1 === t2
       case (_,_) => false
@@ -93,8 +93,8 @@ object eqShEx extends LazyLogging {
     s1.annotations === s2.annotations
     }
 
-  implicit lazy val eqSomeOf: Eq[SomeOf] = new Eq[SomeOf] {
-    final def eqv(s1: SomeOf, s2: SomeOf): Boolean =
+  implicit lazy val eqSomeOf: Eq[OneOf] = new Eq[OneOf] {
+    final def eqv(s1: OneOf, s2: OneOf): Boolean =
       s1.expressions === s2.expressions &&
     s1.min === s2.min &&
     s1.max === s2.max &&

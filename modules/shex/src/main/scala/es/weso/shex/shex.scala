@@ -242,7 +242,7 @@ case class EachOf(
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
 }
 
-case class SomeOf(
+case class OneOf(
     expressions: List[TripleExpr],
     optMin: Option[Int],
     optMax: Option[Max],

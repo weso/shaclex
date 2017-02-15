@@ -124,7 +124,7 @@ implicit lazy val encodeShapeLabel: Encoder[ShapeLabel] = new Encoder[ShapeLabel
 }
 implicit lazy val encodeTripleExpr: Encoder[TripleExpr] = new Encoder[TripleExpr] {
   final def apply(a: TripleExpr): Json =  a match {
-    case s: SomeOf => s.asJson
+    case s: OneOf => s.asJson
     case s: EachOf => s.asJson
     case Inclusion(i) => mkObjectTyped("Inclusion",List(field("include",i)))
     case tc: TripleConstraint => tc.asJson
@@ -142,9 +142,9 @@ implicit lazy val encodeEachOf: Encoder[EachOf] = new Encoder[EachOf] {
     ))
 }
 
-implicit lazy val encodeSomeOf: Encoder[SomeOf] = new Encoder[SomeOf] {
-  final def apply(a: SomeOf): Json =
-    mkObjectTyped("SomeOf",
+implicit lazy val encodeSomeOf: Encoder[OneOf] = new Encoder[OneOf] {
+  final def apply(a: OneOf): Json =
+    mkObjectTyped("OneOf",
         List(field("expressions",a.expressions),
              optField("min",a.optMin),
              optField("max",a.optMax),

@@ -383,13 +383,25 @@ trait RDFParser {
     }
   } yield r
 
-  def booleanFromPredicate(p: IRI): RDFParser[Boolean] = (n,rdf) => for {
-    lit <- literalFromPredicate(p)(n,rdf)
-    b <- lit match {
-      case BooleanLiteral(bool) => Success(bool)
-      case _ => parseFail(s"Expected boolean for predicate $p but obtained $lit")
-    }
-  } yield b
+  def boolean : RDFParser[Boolean] = (n,rdf) => n match {
+    case BooleanLiteral.trueLiteral => Success(true)
+    case BooleanLiteral.falseLiteral => Success(false)
+    case DatatypeLiteral("true",xsd_boolean) => Success(true)
+    case DatatypeLiteral("false",xsd_boolean) => Success(false)
+    case _ => parseFail(s"Expected boolean literal. Found $n")
+  }
+
+  def iri: RDFParser[IRI] = (n,rdf) => n match {
+    case i: IRI => Success(i)
+    case _ => parseFail(s"Expected IRI, found $n")
+  }
+
+  def integer: RDFParser[Int] = (n,rdf) => n match {
+    case IntegerLiteral(n) => Success(n)
+    case _ => parseFail(s"Expected integer literal for node $n")
+  }
+
+  def booleanFromPredicate(p: IRI): RDFParser[Boolean] = arc(p, boolean)
 
   def booleanFromPredicateOptional(p: IRI): RDFParser[Option[Boolean]] = (n,rdf) => {
     objectFromPredicateOptional(p)(n,rdf) match {

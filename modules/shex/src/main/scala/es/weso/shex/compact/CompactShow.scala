@@ -222,7 +222,7 @@ object CompactShow {
   private def tripleExprDoc(pm: PrefixMap)(t: TripleExpr): Document =
     t match {
       case e: EachOf => eachOfDoc(pm)(e)
-      case e: SomeOf => someOfDoc(pm)(e)
+      case e: OneOf => someOfDoc(pm)(e)
       case Inclusion(l) => keyword("&") :: shapeLabelDoc(pm)(l)
       case t: TripleConstraint => tripleConstraintDoc(pm)(t)
     }
@@ -240,7 +240,7 @@ object CompactShow {
     optDoc(e.semActs, semActsDoc(pm)) ::
     optDoc(e.annotations, annotationsDoc(pm))
   }
-  private def someOfDoc(pm: PrefixMap)(e: SomeOf): Document = {
+  private def someOfDoc(pm: PrefixMap)(e: OneOf): Document = {
     val kernel = if (Cardinality.isDefault(e.min, e.max)) {
       listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword("|"))
     } else {

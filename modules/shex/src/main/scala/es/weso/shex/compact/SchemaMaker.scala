@@ -749,7 +749,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case Some(te) => if (anns.isEmpty) ok(maybeTe)
       else te match {
         case t: TripleConstraint => ok(Some(t.copy(annotations = Some(anns))))
-        case so: SomeOf => ok(Some(so.copy(annotations = Some(anns))))
+        case so: OneOf => ok(Some(so.copy(annotations = Some(anns))))
         case eo: EachOf => ok(Some(eo.copy(annotations = Some(anns))))
         case _ => err(s"Can't add annotations $anns to $te")
       }
@@ -988,7 +988,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           if (sActs.isEmpty) None
           else Some(sActs)
       )
-      case so: SomeOf => so.copy(
+      case so: OneOf => so.copy(
         optMin = cardinality._1,
         optMax = cardinality._2,
         annotations =
@@ -1048,7 +1048,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     groups <- visitList(visitGroupShape, ctx.groupShape)
   } yield groups.length match {
     case 1 => groups.head
-    case _ => SomeOf(expressions = groups, None,None,None,None)
+    case _ => OneOf(expressions = groups, None,None,None,None)
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = {

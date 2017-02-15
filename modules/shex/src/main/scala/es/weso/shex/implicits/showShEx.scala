@@ -117,7 +117,7 @@ implicit lazy val showNumericLiteral: Show[NumericLiteral] = new Show[NumericLit
 implicit lazy val showTripleExpr: Show[TripleExpr] = new Show[TripleExpr] {
   final def show(a: TripleExpr): String = a match {
     case e: EachOf => e.show
-    case e: SomeOf => e.show
+    case e: OneOf => e.show
     case Inclusion(i) => s"Inclusion(${i.show})"
     case tc: TripleConstraint => tc.show
   }
@@ -128,9 +128,9 @@ implicit lazy val showEachOf: Show[EachOf] = new Show[EachOf] {
     s"EachOf(${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
 }
 
-implicit lazy val showSomeOf: Show[SomeOf] = new Show[SomeOf] {
-  final def show(a: SomeOf): String =
-    s"SomeOf(${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
+implicit lazy val showSomeOf: Show[OneOf] = new Show[OneOf] {
+  final def show(a: OneOf): String =
+    s"OneOf(${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
 }
 
 implicit lazy val showTripleConstraint: Show[TripleConstraint] = new Show[TripleConstraint] {

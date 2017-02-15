@@ -186,7 +186,7 @@ object decoderShEx {
   implicit lazy val decodeTripleExpr: Decoder[TripleExpr] = Decoder.instance { c =>
     c.downField("type").as[String].flatMap {
       case "EachOf"           => c.as[EachOf]
-      case "SomeOf"           => c.as[SomeOf]
+      case "OneOf"           => c.as[OneOf]
       case "Inclusion"        => c.as[Inclusion]
       case "TripleConstraint" => c.as[TripleConstraint]
       case other =>
@@ -205,15 +205,15 @@ object decoderShEx {
     } yield EachOf(expressions, min, max, semActs, annotations)
   }
 
-  implicit lazy val decodeSomeOf: Decoder[SomeOf] = Decoder.instance { c =>
+  implicit lazy val decodeSomeOf: Decoder[OneOf] = Decoder.instance { c =>
     for {
-      _ <- fixedFieldValue(c, "type", "SomeOf")
+      _ <- fixedFieldValue(c, "type", "OneOf")
       expressions <- fieldDecode[List[TripleExpr]](c, "expressions")
       min <- optFieldDecode[Int](c, "min")
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield SomeOf(expressions, min, max, semActs, annotations)
+    } yield OneOf(expressions, min, max, semActs, annotations)
   }
 
   implicit lazy val decodeAnnotation: Decoder[Annotation] = Decoder.instance { c =>

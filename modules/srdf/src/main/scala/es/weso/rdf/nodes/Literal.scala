@@ -19,7 +19,7 @@ case class DatatypeLiteral(lexicalForm: String, dataType: IRI) extends Literal {
 
 // It should be better to inherit from DatatypeLiteral,
 // but case-to-case inheritance is prohibited in Scala
-case class IntegerLiteral(int: Integer) extends Literal {
+case class IntegerLiteral(int: Int) extends Literal {
   val dataType = RDFNode.IntegerDatatypeIRI
   val lexicalForm = int.toString
 

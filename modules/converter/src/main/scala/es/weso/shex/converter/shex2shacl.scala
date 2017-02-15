@@ -90,7 +90,7 @@ object ShEx2Shacl extends Converter {
   def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema): Result[shacl.NodeShape] = {
     te match {
      case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf conversion")
-     case e: shex.SomeOf => err(s"cnvTripleExpr: Not implemented SomeOf conversion")
+     case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf conversion")
      case e: shex.Inclusion => err(s"cnvTripleExpr: Not implemented Inclusion conversion")
      case tc: shex.TripleConstraint => cnvTripleConstraint(tc,schema)
     }

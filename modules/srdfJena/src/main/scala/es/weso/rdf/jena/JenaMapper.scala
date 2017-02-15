@@ -67,7 +67,10 @@ object JenaMapper {
         // Creates the BNode if it doesn't exist
         m.createResource(new AnonId(id))
       }
-      case IntegerLiteral(n)            => m.createTypedLiteral(n)
+      case IntegerLiteral(n)            => {
+        val i: Integer = n
+        m.createTypedLiteral(i)
+      }
       case DecimalLiteral(d)            => m.createTypedLiteral(d)
       //      case BooleanLiteral(b) => m.createLiteral(b)
       case LangLiteral(str, Lang(lang)) => m.createLiteral(str, lang)
