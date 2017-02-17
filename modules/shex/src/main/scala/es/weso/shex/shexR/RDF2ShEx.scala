@@ -26,16 +26,14 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     startActions <- opt(sx_startActs, semActList1Plus)(n,rdf)
     start <- opt(sx_start, shapeExpr)(n,rdf)
     shapePairs <- starWithNodes(sx_shapes, shapeExpr)(n,rdf)
-    shapeMap <- cnvShapePairs(shapePairs)
+    shapes <- star(sx_shapes, shapeExpr)(n,rdf)
   } yield {
-    val shapes = if (shapeMap.isEmpty) None
-                 else Some(shapeMap)
-    Schema(Some(rdf.getPrefixMap()),None,startActions,start,shapes)
+    Schema(Some(rdf.getPrefixMap()),None,startActions,start, ls2Option(shapes))
   }
 
-  def cnvShapePairs(ps: List[(RDFNode,ShapeExpr)]): Try[Map[ShapeLabel,ShapeExpr]] = {
+/*  def cnvShapePairs(ps: List[(RDFNode,ShapeExpr)]): Try[Map[ShapeLabel,ShapeExpr]] = {
     ps.map(cnvShapePair).sequence.map(_.toMap)
-  }
+  } */
 
   def cnvShapePair(p: (RDFNode,ShapeExpr)): Try[(ShapeLabel,ShapeExpr)] =
     toLabel(p._1).map(l => (l,p._2))
@@ -58,17 +56,23 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   def shapeOr: RDFParser[ShapeOr] = (n,rdf) => for {
     _ <- checkType(sx_ShapeOr)(n,rdf)
     shapeExprs <- arc(sx_shapeExprs, shapeExprList2Plus)(n,rdf)
-  } yield ShapeOr(shapeExprs)
+  } yield ShapeOr(mkId(n), shapeExprs)
+
+  def mkId(n: RDFNode): Option[ShapeLabel] = n match {
+    case iri: IRI => Some(IRILabel(iri))
+    case bnode: BNodeId => Some(BNodeLabel(bnode))
+    case _ => None  // TODO: Raise an exception?
+  }
 
   def shapeAnd: RDFParser[ShapeAnd] = (n,rdf) => for {
     _ <- checkType(sx_ShapeAnd)(n,rdf)
     shapeExprs <- arc(sx_shapeExprs, shapeExprList2Plus)(n,rdf)
-  } yield ShapeAnd(shapeExprs)
+  } yield ShapeAnd(mkId(n),shapeExprs)
 
   def shapeNot: RDFParser[ShapeNot] = (n,rdf) => for {
     _ <- checkType(sx_ShapeNot)(n,rdf)
     shapeExpr <- arc(sx_shapeExpr, shapeExpr)(n,rdf)
-  } yield ShapeNot(shapeExpr)
+  } yield ShapeNot(mkId(n),shapeExpr)
 
   def nodeConstraint: RDFParser[NodeConstraint] = (n,rdf) => for {
     _ <- checkType(sx_NodeConstraint)(n,rdf)
@@ -90,11 +94,11 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     extras <- star(sx_extra, iri)(n,rdf)
     expression <- opt(sx_expression, tripleExpression)(n,rdf)
     semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
-  } yield Shape(None, closed, ls2Option(extras), expression, None, semActs)
+  } yield Shape(mkId(n),None, closed, ls2Option(extras), expression, None, semActs)
 
   def shapeExternal: RDFParser[ShapeExternal] = (n,rdf) => for {
     _ <- checkType(sx_ShapeExternal)(n,rdf)
-  } yield ShapeExternal()
+  } yield ShapeExternal(mkId(n))
 
   def semAct: RDFParser[SemAct] = (n,rdf) => for {
     _ <- checkType(sx_SemAct)(n,rdf)

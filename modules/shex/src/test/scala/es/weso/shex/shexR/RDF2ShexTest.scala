@@ -127,6 +127,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             |       sx:predicate :p ;
             |       sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ]
             |     ]
+            |  ] .
          """.stripMargin
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)

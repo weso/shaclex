@@ -6,7 +6,7 @@
     "type": "TripleConstraintSolutions", "predicate": "http://a.example/p1",
     "valueExpr": { "type": "NodeConstraint", "datatype": "http://a.example/dt1" },
     "solutions":[
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"ab\"^^http://a.example/dt1"}
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "ab", "type": "http://a.example/dt1" }}
     ]
   }
 }

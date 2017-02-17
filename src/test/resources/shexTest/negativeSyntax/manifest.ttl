@@ -1,0 +1,607 @@
+@base <https://raw.githubusercontent.com/shexSpec/shexTest/master/negativeSyntax/manifest> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix sht:    <http://www.w3.org/ns/shacl/test-suite#> .
+@prefix sx:     <https://shexspec.github.io/shexTest/ns#> .
+
+<> a mf:Manifest ;
+    rdfs:comment "ShEx negative syntax tests" ;
+    mf:entries (
+    <#1decimalMininclusiveroman-numeral>
+    <#1dotAnnot_AIRIREF>
+    <#1dotUnlabeledCode1>
+    <#1doubleMininclusiveroman-numeral>
+    <#1floatMininclusiveroman-numeral>
+    <#1integerMininclusiveroman-numeral>
+    <#1inverseinversedot>
+    <#1iriLength2>
+    <#1iriMaxexclusive>
+    <#1iriMaxinclusive>
+    <#1iriMinexclusive>
+    <#1iriMininclusive>
+    <#1literalFractiondigitsxsd-integer>
+    <#1literalLength2>
+    <#1literalTotaldigitsxsd-integer>
+    <#1negatedinversenegateddot>
+    <#1negatednegateddot>
+    <#1unknowndatatypeMaxInclusive>
+    <#1val1bnode>
+    <#1val1iriMinusiri1>
+    <#1val1vcrefSTRING_LITERAL1>
+    <#1valA>
+    <#DECIMAL-123.abc>
+    <#DOUBLE-123e>
+    <#INTEGER-+-1>
+    <#INTEGER-123abc>
+    <#IRIREF-with-ECHAR>
+    <#IRIREF-with-PN_LOCAL_ESC>
+    <#IRIREF-with-SPACE>
+    <#IRIREF-with-bad-UCHAR.1>
+    <#IRIREF-with-bad-UCHAR.2>
+    <#PNAME_NS-dot-at-end-declared>
+    <#PNAME_NS-dot-at-end-undeclared>
+    <#PNAME_NS-dot-at-start-declared>
+    <#PNAME_NS-dot-at-start-undeclared>
+    <#PN_LOCAL-PERCENT-end>
+    <#PN_LOCAL-PERCENT-mid>
+    <#PN_LOCAL-PERCENT-start>
+    <#PN_LOCAL-dash-start>
+    <#PN_LOCAL-unescaped-TILDE>
+    <#PN_LOCAL-with-UCHAR.1>
+    <#STRING_LITERAL1-ending-QUOTATION_MARK>
+    <#STRING_LITERAL2-bad-ECHAR>
+    <#STRING_LITERAL2-bad-LANGTAG>
+    <#STRING_LITERAL2-bad-UCHAR1>
+    <#STRING_LITERAL2-bad-UCHAR2-value>
+    <#STRING_LITERAL2-ending-APOSTROPHE>
+    <#STRING_LITERAL2-illegal-UCHAR1-value>
+    <#STRING_LITERAL2-with-LANGTAG-and-datatype>
+    <#STRING_LITERAL_LONG1-ending-APOSTROPHE>
+    <#STRING_LITERAL_LONG1-ending-APOSTROPHE4>
+    <#STRING_LITERAL_LONG2-ending-APOSTROPHE3>
+    <#STRING_LITERAL_LONG2-ending-QUOTATION_MARK4>
+    <#STRING_LITERAL_LONG2-unterminated>
+    <#a>
+    <#base-no-uri>
+    <#base-uri-dot>
+    <#bnodedot>
+    <#capitol-A>
+    <#group-no-COMMA-separators>
+    <#groupShapeConstr-trailing-OR>
+    <#literal-0x123>
+    <#open1dotclose>
+    <#open1dotcloseAnnot3>
+    <#open1dotcloseCode1>
+    <#open1dotclosecardOpt>
+    <#openopen1dotOr1dotclose>
+    <#openopen1dotcloseCode1closeCode2>
+    <#predicate-ANON>
+    <#predicate-BLANK_NODE_LABEL>
+    <#predicate-literal>
+    <#predicate-true>
+    <#prefix-missing>
+    <#prefix-no-COLON>
+    <#prefix-no-PNAME_NS>
+    <#prefix-no-uri>
+    <#prefix-none>
+    <#shapename-a>
+    <#shapename-literal>
+    <#shapename-true>
+    <#tripleConsraint-no-valueClass>
+    <#tripleConsraint-with-datatype-and-dot>
+    <#tripleConsraint-with-datatype-and-valueSet>
+    <#tripleConsraint-with-dot-and-datatype>
+    <#tripleConsraint-with-two-cardinalities>
+  ) .
+
+<#1decimalMininclusiveroman-numeral> a sht:NegativeSyntax ;
+  mf:name "1decimalMininclusiveroman-numeral" ;
+  mf:status mf:proposed ;
+  sx:shex <1decimalMininclusiveroman-numeral.shex> ;
+  .
+
+<#1dotAnnot_AIRIREF> a sht:NegativeSyntax ;
+  mf:name "1dotAnnot_AIRIREF" ;
+  mf:status mf:proposed ;
+  sx:shex <1dotAnnot_AIRIREF.shex> ;
+  .
+
+<#1dotUnlabeledCode1> a sht:NegativeSyntax ;
+  mf:name "1dotUnlabeledCode1" ;
+  mf:status mf:proposed ;
+  sx:shex <1dotUnlabeledCode1.shex> ;
+  .
+
+<#1doubleMininclusiveroman-numeral> a sht:NegativeSyntax ;
+  mf:name "1doubleMininclusiveroman-numeral" ;
+  mf:status mf:proposed ;
+  sx:shex <1doubleMininclusiveroman-numeral.shex> ;
+  .
+
+<#1floatMininclusiveroman-numeral> a sht:NegativeSyntax ;
+  mf:name "1floatMininclusiveroman-numeral" ;
+  mf:status mf:proposed ;
+  sx:shex <1floatMininclusiveroman-numeral.shex> ;
+  .
+
+<#1integerMininclusiveroman-numeral> a sht:NegativeSyntax ;
+  mf:name "1integerMininclusiveroman-numeral" ;
+  mf:status mf:proposed ;
+  sx:shex <1integerMininclusiveroman-numeral.shex> ;
+  .
+
+<#1inverseinversedot> a sht:NegativeSyntax ;
+  mf:name "1inverseinversedot" ;
+  mf:status mf:proposed ;
+  sx:shex <1inverseinversedot.shex> ;
+  .
+
+<#1iriLength2> a sht:NegativeSyntax ;
+  mf:name "1iriLength2" ;
+  mf:status mf:proposed ;
+  sx:shex <1iriLength2.shex> ;
+  .
+
+<#1iriMaxexclusive> a sht:NegativeSyntax ;
+  mf:name "1iriMaxexclusive" ;
+  mf:status mf:proposed ;
+  sx:shex <1iriMaxexclusive.shex> ;
+  .
+
+<#1iriMaxinclusive> a sht:NegativeSyntax ;
+  mf:name "1iriMaxinclusive" ;
+  mf:status mf:proposed ;
+  sx:shex <1iriMaxinclusive.shex> ;
+  .
+
+<#1iriMinexclusive> a sht:NegativeSyntax ;
+  mf:name "1iriMinexclusive" ;
+  mf:status mf:proposed ;
+  sx:shex <1iriMinexclusive.shex> ;
+  .
+
+<#1iriMininclusive> a sht:NegativeSyntax ;
+  mf:name "1iriMininclusive" ;
+  mf:status mf:proposed ;
+  sx:shex <1iriMininclusive.shex> ;
+  .
+
+<#1literalFractiondigitsxsd-integer> a sht:NegativeSyntax ;
+  mf:name "1literalFractiondigitsxsd-integer" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalFractiondigitsxsd-integer.shex> ;
+  .
+
+<#1literalLength2> a sht:NegativeSyntax ;
+  mf:name "1literalLength2" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalLength2.shex> ;
+  .
+
+<#1literalTotaldigitsxsd-integer> a sht:NegativeSyntax ;
+  mf:name "1literalTotaldigitsxsd-integer" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalTotaldigitsxsd-integer.shex> ;
+  .
+
+<#1negatedinversenegateddot> a sht:NegativeSyntax ;
+  mf:name "1negatedinversenegateddot" ;
+  mf:status mf:proposed ;
+  sx:shex <1negatedinversenegateddot.shex> ;
+  .
+
+<#1negatednegateddot> a sht:NegativeSyntax ;
+  mf:name "1negatednegateddot" ;
+  mf:status mf:proposed ;
+  sx:shex <1negatednegateddot.shex> ;
+  .
+
+<#1unknowndatatypeMaxInclusive> a sht:NegativeSyntax ;
+  mf:name "1unknowndatatypeMaxInclusive" ;
+  mf:status mf:proposed ;
+  sx:shex <1unknowndatatypeMaxInclusive.shex> ;
+  .
+
+<#1val1bnode> a sht:NegativeSyntax ;
+  mf:name "1val1bnode" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1bnode.shex> ;
+  .
+
+<#1val1iriMinusiri1> a sht:NegativeSyntax ;
+  mf:name "1val1iriMinusiri1" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1iriMinusiri1.shex> ;
+  .
+
+<#1val1vcrefSTRING_LITERAL1> a sht:NegativeSyntax ;
+  mf:name "1val1vcrefSTRING_LITERAL1" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1vcrefSTRING_LITERAL1.shex> ;
+  .
+
+<#1valA> a sht:NegativeSyntax ;
+  mf:name "1valA" ;
+  mf:status mf:proposed ;
+  sx:shex <1valA.shex> ;
+  .
+
+<#DECIMAL-123.abc> a sht:NegativeSyntax ;
+  mf:name "DECIMAL-123.abc" ;
+  mf:status mf:proposed ;
+  sx:shex <DECIMAL-123.abc.shex> ;
+  .
+
+<#DOUBLE-123e> a sht:NegativeSyntax ;
+  mf:name "DOUBLE-123e" ;
+  mf:status mf:proposed ;
+  sx:shex <DOUBLE-123e.shex> ;
+  .
+
+<#INTEGER-+-1> a sht:NegativeSyntax ;
+  mf:name "INTEGER-+-1" ;
+  mf:status mf:proposed ;
+  sx:shex <INTEGER-+-1.shex> ;
+  .
+
+<#INTEGER-123abc> a sht:NegativeSyntax ;
+  mf:name "INTEGER-123abc" ;
+  mf:status mf:proposed ;
+  sx:shex <INTEGER-123abc.shex> ;
+  .
+
+<#IRIREF-with-ECHAR> a sht:NegativeSyntax ;
+  mf:name "IRIREF-with-ECHAR" ;
+  mf:status mf:proposed ;
+  sx:shex <IRIREF-with-ECHAR.shex> ;
+  .
+
+<#IRIREF-with-PN_LOCAL_ESC> a sht:NegativeSyntax ;
+  mf:name "IRIREF-with-PN_LOCAL_ESC" ;
+  mf:status mf:proposed ;
+  sx:shex <IRIREF-with-PN_LOCAL_ESC.shex> ;
+  .
+
+<#IRIREF-with-SPACE> a sht:NegativeSyntax ;
+  mf:name "IRIREF-with-SPACE" ;
+  mf:status mf:proposed ;
+  sx:shex <IRIREF-with-SPACE.shex> ;
+  .
+
+<#IRIREF-with-bad-UCHAR.1> a sht:NegativeSyntax ;
+  mf:name "IRIREF-with-bad-UCHAR.1" ;
+  mf:status mf:proposed ;
+  sx:shex <IRIREF-with-bad-UCHAR.1.shex> ;
+  .
+
+<#IRIREF-with-bad-UCHAR.2> a sht:NegativeSyntax ;
+  mf:name "IRIREF-with-bad-UCHAR.2" ;
+  mf:status mf:proposed ;
+  sx:shex <IRIREF-with-bad-UCHAR.2.shex> ;
+  .
+
+<#PNAME_NS-dot-at-end-declared> a sht:NegativeSyntax ;
+  mf:name "PNAME_NS-dot-at-end-declared" ;
+  mf:status mf:proposed ;
+  sx:shex <PNAME_NS-dot-at-end-declared.shex> ;
+  .
+
+<#PNAME_NS-dot-at-end-undeclared> a sht:NegativeSyntax ;
+  mf:name "PNAME_NS-dot-at-end-undeclared" ;
+  mf:status mf:proposed ;
+  sx:shex <PNAME_NS-dot-at-end-undeclared.shex> ;
+  .
+
+<#PNAME_NS-dot-at-start-declared> a sht:NegativeSyntax ;
+  mf:name "PNAME_NS-dot-at-start-declared" ;
+  mf:status mf:proposed ;
+  sx:shex <PNAME_NS-dot-at-start-declared.shex> ;
+  .
+
+<#PNAME_NS-dot-at-start-undeclared> a sht:NegativeSyntax ;
+  mf:name "PNAME_NS-dot-at-start-undeclared" ;
+  mf:status mf:proposed ;
+  sx:shex <PNAME_NS-dot-at-start-undeclared.shex> ;
+  .
+
+<#PN_LOCAL-PERCENT-end> a sht:NegativeSyntax ;
+  mf:name "PN_LOCAL-PERCENT-end" ;
+  mf:status mf:proposed ;
+  sx:shex <PN_LOCAL-PERCENT-end.shex> ;
+  .
+
+<#PN_LOCAL-PERCENT-mid> a sht:NegativeSyntax ;
+  mf:name "PN_LOCAL-PERCENT-mid" ;
+  mf:status mf:proposed ;
+  sx:shex <PN_LOCAL-PERCENT-mid.shex> ;
+  .
+
+<#PN_LOCAL-PERCENT-start> a sht:NegativeSyntax ;
+  mf:name "PN_LOCAL-PERCENT-start" ;
+  mf:status mf:proposed ;
+  sx:shex <PN_LOCAL-PERCENT-start.shex> ;
+  .
+
+<#PN_LOCAL-dash-start> a sht:NegativeSyntax ;
+  mf:name "PN_LOCAL-dash-start" ;
+  mf:status mf:proposed ;
+  sx:shex <PN_LOCAL-dash-start.shex> ;
+  .
+
+<#PN_LOCAL-unescaped-TILDE> a sht:NegativeSyntax ;
+  mf:name "PN_LOCAL-unescaped-TILDE" ;
+  mf:status mf:proposed ;
+  sx:shex <PN_LOCAL-unescaped-TILDE.shex> ;
+  .
+
+<#PN_LOCAL-with-UCHAR.1> a sht:NegativeSyntax ;
+  mf:name "PN_LOCAL-with-UCHAR.1" ;
+  mf:status mf:proposed ;
+  sx:shex <PN_LOCAL-with-UCHAR.1.shex> ;
+  .
+
+<#STRING_LITERAL1-ending-QUOTATION_MARK> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL1-ending-QUOTATION_MARK" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL1-ending-QUOTATION_MARK.shex> ;
+  .
+
+<#STRING_LITERAL2-bad-ECHAR> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-bad-ECHAR" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-bad-ECHAR.shex> ;
+  .
+
+<#STRING_LITERAL2-bad-LANGTAG> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-bad-LANGTAG" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-bad-LANGTAG.shex> ;
+  .
+
+<#STRING_LITERAL2-bad-UCHAR1> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-bad-UCHAR1" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-bad-UCHAR1.shex> ;
+  .
+
+<#STRING_LITERAL2-bad-UCHAR2-value> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-bad-UCHAR2-value" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-bad-UCHAR2-value.shex> ;
+  .
+
+<#STRING_LITERAL2-ending-APOSTROPHE> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-ending-APOSTROPHE" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-ending-APOSTROPHE.shex> ;
+  .
+
+<#STRING_LITERAL2-illegal-UCHAR1-value> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-illegal-UCHAR1-value" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-illegal-UCHAR1-value.shex> ;
+  .
+
+<#STRING_LITERAL2-with-LANGTAG-and-datatype> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL2-with-LANGTAG-and-datatype" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL2-with-LANGTAG-and-datatype.shex> ;
+  .
+
+<#STRING_LITERAL_LONG1-ending-APOSTROPHE> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL_LONG1-ending-APOSTROPHE" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL_LONG1-ending-APOSTROPHE.shex> ;
+  .
+
+<#STRING_LITERAL_LONG1-ending-APOSTROPHE4> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL_LONG1-ending-APOSTROPHE4" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL_LONG1-ending-APOSTROPHE4.shex> ;
+  .
+
+<#STRING_LITERAL_LONG2-ending-APOSTROPHE3> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL_LONG2-ending-APOSTROPHE3" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL_LONG2-ending-APOSTROPHE3.shex> ;
+  .
+
+<#STRING_LITERAL_LONG2-ending-QUOTATION_MARK4> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL_LONG2-ending-QUOTATION_MARK4" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL_LONG2-ending-QUOTATION_MARK4.shex> ;
+  .
+
+<#STRING_LITERAL_LONG2-unterminated> a sht:NegativeSyntax ;
+  mf:name "STRING_LITERAL_LONG2-unterminated" ;
+  mf:status mf:proposed ;
+  sx:shex <STRING_LITERAL_LONG2-unterminated.shex> ;
+  .
+
+<#a> a sht:NegativeSyntax ;
+  mf:name "a" ;
+  mf:status mf:proposed ;
+  sx:shex <a.shex> ;
+  .
+
+<#base-no-uri> a sht:NegativeSyntax ;
+  mf:name "base-no-uri" ;
+  mf:status mf:proposed ;
+  sx:shex <base-no-uri.shex> ;
+  .
+
+<#base-uri-dot> a sht:NegativeSyntax ;
+  mf:name "base-uri-dot" ;
+  mf:status mf:proposed ;
+  sx:shex <base-uri-dot.shex> ;
+  .
+
+<#bnodedot> a sht:NegativeSyntax ;
+  mf:name "bnodedot" ;
+  mf:status mf:proposed ;
+  sx:shex <bnodedot.shex> ;
+  .
+
+<#capitol-A> a sht:NegativeSyntax ;
+  mf:name "capitol-A" ;
+  mf:status mf:proposed ;
+  sx:shex <capitol-A.shex> ;
+  .
+
+<#group-no-COMMA-separators> a sht:NegativeSyntax ;
+  mf:name "group-no-COMMA-separators" ;
+  mf:status mf:proposed ;
+  sx:shex <group-no-COMMA-separators.shex> ;
+  .
+
+<#groupShapeConstr-trailing-OR> a sht:NegativeSyntax ;
+  mf:name "groupShapeConstr-trailing-OR" ;
+  mf:status mf:proposed ;
+  sx:shex <groupShapeConstr-trailing-OR.shex> ;
+  .
+
+<#literal-0x123> a sht:NegativeSyntax ;
+  mf:name "literal-0x123" ;
+  mf:status mf:proposed ;
+  sx:shex <literal-0x123.shex> ;
+  .
+
+<#open1dotclose> a sht:NegativeSyntax ;
+  mf:name "open1dotclose" ;
+  mf:status mf:proposed ;
+  sx:shex <open1dotclose.shex> ;
+  .
+
+<#open1dotcloseAnnot3> a sht:NegativeSyntax ;
+  mf:name "open1dotcloseAnnot3" ;
+  mf:status mf:proposed ;
+  sx:shex <open1dotcloseAnnot3.shex> ;
+  .
+
+<#open1dotcloseCode1> a sht:NegativeSyntax ;
+  mf:name "open1dotcloseCode1" ;
+  mf:status mf:proposed ;
+  sx:shex <open1dotcloseCode1.shex> ;
+  .
+
+<#open1dotclosecardOpt> a sht:NegativeSyntax ;
+  mf:name "open1dotclosecardOpt" ;
+  mf:status mf:proposed ;
+  sx:shex <open1dotclosecardOpt.shex> ;
+  .
+
+<#openopen1dotOr1dotclose> a sht:NegativeSyntax ;
+  mf:name "openopen1dotOr1dotclose" ;
+  mf:status mf:proposed ;
+  sx:shex <openopen1dotOr1dotclose.shex> ;
+  .
+
+<#openopen1dotcloseCode1closeCode2> a sht:NegativeSyntax ;
+  mf:name "openopen1dotcloseCode1closeCode2" ;
+  mf:status mf:proposed ;
+  sx:shex <openopen1dotcloseCode1closeCode2.shex> ;
+  .
+
+<#predicate-ANON> a sht:NegativeSyntax ;
+  mf:name "predicate-ANON" ;
+  mf:status mf:proposed ;
+  sx:shex <predicate-ANON.shex> ;
+  .
+
+<#predicate-BLANK_NODE_LABEL> a sht:NegativeSyntax ;
+  mf:name "predicate-BLANK_NODE_LABEL" ;
+  mf:status mf:proposed ;
+  sx:shex <predicate-BLANK_NODE_LABEL.shex> ;
+  .
+
+<#predicate-literal> a sht:NegativeSyntax ;
+  mf:name "predicate-literal" ;
+  mf:status mf:proposed ;
+  sx:shex <predicate-literal.shex> ;
+  .
+
+<#predicate-true> a sht:NegativeSyntax ;
+  mf:name "predicate-true" ;
+  mf:status mf:proposed ;
+  sx:shex <predicate-true.shex> ;
+  .
+
+<#prefix-missing> a sht:NegativeSyntax ;
+  mf:name "prefix-missing" ;
+  mf:status mf:proposed ;
+  sx:shex <prefix-missing.shex> ;
+  .
+
+<#prefix-no-COLON> a sht:NegativeSyntax ;
+  mf:name "prefix-no-COLON" ;
+  mf:status mf:proposed ;
+  sx:shex <prefix-no-COLON.shex> ;
+  .
+
+<#prefix-no-PNAME_NS> a sht:NegativeSyntax ;
+  mf:name "prefix-no-PNAME_NS" ;
+  mf:status mf:proposed ;
+  sx:shex <prefix-no-PNAME_NS.shex> ;
+  .
+
+<#prefix-no-uri> a sht:NegativeSyntax ;
+  mf:name "prefix-no-uri" ;
+  mf:status mf:proposed ;
+  sx:shex <prefix-no-uri.shex> ;
+  .
+
+<#prefix-none> a sht:NegativeSyntax ;
+  mf:name "prefix-none" ;
+  mf:status mf:proposed ;
+  sx:shex <prefix-none.shex> ;
+  .
+
+<#shapename-a> a sht:NegativeSyntax ;
+  mf:name "shapename-a" ;
+  mf:status mf:proposed ;
+  sx:shex <shapename-a.shex> ;
+  .
+
+<#shapename-literal> a sht:NegativeSyntax ;
+  mf:name "shapename-literal" ;
+  mf:status mf:proposed ;
+  sx:shex <shapename-literal.shex> ;
+  .
+
+<#shapename-true> a sht:NegativeSyntax ;
+  mf:name "shapename-true" ;
+  mf:status mf:proposed ;
+  sx:shex <shapename-true.shex> ;
+  .
+
+<#tripleConsraint-no-valueClass> a sht:NegativeSyntax ;
+  mf:name "tripleConsraint-no-valueClass" ;
+  mf:status mf:proposed ;
+  sx:shex <tripleConsraint-no-valueClass.shex> ;
+  .
+
+<#tripleConsraint-with-datatype-and-dot> a sht:NegativeSyntax ;
+  mf:name "tripleConsraint-with-datatype-and-dot" ;
+  mf:status mf:proposed ;
+  sx:shex <tripleConsraint-with-datatype-and-dot.shex> ;
+  .
+
+<#tripleConsraint-with-datatype-and-valueSet> a sht:NegativeSyntax ;
+  mf:name "tripleConsraint-with-datatype-and-valueSet" ;
+  mf:status mf:proposed ;
+  sx:shex <tripleConsraint-with-datatype-and-valueSet.shex> ;
+  .
+
+<#tripleConsraint-with-dot-and-datatype> a sht:NegativeSyntax ;
+  mf:name "tripleConsraint-with-dot-and-datatype" ;
+  mf:status mf:proposed ;
+  sx:shex <tripleConsraint-with-dot-and-datatype.shex> ;
+  .
+
+<#tripleConsraint-with-two-cardinalities> a sht:NegativeSyntax ;
+  mf:name "tripleConsraint-with-two-cardinalities" ;
+  mf:status mf:proposed ;
+  sx:shex <tripleConsraint-with-two-cardinalities.shex> ;
+  .
+

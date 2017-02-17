@@ -22,13 +22,13 @@ implicit lazy val showPrefixMap: Show[PrefixMap] = new Show[PrefixMap] {
 
 implicit lazy val showShapeExpr: Show[ShapeExpr] = new Show[ShapeExpr] {
   final def show(a: ShapeExpr): String = a match {
-    case ShapeOr(shapes) => s"ShapeOr(${shapes.map(_.show).mkString(",")})"
-    case ShapeAnd(shapes) => s"ShapeAnd(${shapes.map(_.show).mkString(",")})"
-    case ShapeNot(shape) => s"ShapeNot(${shape.show})"
+    case ShapeOr(id,shapes) => s"ShapeOr($id, ${shapes.map(_.show).mkString(",")})"
+    case ShapeAnd(id,shapes) => s"ShapeAnd($id, ${shapes.map(_.show).mkString(",")})"
+    case ShapeNot(id,shape) => s"ShapeNot($id, ${shape.show})"
     case s: Shape => s.show
     case nc:NodeConstraint => nc.show
     case ShapeRef(r) => s"ShapeRef(${r.show})"
-    case ShapeExternal() => s"ShapeExternal"
+    case ShapeExternal(id) => s"ShapeExternal($id)"
   }
 }
 

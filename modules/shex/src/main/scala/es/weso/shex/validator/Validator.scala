@@ -142,9 +142,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
     logger.info(s"${attempt.show}, node: ${node.show}, shapeExpr: ${CompactShow.showShapeExpr(s, schema.prefixMap)}")
     s match{
-      case ShapeOr(ses) => checkOr(attempt,node,ses)
-      case ShapeAnd(ses) => checkAnd(attempt,node,ses)
-      case ShapeNot(s) => checkNot(attempt,node,s)
+      case ShapeOr(_,ses) => checkOr(attempt,node,ses)
+      case ShapeAnd(_,ses) => checkAnd(attempt,node,ses)
+      case ShapeNot(_,s) => checkNot(attempt,node,s)
       case nc: NodeConstraint => checkNodeConstraint(attempt,node,nc)
       case s: Shape => checkShape(attempt,node,s)
       case ShapeRef(ref) => checkRef(attempt,node,ref)

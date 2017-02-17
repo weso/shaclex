@@ -21,11 +21,12 @@ object decoderShEx {
   implicit lazy val decodeSchema: Decoder[Schema] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Schema").right
+      _ <- fixedFieldValue(c, "@context", "https://shexspec.github.io/context.jsonld").right
       prefixes <- optFieldDecodeMap[Prefix, IRI](c, "prefixes").right
       base <- optFieldDecode[IRI](c, "base").right
       startActs <- optFieldDecode[List[SemAct]](c, "startActs").right
       start <- optFieldDecode[ShapeExpr](c, "start").right
-      shapes <- optFieldDecodeMap[ShapeLabel, ShapeExpr](c, "shapes").right
+      shapes <- optFieldDecode[List[ShapeExpr]](c, "shapes").right
     } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes)
   }
 
@@ -38,8 +39,8 @@ object decoderShEx {
   implicit lazy val decodeShapeLabel: Decoder[ShapeLabel] =
     Decoder[String].emap(str => parseShapeLabel(str))
 
-  implicit lazy val keyDecoderShapeLabel: KeyDecoder[ShapeLabel] =
-    KeyDecoder.instance { str => parseShapeLabel(str).toOption }
+/*  implicit lazy val keyDecoderShapeLabel: KeyDecoder[ShapeLabel] =
+    KeyDecoder.instance { str => parseShapeLabel(str).toOption } */
 
   implicit lazy val decodeBNodeId: Decoder[BNodeId] =
     Decoder[String].map(BNodeId(_))
@@ -76,22 +77,25 @@ object decoderShEx {
   implicit lazy val decodeShapeOr: Decoder[ShapeOr] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeOr").right
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       ses <- fieldDecode[List[ShapeExpr]](c, "shapeExprs").right
-    } yield ShapeOr(ses)
+    } yield ShapeOr(id,ses)
   }
 
   implicit lazy val decodeShapeAnd: Decoder[ShapeAnd] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeAnd").right
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       ses <- fieldDecode[List[ShapeExpr]](c, "shapeExprs").right
-    } yield ShapeAnd(ses)
+    } yield ShapeAnd(id,ses)
   }
 
   implicit lazy val decodeShapeNot: Decoder[ShapeNot] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeNot").right
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       se <- fieldDecode[ShapeExpr](c, "shapeExpr").right
-    } yield ShapeNot(se)
+    } yield ShapeNot(id,se)
   }
 
   implicit lazy val decodeNodeConstraint: Decoder[NodeConstraint] = Decoder.instance { c =>
@@ -174,13 +178,14 @@ object decoderShEx {
   implicit lazy val decodeShape: Decoder[Shape] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Shape")
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       virtual <- optFieldDecode[Boolean](c, "virtual")
       closed <- optFieldDecode[Boolean](c, "closed")
       extra <- optFieldDecode[List[IRI]](c, "extra")
       expression <- optFieldDecode[TripleExpr](c, "expression")
       inherit <- optFieldDecode[ShapeLabel](c, "inherit")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
-    } yield Shape(virtual, closed, extra, expression, inherit, semActs)
+    } yield Shape(id, virtual, closed, extra, expression, inherit, semActs)
   }
 
   implicit lazy val decodeTripleExpr: Decoder[TripleExpr] = Decoder.instance { c =>
@@ -241,7 +246,8 @@ object decoderShEx {
   implicit lazy val decodeShapeExternal: Decoder[ShapeExternal] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeExternal")
-    } yield ShapeExternal()
+      id <- optFieldDecode[ShapeLabel](c,"id").right
+    } yield ShapeExternal(id)
   }
 
   implicit lazy val decodeValueSetValue: Decoder[ValueSetValue] =

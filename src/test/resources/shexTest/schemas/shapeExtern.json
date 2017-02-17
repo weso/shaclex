@@ -1,8 +1,10 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes": {
-    "http://a.example/Sext": {
+  "shapes": [
+    {
+      "id": "http://a.example/Sext",
       "type": "ShapeExternal"
     }
-  }
+  ]
 }

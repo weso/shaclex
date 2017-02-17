@@ -1,17 +1,28 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes":{
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "predicate": "http://a.example/p1",
         "semActs": [
-          { "type": "SemAct", "name": "http://shex.io/extensions/Test/#a" },
-          { "type": "SemAct", "name": "http://shex.io/extensions/Test/#b" },
-          { "type": "SemAct", "name": "http://shex.io/extensions/Test/#c" }
+          {
+            "type": "SemAct",
+            "name": "http://shex.io/extensions/Test/#a"
+          },
+          {
+            "type": "SemAct",
+            "name": "http://shex.io/extensions/Test/#b"
+          },
+          {
+            "type": "SemAct",
+            "name": "http://shex.io/extensions/Test/#c"
+          }
         ]
       }
     }
-  }
+  ]
 }

@@ -1,0 +1,612 @@
+{
+  "@context": [
+    {
+      "@base": "https://raw.githubusercontent.com/shexSpec/shexTest/master/negativeSyntax/manifest"
+    },
+    "../context.jsonld"
+  ],
+  "@graph": [
+    {
+      "@id": "",
+      "@type": "mf:Manifest",
+      "rdfs:comment": "ShEx negative syntax tests",
+      "entries": [
+        {
+          "@id": "#1decimalMininclusiveroman-numeral",
+          "@type": "sht:NegativeSyntax",
+          "name": "1decimalMininclusiveroman-numeral",
+          "status": "mf:proposed",
+          "shex": "1decimalMininclusiveroman-numeral.shex"
+        },
+        {
+          "@id": "#1dotAnnot_AIRIREF",
+          "@type": "sht:NegativeSyntax",
+          "name": "1dotAnnot_AIRIREF",
+          "status": "mf:proposed",
+          "shex": "1dotAnnot_AIRIREF.shex"
+        },
+        {
+          "@id": "#1dotUnlabeledCode1",
+          "@type": "sht:NegativeSyntax",
+          "name": "1dotUnlabeledCode1",
+          "status": "mf:proposed",
+          "shex": "1dotUnlabeledCode1.shex"
+        },
+        {
+          "@id": "#1doubleMininclusiveroman-numeral",
+          "@type": "sht:NegativeSyntax",
+          "name": "1doubleMininclusiveroman-numeral",
+          "status": "mf:proposed",
+          "shex": "1doubleMininclusiveroman-numeral.shex"
+        },
+        {
+          "@id": "#1floatMininclusiveroman-numeral",
+          "@type": "sht:NegativeSyntax",
+          "name": "1floatMininclusiveroman-numeral",
+          "status": "mf:proposed",
+          "shex": "1floatMininclusiveroman-numeral.shex"
+        },
+        {
+          "@id": "#1integerMininclusiveroman-numeral",
+          "@type": "sht:NegativeSyntax",
+          "name": "1integerMininclusiveroman-numeral",
+          "status": "mf:proposed",
+          "shex": "1integerMininclusiveroman-numeral.shex"
+        },
+        {
+          "@id": "#1inverseinversedot",
+          "@type": "sht:NegativeSyntax",
+          "name": "1inverseinversedot",
+          "status": "mf:proposed",
+          "shex": "1inverseinversedot.shex"
+        },
+        {
+          "@id": "#1iriLength2",
+          "@type": "sht:NegativeSyntax",
+          "name": "1iriLength2",
+          "status": "mf:proposed",
+          "shex": "1iriLength2.shex"
+        },
+        {
+          "@id": "#1iriMaxexclusive",
+          "@type": "sht:NegativeSyntax",
+          "name": "1iriMaxexclusive",
+          "status": "mf:proposed",
+          "shex": "1iriMaxexclusive.shex"
+        },
+        {
+          "@id": "#1iriMaxinclusive",
+          "@type": "sht:NegativeSyntax",
+          "name": "1iriMaxinclusive",
+          "status": "mf:proposed",
+          "shex": "1iriMaxinclusive.shex"
+        },
+        {
+          "@id": "#1iriMinexclusive",
+          "@type": "sht:NegativeSyntax",
+          "name": "1iriMinexclusive",
+          "status": "mf:proposed",
+          "shex": "1iriMinexclusive.shex"
+        },
+        {
+          "@id": "#1iriMininclusive",
+          "@type": "sht:NegativeSyntax",
+          "name": "1iriMininclusive",
+          "status": "mf:proposed",
+          "shex": "1iriMininclusive.shex"
+        },
+        {
+          "@id": "#1literalFractiondigitsxsd-integer",
+          "@type": "sht:NegativeSyntax",
+          "name": "1literalFractiondigitsxsd-integer",
+          "status": "mf:proposed",
+          "shex": "1literalFractiondigitsxsd-integer.shex"
+        },
+        {
+          "@id": "#1literalLength2",
+          "@type": "sht:NegativeSyntax",
+          "name": "1literalLength2",
+          "status": "mf:proposed",
+          "shex": "1literalLength2.shex"
+        },
+        {
+          "@id": "#1literalTotaldigitsxsd-integer",
+          "@type": "sht:NegativeSyntax",
+          "name": "1literalTotaldigitsxsd-integer",
+          "status": "mf:proposed",
+          "shex": "1literalTotaldigitsxsd-integer.shex"
+        },
+        {
+          "@id": "#1negatedinversenegateddot",
+          "@type": "sht:NegativeSyntax",
+          "name": "1negatedinversenegateddot",
+          "status": "mf:proposed",
+          "shex": "1negatedinversenegateddot.shex"
+        },
+        {
+          "@id": "#1negatednegateddot",
+          "@type": "sht:NegativeSyntax",
+          "name": "1negatednegateddot",
+          "status": "mf:proposed",
+          "shex": "1negatednegateddot.shex"
+        },
+        {
+          "@id": "#1unknowndatatypeMaxInclusive",
+          "@type": "sht:NegativeSyntax",
+          "name": "1unknowndatatypeMaxInclusive",
+          "status": "mf:proposed",
+          "shex": "1unknowndatatypeMaxInclusive.shex"
+        },
+        {
+          "@id": "#1val1bnode",
+          "@type": "sht:NegativeSyntax",
+          "name": "1val1bnode",
+          "status": "mf:proposed",
+          "shex": "1val1bnode.shex"
+        },
+        {
+          "@id": "#1val1iriMinusiri1",
+          "@type": "sht:NegativeSyntax",
+          "name": "1val1iriMinusiri1",
+          "status": "mf:proposed",
+          "shex": "1val1iriMinusiri1.shex"
+        },
+        {
+          "@id": "#1val1vcrefSTRING_LITERAL1",
+          "@type": "sht:NegativeSyntax",
+          "name": "1val1vcrefSTRING_LITERAL1",
+          "status": "mf:proposed",
+          "shex": "1val1vcrefSTRING_LITERAL1.shex"
+        },
+        {
+          "@id": "#1valA",
+          "@type": "sht:NegativeSyntax",
+          "name": "1valA",
+          "status": "mf:proposed",
+          "shex": "1valA.shex"
+        },
+        {
+          "@id": "#DECIMAL-123.abc",
+          "@type": "sht:NegativeSyntax",
+          "name": "DECIMAL-123.abc",
+          "status": "mf:proposed",
+          "shex": "DECIMAL-123.abc.shex"
+        },
+        {
+          "@id": "#DOUBLE-123e",
+          "@type": "sht:NegativeSyntax",
+          "name": "DOUBLE-123e",
+          "status": "mf:proposed",
+          "shex": "DOUBLE-123e.shex"
+        },
+        {
+          "@id": "#INTEGER-+-1",
+          "@type": "sht:NegativeSyntax",
+          "name": "INTEGER-+-1",
+          "status": "mf:proposed",
+          "shex": "INTEGER-+-1.shex"
+        },
+        {
+          "@id": "#INTEGER-123abc",
+          "@type": "sht:NegativeSyntax",
+          "name": "INTEGER-123abc",
+          "status": "mf:proposed",
+          "shex": "INTEGER-123abc.shex"
+        },
+        {
+          "@id": "#IRIREF-with-ECHAR",
+          "@type": "sht:NegativeSyntax",
+          "name": "IRIREF-with-ECHAR",
+          "status": "mf:proposed",
+          "shex": "IRIREF-with-ECHAR.shex"
+        },
+        {
+          "@id": "#IRIREF-with-PN_LOCAL_ESC",
+          "@type": "sht:NegativeSyntax",
+          "name": "IRIREF-with-PN_LOCAL_ESC",
+          "status": "mf:proposed",
+          "shex": "IRIREF-with-PN_LOCAL_ESC.shex"
+        },
+        {
+          "@id": "#IRIREF-with-SPACE",
+          "@type": "sht:NegativeSyntax",
+          "name": "IRIREF-with-SPACE",
+          "status": "mf:proposed",
+          "shex": "IRIREF-with-SPACE.shex"
+        },
+        {
+          "@id": "#IRIREF-with-bad-UCHAR.1",
+          "@type": "sht:NegativeSyntax",
+          "name": "IRIREF-with-bad-UCHAR.1",
+          "status": "mf:proposed",
+          "shex": "IRIREF-with-bad-UCHAR.1.shex"
+        },
+        {
+          "@id": "#IRIREF-with-bad-UCHAR.2",
+          "@type": "sht:NegativeSyntax",
+          "name": "IRIREF-with-bad-UCHAR.2",
+          "status": "mf:proposed",
+          "shex": "IRIREF-with-bad-UCHAR.2.shex"
+        },
+        {
+          "@id": "#PNAME_NS-dot-at-end-declared",
+          "@type": "sht:NegativeSyntax",
+          "name": "PNAME_NS-dot-at-end-declared",
+          "status": "mf:proposed",
+          "shex": "PNAME_NS-dot-at-end-declared.shex"
+        },
+        {
+          "@id": "#PNAME_NS-dot-at-end-undeclared",
+          "@type": "sht:NegativeSyntax",
+          "name": "PNAME_NS-dot-at-end-undeclared",
+          "status": "mf:proposed",
+          "shex": "PNAME_NS-dot-at-end-undeclared.shex"
+        },
+        {
+          "@id": "#PNAME_NS-dot-at-start-declared",
+          "@type": "sht:NegativeSyntax",
+          "name": "PNAME_NS-dot-at-start-declared",
+          "status": "mf:proposed",
+          "shex": "PNAME_NS-dot-at-start-declared.shex"
+        },
+        {
+          "@id": "#PNAME_NS-dot-at-start-undeclared",
+          "@type": "sht:NegativeSyntax",
+          "name": "PNAME_NS-dot-at-start-undeclared",
+          "status": "mf:proposed",
+          "shex": "PNAME_NS-dot-at-start-undeclared.shex"
+        },
+        {
+          "@id": "#PN_LOCAL-PERCENT-end",
+          "@type": "sht:NegativeSyntax",
+          "name": "PN_LOCAL-PERCENT-end",
+          "status": "mf:proposed",
+          "shex": "PN_LOCAL-PERCENT-end.shex"
+        },
+        {
+          "@id": "#PN_LOCAL-PERCENT-mid",
+          "@type": "sht:NegativeSyntax",
+          "name": "PN_LOCAL-PERCENT-mid",
+          "status": "mf:proposed",
+          "shex": "PN_LOCAL-PERCENT-mid.shex"
+        },
+        {
+          "@id": "#PN_LOCAL-PERCENT-start",
+          "@type": "sht:NegativeSyntax",
+          "name": "PN_LOCAL-PERCENT-start",
+          "status": "mf:proposed",
+          "shex": "PN_LOCAL-PERCENT-start.shex"
+        },
+        {
+          "@id": "#PN_LOCAL-dash-start",
+          "@type": "sht:NegativeSyntax",
+          "name": "PN_LOCAL-dash-start",
+          "status": "mf:proposed",
+          "shex": "PN_LOCAL-dash-start.shex"
+        },
+        {
+          "@id": "#PN_LOCAL-unescaped-TILDE",
+          "@type": "sht:NegativeSyntax",
+          "name": "PN_LOCAL-unescaped-TILDE",
+          "status": "mf:proposed",
+          "shex": "PN_LOCAL-unescaped-TILDE.shex"
+        },
+        {
+          "@id": "#PN_LOCAL-with-UCHAR.1",
+          "@type": "sht:NegativeSyntax",
+          "name": "PN_LOCAL-with-UCHAR.1",
+          "status": "mf:proposed",
+          "shex": "PN_LOCAL-with-UCHAR.1.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL1-ending-QUOTATION_MARK",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL1-ending-QUOTATION_MARK",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL1-ending-QUOTATION_MARK.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-bad-ECHAR",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-bad-ECHAR",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-bad-ECHAR.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-bad-LANGTAG",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-bad-LANGTAG",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-bad-LANGTAG.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-bad-UCHAR1",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-bad-UCHAR1",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-bad-UCHAR1.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-bad-UCHAR2-value",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-bad-UCHAR2-value",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-bad-UCHAR2-value.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-ending-APOSTROPHE",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-ending-APOSTROPHE",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-ending-APOSTROPHE.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-illegal-UCHAR1-value",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-illegal-UCHAR1-value",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-illegal-UCHAR1-value.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL2-with-LANGTAG-and-datatype",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL2-with-LANGTAG-and-datatype",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL2-with-LANGTAG-and-datatype.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL_LONG1-ending-APOSTROPHE",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL_LONG1-ending-APOSTROPHE",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL_LONG1-ending-APOSTROPHE.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL_LONG1-ending-APOSTROPHE4",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL_LONG1-ending-APOSTROPHE4",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL_LONG1-ending-APOSTROPHE4.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL_LONG2-ending-APOSTROPHE3",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL_LONG2-ending-APOSTROPHE3",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL_LONG2-ending-APOSTROPHE3.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL_LONG2-ending-QUOTATION_MARK4",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL_LONG2-ending-QUOTATION_MARK4",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL_LONG2-ending-QUOTATION_MARK4.shex"
+        },
+        {
+          "@id": "#STRING_LITERAL_LONG2-unterminated",
+          "@type": "sht:NegativeSyntax",
+          "name": "STRING_LITERAL_LONG2-unterminated",
+          "status": "mf:proposed",
+          "shex": "STRING_LITERAL_LONG2-unterminated.shex"
+        },
+        {
+          "@id": "#a",
+          "@type": "sht:NegativeSyntax",
+          "name": "a",
+          "status": "mf:proposed",
+          "shex": "a.shex"
+        },
+        {
+          "@id": "#base-no-uri",
+          "@type": "sht:NegativeSyntax",
+          "name": "base-no-uri",
+          "status": "mf:proposed",
+          "shex": "base-no-uri.shex"
+        },
+        {
+          "@id": "#base-uri-dot",
+          "@type": "sht:NegativeSyntax",
+          "name": "base-uri-dot",
+          "status": "mf:proposed",
+          "shex": "base-uri-dot.shex"
+        },
+        {
+          "@id": "#bnodedot",
+          "@type": "sht:NegativeSyntax",
+          "name": "bnodedot",
+          "status": "mf:proposed",
+          "shex": "bnodedot.shex"
+        },
+        {
+          "@id": "#capitol-A",
+          "@type": "sht:NegativeSyntax",
+          "name": "capitol-A",
+          "status": "mf:proposed",
+          "shex": "capitol-A.shex"
+        },
+        {
+          "@id": "#group-no-COMMA-separators",
+          "@type": "sht:NegativeSyntax",
+          "name": "group-no-COMMA-separators",
+          "status": "mf:proposed",
+          "shex": "group-no-COMMA-separators.shex"
+        },
+        {
+          "@id": "#groupShapeConstr-trailing-OR",
+          "@type": "sht:NegativeSyntax",
+          "name": "groupShapeConstr-trailing-OR",
+          "status": "mf:proposed",
+          "shex": "groupShapeConstr-trailing-OR.shex"
+        },
+        {
+          "@id": "#literal-0x123",
+          "@type": "sht:NegativeSyntax",
+          "name": "literal-0x123",
+          "status": "mf:proposed",
+          "shex": "literal-0x123.shex"
+        },
+        {
+          "@id": "#open1dotclose",
+          "@type": "sht:NegativeSyntax",
+          "name": "open1dotclose",
+          "status": "mf:proposed",
+          "shex": "open1dotclose.shex"
+        },
+        {
+          "@id": "#open1dotcloseAnnot3",
+          "@type": "sht:NegativeSyntax",
+          "name": "open1dotcloseAnnot3",
+          "status": "mf:proposed",
+          "shex": "open1dotcloseAnnot3.shex"
+        },
+        {
+          "@id": "#open1dotcloseCode1",
+          "@type": "sht:NegativeSyntax",
+          "name": "open1dotcloseCode1",
+          "status": "mf:proposed",
+          "shex": "open1dotcloseCode1.shex"
+        },
+        {
+          "@id": "#open1dotclosecardOpt",
+          "@type": "sht:NegativeSyntax",
+          "name": "open1dotclosecardOpt",
+          "status": "mf:proposed",
+          "shex": "open1dotclosecardOpt.shex"
+        },
+        {
+          "@id": "#openopen1dotOr1dotclose",
+          "@type": "sht:NegativeSyntax",
+          "name": "openopen1dotOr1dotclose",
+          "status": "mf:proposed",
+          "shex": "openopen1dotOr1dotclose.shex"
+        },
+        {
+          "@id": "#openopen1dotcloseCode1closeCode2",
+          "@type": "sht:NegativeSyntax",
+          "name": "openopen1dotcloseCode1closeCode2",
+          "status": "mf:proposed",
+          "shex": "openopen1dotcloseCode1closeCode2.shex"
+        },
+        {
+          "@id": "#predicate-ANON",
+          "@type": "sht:NegativeSyntax",
+          "name": "predicate-ANON",
+          "status": "mf:proposed",
+          "shex": "predicate-ANON.shex"
+        },
+        {
+          "@id": "#predicate-BLANK_NODE_LABEL",
+          "@type": "sht:NegativeSyntax",
+          "name": "predicate-BLANK_NODE_LABEL",
+          "status": "mf:proposed",
+          "shex": "predicate-BLANK_NODE_LABEL.shex"
+        },
+        {
+          "@id": "#predicate-literal",
+          "@type": "sht:NegativeSyntax",
+          "name": "predicate-literal",
+          "status": "mf:proposed",
+          "shex": "predicate-literal.shex"
+        },
+        {
+          "@id": "#predicate-true",
+          "@type": "sht:NegativeSyntax",
+          "name": "predicate-true",
+          "status": "mf:proposed",
+          "shex": "predicate-true.shex"
+        },
+        {
+          "@id": "#prefix-missing",
+          "@type": "sht:NegativeSyntax",
+          "name": "prefix-missing",
+          "status": "mf:proposed",
+          "shex": "prefix-missing.shex"
+        },
+        {
+          "@id": "#prefix-no-COLON",
+          "@type": "sht:NegativeSyntax",
+          "name": "prefix-no-COLON",
+          "status": "mf:proposed",
+          "shex": "prefix-no-COLON.shex"
+        },
+        {
+          "@id": "#prefix-no-PNAME_NS",
+          "@type": "sht:NegativeSyntax",
+          "name": "prefix-no-PNAME_NS",
+          "status": "mf:proposed",
+          "shex": "prefix-no-PNAME_NS.shex"
+        },
+        {
+          "@id": "#prefix-no-uri",
+          "@type": "sht:NegativeSyntax",
+          "name": "prefix-no-uri",
+          "status": "mf:proposed",
+          "shex": "prefix-no-uri.shex"
+        },
+        {
+          "@id": "#prefix-none",
+          "@type": "sht:NegativeSyntax",
+          "name": "prefix-none",
+          "status": "mf:proposed",
+          "shex": "prefix-none.shex"
+        },
+        {
+          "@id": "#shapename-a",
+          "@type": "sht:NegativeSyntax",
+          "name": "shapename-a",
+          "status": "mf:proposed",
+          "shex": "shapename-a.shex"
+        },
+        {
+          "@id": "#shapename-literal",
+          "@type": "sht:NegativeSyntax",
+          "name": "shapename-literal",
+          "status": "mf:proposed",
+          "shex": "shapename-literal.shex"
+        },
+        {
+          "@id": "#shapename-true",
+          "@type": "sht:NegativeSyntax",
+          "name": "shapename-true",
+          "status": "mf:proposed",
+          "shex": "shapename-true.shex"
+        },
+        {
+          "@id": "#tripleConsraint-no-valueClass",
+          "@type": "sht:NegativeSyntax",
+          "name": "tripleConsraint-no-valueClass",
+          "status": "mf:proposed",
+          "shex": "tripleConsraint-no-valueClass.shex"
+        },
+        {
+          "@id": "#tripleConsraint-with-datatype-and-dot",
+          "@type": "sht:NegativeSyntax",
+          "name": "tripleConsraint-with-datatype-and-dot",
+          "status": "mf:proposed",
+          "shex": "tripleConsraint-with-datatype-and-dot.shex"
+        },
+        {
+          "@id": "#tripleConsraint-with-datatype-and-valueSet",
+          "@type": "sht:NegativeSyntax",
+          "name": "tripleConsraint-with-datatype-and-valueSet",
+          "status": "mf:proposed",
+          "shex": "tripleConsraint-with-datatype-and-valueSet.shex"
+        },
+        {
+          "@id": "#tripleConsraint-with-dot-and-datatype",
+          "@type": "sht:NegativeSyntax",
+          "name": "tripleConsraint-with-dot-and-datatype",
+          "status": "mf:proposed",
+          "shex": "tripleConsraint-with-dot-and-datatype.shex"
+        },
+        {
+          "@id": "#tripleConsraint-with-two-cardinalities",
+          "@type": "sht:NegativeSyntax",
+          "name": "tripleConsraint-with-two-cardinalities",
+          "status": "mf:proposed",
+          "shex": "tripleConsraint-with-two-cardinalities.shex"
+        }
+      ]
+    }
+  ]
+}

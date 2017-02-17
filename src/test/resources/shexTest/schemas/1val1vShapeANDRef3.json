@@ -1,22 +1,48 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes": {
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "ShapeAnd",
       "shapeExprs": [
-        { "type": "Shape", "expression": {
-          "type": "TripleConstraint", "predicate": "http://a.example/p1",
-          "valueExpr": { "type": "NodeConstraint", "nodeKind": "literal", "minlength": 4 }
-        } },
-        { "type": "Shape", "expression": {
-          "type": "TripleConstraint", "predicate": "http://a.example/p1",
-          "valueExpr": { "type": "NodeConstraint", "nodeKind": "literal", "maxlength": 5 }
-        } },
-        { "type": "Shape", "expression": {
-          "type": "TripleConstraint", "predicate": "http://a.example/p1",
-          "valueExpr": { "type": "NodeConstraint", "nodeKind": "literal", "pattern": "(ab)+" }
-        } }
+        {
+          "type": "Shape",
+          "expression": {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p1",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "minlength": 4
+            }
+          }
+        },
+        {
+          "type": "Shape",
+          "expression": {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p1",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "maxlength": 5
+            }
+          }
+        },
+        {
+          "type": "Shape",
+          "expression": {
+            "type": "TripleConstraint",
+            "predicate": "http://a.example/p1",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "pattern": "(ab)+"
+            }
+          }
+        }
       ]
     }
-  }
+  ]
 }

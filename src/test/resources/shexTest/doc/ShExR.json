@@ -1,0 +1,1005 @@
+{
+  "type": "Schema",
+  "start": "http://shex.io/ns/Schema",
+  "shapes": [
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#Schema"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#startActs",
+            "valueExpr": "http://shex.io/ns/SemActList1Plus",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#start",
+            "valueExpr": "http://shex.io/ns/shapeExpr",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#shapes",
+            "valueExpr": "http://shex.io/ns/shapeExpr",
+            "min": 0,
+            "max": "*"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/Schema"
+    },
+    {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        "http://shex.io/ns/ShapeOr",
+        "http://shex.io/ns/ShapeAnd",
+        "http://shex.io/ns/ShapeNot",
+        "http://shex.io/ns/NodeConstraint",
+        "http://shex.io/ns/Shape",
+        "http://shex.io/ns/ShapeExternal"
+      ],
+      "id": "http://shex.io/ns/shapeExpr"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#ShapeOr"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#shapeExprs",
+            "valueExpr": "http://shex.io/ns/shapeExprList2Plus"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/ShapeOr"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#ShapeAnd"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#shapeExprs",
+            "valueExpr": "http://shex.io/ns/shapeExprList2Plus"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/ShapeAnd"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#ShapeNot"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#shapeExpr",
+            "valueExpr": "http://shex.io/ns/shapeExpr"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/ShapeNot"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#NodeConstraint"
+              ]
+            }
+          },
+          {
+            "type": "OneOf",
+            "expressions": [
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#nodeKind",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "values": [
+                    "http://shex.io/ns/shex#iri",
+                    "http://shex.io/ns/shex#bnode",
+                    "http://shex.io/ns/shex#literal",
+                    "http://shex.io/ns/shex#nonliteral"
+                  ]
+                }
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#datatype",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "nodeKind": "iri"
+                }
+              },
+              "http://shex.io/ns/stringFacet",
+              "http://shex.io/ns/numericFacet",
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#values",
+                "valueExpr": "http://shex.io/ns/valueSetValueList1Plus"
+              }
+            ],
+            "min": 1,
+            "max": "*"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/NodeConstraint"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#Shape"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#closed",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                {
+                  "value": "true",
+                  "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                },
+                {
+                  "value": "false",
+                  "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                }
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#extra",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "iri"
+            },
+            "min": 0,
+            "max": "*"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#expression",
+            "valueExpr": "http://shex.io/ns/tripleExpression",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#semActs",
+            "valueExpr": "http://shex.io/ns/SemActList1Plus",
+            "min": 0,
+            "max": 1
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/Shape"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "valueExpr": {
+          "type": "NodeConstraint",
+          "values": [
+            "http://shex.io/ns/shex#ShapeExternal"
+          ]
+        }
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/ShapeExternal"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#SemAct"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#name",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "iri"
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#code",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "datatype": "http://www.w3.org/2001/XMLSchema#string"
+            },
+            "min": 0,
+            "max": 1
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/SemAct"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#Annotation"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#predicate",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "iri"
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#object",
+            "valueExpr": "http://shex.io/ns/objectValue"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/Annotation"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "id": "http://shex.io/ns/stringFacet",
+            "type": "OneOf",
+            "expressions": [
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#length",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                }
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#minlength",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                }
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#maxlength",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                }
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#pattern",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#string"
+                }
+              }
+            ]
+          },
+          {
+            "id": "http://shex.io/ns/numericFacet",
+            "type": "OneOf",
+            "expressions": [
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#mininclusive",
+                "valueExpr": "http://shex.io/ns/numericLiteral"
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#minexclusive",
+                "valueExpr": "http://shex.io/ns/numericLiteral"
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#maxinclusive",
+                "valueExpr": "http://shex.io/ns/numericLiteral"
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#maxexclusive",
+                "valueExpr": "http://shex.io/ns/numericLiteral"
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#totaldigits",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                }
+              },
+              {
+                "type": "TripleConstraint",
+                "predicate": "http://shex.io/ns/shex#fractiondigits",
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "id": "http://shex.io/ns/facet_holder"
+    },
+    {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        {
+          "type": "NodeConstraint",
+          "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+        },
+        {
+          "type": "NodeConstraint",
+          "datatype": "http://www.w3.org/2001/XMLSchema#decimal"
+        },
+        {
+          "type": "NodeConstraint",
+          "datatype": "http://www.w3.org/2001/XMLSchema#double"
+        }
+      ],
+      "id": "http://shex.io/ns/numericLiteral"
+    },
+    {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        "http://shex.io/ns/objectValue",
+        "http://shex.io/ns/Stem",
+        "http://shex.io/ns/StemRange"
+      ],
+      "id": "http://shex.io/ns/valueSetValue"
+    },
+    {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        {
+          "type": "NodeConstraint",
+          "nodeKind": "iri"
+        },
+        {
+          "type": "NodeConstraint",
+          "nodeKind": "literal"
+        }
+      ],
+      "id": "http://shex.io/ns/objectValue"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#Stem"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#stem",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "datatype": "http://www.w3.org/2001/XMLSchema#anyUri"
+            }
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/Stem"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#StemRange"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#stem",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#anyUri"
+                },
+                "http://shex.io/ns/Wildcard"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#exclusion",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                "http://shex.io/ns/objectValue",
+                "http://shex.io/ns/Stem"
+              ]
+            },
+            "min": 0,
+            "max": "*"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/StemRange"
+    },
+    {
+      "type": "ShapeAnd",
+      "shapeExprs": [
+        {
+          "type": "NodeConstraint",
+          "nodeKind": "bnode"
+        },
+        {
+          "type": "Shape",
+          "expression": {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#Wildcard"
+              ]
+            }
+          },
+          "closed": true
+        }
+      ],
+      "id": "http://shex.io/ns/Wildcard"
+    },
+    {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        "http://shex.io/ns/TripleConstraint",
+        "http://shex.io/ns/OneOf",
+        "http://shex.io/ns/EachOf"
+      ],
+      "id": "http://shex.io/ns/tripleExpression"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#OneOf"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#min",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#max",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                },
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    {
+                      "value": "*"
+                    }
+                  ]
+                }
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#expressions",
+            "valueExpr": "http://shex.io/ns/tripleExpressionList2Plus"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#semActs",
+            "valueExpr": "http://shex.io/ns/SemActList1Plus",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#annotation",
+            "valueExpr": "http://shex.io/ns/Annotation",
+            "min": 0,
+            "max": "*"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/OneOf"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#EachOf"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#min",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#max",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                },
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    {
+                      "value": "*"
+                    }
+                  ]
+                }
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#expressions",
+            "valueExpr": "http://shex.io/ns/tripleExpressionList2Plus"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#semActs",
+            "valueExpr": "http://shex.io/ns/SemActList1Plus",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#annotation",
+            "valueExpr": "http://shex.io/ns/Annotation",
+            "min": 0,
+            "max": "*"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/EachOf"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+            "valueExpr": "http://shex.io/ns/tripleExpression"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+            "valueExpr": "http://shex.io/ns/tripleExpressionList1Plus"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/tripleExpressionList2Plus"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+            "valueExpr": "http://shex.io/ns/tripleExpression"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+                  ]
+                },
+                "http://shex.io/ns/tripleExpressionList1Plus"
+              ]
+            }
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/tripleExpressionList1Plus"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://shex.io/ns/shex#TripleConstraint"
+              ]
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#inverse",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                {
+                  "value": "true",
+                  "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                },
+                {
+                  "value": "false",
+                  "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                }
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#negated",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                {
+                  "value": "true",
+                  "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                },
+                {
+                  "value": "false",
+                  "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                }
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#min",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#max",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "datatype": "http://www.w3.org/2001/XMLSchema#integer"
+                },
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    {
+                      "value": "*"
+                    }
+                  ]
+                }
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#predicate",
+            "valueExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "iri"
+            }
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#valueExpr",
+            "valueExpr": "http://shex.io/ns/shapeExpr",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#semActs",
+            "valueExpr": "http://shex.io/ns/SemActList1Plus",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://shex.io/ns/shex#annotation",
+            "valueExpr": "http://shex.io/ns/Annotation",
+            "min": 0,
+            "max": "*"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/TripleConstraint"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+            "valueExpr": "http://shex.io/ns/SemAct"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+                  ]
+                },
+                "http://shex.io/ns/SemActList1Plus"
+              ]
+            }
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/SemActList1Plus"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+            "valueExpr": "http://shex.io/ns/shapeExpr"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+            "valueExpr": "http://shex.io/ns/shapeExprList1Plus"
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/shapeExprList2Plus"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+            "valueExpr": "http://shex.io/ns/shapeExpr"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+                  ]
+                },
+                "http://shex.io/ns/shapeExprList1Plus"
+              ]
+            }
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/shapeExprList1Plus"
+    },
+    {
+      "type": "Shape",
+      "expression": {
+        "type": "EachOf",
+        "expressions": [
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+            "valueExpr": "http://shex.io/ns/valueSetValue"
+          },
+          {
+            "type": "TripleConstraint",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "NodeConstraint",
+                  "values": [
+                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+                  ]
+                },
+                "http://shex.io/ns/valueSetValueList1Plus"
+              ]
+            }
+          }
+        ]
+      },
+      "closed": true,
+      "id": "http://shex.io/ns/valueSetValueList1Plus"
+    }
+  ],
+  "@context": "https://shexspec.github.io/context.jsonld"
+}

@@ -1,7 +1,9 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes": {
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -20,9 +22,13 @@
           }
         ],
         "semActs": [
-          { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(\"group semAct\") " }
+          {
+            "type": "SemAct",
+            "name": "http://shex.io/extensions/Test/",
+            "code": " print(\"group semAct\") "
+          }
         ]
       }
     }
-  }
+  ]
 }

@@ -1,18 +1,18 @@
 PREFIX ex: <http://a.example/>
 
 ex:S1 {
-   ex:p1 .
+   $ex:S1e ex:p1 .
 }
 
 ex:S2 {
-   ex:p2 .
+   $ex:S2e ex:p2 .
 }
 
 ex:S3 {
-   ex:p3 .
+   $ex:S3e ex:p3 .
 }
 
-ex:S4 &ex:S1 &ex:S2 &ex:S3 {
+ex:S4 &ex:S1e &ex:S2e &ex:S3e {
    ex:p4 .
 }
 

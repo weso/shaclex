@@ -1,7 +1,9 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes": {
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
@@ -16,10 +18,7 @@
                   "type": "NodeConstraint",
                   "nodeKind": "bnode"
                 },
-                {
-                  "type": "ShapeRef",
-                  "reference": "http://a.example/S1"
-                }
+                "http://a.example/S1"
               ]
             },
             {
@@ -27,17 +26,14 @@
               "shapeExprs": [
                 {
                   "type": "NodeConstraint",
-                  "minlength": 5
+                  "minlength": 20
                 },
-                {
-                  "type": "ShapeRef",
-                  "reference": "http://a.example/S1"
-                }
+                "http://a.example/S1"
               ]
             }
           ]
         }
       }
     }
-  }
+  ]
 }

@@ -1,0 +1,46 @@
+{
+  "type": "ShapeTest",
+  "node": "x",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "OneOfSolutions",
+    "solutions": [
+      {
+        "type": "OneOfSolution",
+        "expressions": [
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p1",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "x",
+                "predicate": "http://a.example/p1",
+                "object": { "value": "p1-0" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "OneOfSolution",
+        "expressions": [
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p3",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "x",
+                "predicate": "http://a.example/p3",
+                "object": { "value": "p3-0" }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "min": 2,
+    "max": 3
+  }
+}

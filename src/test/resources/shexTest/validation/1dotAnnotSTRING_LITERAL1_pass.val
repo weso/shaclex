@@ -8,7 +8,7 @@
       {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"http://a.example/o1"}
     ],
     "annotations": [
-      { "type": "Annotation", "predicate": "http://a.example/annot", "object": "\"STRING_LITERAL1\"" }
+      { "type": "Annotation", "predicate": "http://a.example/annot", "object": { "value": "STRING_LITERAL1" } }
     ]
   }
 }

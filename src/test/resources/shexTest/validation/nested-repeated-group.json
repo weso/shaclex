@@ -1,11 +1,12 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
   "prefixes": {
     "": "http://a.example/",
     "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
   "shapes": {
-    "file:///home/eric/checkouts/shexSpec/shexTest/validation/S": {
+    "http://a.example.org/S": {
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -18,7 +19,7 @@
                 "predicate": "http://a.example/a",
                 "valueExpr": {
                   "type": "ValueClass",
-                  "reference": "file:///home/eric/checkouts/shexSpec/shexTest/validation/T"
+                  "reference": "http://a.example.org/T"
                 },
                 "min": 1,
                 "max": "*"
@@ -46,7 +47,7 @@
         ]
       }
     },
-    "file:///home/eric/checkouts/shexSpec/shexTest/validation/T": {
+    "http://a.example.org/T": {
       "type": "Shape",
       "expression": {
         "type": "EachOf",

@@ -11,19 +11,19 @@
           {
             "type": "TripleConstraintSolutions","predicate": "http://a.example/p1",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p1","object":"\"p1-0\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p1","object":{ "value": "p1-0" }}
             ]
           },
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/p2",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p2","object":"\"p2-0\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p2","object":{ "value": "p2-0" }}
             ]
           },
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/p3",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p3","object":"\"p3-0\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p3","object":{ "value": "p3-0" }}
             ]
           }
         ]
@@ -34,20 +34,20 @@
           {
             "type": "TripleConstraintSolutions","predicate": "http://a.example/p1",
             "solutions": [
-              {"type": "TestedTriple", "subject": "x", "predicate": "http://a.example/p1", "object":"\"p1-1\""}
+              {"type": "TestedTriple", "subject": "x", "predicate": "http://a.example/p1", "object":{ "value": "p1-1" }}
             ]
           },
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/p2",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p2","object":"\"p2-1\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p2","object":{ "value": "p2-1" }}
             ]
           },
           {
             "type": "TripleConstraintSolutions",
             "predicate": "http://a.example/p3",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p3","object":"\"p3-1\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p3","object":{ "value": "p3-1" }}
             ]
           }
         ]
@@ -58,20 +58,20 @@
           {
             "type": "TripleConstraintSolutions","predicate": "http://a.example/p1",
             "solutions": [
-              {"type": "TestedTriple", "subject": "x", "predicate": "http://a.example/p1", "object":"\"p1-2\""}
+              {"type": "TestedTriple", "subject": "x", "predicate": "http://a.example/p1", "object":{ "value": "p1-2" }}
             ]
           },
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/p2",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p2","object":"\"p2-2\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p2","object":{ "value": "p2-2" }}
             ]
           },
           {
             "type": "TripleConstraintSolutions",
             "predicate": "http://a.example/p3",
             "solutions": [
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p3","object":"\"p3-2\""}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/p3","object":{ "value": "p3-2" }}
             ]
           }
         ]
@@ -79,9 +79,9 @@
     ],
     "min": 2,"max": 3,
     "annotations": [
-      { "type": "Annotation", "predicate": "http://a.example/annot1", "object": "\"1\"" },
-      { "type": "Annotation", "predicate": "http://a.example/annot2", "object": "\"2\"" },
-      { "type": "Annotation", "predicate": "http://a.example/annot3", "object": "\"3\"" }
+      { "type": "Annotation", "predicate": "http://a.example/annot1", "object": { "value": "1" } },
+      { "type": "Annotation", "predicate": "http://a.example/annot2", "object": { "value": "2" } },
+      { "type": "Annotation", "predicate": "http://a.example/annot3", "object": { "value": "3" } }
     ],
     "semActs": [
       { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(\"group semAct 1\") " },

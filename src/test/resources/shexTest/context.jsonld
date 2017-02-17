@@ -1,0 +1,35 @@
+{
+  "@context": {
+    "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "shex": "http://shex.io/ns/shex#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
+    "sht": "http://www.w3.org/ns/shacl/test-suite#",
+    "sx": "https://shexspec.github.io/shexTest/ns#",
+
+    "id": "@id",
+    "type": "@type",
+
+    "comment": "rdfs:comment",
+    "label": "rdfs:label",
+    "name": "mf:name",
+    "prints": "mf:prints",
+
+    "entries": {"@id": "mf:entries", "@container": "@list", "@type": "@id"},
+    "extensionResults": {"@id": "mf:extensionResults", "@type": "@id", "@container": "@list"},
+    "include": {"@id": "mf:include", "@type": "@id", "@container": "@list"},
+
+    "action": {"@id": "mf:action", "@type": "@id"},
+    "data": {"@id": "sx:data", "@type": "@id"},
+    "extension": {"@id": "mf:extension", "@type": "@id"},
+    "focus": {"@id": "sx:focus", "@type": "@id"},
+    "json": {"@id": "sx:json", "@type": "@id"},
+    "result": {"@id": "mf:result", "@type": "@id"},
+    "schema": {"@id": "sx:schema", "@type": "@id"},
+    "shape": {"@id": "sx:shape", "@type": "@id"},
+    "shex": {"@id": "sx:shex", "@type": "@id"},
+    "status": {"@id": "mf:status", "@type": "@vocab"},
+    "ttl": {"@id": "sx:ttl", "@type": "@id"}
+  }
+}

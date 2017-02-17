@@ -40,7 +40,7 @@
                 "type": "TestedTriple",
                 "subject": "http://a.example/n3",
                 "predicate": "http://a.example/p3",
-                "object": "\"X\""
+                "object": { "value": "X" }
               }
             ]
           }

@@ -1,7 +1,9 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes":{
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -10,20 +12,18 @@
             "type": "TripleConstraint",
             "predicate": "http://a.example/p1"
           },
-          {
-            "type": "Inclusion",
-            "include": "http://a.example/S2"
-          }
+          "http://a.example/S2e"
         ]
       }
     },
-    "http://a.example/S2": {
+    {
+      "id": "http://a.example/S2",
       "type": "Shape",
       "expression": {
+        "id": "http://a.example/S2e",
         "type": "TripleConstraint",
         "predicate": "http://a.example/p2"
       }
     }
-  }
+  ]
 }
-

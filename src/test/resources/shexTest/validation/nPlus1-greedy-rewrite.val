@@ -1,7 +1,7 @@
 {
   "type": "ShapeTest",
   "node": "x",
-  "shape": "S",
+  "shape": "http://a.example.org/S",
   "solution": {
     "type": "EachOfSolutions",
     "solutions": [
@@ -12,26 +12,26 @@
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
             "valueExpr": {
               "type": "NodeConstraint",
-              "values": [ "\"1\"^^http://www.w3.org/2001/XMLSchema#integer" ]
+              "values": [ { "value": "1", "type": "http://www.w3.org/2001/XMLSchema#integer" } ]
             },
             "solutions": [
-              { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "\"1\"^^http://www.w3.org/2001/XMLSchema#integer" }
+              { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": { "value": "1", "type": "http://www.w3.org/2001/XMLSchema#integer" } }
             ]
           },
           {
-            "type": "SomeOfSolutions",
+            "type": "OneOfSolutions",
             "solutions": [
               {
-                "type": "SomeOfSolution",
+                "type": "OneOfSolution",
                 "expressions": [
                   {
                     "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
                     "valueExpr": {
                       "type": "NodeConstraint",
-                      "values": [ "\"3\"^^http://www.w3.org/2001/XMLSchema#integer" ]
+                      "values": [ { "value": "3", "type": "http://www.w3.org/2001/XMLSchema#integer" } ]
                     },
                     "solutions": [
-                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "\"3\"^^http://www.w3.org/2001/XMLSchema#integer" }
+                      { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": { "value": "3", "type": "http://www.w3.org/2001/XMLSchema#integer" } }
                     ]
                   }
                 ]
@@ -43,7 +43,7 @@
             "min": 0, "max": "*",
             "valueExpr": {
               "type": "NodeConstraint",
-              "values": [ "\"4\"^^http://www.w3.org/2001/XMLSchema#integer" ]
+              "values": [ { "value": "4", "type": "http://www.w3.org/2001/XMLSchema#integer" } ]
             },
             "solutions": []
           }

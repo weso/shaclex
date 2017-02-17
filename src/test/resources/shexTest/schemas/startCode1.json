@@ -1,13 +1,21 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "startActs": [ { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(\"startAct\") " } ],
-  "shapes":{
-    "http://a.example/S1": {
+  "startActs": [
+    {
+      "type": "SemAct",
+      "name": "http://shex.io/extensions/Test/",
+      "code": " print(\"startAct\") "
+    }
+  ],
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "predicate": "http://a.example/p1"
       }
     }
-  }
+  ]
 }

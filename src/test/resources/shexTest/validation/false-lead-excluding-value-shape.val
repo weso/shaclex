@@ -1,5 +1,5 @@
 {
-  "type": "ShapeTest", "node": "x", "shape": "S",
+  "type": "ShapeTest", "node": "x", "shape": "http://a.example.org/S",
   "solution": {
     "type": "EachOfSolutions",
     "solutions": [
@@ -8,23 +8,23 @@
         "expressions": [
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
-            "valueExpr": { "type": "ShapeRef", "reference": "T1" },
+            "valueExpr": { "type": "ShapeRef", "reference": "http://a.example.org/T1" },
             "solutions": [
               { "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "x1",
                 "referenced": {
-                  "type": "ShapeTest", "node": "x1", "shape": "T1",
+                  "type": "ShapeTest", "node": "x1", "shape": "http://a.example.org/T1",
                   "solution": {
                     "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
-                    "valueExpr": { "type": "ShapeRef", "reference": "T3" },
+                    "valueExpr": { "type": "ShapeRef", "reference": "http://a.example.org/T3" },
                     "solutions": [
                       {
                         "type": "TestedTriple", "subject": "x1", "predicate": "http://a.example/b", "object": "y1",
                         "referenced": {
-                          "type": "ShapeTest", "node": "y1", "shape": "T3",
+                          "type": "ShapeTest", "node": "y1", "shape": "http://a.example.org/T3",
                           "solution": {
                             "type": "TripleConstraintSolutions", "predicate": "http://a.example/c",
                             "solutions": [
-                              { "type": "TestedTriple", "subject": "y1", "predicate": "http://a.example/c", "object": "\"1\"^^http://www.w3.org/2001/XMLSchema#integer" }
+                              { "type": "TestedTriple", "subject": "y1", "predicate": "http://a.example/c", "object": { "value": "1", "type": "http://www.w3.org/2001/XMLSchema#integer" } }
                             ]
                           }
                         }
@@ -36,19 +36,19 @@
               {
                 "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "x3",
                 "referenced": {
-                  "type": "ShapeTest", "node": "x3", "shape": "T1",
+                  "type": "ShapeTest", "node": "x3", "shape": "http://a.example.org/T1",
                   "solution": {
                     "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
-                    "valueExpr": { "type": "ShapeRef", "reference": "T3" },
+                    "valueExpr": { "type": "ShapeRef", "reference": "http://a.example.org/T3" },
                     "solutions": [
                       {
                         "type": "TestedTriple", "subject": "x3", "predicate": "http://a.example/b", "object": "y3",
                         "referenced": {
-                          "type": "ShapeTest", "node": "y3", "shape": "T3",
+                          "type": "ShapeTest", "node": "y3", "shape": "http://a.example.org/T3",
                           "solution": {
                             "type": "TripleConstraintSolutions", "predicate": "http://a.example/c",
                             "solutions": [
-                              { "type": "TestedTriple", "subject": "y3", "predicate": "http://a.example/c", "object": "\"3\"^^http://www.w3.org/2001/XMLSchema#integer" }
+                              { "type": "TestedTriple", "subject": "y3", "predicate": "http://a.example/c", "object": { "value": "3", "type": "http://www.w3.org/2001/XMLSchema#integer" } }
                             ]
                           }
                         }
@@ -61,31 +61,31 @@
             "min": 0, "max": "*"
           },
           {
-            "type": "SomeOfSolutions",
+            "type": "OneOfSolutions",
             "solutions": [
               {
-                "type": "SomeOfSolution",
+                "type": "OneOfSolution",
                 "expressions": [
                   {
                     "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
-                    "valueExpr": { "type": "ShapeRef", "reference": "T2" },
+                    "valueExpr": { "type": "ShapeRef", "reference": "http://a.example.org/T2" },
                     "solutions": [
                       {
                         "type": "TestedTriple", "subject": "x", "predicate": "http://a.example/a", "object": "x2",
                         "referenced": {
-                          "type": "ShapeTest", "node": "x2", "shape": "T2",
+                          "type": "ShapeTest", "node": "x2", "shape": "http://a.example.org/T2",
                           "solution": {
                             "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
-                            "valueExpr": { "type": "ShapeRef", "reference": "T4" },
+                            "valueExpr": { "type": "ShapeRef", "reference": "http://a.example.org/T4" },
                             "solutions": [
                               {
                                 "type": "TestedTriple", "subject": "x2", "predicate": "http://a.example/b", "object": "y2",
                                 "referenced": {
-                                  "type": "ShapeTest", "node": "y2", "shape": "T4",
+                                  "type": "ShapeTest", "node": "y2", "shape": "http://a.example.org/T4",
                                   "solution": {
                                     "type": "TripleConstraintSolutions", "predicate": "http://a.example/d",
                                     "solutions": [
-                                      { "type": "TestedTriple", "subject": "y2", "predicate": "http://a.example/d", "object": "\"2\"^^http://www.w3.org/2001/XMLSchema#integer" }
+                                      { "type": "TestedTriple", "subject": "y2", "predicate": "http://a.example/d", "object": { "value": "2", "type": "http://www.w3.org/2001/XMLSchema#integer" } }
                                     ]
                                   }
                                 }

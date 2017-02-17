@@ -39,14 +39,17 @@ var store = N3.Store();
 //var json = fs.readFileSync(args[0]).toString();
 
 var P = {
-  "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+  "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
   "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-  "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
-  "sht": "http://www.w3.org/ns/shacl/test-suite#"
+  "mf":   "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
+  "sht":  "http://www.w3.org/ns/shacl/test-suite#",
+  "sx":   "https://shexspec.github.io/shexTest/ns#"
 };
 
-var apparentBase = __dirname + "/manifest";
-var stripPath = apparentBase.length;
+var testDir = path.basename(path.dirname(path.resolve(args[0])));
+var basePath = "https://raw.githubusercontent.com/shexSpec/shexTest/master/";
+var dirPath = basePath + testDir + '/';
+var apparentBase = dirPath + "manifest";
 
 parser.parse(
   "@base <" + apparentBase + "> .\n"+
@@ -80,7 +83,10 @@ function expandCollection (h) {
 function genText () {
   var g = []; // stuff everything into a JSON-LD @graph
   var ret = {
-    "@context": "https://raw.githubusercontent.com/shexSpec/test-suite/gh-pages/tests/manifest-context.jsonld",
+    "@context": [
+      {"@base": apparentBase},
+      "../context.jsonld"
+    ],
     "@graph": g
   };
 
@@ -99,12 +105,12 @@ function genText () {
     ret[ent] = true;
     return ret;
   }, {});
-  var expectedTypes = ["NotValid", "PositiveSyntax", "Valid", "ValidationTest", "ValidationFailure"].map(function (suffix) {
+  var expectedTypes = ["ValidationTest", "ValidationFailure", "RepresentationTest", "NegativeSyntax", "NegativeStructure"].map(function (suffix) {
     return P.sht + suffix;
   });
 
   g.push({
-    "@id": "http://shexspec.github.io/test-suite/tests/manifest.ttl",
+    "@id": "",
     "@type": "mf:Manifest",
     "rdfs:comment": manifestComment,
     "entries": store.find(null, "rdf:type", null).filter(function (t) {
@@ -131,23 +137,47 @@ function genText () {
     }).map(function (st) {
       var s = st[0], t = st[1];
       var testName = util.getLiteralValue(store.find(s, "mf:name", null)[0].object);
+      var testType = store.find(s, "rdf:type", null)[0].object.replace(P.sht, '');
       var expectedName = s.substr(apparentBase.length+1);
       if (WARN && testName !== expectedName) {
 	report("expected label \"" + expectedName + "\" ; got \"" + testName + "\"");
       }
       var actionTriples = store.find(s, "mf:action", null);
-      if (actionTriples.length !== 1) {
-        throw Error("expected 1 action for " + s + " -- got " + actionTriples.length);
-      }
-      var a = actionTriples[0].object;
       function exists (filename) {
-        var filepath = path.join(__dirname, "../validation", filename);
+        var filepath = path.join(__dirname, "../" + testDir + '/' + filename);
         if (WARN && !fs.existsSync(filepath) && !(filepath in knownMissing)) {
-          report("non-existent file: " + s.substr(apparentBase.length) + " is missing " + path.relative(process.cwd(), filepath));
+          report("non-existent file: " + filepath.substr(dirPath.length) + " is missing " + path.relative(process.cwd(), filepath));
 	  knownMissing[filepath] = path.relative(process.cwd(), filepath);
         }
         return filename;
       }
+      if (actionTriples.length !== 1) {
+        if (["RepresentationTest", "NegativeSyntax", "NegativeStructure"].indexOf(testType) === -1) {
+          throw Error("expected 1 action for " + s + " -- got " + actionTriples.length);
+        }
+        // Representation/Syntax/Structure tests
+        return [
+          //      ["rdf"  , "type"    , function (v) { return v.substr(P.sht.length); }],
+          [s, "mf"   , "name"    , function (v) { return util.getLiteralValue(v[0]); }],
+          //[s, "sht", "trait"  , function (v) {
+          //  return v.map(function (x) {
+          //    return x.substr(P.sht.length);;
+          //  });
+          //}],
+          //[s, "rdfs" , "comment" , function (v) { return util.getLiteralValue(v[0]); }],
+          [s, "mf", "status"  , function (v) { return "mf:"+v[0].substr(P.mf.length); }],
+          [s, "sx", "shex", function (v) { return exists(v[0].substr(dirPath.length)); }],
+          [s, "sx", "json", function (v) { return exists(v[0].substr(dirPath.length)); }],
+          [s, "sx", "ttl", function (v) { return exists(v[0].substr(dirPath.length)); }],
+        ].reduce(function (ret, row) {
+          var found = store.findByIRI(row[0], P[row[1]]+row[2], null).map(expandCollection);
+          var target = ret;
+          if (found.length)
+            target[row[2]] = row[3](found);
+          return ret;
+        }, {"@id": s.substr(apparentBase.length), "@type": "sht:"+t.substr(P.sht.length)});
+      }
+      var a = actionTriples[0].object;
       return [
         //      ["rdf"  , "type"    , function (v) { return v.substr(P.sht.length); }],
         [s, "mf"   , "name"    , function (v) { return util.getLiteralValue(v[0]); }],
@@ -158,13 +188,25 @@ function genText () {
         }],
         [s, "rdfs" , "comment" , function (v) { return util.getLiteralValue(v[0]); }],
         [s, "mf", "status"  , function (v) { return "mf:"+v[0].substr(P.mf.length); }],
-        [a, "sht", "schema"  , function (v) { return exists("../" + v[0].substr(stripPath-12)); }], // could be more judicious in creating a relative path from an absolute path.
-        [a, "sht", "shape"   , function (v) { return v[0].indexOf(__dirname) === 0 ? v[0].substr(__dirname.length+1) : v[0]; }],
-        [a, "sht", "data"    , function (v) { return exists(v[0].substr(stripPath-8)); }],
-        [a, "sht", "focus"   , function (v) { return v[0].indexOf(__dirname) === 0 ? v[0].substr(__dirname.length+1) : v[0]; }],
-        [a, "sht", "semActs" , function (v) { return exists("../" + v[0].substr(stripPath-12)); }], // could be more judicious in creating a relative path from an absolute path.
-        [a, "sht", "shapeExterns" , function (v) { return exists("../" + v[0].substr(stripPath-12)); }], // could be more judicious in creating a relative path from an absolute path.
-        [s, "mf", "result"  , function (v) { return exists(v[0].substr(stripPath-8)); }],
+        [a, "sht", "schema"  , function (v) { return exists("../" + v[0].substr(basePath.length)); } ], // could be more judicious in creating a relative path from an absolute path.
+        [a, "sht", "shape"   , function (v) { return v[0].indexOf(dirPath) === 0 ? v[0].substr(dirPath.length) : v[0]; }],
+        [a, "sht", "data"    , function (v) { return exists(v[0].substr(dirPath.length)); }],
+        [a, "sht", "focus"   , function (v) {
+          // Focus can be a literal
+          if (util.isLiteral(v[0])) {
+            var lang = util.getLiteralLanguage(v[0]);
+            var dt = util.getLiteralType(v[0]);
+            var res = {'@value': util.getLiteralValue(v[0])};
+            if (lang.length > 0) {res['@language'] = lang}
+            if (dt.length > 0) {res['@type'] = dt}
+            return res;
+          } else {
+            return (v[0].indexOf(dirPath) === 0 ? v[0].substr(dirPath.length) : v[0]);
+          }
+        }],
+        [a, "sht", "semActs" , function (v) { return exists("../" + v[0].substr(basePath.length)); }], // could be more judicious in creating a relative path from an absolute path.
+        [a, "sht", "shapeExterns" , function (v) { return exists("../" + v[0].substr(basePath.length)); }], // could be more judicious in creating a relative path from an absolute path.
+        [s, "mf", "result"  , function (v) { return exists(v[0].substr(dirPath.length)); }],
         [s, "mf", "extensionResults"  , function (v) {
           return v[0].map(function (x) {
             return {
@@ -179,7 +221,7 @@ function genText () {
         if (found.length)
           target[row[2]] = row[3](found);
         return ret;
-      }, {"@id": s.substr(stripPath), "@type": "sht:"+t.substr(P.sht.length), action: {}, extensionResults: []});
+      }, {"@id": s.substr(apparentBase.length), "@type": "sht:"+t.substr(P.sht.length), action: {}, extensionResults: []});
     })
   });
   var remaining = Object.keys(unmatched);
@@ -192,5 +234,8 @@ function genText () {
     } else {
       console.log(JSON.stringify(ret, null, "  "));
     }
+    process.exit(0);
+  } else {
+    process.exit(1);
   }
 }

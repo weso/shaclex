@@ -5,7 +5,7 @@
   "solution": { 
     "type":"TripleConstraintSolutions", "predicate":"http://a.example/p2",
     "solutions":[
-      {"type":"TestedTriple","subject":"http://a.example/n2","predicate":"http://a.example/p2","object":"\"X\""}
+      {"type":"TestedTriple","subject":"http://a.example/n2","predicate":"http://a.example/p2","object":{ "value": "X" }}
     ]
   }
 }

@@ -1,7 +1,9 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes": {
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -20,11 +22,29 @@
           }
         ],
         "annotations": [
-           { "type": "Annotation", "predicate": "http://a.example/annot1", "object": "\"1\"" },
-           { "type": "Annotation", "predicate": "http://a.example/annot2", "object": "\"2\"" },
-           { "type": "Annotation", "predicate": "http://a.example/annot3", "object": "\"3\"" }
+          {
+            "type": "Annotation",
+            "predicate": "http://a.example/annot1",
+            "object": {
+              "value": "1"
+            }
+          },
+          {
+            "type": "Annotation",
+            "predicate": "http://a.example/annot2",
+            "object": {
+              "value": "2"
+            }
+          },
+          {
+            "type": "Annotation",
+            "predicate": "http://a.example/annot3",
+            "object": {
+              "value": "3"
+            }
+          }
         ]
       }
     }
-  }
+  ]
 }

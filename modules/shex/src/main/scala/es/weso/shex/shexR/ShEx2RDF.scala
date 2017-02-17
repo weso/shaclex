@@ -28,16 +28,19 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
   }
 
   def schema(s:Schema, id: Option[IRI]): RDFSaver[Unit] = {
-    val sm = s.shapesMap.map{ case (l,e) => labeledShapeExpr(l,e) }.toList
     for {
       node <- makeId(id)
       _ <- addPrefixMap(s.prefixMap)
       _ <- addTriple(node,rdf_type,sx_Schema)
-      shapes <- sm.sequence
+      shapes <- optSaver(s.shapes, node, sx_shapes, shapeExprList)
     } yield ()
   }
 
-  def labeledShapeExpr(lbl: ShapeLabel, e: ShapeExpr): RDFSaver[RDFNode] = {
+  def shapeExprList(node: RDFNode, ls: List[ShapeExpr]): RDFSaver[Unit] = for {
+    _ <- ls.map(shapeExpr(node,_)).sequence
+  } yield ()
+
+/*  def shapeExpr(lbl: ShapeLabel, e: ShapeExpr): RDFSaver[RDFNode] = {
     val node : RDFNode = lbl match {
       case IRILabel(iri) => iri
       case BNodeLabel(bnode) => bnode
@@ -45,13 +48,26 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     for {
       _ <- shapeExpr(node,e)
     } yield node
-  }
+  } */
+
+  def mkId(id: Option[ShapeLabel]): RDFSaver[RDFNode] = ???
 
   def shapeExpr(node: RDFNode, e: ShapeExpr): RDFSaver[Unit] = e match {
-    case ShapeExternal() => addTriple(node, rdf_type, sx_ShapeExternal)
+    case ShapeExternal(id) => for {
+      shapeId <- mkId(id)
+      _ <- addTriple(node, sx_shapes, shapeId)
+      _ <- addTriple(shapeId, rdf_type, sx_ShapeExternal)
+    } yield ()
     case NodeConstraint(nk,dt,facets,values) => for {
       _ <- maybeAddContent(nk, node, sx_nodeKind, nodeKind)
     } yield ()
+  }
+
+  def optSaver[A](maybe: Option[A], node: RDFNode, pred: IRI, saver: (RDFNode, A) => RDFSaver[Unit]): RDFSaver[Unit] = {
+    maybe match {
+      case None => State.pure(())
+      case Some(x) => saver(node, x)
+    }
   }
 
   def maybeAddContent[A](maybe: Option[A], node: RDFNode, pred: IRI, saver: (RDFNode, IRI, A) => RDFSaver[Unit]): RDFSaver[Unit] = {

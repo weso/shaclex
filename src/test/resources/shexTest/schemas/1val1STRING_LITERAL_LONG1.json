@@ -1,13 +1,22 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes":{
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "predicate": "http://a.example/p1",
-        "valueExpr": { "type": "NodeConstraint", "values": ["\"STRING_LITERAL_LONG1\""] }
+        "valueExpr": {
+          "type": "NodeConstraint",
+          "values": [
+            {
+              "value": "STRING_LITERAL_LONG1"
+            }
+          ]
+        }
       }
     }
-  }
+  ]
 }

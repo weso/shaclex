@@ -1,0 +1,15 @@
+{
+  "type": "ShapeTest",
+  "node": "s1",
+  "shape": "S1",
+  "solution": {
+    "type":"TripleConstraintSolutions", "predicate":"p1",
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "values": [ "o1" ]
+    },
+    "solutions":[
+      {"type":"TestedTriple","subject":"s1","predicate":"p1","object":"o1"}
+    ]
+  }
+}

@@ -40,7 +40,7 @@ object table {
     def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
       constraints.get(cref).map(ce => ce match {
         case Pos(se) => se
-        case Neg(se) => ShapeNot(se)
+        case Neg(se) => ShapeNot(None,se)
       })
     }
 

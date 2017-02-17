@@ -1,13 +1,15 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "start": { "type": "ShapeRef", "reference": "http://a.example/S1" },
-  "shapes": {
-    "http://a.example/S1": {
+  "start": "http://a.example/S1",
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "predicate": "http://a.example/p1"
       }
     }
-  }
+  ]
 }

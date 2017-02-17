@@ -8,9 +8,9 @@
       {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"http://a.example/o1"}
     ],
     "annotations": [
-      { "type": "Annotation", "predicate": "http://a.example/annot1", "object": "\"1\"" },
-      { "type": "Annotation", "predicate": "http://a.example/annot2", "object": "\"2\"" },
-      { "type": "Annotation", "predicate": "http://a.example/annot3", "object": "\"3\"" }
+      { "type": "Annotation", "predicate": "http://a.example/annot1", "object": { "value": "1" } },
+      { "type": "Annotation", "predicate": "http://a.example/annot2", "object": { "value": "2" } },
+      { "type": "Annotation", "predicate": "http://a.example/annot3", "object": { "value": "3" } }
     ]
   }
 }

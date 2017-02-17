@@ -54,13 +54,13 @@ object eqShEx extends LazyLogging {
 
   implicit lazy val eqShapeExpr: Eq[ShapeExpr] = new Eq[ShapeExpr] {
     final def eqv(a1: ShapeExpr, a2: ShapeExpr): Boolean = (a1,a2) match {
-      case (ShapeOr(ss1),ShapeOr(ss2)) => ss1 === ss2
-      case (ShapeAnd(ss1),ShapeAnd(ss2)) => ss1 === ss2
-      case (ShapeNot(s1),ShapeNot(s2)) => s1 === s2
+      case (ShapeOr(id1, ss1),ShapeOr(id2, ss2)) => id1 == id2 && ss1 === ss2
+      case (ShapeAnd(id1, ss1),ShapeAnd(id2, ss2)) => id1 == id2 && ss1 === ss2
+      case (ShapeNot(id1, s1),ShapeNot(id2, s2)) => id1 == id2 && s1 === s2
       case (n1:NodeConstraint,n2: NodeConstraint) => n1 === n2
       case (s1:Shape,s2:Shape) => s1 === s2
       case (ShapeRef(i1),ShapeRef(i2)) => i1 === i2
-      case (ShapeExternal(),ShapeExternal()) => true
+      case (ShapeExternal(id1),ShapeExternal(id2)) => id1 == id2
       case (_,_) => false
     }
   }

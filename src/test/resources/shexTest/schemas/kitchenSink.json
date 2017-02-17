@@ -1,22 +1,17 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "prefixes": {
-    "e": "http://ex.example/",
-    "ex": "http://ex.example/#",
-    "UserShape": "http://ex.example/#UserShape",
-    "": "http://ex.example/#",
-    "foaf": "http://xmlns.com/foaf/",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schem#"
-  },
-  "base": "http://ex.example/",
   "startActs": [
-    { "type": "SemAct", "name": "http://ex.example/#foo", "code": " initializer for ignored extension " }
+    {
+      "type": "SemAct",
+      "name": "http://ex.example/#foo",
+      "code": " initializer for ignored extension "
+    }
   ],
-  "start": { "type": "ShapeRef", "reference": "http://ex.example/S1" },
-  "shapes": {
-    "http://ex.example/S1": {
+  "start": "http://ex.example/S1",
+  "shapes": [
+    {
+      "id": "http://ex.example/S1",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -49,8 +44,20 @@
               ]
             },
             "annotations": [
-              { "type": "Annotation", "predicate": "http://www.w3.org/2000/01/rdf-schem#label", "object": "\"State\"" },
-              { "type": "Annotation", "predicate": "http://www.w3.org/2000/01/rdf-schem#description", "object": "\"the sit\"" }
+              {
+                "type": "Annotation",
+                "predicate": "http://www.w3.org/2000/01/rdf-schem#label",
+                "object": {
+                  "value": "State"
+                }
+              },
+              {
+                "type": "Annotation",
+                "predicate": "http://www.w3.org/2000/01/rdf-schem#description",
+                "object": {
+                  "value": "the sit"
+                }
+              }
             ]
           },
           {
@@ -63,10 +70,7 @@
                   "type": "NodeConstraint",
                   "nodeKind": "iri"
                 },
-                {
-                  "type": "ShapeRef",
-                  "reference": "http://ex.example/#UserShape"
-                }
+                "http://ex.example/#UserShape"
               ]
             }
           },
@@ -91,10 +95,7 @@
                       "type": "NodeConstraint",
                       "nodeKind": "nonliteral"
                     },
-                    {
-                      "type": "ShapeRef",
-                      "reference": "http://ex.example/#EmployeeShape"
-                    }
+                    "http://ex.example/#EmployeeShape"
                   ]
                 }
               },
@@ -110,28 +111,31 @@
             "min": 0,
             "max": 1,
             "semActs": [
-              { "type": "SemAct", "name": "http://ex.example/#foo", "code": " asdfasdf " }
+              {
+                "type": "SemAct",
+                "name": "http://ex.example/#foo",
+                "code": " asdfasdf "
+              }
             ]
           },
           {
             "type": "TripleConstraint",
             "predicate": "http://ex.example/#related",
-            "valueExpr": {
-              "type": "ShapeRef",
-              "reference": "http://ex.example/S1"
-            },
-            "min": 0, "max": "*"
+            "valueExpr": "http://ex.example/S1",
+            "min": 0,
+            "max": "*"
           }
         ]
       }
     },
-    "http://ex.example/#UserShape": {
+    {
+      "id": "http://ex.example/#UserShape",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
         "expressions": [
           {
-            "type": "SomeOf",
+            "type": "OneOf",
             "expressions": [
               {
                 "type": "TripleConstraint",
@@ -151,7 +155,8 @@
                       "type": "NodeConstraint",
                       "datatype": "http://www.w3.org/2001/XMLSchema#string"
                     },
-                    "min": 1, "max": "*"
+                    "min": 1,
+                    "max": "*"
                   },
                   {
                     "type": "TripleConstraint",
@@ -184,17 +189,15 @@
                   "type": "NodeConstraint",
                   "nodeKind": "bnode"
                 },
-                {
-                  "type": "ShapeRef",
-                  "reference": "_:IDshape"
-                }
+                "_:IDshape"
               ]
             }
           }
         ]
       }
     },
-    "http://ex.example/#EmployeeShape": {
+    {
+      "id": "http://ex.example/#EmployeeShape",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -206,7 +209,8 @@
               "type": "NodeConstraint",
               "datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "min": 1, "max": "*"
+            "min": 1,
+            "max": "*"
           },
           {
             "type": "TripleConstraint",
@@ -223,7 +227,8 @@
               "type": "NodeConstraint",
               "nodeKind": "iri"
             },
-            "min": 0, "max": "*"
+            "min": 0,
+            "max": "*"
           },
           {
             "type": "TripleConstraint",
@@ -238,10 +243,12 @@
         ]
       }
     },
-    "_:IDshape": {
+    {
+      "id": "_:IDshape",
       "type": "Shape",
       "expression": {
-        "type": "SomeOf",
+        "id": "_:IDshapeE",
+        "type": "OneOf",
         "expressions": [
           {
             "type": "EachOf",
@@ -268,10 +275,21 @@
                 "valueExpr": {
                   "type": "NodeConstraint",
                   "values": [
-                    "\"a\"",
-                    "\"b\"^^http://ex.example/#c",
-                    "\"c\"@en",
-                    "\"d\"@en-fr"
+                    {
+                      "value": "a"
+                    },
+                    {
+                      "value": "b",
+                      "type": "http://ex.example/#c"
+                    },
+                    {
+                      "value": "c",
+                      "language": "en"
+                    },
+                    {
+                      "value": "d",
+                      "language": "en-fr"
+                    }
                   ]
                 },
                 "min": 2,
@@ -285,8 +303,16 @@
                   "nodeKind": "bnode"
                 },
                 "semActs": [
-                  { "type": "SemAct", "name": "http://ex.example/#foo", "code": " ignored "},
-                  { "type": "SemAct", "name": "http://ex.example/#bar", "code": " also ignored " }
+                  {
+                    "type": "SemAct",
+                    "name": "http://ex.example/#foo",
+                    "code": " ignored "
+                  },
+                  {
+                    "type": "SemAct",
+                    "name": "http://ex.example/#bar",
+                    "code": " also ignored "
+                  }
                 ]
               }
             ]
@@ -304,8 +330,14 @@
                     "valueExpr": {
                       "type": "NodeConstraint",
                       "values": [
-                        "\"true\"^^http://www.w3.org/2001/XMLSchema#boolean",
-                        "\"false\"^^http://www.w3.org/2001/XMLSchema#boolean"
+                        {
+                          "value": "true",
+                          "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                        },
+                        {
+                          "value": "false",
+                          "type": "http://www.w3.org/2001/XMLSchema#boolean"
+                        }
                       ]
                     }
                   },
@@ -319,46 +351,38 @@
               {
                 "type": "TripleConstraint",
                 "predicate": "http://ex.example/#issues",
-                "valueExpr": {
-                  "type": "ShapeRef",
-                  "reference": "http://ex.example/S1"
-                },
-                "min": 0, "max": "*"
+                "valueExpr": "http://ex.example/S1",
+                "min": 0,
+                "max": "*"
               },
               {
                 "type": "TripleConstraint",
                 "predicate": "http://ex.example/#seeAlso",
-                "valueExpr": {
-                  "type": "ShapeRef",
-                  "reference": "http://ex.example/S1"
-                },
-                "min": 0, "max": "*"
+                "valueExpr": "http://ex.example/S1",
+                "min": 0,
+                "max": "*"
               },
               {
                 "type": "TripleConstraint",
                 "predicate": "http://ex.example/#says",
-                "valueExpr": {
-                  "type": "ShapeRef",
-                  "reference": "http://ex.example/#EmployeeShape"
-                },
-                "min": 0, "max": "*"
+                "valueExpr": "http://ex.example/#EmployeeShape",
+                "min": 0,
+                "max": "*"
               }
             ]
           }
         ]
       }
     },
-    "http://ex.example/#FooID": {
+    {
+      "id": "http://ex.example/#FooID",
       "type": "Shape",
       "closed": true,
-      "expression": {
-        "type": "Inclusion",
-        "include": "_:IDshape"
-      },
+      "expression": "_:IDshapeE",
       "extra": [
         "http://ex.example/#code",
         "http://ex.example/#system"
       ]
     }
-  }
+  ]
 }

@@ -1,6 +1,6 @@
 { "type": "ShapeTest",
   "node": "s0",
-  "shape": "S",
+  "shape": "http://a.example.org/S",
   "solution": {
     "type": "EachOfSolutions",
     "solutions": [
@@ -10,13 +10,13 @@
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
             "solutions": [
-              { "type": "TestedTriple", "subject": "s0", "predicate": "http://a.example/a", "object": "\"1\"" }
+              { "type": "TestedTriple", "subject": "s0", "predicate": "http://a.example/a", "object": { "value": "1" } }
             ]
           },
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/b",
             "solutions": [
-              { "type": "TestedTriple", "subject": "s0", "predicate": "http://a.example/b", "object": "\"1\"" }
+              { "type": "TestedTriple", "subject": "s0", "predicate": "http://a.example/b", "object": { "value": "1" } }
             ]
           }
         ]

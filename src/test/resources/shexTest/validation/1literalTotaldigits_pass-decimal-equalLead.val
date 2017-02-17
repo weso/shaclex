@@ -6,7 +6,7 @@
     "type": "TripleConstraintSolutions", "predicate": "http://a.example/p1",
     "valueExpr": { "type": "NodeConstraint", "nodeKind": "literal", "totaldigits": 5 },
     "solutions":[
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"01.2345\"^^http://www.w3.org/2001/XMLSchema#decimal"}
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "01.2345", "type": "http://www.w3.org/2001/XMLSchema#decimal" }}
     ]
   }
 }

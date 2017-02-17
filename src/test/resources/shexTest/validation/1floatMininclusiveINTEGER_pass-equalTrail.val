@@ -15,7 +15,7 @@
         "type": "TestedTriple",
         "subject": "http://a.example/s1",
         "predicate": "http://a.example/p1",
-        "object": "\"5.0\"^^http://www.w3.org/2001/XMLSchema#float"
+        "object": { "value": "5.0", "type": "http://www.w3.org/2001/XMLSchema#float" }
       }
     ]
   }

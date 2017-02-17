@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created by diasvg.py -->
+
+<svg width="54.663cm" height="30.800cm" viewBox="2.300 2.250 56.963 33.050"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+  <style>
+.class.background { fill:#FFFFFF; stroke:none; stroke-width:0 }
+.class.area { fill:none; stroke:#000000; stroke-width:0.100; }
+.class.label { fill:#000000; font-size:.8px; font-family:sans; font-style:normal; font-weight:700; }
+.attr.label { font-size:.5px; }
+
+.virtual.area { fill:none; stroke:#441100; stroke-width:0.100; }
+.virtual.label { fill:#441100; font-size:.8px; font-family:sans; font-style:normal; font-weight:700; }
+.virtual.attr.label { font-size:.5px; }
+
+.subclass.line  { fill:none; stroke:#007777; stroke-width:0.200; }
+.subclass.inner { fill:#FFFFFF; stroke:none; stroke-width:0.100; }
+.subclass.outer { fill:none; stroke:#007777; stroke-width:0.100; }
+
+.assoc.label { fill:#777700; font-size:.7px; font-family:monospace; font-style:normal; font-weight:lighter; }
+.assoc.card  { fill:#777700; font-size:.7px; font-family:monospace; font-style:normal; font-weight:lighter; }
+.assoc.line { fill:none; stroke:#777700; stroke-width:0.100; }
+.assoc.arrow { fill:#777700; stroke:none; stroke-width:0.100; }
+  </style>
+
+<rect class="class title background" x="25.200" y="2.300" width="7.045" height="1.400"/>
+<rect class="class title area" x="25.200" y="2.300" width="7.045" height="1.400"/>
+<text class="class label" x="28.723" y="3.250"  text-anchor="middle">Schema</text>
+<rect class="class attrs background" x="25.200" y="3.700" width="7.045" height="1.000"/>
+<rect class="class attrs area" x="25.200" y="3.700" width="7.045" height="1.000"/>
+<text class="attr  label" x="25.350" y="4.400" text-anchor="start">+startAct: SemAct</text>
+
+<rect class="class virtual title background" x="13.800" y="7.950" width="8.218" height="1.400"/>
+<rect class="class virtual title area" x="13.800" y="7.950" width="8.218" height="1.400"/>
+<text class="class virtual label" x="17.909" y="8.900" fill="#ff0000" text-anchor="middle">ShapeExpression</text>
+<rect class="class virtual attrs background" x="13.800" y="9.350" width="8.218" height="1.000"/>
+<rect class="class virtual attrs area" x="13.800" y="9.350" width="8.218" height="1.000"/>
+<text class="attr  virtual label" x="13.950" y="10.050" text-anchor="start">+label: ID</text>
+
+<polyline class="assoc line"  points="25.200,4.700 25.200,5.050 13.800,5.050 13.800,7.950 "/>
+<text     class="assoc label" x="19.500" y="4.900" text-anchor="middle">start</text>
+<polygon  class="assoc arrow" id="startArrow"  points="18.338,4.900 18.338,4.500 17.938,4.700 "/>
+<text     class="assoc card"  x="14.000" y="7.750" text-anchor="start">0..1</text>
+
+<polyline class="assoc line"  points="28.723,4.750 28.723,6.200 17.909,6.200 17.909,7.903 "/>
+<text     class="assoc label" x="23.316" y="6.050" text-anchor="middle">shapes</text>
+<polygon  class="assoc arrow" id="shapesArrow"  points="21.961,6.050 21.961,5.650 21.561,5.850 "/>
+<text     class="assoc card"  x="18.109" y="7.703" text-anchor="start">0..*</text>
+
+<rect class="class title background" x="2.350" y="14.900" width="4.375" height="1.400"/>
+<rect class="class title area" x="2.350" y="14.900" width="4.375" height="1.400"/>
+<text class="class label" x="4.538" y="15.850"  text-anchor="middle">ShapeOr</text>
+<rect class="class attrs background" x="2.350" y="16.300" width="4.375" height="0.400"/>
+<rect class="class attrs area" x="2.350" y="16.300" width="4.375" height="0.400"/>
+
+<polyline class="subclass line"  points="12.888,7.950 2.618,7.950 2.618,14.900 2.350,14.900 "/>
+<polygon  class="subclass inner" points="12.888,8.350 13.688,7.950 12.888,7.550 "/>
+<polygon  class="subclass outer" points="12.888,8.350 13.688,7.950 12.888,7.550 "/>
+
+<polyline class="assoc line"  points="3.268,14.800 3.200,14.800 3.200,9.050 13.718,9.050 "/>
+<text     class="assoc label" x="3.300" y="11.775" text-anchor="start">shapeExprs</text>
+<polygon  class="assoc arrow" id="ShapeOrshapeExprsArrow" points="7.250,11.775 7.250,11.375 7.650,11.575 "/>
+<text     class="assoc card"  x="13.518" y="8.900" text-anchor="end">2..*</text>
+
+<rect class="class title background" x="7.950" y="14.950" width="5.062" height="1.400"/>
+<rect class="class title area" x="7.950" y="14.950" width="5.062" height="1.400"/>
+<text class="class label" x="10.481" y="15.900"  text-anchor="middle">ShapeAnd</text>
+<rect class="class attrs background" x="7.950" y="16.350" width="5.062" height="0.400"/>
+<rect class="class attrs area" x="7.950" y="16.350" width="5.062" height="0.400"/>
+
+<polyline class="subclass line"  points="13.800,11.262 13.800,10.850 7.950,10.850 7.950,14.950 "/>
+<polygon  class="subclass inner" points="14.200,11.262 13.800,10.462 13.400,11.262 "/>
+<polygon  class="subclass outer" points="14.200,11.262 13.800,10.462 13.400,11.262 "/>
+
+<polyline class="assoc line"  points="13.800,10.350 13.800,11.800 10.481,11.800 10.481,14.900 "/>
+<text     class="assoc label" x="12.141" y="11.650" text-anchor="middle">shapeExprs</text>
+<polygon  class="assoc arrow"  points="14.166,11.650 14.166,11.250 14.566,11.450 "/>
+<text     class="assoc card"  x="10.681" y="14.700" text-anchor="start">0..*</text>
+
+<rect class="class title background" x="13.900" y="14.950" width="4.902" height="1.400"/>
+<rect class="class title area" x="13.900" y="14.950" width="4.902" height="1.400"/>
+<text class="class label" x="16.351" y="15.900"  text-anchor="middle">ShapeNot</text>
+<rect class="class attrs background" x="13.900" y="16.350" width="4.902" height="0.400"/>
+<rect class="class attrs area" x="13.900" y="16.350" width="4.902" height="0.400"/>
+
+<polyline class="subclass line"  points="13.800,11.262 13.800,13.225 14.500,13.225 14.500,15.300 "/>
+<polygon  class="subclass inner" points="14.200,11.262 13.800,10.462 13.400,11.262 "/>
+<polygon  class="subclass outer" points="14.200,11.262 13.800,10.462 13.400,11.262 "/>
+
+<polyline class="assoc line"  points="16.351,14.901 16.351,12.550 17.909,12.550 17.909,10.399 "/>
+<text     class="assoc label" x="17.130" y="12.400" text-anchor="middle">shapeExpr</text>
+<polygon  class="assoc arrow"  points="18.962,12.400 18.962,12.000 19.362,12.200 "/>
+
+
+<rect class="class title background" x="19.868" y="15.650" width="11.280" height="1.400"/>
+<rect class="class title area" x="19.868" y="15.650" width="11.280" height="1.400"/>
+<text class="class label" x="25.508" y="16.600"  text-anchor="middle">NodeConstraint</text>
+<rect class="class attrs background" x="19.868" y="17.050" width="11.280" height="2.600"/>
+<rect class="class attrs area" x="19.868" y="17.050" width="11.280" height="2.600"/>
+<text class="attr  label" x="20.018" y="17.750" text-anchor="start">+nodeKind: IRI|BNode|Literal</text>
+<text class="attr  label" x="20.018" y="18.550" text-anchor="start">+datatype: IRI</text>
+<text class="attr  label" x="20.018" y="19.350" text-anchor="start">+xsFacet: XMLSchemaFacet</text>
+
+<polyline class="subclass line"  points="17.909,11.262 17.909,13.400 19.868,13.400 19.868,15.650 "/>
+<polygon  class="subclass inner" points="18.309,11.262 17.909,10.462 17.509,11.262 "/>
+<polygon  class="subclass outer" points="18.309,11.262 17.909,10.462 17.509,11.262 "/>
+
+<rect class="class title background" x="31.818" y="15.650" width="6.660" height="1.400"/>
+<rect class="class title area" x="31.818" y="15.650" width="6.660" height="1.400"/>
+<text class="class label" x="35.148" y="16.600"  text-anchor="middle">Shape</text>
+<rect class="class attrs background" x="31.818" y="17.050" width="6.660" height="2.600"/>
+<rect class="class attrs area" x="31.818" y="17.050" width="6.660" height="2.600"/>
+<text class="attr  label" x="31.968" y="17.750" text-anchor="start">+closed: BOOL</text>
+<text class="attr  label" x="31.968" y="18.550" text-anchor="start">+extra: IRI</text>
+<text class="attr  label" x="31.968" y="19.350" text-anchor="start">+semActs: SemAct</text>
+
+<polyline class="subclass line"  points="22.017,11.262 22.017,13.400 31.818,13.400 31.818,15.650 "/>
+<polygon  class="subclass inner" points="22.417,11.262 22.017,10.462 21.617,11.262 "/>
+<polygon  class="subclass outer" points="22.417,11.262 22.017,10.462 21.617,11.262 "/>
+
+<polyline class="assoc line"  points="17.909,9.150 17.909,9.350 35.148,9.350 35.148,15.650 "/>
+<text     class="assoc label" x="26.528" y="9.200" text-anchor="middle">expression</text>
+<polygon  class="assoc arrow"  points="24.403,9.200 24.403,8.800 24.003,9.000 "/>
+<text     class="assoc card"  x="35.348" y="15.450" text-anchor="start">0..1</text>
+
+<rect class="class virtual title background" x="42.018" y="9.000" width="7.935" height="1.400"/>
+<rect class="class virtual title area" x="42.018" y="9.000" width="7.935" height="1.400"/>
+<text class="class virtual label" x="45.985" y="9.950"  text-anchor="middle">TripleExpression</text>
+<rect class="class virtual attrs background" x="42.018" y="10.400" width="7.935" height="1.000"/>
+<rect class="class virtual attrs area" x="42.018" y="10.400" width="7.935" height="1.000"/>
+<text class="attr  virtual label" x="42.168" y="11.100" text-anchor="start">+semActs: SemAct</text>
+
+<rect class="class title background" x="40.117" y="13.950" width="3.320" height="1.400"/>
+<rect class="class title area" x="40.117" y="13.950" width="3.320" height="1.400"/>
+<text class="class label" x="41.777" y="14.900"  text-anchor="middle">OneOf</text>
+<rect class="class attrs background" x="40.117" y="15.350" width="3.320" height="0.400"/>
+<rect class="class attrs area" x="40.117" y="15.350" width="3.320" height="0.400"/>
+
+<polyline class="subclass line"  points="41.106,9.700 40.017,9.700 40.017,13.750 "/>
+<polygon  class="subclass inner" points="41.106,10.100 41.906,9.700 41.106,9.300 "/>
+<polygon  class="subclass outer" points="41.106,10.100 41.906,9.700 41.106,9.300 "/>
+
+<polyline class="assoc line"  points="36.518,15.700 36.367,15.700 36.367,9.700 42.018,9.700 "/>
+<text     class="assoc label" x="36.468" y="12.550" text-anchor="start">expression</text>
+<polygon  class="assoc arrow" points="40.418,12.550 40.418,12.150 40.818,12.350 "/>
+<text     class="assoc card" x="41.818" y="9.550" text-anchor="end">2..*</text>
+
+<polyline class="assoc line"  points="41.777,13.950 41.777,12.900 40.777,12.900 40.777,9.700 42.018,9.700 "/>
+<text     class="assoc label" x="41.277" y="12.750" text-anchor="middle">expressions</text>
+<polygon  class="assoc arrow"  points="43.495,12.750 43.495,12.350 43.895,12.550 "/>
+<text     class="assoc card" x="41.818" y="9.550" text-anchor="end">2..*</text>
+
+<rect class="class title background" x="44.273" y="13.935" width="3.660" height="1.400"/>
+<rect class="class title area" x="44.273" y="13.935" width="3.660" height="1.400"/>
+<text class="class label" x="46.103" y="14.885"  text-anchor="middle">EachOf</text>
+<rect class="class attrs background" x="44.273" y="15.335" width="3.660" height="0.400"/>
+<rect class="class attrs area" x="44.273" y="15.335" width="3.660" height="0.400"/>
+
+<polyline class="subclass line"  points="42.018,12.312 42.018,12.900 44.273,12.900 44.273,13.935 "/>
+<polygon  class="subclass inner" points="42.418,12.312 42.018,11.512 41.618,12.312 "/>
+<polygon  class="subclass outer" points="42.418,12.312 42.018,11.512 41.618,12.312 "/>
+
+<polyline class="assoc line"  points="45.985,11.450 45.985,12.368 46.103,12.368 46.103,13.885 "/>
+<text     class="assoc label" x="46.044" y="12.218" text-anchor="middle">expressions</text>
+<polygon  class="assoc arrow"  points="48.261,12.218 48.261,11.818 48.661,12.018 "/>
+<text     class="assoc card"  x="46.303" y="13.685" text-anchor="start">2..*</text>
+
+<rect class="class title background" x="49.168" y="13.950" width="7.745" height="1.400"/>
+<rect class="class title area" x="49.168" y="13.950" width="7.745" height="1.400"/>
+<text class="class label" x="53.040" y="14.900"  text-anchor="middle">TripleConstraint</text>
+<rect class="class attrs background" x="49.168" y="15.350" width="7.745" height="3.400"/>
+<rect class="class attrs area" x="49.168" y="15.350" width="7.745" height="3.400"/>
+<text class="attr  label" x="49.318" y="16.050" text-anchor="start">+inverse: BOOL</text>
+<text class="attr  label" x="49.318" y="16.850" text-anchor="start">+predicate: IRI</text>
+<text class="attr  label" x="49.318" y="17.650" text-anchor="start">+min: INT</text>
+<text class="attr  label" x="49.318" y="18.450" text-anchor="start">+max: INT</text>
+
+<polyline class="subclass line"  points="49.953,12.312 49.953,13.050 53.040,13.050 53.040,13.900 "/>
+<polygon  class="subclass inner" points="50.353,12.312 49.953,11.512 49.553,12.312 "/>
+<polygon  class="subclass outer" points="50.353,12.312 49.953,11.512 49.553,12.312 "/>
+
+<polyline class="assoc line"  points="53.040,13.902 53.040,8.000 21.968,8.000 21.968,7.750 "/>
+<text     class="assoc label" x="37.504" y="7.850" text-anchor="middle">valueExpr</text>
+<polygon  class="assoc arrow" points="35.571,7.850 35.571,7.450 35.171,7.650 "/>
+<text     class="assoc card"  x="22.168" y="8.350" text-anchor="start">0..1</text>
+
+<rect class="class virtual title background" x="4.618" y="17.650" width="6.935" height="1.400"/>
+<rect class="class virtual title area" x="4.618" y="17.650" width="6.935" height="1.400"/>
+<text class="class virtual label" x="8.085" y="18.600"  text-anchor="middle">valueSetValue</text>
+
+<polyline class="assoc line"  points="19.868,18.350 15.735,18.350 15.735,18.350 11.602,18.350 "/>
+<text     class="assoc label" x="15.735" y="18.200" text-anchor="middle">values</text>
+<polygon  class="assoc arrow"  points="14.380,18.200 14.380,17.800 13.980,18.000 "/>
+<text     class="assoc card"  x="11.802" y="18.200" text-anchor="start">1..*</text>
+
+<rect class="class title background" x="25.218" y="31.200" width="4.160" height="1.400"/>
+<rect class="class title area" x="25.218" y="31.200" width="4.160" height="1.400"/>
+<text class="class label" x="27.298" y="32.150"  text-anchor="middle">valueIRI</text>
+<rect class="class attrs background" x="25.218" y="32.600" width="4.160" height="0.400"/>
+<rect class="class attrs area" x="25.218" y="32.600" width="4.160" height="0.400"/>
+
+<polyline class="subclass line"  points="29.009,29.360 29.009,29.800 27.298,29.800 27.298,31.151 "/>
+<polygon  class="subclass inner" points="29.409,29.360 29.009,28.560 28.609,29.360 "/>
+<polygon  class="subclass outer" points="29.409,29.360 29.009,28.560 28.609,29.360 "/>
+
+<rect class="class title background" x="30.768" y="31.150" width="5.870" height="1.400"/>
+<rect class="class title area" x="30.768" y="31.150" width="5.870" height="1.400"/>
+<text class="class label" x="33.703" y="32.100"  text-anchor="middle">valueLiteral</text>
+<rect class="class attrs background" x="30.768" y="32.550" width="5.870" height="0.400"/>
+<rect class="class attrs area" x="30.768" y="32.550" width="5.870" height="0.400"/>
+
+<polyline class="subclass line"  points="29.009,29.360 29.009,29.800 33.703,29.800 33.703,31.100 "/>
+<polygon  class="subclass inner" points="29.409,29.360 29.009,28.560 28.609,29.360 "/>
+<polygon  class="subclass outer" points="29.409,29.360 29.009,28.560 28.609,29.360 "/>
+
+<rect class="class title background" x="11.318" y="26.900" width="4.350" height="1.400"/>
+<rect class="class title area" x="11.318" y="26.900" width="4.350" height="1.400"/>
+<text class="class label" x="13.493" y="27.850"  text-anchor="middle">Stem</text>
+<rect class="class attrs background" x="11.318" y="28.300" width="4.350" height="1.000"/>
+<rect class="class attrs area" x="11.318" y="28.300" width="4.350" height="1.000"/>
+<text class="attr  label" x="11.468" y="29.000" text-anchor="start">+stem: IRI</text>
+
+<polyline class="subclass line"  points="15.573,24.412 15.573,25.500 13.493,25.500 13.493,26.850 "/>
+<polygon  class="subclass inner" points="15.973,24.412 15.573,23.612 15.173,24.412 "/>
+<polygon  class="subclass outer" points="15.973,24.412 15.573,23.612 15.173,24.412 "/>
+
+<rect class="class title background" x="4.268" y="26.800" width="5.673" height="1.400"/>
+<rect class="class title area" x="4.268" y="26.800" width="5.673" height="1.400"/>
+<text class="class label" x="7.104" y="27.750"  text-anchor="middle">StemRange</text>
+<rect class="class attrs background" x="4.268" y="28.200" width="5.673" height="0.400"/>
+<rect class="class attrs area" x="4.268" y="28.200" width="5.673" height="0.400"/>
+
+<polyline class="subclass line"  points="8.085,19.962 8.085,20.950 4.268,20.950 4.268,26.800 "/>
+<polygon  class="subclass inner" points="8.485,19.962 8.085,19.162 7.685,19.962 "/>
+<polygon  class="subclass outer" points="8.485,19.962 8.085,19.162 7.685,19.962 "/>
+
+<rect class="class virtual title background" x="10.868" y="22.050" width="9.410" height="1.400"/>
+<rect class="class virtual title area" x="10.868" y="22.050" width="9.410" height="1.400"/>
+<text class="class virtual label" x="15.573" y="23.000"  text-anchor="middle">objectValueORStem</text>
+
+<rect class="class attrs background" x="17.068" y="31.150" width="4.488" height="1.400"/>
+<rect class="class attrs area" x="17.068" y="31.150" width="4.488" height="1.400"/>
+<text class="class label" x="19.311" y="32.100" text-anchor="middle">Wildcard</text>
+
+<rect class="class virtual title background" x="26.118" y="27.000" width="5.783" height="1.400"/>
+<rect class="class virtual title area" x="26.118" y="27.000" width="5.783" height="1.400"/>
+<text class="class virtual label" x="29.009" y="27.950"  text-anchor="middle">objectValue</text>
+
+<polyline class="subclass line"  points="15.573,24.412 15.573,25.500 29.009,25.500 29.009,26.950 "/>
+<polygon  class="subclass inner" points="15.973,24.412 15.573,23.612 15.173,24.412 "/>
+<polygon  class="subclass outer" points="15.973,24.412 15.573,23.612 15.173,24.412 "/>
+<polyline class="subclass line"  points="8.085,20.012 8.085,20.950 15.573,20.950 15.573,22.000 "/>
+<polygon  class="subclass inner" points="8.485,20.012 8.085,19.212 7.685,20.012 "/>
+<polygon  class="subclass outer" points="8.485,20.012 8.085,19.212 7.685,20.012 "/>
+
+<rect class="class virtual title background" x="16.518" y="27.150" width="6.992" height="1.400"/>
+<rect class="class virtual title area" x="16.518" y="27.150" width="6.992" height="1.400"/>
+<text class="class virtual label" x="20.014" y="28.100"  text-anchor="middle">IRIORWildcard</text>
+
+<polyline class="subclass line"  points="20.014,29.512 20.014,30.250 19.311,30.250 19.311,31.100 "/>
+<polygon  class="subclass inner" points="20.414,29.512 20.014,28.712 19.614,29.512 "/>
+<polygon  class="subclass outer" points="20.414,29.512 20.014,28.712 19.614,29.512 "/>
+<polyline class="subclass line"  points="20.014,29.512 20.014,30.250 25.218,30.250 25.218,31.200 "/>
+<polygon  class="subclass inner" points="20.414,29.512 20.014,28.712 19.614,29.512 "/>
+<polygon  class="subclass outer" points="20.414,29.512 20.014,28.712 19.614,29.512 "/>
+
+<polyline class="assoc line"  points="7.104,26.750 7.104,25.050 10.868,25.050 10.868,23.450 "/>
+<text     class="assoc label" x="8.986" y="24.900" text-anchor="middle">exclusions</text>
+<polygon  class="assoc arrow"  points="11.011,24.900 11.011,24.500 11.411,24.700 "/>
+<text     class="assoc card"  x="11.068" y="24.050" text-anchor="start">1..*</text>
+
+<polyline class="assoc line"  points="7.104,28.649 7.104,30.600 16.518,30.600 16.518,28.550 "/>
+<text     class="assoc label" x="11.811" y="30.450" text-anchor="middle">stem</text>
+<polygon  class="assoc arrow"  points="12.681,30.450 12.681,30.050 13.081,30.250 "/>
+
+</svg>

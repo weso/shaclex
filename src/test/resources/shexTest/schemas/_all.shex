@@ -13,15 +13,17 @@ PREFIX prefix1: <http://all.example/>
 %prefix1:act2{ START2 %}
 
 <http://all.example/S1> EXTRA <http://all.example/p1> <http://all.example/p2> <http://all.example/p3> {
+ $<http://all.example/S1e> (
    <http://all.example/p1> .;
    <http://all.example/p2> .;
-   <http://all.example/p3> .
+   <http://all.example/p3> .)
 }
 
 prefix1:S2 EXTRA prefix1:p1 prefix1:p2 prefix1:p3 {
+ $prefix1:S2e (
    prefix1:p1- .;
    prefix1:p2 .;
-   prefix1:p3 .
+   prefix1:p3 .)
 }
 
 PREFIX a: <http://all.example/>
@@ -52,7 +54,7 @@ PREFIX : <http://all.example/>
 #VIRTUAL
 prefix1:S3 EXTRA a:a prefix:prefix base:base # &a:S1
 {
-   &a:S1;
+   &a:S1e;
    a:a .;
    prefix:prefix prefix:dt LENGTH 2?;
    (  base:base IRI*;
@@ -90,10 +92,11 @@ prefix1:S5 IRI
 
 _:a·̀ͯ‿.⁀ CLOSED # &_:a·̀ͯ‿.⁀ &<http://all.example/S2>
 {
-   &_:a·̀ͯ‿.⁀;
-   &<http://all.example/S2>
+  $_:a·̀ͯ‿.⁀e (
+   &_:a·̀ͯ‿.⁀e;
+   &<http://all.example/S2e> )
 }
 
 _:AZazÀÖØöø˿ͰͽͿ῿‌‍⁰↏Ⰰ⿯、퟿豈﷏ﷰ�𐀀󯿽 {
-   &_:a·̀ͯ‿.⁀
+   &_:a·̀ͯ‿.⁀e
 }

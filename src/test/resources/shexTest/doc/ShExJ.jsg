@@ -2,55 +2,72 @@
 # The form "OBJNAME  { property:PROPTYPE ... }" matches an object of type OBJTYPE
 # The form "RULENAME = NAME1 | NAME2 ..." matches any of NAMEn.
 # the form "TERMNAME : "RegExp" matches any literal matching RegExp
-# A PROPETYPE can be:
+# A PROPTYPE can be:
 #   TERMINAL - a terminal, all caps in this example.
 #   [PROPTYPE] - an array of PROPTYPE.
 #   {TERMINAL->PROPTYPE} - a map from TERMINAL to PROPTYPE.
 #   (PROPTYPE1|PROPTYPE2...) - any of PROPTYPEn.
 
-.TYPE type; # All objects have a type property corresponding to the production name, e.g. "Schema"
+.TYPE type - ObjectLiteral labeledShapeOr labeledShapeAnd labeledShapeNot labeledNodeConstraint labeledShape labeledShapeExternal
 
-Schema           { prefixes:{PREFIX->IRI}? base:IRI? startActs:[SemAct]? start:shapeExpr? shapes:{shapeLabel->shapeExpr}? }
-shapeExpr        = ShapeOr | ShapeAnd | ShapeNot | NodeConstraint | Shape | ShapeRef | ShapeExternal;
-ShapeOr          { shapeExprs:[shapeExpr] }
-ShapeAnd         { shapeExprs:[shapeExpr] }
+; # All objects have a type property corresponding to the production name, e.g. "Schema"
+
+Schema           {
+  "@context":"https://shexspec.github.io/context.jsonld"
+startActs:[SemAct+]? start:(shapeExpr|labeledShapeExpr)? shapes:[labeledShapeExpr+]? }
+
+# labeled Shape Expressions
+labeledShapeExpr        = labeledShapeOr | labeledShapeAnd | labeledShapeNot | labeledNodeConstraint | labeledShape | IRI | labeledShapeExternal;
+labeledShapeOr          { type:"ShapeOr"        id:shapeLabel shapeExprs:[shapeExpr{2,}] }
+labeledShapeAnd         { type:"ShapeAnd"       id:shapeLabel shapeExprs:[shapeExpr{2,}] }
+labeledShapeNot         { type:"ShapeNot"       id:shapeLabel shapeExpr:shapeExpr }
+labeledNodeConstraint   { type:"NodeConstraint" id:shapeLabel nodeKind:("iri"|"bnode"|"nonliteral"|"literal")? datatype:IRI? xsFacet* values:[valueSetValue+]? }
+labeledShape            { type:"Shape"          id:shapeLabel virtual:BOOL? closed:BOOL? extra:[IRI+]? expression:tripleExpr? inherit:[shapeLabel+]? semActs:[SemAct+]? }
+labeledShapeExternal    { type:"ShapeExternal"  id:shapeLabel  }
+
+# Shape Expressions
+shapeExpr        = ShapeOr | ShapeAnd | ShapeNot | NodeConstraint | Shape | IRI | ShapeExternal;
+ShapeOr          { shapeExprs:[shapeExpr{2,}] }
+ShapeAnd         { shapeExprs:[shapeExpr{2,}] }
 ShapeNot         { shapeExpr:shapeExpr }
-Shape            { virtual:BOOL? closed:BOOL? extra:[IRI]? expression:tripleExpr? inherit:[shapeLabel]? semActs:[SemAct]? }
+NodeConstraint   { nodeKind:("iri"|"bnode"|"nonliteral"|"literal")? datatype:IRI? xsFacet* values:[valueSetValue+]? }
+Shape            { virtual:BOOL? closed:BOOL? extra:[IRI+]? expression:tripleExpr? inherit:[shapeLabel+]? semActs:[SemAct+]? }
 ShapeExternal    {  }
-ShapeRef         { reference:IRI } # should be a TERM or some such
-SemAct           { name:IRI code:STRING? }
-tripleExpr       = EachOf | SomeOf | TripleConstraint | Inclusion ;
-EachOf           { expressions:[tripleExpr] min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct]? annotations:[Annotation]? }
-SomeOf           { expressions:[tripleExpr] min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct]? annotations:[Annotation]? }
-Inclusion        { include:shapeLabel }
-TripleConstraint { inverse:BOOL? negated:BOOL? predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct]? annotations:[Annotation]? }
-NodeConstraint   { nodeKind:("iri"|"bnode"|"nonliteral"|"literal")? datatype:IRI? xsFacet* values:[valueSetValue]? }
-Annotation       { predicate:IRI object:objectValue }
 
+# Triple Expressions
+tripleExpr       = EachOf | OneOf | TripleConstraint | IRI ;
+EachOf           { id:IRI? expressions:[tripleExpr{2,}] min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct+]? annotations:[Annotation+]? }
+OneOf            { id:IRI? expressions:[tripleExpr{2,}] min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct+]? annotations:[Annotation+]? }
+TripleConstraint { id:IRI? inverse:BOOL? negated:BOOL? predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct+]? annotations:[Annotation+]? }
+
+# XML Schema facets
 xsFacet          = stringFacet | numericFacet ;
 stringFacet      = (length|minlength|maxlength):INTEGER | pattern:STRING ;
 numericFacet     = (mininclusive|minexclusive|maxinclusive|maxexclusive):numericLiteral
                  | (totaldigits|fractiondigits):INTEGER ;
+
+# Value Sets
+valueSetValue    = objectValue|Stem|StemRange ;
+objectValue      = IRI|ObjectLiteral ;
+Stem             { stem:IRI } # StemRange with exclusions
+StemRange        { stem:(IRI|Wildcard) exclusions:[objectValue|Stem +]? }
+Wildcard         {  }
+
+SemAct           { name:IRI code:STRING? }
+Annotation       { predicate:IRI object:objectValue }
+
 shapeLabel       = IRI|BNODE ;
 numericLiteral   = INTEGER|DECIMAL|DOUBLE ;
-valueSetValue    = objectValue|Stem|StemRange ;
-objectValue      = IRI|RDFLiteral ;
-Stem             { stem:IRI } # StemRange with exclusions
-StemRange        { stem:(IRI|Wildcard) exclusions:[objectValue|Stem]? }
-Wildcard         {  }
 RDFLiteral       = SIMPLE_LITERAL|DATATYPE_LITERAL|LANG_LITERAL ;
+ObjectLiteral    { value:STRING language:STRING? type:STRING? }
 
 # Terminals used in productions:
-PREFIX           : PN_PREFIX? ; # <http://www.w3.org/TR/turtle/#grammar-production-PNAME_NS> - ":"
 IRI              : (PN_CHARS | '.' | ':' | '/' | '\\' | '#' | '@' | '%' | '&' | UCHAR)* ; # <http://www.w3.org/TR/turtle/#grammar-production-IRIREF> - "<>"s
 BNODE            : '_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)? ; # <http://www.w3.org/TR/turtle/#grammar-production-BLANK_NODE_LABEL>
 BOOL             : "true" | "false" ; # JSON boolean tokens
 INTEGER          : [+-]? [0-9] + ; # <http://www.w3.org/TR/turtle/#grammar-production-INTEGER>
 DECIMAL          : [+-]? [0-9]* '.' [0-9] + ; # <http://www.w3.org/TR/turtle/#grammar-production-DECIMAL>
 DOUBLE           : [+-]? ([0-9] + '.' [0-9]* EXPONENT | '.' [0-9]+ EXPONENT | [0-9]+ EXPONENT) ; # <http://www.w3.org/TR/turtle/#grammar-production-DOUBLE>
-SIMPLE_LITERAL   : '"' ([^"\\\r\n] | '\\"')* '"' ; # JSON string with '"' at beginning and end
-DATATYPE_LITERAL : SIMPLE_LITERAL "^^" IRI ; # JSON string with '"' at beginning, an unescaped '"' followed by '^^' and an IRI
-LANG_LITERAL     : SIMPLE_LITERAL LANGTAG ; # JSON string with '"' at beginning, an unescaped '"' followed by '@' and a Turtle LANGTAG                   
 STRING           : .* ;
 
 # Terminals use only in other terminals:

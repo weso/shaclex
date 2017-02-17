@@ -1,7 +1,7 @@
 {
   "type": "ShapeTest",
   "node": "x",
-  "shape": "S",
+  "shape": "http://a.example.org/S",
   "solution": {
     "type": "EachOfSolutions",
     "solutions": [
@@ -16,16 +16,16 @@
             "solutions": []
           },
           {
-            "type": "SomeOfSolutions",
+            "type": "OneOfSolutions",
             "solutions":[
               {
-                "type": "SomeOfSolution",
+                "type": "OneOfSolution",
                 "expressions": [
                   {
                     "type": "TripleConstraintSolutions", "predicate":"http://a.example/a",
                     "min": 1, "max": "*",
                     "solutions":[
-                      {"type":"TestedTriple","subject":"x","predicate":"http://a.example/a","object":"\"1\"^^http://www.w3.org/2001/XMLSchema#integer"}
+                      {"type":"TestedTriple","subject":"x","predicate":"http://a.example/a","object":{ "value": "1", "type": "http://www.w3.org/2001/XMLSchema#integer" }}
                     ]
                   }
                 ]
@@ -35,7 +35,7 @@
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
             "solutions": [
-              { "type":"TestedTriple","subject":"x","predicate":"http://a.example/a","object":"\"3\"^^http://www.w3.org/2001/XMLSchema#integer" }
+              { "type":"TestedTriple","subject":"x","predicate":"http://a.example/a","object":{ "value": "3", "type": "http://www.w3.org/2001/XMLSchema#integer" } }
             ]
           }
         ]

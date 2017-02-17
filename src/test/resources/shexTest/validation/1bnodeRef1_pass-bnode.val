@@ -36,7 +36,7 @@
                 "type": "TestedTriple",
                 "subject": "_:n2",
                 "predicate": "http://a.example/p2",
-                "object": "\"X\""
+                "object": { "value": "X" }
               }
             ]
           }

@@ -10,7 +10,7 @@ case class Schema(
     base: Option[IRI],
     startActs: Option[List[SemAct]],
     start: Option[ShapeExpr],
-    shapes: Option[Map[ShapeLabel,ShapeExpr]]
+    shapes: Option[List[ShapeExpr]]
 ) {
 
   def resolveShapeLabel(l: ShapeLabel): Either[String,IRI] = l match {
@@ -29,34 +29,40 @@ case class Schema(
 
 
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
-    shapes.getOrElse(Map()).get(label)
+    shapes.getOrElse(List()).find(_.id == label)
 
-  lazy val shapesMap: Map[ShapeLabel,ShapeExpr] =
-    shapes.getOrElse(Map())
+  lazy val shapeList = shapes.getOrElse(List())
 
   def labels: List[ShapeLabel] = {
-    shapesMap.keys.toList
+    shapeList.map(_.id).flatten
   }
+
 }
 
-abstract sealed trait ShapeExpr
+abstract sealed trait ShapeExpr {
+  def id: Option[ShapeLabel]
+}
 
 object ShapeExpr {
   def any: ShapeExpr = NodeConstraint.empty
 }
 
-case class ShapeOr(shapeExprs: List[ShapeExpr]) extends ShapeExpr
+case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr
 
-case class ShapeAnd(shapeExprs: List[ShapeExpr]) extends ShapeExpr
+case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr
 
-case class ShapeNot(shapeExpr: ShapeExpr) extends ShapeExpr
+case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr
 
 case class NodeConstraint(
     nodeKind: Option[NodeKind],
     datatype: Option[IRI],
     xsFacets: List[XsFacet],
     values: Option[List[ValueSetValue]]
-    ) extends ShapeExpr
+    ) extends ShapeExpr {
+  def id = None
+}
+
+
 object NodeConstraint {
 
   def empty = NodeConstraint(
@@ -89,6 +95,7 @@ object NodeConstraint {
 
 // TODO: Review if shapes should have annotations
 case class Shape(
+    id: Option[ShapeLabel],
     virtual:Option[Boolean],
     closed: Option[Boolean],
     extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
@@ -113,6 +120,7 @@ case class Shape(
 
 object Shape{
   def empty: Shape = Shape(
+   id = None,
    virtual = None,
    closed = None,
    extra = None,
@@ -129,10 +137,11 @@ object Shape{
 
 }
 
-case class ShapeRef(reference: ShapeLabel) extends ShapeExpr
+case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
+  def id = None
+}
 
-case class ShapeExternal() extends ShapeExpr
-
+case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr
 
 sealed trait XsFacet {
   val fieldName: String

@@ -15,7 +15,7 @@
         "type": "TestedTriple",
         "subject": "http://a.example/s1",
         "predicate": "http://a.example/p1",
-        "object": "\"5.6e0\"^^http://www.w3.org/2001/XMLSchema#double"
+        "object": { "value": "5.6e0", "type": "http://www.w3.org/2001/XMLSchema#double" }
       }
     ]
   }

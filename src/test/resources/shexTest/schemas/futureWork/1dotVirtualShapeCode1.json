@@ -1,4 +1,5 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
   "prefixes": {},
   "shapes":{

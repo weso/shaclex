@@ -14,7 +14,7 @@
         "type": "TestedTriple",
         "subject": "http://a.example/s1",
         "predicate": "http://a.example/p1",
-        "object": "\"abcde\""
+        "object": { "value": "abcde" }
       }
     ]
   }

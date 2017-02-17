@@ -1,16 +1,22 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes":{
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "inverse": true,
         "predicate": "http://a.example/p1",
         "semActs": [
-          { "type": "SemAct", "name": "http://shex.io/extensions/Test/", "code": " print(o) " }
+          {
+            "type": "SemAct",
+            "name": "http://shex.io/extensions/Test/",
+            "code": " print(o) "
+          }
         ]
       }
     }
-  }
+  ]
 }

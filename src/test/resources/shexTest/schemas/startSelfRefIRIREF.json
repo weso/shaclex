@@ -1,0 +1,18 @@
+{
+  "@context": "https://shexspec.github.io/context.jsonld",
+  "type": "Schema",
+  "start": "http://a.example/S1",
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
+      "type": "Shape",
+      "expression": {
+        "type": "TripleConstraint",
+        "predicate": "http://a.example/p1",
+        "min": 0,
+        "max": "*",
+        "valueExpr": "http://a.example/S1"
+      }
+    }
+  ]
+}

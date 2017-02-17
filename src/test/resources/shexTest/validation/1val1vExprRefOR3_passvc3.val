@@ -5,25 +5,30 @@
   "solution": {
     "type": "TripleConstraintSolutions",
     "predicate": "http://a.example/p1",
-    "valueExpr": {
-      "type": "ShapeRef",
-      "reference": "http://a.example/vc4"
-    },
     "solutions": [
       {
         "type": "TestedTriple",
         "subject": "http://a.example/s1",
         "predicate": "http://a.example/p1",
-        "object": "\"ef\"",
+        "object": { "value": "ef" },
         "referenced": {
           "type": "ShapeOrResults",
           "solution": {
             "type": "NodeTest",
-            "node": "\"ef\"",
-            "shape": "http://a.example/vc3"
+            "node": { "value": "ef" },
+            "shape": "http://a.example/vc3",
+            "shapeExpr": {
+              "type": "NodeConstraint",
+              "nodeKind": "literal",
+              "pattern": ".*ef"
+            }
           }
         }
       }
-    ]
+    ],
+    "valueExpr": {
+      "type": "ShapeRef",
+      "reference": "http://a.example/vc4"
+    }
   }
 }

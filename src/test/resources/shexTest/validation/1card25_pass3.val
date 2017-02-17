@@ -5,9 +5,9 @@
   "solution": { 
     "type":"TripleConstraintSolutions", "predicate":"http://a.example/p1",
     "solutions":[
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"a\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"b\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"c\""}
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "a" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "b" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "c" }}
     ],
     "min": 2, "max": 5
   }

@@ -1,11 +1,9 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "prefixes": {
-    "": "http://a.example/",
-    "xsd": "http://www.w3.org/2001/XMLSchema#"
-  },
-  "shapes": {
-    "file:///home/eric/checkouts/shexSpec/shexTest/validation/S": {
+  "shapes": [
+    {
+      "id": "http://a.example.org/S",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -14,22 +12,22 @@
             "type": "TripleConstraint",
             "predicate": "http://a.example/a",
             "valueExpr": {
-              "type": "ValueClass",
+              "type": "NodeConstraint",
               "values": [
-                "\"1\"^^http://www.w3.org/2001/XMLSchema#integer"
+                { "value": "1", "type": "http://www.w3.org/2001/XMLSchema#integer" }
               ]
             }
           },
           {
-            "type": "SomeOf",
+            "type": "OneOf",
             "expressions": [
               {
                 "type": "TripleConstraint",
                 "predicate": "http://a.example/a",
                 "valueExpr": {
-                  "type": "ValueClass",
+                  "type": "NodeConstraint",
                   "values": [
-                    "\"2\"^^http://www.w3.org/2001/XMLSchema#integer"
+                    { "value": "2", "type": "http://www.w3.org/2001/XMLSchema#integer" }
                   ]
                 },
                 "min": 1,
@@ -39,9 +37,9 @@
                 "type": "TripleConstraint",
                 "predicate": "http://a.example/a",
                 "valueExpr": {
-                  "type": "ValueClass",
+                  "type": "NodeConstraint",
                   "values": [
-                    "\"3\"^^http://www.w3.org/2001/XMLSchema#integer"
+                    { "value": "3", "type": "http://www.w3.org/2001/XMLSchema#integer" }
                   ]
                 }
               }
@@ -51,9 +49,9 @@
             "type": "TripleConstraint",
             "predicate": "http://a.example/a",
             "valueExpr": {
-              "type": "ValueClass",
+              "type": "NodeConstraint",
               "values": [
-                "\"4\"^^http://www.w3.org/2001/XMLSchema#integer"
+                { "value": "4", "type": "http://www.w3.org/2001/XMLSchema#integer" }
               ]
             },
             "min": 0,
@@ -62,5 +60,5 @@
         ]
       }
     }
-  }
+  ]
 }

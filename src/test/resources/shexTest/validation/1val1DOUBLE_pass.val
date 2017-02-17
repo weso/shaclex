@@ -8,7 +8,7 @@
     "valueExpr": {
       "type": "NodeConstraint",
       "values": [
-        "\"0e0\"^^http://www.w3.org/2001/XMLSchema#double"
+        { "value": "0E0", "type": "http://www.w3.org/2001/XMLSchema#double" }
       ]
     },
     "solutions": [
@@ -16,7 +16,7 @@
         "type": "TestedTriple",
         "subject": "http://a.example/s1",
         "predicate": "http://a.example/p1",
-        "object": "\"0e0\"^^http://www.w3.org/2001/XMLSchema#double"
+        "object": { "value": "0E0", "type": "http://www.w3.org/2001/XMLSchema#double" }
       }
     ]
   }

@@ -1,13 +1,23 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes":{
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "predicate": "http://a.example/p1",
-        "valueExpr": { "type": "NodeConstraint", "values": ["\"0e0\"^^http://www.w3.org/2001/XMLSchema#double"] }
+        "valueExpr": {
+          "type": "NodeConstraint",
+          "values": [
+            {
+              "value": "0E0",
+              "type": "http://www.w3.org/2001/XMLSchema#double"
+            }
+          ]
+        }
       }
     }
-  }
+  ]
 }

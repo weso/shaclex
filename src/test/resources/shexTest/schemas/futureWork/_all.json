@@ -149,7 +149,7 @@
 	    "min":0,"max":1
 	  },
 	  {
-	    "type":"SomeOf",
+	    "type":"OneOf",
 	    "expressions":[
 	      {
 		"type":"EachOf",
@@ -219,7 +219,7 @@
 		"type":"EachOf",
 		"expressions":[
 		  {
-		    "type":"SomeOf",
+		    "type":"OneOf",
 		    "expressions":[
 		      {
 			"type":"EachOf",
@@ -361,10 +361,7 @@
     },
     "_:AZazÀÖØöø˿ͰͽͿ῿‌‍⁰↏Ⰰ⿯、퟿豈﷏ﷰ�𐀀󯿽":{
       "type":"Shape",
-      "expression":{
-	"type":"Inclusion",
-	"include":"_:a·̀ͯ‿.⁀"
-      }
+      "expression":"_:a·̀ͯ‿.⁀"
     }
   }
 }

@@ -1,0 +1,11 @@
+{
+  "@context": "https://shexspec.github.io/context.jsonld",
+  "type": "Schema",
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
+      "type": "NodeConstraint",
+      "datatype": "http://a.example/bloodType"
+    }
+  ]
+}

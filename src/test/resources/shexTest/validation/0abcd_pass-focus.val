@@ -1,5 +1,9 @@
 {
   "type": "NodeTest",
   "node": "_:abcd",
-  "shape": "http://a.example/S1"
+  "shape": "http://a.example/S1",
+  "shapeExpr": {
+    "type": "NodeConstraint",
+    "nodeKind": "bnode"
+  }
 }

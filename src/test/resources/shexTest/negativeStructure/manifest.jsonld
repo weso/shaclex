@@ -1,0 +1,59 @@
+{
+  "@context": [
+    {
+      "@base": "https://raw.githubusercontent.com/shexSpec/shexTest/master/negativeStructure/manifest"
+    },
+    "../context.jsonld"
+  ],
+  "@graph": [
+    {
+      "@id": "",
+      "@type": "mf:Manifest",
+      "rdfs:comment": "ShEx negative structure tests",
+      "entries": [
+        {
+          "@id": "#1MissingRef",
+          "@type": "sht:NegativeStructure",
+          "name": "1MissingRef",
+          "status": "mf:proposed",
+          "shex": "1MissingRef.shex"
+        },
+        {
+          "@id": "#1focusMissingRefdot",
+          "@type": "sht:NegativeStructure",
+          "name": "1focusMissingRefdot",
+          "status": "mf:proposed",
+          "shex": "1focusMissingRefdot.shex"
+        },
+        {
+          "@id": "#1focusRefANDSelfdot",
+          "@type": "sht:NegativeStructure",
+          "name": "1focusRefANDSelfdot",
+          "status": "mf:proposed",
+          "shex": "1focusRefANDSelfdot.shex"
+        },
+        {
+          "@id": "#includeNonSimpleShape",
+          "@type": "sht:NegativeStructure",
+          "name": "includeNonSimpleShape",
+          "status": "mf:proposed",
+          "shex": "includeNonSimpleShape.shex"
+        },
+        {
+          "@id": "#includeSimpleShape",
+          "@type": "sht:NegativeStructure",
+          "name": "includeSimpleShape",
+          "status": "mf:proposed",
+          "shex": "includeSimpleShape.shex"
+        },
+        {
+          "@id": "#includeExpressionNotFound",
+          "@type": "sht:NegativeStructure",
+          "name": "includeExpressionNotFound",
+          "status": "mf:proposed",
+          "shex": "includeExpressionNotFound.shex"
+        }
+      ]
+    }
+  ]
+}

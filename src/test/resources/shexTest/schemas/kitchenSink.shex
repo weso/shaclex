@@ -1,4 +1,4 @@
-# Issue-simple-annotated.shex - Issue representation in Turtle
+# kitchenSink.shex - Issue schema using most ShEx features.
 
 BASE <http://ex.example/>
 PREFIX e: <http://ex.example/>
@@ -7,8 +7,7 @@ PREFIX UserShape: <http://ex.example/#UserShape>
 PREFIX : <http://ex.example/#>
 PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-prefix rdfs: <http://www.w3.org/2000/01/rdf-schem#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schem#>
 
 %ex:foo{ initializer for ignored extension %}
 start = @<S1>  # Issue validation starts with <IssueShape>
@@ -46,6 +45,7 @@ UserShape: {                             # A <UserShape> has:
 BASE <../>
 #VIRTUAL
 _:IDshape {
+    $_:IDshapeE (
     ex:code LITERAL;
     ex:system IRI;
     ex:literal ["a" "b"^^ex:c "c"@en "d"@en-fr]{2,3};
@@ -56,11 +56,11 @@ _:IDshape {
     ex:seeAlso @ # interjection!
                  e:S1*;
     ex:says @ # interjection2!
-                 :EmployeeShape*;
+                 :EmployeeShape*; )
 }
 
 ex:FooID CLOSED # &_:IDshape
   EXTRA ex:code ex:system {
-    &_:IDshape
+    &_:IDshapeE
   }
 

@@ -1,0 +1,16 @@
+{
+  "type": "ShapeOrResults",
+  "solution": {
+    "type": "NodeTest",
+    "node": "http://a.example/v1",
+    "shape": "http://a.example/vs1",
+    "shapeExpr": {
+      "type": "NodeConstraint",
+      "values": [
+        "http://a.example/v1",
+        "http://a.example/v2",
+        "http://a.example/v3"
+      ]
+    }
+  }
+}

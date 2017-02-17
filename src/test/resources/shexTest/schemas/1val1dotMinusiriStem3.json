@@ -1,24 +1,39 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "shapes":{
-    "http://a.example/S1": {
+  "shapes": [
+    {
+      "id": "http://a.example/S1",
       "type": "Shape",
       "expression": {
         "type": "TripleConstraint",
         "predicate": "http://a.example/p1",
         "valueExpr": {
-          "type": "NodeConstraint", "values": [
-            { "type": "StemRange",
-              "stem": { "type": "Wildcard" },
+          "type": "NodeConstraint",
+          "values": [
+            {
+              "type": "StemRange",
+              "stem": {
+                "type": "Wildcard"
+              },
               "exclusions": [
-                { "type": "Stem", "stem": "http://a.example/v1"},
-                { "type": "Stem", "stem": "http://a.example/v2"},
-                { "type": "Stem", "stem": "http://a.example/v3"}
+                {
+                  "type": "Stem",
+                  "stem": "http://a.example/v1"
+                },
+                {
+                  "type": "Stem",
+                  "stem": "http://a.example/v2"
+                },
+                {
+                  "type": "Stem",
+                  "stem": "http://a.example/v3"
+                }
               ]
             }
           ]
         }
       }
     }
-  }
+  ]
 }

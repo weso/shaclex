@@ -1,0 +1,101 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/n1a",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p1",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/n1a",
+        "predicate": "http://a.example/p1",
+        "object": "http://a.example/n2a",
+        "referenced": {
+          "type": "ShapeTest",
+          "node": "http://a.example/n2a",
+          "shape": "http://a.example/S1",
+          "solution": {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p1",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/n2a",
+                "predicate": "http://a.example/p1",
+                "object": "http://a.example/n1a",
+                "referenced": {
+                  "type": "Recursion",
+                  "node": "http://a.example/n1a",
+                  "shape": "http://a.example/S1"
+                }
+              }
+            ],
+            "valueExpr": {
+              "type": "ShapeOr",
+              "shapeExprs": [
+                {
+                  "type": "ShapeAnd",
+                  "shapeExprs": [
+                    {
+                      "type": "NodeConstraint",
+                      "nodeKind": "bnode"
+                    },
+                    {
+                      "type": "ShapeRef",
+                      "reference": "http://a.example/S1"
+                    }
+                  ]
+                },
+                {
+                  "type": "ShapeAnd",
+                  "shapeExprs": [
+                    {
+                      "type": "NodeConstraint",
+                      "minlength": 20
+                    },
+                    {
+                      "type": "ShapeRef",
+                      "reference": "http://a.example/S1"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "ShapeOr",
+      "shapeExprs": [
+        {
+          "type": "ShapeAnd",
+          "shapeExprs": [
+            {
+              "type": "NodeConstraint",
+              "nodeKind": "bnode"
+            },
+            {
+              "type": "ShapeRef",
+              "reference": "http://a.example/S1"
+            }
+          ]
+        },
+        {
+          "type": "ShapeAnd",
+          "shapeExprs": [
+            {
+              "type": "NodeConstraint",
+              "minlength": 20
+            },
+            {
+              "type": "ShapeRef",
+              "reference": "http://a.example/S1"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

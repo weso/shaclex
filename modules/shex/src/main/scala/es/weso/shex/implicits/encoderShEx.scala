@@ -18,7 +18,7 @@ object encoderShEx {
              optField("base",s.base),
              optField("startActs",s.startActs),
              optField("start",s.start),
-             optFieldMap("shapes",s.shapes)
+             optField("shapes",s.shapes)
             ))
   }
 
@@ -79,19 +79,19 @@ object encoderShEx {
 implicit lazy val encodeShapeExpr: Encoder[ShapeExpr] = new Encoder[ShapeExpr] {
   final def apply(a: ShapeExpr): Json =
     a match {
-    case ShapeOr(ses) =>
-      mkObjectTyped("ShapeOr", List(field("shapeExprs",ses)))
+    case ShapeOr(id, ses) =>
+      mkObjectTyped("ShapeOr", List(field("id", id), field("shapeExprs",ses)))
 
-    case ShapeAnd(ses) =>
-      mkObjectTyped("ShapeAnd", List(field("shapeExprs",ses)))
+    case ShapeAnd(id, ses) =>
+      mkObjectTyped("ShapeAnd", List(field("id", id), field("shapeExprs",ses)))
 
-    case ShapeNot(se) =>
-      mkObjectTyped("ShapeNot", List(field("shapeExpr",se)))
+    case ShapeNot(id, se) =>
+      mkObjectTyped("ShapeNot", List(field("id", id), field("shapeExpr",se)))
 
     case nc : NodeConstraint => nc.asJson
     case s: Shape => s.asJson
     case ShapeRef(r) => mkObjectTyped("ShapeRef",List(field("reference",r)))
-    case ShapeExternal() => mkObjectTyped("ShapeExternal",List())
+    case ShapeExternal(id) => mkObjectTyped("ShapeExternal",List(field("id", id)))
   }
 }
 

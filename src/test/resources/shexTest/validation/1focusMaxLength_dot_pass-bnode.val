@@ -1,0 +1,31 @@
+{
+  "type": "ShapeAndResults",
+  "solutions": [
+    {
+      "type": "NodeTest",
+      "node": "_:abcdefghijklmnopqrs",
+      "shape": "http://a.example/S1",
+      "shapeExpr": {
+        "type": "NodeConstraint",
+        "maxlength": 19
+      }
+    },
+    {
+      "type": "ShapeTest",
+      "node": "_:abcdefghijklmnopqrs",
+      "shape": "http://a.example/S1",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://a.example/p1",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "_:abcdefghijklmnopqrs",
+            "predicate": "http://a.example/p1",
+            "object": "http://a.example/o1"
+          }
+        ]
+      }
+    }
+  ]
+}

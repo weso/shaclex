@@ -1,7 +1,7 @@
 {
   "type": "ShapeTest",
   "node": "x",
-  "shape": "S",
+  "shape": "http://a.example.org/S",
   "solution": {
     "type": "EachOfSolutions",
     "solutions": [
@@ -11,7 +11,7 @@
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/c",
             "solutions":[
-              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/c","object":"\"1\"^^http://www.w3.org/2001/XMLSchema#integer"}
+              {"type":"TestedTriple","subject":"x","predicate":"http://a.example/c","object":{ "value": "1", "type": "http://www.w3.org/2001/XMLSchema#integer" }}
             ]
           }
         ]

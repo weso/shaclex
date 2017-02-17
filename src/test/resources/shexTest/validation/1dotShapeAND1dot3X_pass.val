@@ -1,0 +1,56 @@
+{
+  "type": "ShapeAndResults",
+  "solutions": [
+    {
+      "type": "ShapeTest",
+      "node": "http://a.example/n1",
+      "shape": "http://a.example/S1",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://a.example/p1",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://a.example/n1",
+            "predicate": "http://a.example/p1",
+            "object": { "value": "X" }
+          }
+        ]
+      }
+    },
+    {
+      "type": "ShapeTest",
+      "node": "http://a.example/n1",
+      "shape": "http://a.example/S1",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://a.example/p2",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://a.example/n1",
+            "predicate": "http://a.example/p2",
+            "object": { "value": "X" }
+          }
+        ]
+      }
+    },
+    {
+      "type": "ShapeTest",
+      "node": "http://a.example/n1",
+      "shape": "http://a.example/S1",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://a.example/p3",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://a.example/n1",
+            "predicate": "http://a.example/p3",
+            "object": { "value": "X" }
+          }
+        ]
+      }
+    }
+  ]
+}

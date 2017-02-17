@@ -34,7 +34,7 @@ When representing a supplied value, shorthand numbers are capitolized ("DECIMAL"
 #### TE - Triple expression operators
 
 * **Each**: EachOf is represented by a semicolon in ShExC: `:S1 { :p1 .; :p2 . }`. EachOf is usually indicated with just a number as indicated by in "ₙdot" and "ₙNC" in filename components.
-* **Some**: SomeOf is represented by a pipe in ShExC: `:S1 { :p1 .| :p2 . }`.
+* **One**: OneOf is represented by a pipe in ShExC: `:S1 { :p1 .| :p2 . }`.
 
 #### SE - Shape expression operators
 
@@ -54,9 +54,9 @@ When representing a supplied value, shorthand numbers are capitolized ("DECIMAL"
 * Annot -
 * Semi - extra semicolon separators -- `\<S\> { :p1 .; :p2 .;| :p3 .; }` c.f. [2dotSemiSome1dotSemi](2dotSemiSome1dotSemi.shex)
 
-## Exploration of SomeOf and EachOf
+## Exploration of OneOf and EachOf
 
-The following tests cover 2-levels of combinatorics of SomeOf and EachOf constructs.
+The following tests cover 2-levels of combinatorics of OneOf and EachOf constructs.
 The column on the right includes the same tests with extra semicolons added wherever possible.
 
 | bare				     | extra ';'s					|

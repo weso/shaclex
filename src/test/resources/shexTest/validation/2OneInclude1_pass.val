@@ -1,0 +1,27 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/n1",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "OneOfSolutions",
+    "solutions": [
+      {
+        "type": "OneOfSolution",
+        "expressions": [
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://a.example/p1",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "http://a.example/n1",
+                "predicate": "http://a.example/p1",
+                "object": { "value": "X" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

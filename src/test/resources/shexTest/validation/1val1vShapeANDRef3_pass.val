@@ -18,7 +18,7 @@
             "type": "TestedTriple",
             "subject": "http://a.example/s1",
             "predicate": "http://a.example/p1",
-            "object": "\"abab\""
+            "object": { "value": "abab" }
           }
         ]
       }
@@ -40,7 +40,7 @@
             "type": "TestedTriple",
             "subject": "http://a.example/s1",
             "predicate": "http://a.example/p1",
-            "object": "\"abab\""
+            "object": { "value": "abab" }
           }
         ]
       }
@@ -62,7 +62,7 @@
             "type": "TestedTriple",
             "subject": "http://a.example/s1",
             "predicate": "http://a.example/p1",
-            "object": "\"abab\""
+            "object": { "value": "abab" }
           }
         ]
       }

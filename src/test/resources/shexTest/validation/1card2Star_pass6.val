@@ -5,12 +5,12 @@
   "solution": { 
     "type":"TripleConstraintSolutions", "predicate":"http://a.example/p1",
     "solutions":[
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"a\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"b\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"c\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"d\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"e\""},
-      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":"\"f\""}
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "a" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "b" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "c" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "d" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "e" }},
+      {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "f" }}
     ],
     "min": 2, "max": "*"
   }

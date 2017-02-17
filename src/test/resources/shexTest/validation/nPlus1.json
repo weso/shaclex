@@ -1,11 +1,9 @@
 {
+  "@context": "https://shexspec.github.io/context.jsonld",
   "type": "Schema",
-  "prefixes": {
-    "": "http://a.example/",
-    "xsd": "http://www.w3.org/2001/XMLSchema#"
-  },
-  "shapes": {
-    "file:///home/eric/checkouts/shexSpec/shexTest/validation/S": {
+  "shapes": [
+    {
+      "id": "http://a.example.org/S",
       "type": "Shape",
       "expression": {
         "type": "EachOf",
@@ -13,42 +11,30 @@
           {
             "type": "TripleConstraint",
             "predicate": "http://a.example/a",
-            "valueExpr": {
-              "type": "ValueClass"
-            },
             "min": 0,
             "max": "*"
           },
           {
-            "type": "SomeOf",
+            "type": "OneOf",
             "expressions": [
               {
                 "type": "TripleConstraint",
                 "predicate": "http://a.example/a",
-                "valueExpr": {
-                  "type": "ValueClass"
-                },
                 "min": 1,
                 "max": "*"
               },
               {
                 "type": "TripleConstraint",
-                "predicate": "http://a.example/a",
-                "valueExpr": {
-                  "type": "ValueClass"
-                }
+                "predicate": "http://a.example/a"
               }
             ]
           },
           {
             "type": "TripleConstraint",
-            "predicate": "http://a.example/a",
-            "valueExpr": {
-              "type": "ValueClass"
-            }
+            "predicate": "http://a.example/a"
           }
         ]
       }
     }
-  }
+  ]
 }

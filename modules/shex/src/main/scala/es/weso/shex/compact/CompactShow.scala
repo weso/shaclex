@@ -39,7 +39,7 @@ object CompactShow {
       comb(baseDoc(s.base),
         comb(startActsDoc(s.prefixMap)(s.startActs),
           comb(startDoc(s.prefixMap)(s.start),
-            shapesDoc(s.shapes, s.prefixMap)))))
+            optShapesDoc(s.shapes, s.prefixMap)))))
   }
 
   private def prefixesDoc(ps: Option[PrefixMap]): Document =
@@ -81,16 +81,13 @@ object CompactShow {
       str("start") :: space :: eq :: space :: shapeExprDoc(pm)(v)
     )
 
-  private def shapesDoc(
-                         s: Option[Map[ShapeLabel, ShapeExpr]],
+  private def optShapesDoc(s: Option[List[ShapeExpr]],
                          pm: PrefixMap
                        ): Document =
-    optDoc(s, (shapesMap: Map[ShapeLabel, ShapeExpr]) =>
-      mapDocWithSeps(shapesMap,
-        none, space, newline,
-        shapeLabelDoc(pm),
-        shapeExprDoc(pm))
-    )
+    optDoc(s, shapeExprsDoc(pm))
+
+  private def shapeExprsDoc(pm: PrefixMap)(shapes: List[ShapeExpr]): Document =
+    listDocSep(shapes, shapeExprDoc(pm), newline)
 
   private def shapeLabelDoc(pm: PrefixMap)(l: ShapeLabel): Document =
     l match {
@@ -101,13 +98,22 @@ object CompactShow {
   private def iriDoc(pm: PrefixMap)(iri: IRI): Doc =
     str(pm.qualify(iri))
 
+  def idDoc(id: Option[ShapeLabel], pm: PrefixMap): Document = id match {
+    case None => empty
+    case Some(label) => shapeLabelDoc(pm)(label)
+  }
+
   private def shapeExprDoc(pm: PrefixMap)(se: ShapeExpr): Document =
     se match {
-      case ShapeOr(es) =>
+        // TODO...review ids generation...
+      case ShapeOr(id,es) =>
+        idDoc(id, pm) :: space ::
         listDocIntersperse(es, shapeExprDoc(pm), keyword("OR"))
-      case ShapeAnd(es) =>
+      case ShapeAnd(id,es) =>
+        idDoc(id, pm) :: space ::
         listDocIntersperse(es, shapeExprDoc(pm), keyword("AND"))
-      case ShapeNot(e) =>
+      case ShapeNot(id,e) =>
+        idDoc(id, pm) :: space ::
         keyword("NOT") :: shapeExprDoc(pm)(e)
       case nc: NodeConstraint =>
         nodeConstraintDoc(pm)(nc)
@@ -115,7 +121,8 @@ object CompactShow {
         shapeDoc(pm)(s)
       case ShapeRef(r) =>
         str("@") :: shapeLabelDoc(pm)(r)
-      case ShapeExternal() =>
+      case ShapeExternal(id) =>
+        idDoc(id, pm) :: space ::
         str("EXTERNAL")
     }
 
@@ -206,6 +213,7 @@ object CompactShow {
     if (closed) { keyword("CLOSED") } else empty
 
   private def shapeDoc(pm: PrefixMap)(s: Shape): Document = {
+    idDoc(s.id, pm) :: space ::
     optDocConst(s.virtual, keyword("VIRTUAL")) ::
       maybeClosed(s.isClosed) ::
       optDoc(s.extra, extraDoc(pm)) ::
