@@ -61,13 +61,13 @@ case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeE
 }
 
 case class NodeConstraint(
+    id: Option[ShapeLabel],
     nodeKind: Option[NodeKind],
     datatype: Option[IRI],
     xsFacets: List[XsFacet],
     values: Option[List[ValueSetValue]]
     ) extends ShapeExpr {
-  def id = None
-  def addId(lbl: ShapeLabel) = this // TODO: Should we raise some error?
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 }
 
 
