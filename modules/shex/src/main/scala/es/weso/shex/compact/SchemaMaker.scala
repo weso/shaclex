@@ -43,16 +43,20 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       prefixMap <- getPrefixMap
       base <- getBase
       start <- getStart
-      shapesMap <- getShapesMap
+      shapeMap <- getShapesMap
     } yield {
       Schema.empty.copy(
         prefixes = if (!prefixMap.isEmpty) Some(prefixMap) else None,
         base = base,
         startActs = startActions,
         start = start,
-        shapes = if (!shapesMap.isEmpty) Some(shapesMap) else None
+        shapes = if (!shapeMap.isEmpty) Some(shapesMap2List(shapeMap)) else None
       )
     }
+  }
+
+  def shapesMap2List(sm: ShapesMap): List[ShapeExpr] = {
+    sm.map{case (lbl,se) => se.addId(lbl)}.toList
   }
 
   override def visitStatement(
@@ -157,7 +161,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   def obtainShapeExpr(ctx: ShapeExprDeclContext): Builder[ShapeExpr] =
     if (isDefined(ctx.KW_EXTERNAL())) {
       // TODO: What happens if there are semantic actions after External??
-      ok(ShapeExternal())
+      ok(ShapeExternal(None))
     } else
     // TODO: Obtain stringFacet*
       visitShapeExpression(ctx.shapeExpression())
@@ -178,7 +182,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       r.sequence
     }
   } yield if (shapes.length == 1) shapes.head
-  else ShapeOr(shapes)
+  else ShapeOr(None, shapes)
 
   override def visitInlineShapeAnd(
                                     ctx: InlineShapeAndContext):
@@ -190,7 +194,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         r.sequence
       }
     } yield if (shapes.length == 1) shapes.head
-    else ShapeAnd(shapes)
+    else ShapeAnd(None,shapes)
   }
 
   override def visitInlineShapeNot(
@@ -199,7 +203,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     shapeAtom <- visitInlineShapeAtom(ctx.inlineShapeAtom())
   } yield
     if (isDefined(ctx.negation()))
-      ShapeNot(shapeAtom)
+      ShapeNot(None,shapeAtom)
     else
       shapeAtom
 
@@ -211,7 +215,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       r.sequence
     }
   } yield if (shapes.length == 1) shapes.head
-  else ShapeOr(shapes)
+  else ShapeOr(None,shapes)
 
   override def visitShapeAnd(
                               ctx: ShapeAndContext):
@@ -223,7 +227,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         r.sequence
       }
     } yield if (shapes.length == 1) shapes.head
-    else ShapeAnd(shapes)
+    else ShapeAnd(None,shapes)
   }
 
   override def visitShapeNot(
@@ -231,7 +235,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   Builder[ShapeExpr] = for {
     shapeAtom <- visitShapeAtom(ctx.shapeAtom())
   } yield if (isDefined(ctx.negation()))
-    ShapeNot(shapeAtom)
+    ShapeNot(None,shapeAtom)
   else shapeAtom
 
   def visitShapeAtom(ctx: ShapeAtomContext):
@@ -243,7 +247,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           sr <- visitOpt(visitShapeOrRef, s.shapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(List(nk,s))
+          case Some(s) => ShapeAnd(None,List(nk,s))
         }
 
       case s: ShapeAtomShapeOrRefContext =>
@@ -297,7 +301,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           sr <- visitOpt(visitInlineShapeOrRef, s.inlineShapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(List(nk,s))
+          case Some(s) => ShapeAnd(None, List(nk,s))
         }
 
       case s: InlineShapeAtomShapeOrRefContext =>
@@ -306,7 +310,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           nk <- visitOpt(visitNodeConstraint,s.nodeConstraint())
         } yield nk match {
           case None => sr
-          case Some(n) => ShapeAnd(List(sr,n))
+          case Some(n) => ShapeAnd(None,List(sr,n))
         }
 
       case s: InlineShapeAtomShapeExpressionContext =>

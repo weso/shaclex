@@ -33,7 +33,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         None,
         None,
         None,
-        Some(Map(BNodeLabel(BNodeId("1")) -> NodeConstraint.nodeKind(IRIKind, List())))
+        Some(List(NodeConstraint.nodeKind(IRIKind, List())))
       )
 
       val result = for {

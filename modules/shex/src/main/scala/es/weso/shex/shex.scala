@@ -41,17 +41,24 @@ case class Schema(
 
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
+  def addId(lbl: ShapeLabel): ShapeExpr
 }
 
 object ShapeExpr {
   def any: ShapeExpr = NodeConstraint.empty
 }
 
-case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr
+case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+}
 
-case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr
+case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+}
 
-case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr
+case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr {
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+}
 
 case class NodeConstraint(
     nodeKind: Option[NodeKind],
@@ -60,6 +67,7 @@ case class NodeConstraint(
     values: Option[List[ValueSetValue]]
     ) extends ShapeExpr {
   def id = None
+  def addId(lbl: ShapeLabel) = this // TODO: Should we raise some error?
 }
 
 
@@ -103,6 +111,7 @@ case class Shape(
     inherit: Option[ShapeLabel],
     semActs: Option[List[SemAct]]
 ) extends ShapeExpr {
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
     virtual.getOrElse(Shape.defaultVirtual)
@@ -139,9 +148,12 @@ object Shape{
 
 case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
   def id = None
+  def addId(lbl: ShapeLabel) = this
 }
 
-case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr
+case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr {
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+}
 
 sealed trait XsFacet {
   val fieldName: String
