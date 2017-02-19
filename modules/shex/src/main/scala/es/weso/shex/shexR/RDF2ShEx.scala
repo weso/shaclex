@@ -78,7 +78,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     _ <- checkType(sx_NodeConstraint)(n,rdf)
     nk <- opt(sx_nodeKind,nodeKind)(n,rdf)
     datatype <- opt(sx_datatype, iri)(n,rdf)
-  } yield NodeConstraint(nk,datatype,List(),None)
+  } yield NodeConstraint(mkId(n),nk,datatype,List(),None)
 
   def nodeKind: RDFParser[NodeKind] = (n,rdf) => n match {
     case `sx_iri` => Success(IRIKind)

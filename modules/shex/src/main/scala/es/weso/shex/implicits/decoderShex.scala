@@ -13,6 +13,7 @@ import java.net.URISyntaxException
 import es.weso.shex._
 import es.weso.rdf._
 import es.weso.json.DecoderUtils._
+import es.weso.rdf.PREFIXES.rdf_langString
 
 
 object decoderShEx {
@@ -101,11 +102,12 @@ object decoderShEx {
   implicit lazy val decodeNodeConstraint: Decoder[NodeConstraint] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "NodeConstraint").right
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       nodeKind <- optFieldDecode[NodeKind](c, "nodeKind").right
       datatype <- optFieldDecode[IRI](c, "datatype").right
       values <- optFieldDecode[List[ValueSetValue]](c, "values").right
       xsFacets <- getXsFacets(c).right
-    } yield NodeConstraint(nodeKind, datatype, xsFacets, values)
+    } yield NodeConstraint(id,nodeKind, datatype, xsFacets, values)
   }
 
   def getXsFacets(c: HCursor): Decoder.Result[List[XsFacet]] = {
@@ -256,7 +258,25 @@ object decoderShEx {
         Decoder[ObjectValue].map(identity)))
 
   implicit lazy val decodeObjectValue: Decoder[ObjectValue] =
-    Decoder[String].emap(s => parseObjectValue(s))
+    Decoder[IRI].map(IRIValue(_)).or(decodeObjectLiteral)
+
+  lazy val decodeObjectLiteral: Decoder[ObjectValue] = Decoder.instance { c =>
+    for {
+      value <- fieldDecode[String](c,"value").right
+      optLang <- optFieldDecode[String](c,"language").right
+      optType <- optFieldDecode[IRI](c,"type").right
+    } yield (optLang,optType) match {
+      case (None,None) => StringValue(value)
+      case (Some(lang),None) => LangString(value,lang)
+      case (None,Some(iri)) => DatatypeString(value,iri)
+      case (Some(lang), Some(iri)) => if (iri == rdf_langString) {
+        LangString(value,lang)
+      } else {
+        throw new Exception(s"Unsupported language tagged literal $value^^$lang with datatype $iri != $rdf_langString")
+      }
+    }
+  }
+
 
   def parseObjectValue(s: String): Either[String, ObjectValue] = {
     s match {

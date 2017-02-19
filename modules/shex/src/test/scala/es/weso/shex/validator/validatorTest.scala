@@ -9,22 +9,20 @@ import util._
 class ValidatorTest extends FunSpec with Matchers with EitherValues {
 
   describe("ShEx validator") {
+    val shapeLabel = IRILabel(IRI("http://example.org/S"))
     val schema =
-      Schema.empty.copy(shapes = Some(
-        Map(IRILabel(IRI("s")) -> NodeConstraint.nodeKind(IRIKind, List()))
-      )
-    )
+      Schema.empty.copy(shapes = Some(List(
+        NodeConstraint.nodeKind(IRIKind, List()).addId(shapeLabel)
+       )))
     val rdfStr = """|prefix : <http://example.org/>
                     |:a :p :b .""".stripMargin
 
     it("Should not validate if label not found") {
-      shouldNotValidate(IRI("http://example.org/a"), IRILabel(IRI("a")),
-        rdfStr,schema)
+      shouldNotValidate(IRI("http://example.org/a"), IRILabel(IRI("http://example.org/Unknown")), rdfStr, schema)
     }
 
     it("Should validate single node constraint") {
-      shouldValidate(IRI("http://example.org/a"), IRILabel(IRI("s")),
-        rdfStr,schema)
+      shouldValidate(IRI("http://example.org/a"), shapeLabel,rdfStr,schema)
     }
   }
 

@@ -11,6 +11,8 @@ import es.weso.rdf.triples.RDFTriple
 trait RDFSaver {
   type RDFSaver[A] = State[RDFAsJenaModel,A]
 
+  def ok[A](x:A): RDFSaver[A] = StateT.pure(x)
+
   def saveList[A](ls: List[A], f: A => RDFSaver[Unit]): RDFSaver[Unit] = {
     ls.map(f(_)).sequence.map(_ => ())
   }

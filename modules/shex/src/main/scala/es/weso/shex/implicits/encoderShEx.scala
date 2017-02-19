@@ -14,7 +14,8 @@ object encoderShEx {
   implicit lazy val encodeSchema: Encoder[Schema] = new Encoder[Schema] {
    final def apply(s: Schema): Json =
      mkObjectTyped("Schema",
-        List(optFieldMap("prefixes", s.prefixes.map(_.pm)),
+        List(field("@context","https://shexspec.github.io/context.jsonld"),
+             optFieldMap("prefixes", s.prefixes.map(_.pm)),
              optField("base",s.base),
              optField("startActs",s.startActs),
              optField("start",s.start),
@@ -80,25 +81,26 @@ implicit lazy val encodeShapeExpr: Encoder[ShapeExpr] = new Encoder[ShapeExpr] {
   final def apply(a: ShapeExpr): Json =
     a match {
     case ShapeOr(id, ses) =>
-      mkObjectTyped("ShapeOr", List(field("id", id), field("shapeExprs",ses)))
+      mkObjectTyped("ShapeOr", List(optField("id", id), field("shapeExprs",ses)))
 
     case ShapeAnd(id, ses) =>
-      mkObjectTyped("ShapeAnd", List(field("id", id), field("shapeExprs",ses)))
+      mkObjectTyped("ShapeAnd", List(optField("id", id), field("shapeExprs",ses)))
 
     case ShapeNot(id, se) =>
-      mkObjectTyped("ShapeNot", List(field("id", id), field("shapeExpr",se)))
+      mkObjectTyped("ShapeNot", List(optField("id", id), field("shapeExpr",se)))
 
     case nc : NodeConstraint => nc.asJson
     case s: Shape => s.asJson
     case ShapeRef(r) => mkObjectTyped("ShapeRef",List(field("reference",r)))
-    case ShapeExternal(id) => mkObjectTyped("ShapeExternal",List(field("id", id)))
+    case ShapeExternal(id) => mkObjectTyped("ShapeExternal",List(optField("id", id)))
   }
 }
 
 implicit lazy val encodeNodeConstraint: Encoder[NodeConstraint] = new Encoder[NodeConstraint] {
   final def apply(a: NodeConstraint): Json =
     mkObjectTyped("NodeConstraint",
-        List(optField("nodeKind",a.nodeKind),
+        List(optField("id",a.id),
+             optField("nodeKind",a.nodeKind),
              optField("datatype",a.datatype),
              optField("values",a.values)
             ) ++ mkFieldsFacets(a.xsFacets))
@@ -107,7 +109,8 @@ implicit lazy val encodeNodeConstraint: Encoder[NodeConstraint] = new Encoder[No
 implicit lazy val encodeShape: Encoder[Shape] = new Encoder[Shape] {
   final def apply(a: Shape): Json =
     mkObjectTyped("Shape",
-        List(optFieldIfNotDefault("virtual",a.virtual,Shape.defaultVirtual),
+        List(optField("id", a.id),
+             optFieldIfNotDefault("virtual",a.virtual,Shape.defaultVirtual),
              optFieldIfNotDefault("closed",a.closed,Shape.defaultClosed),
              optField("extra",a.extra),
              optField("expression",a.expression),
@@ -200,9 +203,24 @@ implicit lazy val encodeValueSetValue: Encoder[ValueSetValue] = new Encoder[Valu
 implicit lazy val encodeObjectValue: Encoder[ObjectValue] = new Encoder[ObjectValue] {
   final def apply(a: ObjectValue): Json = a match {
     case IRIValue(i) => i.asJson
-    case StringValue(s) => Json.fromString("\"" + s + "\"")
-    case DatatypeString(s,d) => Json.fromString("\"" + s + "\"^^" + d.str)
-    case LangString(s,l) => Json.fromString("\"" + s + "\"@" + l)
+    case StringValue(s) => {
+      val fields: List[(String,Json)] = List(("value",Json.fromString(s)))
+      Json.fromFields(fields)
+    }
+    case DatatypeString(s,d) => {
+      val fields: List[(String,Json)] = List(
+        ("value",Json.fromString(s)),
+        ("type",d.asJson)
+      )
+      Json.fromFields(fields)
+    }
+    case LangString(s,l) => {
+      val fields: List[(String,Json)] = List(
+        ("value",Json.fromString(s)),
+        ("language",Json.fromString(l))
+      )
+      Json.fromFields(fields)
+    }
   }
 }
 

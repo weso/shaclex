@@ -50,7 +50,11 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
   } */
 
-  def mkId(id: Option[ShapeLabel]): RDFSaver[RDFNode] = ???
+  def mkId(id: Option[ShapeLabel]): RDFSaver[RDFNode] = id match {
+    case None => createBNode
+    case Some(IRILabel(iri)) => ok(iri)
+    case Some(BNodeLabel(bNode)) => ok(bNode)
+  }
 
   def shapeExpr(node: RDFNode, e: ShapeExpr): RDFSaver[Unit] = e match {
     case ShapeExternal(id) => for {
@@ -58,8 +62,11 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
       _ <- addTriple(node, sx_shapes, shapeId)
       _ <- addTriple(shapeId, rdf_type, sx_ShapeExternal)
     } yield ()
-    case NodeConstraint(nk,dt,facets,values) => for {
-      _ <- maybeAddContent(nk, node, sx_nodeKind, nodeKind)
+    case NodeConstraint(id,nk,dt,facets,values) => for {
+      shapeId <- mkId(id)
+      _ <- addTriple(node, sx_shapes, shapeId)
+      _ <- addTriple(shapeId,rdf_type,sx_NodeConstraint)
+      _ <- maybeAddContent(nk, shapeId, sx_nodeKind, nodeKind)
     } yield ()
   }
 

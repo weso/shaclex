@@ -29,7 +29,7 @@ case class Schema(
 
 
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
-    shapes.getOrElse(List()).find(_.id == label)
+    shapes.getOrElse(List()).find(_.id == Some(label))
 
   lazy val shapeList = shapes.getOrElse(List())
 
@@ -74,11 +74,12 @@ case class NodeConstraint(
 object NodeConstraint {
 
   def empty = NodeConstraint(
-          nodeKind = None,
-          datatype = None,
-          xsFacets = List(),
-          values = None
-      )
+    id = None,
+    nodeKind = None,
+    datatype = None,
+    xsFacets = List(),
+    values = None
+  )
 
   def nodeKind(nk: NodeKind, facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
@@ -205,10 +206,13 @@ case class NumericDecimal(n: BigDecimal) extends NumericLiteral
 sealed trait ValueSetValue
 
 sealed trait ObjectValue extends ValueSetValue
+
 case class IRIValue(i: IRI) extends ObjectValue
-case class StringValue(s: String) extends ObjectValue
-case class DatatypeString(s: String, iri: IRI) extends ObjectValue
-case class LangString(s: String, lang: String) extends ObjectValue
+
+sealed trait ObjectLiteral extends ObjectValue
+case class StringValue(s: String) extends ObjectLiteral
+case class DatatypeString(s: String, iri: IRI) extends ObjectLiteral
+case class LangString(s: String, lang: String) extends ObjectLiteral
 
 object ObjectValue {
   def trueValue: ObjectValue = DatatypeString("true", xsd_boolean)

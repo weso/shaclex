@@ -22,24 +22,24 @@ implicit lazy val showPrefixMap: Show[PrefixMap] = new Show[PrefixMap] {
 
 implicit lazy val showShapeExpr: Show[ShapeExpr] = new Show[ShapeExpr] {
   final def show(a: ShapeExpr): String = a match {
-    case ShapeOr(id,shapes) => s"ShapeOr($id, ${shapes.map(_.show).mkString(",")})"
-    case ShapeAnd(id,shapes) => s"ShapeAnd($id, ${shapes.map(_.show).mkString(",")})"
-    case ShapeNot(id,shape) => s"ShapeNot($id, ${shape.show})"
+    case ShapeOr(id,shapes) => s"ShapeOr(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
+    case ShapeAnd(id,shapes) => s"ShapeAnd(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
+    case ShapeNot(id,shape) => s"ShapeNot(${optShow(id)}, ${shape.show})"
     case s: Shape => s.show
     case nc:NodeConstraint => nc.show
     case ShapeRef(r) => s"ShapeRef(${r.show})"
-    case ShapeExternal(id) => s"ShapeExternal($id)"
+    case ShapeExternal(id) => s"ShapeExternal(${optShow(id)}"
   }
 }
 
 implicit lazy val showShape: Show[Shape] = new Show[Shape] {
   final def show(a: Shape): String =
-    s"Shape(${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a.inherit)}, ${optShow(a.semActs)})"
+    s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a.inherit)}, ${optShow(a.semActs)})"
 }
 
 implicit lazy val showNodeConstraint: Show[NodeConstraint] = new Show[NodeConstraint] {
   final def show(a: NodeConstraint): String =
-    s"NodeConstraint(${optShow(a.nodeKind)}, ${optShow(a.datatype)}, ${a.xsFacets.show}, ${optShow(a.values)})"
+    s"NodeConstraint(${optShow(a.id)}, ${optShow(a.nodeKind)}, ${optShow(a.datatype)}, ${a.xsFacets.show}, ${optShow(a.values)})"
 }
 
 implicit lazy val showNodeKind: Show[NodeKind] = new Show[NodeKind] {
