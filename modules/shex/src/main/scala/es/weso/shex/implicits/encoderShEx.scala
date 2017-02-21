@@ -65,7 +65,8 @@ object encoderShEx {
  implicit lazy val encoderTripleConstraint: Encoder[TripleConstraint] = new Encoder[TripleConstraint] {
   final def apply(a: TripleConstraint): Json =
         mkObjectTyped("TripleConstraint",
-        List(optField("inverse", a.optInverse),
+        List(optField("id", a.id),
+             optField("inverse", a.optInverse),
              optField("negated", a.optNegated),
              field("predicate", a.predicate),
              optFieldIfNotDefault("valueExpr", a.valueExpr, ShapeExpr.any),
@@ -91,7 +92,7 @@ implicit lazy val encodeShapeExpr: Encoder[ShapeExpr] = new Encoder[ShapeExpr] {
 
     case nc : NodeConstraint => nc.asJson
     case s: Shape => s.asJson
-    case ShapeRef(r) => mkObjectTyped("ShapeRef",List(field("reference",r)))
+    case ShapeRef(r) => r.asJson
     case ShapeExternal(id) => mkObjectTyped("ShapeExternal",List(optField("id", id)))
   }
 }
@@ -129,7 +130,7 @@ implicit lazy val encodeTripleExpr: Encoder[TripleExpr] = new Encoder[TripleExpr
   final def apply(a: TripleExpr): Json =  a match {
     case s: OneOf => s.asJson
     case s: EachOf => s.asJson
-    case Inclusion(i) => mkObjectTyped("Inclusion",List(field("include",i)))
+    case Inclusion(i) => i.asJson // mkObjectTyped("Inclusion",List(field("include",i)))
     case tc: TripleConstraint => tc.asJson
   }
 }

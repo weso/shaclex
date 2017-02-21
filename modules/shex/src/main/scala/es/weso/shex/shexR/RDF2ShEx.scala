@@ -119,8 +119,10 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     valueExpr <- opt(sx_valueExpr,shapeExpr)(n,rdf)
     semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
     annotations <- star(sx_annotation,annotationParser)(n,rdf)
-  } yield TripleConstraint(optInverse,optNegated,predicate,valueExpr,optMin,optMax,semActs,
-    ls2Option(annotations)
+  } yield TripleConstraint(mkId(n),
+     optInverse,optNegated,predicate,valueExpr,optMin,optMax,semActs,
+     ls2Option(annotations
+     )
   )
 
   def oneOf: RDFParser[OneOf] = (n, rdf) => for {

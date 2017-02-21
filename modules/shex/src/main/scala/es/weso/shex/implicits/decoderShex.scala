@@ -61,14 +61,20 @@ object decoderShEx {
     Decoder[Int].map(n => IntMax(n)).or(
       Decoder[String].map(s => Star))
 
-  implicit lazy val decodeShapeExpr: Decoder[ShapeExpr] = Decoder.instance { c =>
+  implicit lazy val decodeShapeExpr: Decoder[ShapeExpr] =
+    decoderShapeRef.or(
+      decoderLabeledShapeExpr)
+
+  lazy val decoderShapeRef: Decoder[ShapeRef] =
+    Decoder[ShapeLabel].map(lbl => ShapeRef(lbl))
+
+  lazy val decoderLabeledShapeExpr: Decoder[ShapeExpr] = Decoder.instance { c =>
     c.downField("type").as[String] match {
       case Right("ShapeOr")  => c.as[ShapeOr]
       case Right("ShapeAnd") => c.as[ShapeAnd]
       case Right("ShapeNot") => c.as[ShapeNot]
       case Right("NodeConstraint") => c.as[NodeConstraint]
       case Right("Shape")          => c.as[Shape]
-      case Right("ShapeRef")       => c.as[ShapeRef]
       case Right("ShapeExternal")  => c.as[ShapeExternal]
       case other =>
         Either.left(DecodingFailure(s"Decoding ShapeExpr. Unexpected value $other", Nil))
@@ -190,11 +196,17 @@ object decoderShEx {
     } yield Shape(id, virtual, closed, extra, expression, inherit, semActs)
   }
 
-  implicit lazy val decodeTripleExpr: Decoder[TripleExpr] = Decoder.instance { c =>
+  implicit lazy val decodeTripleExpr: Decoder[TripleExpr] =
+    decoderInclusion.or(decoderLabeledTripleExpr)
+
+  lazy val decoderInclusion: Decoder[Inclusion] =
+    Decoder[ShapeLabel].map(lbl => Inclusion(lbl))
+
+  lazy val decoderLabeledTripleExpr: Decoder[TripleExpr] = Decoder.instance { c =>
     c.downField("type").as[String].flatMap {
       case "EachOf"           => c.as[EachOf]
       case "OneOf"           => c.as[OneOf]
-      case "Inclusion"        => c.as[Inclusion]
+//      case "Inclusion"        => c.as[Inclusion]
       case "TripleConstraint" => c.as[TripleConstraint]
       case other =>
         Either.left(DecodingFailure(s"Decoding TripleExpr. Unexpected value $other", Nil))
@@ -231,19 +243,19 @@ object decoderShEx {
     } yield Annotation(predicate, obj)
   }
 
-  implicit lazy val decodeInclusion: Decoder[Inclusion] = Decoder.instance { c =>
+/*  implicit lazy val decodeInclusion: Decoder[Inclusion] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Inclusion")
       include <- fieldDecode[ShapeLabel](c, "include")
     } yield Inclusion(include)
-  }
+  } */
 
-  implicit lazy val decodeShapeRef: Decoder[ShapeRef] = Decoder.instance { c =>
+/*  implicit lazy val decodeShapeRef: Decoder[ShapeRef] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeRef")
       reference <- fieldDecode[ShapeLabel](c, "reference")
     } yield ShapeRef(reference)
-  }
+  } */
 
   implicit lazy val decodeShapeExternal: Decoder[ShapeExternal] = Decoder.instance { c =>
     for {
@@ -319,6 +331,7 @@ object decoderShEx {
   implicit lazy val decodeTripleConstraint: Decoder[TripleConstraint] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "TripleConstraint")
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       inverse <- optFieldDecode[Boolean](c, "inverse")
       negated <- optFieldDecode[Boolean](c, "negated")
       predicate <- fieldDecode[IRI](c, "predicate")
@@ -327,7 +340,7 @@ object decoderShEx {
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield TripleConstraint(inverse, negated, predicate, valueExpr, min, max, semActs, annotations)
+    } yield TripleConstraint(id, inverse, negated, predicate, valueExpr, min, max, semActs, annotations)
   }
 
   def parsePrefix(str: String): Either[String, Prefix] =

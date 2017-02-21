@@ -283,6 +283,7 @@ case class Inclusion(include: ShapeLabel)
 }
 
 case class TripleConstraint(
+    id: Option[ShapeLabel],
     optInverse: Option[Boolean],
     optNegated: Option[Boolean],
     predicate: IRI,
@@ -301,12 +302,14 @@ case class TripleConstraint(
     if (direct) Direct(predicate)
     else Inverse(predicate)
 
+ def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
 }
 
 object TripleConstraint {
   def emptyPred(pred: IRI): TripleConstraint =
     TripleConstraint(
-      None,None,pred,None,None,None,None,None
+      None,None,None,pred,None,None,None,None,None
     )
 
 }

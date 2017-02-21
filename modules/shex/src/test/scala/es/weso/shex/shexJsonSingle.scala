@@ -30,7 +30,7 @@ class shexJsonSingle extends FunSpec with JsonTest with Matchers with EitherValu
   }
 
   describe("Parsing Schema from Json") {
-    val name = "startRefbnode"
+    val name = "2OneInclude1"
     val file = getJsonFile(schemasFolder, name)
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString
