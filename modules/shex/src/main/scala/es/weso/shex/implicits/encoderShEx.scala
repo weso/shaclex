@@ -139,6 +139,7 @@ implicit lazy val encodeEachOf: Encoder[EachOf] = new Encoder[EachOf] {
   final def apply(a: EachOf): Json =
     mkObjectTyped("EachOf",
         List(field("expressions",a.expressions),
+             optField("id", a.id),
              optField("min",a.optMin),
              optField("max",a.optMax),
              optField("semActs",a.semActs),
@@ -146,10 +147,11 @@ implicit lazy val encodeEachOf: Encoder[EachOf] = new Encoder[EachOf] {
     ))
 }
 
-implicit lazy val encodeSomeOf: Encoder[OneOf] = new Encoder[OneOf] {
+implicit lazy val encodeOneOf: Encoder[OneOf] = new Encoder[OneOf] {
   final def apply(a: OneOf): Json =
     mkObjectTyped("OneOf",
         List(field("expressions",a.expressions),
+             optField("id", a.id),
              optField("min",a.optMin),
              optField("max",a.optMax),
              optField("semActs",a.semActs),

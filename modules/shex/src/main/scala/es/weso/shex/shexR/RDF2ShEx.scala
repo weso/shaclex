@@ -132,7 +132,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     expressions <- arc(sx_expressions,tripleExpressionList2Plus)(n,rdf)
     semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
     annotations <- star(sx_annotation,annotationParser)(n,rdf)
-  } yield OneOf(expressions,optMin,optMax,semActs,ls2Option(annotations))
+  } yield OneOf(mkId(n),expressions,optMin,optMax,semActs,ls2Option(annotations))
 
   def eachOf: RDFParser[EachOf] = (n, rdf) => for {
     _ <- checkType(sx_EachOf)(n,rdf)
@@ -141,7 +141,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     expressions <- arc(sx_expressions,tripleExpressionList2Plus)(n,rdf)
     semActs <- opt(sx_semActs, semActList1Plus)(n,rdf)
     annotations <- star(sx_annotation,annotationParser)(n,rdf)
-  } yield EachOf(expressions,optMin,optMax,semActs,ls2Option(annotations))
+  } yield EachOf(mkId(n),expressions,optMin,optMax,semActs,ls2Option(annotations))
 
   def ls2Option[A](ls: List[A]): Option[List[A]] =
     if (ls.isEmpty) None else Some(ls)

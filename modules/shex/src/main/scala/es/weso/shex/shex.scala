@@ -87,6 +87,13 @@ object NodeConstraint {
       xsFacets = facets
     )
 
+  def nodeKind(idLabel: Option[ShapeLabel], nk: NodeKind, facets: List[XsFacet]): NodeConstraint =
+    NodeConstraint.empty.copy(
+      id = idLabel,
+      nodeKind = Some(nk),
+      xsFacets = facets
+    )
+
   def datatype(dt: IRI,
                facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
@@ -257,6 +264,7 @@ object TripleExpr {
 }
 
 case class EachOf(
+    id: Option[ShapeLabel],
     expressions: List[TripleExpr],
     optMin: Option[Int],
     optMax: Option[Max],
@@ -268,6 +276,7 @@ case class EachOf(
 }
 
 case class OneOf(
+    id: Option[ShapeLabel],
     expressions: List[TripleExpr],
     optMin: Option[Int],
     optMax: Option[Max],

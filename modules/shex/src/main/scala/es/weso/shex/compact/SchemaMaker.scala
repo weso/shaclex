@@ -728,7 +728,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitInlineShapeDefinition(ctx: InlineShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
-      tripleExpr <- visitSomeOfShape(ctx.someOfShape())
+      tripleExpr <- visitOneOfShape(ctx.oneOfShape())
       shape <- makeShape(qualifiers,tripleExpr,List())
     } yield shape
   }
@@ -736,7 +736,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
-      tripleExpr <- visitSomeOfShape(ctx.someOfShape())
+      tripleExpr <- visitOneOfShape(ctx.oneOfShape())
       semActs <- visitSemanticActions(ctx.semanticActions())
       anns <- visitList(visitAnnotation,ctx.annotation())
       // newTripleExpr <- addAnnotations(tripleExpr,anns)
@@ -806,17 +806,17 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ls <- visitList(visitPredicate, ctx.predicate())
   } yield Extra(ls)
 
-  override def visitSomeOfShape(
-                                 ctx: SomeOfShapeContext): Builder[Option[TripleExpr]] = {
+  override def visitOneOfShape(
+                                 ctx: OneOfShapeContext): Builder[Option[TripleExpr]] = {
     if (isDefined(ctx)) {
       ctx match {
         case _ if (isDefined(ctx.groupShape())) => for {
           tripleExpr <- visitGroupShape(ctx.groupShape())
         } yield Some(tripleExpr)
-        case _ if (isDefined(ctx.multiElementSomeOf())) => for {
-          tripleExpr <- visitMultiElementSomeOf(ctx.multiElementSomeOf())
+        case _ if (isDefined(ctx.multiElementOneOf())) => for {
+          tripleExpr <- visitMultiElementOneOf(ctx.multiElementOneOf())
         } yield Some(tripleExpr)
-        case _ => err(s"visitSomeOfShape: unknown $ctx")
+        case _ => err(s"visitOneOfShape: unknown $ctx")
       }
     } else ok(None)
   }
@@ -839,8 +839,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         visitInclude(ctx.include())
       case _  => for {
         pl <- visitOpt(visitProductionLabel, ctx.productionLabel())
-        te <- if (isDefined(ctx.bracketedTripleExpr()))
-                visitBracketedTripleExpr(ctx.bracketedTripleExpr())
+        te <- if (isDefined(ctx.encapsulatedShape()))
+                visitEncapsulatedShape(ctx.encapsulatedShape())
         else if (isDefined(ctx.tripleConstraint()))
                  visitTripleConstraint(ctx.tripleConstraint())
              else err(s"visitUnaryShape: unknown $ctx")
@@ -959,7 +959,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   } yield Inclusion(lbl)
 
   override def
-     visitBracketedTripleExpr(ctx: BracketedTripleExprContext): Builder[TripleExpr] =
+     visitEncapsulatedShape(ctx: EncapsulatedShapeContext): Builder[TripleExpr] =
    for {
     tripleExpr <- visitInnerShape(ctx.innerShape())
     cardinality <- getCardinality(ctx.cardinality())
@@ -1028,7 +1028,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitInnerShape(ctx: InnerShapeContext): Builder[TripleExpr] =
     ctx match {
       case _ if isDefined(ctx.multiElementGroup()) => visitMultiElementGroup(ctx.multiElementGroup())
-      case _ if isDefined(ctx.multiElementSomeOf()) => visitMultiElementSomeOf(ctx.multiElementSomeOf())
+      case _ if isDefined(ctx.multiElementOneOf()) => visitMultiElementOneOf(ctx.multiElementOneOf())
       case _ => err("visitInnerShape. Unknown alternative")
     }
 
@@ -1043,16 +1043,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ses <- visitList(visitUnaryShape, ctx.unaryShape())
   } yield ses.length match {
     case 1 => ses.head
-    case _ => EachOf(expressions = ses, None,None,None,None)
+    case _ => EachOf(None, expressions = ses, None,None,None,None)
   }
 
   override def
-     visitMultiElementSomeOf(ctx: MultiElementSomeOfContext):
+     visitMultiElementOneOf(ctx: MultiElementOneOfContext):
         Builder[TripleExpr] = for {
     groups <- visitList(visitGroupShape, ctx.groupShape)
   } yield groups.length match {
     case 1 => groups.head
-    case _ => OneOf(expressions = groups, None,None,None,None)
+    case _ => OneOf(None,expressions = groups, None,None,None,None)
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = {

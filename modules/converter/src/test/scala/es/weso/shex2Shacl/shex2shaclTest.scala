@@ -12,10 +12,10 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
     it ("Should convert simple node constraint") {
       val shexSchema: shex.Schema =
         shex.Schema.empty.
-        copy(shapes = Some(Map(
-             shex.IRILabel(IRI("http://example.org/S")) ->
+        copy(shapes = Some(List(
               shex.NodeConstraint.empty.copy(
-                  nodeKind = Some(shex.BNodeKind))
+                id = Some(shex.IRILabel(IRI("http://example.org/S"))),
+                nodeKind = Some(shex.BNodeKind))
          ))
       )
 
@@ -43,10 +43,10 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
       val shexSchema: shex.Schema =
         shex.Schema.empty.
         copy(
-            shapes = Some(Map(
-              shex.IRILabel(IRI("http://example.org/S")) ->
+            shapes = Some(List(
               shex.NodeConstraint.empty.copy(
-                  nodeKind = Some(shex.BNodeKind))
+                id = Some(shex.IRILabel(IRI("http://example.org/S"))),
+                nodeKind = Some(shex.BNodeKind))
          ))
       )
 

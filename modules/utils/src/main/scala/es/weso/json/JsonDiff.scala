@@ -1,10 +1,15 @@
 package es.weso.json
 import io.circe._
+import gnieh.diffson.circe._
 
 /*
  * Obtains a diff between 2 Jsons
  */
-object JsonDiff {
+object JsonCompare {
+
+  def jsonDiff(json1: Json, json2: Json): JsonPatch = {
+    JsonDiff.diff(json1, json2, false)
+  }
 
   /**
    * Obtains a diff between 2 Jsons

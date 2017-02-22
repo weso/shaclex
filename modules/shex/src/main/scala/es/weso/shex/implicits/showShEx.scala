@@ -125,17 +125,17 @@ implicit lazy val showTripleExpr: Show[TripleExpr] = new Show[TripleExpr] {
 
 implicit lazy val showEachOf: Show[EachOf] = new Show[EachOf] {
   final def show(a: EachOf): String =
-    s"EachOf(${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
+    s"EachOf(${optShow(a.id)}, ${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
 }
 
-implicit lazy val showSomeOf: Show[OneOf] = new Show[OneOf] {
+implicit lazy val showOneOf: Show[OneOf] = new Show[OneOf] {
   final def show(a: OneOf): String =
-    s"OneOf(${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
+    s"OneOf(${optShow(a.id)},${a.expressions.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
 }
 
 implicit lazy val showTripleConstraint: Show[TripleConstraint] = new Show[TripleConstraint] {
   final def show(a: TripleConstraint): String =
-    s"TripleConstraint(${optShow(a.optInverse)}, ${optShow(a.optNegated)}, ${a.predicate.show}, ${a.valueExpr.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
+    s"TripleConstraint(${optShow(a.id)}, ${optShow(a.optInverse)}, ${optShow(a.optNegated)}, ${a.predicate.show}, ${a.valueExpr.show}, ${optShow(a.optMin)}, ${optShow(a.optMax)}, ${optShow(a.semActs)}, ${optShow(a.annotations)})"
 }
 
 implicit lazy val showAnnotation: Show[Annotation] = new Show[Annotation] {

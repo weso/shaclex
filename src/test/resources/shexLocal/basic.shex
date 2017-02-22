@@ -1,2 +1,2 @@
 prefix ex: <http://example.org>
-ex:S IRI
+ex:S { ex:p IRI }

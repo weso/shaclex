@@ -5,7 +5,7 @@ import cats._, data._
 import cats.implicits._
 import io.circe.syntax._
 import io.circe.parser._
-import JsonDiff._
+import JsonCompare._
 
 trait JsonTest extends FunSpec {
   
@@ -20,7 +20,7 @@ trait JsonTest extends FunSpec {
             if (json.equals(jsonEncoded)) {
               ()
             } else {
-              fail(s"Jsons are different. Diff=${diff(json, jsonEncoded)}\nJson:\n${json.show}\nEncoded:${jsonEncoded.show}\nSchema:${v.show}")
+              fail(s"Jsons are different. Diff=${jsonDiff(json, jsonEncoded)}\nJson:\n${json.show}\n................Encoded:\n${jsonEncoded.show}\n.......Schema:${v.show}")
             }
           }
         }

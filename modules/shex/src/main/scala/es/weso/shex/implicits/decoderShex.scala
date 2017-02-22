@@ -216,23 +216,25 @@ object decoderShEx {
   implicit lazy val decodeEachOf: Decoder[EachOf] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "EachOf")
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       expressions <- fieldDecode[List[TripleExpr]](c, "expressions")
       min <- optFieldDecode[Int](c, "min")
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield EachOf(expressions, min, max, semActs, annotations)
+    } yield EachOf(id,expressions, min, max, semActs, annotations)
   }
 
-  implicit lazy val decodeSomeOf: Decoder[OneOf] = Decoder.instance { c =>
+  implicit lazy val decodeOneOf: Decoder[OneOf] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "OneOf")
+      id <- optFieldDecode[ShapeLabel](c,"id").right
       expressions <- fieldDecode[List[TripleExpr]](c, "expressions")
       min <- optFieldDecode[Int](c, "min")
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield OneOf(expressions, min, max, semActs, annotations)
+    } yield OneOf(id,expressions, min, max, semActs, annotations)
   }
 
   implicit lazy val decodeAnnotation: Decoder[Annotation] = Decoder.instance { c =>

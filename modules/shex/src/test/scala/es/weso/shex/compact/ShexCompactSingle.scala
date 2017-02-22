@@ -13,7 +13,7 @@ import es.weso.shex._
 
 import scala.util.{Failure, Success}
 
-class shexCompactSingle extends FunSpec with JsonTest with Matchers with EitherValues {
+class ShexCompactSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")

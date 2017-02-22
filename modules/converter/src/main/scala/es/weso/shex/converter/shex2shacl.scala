@@ -26,13 +26,14 @@ object ShEx2Shacl extends Converter {
   }
 
   def getShaclShapes(schema: shex.Schema): Result[Seq[shacl.NodeShape]] = {
-    val shapesMap: Map[shex.ShapeLabel,shex.ShapeExpr] = schema.shapes.getOrElse(Map())
+    val shapesMap: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())
     val zero: Result[Seq[shacl.NodeShape]] = ok(Seq())
-    def comb(
-              rs: Result[Seq[shacl.NodeShape]],
-              pair: (shex.ShapeLabel,shex.ShapeExpr)): Result[Seq[shacl.NodeShape]] = {
-      val (shapeLabel,shapeExpr) = pair
-      val r1: Result[IRI] = schema.resolveShapeLabel(shapeLabel).toValidatedNel
+    def comb(rs: Result[Seq[shacl.NodeShape]],
+             shapeExpr: shex.ShapeExpr): Result[Seq[shacl.NodeShape]] = {
+      val r1: Result[IRI] = shapeExpr.id match {
+        case None => err(s"shapeExpr $shapeExpr doesn't have id: Not implemented resolution of this case yet")
+        case Some(lbl) => schema.resolveShapeLabel(lbl).toValidatedNel
+      }
       val r2: Result[shacl.NodeShape] = cnvShapeExpr(shapeExpr, schema)
       val r : Result[NodeShape] = (r1 |@| r2).map((iri, shape) => shape.addId(iri))
       r.product(rs).map{ case (x,xs) => x +: xs }
