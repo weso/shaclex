@@ -2,11 +2,13 @@ package es.weso.rdf
 
 import es.weso.rdf.nodes._
 import scala.collection.immutable.Map
+import com.typesafe.scalalogging.LazyLogging
+
 
 /**
  * PrefixMap representation
  */
-case class PrefixMap(pm: Map[Prefix, IRI]) {
+case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
 
   def isEmpty: Boolean = pm.isEmpty
 

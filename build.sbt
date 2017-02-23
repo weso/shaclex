@@ -21,7 +21,7 @@ lazy val scalaTestVersion = "3.0.1"
 lazy val scalacticVersion = "3.0.1"
 lazy val logbackVersion   = "1.1.7"
 lazy val loggingVersion   = "3.5.0"
-lazy val http4sVersion    = "0.15.2a"
+lazy val http4sVersion    = "0.16.0-cats-SNAPSHOT"
 //lazy val rhoVersion       = "0.12.0a"
 lazy val scalatagsVersion = "0.6.2"
 lazy val kindProjectorVersion = "0.9.3"
@@ -175,6 +175,7 @@ lazy val srdf =
   settings(
       libraryDependencies ++= Seq(
         "org.typelevel" %% "cats" % catsVersion
+      , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
       )
   )
 

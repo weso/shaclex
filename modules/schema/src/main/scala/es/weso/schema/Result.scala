@@ -128,7 +128,7 @@ case class Result(
 
 }
 
-object Result {
+object Result extends LazyLogging {
   def empty =
     Result(isValid = true,
            message = "",
@@ -147,6 +147,7 @@ object Result {
   lazy val defaultResultFormat = availableResultFormats.head
 
   implicit val decodeResult: Decoder[Result] = Decoder.instance { c =>
+    logger.info(s"Decoding result: $c")
     for {
       isValid <- c.get[Boolean]("valid")
       message <- c.get[String]("message")

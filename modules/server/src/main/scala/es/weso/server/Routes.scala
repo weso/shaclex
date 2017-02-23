@@ -13,6 +13,7 @@ import org.http4s.websocket.WebsocketBits._
 import org.http4s.{EntityEncoder, HttpService, LanguageTag, Status}
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
+import org.http4s.client.impl.DefaultExecutor
 import org.http4s.server.websocket.WS
 import org.http4s.headers._
 import org.http4s.circe._
@@ -21,8 +22,8 @@ import org.http4s.twirl._
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
-import scalaz.stream.{Exchange, Process, time}
-import scalaz.stream.async.topic
+// import scalaz.stream.{Exchange, Process, time}
+// import scalaz.stream.async.topic
 import es.weso._
 import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
@@ -33,12 +34,12 @@ class Routes {
   private val logger = getLogger
   val API = "api"
 
-//  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
+  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   // Get the static content
-  private val static  = cachedResource(Config("/static", "/static"))
-  private val views   = cachedResource(Config("/staticviews", "/"))
-  private val swagger = cachedResource(Config("/swagger", "/swagger"))
+  private val static  = cachedResource(Config("/static", "/static",executor=scheduledEC))
+  private val views   = cachedResource(Config("/staticviews", "/",executor=scheduledEC))
+  private val swagger = cachedResource(Config("/swagger", "/swagger",executor=scheduledEC))
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
@@ -127,11 +128,11 @@ class Routes {
         availableDataFormats,
         defaultDataFormat,
         availableSchemaFormats,
-        defaultSchemaFormat,
+        Schemas.shEx.defaultFormat,
         availableSchemaEngines,
-        defaultSchemaEngine,
+        Schemas.shEx.name,
         availableTriggerModes,
-        defaultTriggerMode
+        Schemas.shEx.defaultTriggerMode.name
       ))
     }
 
@@ -370,20 +371,20 @@ class Routes {
   }
 
   // Contents on /static are mapped to /static
-  case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r)
+  case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r).map(_.orNotFound)
 
   // Contents on /swagger are directly mapped to /swagger
-  case r @ GET -> _ if r.pathInfo.startsWith("/swagger/") => swagger(r)
+  case r @ GET -> _ if r.pathInfo.startsWith("/swagger/") => swagger(r).map(_.orNotFound)
 
   // case r @ GET -> _ if r.pathInfo.startsWith("/swagger.json") => views(r)
 
   // When accessing to a folder (ends by /) append index.scala.html
   case r @ GET -> _ if r.pathInfo.endsWith("/") =>
-      service(r.withPathInfo(r.pathInfo + "index.scala.html"))
+      service(r.withPathInfo(r.pathInfo + "index.scala.html")).map(_.orNotFound)
 
   case r @ GET -> _ =>
-      val rr = if (r.pathInfo.contains('.')) r else r.withPathInfo(r.pathInfo + ".html")
-      views(rr)
+    val rr = if (r.pathInfo.contains('.')) r else r.withPathInfo(r.pathInfo + ".html")
+        views(rr).map(_.orNotFound)
 
 
   }

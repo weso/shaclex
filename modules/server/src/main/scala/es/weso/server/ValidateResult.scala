@@ -47,14 +47,13 @@ case class ValidateResult
   sb ++= s"<p>Data format: $dataFormat</p>"
   sb ++= s"<pre class='data'>${escape(data)}</pre></p>"
   sb ++= "</details>"
-  sb ++= "</body>"
   sb ++= "</html>"
   sb.toString
  }
 
  def result2HTML(jsonResult: Json): String = {
   jsonResult.as[Result].fold(
-   failure => s"Failure recovering result from ${jsonResult.spaces2}",
+   failure => s"Failure parsing result: ${jsonResult.spaces2}",
    result => {
     val sb = new StringBuilder
     if (result.isValid) {

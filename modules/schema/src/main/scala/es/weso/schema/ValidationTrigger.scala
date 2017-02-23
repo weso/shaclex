@@ -32,10 +32,10 @@ case object TargetDeclarations extends ValidationTrigger {
 /**
  * Validates a node against a specific shape
  */
-case class NodeShape(node: IRI, shape: String) extends ValidationTrigger {
+case class NodeShapeTrigger(node: Option[IRI], shape: Option[String]) extends ValidationTrigger {
   override def explain = "A node with a shape"
-  override def maybeFocusNode = Some(node.toString)
-  override def maybeShape = Some(shape)
+  override def maybeFocusNode = node.map(_.toString)
+  override def maybeShape = shape
   override def name = "NodeShape"
 }
 
@@ -43,9 +43,9 @@ case class NodeShape(node: IRI, shape: String) extends ValidationTrigger {
 /**
   * Validates a nodes against the start shape
   */
-case class NodeStart(node: IRI) extends ValidationTrigger {
+case class NodeStart(node: Option[IRI]) extends ValidationTrigger {
   override def explain = "Nodes agains start shape"
-  override def maybeFocusNode = Some(node.toString)
+  override def maybeFocusNode = node.map(_.toString)
   override def maybeShape = None
   override def name = "NodeStart"
 }
@@ -55,7 +55,7 @@ object ValidationTrigger {
  lazy val default: ValidationTrigger = TargetDeclarations
 
  def nodeShape(node: String, shape: String): ValidationTrigger =
-   NodeShape(IRI(node), shape)
+   NodeShapeTrigger(Some(IRI(node)), Some(shape))
 
  lazy val targetDeclarations: ValidationTrigger = TargetDeclarations
 
@@ -71,14 +71,14 @@ object ValidationTrigger {
        val eitherNode = removeLTGT(node,nodeMap)
        val eitherShape = removeLTGT(shape,shapeMap)
        (eitherNode,eitherShape) match {
-         case (Right(iriNode),Right(iriShape)) => Right(NodeShape(iriNode,iriShape.str))
+         case (Right(iriNode),Right(iriShape)) => Right(NodeShapeTrigger(Some(iriNode),Some(iriShape.str)))
          case (Left(e), Right(_)) => Left(e)
          case (Right(_), Left(e)) => Left(e)
          case (Left(e1),Left(e2)) => Left(e1 + "\n" + e2)
        }
      }
      case ("NODESTART",Some(node),_) => {
-       removeLTGT(node,nodeMap).right.map(NodeStart(_))
+       removeLTGT(node,nodeMap).right.map(n => NodeStart(Some(n)))
      }
      case _ =>
        Left(s"Cannot understand trigger mode\ntrigger = $name, node: $node, shape: $shape")
@@ -104,8 +104,8 @@ object ValidationTrigger {
  def triggerValues: List[(String,String)] = {
    List(
      TargetDeclarations,
-     NodeShape(IRI(""),""),
-     NodeStart(IRI(""))).map(
+     NodeShapeTrigger(None,None),
+     NodeStart(None)).map(
       vt => (vt.name,vt.explain)
      )
  }

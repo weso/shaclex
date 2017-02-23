@@ -14,7 +14,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
   val server = new ShaclexServer(ip,port)
 
   def serve(req: Request): Response =
-    server.service.run(req).run
+    server.service.run(req).unsafeRun().orNotFound
 
   describe("ValidateShEx") {
     it("Should return 200 when asking for root") {
@@ -27,7 +27,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
         Uri(path = "/api/test",
           query = Query.fromPairs(("name","<John>")))))
       response.status should be(Ok)
-      response.as[String].unsafePerformSync should be("Hello <John>")
+      response.as[String].unsafeRun() should be("Hello <John>")
     }
 
     it("Should validate a single example") {
@@ -51,7 +51,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
         )))
 
       response.status should be(Ok)
-      val strResponse = response.as[String].unsafePerformSync
+      val strResponse = response.as[String].unsafeRun()
       val jsonResponse = parse(strResponse).getOrElse(Json.Null)
       val isValid : Option[Boolean] =
         jsonResponse.hcursor.downField("result").get[Boolean]("valid").toOption

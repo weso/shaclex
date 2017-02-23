@@ -20,8 +20,9 @@ abstract class Schema {
     trigger: ValidationTrigger): Result = {
   trigger match {
    case TargetDeclarations => validateTargetDecls(rdf)
-   case NodeShape(node,shape) => validateNodeShape(node,shape,rdf)
-   case NodeStart(node) => validateNodeStart(node,rdf)
+   case NodeShapeTrigger(Some(node),Some(shape)) => validateNodeShape(node,shape,rdf)
+   case NodeStart(Some(node)) => validateNodeStart(node,rdf)
+   case _ => throw new Exception(s"Unsupported validation trigger $trigger")
   }
  }
 
@@ -53,6 +54,8 @@ abstract class Schema {
  def serialize(format: String): Try[String]
 
  def defaultFormat: String = formats.head
+
+ def defaultTriggerMode: ValidationTrigger
 
  /**
   * Creates an empty schema

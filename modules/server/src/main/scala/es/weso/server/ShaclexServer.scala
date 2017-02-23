@@ -2,6 +2,7 @@ package es.weso.server
 
 import java.util.concurrent.Executors
 
+import fs2.Task
 import org.http4s._
 //import org.http4s.rho.swagger.SwaggerSupport
 //import org.http4s.rho.swagger.models.Info
@@ -11,7 +12,7 @@ import org.http4s.server.{Server, ServerApp, ServerBuilder}
 import org.log4s.getLogger
 
 import scala.util.Properties.envOrNone
-import scalaz.concurrent.Task
+// import scalaz.concurrent.Task
 
 class ShaclexServer(host: String, port: Int) {
   private val logger = getLogger

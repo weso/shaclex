@@ -1,0 +1,13 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SHACLex examples</title>
+</head>
+<body>
+<h1>SHACLEX Examples</h1>
+<ul>
+<li><a href="/api/validate?schema=PREFIX+%3A+++++++%3Chttp%3A%2F%2Fexample.org%2F%3E%0D%0APREFIX+schema%3A+%3Chttp%3A%2F%2Fschema.org%2F%3E%0D%0APREFIX+xsd%3A++%3Chttp%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema%23%3E%0D%0A%0D%0A%3AUser+IRI+%7B+%0D%0A+schema%3Aname++++++++++xsd%3Astring++%3B%0D%0A+schema%3AbirthDate+++++xsd%3Adate%3F++%3B%0D%0A+schema%3Agender++++++++%5B+schema%3AMale+schema%3AFemale+%5D%3B%0D%0A+schema%3Aknows+++++++++%40%3AUser*%0D%0A%7D&schemaFormat=ShExC&schemaEngine=ShEx&triggerMode=NodeShape&node=%3Chttp%3A%2F%2Fexample.org%2Falice%3E&shape=%3Chttp%3A%2F%2Fexample.org%2FUser%3E&data=PREFIX+%3A+++++++%3Chttp%3A%2F%2Fexample.org%2F%3E%0D%0APREFIX+schema%3A+%3Chttp%3A%2F%2Fschema.org%2F%3E%0D%0APREFIX+xsd%3A++++%3Chttp%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema%23%3E%0D%0APREFIX+foaf%3A+++%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0D%0A%0D%0A%3Aalice+schema%3Aname+++++++++++%22Alice%22+%3B++++++++++++%23+%25*+%5CPasses%7B%3AUser%7D+*%29%0D%0A+++++++schema%3Agender+++++++++schema%3AFemale+%3B%0D%0A+++++++schema%3Aknows++++++++++%3Abob+.%0D%0A%0D%0A%3Abob+++schema%3Agender+++++++++schema%3AMale+%3B++++++++%23+%25*+%5CPasses%7B%3AUser%7D+*%29%0D%0A+++++++schema%3Aname+++++++++++%22Robert%22%3B++++++++++++%0D%0A+++++++schema%3AbirthDate++++++%221980-03-10%22%5E%5Exsd%3Adate+.%0D%0A%0D%0A%3Acarol+schema%3Aname+++++++++++%22Carol%22+%3B++++++++++++%23+%25*+%5CPasses%7B%3AUser%7D+*%29%0D%0A+++++++schema%3Agender+++++++++schema%3AFemale+%3B++%0D%0A+++++++foaf%3Aname+++++++++++++%22Carol%22+.&dataFormat=TURTLE">Simple example (ShEx)</a></li>
+</ul>
+
+</body>
+</html>

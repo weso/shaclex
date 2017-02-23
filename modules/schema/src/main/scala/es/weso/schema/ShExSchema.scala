@@ -17,9 +17,13 @@ import es.weso.shex.implicits.showShEx.showShapeLabel
 case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   override def name = "ShEx"
 
+  lazy val shExCFormat = "ShExC"
+
   override def formats =
-    List("SHEXC","SHEXJ") ++
+    List(shExCFormat) ++
     RDFAsJenaModel.availableFormats
+
+  override def defaultTriggerMode: ValidationTrigger = NodeShapeTrigger(None,None)
 
   override def validateTargetDecls(rdf: RDFReader) : Result = {
     val validator = Validator(schema)
