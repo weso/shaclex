@@ -304,7 +304,7 @@ test in assembly := {}
 
 assemblyJarName in assembly := "shaclex.jar"
 
-resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
+// resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.sonatypeRepo("snapshots")
 
