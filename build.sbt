@@ -306,10 +306,10 @@ assemblyJarName in assembly := "shaclex.jar"
 
 // resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
 // resolvers += Resolver.sonatypeRepo("releases")
-resolvers += Resolver.sonatypeRepo("snapshots")
+// resolvers += Resolver.sonatypeRepo("snapshots")
 
-//resolvers += "Sonatype OSS Snapshots" at
-//  "https://oss.sonatype.org/content/repositories/snapshots"
+resolvers += "Sonatype OSS Snapshots" at
+  "https://oss.sonatype.org/content/repositories/snapshots"
 
 // resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
 
