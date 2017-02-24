@@ -306,15 +306,14 @@ assemblyJarName in assembly := "shaclex.jar"
 
 // resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
 // resolvers += Resolver.sonatypeRepo("releases")
+
 // resolvers += Resolver.sonatypeRepo("snapshots")
 
-resolvers += "Sonatype OSS Snapshots" at
-  "https://oss.sonatype.org/content/repositories/snapshots"
+// resolvers += "Sonatype OSS Snapshots" at
+//  "https://oss.sonatype.org/content/repositories/snapshots"
 
 // resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
 
-
-resolvers += Resolver.bintrayRepo("labra", "maven")
 
 // EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
 
@@ -328,9 +327,10 @@ bintrayOrganization in bintray := Some("weso")
 
 // licenses += ("MPL-2.0", url("http://opensource.org/licenses/MPL-2.0"))
 
-resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
+// resolvers += "Bintray" at "http://dl.bintray.com/weso/weso-releases"
 
 resolvers += Resolver.bintrayRepo("labra", "maven")
+resolvers += Resolver.bintrayRepo("weso", "weso-releases")
 
 ghpages.settings
 
