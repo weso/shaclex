@@ -147,7 +147,8 @@ lazy val server =
       "org.http4s" %% "http4s-circe" % http4sVersion,
       "org.http4s" %% "http4s-twirl" % http4sVersion,
       "com.lihaoyi" %% "scalatags" % scalatagsVersion
-    )
+    ),
+   resolvers += Resolver.sonatypeRepo("snapshots")
   )
 
 lazy val converter =
