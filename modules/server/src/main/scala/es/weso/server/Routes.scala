@@ -42,6 +42,7 @@ class Routes {
   private val swagger = cachedResource(Config("/swagger", "/swagger",executor=scheduledEC))
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
+  object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
   object TargetDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetDataFormat")
   object SchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
@@ -123,17 +124,34 @@ class Routes {
       Ok(html.about())
     }
 
-    case req @ GET -> Root / "validate" => {
-      Ok(html.validate(
-        availableDataFormats,
-        defaultDataFormat,
-        availableSchemaFormats,
-        Schemas.shEx.defaultFormat,
-        availableSchemaEngines,
-        Schemas.shEx.name,
-        availableTriggerModes,
-        Schemas.shEx.defaultTriggerMode.name
-      ))
+    case req @ GET -> Root / "validate" :?
+      OptDataParam(optData) +&
+      DataFormatParam(optDataFormat) +&
+      SchemaParam(optSchema) +&
+      SchemaFormatParam(optSchemaFormat) +&
+      SchemaEngineParam(optSchemaEngine) +&
+      TriggerModeParam(optTriggerMode) +&
+      NodeParam(optNode) +&
+      ShapeParam(optShape) => {
+    val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+    val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+    val schemaFormat = optSchema match {
+    case None => dataFormat
+      case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+    }
+    val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+    Ok(html.validate(
+      optData,
+      availableDataFormats,
+      defaultDataFormat,
+      optSchema,
+      availableSchemaFormats,
+      Schemas.shEx.defaultFormat,
+      availableSchemaEngines,
+      Schemas.shEx.name,
+      availableTriggerModes,
+      Schemas.shEx.defaultTriggerMode.name
+     ))
     }
 
     case req @ GET -> Root / "validateDataEmbedded" => {
@@ -353,7 +371,7 @@ class Routes {
                   triggerMode,optNode,optShape,jsonResult)
               val default = Ok(validationResult.asJson)
                 .withContentType(Some(`Content-Type`(`application/json`)))
-              req.headers.get(`Accept`) match {
+/*              req.headers.get(`Accept`) match {
                 case Some(ah) => {
                   logger.info(s"Accept header: $ah")
                   val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
@@ -363,7 +381,8 @@ class Routes {
                   } else default
                 }
                 case None => default
-              }
+              } */
+              default
             }
           }
         }

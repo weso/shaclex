@@ -3,7 +3,7 @@
    current: String
 )
 <label for="dataFormat">Data Format</label>
-<select id="dataFormat" form="@formId" name="dataFormat">
+<select id="dataFormat" form="@formId" name="dataFormat" onchange="changeMode(codeMirrorData, this.options[this.selectedIndex].value)">
  @for(d <- formats) {
   <option value="@d"
      @{if(d == current) { "selected" }}>@d

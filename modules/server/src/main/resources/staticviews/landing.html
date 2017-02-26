@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Shaclex</title>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="codemirror-5.24.2/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
+    <script src="codemirror-5.24.2/mode/shex/shex.js"></script>
+    <script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
+    <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
+    <style type="text/css">
+      .CodeMirror {border: 1px solid black;}
+    </style>
+</head>
+<body>
+    <h1>Shaclex</h1>
+    <div id="resultDiv"></div>
+    <form action="/validate" method="GET" id="validate">
+        <fieldset>
+            <label for="schemaEngine">Schema engine</label>
+            <select id="schemaEngine" form="validate" name="schemaEngine">
+                <option value="ShEx">ShEx</option>
+                <option value="SHACLex">SHACLex</option>
+            </select>
+        </fieldset>
+
+        <fieldset>
+         <legend>RDF Data</legend>
+         <textarea id="rdfData" placeHolder="RDF data">PREFIX :       &lt;http://example.org/&gt;
+PREFIX schema: &lt;http://schema.org/&gt;
+PREFIX xsd:    &lt;http://www.w3.org/2001/XMLSchema#&gt;
+PREFIX foaf:   &lt;http://xmlns.com/foaf/0.1/&gt;
+
+:alice schema:name           &quot;Alice&quot; ;            # %* \Passes{:User} *)
+       schema:gender         schema:Female ;
+       schema:knows          :bob .
+
+:bob   schema:gender         schema:Male ;        # %* \Passes{:User} *)
+       schema:name           &quot;Robert&quot;;
+       schema:birthDate      &quot;1980-03-10&quot;^^xsd:date .
+
+:carol schema:name           &quot;Carol&quot; ;            # %* \Passes{:User} *)
+       schema:gender         schema:Female ;
+       foaf:name             &quot;Carol&quot; .
+         </textarea>
+         <label>Data format:
+           <select id="dataFormat" form="validate" onchange='changeMode(codeMirrorData, this.options[this.selectedIndex].value)'>
+            <option value="TURTLE">Turtle</option>
+            <option value="JSON-LD">Json-LD</option>
+            <option value="RDF/XML">RDF/XML</option>
+          </select>
+         </label>
+        </fieldset>
+
+       <fieldset>
+        <legend>Schema</legend>
+
+        <textarea id="schema" placeHolder="Schema">PREFIX :       &lt;http://example.org/&gt;
+PREFIX schema: &lt;http://schema.org/&gt;
+PREFIX xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt;
+
+:User IRI {
+ schema:name          xsd:string  ;
+ schema:birthDate     xsd:date?  ;
+ schema:gender        [ schema:Male schema:Female ];
+ schema:knows         @:User*
+}
+</textarea>
+        <label>Schema format: </label>
+        <select id="schemaFormat" form="validate" onchange="changeMode(codeMirrorSchema, this.options[this.selectedIndex].value)">
+            <option value="ShExC">ShExC</option>
+            <option value="TURTLE">Turtle</option>
+            <option value="JSON-LD">Json-LD</option>
+            <option value="RDF/XML">RDF/XML</option>
+        </select>
+       </fieldset>
+       <fieldset>
+         <label for="triggerMode">Trigger Mode</label>
+         <select id="triggerMode" form="validate" name="triggerMode">
+             <option value="NodeShape">NodeShape</option>
+             <option value="NodeStart">NodeStart</option>
+             <option value="TargetDecls">TargetDecls</option>
+         </select>
+         <label>Node<input type="text" placeholder="Node" id="node" value="<http://example.org/alice>"></label>
+         <label>Shape<input type="text" placeholder="Shape" id="shape" value="<http://example.org/User>"></label>
+       </fieldset>
+       <input type="button" value="validate" id="validateButton"/>
+    </form>
+    <label>Editor theme:
+            <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">
+            <option value="eclipse">Eclipse</option>
+            <option value="elegant">Elegant</option>
+            <option value="monokai">Monokai</option>
+        </select>
+    </label>
+
+<script src="js/shaclex.js" ></script>
+</body>
+</html>

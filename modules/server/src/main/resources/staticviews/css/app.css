@@ -25,3 +25,11 @@ pre.schema {
 pre.result {
  border: 1px black;
 }
+
+pre.valid {
+ border: 1px green;
+}
+
+pre.notValid {
+ border: 1px red;
+}

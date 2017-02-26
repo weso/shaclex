@@ -1,5 +1,7 @@
-@(availableDataFormats: List[String],
+@(data:Option[String],
+  availableDataFormats: List[String],
   currentDataFormat: String,
+  schema:Option[String],
   availableSchemaFormats: List[String],
   currentSchemaFormat: String,
   availableSchemaEngines: List[String],
@@ -7,37 +9,68 @@
   availableTriggerModes: List[String],
   currentTriggerMode: String
  )
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>API Shaclex</title>
-    <link rel="stylesheet" href="static/css/app.css">
+    <meta charset="utf-8">
+    <title>Shaclex</title>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="codemirror-5.24.2/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
 
+    <!-- some modes -->
+    <script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
+    <script src="codemirror-5.24.2/mode/shex/shex.js"></script>
+    <script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
+    <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
+
+    <style type="text/css">
+      .CodeMirror {border: 1px solid black;}
+    </style>
 </head>
+
 <body>
-<h1>Validate RDF Data</h1>
-<form action="/api/validate" method="get" id="validate">
+<h1>Shaclex</h1>
+<div id="resultDiv"></div>
+<form action="/validate" method="GET" id="validate">
+    <fieldset>
+        @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
+    </fieldset>
 
-    <label for="schema">Schema</label>
-    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
+    <fieldset>
+        <legend>RDF Data</legend>
+        <textarea id="rdfData" placeHolder="RDF data">@{data.getOrElse("")}</textarea>
+        @selectDataFormat("validate",availableDataFormats,currentDataFormat)
+    </fieldset>
 
-    @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
-    @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
-    <hr/>
-    @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
-    <label for="node">Node</label>
-    <input id="node" name="node" value="" placeholder="node"/>
+    <fieldset>
+        <legend>Schema</legend>
 
-    <label for="shape">Shape</label>
-    <input id="shape" name="shape" value="" placeholder="shape label"/>
-
-<hr/>
-    <label for="data">RDF Data</label>
-    <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
-
-    @selectDataFormat("validate",availableDataFormats,currentDataFormat)
-
-    <button type="submit">Validate</button>
+        <textarea id="schema" placeHolder="Schema">@{schema.getOrElse("")}</textarea>
+        @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
+    </fieldset>
+    <fieldset>
+        @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
+        <label>Node<input type="text" placeholder="Node" id="node"></label>
+        <label>Shape<input type="text" placeholder="Shape" id="shape"></label>
+    </fieldset>
+    <input type="button" value="validate" id="validateButton"/>
 </form>
+<label>Editor theme:
+    <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">
+        <option value="eclipse">Eclipse</option>
+        <option value="elegant">Elegant</option>
+        <option value="monokai">Monokai</option>
+    </select>
+</label>
+
+<script src="js/shaclex.js" ></script>
 </body>
 </html>
+
+
+
+
