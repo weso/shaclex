@@ -26,10 +26,10 @@ pre.result {
  border: 1px black;
 }
 
-pre.valid {
+#resultDiv.valid {
  border: 1px green;
 }
 
-pre.notValid {
+#resultDiv.notValid {
  border: 1px red;
 }

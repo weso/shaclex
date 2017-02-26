@@ -1,5 +1,5 @@
-// var urlShaclex = "http://shaclex.herokuapp.com"
-var urlShaclex = "http://localhost:8080";
+var urlShaclex = "http://shaclex.herokuapp.com"
+// var urlShaclex = "http://localhost:8080";
 
 var rdfData = document.getElementById("rdfData");
 var codeMirrorData = CodeMirror.fromTextArea(document.getElementById("rdfData"), {
@@ -60,11 +60,14 @@ $(document).ready(function(){
   .done(function(json) {
      var result = json.result;
      console.log("Done!" + JSON.stringify(json));
-     var validClass = result.valid ? "valid": "notValid";
-     var pre = $("<pre/>", { "class": validClass })
-     pre.html(JSON.stringify(result,undefined,2));
+
+     var validClass = result.valid ? "valid": "notValid" ;
+     $("#resultDiv").addClass(validClass);
      $("#resultDiv").empty();
-     $("#resultDiv").append(pre);
+     $("#resultDiv").append($("<h2>").text(validClass));
+     var pre = $("<pre/>").html(JSON.stringify(result,undefined,2));
+     var details = $("<details/>").append(pre);
+     $("#resultDiv").append(details);
   })
   .fail(function( xhr, status, errorThrown ) {
     $("#resultDiv").html("<h2 class='notValid'>" + errorThrown + "<pre>" + xhr.responseText + "</pre><p>" + status + "</p></h2>" );
