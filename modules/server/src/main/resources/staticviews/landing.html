@@ -16,7 +16,11 @@
     <script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
     <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
     <style type="text/css">
-      .CodeMirror {border: 1px solid black;}
+      .CodeMirror {
+        border: 1px solid black;
+        viewportMargin: Infinity;
+        height: auto
+      }
     </style>
 </head>
 <body>
@@ -28,6 +32,10 @@
             <select id="schemaEngine" form="validate" name="schemaEngine">
                 <option value="ShEx">ShEx</option>
                 <option value="SHACLex">SHACLex</option>
+            </select>
+            <select id="toggleSchemaEmbedded" onchange="changeSchemaEmbedded(this.options[this.selectedIndex].value)">
+                <option value="schemaEmbedded">Schema embedded</option>
+                <option value="noSchemaEmbedded" selected>Schema separated</option>
             </select>
         </fieldset>
 
@@ -58,7 +66,7 @@ PREFIX foaf:   &lt;http://xmlns.com/foaf/0.1/&gt;
           </select>
          </label>
         </fieldset>
-
+      <div id="schemaDiv">
        <fieldset>
         <legend>Schema</legend>
 
@@ -81,17 +89,29 @@ PREFIX xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt;
             <option value="RDF/XML">RDF/XML</option>
         </select>
        </fieldset>
+      </div>
        <fieldset>
          <label for="triggerMode">Trigger Mode</label>
-         <select id="triggerMode" form="validate" name="triggerMode">
+         <select id="triggerMode" form="validate" name="triggerMode"
+                 onchange="changeTriggerMode(this.options[this.selectedIndex].value)">
              <option value="NodeShape">NodeShape</option>
              <option value="NodeStart">NodeStart</option>
              <option value="TargetDecls">TargetDecls</option>
          </select>
-         <label>Node<input type="text" placeholder="Node" id="node" value="<http://example.org/alice>"></label>
-         <label>Shape<input type="text" placeholder="Shape" id="shape" value="<http://example.org/User>"></label>
+         <div id="nodeDiv">
+           <label>Node
+               <textarea placeholder="Node" id="node">&lt;http://example.org/alice&gt;</textarea>
+           </label>
+         </div>
+         <div id="shapeDiv">
+           <label>Shape
+               <textarea placeholder="Shape" id="shape">&lt;http://example.org/User&gt;</textarea>
+           </label>
+         </div>
        </fieldset>
+      <div class="submit">
        <input type="button" value="validate" id="validateButton"/>
+      </div>
     </form>
     <label>Editor theme:
             <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">

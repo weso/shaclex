@@ -54,6 +54,8 @@ class Routes {
   object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
+  object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
+
   val availableDataFormats = DataFormats.formatNames.toList
   val defaultDataFormat = DataFormats.defaultFormatName
   val availableSchemaFormats = Schemas.availableFormats
@@ -132,7 +134,8 @@ class Routes {
       SchemaEngineParam(optSchemaEngine) +&
       TriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
-      ShapeParam(optShape) => {
+      ShapeParam(optShape) +&
+      SchemaEmbedded(optSchemaEmbedded) => {
     val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
     val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
     val schemaFormat = optSchema match {
@@ -140,6 +143,8 @@ class Routes {
       case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
     }
     val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+    val schemaEmbedded = optSchemaEmbedded.getOrElse(false)
+
     Ok(html.validate(
       optData,
       availableDataFormats,
@@ -152,7 +157,8 @@ class Routes {
       availableTriggerModes,
       Schemas.shEx.defaultTriggerMode.name,
       optNode,
-      optShape
+      optShape,
+      schemaEmbedded
      ))
     }
 

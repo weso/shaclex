@@ -9,7 +9,8 @@
   availableTriggerModes: List[String],
   currentTriggerMode: String,
   optNode: Option[String],
-  optShape: Option[String]
+  optShape: Option[String],
+  schemaEmbedded: Boolean
  )
 
 @import java.net.URLEncoder
@@ -34,9 +35,9 @@
 
     <style type="text/css">
       .CodeMirror {
-       border: 1px solid black;
-       viewportMargin: Infinity;
-       height: auto;
+        border: 1px solid black;
+        viewportMargin: Infinity;
+        height: auto
       }
     </style>
 </head>
@@ -47,6 +48,10 @@
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
+        <select id="toggleSchemaEmbedded" onchange="changeSchemaEmbedded(this.options[this.selectedIndex].value)">
+            <option value='schemaEmbedded' @{if(schemaEmbedded) { "selected" }}'>Schema embedded</option>
+            <option value="noSchemaEmbedded" @{if(!schemaEmbedded) { "selected" }}>Schema separated</option>
+        </select>
     </fieldset>
 
     <fieldset>
@@ -55,20 +60,25 @@
         @selectDataFormat("validate",availableDataFormats,currentDataFormat)
     </fieldset>
 
+    <div id="schemaDiv">
     <fieldset>
         <legend>Schema</legend>
 
         <textarea id="schema" placeHolder="Schema">@{schema.getOrElse("")}</textarea>
         @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
     </fieldset>
-    <fieldset>
+    </div>
         @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
+        <div id="nodeDiv">
         <label>Node
             <textarea placeholder="Node" id="node">@{optNode.getOrElse("")}</textarea>
         </label>
+        </div>
+        <div id="shapeDiv">
         <label>Shape
             <textarea placeholder="Shape" id="shape">@{optShape.getOrElse("")}</textarea>
         </label>
+        </div>
     </fieldset>
 
     <div class="submit">
@@ -84,7 +94,7 @@
     </select>
 </label>
 <hr/>
-<button id="permalink">Generate permalink</button>
+<!--<button id="permalink">Generate permalink</button> -->
 <a href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&node=@{URLEncoder.encode(optNode.getOrElse(""))}&shape=@{URLEncoder.encode(optShape.getOrElse(""))}'>Generate permalink</a>
 
 <script src="js/shaclex.js" ></script>

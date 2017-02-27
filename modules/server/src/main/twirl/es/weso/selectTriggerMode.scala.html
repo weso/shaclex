@@ -3,7 +3,7 @@
    current: String
 )
 <label for="triggerMode">Trigger Mode</label>
-<select id="triggerMode" form="@formId" name="triggerMode">
+<select id="triggerMode" form="@formId" name="triggerMode" onchange="changeTriggerMode(this.options[this.selectedIndex].value)">
  @for(t <- triggerModes) {
   <option value="@t"
      @{if(t == current) { "selected" }}>@t

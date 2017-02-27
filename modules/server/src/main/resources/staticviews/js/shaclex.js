@@ -20,6 +20,36 @@ function changeTheme(theme) {
  codeMirrorSchema.setOption("theme",theme);
 }
 
+function changeSchemaEmbedded(value) {
+ console.log("Changing schemaEmbedded: " + value);
+ if (value=='schemaEmbedded') {
+  $("#schemaDiv").hide();
+ } else {
+  $("#schemaDiv").show();
+ }
+}
+
+function changeTriggerMode(value) {
+ console.log("Changing triggermode: " + value);
+ switch (value.toUpperCase()) {
+  case 'TARGETDECLS':
+    $("#nodeDiv").hide();
+    $("#shapeDiv").hide();
+    console.log("Hiding all: " + value);
+    break;
+  case 'NODESHAPE':
+    $("#nodeDiv").show();
+    $("#shapeDiv").show();
+    console.log("Showing all: " + value);
+    break;
+  case 'NODESTART':
+    $("#nodeDiv").show();
+    $("#shapeDiv").hide();
+    console.log("Showing node only: " + value);
+    break;
+ }
+}
+
 function getDataFormat(element) {
  var format = element.options[element.selectedIndex].value;
  window.alert("Data format of " + element + " format: " + format);
@@ -27,42 +57,54 @@ function getDataFormat(element) {
 
 $(document).ready(function(){
 
-var urlShaclex = "http://shaclex.herokuapp.com"
-// var urlShaclex = "http://localhost:8080";
+// var urlShaclex = "http://shaclex.herokuapp.com"
+var urlShaclex = "http://localhost:8080";
+console.log("Main Url = " + urlShaclex);
+
+var schemaEmbeddedValue = $("#toggleSchemaEmbedded").val();
+console.log("Schema embedded = " + schemaEmbeddedValue);
+changeSchemaEmbedded(schemaEmbeddedValue);
+
+var triggerModeValue = $("#triggerMode").val();
+console.log("Trigger mode = " + triggerModeValue);
+changeTriggerMode(triggerModeValue);
 
 var rdfData = document.getElementById("rdfData");
+
 var codeMirrorData = CodeMirror.fromTextArea(document.getElementById("rdfData"), {
  lineNumbers: true,
  mode: "turtle",
- scrollbarStyle: "null"
 });
 
 var codeMirrorSchema = CodeMirror.fromTextArea(document.getElementById("schema"), {
-   lineNumbers: true,
-   mode: "shex",
-   scrollbarStyle: "null"
+  lineNumbers: true,
+  mode: "shex",
 });
-codeMirrorData.on("beforeChange", function(instance, change) {
+
+// Don't allow newline before change in CodeMirror
+function noNewLine(instance,change) {
     var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
     change.update(change.from, change.to, [newtext]);
     return true;
-});
-codeMirrorSchema.on("beforeChange", function(instance, change) {
-    var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
-    change.update(change.from, change.to, [newtext]);
-    return true;
-});
+}
 
 var codeMirrorNode = CodeMirror.fromTextArea(document.getElementById("node"), {
  lineNumbers: false,
+ mode: "turtle",
+ scrollbarStyle: "null",
  height: 1,
- mode: "turtle"
 });
+
 var codeMirrorShape = CodeMirror.fromTextArea(document.getElementById("shape"), {
  lineNumbers: false,
+ mode: "turtle",
+ scrollbarStyle: "null",
  height: 1,
- mode: "turtle"
 });
+
+codeMirrorNode.on("beforeChange", noNewLine);
+codeMirrorShape.on("beforeChange", noNewLine);
+
 
  console.log("Document ready...");
   $("#validateButton").click(function(e){
