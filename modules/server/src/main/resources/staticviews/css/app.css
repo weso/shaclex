@@ -33,3 +33,12 @@ pre.result {
 #resultDiv.notValid {
  border: 1px red;
 }
+
+div.submit {
+ position: fixed;
+ bottom: 4em;
+ right: 0.1em;
+ z-index: 3;
+ overflow: visible;
+ width: auto;
+}

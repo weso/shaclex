@@ -150,7 +150,9 @@ class Routes {
       availableSchemaEngines,
       Schemas.shEx.name,
       availableTriggerModes,
-      Schemas.shEx.defaultTriggerMode.name
+      Schemas.shEx.defaultTriggerMode.name,
+      optNode,
+      optShape
      ))
     }
 
