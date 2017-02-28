@@ -15,7 +15,7 @@ parallelExecution in Test := false
 
 // Versions of common packages
 lazy val circeVersion     = "0.7.0"
-lazy val effVersion       = "2.2.0"
+lazy val effVersion       = "3.0.2"
 lazy val catsVersion      = "0.9.0"
 lazy val scalaTestVersion = "3.0.1"
 lazy val scalacticVersion = "3.0.1"

@@ -38,14 +38,11 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
-        schemas <- rdf2Shex.getSchemas(rdf)
+        schemas <- RDF2ShEx.tryRDF2Schema(rdf)
       } yield schemas
 
       result match {
-        case Success(ss) => ss.size match {
-          case 0 => fail("No schema found")
-          case 1 => {
-            val schema = ss.head
+        case Success(schema) => {
             val model1 = ShEx2RDF.shEx2Model(schema, Some(IRI("http://example.org/x")))
             val model2 = ShEx2RDF.shEx2Model(expected, Some(IRI("http://example.org/x")))
             if (model1.isIsomorphicWith(model2)) {
@@ -55,8 +52,6 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
               fail("Schemas are not isomorphic")
             }
           }
-          case _ => fail("More than one schema returned")
-        }
       case Failure(e) => {
             info(s"Failed $e")
             fail(e)
