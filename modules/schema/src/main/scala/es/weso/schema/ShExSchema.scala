@@ -10,6 +10,7 @@ import es.weso.shex.{Schema => Schema_, _}
 import es.weso.shex.validator._
 import es.weso.shex._
 import es.weso.typing._
+import es.weso.shex.shexR._
 
 import scala.util._
 import es.weso.shex.implicits.showShEx.showShapeLabel
@@ -18,9 +19,10 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   override def name = "ShEx"
 
   lazy val shExCFormat = "ShExC"
+  lazy val shExJFormat = "ShExJ"
 
   override def formats =
-    List(shExCFormat) ++
+    List(shExCFormat, shExJFormat) ++
     RDFAsJenaModel.availableFormats
 
   override def defaultTriggerMode: ValidationTrigger = NodeShapeTrigger(None,None)
@@ -93,57 +95,12 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     cnvResult(r,rdf)
   }
 
-
-/*  def hasSolutions(rs: Seq[Map[RDFNode,(Seq[ShExLabel],Seq[ShExLabel])]]): Boolean = {
-    if (rs.size == 0) false
-    else if (rs.size == 1 && rs.head.isEmpty) false
-    else true
-  }
-
-  def validationResult2Result(result: ValidationResult[RDFNode,ShExLabel,Throwable]): Result = {
-    val isValid = result.isValid
-    val (msg,solutions,errors): (String,Seq[Solution],Seq[ErrorInfo]) = {
-      result.extract match {
-        case Success(rs) => {
-          if (hasSolutions(rs))
-            ("Solutions found", rs.map(cnvSol(_)), Seq())
-          else
-            ("No Results", Seq(), Seq(ErrorInfo("No results")))
-        }
-        case Failure(e) => (s"Error $e.getMessage", Seq(), Seq(ErrorInfo(e.getMessage)))
-      }
-    }
-    val r = Result(isValid, msg, solutions, errors)
-    println(s"validationresult2Result result: $result, r: $r")
-    r
-  }
-
-  def cnvSol(rs: Map[RDFNode, (Seq[ShExLabel], Seq[ShExLabel])]): Solution = {
-    Solution(rs.mapValues(cnvShapes(_)))
-  }
-
-  def cnvShapes(pair: (Seq[ShExLabel], Seq[ShExLabel])): InfoNode = {
-    val (shapes,noShapes) = pair
-    InfoNode(shapes.map(mkLabelExplanation(_)),noShapes.map(mkLabelExplanation(_)))
-  }
-
-  def mkLabelExplanation(lbl: ShExLabel): (ShapeLabel,Explanation) = {
-    (ShapeLabel(lbl.toString),Explanation(""))
-  } */
-
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShExSchema] = {
     ShExSchema.fromString(cs,format,base)
   }
 
-  override def fromRDF(rdf: RDFReader): Try[Schema] = {
-    logger.warn("Not implemented conversion from RDF. Returns empty Schema")
-    Success(ShExSchema.empty)
-  }
-  /*{
-    for {
-      schema <- RDF2Schema.rdf2Schema(rdf)
-    } yield ShEx(schema)
-  }*/
+  override def fromRDF(rdf: RDFReader): Try[Schema] =
+    RDF2ShEx.tryRDF2Schema(rdf).map(ShExSchema(_))
 
   override def serialize(format: String): Try[String] = {
     if (formats.contains(format.toUpperCase()))

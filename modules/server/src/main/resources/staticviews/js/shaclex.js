@@ -1,3 +1,9 @@
+// var urlShaclex = "http://shaclex.herokuapp.com"
+var urlShaclex = "http://localhost:8080";
+var codeMirrorData ;
+var codeMirrorSchema ;
+
+
 function changeMode(element,syntax) {
  var mode = "turtle";
  switch (syntax.toUpperCase()) {
@@ -30,6 +36,7 @@ function changeSchemaEmbedded(value) {
 }
 
 function changeTriggerMode(value) {
+ if (value) {
  console.log("Changing triggermode: " + value);
  switch (value.toUpperCase()) {
   case "TARGETDECLS":
@@ -47,6 +54,7 @@ function changeTriggerMode(value) {
     $("#shapeDiv").hide();
     console.log("Showing node only: " + value);
     break;
+  }
  }
 }
 
@@ -74,8 +82,6 @@ function getDataFormat(element) {
 
 $(document).ready(function(){
 
-// var urlShaclex = "http://shaclex.herokuapp.com"
-var urlShaclex = "http://localhost:8080";
 console.log("Main Url = " + urlShaclex);
 
 var schemaEmbeddedValue = $("#toggleSchemaEmbedded").val();
@@ -87,16 +93,19 @@ console.log("Trigger mode = " + triggerModeValue);
 changeTriggerMode(triggerModeValue);
 
 var rdfData = document.getElementById("rdfData");
-
-var codeMirrorData = CodeMirror.fromTextArea(document.getElementById("rdfData"), {
- lineNumbers: true,
- mode: "turtle",
-});
-
-var codeMirrorSchema = CodeMirror.fromTextArea(document.getElementById("schema"), {
+if (rdfData) {
+ codeMirrorData = CodeMirror.fromTextArea(rdfData, {
   lineNumbers: true,
-  mode: "shex",
+  mode: "turtle",
 });
+}
+var schema = document.getElementById("schema")
+if (schema) {
+ codeMirrorSchema = CodeMirror.fromTextArea(schema, {
+   lineNumbers: true,
+   mode: "shex",
+ });
+}
 
 // Don't allow newline before change in CodeMirror
 function noNewLine(instance,change) {
@@ -128,16 +137,16 @@ codeMirrorShape.setSize("48%","2em");
 
  console.log("Document ready...");
   $("#validateButton").click(function(e){
-     e.preventDefault();
-     console.log("click on validating...");
-     var data = codeMirrorData.getValue();
-     var schema = codeMirrorSchema.getValue();
-     var dataFormat = $("#dataFormat").val();
-     var schemaFormat = $("#schemaFormat").val();
-     var node = codeMirrorNode.getValue();
-     var shape = codeMirrorShape.getValue();
-     var schemaEngine = $("#schemaEngine").val();
-     var triggerMode = $("#triggerMode").val();
+    e.preventDefault();
+    console.log("click on validating...");
+    var data = codeMirrorData.getValue();
+    var schema = codeMirrorSchema.getValue();
+    var dataFormat = $("#dataFormat").find(":selected").text();
+    var schemaFormat = $("#schemaFormat").find(":selected").text();
+    var node = codeMirrorNode.getValue();
+    var shape = codeMirrorShape.getValue();
+    var schemaEngine = $("#schemaEngine").find(":selected").text();
+    var triggerMode = $("#triggerMode").find(":selected").text();
      console.log("Trigger mode in AJAX query:" + triggerMode);
      var location = "/validate?" +
                     "data=" + encodeURIComponent(data) +
@@ -181,12 +190,12 @@ codeMirrorShape.setSize("48%","2em");
     console.log("generating permalink");
     var data = codeMirrorData.getValue();
     var schema = codeMirrorSchema.getValue();
-    var dataFormat = $("#dataFormat").val();
-    var schemaFormat = $("#schemaFormat").val();
+    var dataFormat = $("#dataFormat").find(":selected").text();
+    var schemaFormat = $("#schemaFormat").find(":selected").text();
     var node = codeMirrorNode.getValue();
     var shape = codeMirrorShape.getValue();
-    var schemaEngine = $("#schemaEngine").val();
-    var triggerMode = $("#triggerMode").val();
+    var schemaEngine = $("#schemaEngine").find(":selected").text();
+    var triggerMode = $("#triggerMode").find(":selected").text();
     console.log("Trigger mode in permalink generation:" + triggerMode);
     var location = "/validate?" +
                     "data=" + encodeURIComponent(data) +

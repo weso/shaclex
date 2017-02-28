@@ -2,7 +2,10 @@ package es.weso.shex
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
+import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
 import es.weso.utils.MapUtils._
+
 import util._
 
 case class Schema(
@@ -131,7 +134,7 @@ case class Shape(
   def extraPaths =
     extra.getOrElse(List()).map(Direct(_))
 
-  def tripleExpr = expression.getOrElse(TripleExpr.any)
+  // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
 }
 
@@ -259,8 +262,6 @@ case class SemAct(name: IRI, code: Option[String])
 abstract sealed trait TripleExpr
 
 object TripleExpr {
-  lazy val any : TripleExpr =
-    throw new Exception("Not implemented Any yet")
 }
 
 case class EachOf(
@@ -365,13 +366,16 @@ case class BNodeLabel(bnode: BNodeId) extends ShapeLabel
 
 object Schema {
 
+  lazy val rdfDataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase)
+
   def empty: Schema =
     Schema(None,None,None,None,None)
 
   def fromString(cs: CharSequence,
                  format: String,
                  base: Option[String] = None): Try[Schema] = {
-    format.toUpperCase match {
+    val formatUpperCase = format.toUpperCase
+    formatUpperCase match {
       case "SHEXC" => {
         import compact.Parser.parseSchema
         parseSchema(cs.toString) match {
@@ -380,14 +384,17 @@ object Schema {
       }
       }
       case "SHEXJ" =>{
-//        import io.circe._
         import io.circe.parser._
-//        import io.circe.syntax._
         import es.weso.shex.implicits.decoderShEx._
         decode[Schema](cs.toString).
           fold(e => Failure(new Exception(e.toString)),
                s => Success(s))
       }
+      case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
+        rdf <- RDFAsJenaModel.fromChars(cs,formatUpperCase,None)
+        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+      } yield schema
+
       case _ =>
         Failure(
           new Exception(s"Not implemented ShEx parser for format $format")
@@ -396,7 +403,8 @@ object Schema {
   }
 
   def serialize(schema: Schema, format: String): String = {
-    format.toUpperCase match {
+    val formatUpperCase = format.toUpperCase
+    formatUpperCase match {
       case "SHEXC" => {
         import compact.CompactShow._
         showSchema(schema)
@@ -407,6 +415,11 @@ object Schema {
         import io.circe.syntax._
         import es.weso.shex.implicits.encoderShEx._
         schema.asJson.spaces4
+      }
+      case _ if (rdfDataFormats.contains(formatUpperCase)) => {
+        val model = ShEx2RDF.shEx2Model(schema,None)
+        val rdf = RDFAsJenaModel(model)
+        rdf.serialize(formatUpperCase)
       }
       case _ =>
         s"Not implemented conversion to $format. Schema: $schema"

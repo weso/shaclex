@@ -8,7 +8,7 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.collection.Bag
 import es.weso.rbe.interval.IntervalChecker
-import es.weso.rbe.{BagChecker, Rbe}
+import es.weso.rbe.{BagChecker, Empty, Rbe}
 import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
 import ViolationError._
@@ -255,10 +255,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
     logger.info(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
-    val tripleExpr = s.tripleExpr
+    // val tripleExpr = s.tripleExpr
     for {
       neighs <- getNeighs(node)
-      tableRbe <- mkTable(tripleExpr)
+      tableRbe <- mkTable(s.expression)
       (cTable,rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
       csRest <- calculateCandidates(neighs,cTable)
@@ -297,8 +297,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
 
-  def mkTable(t: TripleExpr): Check[(CTable,Rbe_)] =
-    ok(CTable.mkTable(t))
+  def mkTable(t: Option[TripleExpr]): Check[(CTable,Rbe_)] = t match {
+    case None => ok((CTable.empty,Empty))
+    case Some(te) => ok(CTable.mkTable(te))
+  }
 
   /**
     * Calculates the sequence of candidates

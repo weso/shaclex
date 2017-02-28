@@ -30,7 +30,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
       response.as[String].unsafeRun() should be("Hello <John>")
     }
 
-    it("Should validate a single example") {
+    it("Should validate a single example using ShEx") {
       val dataStr =
         """prefix : <http://example.org/>
           |prefix sh: <http://www.w3.org/ns/shacl#>
@@ -47,14 +47,14 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
         Uri(path = "/api/validate",
           query = Query.fromPairs(
             ("data",dataStr),("schema",schemaStr),
-            ("schemaFormat","SHEXC"),("schemaEngine","SHEX"))
+            ("schemaFormat","SHEXC"),("schemaEngine","ShEx"))
         )))
 
       response.status should be(Ok)
       val strResponse = response.as[String].unsafeRun()
       val jsonResponse = parse(strResponse).getOrElse(Json.Null)
       val isValid : Option[Boolean] =
-        jsonResponse.hcursor.downField("result").get[Boolean]("valid").toOption
+        jsonResponse.hcursor.get[Boolean]("isValid").toOption
       isValid shouldBe Some(true)
     }
   }

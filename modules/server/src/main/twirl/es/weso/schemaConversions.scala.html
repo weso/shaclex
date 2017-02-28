@@ -1,4 +1,5 @@
-@(availableSchemaFormats: List[String],
+@(schema: Option[String],
+  availableSchemaFormats: List[String],
   currentSchemaFormat: String,
   availableSchemaEngines: List[String],
   currentSchemaEngine: String,
@@ -6,24 +7,44 @@
   currentTargetSchemaEngine: String
 )
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>API Shaclex - Convert Schema</title>
-    <link rel="stylesheet" href="static/css/app.css">
-</head>
-<body>
+<meta charset="utf-8">
+<title>Schema conversions</title>
+<script src="js/jquery-3.1.1.min.js"></script>
+<script src="codemirror-5.24.2/lib/codemirror.js"></script>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
+<link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
+<link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
+<link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
 
-<h1 >Parse & Convert Schema</h1>
+<!-- some modes -->
+<script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
+<script src="codemirror-5.24.2/mode/shex/shex.js"></script>
+<script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
+<script src="codemirror-5.24.2/mode/xml/xml.js"></script>
+
+<style type="text/css">
+.CodeMirror {
+ border: 1px solid black;
+ viewportMargin: Infinity;
+ height: auto
+}
+</style>
+</head>
+
+<body>
+<h1><a href="/">Shaclex</a>: Parse and convert Schema</h1>
 <form action="/api/schema/convert" method="get" id="convert">
     <label for="schema">Schema</label>
-    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
-
+    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema">@{schema.getOrElse("")}</textarea>
     @selectSchemaFormat("convert",availableSchemaFormats,currentSchemaFormat)
     @selectSchemaEngine("convert", availableSchemaEngines,currentSchemaEngine)
     @selectTargetSchemaFormat("convert",availableSchemaFormats,currentTargetSchemaFormat)
     @selectTargetSchemaEngine("convert",availableSchemaEngines,currentTargetSchemaEngine)
-
-    <button type="submit">Convert</button>
+    <div class="submit">
+      <button type="submit">Convert</button>
+    </div>
 </form>
+<script src="js/shaclex.js" ></script>
 </body>
 </html>

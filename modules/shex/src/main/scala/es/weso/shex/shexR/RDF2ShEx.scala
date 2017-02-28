@@ -16,9 +16,20 @@ import scala.util.{Failure, Success, Try}
  */
 trait RDF2ShEx extends RDFParser with LazyLogging {
 
-  def getSchemas (rdf: RDFReader): Try[List[Schema]] = {
+  def getSchema(rdf: RDFReader): Either[String,Schema] = {
     val schemaNodes = rdf.triplesWithPredicateObject(rdf_type, sx_Schema).map(_.subj).toList
-    schemaNodes.map(schema(_,rdf)).sequence
+    val trySchemas: Try[List[Schema]] = schemaNodes.map(schema(_,rdf)).sequence
+    trySchemas match {
+      case Failure(e) => Left(s"Error parsing RDF as Schema: $e\nRDF: ${rdf.serialize("TURTLE")}")
+      case Success(schemas) => schemas.length match {
+        case 0 => Left(s"Empty schema parsing RDF\nRDF: ${rdf.serialize("TURTLE")}")
+        case 1 => Right(schemas.head)
+        case _ => {
+          logger.warn(s"More than one schema obtained when parsing RDF\n${rdf.serialize("TURTLE")}")
+          Right(schemas.head)
+        }
+      }
+    }
   }
 
   def schema: RDFParser[Schema] = (n,rdf) => for {
@@ -180,8 +191,18 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     ses <- arc(rdf_rest,shapeExprList1Plus)
     Success(se1 +: ses)
   }*/
+}
 
+object RDF2ShEx extends RDF2ShEx {
 
+ def rdf2Schema(rdf: RDFReader): Either[String,Schema] =
+   getSchema(rdf)
+
+ def tryRDF2Schema(rdf: RDFReader): Try[Schema] =
+    getSchema(rdf) match {
+      case Left(str) => Failure(new Exception(s"fromRDF error: $str"))
+      case Right(s) => Success(s)
+    }
 
 
 }

@@ -2,11 +2,10 @@
    triggerModes: List[String],
    current: String
 )
-<label for="triggerMode">Trigger Mode</label>
+<label for="triggerMode">Trigger Mode (current: @current)</label>
 <select id="triggerMode" form="@formId" name="triggerMode" onchange="changeTriggerMode(this.options[this.selectedIndex].value)">
  @for(t <- triggerModes) {
   <option value="@t"
-     @{if(t == current) { "selected" }}>@t
-  </option>
+     @{if(t == current) { "selected" }}>@t</option>
  }
 </select>

@@ -8,7 +8,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import org.http4s.dsl.{QueryParamDecoderMatcher, _}
+import org.http4s.dsl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher, _}
 import org.http4s.websocket.WebsocketBits._
 import org.http4s.{EntityEncoder, HttpService, LanguageTag, Status}
 import org.http4s.server.staticcontent
@@ -72,10 +72,15 @@ class Routes {
       Ok(html.index())
     }
 
-    case req @ GET -> Root / "dataConversions" => {
+    case req @ GET -> Root / "dataConversions" :?
+      OptDataParam(optData) +&
+      DataFormatParam(optDataFormat) +&
+      TargetDataFormatParam(optTargetDataFormat) => {
       Ok(html.dataConversions(
+        optData,
         availableDataFormats,
-        defaultDataFormat))
+        optDataFormat.getOrElse(defaultDataFormat),
+        optTargetDataFormat.getOrElse(defaultDataFormat)))
     }
 
     case req @ GET -> Root / "dataInfo" => {
@@ -84,14 +89,20 @@ class Routes {
         defaultDataFormat))
     }
 
-    case req @ GET -> Root / "schemaConversions" => {
+    case req @ GET -> Root / "schemaConversions" :?
+      SchemaParam(optSchema) +&
+      SchemaFormatParam(optSchemaFormat) +&
+      SchemaEngineParam(optSchemaEngine) +&
+      TargetSchemaFormatParam(optTargetSchemaFormat) +&
+      TargetSchemaEngineParam(optTargetSchemaEngine) => {
       Ok(html.schemaConversions(
+        optSchema,
         availableSchemaFormats,
-        defaultSchemaFormat,
+        optSchemaFormat.getOrElse(defaultSchemaFormat),
         availableSchemaEngines,
-        defaultSchemaEngine,
-        defaultSchemaFormat,
-        defaultSchemaEngine
+        optSchemaEngine.getOrElse(defaultSchemaEngine),
+        optTargetSchemaFormat.getOrElse(defaultSchemaFormat),
+        optTargetSchemaEngine.getOrElse(defaultSchemaEngine)
       ))
     }
 
@@ -145,29 +156,18 @@ class Routes {
       result,
       optData,
       availableDataFormats,
-      defaultDataFormat,
+      optDataFormat.getOrElse(defaultDataFormat),
       optSchema,
       availableSchemaFormats,
-      Schemas.shEx.defaultFormat,
+      optSchemaFormat.getOrElse(Schemas.shEx.defaultFormat),
       availableSchemaEngines,
-      Schemas.shEx.name,
+      optSchemaEngine.getOrElse(Schemas.shEx.name),
       availableTriggerModes,
-      Schemas.shEx.defaultTriggerMode.name,
+      optTriggerMode.getOrElse(Schemas.shEx.defaultTriggerMode.name),
       optNode,
       optShape,
       schemaEmbedded
      ))
-    }
-
-    case req @ GET -> Root / "validateDataEmbedded" => {
-      Ok(html.validateDataEmbedded(
-        availableDataFormats,
-        defaultDataFormat,
-        availableSchemaEngines,
-        defaultSchemaEngine,
-        availableTriggerModes,
-        defaultTriggerMode
-      ))
     }
 
     // API methods
