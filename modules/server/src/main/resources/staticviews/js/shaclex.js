@@ -1,5 +1,5 @@
-// var urlShaclex = "http://shaclex.herokuapp.com"
-var urlShaclex = "http://localhost:8080";
+var urlShaclex = "http://shaclex.herokuapp.com"
+// var urlShaclex = "http://localhost:8080";
 var codeMirrorData ;
 var codeMirrorSchema ;
 
