@@ -3,7 +3,7 @@ package es.weso.server
 import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.schema.{DataFormats, Schemas, ValidationTrigger}
+import es.weso.schema.{DataFormats, Result, Schemas, ValidationTrigger}
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
@@ -136,16 +136,13 @@ class Routes {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       SchemaEmbedded(optSchemaEmbedded) => {
-    val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-    val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
-    val schemaFormat = optSchema match {
-    case None => dataFormat
-      case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
-    }
-    val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+    val result = optData.map(data =>
+      validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape)
+    )
     val schemaEmbedded = optSchemaEmbedded.getOrElse(false)
 
     Ok(html.validate(
+      result,
       optData,
       availableDataFormats,
       defaultDataFormat,
@@ -353,49 +350,22 @@ class Routes {
       TriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
       ShapeParam(optShape) => {
-      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-      val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
-      val schemaFormat = optSchema match {
-        case None => dataFormat
-        case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
-      }
-      val schemaStr = optSchema match {
-        case None => data
-        case Some(schema) => schema
-      }
-      val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
-
-      Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
-        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
-        case Success(schema) => {
-          RDFAsJenaModel.fromChars(data,dataFormat,None) match {
-            case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
-            case Success(rdf) => {
-              val result = schema.validate(rdf,triggerMode,optNode,optShape)
-              val jsonResult = result.toJson
-              val validationResult =
-                ValidateResult(data,dataFormat,
-                  schemaStr,schemaFormat,schemaEngine,
-                  triggerMode,optNode,optShape,jsonResult)
-              val default = Ok(validationResult.asJson)
-                .withContentType(Some(`Content-Type`(`application/json`)))
-/*              req.headers.get(`Accept`) match {
-                case Some(ah) => {
-                  logger.info(s"Accept header: $ah")
-                  val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
-                  if (hasHTML) {
-                    val htmlStr = validationResult.toHTML
-                    Ok(htmlStr).withContentType(Some(`Content-Type`(`text/html`)))
-                  } else default
-                }
-                case None => default
-              } */
-              default
-            }
-          }
-        }
-      }
-  }
+      val result = validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape)
+      val default = Ok(result.asJson)
+        .withContentType(Some(`Content-Type`(`application/json`)))
+      /*              req.headers.get(`Accept`) match {
+                      case Some(ah) => {
+                        logger.info(s"Accept header: $ah")
+                        val hasHTML : Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
+                        if (hasHTML) {
+                          val htmlStr = validationResult.toHTML
+                          Ok(htmlStr).withContentType(Some(`Content-Type`(`text/html`)))
+                        } else default
+                      }
+                      case None => default
+                    } */
+      default
+    }
 
   // Contents on /static are mapped to /static
   case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r).map(_.orNotFound)
@@ -424,6 +394,40 @@ class Routes {
 
   def prefixMap2Json(pm: PrefixMap): Json = {
     Json.fromFields(pm.pm.map{ case (prefix,iri) => (prefix.str, Json.fromString(iri.getLexicalForm))})
+  }
+
+  def validate(data: String,
+               optDataFormat: Option[String],
+               optSchema: Option[String],
+               optSchemaFormat: Option[String],
+               optSchemaEngine: Option[String],
+               optTriggerMode: Option[String],
+               optNode: Option[String],
+               optShape: Option[String]): Result = {
+    val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+    val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+    val schemaFormat = optSchema match {
+      case None => dataFormat
+      case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+    }
+    val schemaStr = optSchema match {
+      case None => data
+      case Some(schema) => schema
+    }
+    val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+    Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
+      case Failure(e) =>
+        Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr")
+      case Success(schema) => {
+        RDFAsJenaModel.fromChars(data,dataFormat,None) match {
+          case Failure(e) =>
+            Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data")
+          case Success(rdf) => {
+            schema.validate(rdf,triggerMode,optNode,optShape)
+          }
+        }
+      }
+    }
   }
 
 }

@@ -1,15 +1,15 @@
 function changeMode(element,syntax) {
  var mode = "turtle";
  switch (syntax.toUpperCase()) {
-  case 'TURTLE': mode = 'turtle' ;
+  case "TURTLE": mode = "turtle" ;
                  break ;
-  case 'N-TRIPLES': mode = 'turtle' ;
+  case "N-TRIPLES": mode = "turtle" ;
                  break ;
-  case 'RDF/XML': mode = 'xml' ;
+  case "RDF/XML": mode = "xml" ;
                  break ;
-  case 'JSON-LD': mode = 'javascript' ;
+  case "JSON-LD" : mode = "javascript" ;
                  break ;
-  case 'SHEXC': mode = 'shex' ;
+  case "SHEXC": mode = "shex" ;
                 break ;
  }
  element.setOption("mode",mode);
@@ -22,7 +22,7 @@ function changeTheme(theme) {
 
 function changeSchemaEmbedded(value) {
  console.log("Changing schemaEmbedded: " + value);
- if (value=='schemaEmbedded') {
+ if (value==="schemaEmbedded") {
   $("#schemaDiv").hide();
  } else {
   $("#schemaDiv").show();
@@ -32,22 +32,39 @@ function changeSchemaEmbedded(value) {
 function changeTriggerMode(value) {
  console.log("Changing triggermode: " + value);
  switch (value.toUpperCase()) {
-  case 'TARGETDECLS':
+  case "TARGETDECLS":
     $("#nodeDiv").hide();
     $("#shapeDiv").hide();
     console.log("Hiding all: " + value);
     break;
-  case 'NODESHAPE':
+  case "NODESHAPE":
     $("#nodeDiv").show();
     $("#shapeDiv").show();
     console.log("Showing all: " + value);
     break;
-  case 'NODESTART':
+  case "NODESTART":
     $("#nodeDiv").show();
     $("#shapeDiv").hide();
     console.log("Showing node only: " + value);
     break;
  }
+}
+
+function showResult(result) {
+  console.log("Result: " + result);
+  var validText;
+  if (result.isValid) {
+   $("#resultDiv").removeClass("notValid").addClass("valid");
+   validText = "Valid";
+  } else {
+   $("#resultDiv").removeClass("valid").addClass("notValid");
+   validText = "Not valid";
+  }
+  $("#resultDiv").empty();
+  $("#resultDiv").append($("<h2>").text(validText));
+  var pre = $("<pre/>").html(JSON.stringify(result,undefined,2));
+  var details = $("<details/>").append(pre);
+  $("#resultDiv").append(details);
 }
 
 function getDataFormat(element) {
@@ -95,6 +112,7 @@ var codeMirrorNode = CodeMirror.fromTextArea(document.getElementById("node"), {
  height: 1,
 });
 
+
 var codeMirrorShape = CodeMirror.fromTextArea(document.getElementById("shape"), {
  lineNumbers: false,
  mode: "turtle",
@@ -104,6 +122,8 @@ var codeMirrorShape = CodeMirror.fromTextArea(document.getElementById("shape"), 
 
 codeMirrorNode.on("beforeChange", noNewLine);
 codeMirrorShape.on("beforeChange", noNewLine);
+codeMirrorNode.setSize("48%","2em");
+codeMirrorShape.setSize("48%","2em");
 
 
  console.log("Document ready...");
@@ -118,6 +138,16 @@ codeMirrorShape.on("beforeChange", noNewLine);
      var shape = codeMirrorShape.getValue();
      var schemaEngine = $("#schemaEngine").val();
      var triggerMode = $("#triggerMode").val();
+     console.log("Trigger mode in AJAX query:" + triggerMode);
+     var location = "/validate?" +
+                    "data=" + encodeURIComponent(data) +
+                    "&dataFormat=" + encodeURIComponent(dataFormat) +
+                    "&schema=" + encodeURIComponent(schema) +
+                    "&schemaFormat=" + encodeURIComponent(schemaFormat) +
+                    "&schemaEngine=" + encodeURIComponent(schemaEngine) +
+                    "&triggerMode=" + encodeURIComponent(triggerMode) +
+                    "&node=" + encodeURIComponent(node) +
+                    "&shape=" + encodeURIComponent(shape);
 
      $.ajax({ url: urlShaclex + "/api/validate",
       data: {
@@ -133,30 +163,13 @@ codeMirrorShape.on("beforeChange", noNewLine);
     type: "GET",
     dataType : "json"
   })
-  .done(function(json) {
-     var result = json.result;
-     console.log("Done!" + JSON.stringify(json));
-
-     var validClass = result.valid ? "valid": "notValid" ;
-     $("#resultDiv").addClass(validClass);
-     $("#resultDiv").empty();
-     $("#resultDiv").append($("<h2>").text(validClass));
-     var pre = $("<pre/>").html(JSON.stringify(result,undefined,2));
-     var details = $("<details/>").append(pre);
-     $("#resultDiv").append(details);
-     window.history.pushState("validate", "Validate", "/validate?" +
-       "data=" + encodeURI(data) +
-       "&dataFormat=" + encodeURI(dataFormat) +
-       "&schema=" + encodeURI(schema) +
-       "&schemaFormat=" + encodeURI(schemaFormat) +
-       "&schemaEngine=" + encodeURI(schemaEngine) +
-       "&triggerMode=" + encodeURI(triggerMode) +
-       "&node=" + encodeURI(node) +
-       "&shape=" + encodeURI(shape)
-       );
+  .done(function(result) {
+     console.log("Done!: " + JSON.stringify(result));
+     showResult(result);
+     history.pushState({},"validate",location);
   })
   .fail(function( xhr, status, errorThrown ) {
-    $("#resultDiv").html("<h2 class='notValid'>" + errorThrown + "<pre>" + xhr.responseText + "</pre><p>" + status + "</p></h2>" );
+    $("#resultDiv").html("<h2>" + errorThrown + "</h2><pre>" + xhr.responseText + "</pre><p>" + status + "</p>" );
     console.log( "Error: " + errorThrown );
     console.log( "Status: " + status );
     console.dir( xhr );
@@ -165,6 +178,7 @@ codeMirrorShape.on("beforeChange", noNewLine);
 
   $("#permalink").click(function(e){
     e.preventDefault();
+    console.log("generating permalink");
     var data = codeMirrorData.getValue();
     var schema = codeMirrorSchema.getValue();
     var dataFormat = $("#dataFormat").val();
@@ -173,15 +187,16 @@ codeMirrorShape.on("beforeChange", noNewLine);
     var shape = codeMirrorShape.getValue();
     var schemaEngine = $("#schemaEngine").val();
     var triggerMode = $("#triggerMode").val();
+    console.log("Trigger mode in permalink generation:" + triggerMode);
     var location = "/validate?" +
-                    "data=" + encodeURI(data) +
-                    "&dataFormat=" + encodeURI(dataFormat) +
-                    "&schema=" + encodeURI(schema) +
-                    "&schemaFormat=" + encodeURI(schemaFormat) +
-                    "&schemaEngine=" + encodeURI(schemaEngine) +
-                    "&triggerMode=" + encodeURI(triggerMode) +
-                    "&node=" + encodeURI(node) +
-                    "&shape=" + encodeURI(shape);
+                    "data=" + encodeURIComponent(data) +
+                    "&dataFormat=" + encodeURIComponent(dataFormat) +
+                    "&schema=" + encodeURIComponent(schema) +
+                    "&schemaFormat=" + encodeURIComponent(schemaFormat) +
+                    "&schemaEngine=" + encodeURIComponent(schemaEngine) +
+                    "&triggerMode=" + encodeURIComponent(triggerMode) +
+                    "&node=" + encodeURIComponent(node) +
+                    "&shape=" + encodeURIComponent(shape);
     console.log("Permalink: " + location);
     window.location = location;
   });

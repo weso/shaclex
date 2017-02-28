@@ -1,4 +1,7 @@
-@(data:Option[String],
+@import es.weso.schema.Result
+
+@(result: Option[Result],
+  data:Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
   schema:Option[String],
@@ -43,8 +46,8 @@
 </head>
 
 <body>
-<h1>Shaclex</h1>
-<div id="resultDiv"></div>
+<h1><a href="/">Shaclex</a></h1>
+<div id="resultDiv">@{if(result.isDefined){showResult(result.get)}}</div>
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
@@ -95,7 +98,7 @@
 </label>
 <hr/>
 <!--<button id="permalink">Generate permalink</button> -->
-<a href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&node=@{URLEncoder.encode(optNode.getOrElse(""))}&shape=@{URLEncoder.encode(optShape.getOrElse(""))}'>Generate permalink</a>
+<a id="permalink" href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&node=@{URLEncoder.encode(optNode.getOrElse(""))}&shape=@{URLEncoder.encode(optShape.getOrElse(""))}'>Generate permalink</a>
 
 <script src="js/shaclex.js" ></script>
 </body>

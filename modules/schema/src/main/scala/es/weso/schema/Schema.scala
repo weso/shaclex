@@ -35,7 +35,7 @@ abstract class Schema {
              ): Result = {
   ValidationTrigger.findTrigger(triggerMode,node,shape,nodeMap,shapesMap) match {
    case Left(err) =>
-    Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, node: $node,, shape: $shape, prefixMap: $pm")
+    Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, node: $node, shape: $shape, prefixMap: $pm")
    case Right(trigger) =>
     validateWithTrigger(rdf,trigger)
   }

@@ -26,12 +26,14 @@ pre.result {
  border: 1px black;
 }
 
-#resultDiv.valid {
+.valid {
  border: 1px green;
+ color: green;
 }
 
-#resultDiv.notValid {
+.notValid {
  border: 1px red;
+ color: red;
 }
 
 div.submit {
