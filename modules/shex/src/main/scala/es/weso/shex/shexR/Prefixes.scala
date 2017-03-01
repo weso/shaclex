@@ -23,6 +23,7 @@ object PREFIXES {
   lazy val sx_ShapeExternal = sx + "ShapeExternal"
   lazy val sx_ShapeNot = sx + "ShapeNot"
   lazy val sx_ShapeOr = sx + "ShapeOr"
+  lazy val sx_INF = sx + "INF"
 
   lazy val sx_annotation = sx + "annotation"
   lazy val sx_bnode = sx + "bnode"

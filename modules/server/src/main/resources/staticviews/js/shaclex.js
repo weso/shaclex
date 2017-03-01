@@ -1,5 +1,13 @@
-var urlShaclex = "http://shaclex.herokuapp.com"
+function getHost() {
+ return window.location.protocol + "//" + window.location.hostname ;
+}
+
+// "http://shaclex.herokuapp.com"
 // var urlShaclex = "http://localhost:8080";
+var urlShaclex = getHost();
+
+console.log("urlShaclex: " + urlShaclex);
+
 var codeMirrorData ;
 var codeMirrorSchema ;
 
@@ -103,6 +111,8 @@ if (rdfData) {
  codeMirrorData = CodeMirror.fromTextArea(rdfData, {
   lineNumbers: true,
   mode: "turtle",
+  viewportMargin: Infinity,
+  matchBrackets: true,
 });
 }
 var schema = document.getElementById("schema")
@@ -110,6 +120,8 @@ if (schema) {
  codeMirrorSchema = CodeMirror.fromTextArea(schema, {
    lineNumbers: true,
    mode: "shex",
+   viewportMargin: Infinity,
+   matchBrackets: true
  });
 }
 
