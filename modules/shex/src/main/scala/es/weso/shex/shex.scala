@@ -155,6 +155,9 @@ object Shape{
   def defaultInherit = List[ShapeLabel]()
   def defaultSemActs = List[SemAct]()
 
+  def expr(te: TripleExpr): Shape = {
+    Shape.empty.copy(expression = Some(te))
+  }
 }
 
 case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
@@ -322,6 +325,11 @@ object TripleConstraint {
       None,None,None,pred,None,None,None,None,None
     )
 
+  def valueExpr(pred: IRI, ve: ShapeExpr): TripleConstraint =
+    emptyPred(pred).copy(valueExpr = Some(ve))
+
+  def datatype(pred: IRI, iri: IRI, facets: List[XsFacet]): TripleConstraint =
+   emptyPred(pred).copy(valueExpr = Some(NodeConstraint.datatype(iri,facets)))
 }
 
 case class Annotation(predicate: IRI, obj: ObjectValue)

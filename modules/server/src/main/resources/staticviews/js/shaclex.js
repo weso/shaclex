@@ -13,6 +13,12 @@ function changeMode(element,syntax) {
                  break ;
   case "RDF/XML": mode = "xml" ;
                  break ;
+  case "TRIX": mode = "xml" ;
+                   break ;
+    case "SHEXJ" : mode = "javascript" ;
+                 break ;
+  case "RDF/JSON" : mode = "javascript" ;
+                 break ;
   case "JSON-LD" : mode = "javascript" ;
                  break ;
   case "SHEXC": mode = "shex" ;

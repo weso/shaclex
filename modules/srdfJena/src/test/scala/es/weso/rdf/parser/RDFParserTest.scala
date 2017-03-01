@@ -221,7 +221,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with TryValues 
       }
     }
   }
-    describe("list1Plus") {
+  describe("list1Plus") {
       it("parses list1Plus ") {
         val ex = "http://example.org/"
         val iriEx = IRI(ex)
@@ -238,7 +238,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with TryValues 
         } yield (v)
         try1 match {
           case Failure(e) => fail(s"Failed with $e")
-          case Success(values) => values should contain only (y,z)
+          case Success(values) => values should contain theSameElementsAs List(y,z)
         }
       }
 
@@ -266,5 +266,70 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with TryValues 
       }
 
     }
-}
+
+    describe("list2Plus") {
+      it("parses list2Plus ") {
+        val ex = "http://example.org/"
+        val iriEx = IRI(ex)
+        val str =s"""|prefix : <$ex>
+                     |:x :p (:y :z) .""".stripMargin
+        val x = iriEx + "x"
+        val p = iriEx + "p"
+        val y = iriEx + "y"
+        val z = iriEx + "z"
+        def isIri(n: RDFNode): Boolean = n.isIRI
+        val try1 = for {
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+          v <- arc(p, list2Plus(condition(isIri,"isIRI")))(x, rdf)
+        } yield (v)
+        try1 match {
+          case Failure(e) => fail(s"Failed with $e")
+          case Success(values) => values should contain theSameElementsAs List(y,z)
+        }
+      }
+
+      it("fails list2Plus if only one") {
+        val ex = "http://example.org/"
+        val iriEx = IRI(ex)
+        val str =s"""|prefix : <$ex>
+                     |:x :p (:y ) .""".stripMargin
+        val x = iriEx + "x"
+        val p = iriEx + "p"
+        val y = iriEx + "y"
+        val z = iriEx + "z"
+        def isIri(n: RDFNode): Boolean = n.isIRI
+        val try1 = for {
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+          v <- arc(p, list2Plus(condition(isIri,"isIRI")))(x, rdf)
+        } yield (v)
+        try1 match {
+          case Failure(e) => info(s"Failed as expected $e")
+          case Success(values) => fail(s"Should fail if only one value but succedded with $values")
+        }
+      }
+
+      it("fails list2Plus with recursive nodes in RDF list") {
+        val ex = "http://example.org/"
+        val iriEx = IRI(ex)
+        val str =s"""|prefix : <$ex>
+                     |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                     |:x :p _:1 .
+                     |_:1 rdf:first :y .
+                     |_:1 rdf:rest _:1 .""".stripMargin
+        val x = iriEx + "x"
+        val p = iriEx + "p"
+        val y = iriEx + "y"
+        val z = iriEx + "z"
+        def isIri(n: RDFNode): Boolean = n.isIRI
+        val try1 = for {
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+          v <- arc(p, list2Plus(condition(isIri,"isIRI")))(x, rdf)
+        } yield (v)
+        try1 match {
+          case Failure(e) => info("fails as expected")
+          case Success(values) => fail(s"Fails because it obtained values $values but should have failed")
+        }
+      }
+    }
+  }
 }

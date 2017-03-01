@@ -470,7 +470,8 @@ trait RDFParser {
   */
   def list2Plus[A](p:RDFParser[A]): RDFParser[List[A]] = (n,rdf) => for {
     first <- arc(rdf_first,p)(n,rdf)
-    rest <- list1Plus(p)(n,rdf)
+    restNode <- objectFromPredicate(rdf_rest)(n,rdf)
+    rest <- list1Plus(p)(restNode,rdf)
   } yield first :: rest
 
   /**

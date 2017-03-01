@@ -23,7 +23,9 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def formats =
     List(shExCFormat, shExJFormat) ++
-    RDFAsJenaModel.availableFormats
+     RDFAsJenaModel.availableFormats
+
+  lazy val formatsUpperCase = formats.map(_.toUpperCase)
 
   override def defaultTriggerMode: ValidationTrigger = NodeShapeTrigger(None,None)
 
@@ -103,7 +105,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     RDF2ShEx.tryRDF2Schema(rdf).map(ShExSchema(_))
 
   override def serialize(format: String): Try[String] = {
-    if (formats.contains(format.toUpperCase()))
+    if (formatsUpperCase.contains(format.toUpperCase()))
       Success(Schema_.serialize(schema, format))
     else
       Failure(

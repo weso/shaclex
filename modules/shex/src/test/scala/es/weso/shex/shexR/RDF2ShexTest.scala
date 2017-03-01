@@ -7,6 +7,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{BNodeId, IRI}
 import es.weso.shex.shexR.PREFIXES._
 import org.apache.jena.rdf.model.Model
+import es.weso.rdf.PREFIXES._
 
 import scala.util.{Failure, Success}
 
@@ -108,35 +109,91 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
       }
     }
 
-    it("Should parse schema with 2 shape expressions") {
+    it("Should parse schema with a triple constraint") {
       val ex = "http://example.org/"
+      val p = IRI(ex) + "p"
+      val user = IRILabel(IRI(ex) + "User")
+      val expr = IRILabel(IRI(ex) + "expr")
+      val v = IRILabel(IRI(ex) + "v")
       val rdfStr =
         s"""|prefix : <$ex>
             |prefix sx: <http://shex.io/ns/shex#>
             |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
             |:S a sx:Schema ;
-            |   sx:shapes [
-            |     a sx:Shape ;
-            |     sx:expression [
-            |       a sx:tripleConstraint;
+            |   sx:shapes :User .
+            |:User a sx:Shape ;
+            |     sx:expression :expr .
+            |:expr  a sx:TripleConstraint;
             |       sx:predicate :p ;
-            |       sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ]
-            |     ]
-            |  ] .
+            |       sx:valueExpr :v .
+            |:v  a sx:NodeConstraint ;
+            |    sx:datatype xsd:string .
          """.stripMargin
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
-        schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"),rdf)
-      } yield schemas
+        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+      } yield schema
+
+      val nc = NodeConstraint.datatype(xsd_string,List()).addId(v)
+      val tc = TripleConstraint.valueExpr(p,nc).addId(expr)
+      val shape = Shape.expr(tc).addId(user)
 
       result match {
-        case Success(v) => v should be(None)
+        case Success(schema) => schema.shapes should be (Some(List(shape)))
         case Failure(e) => {
           info(s"Failed $e")
           fail(e)
         }
       }
     }
+
+    it("Should parse schema with a shapeAnd") {
+      val ex = "http://example.org/"
+      val p = IRI(ex) + "p"
+      val user = IRILabel(IRI(ex) + "User")
+      val expr1 = IRILabel(IRI(ex) + "expr1")
+      val expr2 = IRILabel(IRI(ex) + "expr2")
+      val tc = IRILabel(IRI(ex) + "tc")
+      val v = IRILabel(IRI(ex) + "v")
+      val rdfStr =
+        s"""|prefix : <$ex>
+            |prefix sx: <http://shex.io/ns/shex#>
+            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+            |:S a sx:Schema ;
+            |   sx:shapes :User .
+            |:User a sx:ShapeAnd ;
+            |     sx:shapeExprs (:expr1 :expr2) .
+            |
+            |:expr1 a sx:Shape ;
+            |       sx:expression :tc .
+            |:tc a  sx:TripleConstraint;
+            |       sx:predicate :p ;
+            |       sx:valueExpr :v .
+            |:v  a sx:NodeConstraint ;
+            |    sx:datatype xsd:string .
+            |:expr2 a sx:NodeConstraint ;
+            |       sx:nodeKind sx:iri .
+         """.stripMargin
+      val result = for {
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
+        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+      } yield schema
+
+      val nc = NodeConstraint.datatype(xsd_string,List()).addId(v)
+      val te: TripleExpr = TripleConstraint.valueExpr(p,nc).addId(tc)
+      val se1: ShapeExpr = Shape.expr(te).addId(expr1)
+      val se2: ShapeExpr = NodeConstraint.nodeKind(IRIKind,List()).addId(expr2)
+      val shape = ShapeAnd(Some(user), List(se1,se2))
+
+      result match {
+        case Success(schema) => schema.shapes should be (Some(List(shape)))
+        case Failure(e) => {
+          info(s"Failed $e")
+          fail(e)
+        }
+      }
+    }
+
   }
 
 
