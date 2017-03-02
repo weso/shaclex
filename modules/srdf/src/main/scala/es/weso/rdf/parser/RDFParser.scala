@@ -401,6 +401,12 @@ trait RDFParser {
     case _ => parseFail(s"Expected integer literal for node $n")
   }
 
+  def string: RDFParser[String] = (n,rdf) => n match {
+    case StringLiteral(str) => Success(str)
+    case _ => parseFail(s"Expected string literal for node $n")
+  }
+
+
   def booleanFromPredicate(p: IRI): RDFParser[Boolean] = arc(p, boolean)
 
   def booleanFromPredicateOptional(p: IRI): RDFParser[Option[Boolean]] = (n,rdf) => {
@@ -448,6 +454,17 @@ trait RDFParser {
       os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
       vs : List[A] <- os.map(node => parser(node,rdf)).sequence
     } yield vs
+
+  def collect[A](ps: List[RDFParser[A]]): RDFParser[List[A]] = (n,rdf) => {
+    val zero: List[A] = List()
+    def combine(xs: List[A], parser: RDFParser[A]):List[A]= {
+      parser(n,rdf) match {
+        case Success(x) => x :: xs
+        case Failure(_) => xs
+      }
+    }
+    Success(ps.foldLeft(zero)(combine))
+  }
 
   def checkType(expected: RDFNode): RDFParser[Boolean] = (n,rdf) => for {
     obtained <- objectFromPredicate(rdf_type)(n,rdf)

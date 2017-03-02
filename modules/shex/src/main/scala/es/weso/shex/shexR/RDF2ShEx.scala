@@ -89,9 +89,69 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     _ <- checkType(sx_NodeConstraint)(n,rdf)
     nk <- opt(sx_nodeKind,nodeKind)(n,rdf)
     datatype <- opt(sx_datatype, iri)(n,rdf)
-    // TODO: Facets
-    // TODO: Values
-  } yield NodeConstraint(mkId(n),nk,datatype,List(),None)
+    facets <- collect(xsFacets)(n,rdf)
+    values <- opt(sx_values, valueSetValueList1Plus)(n,rdf)
+  } yield NodeConstraint(mkId(n),nk,datatype,facets,values)
+
+  def xsFacets: List[RDFParser[XsFacet]] = List(
+    length,
+    minLength,
+    maxLength,
+    pattern,
+    mininclusive,
+    minexclusive,
+    maxinclusive,
+    maxexclusive,
+    totaldigits,
+    fractiondigits
+  )
+
+  def length: RDFParser[Length] = (n,rdf) => for {
+    value <- arc(sx_length,integer)(n,rdf)
+  } yield Length(value)
+
+  def minLength: RDFParser[MinLength] = (n,rdf) => for {
+    value <- arc(sx_minlength,integer)(n,rdf)
+  } yield MinLength(value)
+
+  def maxLength: RDFParser[MaxLength] = (n,rdf) => for {
+    value <- arc(sx_maxlength,integer)(n,rdf)
+  } yield MaxLength(value)
+
+  def pattern: RDFParser[Pattern] = (n,rdf) => for {
+    value <- arc(sx_pattern,string)(n,rdf)
+  } yield Pattern(value)
+
+  def mininclusive: RDFParser[MinInclusive] = (n,rdf) => for {
+    value <- arc(sx_mininclusive,numericLiteral)(n,rdf)
+  } yield MinInclusive(value)
+
+  def minexclusive: RDFParser[MinExclusive] = (n,rdf) => for {
+    value <- arc(sx_minexclusive,numericLiteral)(n,rdf)
+  } yield MinExclusive(value)
+
+  def maxinclusive: RDFParser[MaxInclusive] = (n,rdf) => for {
+    value <- arc(sx_maxinclusive,numericLiteral)(n,rdf)
+  } yield MaxInclusive(value)
+
+  def maxexclusive: RDFParser[MaxExclusive] = (n,rdf) => for {
+    value <- arc(sx_maxexclusive,numericLiteral)(n,rdf)
+  } yield MaxExclusive(value)
+
+  def numericLiteral: RDFParser[NumericLiteral] = (n,rdf) => n match {
+    case IntegerLiteral(n) => Success(NumericInt(n))
+    case DoubleLiteral(d) => Success(NumericDouble(d))
+    case DecimalLiteral(d) => Success(NumericDecimal(d))
+    case _ => parseFail(s"Expected numeric literal but found $n")
+  }
+
+  def fractiondigits: RDFParser[FractionDigits] = (n,rdf) => for {
+    value <- arc(sx_fractiondigits,integer)(n,rdf)
+  } yield FractionDigits(value)
+
+  def totaldigits: RDFParser[TotalDigits] = (n,rdf) => for {
+    value <- arc(sx_totaldigits,integer)(n,rdf)
+  } yield TotalDigits(value)
 
   def nodeKind: RDFParser[NodeKind] = (n,rdf) => n match {
     case `sx_iri` => Success(IRIKind)
@@ -120,7 +180,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield SemAct(name,code)
 
   def tripleExpression: RDFParser[TripleExpr] =
-    someOf(tripleConstraint, oneOf, eachOf)
+    firstOf(tripleConstraint, oneOf, eachOf)
 
   def tripleConstraint: RDFParser[TripleConstraint] = (n,rdf) => for {
     _ <- checkType(sx_TripleConstraint)(n,rdf)
@@ -137,6 +197,44 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
      ls2Option(annotations
      )
   )
+
+  def valueSetValue: RDFParser[ValueSetValue] = firstOf(
+    objectValue,
+    stem,
+    stemRange
+  )
+
+  def stem: RDFParser[Stem] = (n,rdf) => for {
+    _ <- checkType(sx_Stem)(n,rdf)
+    str <- arc(sx_stem,anyUri)(n,rdf)
+  } yield Stem(IRI(str))
+
+  def stemRange: RDFParser[StemRange] = (n,rdf) => for {
+    _ <- checkType(sx_StemRange)(n,rdf)
+    sv <- arc(sx_stem,stemValue)(n,rdf)
+    exclusions <- star(sx_exclusion, objectValueStem)(n,rdf)
+  } yield StemRange(sv, ls2Option(exclusions))
+
+  def stemValue: RDFParser[StemValue] = firstOf(
+    anyUriStem,
+    wildCard
+  )
+
+  def anyUriStem: RDFParser[StemValue] = (n,rdf) => for {
+    str <- anyUri(n,rdf)
+  } yield IRIStem(IRI(str))
+
+  def wildCard: RDFParser[StemValue] = (n,rdf) => for {
+    _ <- checkType(sx_Wildcard)(n,rdf)
+  } yield Wildcard()
+
+  def objectValueStem: RDFParser[ValueSetValue] =
+    firstOf(objectValue, stem)
+
+  def anyUri: RDFParser[String] = (n,rdf) => n match {
+    case DatatypeLiteral(str,iri) if iri == xsd_anyUri => Success(str)
+    case _ => parseFail(s"Expected typed literal with datatype xsd:anyUri. Obtained: $n")
+  }
 
   def oneOf: RDFParser[OneOf] = (n, rdf) => for {
     _ <- checkType(sx_OneOf)(n,rdf)
@@ -179,20 +277,21 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     case _ => parseFail(s"Unexpected node parsing max cardinality: $n")
   }
 
-  def tripleExpressionList2Plus : RDFParser[List[TripleExpr]] = list2Plus(tripleExpression)
+  def tripleExpressionList2Plus : RDFParser[List[TripleExpr]] =
+    list2Plus(tripleExpression)
 
-  def semActList1Plus: RDFParser[List[SemAct]] = list1Plus(semAct)
+  def semActList1Plus: RDFParser[List[SemAct]] =
+    list1Plus(semAct)
 
-  def shapeExprList2Plus: RDFParser[List[ShapeExpr]] = list2Plus(shapeExpr)
+  def shapeExprList2Plus: RDFParser[List[ShapeExpr]] =
+    list2Plus(shapeExpr)
 
   def shapeExprList1Plus: RDFParser[List[ShapeExpr]] =
     list1Plus(shapeExpr)
 
-    /*(n,rdf) => for {
-    se1 <- arc(rdf_first,shapeExpr)
-    ses <- arc(rdf_rest,shapeExprList1Plus)
-    Success(se1 +: ses)
-  }*/
+  def valueSetValueList1Plus: RDFParser[List[ValueSetValue]] =
+    list1Plus(valueSetValue)
+
 }
 
 object RDF2ShEx extends RDF2ShEx {
