@@ -113,12 +113,30 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
       _ <- addTriple(shapeId,rdf_type,sx_NodeConstraint)
       _ <- maybeAddContent(nk, shapeId, sx_nodeKind, nodeKind)
       _ <- maybeAddContent(dt, shapeId, sx_datatype, iri)
-      // _ <- addStarContent(facets, shapeId, sx_, datatype)
+      _ <- facets.map(xsFacet(_, shapeId)).sequence
       _ <- maybeAddListContent(values,shapeId,sx_values,valueSetValue)
     } yield shapeId
     case ShapeRef(lbl) => label(lbl)
   }
 
+  def xsFacet(facet: XsFacet, node: RDFNode): RDFSaver[Unit] = facet match {
+    case Length(n) => addTriple(node,sx_length,IntegerLiteral(n))
+    case MinLength(n) => addTriple(node,sx_minlength,IntegerLiteral(n))
+    case MaxLength(n) => addTriple(node,sx_maxlength,IntegerLiteral(n))
+    case Pattern(n) => addTriple(node,sx_pattern,StringLiteral(n))
+    case MinInclusive(n) => addContent(n,node,sx_mininclusive,numericLiteral)
+    case MinExclusive(n) => addContent(n,node,sx_minexclusive,numericLiteral)
+    case MaxInclusive(n) => addContent(n,node,sx_maxinclusive,numericLiteral)
+    case MaxExclusive(n) => addContent(n,node,sx_maxexclusive,numericLiteral)
+    case FractionDigits(n) => addTriple(node,sx_fractiondigits,IntegerLiteral(n))
+    case TotalDigits(n) => addTriple(node,sx_totaldigits,IntegerLiteral(n))
+  }
+
+  def numericLiteral(n: NumericLiteral): RDFSaver[RDFNode] = n match {
+    case NumericInt(n) => ok(IntegerLiteral(n))
+    case NumericDouble(n) => ok(DoubleLiteral(n))
+    case NumericDecimal(n) => ok(DecimalLiteral(n))
+  }
 
   def valueSetValue(x: ValueSetValue): RDFSaver[RDFNode] = x match {
     case IRIValue(iri) => ok(iri)
