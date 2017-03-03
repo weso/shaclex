@@ -5,13 +5,11 @@ import ViolationError._
 import cats._
 import data._
 import cats.implicits._
-
-import util.matching._
 import showShacl._
 import es.weso.typing._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.path.SHACLPath
-import es.weso.utils.RegexUtils._
+import es.weso.utils.RegEx
 
 /**
  * This validator is implemented directly in Scala using cats library
@@ -357,16 +355,15 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"$node satisfies maxLength($n)")
 
   def pattern(p: String, flags: Option[String]): NodeChecker = attempt => node => for {
-    pattern <- getRegex(p, flags)
-    t <- condition(regexMatch(pattern, node.getLexicalForm), attempt,
-      patternError(node, attempt, p, flags),
-      s"$node satisfies pattern '$p'${flags.getOrElse("")})")
+    b <- regexMatch(p,flags,node.getLexicalForm,node,attempt)
+    t <- condition(b, attempt,patternError(node, attempt, p, flags),
+      s"$node satisfies pattern ~/$p/${flags.getOrElse("")}")
   } yield t
 
-  def getRegex(p: String, flags: Option[String]): Check[Regex] =
-    makeRegex(p,flags) match {
-      case Left(str) => throw new Exception("Not implemented getRegex error handler")
-      case Right(regex) => ok(regex)
+  def regexMatch(p: String, flags: Option[String], str: String, node:RDFNode, attempt: Attempt): Check[Boolean] =
+    RegEx(p,flags).matches(str) match {
+      case Left(msg) => err(regexError(node,attempt,msg))
+      case Right(b) => ok(b)
     }
 
   def uniqueLang(b: Boolean, os: Seq[RDFNode], attempt: Attempt, path: SHACLPath): Check[ShapeTyping] = if (b) {
@@ -568,10 +565,9 @@ case class Validator(schema: Schema) extends LazyLogging {
     } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
   }
 
-  def addNotEvidence(
-                      nodeShape: NodeShapePair,
-                      e: ViolationError,
-                      msg: String): Check[ShapeTyping] = {
+  def addNotEvidence(nodeShape: NodeShapePair,
+                     e: ViolationError,
+                     msg: String): Check[ShapeTyping] = {
     val node = nodeShape.node
     val shape = nodeShape.shape
     for {

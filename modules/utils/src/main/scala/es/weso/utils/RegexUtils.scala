@@ -8,14 +8,13 @@ case class RegEx(pattern: String, maybeFlags: Option[String]) {
       val regex = new RegularExpression(pattern, maybeFlags.getOrElse(""))
       Right(regex.matches(str))
     } catch {
-      case e: Exception => Left(s"Parse exception: $e when matching $str with /$pattern/${maybeFlags.getOrElse("")}")
+      case e: Exception => Left(s"Error: $e, matching $str with /$pattern/${maybeFlags.getOrElse("")}")
     }
   }
 }
 
-object RegexUtils {
+/*object RegexUtils {
 
-  // TODO: Use xerces implementation of XPath regex instead of Scala's builtin
   def makeRegex(pattern: String,
                 flags: Option[String]): Either[String,RegEx] = {
     Right(RegEx(pattern,flags))
@@ -25,4 +24,4 @@ object RegexUtils {
     pattern.matches(str)
   }
 
-}
+}*/

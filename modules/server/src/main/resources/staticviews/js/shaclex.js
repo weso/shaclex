@@ -1,5 +1,6 @@
 function getHost() {
- return window.location.protocol + "//" + window.location.hostname ;
+ var port = window.location.port;
+ return window.location.protocol + "//" + window.location.hostname + (port? ":" + port: "") ;
 }
 
 // "http://shaclex.herokuapp.com"
@@ -113,7 +114,8 @@ if (rdfData) {
   mode: "turtle",
   viewportMargin: Infinity,
   matchBrackets: true,
-});
+ });
+// codeMirrorData.setSize("48%",null);
 }
 var schema = document.getElementById("schema")
 if (schema) {
@@ -123,6 +125,7 @@ if (schema) {
    viewportMargin: Infinity,
    matchBrackets: true
  });
+// codeMirrorSchema.setSize("48%",null);
 }
 
 // Don't allow newline before change in CodeMirror
@@ -132,25 +135,29 @@ function noNewLine(instance,change) {
     return true;
 }
 
-var codeMirrorNode = CodeMirror.fromTextArea(document.getElementById("node"), {
+var nodeId = document.getElementById("node");
+if (nodeId) {
+var codeMirrorNode = CodeMirror.fromTextArea(nodeId, {
+ lineNumbers: false,
+ mode: "turtle",
+ scrollbarStyle: "null",
+ height: 1,
+ });
+ codeMirrorNode.on("beforeChange", noNewLine);
+ codeMirrorNode.setSize(null,"1.5em");
+}
+
+var shapeId = document.getElementById("shape");
+if (shapeId) {
+var codeMirrorShape = CodeMirror.fromTextArea(shapeId, {
  lineNumbers: false,
  mode: "turtle",
  scrollbarStyle: "null",
  height: 1,
 });
-
-
-var codeMirrorShape = CodeMirror.fromTextArea(document.getElementById("shape"), {
- lineNumbers: false,
- mode: "turtle",
- scrollbarStyle: "null",
- height: 1,
-});
-
-codeMirrorNode.on("beforeChange", noNewLine);
 codeMirrorShape.on("beforeChange", noNewLine);
-codeMirrorNode.setSize("48%","2em");
-codeMirrorShape.setSize("48%","2em");
+codeMirrorShape.setSize(null,"1.5em");
+}
 
 
  console.log("Document ready...");

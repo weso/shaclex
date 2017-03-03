@@ -95,7 +95,7 @@ class Routes {
       SchemaEngineParam(optSchemaEngine) +&
       TargetSchemaFormatParam(optTargetSchemaFormat) +&
       TargetSchemaEngineParam(optTargetSchemaEngine) => {
-      Ok(html.schemaConversions(
+      Ok(html.schemaConversions(None,
         optSchema,
         availableSchemaFormats,
         optSchemaFormat.getOrElse(defaultSchemaFormat),

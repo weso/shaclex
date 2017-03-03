@@ -44,3 +44,29 @@ div.submit {
  overflow: visible;
  width: auto;
 }
+
+.dataPanel {
+ width: 48%;
+ float: left;
+}
+.schemaPanel {
+ width: 48%;
+ float: right;
+}
+.triggerModePanel {
+ clear: both;
+}
+
+#nodeDiv {
+ float: left;
+ width: 30%;
+}
+
+#shapeDiv {
+ float: right;
+ width: 30% ;
+}
+
+.otherOptions {
+ clear: both;
+}

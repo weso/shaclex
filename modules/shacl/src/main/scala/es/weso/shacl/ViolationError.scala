@@ -29,6 +29,10 @@ object ViolationError {
   def failedNodeShape(node: RDFNode, shape: NodeShape, attempt: Attempt, msg: String) =
     basic("FailedNodeShape", node, attempt, msg)
 
+  def regexError(node: RDFNode, attempt: Attempt, msg: String) =
+    basic("RegEx error", node, attempt, msg)
+
+
   def classError(focusNode: RDFNode, cls: RDFNode, attempt: Attempt) =
     basic("classError", focusNode, attempt, s"Node $focusNode doesn't belong to class $cls")
 

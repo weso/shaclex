@@ -1,4 +1,7 @@
-@(schema: Option[String],
+@import io.circe._
+
+@(result: Option[Json],
+  schema: Option[String],
   availableSchemaFormats: List[String],
   currentSchemaFormat: String,
   availableSchemaEngines: List[String],
@@ -6,6 +9,8 @@
   currentTargetSchemaFormat: String,
   currentTargetSchemaEngine: String
 )
+
+
 <html lang="en">
 <meta charset="utf-8">
 <title>Schema conversions</title>
@@ -36,13 +41,23 @@
 
 <body>
 <h1><a href="/">Shaclex</a>: Parse and convert Schema</h1>
+<div id="resultDiv">@{if(result.isDefined){result.spaces2}}</div>
 <form action="/api/schema/convert" method="get" id="convert">
+  <fieldset>
+      <legend>Source</legend>
+      @selectSchemaFormat("convert",availableSchemaFormats,currentSchemaFormat)
+      @selectSchemaEngine("convert", availableSchemaEngines,currentSchemaEngine)
+  </fieldset>
+  <fieldset class="schemaPanel">
     <label for="schema">Schema</label>
-    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema">@{schema.getOrElse("")}</textarea>
-    @selectSchemaFormat("convert",availableSchemaFormats,currentSchemaFormat)
-    @selectSchemaEngine("convert", availableSchemaEngines,currentSchemaEngine)
-    @selectTargetSchemaFormat("convert",availableSchemaFormats,currentTargetSchemaFormat)
-    @selectTargetSchemaEngine("convert",availableSchemaEngines,currentTargetSchemaEngine)
+    <textarea id="schema" name="schema"
+              placeholder="schema">@{schema.getOrElse("")}</textarea>
+  </fieldset>
+  <fieldset>
+        <legend>Target</legend>
+        @selectTargetSchemaFormat("convert",availableSchemaFormats,currentTargetSchemaFormat)
+        @selectTargetSchemaEngine("convert",availableSchemaEngines,currentTargetSchemaEngine)
+    </fieldset>
     <div class="submit">
       <button type="submit">Convert</button>
     </div>

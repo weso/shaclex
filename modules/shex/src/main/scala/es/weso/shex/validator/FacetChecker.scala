@@ -8,7 +8,7 @@ import es.weso.rdf.nodes._
 import es.weso.shex.ViolationError._
 import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
-import es.weso.utils.RegexUtils._
+import es.weso.utils.RegEx
 
 case class FacetChecker(schema: Schema)
   extends ShowValidator(schema) with LazyLogging {
@@ -48,19 +48,13 @@ case class FacetChecker(schema: Schema)
       }
       case Pattern(p,flags) => {
         val str = node.getLexicalForm
-        val tryMatch = for {
-          regex <- makeRegex(p,flags)
-          b <- regex.matches(str)
-        } yield b
-
-        tryMatch match {
+        RegEx(p,flags).matches(str) match {
           case Right(b) => checkCond(b,attempt,
             msgErr(s"${node.show} doesn't match Pattern($p) with lexical form $str"),
             s"${node.show} satisfies Pattern($p) with lexical form $str")
           case Left(msg) => errStr(msg)
         }
       }
-
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")
         errStr(s"Not implemented checkFacet: $facet")
