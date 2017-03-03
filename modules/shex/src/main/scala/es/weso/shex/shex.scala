@@ -187,7 +187,7 @@ case class MaxLength(v:Int) extends StringFacet {
   val fieldName = "maxlength"
 }
 
-case class Pattern(p: String) extends StringFacet {
+case class Pattern(p: String, flags: Option[String]) extends StringFacet {
   val fieldName = "pattern"
 }
 

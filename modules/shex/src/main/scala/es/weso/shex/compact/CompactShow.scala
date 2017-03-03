@@ -151,7 +151,7 @@ object CompactShow {
       case Length(v) => f.fieldName :: space :: text(v.toString)
       case MinLength(v) => f.fieldName :: space :: text(v.toString)
       case MaxLength(v) => f.fieldName :: space :: text(v.toString)
-      case Pattern(p) => f.fieldName :: space :: stringDoc(p)
+      case Pattern(p,flags) => text("~/") :: text(p) :: text("/") :: text(flags.getOrElse(""))
       case MinInclusive(n) => f.fieldName :: space :: numericDoc(n)
       case MaxInclusive(n) => f.fieldName :: space :: numericDoc(n)
       case MinExclusive(n) => f.fieldName :: space :: numericDoc(n)
@@ -160,8 +160,12 @@ object CompactShow {
       case FractionDigits(n) => f.fieldName :: space :: text(n.toString)
     }
 
-  private def numericDoc(n: NumericLiteral): Document =
-    str("TODO: NumericLiteral")
+  private def numericDoc(n: NumericLiteral): Document = n match {
+    case NumericInt(n) => integerDoc(n.toString)
+    case NumericDouble(d) => doubleDoc(d.toString)
+    case NumericDecimal(d) => decimalDoc(d.toString)
+  }
+
 
   private def valueSetDoc(pm: PrefixMap)(vs: List[ValueSetValue]): Document =
     keyword("[") ::

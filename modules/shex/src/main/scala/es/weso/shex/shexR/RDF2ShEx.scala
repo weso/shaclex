@@ -120,7 +120,8 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
 
   def pattern: RDFParser[Pattern] = (n,rdf) => for {
     value <- arc(sx_pattern,string)(n,rdf)
-  } yield Pattern(value)
+    flags <- opt(sx_flags,string)(n,rdf)
+  } yield Pattern(value,flags)
 
   def mininclusive: RDFParser[MinInclusive] = (n,rdf) => for {
     value <- arc(sx_mininclusive,numericLiteral)(n,rdf)

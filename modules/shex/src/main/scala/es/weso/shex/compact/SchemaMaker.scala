@@ -576,10 +576,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         stringLength <- visitStringLength(ctx.stringLength)(n)
       } yield stringLength
     } else {
-      // pattern
+      // TODO. Update pattern to handle flags
       for {
         str <- visitString(ctx.string())
-      } yield Pattern(str)
+      } yield Pattern(str,None)
     }
   }
 

@@ -28,6 +28,7 @@ lazy val kindProjectorVersion = "0.9.3"
 lazy val scallopVersion = "2.0.6"
 lazy val jenaVersion = "3.1.1"
 lazy val diffsonVersion = "2.1.2"
+lazy val xercesVersion = "2.11.0"
 
 herokuAppName in Compile := "shaclex"
 
@@ -232,6 +233,7 @@ lazy val utils =
     , "io.circe" %% "circe-parser" % circeVersion
     , "org.typelevel" %% "cats" % catsVersion
     , "org.gnieh" %% "diffson-circe" % diffsonVersion
+    , "xerces" % "xercesImpl" % xercesVersion
     )
   )
 

@@ -46,17 +46,21 @@ case class FacetChecker(schema: Schema)
           msgErr(s"${node.show} doesn't satisfy facet MaxLength($n) with length $l"),
           s"${node.show} satisfies MaxLength($n) with length $l")
       }
-      case Pattern(p) => {
+      case Pattern(p,flags) => {
         val str = node.getLexicalForm
-        val regex = makeRegex(p,None) match {
-          case Right(r) => r
-          case Left(err) => throw new Exception(s"Not implemented error handling for regex $p yet")
+        val tryMatch = for {
+          regex <- makeRegex(p,flags)
+          b <- regex.matches(str)
+        } yield b
+
+        tryMatch match {
+          case Right(b) => checkCond(b,attempt,
+            msgErr(s"${node.show} doesn't match Pattern($p) with lexical form $str"),
+            s"${node.show} satisfies Pattern($p) with lexical form $str")
+          case Left(msg) => errStr(msg)
         }
-        checkCond(regexMatch(regex,str),
-          attempt,
-          msgErr(s"${node.show} doesn't match Pattern($p) with lexical form $str"),
-          s"${node.show} satisfies Pattern($p) with lexical form $str")
       }
+
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")
         errStr(s"Not implemented checkFacet: $facet")

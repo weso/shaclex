@@ -38,6 +38,7 @@ object PREFIXES {
   lazy val sx_expression = sx + "expression"
   lazy val sx_expressions = sx + "expressions"
   lazy val sx_fractiondigits = sx + "fractiondigits"
+  lazy val sx_flags = sx + "flags"
   lazy val sx_iri = sx + "iri"
   lazy val sx_inverse = sx + "inverse"
   lazy val sx_length = sx + "length"
