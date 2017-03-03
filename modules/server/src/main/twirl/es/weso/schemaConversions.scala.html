@@ -48,16 +48,16 @@
       @selectSchemaFormat("convert",availableSchemaFormats,currentSchemaFormat)
       @selectSchemaEngine("convert", availableSchemaEngines,currentSchemaEngine)
   </fieldset>
-  <fieldset class="schemaPanel">
-    <label for="schema">Schema</label>
-    <textarea id="schema" name="schema"
-              placeholder="schema">@{schema.getOrElse("")}</textarea>
-  </fieldset>
-  <fieldset>
+    <fieldset>
         <legend>Target</legend>
         @selectTargetSchemaFormat("convert",availableSchemaFormats,currentTargetSchemaFormat)
         @selectTargetSchemaEngine("convert",availableSchemaEngines,currentTargetSchemaEngine)
     </fieldset>
+  <fieldset>
+    <label for="schema">Schema</label>
+    <textarea id="schema" name="schema"
+              placeholder="schema">@{schema.getOrElse("")}</textarea>
+  </fieldset>
     <div class="submit">
       <button type="submit">Convert</button>
     </div>

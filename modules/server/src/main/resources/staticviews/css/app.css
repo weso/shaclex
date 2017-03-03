@@ -46,11 +46,11 @@ div.submit {
 }
 
 .dataPanel {
- width: 48%;
+ width: 45%;
  float: left;
 }
 .schemaPanel {
- width: 48%;
+ width: 45%;
  float: right;
 }
 .triggerModePanel {
