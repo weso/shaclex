@@ -6,9 +6,7 @@ import es.weso.typing._
 import es.weso.rdf.nodes._
 import es.weso.shex._
 
-case class ShapeTyping(
-  t: Typing[RDFNode, ShapeType, ViolationError, String]
-) {
+case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
 
   def getOkValues(node: RDFNode): Set[ShapeType] =
     t.getOkValues(node)

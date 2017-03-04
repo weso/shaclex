@@ -2,10 +2,7 @@ package es.weso.shex.validator
 import cats._, data._
 import cats.implicits._
 
-case class CheckResult[
-  E: Show,
-  A: Show,
-  Log: Show](r: (Log, Either[E, A])) {
+case class CheckResult[E: Show,A: Show,Log: Show](r: (Log, Either[E, A])) {
 
   def isOK: Boolean = r._2.isRight
 

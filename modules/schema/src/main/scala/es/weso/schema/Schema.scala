@@ -15,13 +15,12 @@ abstract class Schema {
   */
  def formats: Seq[String]
 
- def validateWithTrigger
-   (rdf: RDFReader,
-    trigger: ValidationTrigger): Result = {
+ def validateWithTrigger(rdf: RDFReader,trigger: ValidationTrigger): Result = {
   trigger match {
    case TargetDeclarations => validateTargetDecls(rdf)
    case NodeShapeTrigger(Some(node),Some(shape)) => validateNodeShape(node,shape,rdf)
    case NodeStart(Some(node)) => validateNodeStart(node,rdf)
+   case ShapeMapTrigger(sm) => validateShapeMap(sm,rdf)
    case _ => throw new Exception(s"Unsupported validation trigger $trigger")
   }
  }
@@ -46,6 +45,8 @@ abstract class Schema {
  def validateNodeShape(node: IRI, label: String, rdf: RDFReader): Result
 
  def validateNodeStart(node: IRI, rdf: RDFReader): Result
+
+ def validateShapeMap(shapeMap: ShapeMap, rdf: RDFReader): Result
 
  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema]
 

@@ -67,44 +67,8 @@ case class Result(
     this.asJson
   }
 
-
-
   def toJsonString2spaces: String =
     toJson.spaces2
-
-
-  /*  def toHTML(cut: Int = 1, schema:Schema): String = {
-    val sb = new StringBuilder
-    val pm = schema.pm
-    if (isValid) {
-      if (noSolutions(solutions)) {
-        sb ++= "<h2>No solutions found</h2"
-      } else {
-     for ((solution, n) <- solutions zip (1 to cut)) {
-      sb ++= "<h2 class='result'>Result" + printNumber(n, cut) + "</h2>"
-      sb ++= schema.htmlBeforeSolutions
-      sb ++= solution.toHTML(pm)
-      sb ++= schema.htmlAfterSolutions
-     }
-     }
-    } else {
-    val numErrors = errors.size
-    val errorStr = if (numErrors == 1) "Error" else "Errors"
-    sb ++="<div class=\"errors\">"
-    sb ++= s"<p class='errorMsg'>${numErrors} $errorStr found</p>"
-    sb ++= "<table class='display' id='results' >"
-    sb ++= schema.htmlBeforeErrors
-    for (error <- errors) {
-      sb ++= error.toHTML(pm)
-     }
-    sb ++= schema.htmlAfterErrors
-    sb++="</table>"
-    }
-    sb.toString
-  }
-
-  }
- */
 
   lazy val cut = 1 // TODO maybe remove concept of cut
 

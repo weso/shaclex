@@ -39,6 +39,18 @@ case class NodeShapeTrigger(node: Option[IRI], shape: Option[String]) extends Va
   override def name = "NodeShape"
 }
 
+sealed abstract class TargetShape
+case object Start extends TargetShape
+case class ShapeLabel(label: String) extends AnyVal
+
+case class ShapeMap(map: Map[RDFNode, Set[TargetShape]])
+
+case class ShapeMapTrigger(shapeMap: ShapeMap) extends ValidationTrigger {
+  override def explain = "A shape map"
+  override def maybeFocusNode = throw new Exception("Not implemented maybeFocusNode")
+  override def maybeShape = throw new Exception("Not implemented maybeFocusNode")
+  override def name = "ShapeMap"
+}
 
 /**
   * Validates a nodes against the start shape

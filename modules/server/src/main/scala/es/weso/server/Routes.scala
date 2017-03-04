@@ -414,7 +414,6 @@ class Routes {
       case None => data
       case Some(schema) => schema
     }
-    val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
     Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
       case Failure(e) =>
         Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr")
@@ -423,7 +422,11 @@ class Routes {
           case Failure(e) =>
             Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data")
           case Success(rdf) => {
-            schema.validate(rdf,triggerMode,optNode,optShape)
+            val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+            ValidationTrigger.findTrigger(triggerMode,optNode,optShape,rdf.getPrefixMap,schema.pm) match {
+              case Left(msg) => Result.errStr(s"Cannot obtain trigger: $msg")
+              case Right(trigger) =>  schema.validateWithTrigger(rdf,trigger)
+            }
           }
         }
       }

@@ -35,15 +35,14 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     cnvResult(r, rdf)
   }
 
-  def cnvResult(
-    r: CheckResult[ViolationError, ShapeTyping,
-                   List[(es.weso.shex.validator.NodeShape,String)]],
-    rdf: RDFReader): Result =
+  def cnvResult
+   (r: CheckResult[ViolationError,ShapeTyping,List[(es.weso.shex.validator.NodeShape,String)]],rdf: RDFReader
+   ): Result =
     Result(isValid = r.isOK,
            message = if (r.isOK) "Valid" else "Not valid",
            solutions = r.results.map(cnvShapeTyping(_,rdf)),
            errors = r.errors.map(cnvViolationError(_))
-    )
+   )
 
   def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
     Solution(st.t.getMap.mapValues(cnvResult),
@@ -96,6 +95,15 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     val r = validator.validateNodeStart(rdf,node)
     cnvResult(r,rdf)
   }
+
+  override def validateShapeMap(sm: ShapeMap, rdf: RDFReader) : Result = {
+    val zero: ShapeTyping = ShapeTyping.emptyShapeTyping
+    def combine(typing: ShapeTyping, current: (RDFNode, Set[TargetShape])): ShapeTyping = ???
+    val st: ShapeTyping = sm.map.foldLeft(zero)(combine)
+    val s: Solution = cnvShapeTyping(st,rdf)
+    ???
+  }
+
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShExSchema] = {
     ShExSchema.fromString(cs,format,base)

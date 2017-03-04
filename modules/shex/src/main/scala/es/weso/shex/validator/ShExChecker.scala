@@ -67,7 +67,8 @@ object ShExChecker extends CheckerCats {
     } yield t.addNotEvidence(node, shape, e)
   }
 
-  def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
+  def runLocal[A](c: Check[A],
+                  f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
   def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
@@ -78,14 +79,19 @@ object ShExChecker extends CheckerCats {
     ok(ShapeTyping.combineTypings(ts))
   }
 
-  def runCheck[A: Show](
-                         c: Check[A],
-                         rdf: RDFReader
+  def runCheck[A: Show](c: Check[A],
+                        rdf: RDFReader
                        ): CheckResult[ViolationError, A, Log] = {
     val initial: ShapeTyping = Monoid[ShapeTyping].empty
-    val r = run(c)(rdf)(initial)
-    CheckResult(r)
+    runCheckWithTyping(c,rdf,initial)
   }
 
+  def runCheckWithTyping[A: Show](c: Check[A],
+                         rdf: RDFReader,
+                         typing: ShapeTyping
+                        ): CheckResult[ViolationError, A, Log] = {
+    val r = run(c)(rdf)(typing)
+    CheckResult(r)
+  }
 
 }

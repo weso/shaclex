@@ -78,7 +78,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     schema.getShape(label) match {
       case None => errStr[ShapeExpr](s"Can't find shape ${label.show} is Schema:\n${schema.show}")
       case Some(shape) => ok(shape)
-    }
+  }
 
   def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
     logger.info(s"nodeShape. Node: ${node.show} Label: ${shapeName}")
@@ -98,7 +98,6 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         checkNodeShapeExpr(attempt,node,shape)
     }
   }
-
 
   def getShapeLabel(str: String): Check[ShapeLabel] = {
     logger.info(s"getShapeLabel. Label: ${str}")
