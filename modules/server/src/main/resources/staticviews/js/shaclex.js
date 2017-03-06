@@ -18,12 +18,12 @@ function newCodeMirrorNode(n) {
  if (nodeId) {
   var codeMirrorNode = CodeMirror.fromTextArea(nodeId, {
   lineNumbers: false,
-  mode: "turtle",
-  scrollbarStyle: "null",
-  tabindex: 1,
-  height: 1,
-  extraKeys: { Tab: false }
- });
+   mode: "turtle",
+   scrollbarStyle: "null",
+   tabindex: 2*n,
+   height: 1,
+   extraKeys: { Tab: false }
+  });
   codeMirrorNode.on("beforeChange", noNewLine);
   codeMirrorNode.setSize(null,"1.5em");
   codeMirrorNodes.push(codeMirrorNode);
@@ -39,7 +39,7 @@ function newCodeMirrorShape(n) {
    lineNumbers: false,
    mode: "turtle",
    scrollbarStyle: "null",
-   tabindex: 2,
+   tabindex: 2*n+1,
    height: 1,
    extraKeys: { Tab: false }
   });
@@ -56,10 +56,19 @@ function getInputRows() {
  return $("#rowsCounter").data("value");
 }
 
+function setInputRows(n) {
+ $("#rowsCounter").data("value",n);
+}
+
+function incrementInputRows() {
+ inputRows = getInputRows();
+ inputRows++
+ setInputRows(inputRows);
+ return inputRows;
+}
+
 function addNodeShapeEntry() {
-  inputRows = getInputRows();
-  inputRows++;
-  $("#rowsCounter").data("value", inputRows);
+  inputRows = incrementInputRows();
   var nodeEntry =  "<div id ='nodeDiv"+ inputRows + "' class='nodeDiv'><label>Node<textarea placeholder='Node' id='node" + inputRows + "' placeholder='Node...'></textarea></label></div>"
   var shapeEntry = "<div id ='shapeDiv"+inputRows  + "' class='shapeDiv'><label>Shape<textarea placeholder='Shape' id='shape" + inputRows + "' placeholder='Shape...'></textarea></label></div><div style='clear:both'></div>"
   console.log("Setting styles... on #nodeDiv" + inputRows);
@@ -76,6 +85,7 @@ function addNodeShapeEntry() {
 }
 
 function removeNodeShapeEntry() {
+  $inputRows = getInputRows();
   if (inputRows > 0) {
     console.log("Removing entry..."+ inputRows);
     $("#shapeDiv" + inputRows).remove();
@@ -83,8 +93,9 @@ function removeNodeShapeEntry() {
     codeMirrorNodes.pop();
     codeMirrorShapes.pop();
     inputRows--;
+    setInputRows(inputRows);
   }
-  console.log("Current rows" + inputRows + ". mirrorNodes: " + mirrorNodes + " mirrorShapes: " + mirrorShapes);
+  console.log("Current rows" + inputRows + ". codeMirrorNodes: " + codeMirrorNodes + " codeMirrorShapes: " + codeMirrorShapes);
 }
 
 // Don't allow newline before change in CodeMirror

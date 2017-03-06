@@ -1,7 +1,9 @@
 package es.weso.schema
 import java.net.{URLDecoder, URLEncoder}
 
-object ShapeMap {
+import com.typesafe.scalalogging.LazyLogging
+
+object ShapeMap extends LazyLogging {
 
   /**
   * Transforms Map("<a>" -> List("<x>"), "<b>" -> List("<y>","<z>"))
@@ -25,7 +27,7 @@ object ShapeMap {
     case None => Map("" -> List("")) // Initialize with an empty row
     case Some("") => Map("" -> List(""))
     case Some(str) => {
-      println(s"....str: $str")
+      logger.info(s"ParseShapeMap: $str")
       // Obtain the list of pairs
       val pairs = str.split(",").map(s => s match {
         case "" | "@" => ("", "")
@@ -38,7 +40,7 @@ object ShapeMap {
       // Groups them and returns the list of values
       pairs.groupBy(_._1).map {
         case (k, v) => {
-          println(s"........$k-$v")
+          logger.info(s"parseShapeMap: $k-$v")
           (decodeUrl(k), v.map(_._2).toList.map(decodeUrl(_)))
         }
       }

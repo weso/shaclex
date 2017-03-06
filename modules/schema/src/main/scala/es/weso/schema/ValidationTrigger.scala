@@ -4,6 +4,7 @@ import es.weso.rdf.nodes._
 import cats._
 import cats.data._
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 
 import util._
 
@@ -30,7 +31,7 @@ object ShapeMapTrigger {
   def empty = ShapeMapTrigger(Map(),Set())
 }
 
-object ValidationTrigger {
+object ValidationTrigger extends LazyLogging {
 
  lazy val default: ValidationTrigger = TargetDeclarations
 
@@ -69,7 +70,11 @@ object ValidationTrigger {
        case (Some(strNode), Some(strShape)) => for {
          node <- removeLTGT(strNode,nodePrefixMap)
          shape <- removeLTGT(strShape,shapePrefixMap)
-       } yield ShapeMapTrigger(Map(node -> Set(shape.str)), Set())
+       } yield {
+         val shapeMap = ShapeMapTrigger(Map(node -> Set(shape.str)), Set())
+         logger.info(s"NodeShape trigger converted to $shapeMap")
+         shapeMap
+       }
        case _ => Left(s"Cannot be NodeShape trigger if no node or shape. Node = $optNode, shape = $optShape")
      }
      case "NODESTART" => (optNode,optShape) match {

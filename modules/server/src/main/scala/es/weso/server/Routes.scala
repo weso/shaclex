@@ -3,7 +3,7 @@ package es.weso.server
 import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.schema.{DataFormats, Result, Schemas, ValidationTrigger}
+import es.weso.schema._
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
@@ -151,14 +151,32 @@ class Routes {
       ShapeMapParam(optShapeMap) +&
       SchemaEmbedded(optSchemaEmbedded) => {
     val shapeMap = parseShapeMap(optShapeMap)
-    val result = optData.map(data =>
+    val resultTrigger = optData.map(data =>
       validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape,shapeMap)
     )
     val schemaEmbedded = optSchemaEmbedded.getOrElse(false)
     logger.info(s"ShapeMap: $optShapeMap. Parsed as $shapeMap" )
+    val recoveredTriggerName: String = resultTrigger match {
+      case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
+      case Some((_,maybeTrigger)) => maybeTrigger match {
+        case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
+        case Some(trigger) => trigger.name
+      }
+    }
+    val recoveredShapeMap: List[(String,String)] = resultTrigger match {
+      case None => flattenShapeMap(shapeMap)
+      case Some((_,maybeTrigger)) => maybeTrigger match {
+        case None => flattenShapeMap(shapeMap)
+        case Some(ShapeMapTrigger(sm,nodes)) => sm.map{
+          case (node,vs) => vs.map(v => (node.toString,s"<$v>"))
+        }.flatten.toList
+        case Some(_) => flattenShapeMap(shapeMap)
+      }
+    }
+    logger.info(s"Recovered shapeMap: $recoveredShapeMap" )
 
     Ok(html.validate(
-      result,
+      resultTrigger.map(_._1),
       optData,
       availableDataFormats,
       optDataFormat.getOrElse(defaultDataFormat),
@@ -168,8 +186,8 @@ class Routes {
       availableSchemaEngines,
       optSchemaEngine.getOrElse(Schemas.shEx.name),
       availableTriggerModes,
-      optTriggerMode.getOrElse(Schemas.shEx.defaultTriggerMode.name),
-      flattenShapeMap(shapeMap),
+      recoveredTriggerName,
+      recoveredShapeMap,
       schemaEmbedded
      ))
     }
@@ -360,7 +378,7 @@ class Routes {
       val result = validate(data,optDataFormat,
         optSchema,optSchemaFormat,optSchemaEngine,
         optTriggerMode,optNode,optShape,shapeMap)
-      val default = Ok(result.asJson)
+      val default = Ok(result._1.asJson)
         .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {
                       case Some(ah) => {
@@ -400,7 +418,6 @@ class Routes {
     staticcontent.resourceService(cachedConfig)
   }
 
-
   def prefixMap2Json(pm: PrefixMap): Json = {
     Json.fromFields(pm.pm.map{ case (prefix,iri) => (prefix.str, Json.fromString(iri.getLexicalForm))})
   }
@@ -413,7 +430,7 @@ class Routes {
                optTriggerMode: Option[String],
                optNode: Option[String],
                optShape: Option[String],
-               shapeMap: Map[String,List[String]]): Result = {
+               shapeMap: Map[String,List[String]]): (Result,Option[ValidationTrigger]) = {
     val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
     val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
     val schemaFormat = optSchema match {
@@ -426,16 +443,16 @@ class Routes {
     }
     Schemas.fromString(schemaStr,schemaFormat,schemaEngine,None) match {
       case Failure(e) =>
-        Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr")
+        (Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr"),None)
       case Success(schema) => {
         RDFAsJenaModel.fromChars(data,dataFormat,None) match {
           case Failure(e) =>
-            Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data")
+            (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
           case Success(rdf) => {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
             ValidationTrigger.findTrigger(triggerMode,shapeMap,optNode,optShape,rdf.getPrefixMap,schema.pm) match {
-              case Left(msg) => Result.errStr(s"Cannot obtain trigger: $msg")
-              case Right(trigger) =>  schema.validateWithTrigger(rdf,trigger)
+              case Left(msg) => (Result.errStr(s"Cannot obtain trigger: $msg"),None)
+              case Right(trigger) =>  (schema.validateWithTrigger(rdf,trigger),Some(trigger))
             }
           }
         }
