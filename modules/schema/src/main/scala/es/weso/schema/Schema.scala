@@ -18,23 +18,22 @@ abstract class Schema {
  def validateWithTrigger(rdf: RDFReader,trigger: ValidationTrigger): Result = {
   trigger match {
    case TargetDeclarations => validateTargetDecls(rdf)
-   case NodeShapeTrigger(Some(node),Some(shape)) => validateNodeShape(node,shape,rdf)
-   case NodeStart(Some(node)) => validateNodeStart(node,rdf)
-   case ShapeMapTrigger(sm) => validateShapeMap(sm,rdf)
+   case ShapeMapTrigger(sm,nodes) => validateShapeMap(sm,nodes,rdf)
    case _ => throw new Exception(s"Unsupported validation trigger $trigger")
   }
  }
 
  def validate(rdf: RDFReader,
               triggerMode: String,
-              node: Option[String],
-              shape: Option[String],
-              nodeMap: PrefixMap = PrefixMap.empty,
-              shapesMap: PrefixMap = PrefixMap.empty
+              shapeMap: Map[String, List[String]],
+              optNode: Option[String],
+              optShape: Option[String],
+              nodePrefixMap: PrefixMap = PrefixMap.empty,
+              shapesPrefixMap: PrefixMap = pm
              ): Result = {
-  ValidationTrigger.findTrigger(triggerMode,node,shape,nodeMap,shapesMap) match {
+  ValidationTrigger.findTrigger(triggerMode,shapeMap,optNode,optShape,nodePrefixMap,shapesPrefixMap) match {
    case Left(err) =>
-    Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, node: $node, shape: $shape, prefixMap: $pm")
+    Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm")
    case Right(trigger) =>
     validateWithTrigger(rdf,trigger)
   }
@@ -46,7 +45,7 @@ abstract class Schema {
 
  def validateNodeStart(node: IRI, rdf: RDFReader): Result
 
- def validateShapeMap(shapeMap: ShapeMap, rdf: RDFReader): Result
+ def validateShapeMap(map: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader): Result
 
  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema]
 

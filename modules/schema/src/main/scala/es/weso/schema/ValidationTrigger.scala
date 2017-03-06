@@ -1,21 +1,14 @@
 package es.weso.schema
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
+import cats._
+import cats.data._
+import cats.implicits._
 
 import util._
 
 abstract class ValidationTrigger {
-
   def explain: String
-  def extractNode: String =
-    maybeFocusNode.getOrElse("")
-
-  def extractShape: String =
-    maybeShape.getOrElse("")
-
-  def maybeFocusNode: Option[String]
-  def maybeShape: Option[String]
-
   def name: String
 }
 
@@ -24,42 +17,17 @@ abstract class ValidationTrigger {
  */
 case object TargetDeclarations extends ValidationTrigger {
   override def explain = "Only SHACL target declarations"
-  override def maybeFocusNode = None
-  override def maybeShape = None
   override def name = "TargetDecls"
 }
 
-/**
- * Validates a node against a specific shape
- */
-case class NodeShapeTrigger(node: Option[IRI], shape: Option[String]) extends ValidationTrigger {
-  override def explain = "A node with a shape"
-  override def maybeFocusNode = node.map(_.toString)
-  override def maybeShape = shape
-  override def name = "NodeShape"
-}
-
-sealed abstract class TargetShape
-case object Start extends TargetShape
-case class ShapeLabel(label: String) extends AnyVal
-
-case class ShapeMap(map: Map[RDFNode, Set[TargetShape]])
-
-case class ShapeMapTrigger(shapeMap: ShapeMap) extends ValidationTrigger {
+case class ShapeMapTrigger(map: Map[RDFNode,Set[String]],
+                           nodes: Set[RDFNode]) extends ValidationTrigger {
   override def explain = "A shape map"
-  override def maybeFocusNode = throw new Exception("Not implemented maybeFocusNode")
-  override def maybeShape = throw new Exception("Not implemented maybeFocusNode")
   override def name = "ShapeMap"
 }
 
-/**
-  * Validates a nodes against the start shape
-  */
-case class NodeStart(node: Option[IRI]) extends ValidationTrigger {
-  override def explain = "Nodes agains start shape"
-  override def maybeFocusNode = node.map(_.toString)
-  override def maybeShape = None
-  override def name = "NodeStart"
+object ShapeMapTrigger {
+  def empty = ShapeMapTrigger(Map(),Set())
 }
 
 object ValidationTrigger {
@@ -67,33 +35,51 @@ object ValidationTrigger {
  lazy val default: ValidationTrigger = TargetDeclarations
 
  def nodeShape(node: String, shape: String): ValidationTrigger =
-   NodeShapeTrigger(Some(IRI(node)), Some(shape))
+   ShapeMapTrigger(Map(IRI(node) -> Set(shape)), Set())
 
  lazy val targetDeclarations: ValidationTrigger = TargetDeclarations
 
+ def cnvShapes(ss: List[String], pm: PrefixMap): Either[String,Set[String]] = {
+   ss.map(removeLTGT(_,pm).map(_.str)).sequenceU.map(_.toSet)
+ }
+
  def findTrigger(name: String,
-                 node: Option[String],
-                 shape: Option[String],
-                 nodeMap: PrefixMap = PrefixMap.empty,
-                 shapeMap: PrefixMap = PrefixMap.empty
+                 shapeMap: Map[String,List[String]],
+                 optNode: Option[String],
+                 optShape: Option[String],
+                 nodePrefixMap: PrefixMap = PrefixMap.empty,
+                 shapePrefixMap: PrefixMap = PrefixMap.empty
                 ): Either[String,ValidationTrigger] = {
-   (name.toUpperCase,node,shape) match {
-     case ("TARGETDECLS",_,_) => Right(TargetDeclarations)
-     case ("NODESHAPE",Some(node),Some(shape)) => {
-       val eitherNode = removeLTGT(node,nodeMap)
-       val eitherShape = removeLTGT(shape,shapeMap)
-       (eitherNode,eitherShape) match {
-         case (Right(iriNode),Right(iriShape)) => Right(NodeShapeTrigger(Some(iriNode),Some(iriShape.str)))
-         case (Left(e), Right(_)) => Left(e)
-         case (Right(_), Left(e)) => Left(e)
-         case (Left(e1),Left(e2)) => Left(e1 + "\n" + e2)
-       }
+   name.toUpperCase match {
+     case "TARGETDECLS" => Right(TargetDeclarations)
+
+     case "SHAPEMAP" => {
+       val cleanedShapeMap = shapeMap - ""
+       val cnvShapeMap: List[Either[String,(RDFNode,Set[String])]] = cleanedShapeMap.map{ case (node, ls) => for {
+          rdfNode <- removeLTGT(node,nodePrefixMap)
+          shapes <- cnvShapes(ls,shapePrefixMap)
+        } yield (rdfNode,shapes)
+       }.toList
+       val eitherList: Either[String,List[(RDFNode,Set[String])]] = cnvShapeMap.sequenceU
+       for {
+         ls <- eitherList
+       } yield ShapeMapTrigger(Map(ls: _*),Set())
      }
-     case ("NODESTART",Some(node),_) => {
-       removeLTGT(node,nodeMap).right.map(n => NodeStart(Some(n)))
+     case "NODESHAPE" => (optNode,optShape) match {
+       case (Some(strNode), Some(strShape)) => for {
+         node <- removeLTGT(strNode,nodePrefixMap)
+         shape <- removeLTGT(strShape,shapePrefixMap)
+       } yield ShapeMapTrigger(Map(node -> Set(shape.str)), Set())
+       case _ => Left(s"Cannot be NodeShape trigger if no node or shape. Node = $optNode, shape = $optShape")
+     }
+     case "NODESTART" => (optNode,optShape) match {
+       case (Some(strNode), None) => for {
+         node <- removeLTGT(strNode,nodePrefixMap)
+       } yield ShapeMapTrigger(Map(), Set(node))
+       case _ => Left(s"Cannot be NodeStart trigger with nnode = $optNode, shape = $optShape")
      }
      case _ =>
-       Left(s"Cannot understand trigger mode\ntrigger = $name, node: $node, shape: $shape")
+       Left(s"Cannot understand trigger mode\ntrigger = $name")
    }
  }
 
@@ -114,10 +100,7 @@ object ValidationTrigger {
  }
 
  def triggerValues: List[(String,String)] = {
-   List(
-     TargetDeclarations,
-     NodeShapeTrigger(None,None),
-     NodeStart(None)).map(
+   List(TargetDeclarations,ShapeMapTrigger.empty).map(
       vt => (vt.name,vt.explain)
      )
  }

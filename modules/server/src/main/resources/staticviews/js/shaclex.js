@@ -3,31 +3,112 @@ function getHost() {
  return window.location.protocol + "//" + window.location.hostname + (port? ":" + port: "") ;
 }
 
-// "http://shaclex.herokuapp.com"
-// var urlShaclex = "http://localhost:8080";
 var urlShaclex = getHost();
 
 console.log("urlShaclex: " + urlShaclex);
 
 var codeMirrorData ;
 var codeMirrorSchema ;
+var codeMirrorNodes = new Array();
+var codeMirrorShapes = new Array();
+var inputRows = 0;
 
+function newCodeMirrorNode(n) {
+ var nodeId = document.getElementById("node" + n);
+ if (nodeId) {
+  var codeMirrorNode = CodeMirror.fromTextArea(nodeId, {
+  lineNumbers: false,
+  mode: "turtle",
+  scrollbarStyle: "null",
+  tabindex: 1,
+  height: 1,
+  extraKeys: { Tab: false }
+ });
+  codeMirrorNode.on("beforeChange", noNewLine);
+  codeMirrorNode.setSize(null,"1.5em");
+  codeMirrorNodes.push(codeMirrorNode);
+ } else {
+   console.log("Not found node" + n);
+ }
+}
+
+function newCodeMirrorShape(n) {
+ var shapeId = document.getElementById("shape" + n);
+ if (shapeId) {
+  var codeMirrorShape = CodeMirror.fromTextArea(shapeId, {
+   lineNumbers: false,
+   mode: "turtle",
+   scrollbarStyle: "null",
+   tabindex: 2,
+   height: 1,
+   extraKeys: { Tab: false }
+  });
+ codeMirrorShape.on("beforeChange", noNewLine);
+ codeMirrorShape.setSize(null,"1.5em");
+ console.log("Current codeMirrorShapes: " + codeMirrorShapes.length);
+ codeMirrorShapes.push(codeMirrorShape);
+ } else {
+   console.log("Not found shape" + n);
+ }
+}
+
+function getInputRows() {
+ return $("#rowsCounter").data("value");
+}
+
+function addNodeShapeEntry() {
+  inputRows = getInputRows();
+  inputRows++;
+  $("#rowsCounter").data("value", inputRows);
+  var nodeEntry =  "<div id ='nodeDiv"+ inputRows + "' class='nodeDiv'><label>Node<textarea placeholder='Node' id='node" + inputRows + "' placeholder='Node...'></textarea></label></div>"
+  var shapeEntry = "<div id ='shapeDiv"+inputRows  + "' class='shapeDiv'><label>Shape<textarea placeholder='Shape' id='shape" + inputRows + "' placeholder='Shape...'></textarea></label></div><div style='clear:both'></div>"
+  console.log("Setting styles... on #nodeDiv" + inputRows);
+  $("#nodeDiv"+inputRows).css("float","left");
+  $("#nodeDiv"+inputRows).css("width","30%");
+  $("#shapeDiv"+inputRows).css("float","right");
+  $("#shapeDiv"+inputRows).css("width","30%");
+  $("#nodeShapeContainer").append(nodeEntry);
+  $("#nodeShapeContainer").append(shapeEntry);
+  $("#nodeShapeContainer").append("<div style='clear:both'/>");
+  newCodeMirrorNode(inputRows);
+  newCodeMirrorShape(inputRows);
+  console.log("Added row " + inputRows);
+}
+
+function removeNodeShapeEntry() {
+  if (inputRows > 0) {
+    console.log("Removing entry..."+ inputRows);
+    $("#shapeDiv" + inputRows).remove();
+    $("#nodeDiv" + inputRows).remove();
+    codeMirrorNodes.pop();
+    codeMirrorShapes.pop();
+    inputRows--;
+  }
+  console.log("Current rows" + inputRows + ". mirrorNodes: " + mirrorNodes + " mirrorShapes: " + mirrorShapes);
+}
+
+// Don't allow newline before change in CodeMirror
+function noNewLine(instance,change) {
+    var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
+    change.update(change.from, change.to, [newtext]);
+    return true;
+}
 
 function changeMode(element,syntax) {
  var mode = "turtle";
  switch (syntax.toUpperCase()) {
   case "TURTLE": mode = "turtle" ;
-                 break ;
+                break ;
   case "N-TRIPLES": mode = "turtle" ;
-                 break ;
+                break ;
   case "RDF/XML": mode = "xml" ;
-                 break ;
+                break ;
   case "TRIX": mode = "xml" ;
-                   break ;
-    case "SHEXJ" : mode = "javascript" ;
-                 break ;
+                break ;
+  case "SHEXJ" : mode = "javascript" ;
+                break ;
   case "RDF/JSON" : mode = "javascript" ;
-                 break ;
+                break ;
   case "JSON-LD" : mode = "javascript" ;
                  break ;
   case "SHEXC": mode = "shex" ;
@@ -95,6 +176,22 @@ function getDataFormat(element) {
  window.alert("Data format of " + element + " format: " + format);
 }
 
+function prepareShapeMap() {
+ console.log("Preparing shape map:" );
+ inputRows = getInputRows();
+ console.log("codeMirrorNodes:" + codeMirrorNodes.length + " inputRows: " + inputRows);
+ var pairs = [];
+ for (i=0; i< inputRows; i++) {
+   var node = codeMirrorNodes[i].getValue();
+   var shape = codeMirrorShapes[i].getValue();
+   pairs.push(encodeURIComponent(node) + "@" + encodeURIComponent(shape));
+   console.log("Current pairs: " + JSON.stringify(pairs));
+ }
+ var str = pairs.join(",");
+ console.log("pairs: " + JSON.stringify(pairs) + ". Shape-map = " + str);
+ return str;
+}
+
 $(document).ready(function(){
 
 console.log("Main Url = " + urlShaclex);
@@ -115,7 +212,6 @@ if (rdfData) {
   viewportMargin: Infinity,
   matchBrackets: true,
  });
-// codeMirrorData.setSize("48%",null);
 }
 var schema = document.getElementById("schema")
 if (schema) {
@@ -125,63 +221,37 @@ if (schema) {
    viewportMargin: Infinity,
    matchBrackets: true
  });
-// codeMirrorSchema.setSize("48%",null);
 }
 
-// Don't allow newline before change in CodeMirror
-function noNewLine(instance,change) {
-    var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
-    change.update(change.from, change.to, [newtext]);
-    return true;
+var inputRows = getInputRows();
+console.log("Creating " + inputRows + " codeMirrors");
+
+for(i = 0; i < inputRows; i++) {
+ console.log("Creating codeMirror " + i);
+ newCodeMirrorNode(i);
+ newCodeMirrorShape(i);
 }
 
-var nodeId = document.getElementById("node");
-if (nodeId) {
-var codeMirrorNode = CodeMirror.fromTextArea(nodeId, {
- lineNumbers: false,
- mode: "turtle",
- scrollbarStyle: "null",
- height: 1,
- });
- codeMirrorNode.on("beforeChange", noNewLine);
- codeMirrorNode.setSize(null,"1.5em");
-}
-
-var shapeId = document.getElementById("shape");
-if (shapeId) {
-var codeMirrorShape = CodeMirror.fromTextArea(shapeId, {
- lineNumbers: false,
- mode: "turtle",
- scrollbarStyle: "null",
- height: 1,
-});
-codeMirrorShape.on("beforeChange", noNewLine);
-codeMirrorShape.setSize(null,"1.5em");
-}
-
-
- console.log("Document ready...");
-  $("#validateButton").click(function(e){
+console.log("Document ready...");
+$("#validateButton").click(function(e){
     e.preventDefault();
     console.log("click on validating...");
     var data = codeMirrorData.getValue();
     var schema = codeMirrorSchema.getValue();
     var dataFormat = $("#dataFormat").find(":selected").text();
     var schemaFormat = $("#schemaFormat").find(":selected").text();
-    var node = codeMirrorNode.getValue();
-    var shape = codeMirrorShape.getValue();
     var schemaEngine = $("#schemaEngine").find(":selected").text();
     var triggerMode = $("#triggerMode").find(":selected").text();
-     console.log("Trigger mode in AJAX query:" + triggerMode);
-     var location = "/validate?" +
+    console.log("Trigger mode in AJAX query:" + triggerMode);
+    var shapeMap = prepareShapeMap();
+    var location = "/validate?" +
                     "data=" + encodeURIComponent(data) +
                     "&dataFormat=" + encodeURIComponent(dataFormat) +
                     "&schema=" + encodeURIComponent(schema) +
                     "&schemaFormat=" + encodeURIComponent(schemaFormat) +
                     "&schemaEngine=" + encodeURIComponent(schemaEngine) +
                     "&triggerMode=" + encodeURIComponent(triggerMode) +
-                    "&node=" + encodeURIComponent(node) +
-                    "&shape=" + encodeURIComponent(shape);
+                    "&shapeMap=" + shapeMap;
 
      $.ajax({ url: urlShaclex + "/api/validate",
       data: {
@@ -189,8 +259,7 @@ codeMirrorShape.setSize(null,"1.5em");
         schema: schema,
         dataFormat: dataFormat,
         schemaFormat: schemaFormat,
-        node: node,
-        shape: shape,
+        shapeMap: shapeMap,
         schemaEngine: schemaEngine,
         triggerMode: triggerMode
      },
@@ -217,11 +286,10 @@ codeMirrorShape.setSize(null,"1.5em");
     var schema = codeMirrorSchema.getValue();
     var dataFormat = $("#dataFormat").find(":selected").text();
     var schemaFormat = $("#schemaFormat").find(":selected").text();
-    var node = codeMirrorNode.getValue();
-    var shape = codeMirrorShape.getValue();
     var schemaEngine = $("#schemaEngine").find(":selected").text();
     var triggerMode = $("#triggerMode").find(":selected").text();
     console.log("Trigger mode in permalink generation:" + triggerMode);
+    var shapeMap = prepareShapeMap();
     var location = "/validate?" +
                     "data=" + encodeURIComponent(data) +
                     "&dataFormat=" + encodeURIComponent(dataFormat) +
@@ -229,8 +297,7 @@ codeMirrorShape.setSize(null,"1.5em");
                     "&schemaFormat=" + encodeURIComponent(schemaFormat) +
                     "&schemaEngine=" + encodeURIComponent(schemaEngine) +
                     "&triggerMode=" + encodeURIComponent(triggerMode) +
-                    "&node=" + encodeURIComponent(node) +
-                    "&shape=" + encodeURIComponent(shape);
+                    "&shapeMap=" + shapeMap ;
     console.log("Permalink: " + location);
     window.location = location;
   });

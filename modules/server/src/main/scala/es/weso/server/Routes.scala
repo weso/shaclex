@@ -28,6 +28,7 @@ import es.weso._
 import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
 import es.weso.shaclex.buildinfo.BuildInfo._
+import es.weso.schema.ShapeMap._
 
 class Routes {
 
@@ -54,6 +55,7 @@ class Routes {
   object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
+  object ShapeMapParam extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
   object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
 
   val availableDataFormats = DataFormats.formatNames.toList
@@ -146,11 +148,14 @@ class Routes {
       TriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
+      ShapeMapParam(optShapeMap) +&
       SchemaEmbedded(optSchemaEmbedded) => {
+    val shapeMap = parseShapeMap(optShapeMap)
     val result = optData.map(data =>
-      validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape)
+      validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape,shapeMap)
     )
     val schemaEmbedded = optSchemaEmbedded.getOrElse(false)
+    logger.info(s"ShapeMap: $optShapeMap. Parsed as $shapeMap" )
 
     Ok(html.validate(
       result,
@@ -164,8 +169,7 @@ class Routes {
       optSchemaEngine.getOrElse(Schemas.shEx.name),
       availableTriggerModes,
       optTriggerMode.getOrElse(Schemas.shEx.defaultTriggerMode.name),
-      optNode,
-      optShape,
+      flattenShapeMap(shapeMap),
       schemaEmbedded
      ))
     }
@@ -349,8 +353,13 @@ class Routes {
       SchemaEngineParam(optSchemaEngine) +&
       TriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
-      ShapeParam(optShape) => {
-      val result = validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape)
+      ShapeParam(optShape) +&
+      ShapeMapParam(optShapeMap)
+       => {
+      val shapeMap = parseShapeMap(optShapeMap)
+      val result = validate(data,optDataFormat,
+        optSchema,optSchemaFormat,optSchemaEngine,
+        optTriggerMode,optNode,optShape,shapeMap)
       val default = Ok(result.asJson)
         .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {
@@ -403,7 +412,8 @@ class Routes {
                optSchemaEngine: Option[String],
                optTriggerMode: Option[String],
                optNode: Option[String],
-               optShape: Option[String]): Result = {
+               optShape: Option[String],
+               shapeMap: Map[String,List[String]]): Result = {
     val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
     val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
     val schemaFormat = optSchema match {
@@ -423,7 +433,7 @@ class Routes {
             Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data")
           case Success(rdf) => {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
-            ValidationTrigger.findTrigger(triggerMode,optNode,optShape,rdf.getPrefixMap,schema.pm) match {
+            ValidationTrigger.findTrigger(triggerMode,shapeMap,optNode,optShape,rdf.getPrefixMap,schema.pm) match {
               case Left(msg) => Result.errStr(s"Cannot obtain trigger: $msg")
               case Right(trigger) =>  schema.validateWithTrigger(rdf,trigger)
             }

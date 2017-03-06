@@ -1,0 +1,51 @@
+package es.weso.schema
+import java.net.{URLDecoder, URLEncoder}
+
+object ShapeMap {
+
+  /**
+  * Transforms Map("<a>" -> List("<x>"), "<b>" -> List("<y>","<z>"))
+  * into: "<a>@<x>,<b>@<y>,<b>@<z>"
+  */
+  def shapeMapEncoder(sm: List[(String,String)]): String = {
+    sm.map{
+      case (x,y) => s"${URLEncoder.encode(x,"UTF-8")}@${URLEncoder.encode(x,"UTF-8")}"
+    }.mkString(",")
+  }
+
+  def flattenShapeMap(sm: Map[String,List[String]]): List[(String,String)] = {
+    sm.map{ case (x,ys) => ys.map(y => (x,y))}.toList.flatten
+  }
+
+  /**
+   * Given a string like "<a>@<x>,<b>@<y>,<b>@<z>"
+   * Returns a Map("<a>" -> List("<x>"), "<b>" -> List("<y>","<z>"))
+   */
+  def parseShapeMap(maybeStr: Option[String]): Map[String,List[String]] = maybeStr match {
+    case None => Map("" -> List("")) // Initialize with an empty row
+    case Some("") => Map("" -> List(""))
+    case Some(str) => {
+      println(s"....str: $str")
+      // Obtain the list of pairs
+      val pairs = str.split(",").map(s => s match {
+        case "" | "@" => ("", "")
+        case s if (s.contains('@')) => {
+          val pair = s.split("@");
+          (pair(0), pair(1))
+        }
+        case s => (s, "")
+      })
+      // Groups them and returns the list of values
+      pairs.groupBy(_._1).map {
+        case (k, v) => {
+          println(s"........$k-$v")
+          (decodeUrl(k), v.map(_._2).toList.map(decodeUrl(_)))
+        }
+      }
+    }
+  }
+
+  def decodeUrl(str: String): String =
+    URLDecoder.decode(str,"UTF-8")
+
+}

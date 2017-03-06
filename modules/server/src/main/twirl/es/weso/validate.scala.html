@@ -1,4 +1,5 @@
 @import es.weso.schema.Result
+@import es.weso.schema.ShapeMap._
 
 @(result: Option[Result],
   data:Option[String],
@@ -11,8 +12,7 @@
   currentSchemaEngine: String,
   availableTriggerModes: List[String],
   currentTriggerMode: String,
-  optNode: Option[String],
-  optShape: Option[String],
+  shapeMap: List[(String,String)],
   schemaEmbedded: Boolean
  )
 
@@ -37,6 +37,7 @@
     <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
     <script src="codemirror-5.24.2/addon/edit/closebrackets.js"></script>
     <script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
+    <script src="codemirror-5.24.2/addon/display/placeholder.js"></script>
 
     <style type="text/css">
       .CodeMirror {
@@ -71,18 +72,24 @@
         @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
     </fieldset>
     </div>
-
         @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
-        <div id="nodeDiv">
-        <label>Node
-            <textarea placeholder="Node" id="node">@{optNode.getOrElse("")}</textarea>
-        </label>
+        <div id="nodeShapeContainer">
+        @for(entries <- shapeMap.zipWithIndex) {
+            <div id=@{s"nodeDiv${entries._2}"} class="nodeDiv">
+                <label>Node</label>
+                <textarea placeholder="Node" id=@{s"node${entries._2}"}>@{entries._1._1}</textarea>
+            </div>
+            <div id=@{s"shapeDiv${entries._2}"} class="shapeDiv">
+                <label>Shape</label>
+                <textarea placeholder="Shape" id=@{s"shape${entries._2}"}>@{entries._1._2}</textarea>
+            </div>
+            <div style="clear:both"></div>
+            }
         </div>
-        <div id="shapeDiv">
-        <label>Shape
-            <textarea placeholder="Shape" id="shape">@{optShape.getOrElse("")}</textarea>
-        </label>
+        <div id="rowsCounter" data-value="@{shapeMap.length}" />
         </div>
+        <button type="button" onclick="removeNodeShapeEntry()">-</button>
+        <button type="button" onclick="addNodeShapeEntry()">+</button>
     </fieldset>
 
     <div class="submit">
@@ -100,7 +107,7 @@
 </div>
 <hr/>
 
-<a id="permalink" href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&node=@{URLEncoder.encode(optNode.getOrElse(""))}&shape=@{URLEncoder.encode(optShape.getOrElse(""))}'>Generate permalink</a>
+<a id="permalink" href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&@{shapeMapEncoder(shapeMap)}'>Generate permalink</a>
 
 <script src="js/shaclex.js" ></script>
 </body>

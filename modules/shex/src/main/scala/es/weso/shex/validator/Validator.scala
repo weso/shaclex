@@ -54,15 +54,31 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     t <- combineTypings(ts)
   } yield t
 
-  // TODO
-  def getTargetNodeDeclarations(
-    rdf: RDFReader
-  ): Check[List[(RDFNode,ShapeLabel)]] = {
+  def checkShapeMap(shapeMap: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode]): CheckTyping = for {
+    rdf <- getRDF
+    t1  <- checkNodesShapes(shapeMap,rdf)
+    ts <- checkAll(nodesStart.map(node => checkNodeStart(node)).toList)
+    t <- combineTypings(t1 :: ts)
+  } yield t
+
+  def getTargetNodeDeclarations(rdf: RDFReader): Check[List[(RDFNode,ShapeLabel)]] = {
     checkAll(rdf.triplesWithPredicate(sh_targetNode).
       map(t => (t.obj,mkShapeLabel(t.subj))).
       toList.map(checkPair2nd)
     )
   }
+
+  def checkNodesShapes(shapeMap: Map[RDFNode, Set[String]], rdf: RDFReader): CheckTyping = for {
+    ts <- checkAll(shapeMap.map{
+            case (node,shapeSet) => checkNodeShapes(node,shapeSet,rdf)
+          }.toList)
+    t <- combineTypings(ts)
+  } yield t
+
+  def checkNodeShapes(node: RDFNode, shapes: Set[String], rdf: RDFReader): CheckTyping = for {
+    ts <- checkAll(shapes.toList.map(checkNodeShapeName(node,_)))
+    t <- combineTypings(ts)
+  } yield t
 
   def mkShapeLabel(n: RDFNode): Check[ShapeLabel] = {
     n match {
@@ -90,7 +106,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   def checkNodeStart(node: RDFNode): CheckTyping =
     schema.start match {
-      case None => errStr(s"checkin node $node against start declaration of schema. No start declaration found")
+      case None => errStr(s"checking node $node against start declaration of schema. No start declaration found")
       case Some(shape) => {
         logger.info(s"nodeStart. Node: ${node.show}")
         val shapeType = ShapeType(shape, None, schema)
@@ -381,27 +397,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     outgoing ++ incoming
   }
 
-/*def checkTripleConstraint(
-    attempt: Attempt,
-    node: RDFNode)
-    (t: TripleConstraint): CheckTyping = for {
-  rdf <- getRDF
-  triples =
-    if (t.direct) rdf.triplesWithSubjectPredicate(node,t.predicate)
-    else rdf.triplesWithPredicateObject(t.predicate,node)
-  noTriples = triples.size
-  t <- checkCond(noTriples >= t.min && t.max.biggerThanOrEqual(noTriples),
-           attempt,
-           msgErr(s"Number of triples with predicate ${t.predicate.show}=$noTriples not in (${t.min},${t.max})"),
-           s"No. of triples with predicate ${t.predicate.show}= $noTriples between (${t.min},${t.max})")
- } yield t
-*/
-
   lazy val emptyTyping: ShapeTyping =
     Monoid[ShapeTyping].empty
 
-  // Fails if there is any error
-  def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
+  def validateNodeDecls(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
     runCheck(checkTargetNodeDeclarations, rdf)
   }
 
@@ -411,6 +410,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   def validateNodeStart(rdf: RDFReader, node: IRI): CheckResult[ViolationError, ShapeTyping, Log] = {
      runCheck(checkNodeStart(node), rdf)
+  }
+
+  def validateShapeMap(rdf: RDFReader, shapeMap: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode]): CheckResult[ViolationError, ShapeTyping, Log] = {
+    runCheck(checkShapeMap(shapeMap,nodesStart), rdf)
   }
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {

@@ -16,6 +16,7 @@
     <script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
     <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
     <script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
+    <script src="codemirror-5.24.2/addon/display/placeholder.js"></script>    
 
     <style type="text/css">
       .CodeMirror {
@@ -97,17 +98,23 @@ PREFIX xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt;
              <option value="NodeShape">NodeShape</option>
              <option value="NodeStart">NodeStart</option>
              <option value="TargetDecls">TargetDecls</option>
+             <option value="ShapeMap">ShapeMap</option>
          </select>
-         <div id="nodeDiv" >
+         <div id="nodeShapeContainer">
+          <div id="nodeDiv0" class="nodeDiv">
            <label>Node
-               <textarea placeholder="Node" id="node">&lt;http://example.org/alice&gt;</textarea>
+               <textarea placeholder="Node" id="node0">&lt;http://example.org/alice&gt;</textarea>
            </label>
-         </div>
-         <div id="shapeDiv">
+          </div>
+          <div id="shapeDiv0" class="shapeDiv">
            <label>Shape
-               <textarea placeholder="Shape" id="shape">&lt;http://example.org/User&gt;</textarea>
+               <textarea placeholder="Shape" id="shape0">&lt;http://example.org/User&gt;</textarea>
            </label>
+          </div>
+          <div style="clear:both"></div>
          </div>
+         <button type="button" onclick="addNodeShapeEntry()">+</button>
+         <button type="button" onclick="removeNodeShapeEntry()">-</button>
        </fieldset>
       <div class="submit">
        <input type="button" value="validate" id="validateButton"/>

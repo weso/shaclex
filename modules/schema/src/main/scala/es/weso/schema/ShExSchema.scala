@@ -20,6 +20,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   lazy val shExCFormat = "ShExC"
   lazy val shExJFormat = "ShExJ"
+  lazy val validator = Validator(schema)
 
   override def formats =
     List(shExCFormat, shExJFormat) ++
@@ -27,61 +28,11 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   lazy val formatsUpperCase = formats.map(_.toUpperCase)
 
-  override def defaultTriggerMode: ValidationTrigger = NodeShapeTrigger(None,None)
+  override def defaultTriggerMode: ValidationTrigger = ShapeMapTrigger.empty
 
   override def validateTargetDecls(rdf: RDFReader) : Result = {
-    val validator = Validator(schema)
-    val r = validator.validateAll(rdf)
+    val r = validator.validateNodeDecls(rdf)
     cnvResult(r, rdf)
-  }
-
-  def cnvResult
-   (r: CheckResult[ViolationError,ShapeTyping,List[(es.weso.shex.validator.NodeShape,String)]],rdf: RDFReader
-   ): Result =
-    Result(isValid = r.isOK,
-           message = if (r.isOK) "Valid" else "Not valid",
-           solutions = r.results.map(cnvShapeTyping(_,rdf)),
-           errors = r.errors.map(cnvViolationError(_))
-   )
-
-  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
-    Solution(st.t.getMap.mapValues(cnvResult),
-    rdf.getPrefixMap(),
-    schema.prefixMap)
-  }
-
-  def cnvResult(
-    r: Map[ShapeType,TypingResult[ViolationError,String]]
-  ): InfoNode = {
-    val (oks,bads) = r.toSeq.partition(_._2.isOK)
-    InfoNode(oks.map(cnvShapeResult(_)),
-             bads.map(cnvShapeResult(_)),
-             schema.prefixMap
-    )
-  }
-
-    def cnvShapeResult(
-      p:(ShapeType,TypingResult[ViolationError,String])
-    ): (SchemaLabel,Explanation) = {
-      val shapeLabel = p._1.label match {
-        case Some(lbl) => SchemaLabel(lbl.show, schema.prefixMap)
-        case None => SchemaLabel("_",schema.prefixMap)
-      }
-      val explanation = Explanation(cnvTypingResult(p._2))
-    (shapeLabel, explanation)
-    }
-
-  def cnvTypingResult(result: TypingResult[ViolationError,String]): String = {
-    result.t.fold(
-      es => "Errors: " +
-           es.toList.mkString(",")
-    , rs => "Evidences:" +
-           rs.map(" " + _).mkString(",")
-    )
-  }
-
-  def cnvViolationError(v: ViolationError): ErrorInfo = {
-    ErrorInfo(v.show)
   }
 
   override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
@@ -96,14 +47,62 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     cnvResult(r,rdf)
   }
 
-  override def validateShapeMap(sm: ShapeMap, rdf: RDFReader) : Result = {
-    val zero: ShapeTyping = ShapeTyping.emptyShapeTyping
-    def combine(typing: ShapeTyping, current: (RDFNode, Set[TargetShape])): ShapeTyping = ???
-    val st: ShapeTyping = sm.map.foldLeft(zero)(combine)
-    val s: Solution = cnvShapeTyping(st,rdf)
-    ???
+  override def validateShapeMap(map: Map[RDFNode, Set[String]],
+                                nodesStart: Set[RDFNode],
+                                rdf: RDFReader) : Result = {
+    val validator = Validator(schema)
+    val r = validator.validateShapeMap(rdf, map, nodesStart)
+    cnvResult(r,rdf)
   }
 
+  def cnvResult
+  (r: CheckResult[ViolationError,ShapeTyping,List[(es.weso.shex.validator.NodeShape,String)]],rdf: RDFReader
+  ): Result =
+    Result(isValid = r.isOK,
+      message = if (r.isOK) "Valid" else "Not valid",
+      solutions = r.results.map(cnvShapeTyping(_,rdf)),
+      errors = r.errors.map(cnvViolationError(_))
+    )
+
+  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
+    Solution(st.t.getMap.mapValues(cnvResult),
+      rdf.getPrefixMap(),
+      schema.prefixMap)
+  }
+
+  def cnvResult(
+                 r: Map[ShapeType,TypingResult[ViolationError,String]]
+               ): InfoNode = {
+    val (oks,bads) = r.toSeq.partition(_._2.isOK)
+    InfoNode(oks.map(cnvShapeResult(_)),
+      bads.map(cnvShapeResult(_)),
+      schema.prefixMap
+    )
+  }
+
+  def cnvShapeResult(
+                      p:(ShapeType,TypingResult[ViolationError,String])
+                    ): (SchemaLabel,Explanation) = {
+    val shapeLabel = p._1.label match {
+      case Some(lbl) => SchemaLabel(lbl.show, schema.prefixMap)
+      case None => SchemaLabel("_",schema.prefixMap)
+    }
+    val explanation = Explanation(cnvTypingResult(p._2))
+    (shapeLabel, explanation)
+  }
+
+  def cnvTypingResult(result: TypingResult[ViolationError,String]): String = {
+    result.t.fold(
+      es => "Errors: " +
+        es.toList.mkString(",")
+      , rs => "Evidences:" +
+        rs.map(" " + _).mkString(",")
+    )
+  }
+
+  def cnvViolationError(v: ViolationError): ErrorInfo = {
+    ErrorInfo(v.show)
+  }
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShExSchema] = {
     ShExSchema.fromString(cs,format,base)

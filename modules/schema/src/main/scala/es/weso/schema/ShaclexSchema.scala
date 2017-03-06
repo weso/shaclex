@@ -84,7 +84,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     throw new Exception("Unimplemented validateNodeStart")
   }
 
-  override def validateShapeMap(sm: ShapeMap, rdf: RDFReader) : Result = {
+  override def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {
     throw new Exception("Unimplemented validateShapeMap")
   }
 

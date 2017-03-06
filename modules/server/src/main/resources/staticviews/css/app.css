@@ -71,12 +71,12 @@ div.submit {
  clear: both;
 }
 
-#nodeDiv {
+.nodeDiv {
  float: left;
  width: 30%;
 }
 
-#shapeDiv {
+.shapeDiv {
  float: right;
  width: 30% ;
 }
