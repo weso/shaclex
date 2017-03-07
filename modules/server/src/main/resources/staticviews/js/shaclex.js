@@ -147,20 +147,22 @@ function changeTriggerMode(value) {
  console.log("Changing triggermode: " + value);
  switch (value.toUpperCase()) {
   case "TARGETDECLS":
-    $("#nodeDiv").hide();
-    $("#shapeDiv").hide();
+    $("#nodeShapeContainer").hide();
     console.log("Hiding all: " + value);
     break;
   case "NODESHAPE":
-    $("#nodeDiv").show();
-    $("#shapeDiv").show();
+    $("#nodeShapeContainer").show();
     console.log("Showing all: " + value);
     break;
   case "NODESTART":
-    $("#nodeDiv").show();
-    $("#shapeDiv").hide();
+    $("#nodeShapeContainer").show();
     console.log("Showing node only: " + value);
     break;
+  case "SHAPEMAP":
+    $("#nodeShapeContainer").show();
+    console.log("Showing node only: " + value);
+    break;
+
   }
  }
 }
@@ -177,7 +179,7 @@ function showResult(result) {
   }
   $("#resultDiv").empty();
   $("#resultDiv").append($("<h2>").text(validText));
-  var pre = $("<pre/>").html(JSON.stringify(result,undefined,2));
+  var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
   var details = $("<details/>").append(pre);
   $("#resultDiv").append(details);
 }
@@ -290,6 +292,7 @@ $("#validateButton").click(function(e){
   })
   });
 
+/*
   $("#permalink").click(function(e){
     e.preventDefault();
     console.log("generating permalink");
@@ -312,5 +315,5 @@ $("#validateButton").click(function(e){
     console.log("Permalink: " + location);
     window.location = location;
   });
-
+*/
  });

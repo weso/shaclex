@@ -97,6 +97,8 @@
     </div>
 </form>
 <div class="otherOptions">
+<hr/>
+<h2>Other options</h2>
 <label>Editor theme:
     <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">
         <option value="eclipse">Eclipse</option>
@@ -107,7 +109,9 @@
 </div>
 <hr/>
 
+<!--
 <a id="permalink" href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&@{shapeMapEncoder(shapeMap)}'>Generate permalink</a>
+-->
 
 <script src="js/shaclex.js" ></script>
 </body>
