@@ -14,7 +14,8 @@ case class Result(
     isValid: Boolean,
     message: String,
     solutions: Seq[Solution],
-    errors: Seq[ErrorInfo]) extends LazyLogging {
+    errors: Seq[ErrorInfo],
+    trigger: Option[ValidationTrigger]) extends LazyLogging {
 
   def noSolutions(sols: Seq[Solution]): Boolean = {
     sols.size == 1 && sols.head.isEmpty
@@ -30,6 +31,8 @@ case class Result(
       }
     }
   }
+
+  def addTrigger(trigger: ValidationTrigger): Result = this.copy(trigger = Some(trigger))
 
   def show: String = {
     val sb = new StringBuilder
@@ -95,11 +98,13 @@ case class Result(
 object Result extends LazyLogging {
   def empty =
     Result(isValid = true,
-           message = "",
-           solutions = Seq(),
-           errors=Seq())
+      message = "",
+      solutions = Seq(),
+      errors=Seq(),
+      None
+    )
 
-  def errStr(str: String) = Result(isValid = false, message = str, solutions = Seq(), errors = Seq())
+  def errStr(str: String) = Result(isValid = false, message = str, solutions = Seq(), errors = Seq(), None)
 
   implicit val showResult = new Show[Result] {
     override def show(r: Result): String = r.show
@@ -110,6 +115,7 @@ object Result extends LazyLogging {
   lazy val availableResultFormats = List(TEXT, JSON).map(_.toUpperCase)
   lazy val defaultResultFormat = availableResultFormats.head
 
+  // TODO: take into account trigger
   implicit val decodeResult: Decoder[Result] = Decoder.instance { c =>
     logger.info(s"Decoding result: $c")
     for {
@@ -125,7 +131,7 @@ object Result extends LazyLogging {
       } else for {
         ls <- c.downField("details").as[List[ErrorInfo]]
       } yield ls.toSeq
-    } yield Result(isValid,message,solutions,errors)
+    } yield Result(isValid,message,solutions,errors,None)
   }
 
 

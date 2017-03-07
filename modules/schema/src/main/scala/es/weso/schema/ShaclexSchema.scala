@@ -17,7 +17,12 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def defaultTriggerMode = TargetDeclarations
 
-  override def validateTargetDecls(rdf: RDFReader) : Result = {
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result = trigger match {
+    case TargetDeclarations => validateTargetDecls(rdf).addTrigger(trigger)
+    case ShapeMapTrigger(sm,ts) => Result.errStr("Not implemented ShapeMap for SHACL yet")
+  }
+
+  def validateTargetDecls(rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
     cnvResult(r,rdf)
@@ -28,7 +33,8 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     Result(isValid = r.isOK,
            message = if (r.isOK) "Valid" else "Not valid",
            solutions = r.results.map(cnvShapeTyping(_,rdf)),
-           errors = r.errors.map(cnvViolationError(_))
+           errors = r.errors.map(cnvViolationError(_)),
+           trigger = None
     )
 
   def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): Solution = {
@@ -76,18 +82,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     )
   }
 
-  override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
-    throw new Exception("Not implemented validateNodesShape for SHACLex yet")
-  }
-
-  override def validateNodeStart(node: IRI, rdf: RDFReader) : Result = {
-    throw new Exception("Unimplemented validateNodeStart")
-  }
-
-  override def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {
+  /*def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {
     throw new Exception("Unimplemented validateShapeMap")
-  }
-
+  }*/
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema] = {
     for {

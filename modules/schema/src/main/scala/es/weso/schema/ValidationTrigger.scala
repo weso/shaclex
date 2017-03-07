@@ -5,12 +5,14 @@ import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-
+import io.circe.{Encoder, Json}
+import io.circe.JsonObject.singleton
 import util._
 
 abstract class ValidationTrigger {
   def explain: String
   def name: String
+  def toJson: Json
 }
 
 /**
@@ -19,12 +21,19 @@ abstract class ValidationTrigger {
 case object TargetDeclarations extends ValidationTrigger {
   override def explain = "Only SHACL target declarations"
   override def name = "TargetDecls"
+  override def toJson = Json.fromJsonObject(
+    singleton("type",Json.fromString("Solution"))
+  )
 }
 
 case class ShapeMapTrigger(map: Map[RDFNode,Set[String]],
                            nodes: Set[RDFNode]) extends ValidationTrigger {
   override def explain = "A shape map"
   override def name = "ShapeMap"
+  override def toJson = Json.fromJsonObject(
+    singleton("type",Json.fromString("ShapeMap"))
+  )
+
 }
 
 object ShapeMapTrigger {
@@ -108,6 +117,11 @@ object ValidationTrigger extends LazyLogging {
    List(TargetDeclarations,ShapeMapTrigger.empty).map(
       vt => (vt.name,vt.explain)
      )
+ }
+
+ implicit val encodeSolution: Encoder[ValidationTrigger] = new Encoder[ValidationTrigger] {
+    final def apply(a: ValidationTrigger): Json =
+      a.toJson
  }
 
 }

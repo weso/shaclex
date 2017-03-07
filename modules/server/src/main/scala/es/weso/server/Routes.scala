@@ -452,7 +452,7 @@ class Routes {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
             ValidationTrigger.findTrigger(triggerMode,shapeMap,optNode,optShape,rdf.getPrefixMap,schema.pm) match {
               case Left(msg) => (Result.errStr(s"Cannot obtain trigger: $msg"),None)
-              case Right(trigger) =>  (schema.validateWithTrigger(rdf,trigger),Some(trigger))
+              case Right(trigger) =>  (schema.validate(rdf,trigger),Some(trigger))
             }
           }
         }

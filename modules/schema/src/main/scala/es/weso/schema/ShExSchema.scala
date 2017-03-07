@@ -30,24 +30,29 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def defaultTriggerMode: ValidationTrigger = ShapeMapTrigger.empty
 
-  override def validateTargetDecls(rdf: RDFReader) : Result = {
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result = (trigger match {
+    case TargetDeclarations => validateTargetDecls(rdf)
+    case ShapeMapTrigger(sm,ns) => validateShapeMap(sm,ns,rdf)
+  }).addTrigger(trigger)
+
+  def validateTargetDecls(rdf: RDFReader) : Result = {
     val r = validator.validateNodeDecls(rdf)
     cnvResult(r, rdf)
   }
 
-  override def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
+  def validateNodeShape(node: IRI, shape: String, rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateNodeShape(rdf,node,shape)
     cnvResult(r,rdf)
   }
 
-  override def validateNodeStart(node: IRI, rdf: RDFReader) : Result = {
+  def validateNodeStart(node: IRI, rdf: RDFReader) : Result = {
     val validator = Validator(schema)
     val r = validator.validateNodeStart(rdf,node)
     cnvResult(r,rdf)
   }
 
-  override def validateShapeMap(map: Map[RDFNode, Set[String]],
+  def validateShapeMap(map: Map[RDFNode, Set[String]],
                                 nodesStart: Set[RDFNode],
                                 rdf: RDFReader) : Result = {
     val validator = Validator(schema)
@@ -61,7 +66,8 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     Result(isValid = r.isOK,
       message = if (r.isOK) "Valid" else "Not valid",
       solutions = r.results.map(cnvShapeTyping(_,rdf)),
-      errors = r.errors.map(cnvViolationError(_))
+      errors = r.errors.map(cnvViolationError(_)),
+      None
     )
 
   def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
