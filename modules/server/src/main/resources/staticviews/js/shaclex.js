@@ -94,6 +94,10 @@ function removeNodeShapeEntry() {
     codeMirrorShapes.pop();
     inputRows--;
     setInputRows(inputRows);
+  } else if (inputRows == 0) {
+   codeMirrorNodes[0].setValue("");
+   codeMirrorShapes[0].setValue("");
+   console.log("Cleaning entries when 0 input rows")
   }
   console.log("Current rows" + inputRows + ". codeMirrorNodes: " + codeMirrorNodes + " codeMirrorShapes: " + codeMirrorShapes);
 }
@@ -245,7 +249,10 @@ for(i = 0; i < inputRows; i++) {
  newCodeMirrorShape(i);
 }
 
-console.log("Document ready...");
+console.log("Adding empty node shape entry..."); // Adds an empty entry
+addNodeShapeEntry();
+
+console.log("Adding handler to validateButton...");
 $("#validateButton").click(function(e){
     e.preventDefault();
     console.log("click on validating...");

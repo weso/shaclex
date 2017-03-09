@@ -5,8 +5,9 @@ import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import io.circe.{Encoder, Json}
-import io.circe.JsonObject.singleton
+import io.circe._
+import io.circe.syntax._
+import io.circe.JsonObject._
 import util._
 
 abstract class ValidationTrigger {
@@ -30,8 +31,24 @@ case class ShapeMapTrigger(map: Map[RDFNode,Set[String]],
                            nodes: Set[RDFNode]) extends ValidationTrigger {
   override def explain = "A shape map"
   override def name = "ShapeMap"
+
+  implicit val rdfNodeKeyEncoder = new KeyEncoder[RDFNode] {
+    override def apply(node: RDFNode): String = node.toString
+  }
+
+  // TODO: Improve this...
+  implicit val rdfNodeEncoder = new Encoder[RDFNode] {
+    override def apply(node: RDFNode): Json =
+      Json.fromJsonObject(
+       singleton("type", Json.fromString("RDFNode")).
+       add("value", Json.fromString(node.toString))
+      )
+  }
+
   override def toJson = Json.fromJsonObject(
-    singleton("type",Json.fromString("ShapeMap"))
+    singleton("type",Json.fromString("ShapeMap")).
+      add("shapeMap",map.asJson).
+      add("nodesStart",nodes.asJson)
   )
 
 }

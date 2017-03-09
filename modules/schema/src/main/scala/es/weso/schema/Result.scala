@@ -64,7 +64,9 @@ case class Result(
           add("valid",Json.fromBoolean(isValid)).
           add("type",Json.fromString("Result")).
           add("message",Json.fromString(message)).
-          add("details",details))
+          add("details",details).
+          add("trigger",trigger.asJson)
+        )
       }
     }
     this.asJson
