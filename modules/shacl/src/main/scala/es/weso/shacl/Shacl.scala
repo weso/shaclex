@@ -140,15 +140,6 @@ case class PropertyShape(
   override def toPropertyConstraint: Option[PropertyShape] = Some(this)
 }
 
-/*
-case class PathPropertyShape(
-    id:Option[IRI],
-    path: Path,
-    components: Seq[Component]
-) extends Shape {
-  def isPropertyConstraint = false
-} */
-
 case class NodeConstraint(
     components: List[Component]
 ) extends Shape {
@@ -215,6 +206,8 @@ case class LessThanOrEquals(p: IRI) extends Component
 case class Or(shapes: List[NodeShape]) extends Component
 case class And(shapes: List[NodeShape]) extends Component
 case class Not(shape: NodeShape) extends Component
+case class Xone(shapes: List[NodeShape]) extends Component
+case class QualifiedValueShape(shape: NodeShape, qualifiedMinCount: Option[Int], qualifiedMaxCount: Option[Int], qualifiedValueShapesDisjoint: Boolean) extends Component
 case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component
 case class NodeComponent(shape: NodeShape) extends Component
 case class HasValue(value: Value) extends Component

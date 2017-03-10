@@ -86,20 +86,26 @@ function addNodeShapeEntry() {
 
 function removeNodeShapeEntry() {
   $inputRows = getInputRows();
-  if (inputRows > 0) {
-    console.log("Removing entry..."+ inputRows);
-    $("#shapeDiv" + inputRows).remove();
-    $("#nodeDiv" + inputRows).remove();
-    codeMirrorNodes.pop();
-    codeMirrorShapes.pop();
-    inputRows--;
-    setInputRows(inputRows);
-  } else if (inputRows == 0) {
-   codeMirrorNodes[0].setValue("");
-   codeMirrorShapes[0].setValue("");
-   console.log("Cleaning entries when 0 input rows")
+  switch (inputRows)  {
+   case 0: console.log("Cleaning entries when 0 input rows");
+           break;
+   case 1: codeMirrorNodes[0].setValue("");
+           codeMirrorShapes[0].setValue("");
+           console.log("Cleaning entries when 1 input rows");
+           break;
+   default: if (inputRows > 1) {
+             console.log("Removing entry..."+ inputRows);
+             $("#shapeDiv" + inputRows).remove();
+             $("#nodeDiv" + inputRows).remove();
+             codeMirrorNodes.pop();
+             codeMirrorShapes.pop();
+             inputRows--;
+             setInputRows(inputRows);
+             console.log("Removing one row. New value: " + inputRows);
+            } else {
+             console.log("Unknown value of inputRows: " + inputRows);
+            }
   }
-  console.log("Current rows" + inputRows + ". codeMirrorNodes: " + codeMirrorNodes + " codeMirrorShapes: " + codeMirrorShapes);
 }
 
 // Don't allow newline before change in CodeMirror

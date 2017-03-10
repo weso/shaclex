@@ -208,6 +208,8 @@ case class Validator(schema: Schema) extends LazyLogging {
   def component2Checker(c: Component): NodeChecker = attempt => node => {
     c match {
       case NodeKind(k) => nodeKindChecker(k)(attempt)(node)
+      case Xone(shapes) => xone(shapes)(attempt)(node)
+      case QualifiedValueShape(shape,min,max,disjoint) => qualifiedValueShape(shape,min,max,disjoint)(attempt)(node)
       case And(shapes) => and(shapes)(attempt)(node)
       case Or(shapes)  => or(shapes)(attempt)(node)
       case Not(shape)  => not(shape)(attempt)(node)
@@ -258,9 +260,11 @@ case class Validator(schema: Schema) extends LazyLogging {
           case Disjoint(p) => checkValues(os, disjoint(p)(attempt))
           case LessThan(p) => checkValues(os, lessThan(p)(attempt))
           case LessThanOrEquals(p) => checkValues(os, lessThanOrEquals(p)(attempt))
+          case Xone(shapes) => checkValues(os, xone(shapes)(attempt))
           case And(shapes) => checkValues(os, and(shapes)(attempt))
           case Or(shapes) => checkValues(os, or(shapes)(attempt))
           case Not(shape) => checkValues(os, not(shape)(attempt))
+          case QualifiedValueShape(shape,min,max,disjoint) => checkValues(os, qualifiedValueShape(shape,min,max,disjoint)(attempt))
           case HasValue(v) => checkValues(os, hasValue(v)(attempt))
           case In(values) => checkValues(os, inChecker(values)(attempt))
           case _ => throw new Exception(s"Unsupported check $c")
@@ -433,6 +437,20 @@ case class Validator(schema: Schema) extends LazyLogging {
       t <- combineTypings(t1 +: ts)
     } yield t
   }
+
+  def xone(shapes: Seq[NodeShape]): NodeChecker = attempt => node => {
+    val es = shapes.map(s => nodeShape(node, s)).toList
+    for {
+      t1 <- checkOneOf(es)
+      t2 <- addEvidence(attempt.nodeShape, s"$node passes xone(${shapes.map(_.showId).mkString(",")})")
+      t <- combineTypings(Seq(t1, t2))
+    } yield t
+  }
+
+  def qualifiedValueShape(shape: NodeShape,min: Option[Int], max: Option[Int], disjoint: Boolean): NodeChecker = attempt => node => {
+    ???
+  }
+
 
   def or(shapes: Seq[NodeShape]): NodeChecker = attempt => node => {
     logger.debug(s"or. Shapes $shapes, attempt: $attempt, node $node")
