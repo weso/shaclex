@@ -23,7 +23,7 @@ case object TargetDeclarations extends ValidationTrigger {
   override def explain = "Only SHACL target declarations"
   override def name = "TargetDecls"
   override def toJson = Json.fromJsonObject(
-    singleton("type",Json.fromString("Solution"))
+    singleton("type",Json.fromString("TargetDecls"))
   )
 }
 

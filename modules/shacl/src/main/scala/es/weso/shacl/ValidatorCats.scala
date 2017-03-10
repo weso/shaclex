@@ -209,7 +209,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     c match {
       case NodeKind(k) => nodeKindChecker(k)(attempt)(node)
       case Xone(shapes) => xone(shapes)(attempt)(node)
-      case QualifiedValueShape(shape,min,max,disjoint) => qualifiedValueShape(shape,min,max,disjoint)(attempt)(node)
+      // case QualifiedValueShape(shape,min,max,disjoint) => qualifiedValueShape(shape,min,max,disjoint)(attempt)(node)
       case And(shapes) => and(shapes)(attempt)(node)
       case Or(shapes)  => or(shapes)(attempt)(node)
       case Not(shape)  => not(shape)(attempt)(node)
@@ -264,7 +264,9 @@ case class Validator(schema: Schema) extends LazyLogging {
           case And(shapes) => checkValues(os, and(shapes)(attempt))
           case Or(shapes) => checkValues(os, or(shapes)(attempt))
           case Not(shape) => checkValues(os, not(shape)(attempt))
-          case QualifiedValueShape(shape,min,max,disjoint) => checkValues(os, qualifiedValueShape(shape,min,max,disjoint)(attempt))
+          case QualifiedValueShape(shape,min,max,disjoint) =>
+            qualifiedValueShape(shape, min, max, disjoint, os, attempt, path)
+//            checkValues(os, qualifiedValueShape(shape,min,max,disjoint)(attempt))
           case HasValue(v) => checkValues(os, hasValue(v)(attempt))
           case In(values) => checkValues(os, inChecker(values)(attempt))
           case _ => throw new Exception(s"Unsupported check $c")
@@ -441,16 +443,43 @@ case class Validator(schema: Schema) extends LazyLogging {
   def xone(shapes: Seq[NodeShape]): NodeChecker = attempt => node => {
     val es = shapes.map(s => nodeShape(node, s)).toList
     for {
-      t1 <- checkOneOf(es)
+      t1 <- checkOneOf(es, xoneError(node, attempt, shapes.toList))
       t2 <- addEvidence(attempt.nodeShape, s"$node passes xone(${shapes.map(_.showId).mkString(",")})")
       t <- combineTypings(Seq(t1, t2))
     } yield t
   }
 
-  def qualifiedValueShape(shape: NodeShape,min: Option[Int], max: Option[Int], disjoint: Option[Boolean]): NodeChecker = attempt => node => {
+/*  def qualifiedValueShape(shape: NodeShape,min: Option[Int], max: Option[Int], disjoint: Option[Boolean]): NodeChecker = attempt => node => {
+    logger.info("qualifiedValueShape on node not implemented...")
     ???
+  } */
+
+  def qualifiedValueShape(shape: NodeShape,
+                          min: Option[Int],
+                          max: Option[Int],
+                          disjoint: Option[Boolean],
+                          os: Seq[RDFNode],
+                          attempt: Attempt,
+                          path: SHACLPath): Check[ShapeTyping] = {
+    logger.info(s"qualifiedValueShape. Shape: $shape, $min, $max, $disjoint, $os, $attempt, $path ")
+    val cs : List[Check[ShapeTyping]] = os.toList.map(o => nodeComponentChecker(shape)(attempt)(o))
+    for {
+      ts <- checkLs(cs)
+      value = ts.length
+      t <- condition(between(value, min, max),attempt,
+              qualifiedShapeError(attempt.node, attempt, value, min, max),
+              s"qualifiedValueShape value = ${value}, min=${min.map(_.toString).getOrElse("-")}, max=${max.map(_.toString).getOrElse("-")}"
+      )
+      ts1 <- combineTypings(t :: ts)
+    } yield ts1
   }
 
+  def between(v: Int, maybeMin: Option[Int], maybeMax: Option[Int]): Boolean = (maybeMin, maybeMax) match {
+    case (None, None) => true
+    case (Some(min),None) => v > min
+    case (None,Some(max)) => v < max
+    case (Some(min),Some(max)) => v > min && v < max
+  }
 
   def or(shapes: Seq[NodeShape]): NodeChecker = attempt => node => {
     logger.debug(s"or. Shapes $shapes, attempt: $attempt, node $node")
@@ -507,9 +536,9 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"$node is a Blank Node or an IRI")
   }
 
-  def blankNodeOrLiteralChecker: NodeChecker = nodeShape => node => {
-    condition(node.isBNode || node.isLiteral, nodeShape,
-      bNodeOrLiteralKindError(node, nodeShape),
+  def blankNodeOrLiteralChecker: NodeChecker = attempt => node => {
+    condition(node.isBNode || node.isLiteral, attempt,
+      bNodeOrLiteralKindError(node, attempt),
       s"$node is a Blank Node or Literal")
   }
 

@@ -120,6 +120,12 @@ object ViolationError {
   def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
+  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
+    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")}")
+
+  def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =
+    basic("qualifiedShapeError", focusNode, attempt, s"qualified shape error. Expected $focusNode to satisfy qualifiedValueShape. Value = ${value}, min: ${min.map(_.toString).getOrElse("-")}, max: ${max.map(_.toString).getOrElse("-")}")
+
   def hasValueError(focusNode: RDFNode, attempt: Attempt, value: Value) =
     basic("hasValueError", focusNode, attempt, s"HasValue error. Expected $focusNode to be  $value")
     

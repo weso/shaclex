@@ -55,24 +55,21 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
-  def checkList[A](cs: List[Check[A]]): Check[List[A]] = {
+  def checkLs[A](cs: List[Check[A]]): Check[List[A]] = {
     lazy val z: Check[List[A]] = ok(List())
-
-    def comb(rs: Check[List[A]], c: Check[A]): Check[List[A]] = {
-      def cont1(x: Err): Check[List[A]] = ???
-      def cont2(x: A): Check[List[A]] = ???
-      c.fold((e: Err)  => cont1(e),v => cont2(v))
-    }
-    cs.foldLeft(z)(comb)
+    val css : List[Check[List[A]]] = cs.map(c => c.map(List(_)).orElse(z))
+    def comb(rest: Check[List[A]], current: Check[List[A]]): Check[List[A]] = for {
+      xs <- rest
+      ys <- current
+    } yield (xs ++ ys)
+    css.foldLeft(z)(comb)
   }
 
-  // TODO: Change semantics to validate that only one passes...
-  def checkOneOf[A](cs: List[Check[A]]): Check[A] = {
-    ???
-    /*lazy val z: Check[A] = err(ev.empty)
-    def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
-    cs.foldRight(z)(comb) */
-  }
+  def checkOneOf[A](cs: List[Check[A]], errNotOne: Err): Check[A] = for {
+    rs <- checkLs(cs)
+    v <- if (rs.length == 1) ok(rs.head)
+         else err[A](errNotOne)
+  } yield v
 
 
   def attempt[A](c: Check[A]): Check[Either[Err, A]] = for {
@@ -98,7 +95,6 @@ abstract class CheckerCats extends Checker {
     }
     ls.foldLeft(zero)(comb)
   }
-
 
   def cond[A,B](
     c: Check[A],
