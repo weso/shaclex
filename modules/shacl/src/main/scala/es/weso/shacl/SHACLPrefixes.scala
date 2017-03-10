@@ -52,8 +52,11 @@ object SHACLPrefixes {
   lazy val sh_not : IRI= sh + "not"
   lazy val sh_or : IRI= sh + "or"
   lazy val sh_and : IRI= sh + "and"
+  lazy val sh_xone : IRI= sh + "xone"
   lazy val sh_node : IRI= sh + "node"
   lazy val sh_qualifiedValueShape : IRI = sh + "qualifiedValueShape"
+  lazy val sh_qualifiedValueShapesDisjoint : IRI = sh + "qualifiedValueShapesDisjoint"
+
   lazy val sh_qualifiedMinCount : IRI = sh + "qualifiedMinCount"
   lazy val sh_qualifiedMaxCount : IRI = sh + "qualifiedMaxCount"
   lazy val sh_closed : IRI = sh + "closed"

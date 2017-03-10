@@ -55,6 +55,17 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
+  def checkList[A](cs: List[Check[A]]): Check[List[A]] = {
+    lazy val z: Check[List[A]] = ok(List())
+
+    def comb(rs: Check[List[A]], c: Check[A]): Check[List[A]] = {
+      def cont1(x: Err): Check[List[A]] = ???
+      def cont2(x: A): Check[List[A]] = ???
+      c.fold((e: Err)  => cont1(e),v => cont2(v))
+    }
+    cs.foldLeft(z)(comb)
+  }
+
   // TODO: Change semantics to validate that only one passes...
   def checkOneOf[A](cs: List[Check[A]]): Check[A] = {
     ???

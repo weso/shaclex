@@ -153,6 +153,17 @@ class Shacl2RDF extends RDFSaver {
       ls <- saveToRDFList(shapes,shape)
       _ <- addTriple(id,sh_or,ls)
     } yield ()
+    case Xone(shapes) => for {
+      ls <- saveToRDFList(shapes,shape)
+      _ <- addTriple(id,sh_xone,ls)
+    } yield ()
+    case QualifiedValueShape(s,min,max,disjoint) => for {
+      nodeShape <- shape(s)
+      _ <- addTriple(id,sh_qualifiedValueShape,nodeShape)
+      _ <- maybeAddTriple(id,sh_qualifiedMinCount,min.map(IntegerLiteral(_)))
+      _ <- maybeAddTriple(id,sh_qualifiedMaxCount,max.map(IntegerLiteral(_)))
+      _ <- maybeAddTriple(id,sh_qualifiedValueShapesDisjoint,disjoint.map(BooleanLiteral(_)))
+    } yield ()
     case Not(s) => for {
       nodeS <- shape(s)
       _ <- addTriple(id,sh_not,nodeS)

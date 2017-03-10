@@ -207,7 +207,10 @@ case class Or(shapes: List[NodeShape]) extends Component
 case class And(shapes: List[NodeShape]) extends Component
 case class Not(shape: NodeShape) extends Component
 case class Xone(shapes: List[NodeShape]) extends Component
-case class QualifiedValueShape(shape: NodeShape, qualifiedMinCount: Option[Int], qualifiedMaxCount: Option[Int], qualifiedValueShapesDisjoint: Boolean) extends Component
+case class QualifiedValueShape(shape: NodeShape,
+                               qualifiedMinCount: Option[Int],
+                               qualifiedMaxCount: Option[Int],
+                               qualifiedValueShapesDisjoint: Option[Boolean]) extends Component
 case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component
 case class NodeComponent(shape: NodeShape) extends Component
 case class HasValue(value: Value) extends Component

@@ -447,7 +447,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     } yield t
   }
 
-  def qualifiedValueShape(shape: NodeShape,min: Option[Int], max: Option[Int], disjoint: Boolean): NodeChecker = attempt => node => {
+  def qualifiedValueShape(shape: NodeShape,min: Option[Int], max: Option[Int], disjoint: Option[Boolean]): NodeChecker = attempt => node => {
     ???
   }
 

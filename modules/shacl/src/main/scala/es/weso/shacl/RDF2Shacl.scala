@@ -233,7 +233,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
         minLength, maxLength,
         pattern, languageIn, uniqueLang,
         equals, disjoint, lessThan, lessThanOrEquals,
-        or, and, not,
+        or, and, not, xone, qualifiedValueShape,
         nodeComponent,
         hasValue,
         in
@@ -287,6 +287,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     shapes <- mapRDFParser(nodes,getShape)(n,rdf)
   } yield And(shapes)
 
+  def xone : RDFParser[Xone] = (n,rdf) => for {
+    nodes <- rdfListForPredicate(sh_xone)(n,rdf)
+    if (!nodes.isEmpty)
+    shapes <- mapRDFParser(nodes,getShape)(n,rdf)
+  } yield Xone(shapes)
+
   def not: RDFParser[Not] = (n,rdf) => for {
     shapeNode <- objectFromPredicateOptional(sh_not)(n,rdf)
     if (shapeNode.isDefined)
@@ -305,6 +311,14 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       NodeComponent(s)
     }
   }
+
+  def qualifiedValueShape: RDFParser[QualifiedValueShape] = (n,rdf) => for {
+    obj <- objectFromPredicate(sh_qualifiedValueShape)(n,rdf)
+    shape <- getShape(obj)(n,rdf)
+    min <- optional(integerLiteralForPredicate(sh_qualifiedMinCount))(n,rdf)
+    max <- optional(integerLiteralForPredicate(sh_qualifiedMaxCount))(n,rdf)
+    disjoint <- booleanFromPredicateOptional(sh_qualifiedValueShapesDisjoint)(n,rdf)
+  } yield QualifiedValueShape(shape, min,max, disjoint)
 
   def getShape(node: RDFNode): RDFParser[NodeShape] = (n, rdf) =>
     if (parsedShapes.contains(node)) Success(parsedShapes(node))

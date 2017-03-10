@@ -162,7 +162,7 @@ trait RDFParser {
    * 
    * @param p predicate
    */
-  def integerLiteralForPredicate(p: IRI): RDFParser[Integer] = { (n, rdf) =>
+  def integerLiteralForPredicate(p: IRI): RDFParser[Int] = { (n, rdf) =>
     val ts = rdf.triplesWithSubjectPredicate(n, p)
     ts.size match {
       case 0 => parseFail("integerLiteralFromPredicate: Not found triples with subject " + n + " and predicate " + p)
@@ -345,7 +345,7 @@ trait RDFParser {
     triples.map { case RDFTriple(_, _, o) => o }
   }
 
- def getIntegerLiteral(t: RDFTriple): Try[Integer] = {
+ def getIntegerLiteral(t: RDFTriple): Try[Int] = {
     t.obj match {
       case l: IntegerLiteral => Success(l.int)
       // TODO: case l: DatatypeLiteral(lexicalForm,datatype) => ...
