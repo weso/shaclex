@@ -5,8 +5,8 @@ import es.weso.rdf.nodes._
 
 object showShacl {
 
-  implicit def showShape = new Show[NodeShape] {
-    def show(shape: NodeShape): String = {
+  implicit def showShape = new Show[Shape] {
+    def show(shape: Shape): String = {
       shape.id.fold("_?")(iri => iri.str)
     }
   }

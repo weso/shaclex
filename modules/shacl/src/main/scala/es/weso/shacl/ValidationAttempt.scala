@@ -15,7 +15,7 @@ trait ValidationAttempt {
 
 case class ScopeNodeAttempt(
                              node: IRI,
-                             shape: NodeShape,
+                             shape: Shape,
                              schema: Schema,
                              result: Seq[ViolationError]
 ) extends ValidationAttempt {
@@ -43,7 +43,7 @@ case class ScopeNodeAttempt(
 
 case class ScopeClassAttempt (
                                cls: RDFNode,
-                               shape: NodeShape,
+                               shape: Shape,
                                schema: Schema,
                                result: Seq[ViolationError]
 ) extends ValidationAttempt {

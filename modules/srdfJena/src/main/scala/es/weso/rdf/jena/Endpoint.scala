@@ -56,7 +56,7 @@ case class Endpoint(endpoint: String) extends RDFReader {
     resultSet.map(qs => IRI(qs.get("p").asResource.getURI)).toSet
   }
 
-  override def objects(): Set[IRI] = {
+  override def iriObjects(): Set[IRI] = {
     val resultSet = QueryExecutionFactory.sparqlService(endpoint, findIRIs).execSelect()
     resultSet.map(qs => IRI(qs.get("y").asResource.getURI)).toSet
   }

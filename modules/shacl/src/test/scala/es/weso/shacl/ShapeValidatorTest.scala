@@ -16,7 +16,7 @@ describe("Shapes") {
     val str ="""|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape;
+                 |:S a sh:Shape;
                  |   sh:targetNode :x;
                  |   sh:property [sh:path :p;
                  |   sh:minCount 1] .

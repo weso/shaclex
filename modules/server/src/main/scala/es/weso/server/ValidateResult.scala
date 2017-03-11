@@ -38,7 +38,7 @@ case class ValidateResult
    sb ++= s"Node: <code>${node.get}</code> "
   }
   if (shape.isDefined) {
-   sb ++= s"Shape: <code>${escape(shape.get)}</code>"
+   sb ++= s"Constraint: <code>${escape(shape.get)}</code>"
   }
   sb ++= s"<pre class='schema'>${escape(schema)}</pre></p>"
   sb ++= "</details>"
@@ -102,7 +102,7 @@ case class ValidateResult
    }
 
   table(cls := "infoNode")(
-   tr(td("Shape"),td("Explanation")),
+   tr(td("Constraint"),td("Explanation")),
     hasShapes,
     hasNoShapes
   )

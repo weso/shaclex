@@ -66,7 +66,7 @@ class RDFJenaSpec
   }
 
   describe("Querying RDF graphs") {
-    it("Should be able to get objects of some type") {
+    it("Should be able to get iriObjects of some type") {
       val str = """|@prefix : <http://example.org#> .
                    |:a a :C ; :p 1 .
                    |:b a :C, :D .

@@ -117,7 +117,7 @@ trait RDFParser {
   }
 
   /**
-   * RDFParser that retrieves the set of objects associated with the current node for a given predicate
+   * RDFParser that retrieves the set of iriObjects associated with the current node for a given predicate
    * <p>
    * 
    * @param p predicate 
@@ -130,7 +130,7 @@ trait RDFParser {
   /**
    * A parser of the RDF List associated with the current node 
    * <p>
-   * Fails if there are more than one objects associated with `rdf_first` or `rdf_rest`
+   * Fails if there are more than one iriObjects associated with `rdf_first` or `rdf_rest`
    */
   def rdfList: RDFParser[List[RDFNode]] = { (n, rdf) =>
     n match {

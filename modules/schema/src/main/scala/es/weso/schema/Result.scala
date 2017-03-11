@@ -18,7 +18,7 @@ case class Result(
     trigger: Option[ValidationTrigger]) extends LazyLogging {
 
   def noSolutions(sols: Seq[Solution]): Boolean = {
-    sols.size == 1 && sols.head.isEmpty
+    sols.size == 0 || sols.head.nodes.isEmpty
   }
 
   def solution: Either[String,Solution] = {
@@ -37,14 +37,14 @@ case class Result(
   def show: String = {
     val sb = new StringBuilder
     if (isValid) {
-      if (noSolutions(solutions)) {
-        "No solutions found"
+      if (solutions.size == 0) {
+        sb ++= s"No solutions"
       } else {
-        for ((solution, n) <- solutions zip (1 to cut)) {
-          sb ++= "Result " + printNumber(n, cut)
-          sb ++= solution.show
+          for ((solution, n) <- solutions zip (1 to cut)) {
+            sb ++= "Result " + printNumber(n, cut)
+            sb ++= solution.show
+          }
         }
-      }
     }
     else
       sb ++= errors.map(_.show).mkString("\n")

@@ -98,10 +98,10 @@ object ValidationTrigger extends LazyLogging {
          shape <- removeLTGT(strShape,shapePrefixMap)
        } yield {
          val shapeMap = ShapeMapTrigger(Map(node -> Set(shape.str)), Set())
-         logger.info(s"NodeShape trigger converted to $shapeMap")
+         logger.info(s"Shape trigger converted to $shapeMap")
          shapeMap
        }
-       case _ => Left(s"Cannot be NodeShape trigger if no node or shape. Node = $optNode, shape = $optShape")
+       case _ => Left(s"Cannot be Shape trigger if no node or shape. Node = $optNode, shape = $optShape")
      }
      case "NODESTART" => (optNode,optShape) match {
        case (Some(strNode), None) => for {

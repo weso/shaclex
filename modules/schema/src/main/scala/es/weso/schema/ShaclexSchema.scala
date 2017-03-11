@@ -2,7 +2,7 @@ package es.weso.schema
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl.{Schema => ShaclSchema, NodeShape => ShaclNodeShape, _}
+import es.weso.shacl.{Schema => ShaclSchema, Shape => ShaclNodeShape, _}
 import es.weso.shacl.Validator._
 import es.weso.shacl._
 import util._

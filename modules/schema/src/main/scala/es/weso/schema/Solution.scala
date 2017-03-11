@@ -31,6 +31,9 @@ case class Solution
   def show: String = {
     val sb = new StringBuilder
     sb ++= "Solution\n"
+    if (nodes.isEmpty) {
+      sb ++= "No nodes in solution"
+    } else
     for (pair <- nodes.toSeq) {
       val (node,info) = pair
       sb ++= ( nodeMap.qualify(node) + " " + info.show + "\n" )

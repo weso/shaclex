@@ -20,6 +20,7 @@ object SHACLPrefixes {
   lazy val sh_BlankNodeOrIRI: IRI = sh +  "BlankNodeOrIRI"
   lazy val sh_BlankNodeOrLiteral: IRI = sh +  "BlankNodeOrLiteral"
 
+  lazy val sh_Shape: IRI = sh + "Shape"
   lazy val sh_NodeShape: IRI = sh + "NodeShape"
   lazy val sh_PropertyShape: IRI = sh + "PropertyShape"
   lazy val sh_property: IRI = sh + "property"

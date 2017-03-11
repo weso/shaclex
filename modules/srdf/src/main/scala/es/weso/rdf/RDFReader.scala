@@ -45,10 +45,10 @@ trait RDFReader {
   }
 
   /**
-   * Returns the set of objects that are IRIs in a graph
+   * Returns the set of iriObjects that are IRIs in a graph
    */
-  // TODO: Extend this to return all objects: Seq[RDFNode]
-  def objects(): Set[IRI] = {
+  // TODO: Extend this to return all iriObjects: Seq[RDFNode]
+  def iriObjects(): Set[IRI] = {
     rdfTriples.map(_.obj).filter(_.isIRI).map(_.toIRI)
   }
 
@@ -121,6 +121,10 @@ trait RDFReader {
   * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
   */
   def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode]
+
+  def getTypes(node: RDFNode): Set[RDFNode] = {
+    triplesWithSubjectPredicate(node,rdf_type).map(_.obj)
+  }
 
 }
 

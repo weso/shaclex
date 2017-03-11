@@ -1,0 +1,39 @@
+prefix :       <http://example.org/> 
+prefix sh:     <http://www.w3.org/ns/shacl#> 
+prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
+prefix schema: <http://schema.org/>
+prefix foaf:   <http://xmlns.com/foaf/0.1/>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+        
+:UserShape
+	a sh:NodeShape ;
+	sh:property [
+		sh:path :parent ;
+		sh:minCount 2 ;
+		sh:maxCount 2 ;
+		sh:qualifiedValueShape :FemaleShape ;
+		sh:qualifiedMinCount 1
+	] 
+.
+
+:FemaleShape a sh:PropertyShape ;
+  sh:path :gender ;
+  sh:hasValue :female
+.
+
+:FemaleShape sh:targetNode :carol .
+	
+:NotUserShape a sh:NodeShape ;
+  sh:not :UserShape .
+
+:alice :parent :bob, :carol . 
+:bob :parent :dave, :emily .
+:carol :parent :frank, :grace ; 
+       :gender :female .
+
+:dave :parent :bob, :frank . # fails because no female parent
+:emily :parent :frank .  # fails because of only one parent
+	   
+# :UserShape sh:targetNode :alice, :bob, :carol .
+# :NotUserShape sh:targetNode :dave .
+	 

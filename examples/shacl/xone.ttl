@@ -7,7 +7,6 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
         
 :UserShape
 	a sh:NodeShape ;
-	sh:targetClass :User ;
 	sh:xone (
 		[ sh:property [
 			sh:path :fullName ;
@@ -25,8 +24,10 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 			]
 		]
 	) .
+	
+:NotUserShape a sh:NodeShape ;
+  sh:not :UserShape .
 
-        
 :alice a :User;                            
        :fullName           "Alice" .            
 
@@ -41,3 +42,7 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 
 :dave a :User;        # Fails
      :name "David" .	
+	 
+:UserShape sh:targetNode :alice, :bob .
+:NotUserShape sh:targetNode :carol, :dave .
+	 

@@ -3,6 +3,7 @@ import scala.util._
 import cats._
 import cats.data._
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
@@ -12,7 +13,7 @@ import es.weso.rdf.jena._
 import es.weso.rdf.path._
 import es.weso.shacl._
 
-class Shacl2RDF extends RDFSaver {
+class Shacl2RDF extends RDFSaver with LazyLogging {
 
   def serialize(shacl:Schema, format: String): Try[String] = {
     val rdf: RDFAsJenaModel = toRDF(shacl,RDFAsJenaModel.empty)
@@ -35,7 +36,7 @@ class Shacl2RDF extends RDFSaver {
     } yield ()
   }
 
-  def shape(shape: NodeShape): RDFSaver[RDFNode] = for {
+  def shape(shape: Shape): RDFSaver[RDFNode] = for {
     shapeNode <- makeShapeId(shape.id)
     _ <- targets(shapeNode, shape.targets)
     _ <- constraints(shapeNode, shape.constraints)
@@ -43,10 +44,7 @@ class Shacl2RDF extends RDFSaver {
     _ <- ignoredProperties(shapeNode, shape.ignoredProperties)
   } yield shapeNode
 
-  def makeShapeId(v: Option[IRI]): RDFSaver[RDFNode] = for {
-    node <- makeId(v)
-    _ <- addTriple(node,rdf_type,sh_NodeShape)
-  } yield(node)
+  def makeShapeId(v: Option[IRI]): RDFSaver[RDFNode] = makeId(v)
 
   def targets(id: RDFNode, ts: Seq[Target]): RDFSaver[Unit] =
     saveList(ts.toList, target(id))
@@ -58,7 +56,7 @@ class Shacl2RDF extends RDFSaver {
     case TargetObjectsOf(node) => addTriple(id,sh_targetObjectsOf,node)
   }
 
-  def constraints(id: RDFNode, ts: Seq[Shape]): RDFSaver[Unit] =
+  def constraints(id: RDFNode, ts: Seq[Constraint]): RDFSaver[Unit] =
     saveList(ts.toList, constraint(id))
 
   def closed(id: RDFNode, b: Boolean): RDFSaver[Unit] =
@@ -73,15 +71,23 @@ class Shacl2RDF extends RDFSaver {
     } else
       State.pure(())
 
-  def constraint(id: RDFNode)(t: Shape): RDFSaver[Unit] = t match {
+  def constraint(id: RDFNode)(t: Constraint): RDFSaver[Unit] = t match {
     case PropertyShape(i,path,cs) => for {
       node <- makeShapeId(i)
       pathNode <- makePath(path)
+      _ <- addTriple(id, rdf_type, sh_PropertyShape)
       _ <- addTriple(id, sh_property, node)
       _ <- addTriple(node,sh_path,pathNode)
       _ <- saveList(cs.toList, component(node))
     } yield ()
-    case NodeConstraint(cs) => saveList(cs, component(id))
+    case NodeShape(internalId,cs) => {
+      logger.info(s"Internal id: $internalId ignored but $id added")
+      for {
+        _ <- addTriple(id,rdf_type,sh_NodeShape)
+
+        _ <- saveList(cs.toList, component(id))
+      } yield ()
+    }
   }
 
   def makePath(path: SHACLPath): RDFSaver[RDFNode] = path match {

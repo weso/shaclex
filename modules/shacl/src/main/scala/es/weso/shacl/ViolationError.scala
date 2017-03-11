@@ -23,10 +23,10 @@ object ViolationError {
       subject = None,
       path = attempt.path,
       obj = None,
-      message = Some(msg + s" Node: ${attempt.node}, Shape: ${attempt.shapeIRI.getOrElse(IRI(""))}, path: ${attempt.path.getOrElse(PredicatePath(IRI("")))}"),
+      message = Some(msg + s" Node: ${attempt.node}, Constraint: ${attempt.shapeIRI.getOrElse(IRI(""))}, path: ${attempt.path.getOrElse(PredicatePath(IRI("")))}"),
       sourceConstraint = attempt.shapeIRI)
 
-  def failedNodeShape(node: RDFNode, shape: NodeShape, attempt: Attempt, msg: String) =
+  def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) =
     basic("FailedNodeShape", node, attempt, msg)
 
   def regexError(node: RDFNode, attempt: Attempt, msg: String) =
@@ -111,16 +111,16 @@ object ViolationError {
   def iriOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) =
     basic("iriOrLiteralKindError", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
 
-  def notError(focusNode: RDFNode, attempt: Attempt, shape: NodeShape) =
+  def notError(focusNode: RDFNode, attempt: Attempt, shape: Shape) =
     basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
-  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
+  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
     basic("andError", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
+  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: List[NodeShape]) =
+  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
     basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =

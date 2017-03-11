@@ -28,7 +28,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
   // Keep track of parsed shapes
-  val parsedShapes = collection.mutable.Map[RDFNode,NodeShape]()
+  val parsedShapes = collection.mutable.Map[RDFNode,Shape]()
 
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap
@@ -41,19 +41,22 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     } yield (Schema(pm,shapes))
   }
 
-  def shapes(rdf: RDFReader): Try[Seq[NodeShape]] = {
-   val shape_nodes = subjectsWithType(sh_NodeShape, rdf)
-   filterSuccess(shape_nodes.toSeq.map (node => shape(node,rdf)))
+  def shapes(rdf: RDFReader): Try[Seq[Shape]] = {
+   val nodeShapes = subjectsWithType(sh_NodeShape, rdf)
+   val propertyShapes = subjectsWithType(sh_PropertyShape, rdf)
+   val shapes = subjectsWithType(sh_Shape, rdf)
+   val allShapes: Set[RDFNode] = nodeShapes ++ propertyShapes ++ shapes
+   filterSuccess(allShapes.toSeq.map(shape(_,rdf)))
   }
 
-  def shape(node: RDFNode, rdf: RDFReader): Try[NodeShape] = {
+  def shape(node: RDFNode, rdf: RDFReader): Try[Shape] = {
     if (parsedShapes.contains(node)) Success(parsedShapes(node))
     else {
       val maybeId = node match {
         case iri: IRI => Some(iri)
         case _ => None
       }
-      val shape = NodeShape.empty
+      val shape = Shape.empty
       parsedShapes += (node -> shape)
       for {
         targets <- targets(node, rdf)
@@ -144,27 +147,36 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     case _ => parseFail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
 
-  def constraints: RDFParser[Seq[Shape]] = {
-    combineAll(propertyConstraints, nodeConstraints)
+  def constraints: RDFParser[Seq[Constraint]] = (n,rdf) =>
+    if (!isPropertyShape(n,rdf)) {
+    combineAll(propertyConstraints, nodeConstraints)(n,rdf)
+  } else for {
+    p <- propertyShape(n,rdf)
+  } yield Seq(p)
+
+  def isPropertyShape(node: RDFNode, rdf: RDFReader): Boolean = {
+    rdf.getTypes(node).contains(sh_PropertyShape) ||
+    !rdf.triplesWithSubjectPredicate(node, sh_path).isEmpty
   }
 
-  def nodeConstraints: RDFParser[Seq[NodeConstraint]] = (n,rdf) => {
+  def nodeConstraints: RDFParser[Seq[NodeShape]] = (n, rdf) => {
+   val id = if (n.isIRI) Some(n.toIRI) else None
    for {
      cs <- components(n,rdf)
-   } yield cs.map(c => NodeConstraint(components = List(c)))
+   } yield cs.map(c => NodeShape(id, components = List(c)))
   }
 
-  def propertyConstraints: RDFParser[Seq[Shape]] = (n, rdf) => {
+  def propertyConstraints: RDFParser[Seq[Constraint]] = (n, rdf) => {
     val attempts = for {
       ps <- objectsFromPredicate(sh_property)(n,rdf)
     } yield {
-      val xs = ps.toSeq.map(p => propertyConstraint(p,rdf))
+      val xs = ps.toSeq.map(p => propertyShape(p,rdf))
       filterSuccess(xs)
     }
     attempts.flatten
   }
 
-  def propertyConstraint: RDFParser[PropertyShape] = (n, rdf) => {
+  def propertyShape: RDFParser[PropertyShape] = (n, rdf) => {
     val id = if (n.isIRI) Some(n.toIRI) else None
     for {
       nodePath <- objectFromPredicate(sh_path)(n,rdf)
@@ -320,7 +332,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     disjoint <- booleanFromPredicateOptional(sh_qualifiedValueShapesDisjoint)(n,rdf)
   } yield QualifiedValueShape(shape, min,max, disjoint)
 
-  def getShape(node: RDFNode): RDFParser[NodeShape] = (n, rdf) =>
+  def getShape(node: RDFNode): RDFParser[Shape] = (n, rdf) =>
     if (parsedShapes.contains(node)) Success(parsedShapes(node))
     else shape(node,rdf)
 
@@ -368,7 +380,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def parseNodeKind(os: Set[RDFNode]): Try[Component] = {
     os.size match {
-      case 0 => parseFail("no objects of nodeKind property")
+      case 0 => parseFail("no iriObjects of nodeKind property")
       case 1 => {
         os.head match {
           case nk: IRI => nk match {
@@ -389,7 +401,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
         }
        }
       }
-      case n => parseFail(s"objects of nodeKind property > 1. $os")
+      case n => parseFail(s"iriObjects of nodeKind property > 1. $os")
     }
   }
 
@@ -415,6 +427,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   } yield maker(iri)
 
   def noTarget: Seq[Target] = Seq()
-  def noConstraints: Seq[Shape] = Seq()
+  def noConstraints: Seq[Constraint] = Seq()
 
 }

@@ -19,8 +19,8 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape .
-                 |:T a sh:NodeShape .
+                 |:S a sh:Shape .
+                 |:T a sh:Shape .
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
@@ -37,8 +37,8 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape; sh:targetNode :n1 .
-                 |:T a sh:NodeShape .
+                 |:S a sh:Shape; sh:targetNode :n1 .
+                 |:T a sh:Shape .
                  |""".stripMargin
     val s = ex + "S"
     val t = ex + "T"
@@ -58,8 +58,8 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape; sh:targetNode :s1, :s2 .
-                 |:T a sh:NodeShape; sh:targetNode :t1 .
+                 |:S a sh:Shape; sh:targetNode :s1, :s2 .
+                 |:T a sh:Shape; sh:targetNode :t1 .
                  |""".stripMargin
     val S = ex + "S"
     val T = ex + "T"
@@ -79,7 +79,7 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape;
+                 |:S a sh:Shape;
                  |   sh:property [
                  |     sh:path :p;
                  |     sh:nodeKind sh:IRI
@@ -105,7 +105,7 @@ describe("RDf2Shacl Syntax") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape;
+                 |:S a sh:Shape;
                  |   sh:property [
                  |    sh:path :p;
                  |    sh:nodeKind sh:IRI;
@@ -141,7 +141,7 @@ describe("RDf2Shacl Syntax") {
     val str = s"""|prefix : <$ex>
                  |prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape;
+                 |:S a sh:Shape;
                  |   sh:property [
                  |    sh:path :p;
                  |    sh:minCount 1
@@ -167,7 +167,7 @@ describe("RDf2Shacl Syntax") {
     val str = s"""|prefix : <$ex>
                  |prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:NodeShape;
+                 |:S a sh:Shape;
                  |   sh:property [
                  |    sh:path [ sh:inversePath :p] ;
                  |    sh:minCount 1

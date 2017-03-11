@@ -252,7 +252,7 @@ class Routes {
           val nodes: List[String] =
           (
             rdf.subjects() ++
-            rdf.objects() ++
+            rdf.iriObjects() ++
             rdf.predicates()).map(_.toString).toList
           val jsonNodes : Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
           val pm: Json = prefixMap2Json(rdf.getPrefixMap)

@@ -146,7 +146,7 @@ class MainOpts(
     short = 'l',
     default = None,
     required = false,
-    descr = "Label (IRI) of Shape in Schema")
+    descr = "Label (IRI) of Constraint in Schema")
 
   val server = toggle("server",
     prefix = "no-",
