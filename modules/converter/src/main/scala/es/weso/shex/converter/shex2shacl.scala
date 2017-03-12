@@ -43,16 +43,16 @@ object ShEx2Shacl extends Converter {
 
   def cnvShapeExpr(se: shex.ShapeExpr, schema: shex.Schema): Result[shacl.Shape] =
     se match {
-      case s: shex.ShapeAnd => cnvShapeAnd(s,schema)
-      case s: shex.ShapeOr => cnvShapeOr(s,schema)
-      case s: shex.ShapeNot => cnvShapeNot(s,schema)
+      case s: shex.ShapeAnd => ??? // cnvShapeAnd(s,schema)
+      case s: shex.ShapeOr => ??? // cnvShapeOr(s,schema)
+      case s: shex.ShapeNot => ??? // cnvShapeNot(s,schema)
       case nc: shex.NodeConstraint => cnvNodeConstraint(nc, schema)
       case s: shex.Shape => cnvShape(s,schema)
       case s: shex.ShapeRef => err(s"mkShape: Not implemented $s")
       case s: shex.ShapeExternal => err(s"mkShape: Not implemented $s")
     }
 
-  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.Shape] = {
+/*  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.Shape] = {
     shapeAnd.shapeExprs.
          map(cnvShapeExpr(_,schema)).
          sequence.
@@ -79,6 +79,7 @@ object ShEx2Shacl extends Converter {
             Seq(NodeShape(None, List(Not(shape)))
           )))
   }
+*/
 
   def cnvShape(shape: shex.Shape, schema: shex.Schema): Result[shacl.Shape] = {
     // TODO: Error handling when virtual, inherit, extra, semActs are defined...
@@ -130,7 +131,7 @@ object ShEx2Shacl extends Converter {
      }
 //     max.getOrElse(Max(1)).map
    val components = minComponent ++ maxComponent
-   ok(PropertyShape(None,path,components))
+   ok(Shape.emptyPropertyShape(path).copy(components = components))
  }
 
   def cnvNodeConstraint(
@@ -138,9 +139,7 @@ object ShEx2Shacl extends Converter {
        schema: shex.Schema): Result[shacl.Shape] = {
     val nkShape: Result[List[Component]] =
       nc.nodeKind.map(cnvNodeKind(_)).sequence.map(_.toList)
-    nkShape.map(nks =>
-       shacl.Shape.empty.copy(
-         constraints = Seq(NodeShape(None, nks))))
+    nkShape.map(nks => shacl.Shape.empty.copy(components = nks))
   }
 
   def cnvNodeKind(nk: shex.NodeKind): Result[shacl.NodeKind] =

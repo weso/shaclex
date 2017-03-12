@@ -26,7 +26,7 @@ case class Result(
       case 0 => Left("No solutions")
       case 1 => Right(solutions.head)
       case _ => {
-        logger.warn(s"More than one solution. Only consider the first one. Solutions:\n$solutions")
+        logger.warn(s"More than one solution. Only considering the first one. Solutions:\n$solutions")
         Right(solutions.head)
       }
     }

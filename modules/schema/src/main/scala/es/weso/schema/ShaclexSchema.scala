@@ -5,6 +5,8 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.{Schema => ShaclSchema, Shape => ShaclNodeShape, _}
 import es.weso.shacl.Validator._
 import es.weso.shacl._
+import es.weso.shacl.converter.RDF2Shacl
+
 import util._
 import es.weso.typing._
 

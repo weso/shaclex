@@ -145,17 +145,18 @@ case class Validator(schema: Schema) extends LazyLogging {
   def nodeShape: NodeShapeChecker = {
     case (node, shape) => {
       logger.debug(s"nodeShape(${node.show}, ${shape.show})")
-      val cs = shape.constraints.map(checkConstraint).toList
+//       val cs = shape.constraints.map(checkConstraint).toList
       //      val r = checkAll(cs.map(c => c(Attempt(Shape(node, shape), None))(node)))
       for {
         current <- getTyping
         attempt = Attempt(NodeShapePair(node, shape), None)
-        comp = checkAll(cs.map(c => c(attempt)(node) ))
-        ts <- runLocal(comp, _.addType(node, shape))
-        t <- combineTypings(ts)
-        t1 <- if (shape.closed)
+   //     comp = checkAll(cs.map(c => c(attempt)(node) ))
+        comp = checkShape(shape)(attempt)(node)
+        t <- runLocal(comp, _.addType(node, shape))
+        t1 <-
+         if (shape.closed)
           checkClosed(shape.ignoredProperties, shape.predicatesInPropertyConstraints)(attempt)(node)
-        else ok(t)
+         else ok(t)
       } yield {
         logger.debug(s"nodeShape(${node.show},${shape.show}) checked ok with typing: ${t1.show}")
         t1
@@ -163,16 +164,14 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
-  def checkConstraint(c: Constraint): NodeChecker = {
+  def checkShape(c: Shape): NodeChecker = {
     c match {
-      case pc: PropertyShape  =>
-        checkPropertyShape(pc)
-      case nc: NodeShape =>
-        checkNodeConstraint(nc)
+      case pc: PropertyShape => checkPropertyShape(pc)
+      case nc: NodeShape => checkNodeShape(nc)
     }
   }
 
-  def checkNodeConstraint(nc: NodeShape): NodeChecker = attempt => node => {
+  def checkNodeShape(nc: NodeShape): NodeChecker = attempt => node => {
     val components = nc.components
     val checkers: Seq[NodeChecker] = components.map(component2Checker)
     validateNodeCheckers(attempt, checkers)

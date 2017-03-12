@@ -5,6 +5,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 import es.weso.rdf.path.{InversePath, PredicatePath}
+import es.weso.shacl.converter.RDF2Shacl
 
 import util._
 
@@ -93,11 +94,8 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyShape(
-        id = None,
-        path = PredicatePath(p),
-        components = Seq(NodeKind(IRIKind)))
-    shape.propertyConstraints should contain only(p1)
+    val p1 = Shape.emptyPropertyShape(PredicatePath(p)).copy(components = Seq(NodeKind(IRIKind)))
+    shape.propertyShapes should contain only(p1)
   }
 
     it("should be able to get the property constraint with cardinalities") {
@@ -121,16 +119,12 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    val p1 = PropertyShape(
-      id = None,
-      path = PredicatePath(p),
-        components = Seq(
+    val p1 = Shape.emptyPropertyShape(PredicatePath(p)).copy(components = Seq(
             NodeKind(IRIKind),
             MinCount(1),
-            MaxCount(1))
-        )
-    shape.propertyConstraints.length should be(1)
-    val pc = shape.propertyConstraints.head
+            MaxCount(1)))
+    shape.propertyShapes.length should be(1)
+    val pc = shape.propertyShapes.head
     pc.id should be(None)
     pc.predicate should be(p)
     pc.components should contain only(NodeKind(IRIKind), MinCount(1), MaxCount(1))
@@ -155,8 +149,8 @@ describe("RDf2Shacl Syntax") {
     } yield (schema)
     val schema = attempt.success.value
     val shape = schema.shape(S).value
-    shape.propertyConstraints.length should be(1)
-    val pc = shape.propertyConstraints.head
+    shape.propertyShapes.length should be(1)
+    val pc = shape.propertyShapes.head
     pc.id should be(None)
     pc.predicate should be(p)
     pc.components should contain only(MinCount(1))
@@ -182,8 +176,8 @@ describe("RDf2Shacl Syntax") {
     val schema = attempt.success.value
     val shape = schema.shape(S).value
     val ip = InversePath(PredicatePath(p))
-    shape.propertyConstraints.length should be(1)
-    val pc = shape.propertyConstraints.head
+    shape.propertyShapes.length should be(1)
+    val pc = shape.propertyShapes.head
     pc.id should be(None)
     pc.path should be(ip)
     pc.components should contain only(MinCount(1))

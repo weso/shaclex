@@ -5,6 +5,7 @@ import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
 import es.weso.rdf.nodes.IRI
 import es.weso.server._
+import es.weso.shacl.converter.RDF2Shacl
 //import org.slf4j.LoggerFactory
 // import es.weso.shacl._
 import es.weso.schema._
@@ -13,7 +14,6 @@ import scala.concurrent.duration._
 import es.weso.utils.FileUtils
 import scala.util._
 import java.nio.file._
-import es.weso.shacl.RDF2Shacl
 import es.weso.rdf.RDFReader
 import java.io.File
 

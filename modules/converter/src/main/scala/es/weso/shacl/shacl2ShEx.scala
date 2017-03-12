@@ -9,7 +9,7 @@ import cats.implicits._
 object Shacl2ShEx extends Converter {
   
   def shacl2ShEx(schema:shacl.Schema): Result[shex.Schema] = {
-    val rs: List[Result[shex.ShapeExpr]] = schema.shapes.map(cnvShape(_)).toList
+    val rs: List[Result[shex.ShapeExpr]] = ??? // schema.shapes.map(cnvShape(_)).toList
     val r : Result[List[shex.ShapeExpr]] = rs.sequence
     r.map(m => shex.Schema.empty.copy(shapes = Some(m)))
   }
@@ -26,27 +26,27 @@ object Shacl2ShEx extends Converter {
     xs.foldLeft(zero)(comb)
   }
 
-  def cnvShape(s: shacl.Shape): Result[shex.ShapeExpr] = {
+/*  def cnvShape(s: shacl.Shape): Result[shex.ShapeExpr] = {
     val id : Id = cnvId(s.id)
-    val rs = s.constraints.toList.map(cnvConstraint(id, _)).sequence
+    val rs = s.propertyShapes.toList.map(cnvConstraint(id, _)).sequence
     rs.map(ses => ses.size match {
       case 1 => ses.head
       case n if n > 1 => shex.ShapeAnd(id,ses)
       case _ => ??? // TODO
     })
-  }
+  } */
 
   def cnvId(id: Option[IRI]): Id = id.map(shex.IRILabel(_))
   
-  def cnvConstraint(id: Id, c: shacl.Constraint): Result[shex.ShapeExpr] =
+  def cnvShape(id: Id, c: shacl.Shape): Result[shex.ShapeExpr] =
      c match {
-    case nc: shacl.NodeShape => cnvNodeConstraint(id,nc)
+    case nc: shacl.NodeShape => cnvNodeShape(id,nc)
     case _ => err(s"cnvConstraint: Unimplemented $c")
   }
 
   type Id = Option[shex.ShapeLabel]
 
-  def cnvNodeConstraint(id: Id, c: shacl.NodeShape): Result[shex.ShapeExpr] = {
+  def cnvNodeShape(id: Id, c: shacl.NodeShape): Result[shex.ShapeExpr] = {
     val rs = c.components.toList.map(cnvComponent(id,_)).sequence
     rs.map(ses => ses.size match {
       case 1 => ses.head

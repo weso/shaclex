@@ -477,6 +477,10 @@ trait RDFParser {
     if (cond(n)) Success(n)
     else parseFail(s"Condition $name not satisfied on node $n")
 
+  def failIf(cond: Boolean, msg: String): RDFParser[Unit] = (n,_) =>
+    if (cond) parseFail(s"Condition failed: $msg. Current node: $n")
+    else Success(())
+
   def arc[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n,rdf) => for {
     obj <- objectFromPredicate(pred)(n,rdf)
     x <- parser(obj,rdf)

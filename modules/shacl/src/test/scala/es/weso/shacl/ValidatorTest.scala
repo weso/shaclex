@@ -8,6 +8,7 @@ import es.weso.rdf._
 import util._
 import Validator._
 import es.weso.rdf.path.PredicatePath
+import es.weso.shacl.converter.RDF2Shacl
 
 class ValidatorTest extends
   FunSpec with Matchers with TryValues with OptionValues
@@ -48,7 +49,7 @@ describe("Validator target Nodes") {
     val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
-                 |:S a sh:Shape;
+                 |:S a sh:NodeShape;
                  |   sh:targetNode :x ;
                  |   sh:property [ sh:path :p ;
                  |                 sh:minCount 1
@@ -69,12 +70,12 @@ describe("Validator target Nodes") {
     val good1 = ex + "good1"
     val good2 = ex + "good2"
     val bad1 = ex + "bad1"
-    val pc = PropertyShape(id = None,path = PredicatePath(p),
-            components= Seq(MinCount(1)))
+    val ps = Shape.emptyPropertyShape(PredicatePath(p)).copy(components=Seq(MinCount(1)))
     val s = Shape.empty.copy(
-        id = Some(S),
-        targets = List(TargetNode(x)),
-        constraints = List(pc))
+      id = Some(S),
+      targets = List(TargetNode(x)),
+      propertyShapes = Seq(ps)
+    )
     val validator = Validator(schema)
     validator.targetNodes should contain only ((x,s))
     val checked = validator.validateAll(rdf)

@@ -64,16 +64,14 @@ case class Schema(
 //     sealed abstract class
 // NodeShape extends Shape
 // PropertyShape extends Shape
-case class Shape(id: Option[IRI],
-                 targets: Seq[Target],
-                 constraints: Seq[Constraint],
-                 closed: Boolean,
-                 ignoredProperties: List[IRI]
-) {
+sealed abstract class Shape {
+  def id: Option[IRI]
+  def targets: Seq[Target]
+  def propertyShapes: Seq[PropertyShape]
+  def closed: Boolean
+  def ignoredProperties: List[IRI]
 
-  def addId(iri: IRI): Shape = {
-    this.copy(id = Some(iri))
-  }
+  def addId(iri: IRI): Shape
 
   def hasId(iri: IRI): Boolean = {
     id contains(iri)
@@ -94,11 +92,8 @@ case class Shape(id: Option[IRI],
   def targetObjectsOf: Seq[IRI] =
     targets.map(_.toTargetObjectsOf).flatten.map(_.pred)
 
-  def propertyConstraints: Seq[PropertyShape] =
-    constraints.map(_.toPropertyConstraint).flatten
-
   def predicatesInPropertyConstraints: List[IRI] =
-      propertyConstraints.map(_.predicate).toList
+      propertyShapes.map(_.predicate).toList
 
 }
 
@@ -128,27 +123,44 @@ case class TargetObjectsOf(pred: IRI) extends Target
 /**
 * Captures the common parts of NodeShapes and PropertyShapes
 */
-sealed abstract class Constraint {
+/*sealed abstract class Constraint {
   def isPropertyConstraint: Boolean
   def toPropertyConstraint: Option[PropertyShape] = None
   def components: Seq[Component]
-}
+} */
 
 case class NodeShape(id: Option[IRI],
-                     components: List[Component]
-                    ) extends Constraint {
+                     components: List[Component],
+                     targets: Seq[Target],
+                     propertyShapes: Seq[PropertyShape],
+                     closed: Boolean,
+                     ignoredProperties: List[IRI]
+                    ) extends Shape {
+
+  override def addId(iri: IRI): Shape = {
+    this.copy(id = Some(iri))
+  }
+
   def isPropertyConstraint = false
 }
 
 case class PropertyShape(id:Option[IRI],
                          path: SHACLPath,
-                         components: Seq[Component]
-) extends Constraint {
+                         components: Seq[Component],
+                         targets: Seq[Target],
+                         propertyShapes: Seq[PropertyShape],
+                         closed: Boolean,
+                         ignoredProperties: List[IRI]
+) extends Shape {
+
+  override def addId(iri: IRI): Shape = {
+    this.copy(id = Some(iri))
+  }
+
   def isPropertyConstraint = true
 
   def predicate : IRI = path.predicate.get
 
-  override def toPropertyConstraint: Option[PropertyShape] = Some(this)
 }
 
 
@@ -255,6 +267,23 @@ object Schema {
 }
 
 object Shape {
-  val empty = Shape(None,Seq(),Seq(),false,List())
+
+  val empty = NodeShape(id = None,
+    components = List(),
+    targets = Seq(),
+    propertyShapes = Seq(),
+    closed = false,
+    ignoredProperties = List()
+  )
+
+  def emptyPropertyShape(path: SHACLPath): PropertyShape = PropertyShape(
+    id = None,
+    path = path,
+    components = Seq(),
+    targets = Seq(),
+    propertyShapes = Seq(),
+    closed = false,
+    ignoredProperties = List()
+  )
 }
 

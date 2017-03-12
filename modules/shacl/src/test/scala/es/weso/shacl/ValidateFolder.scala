@@ -1,14 +1,17 @@
 package es.weso.shacl
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
+
 import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
+
 import scala.io.Source
 import util._
 import Validator._
+import es.weso.shacl.converter.RDF2Shacl
 import es.weso.utils.FileUtils._
 
 class ValidateFolder extends

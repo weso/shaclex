@@ -36,13 +36,10 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     } yield ()
   }
 
-  def shape(shape: Shape): RDFSaver[RDFNode] = for {
-    shapeNode <- makeShapeId(shape.id)
-    _ <- targets(shapeNode, shape.targets)
-    _ <- constraints(shapeNode, shape.constraints)
-    _ <- closed(shapeNode, shape.closed)
-    _ <- ignoredProperties(shapeNode, shape.ignoredProperties)
-  } yield shapeNode
+  def shape(shape: Shape): RDFSaver[RDFNode] = shape match {
+    case ns: NodeShape => nodeShape(ns)
+    case ps: PropertyShape => propertyShape(ps)
+  }
 
   def makeShapeId(v: Option[IRI]): RDFSaver[RDFNode] = makeId(v)
 
@@ -56,8 +53,13 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     case TargetObjectsOf(node) => addTriple(id,sh_targetObjectsOf,node)
   }
 
-  def constraints(id: RDFNode, ts: Seq[Constraint]): RDFSaver[Unit] =
-    saveList(ts.toList, constraint(id))
+  def propertyShapes(id: RDFNode, ts: Seq[PropertyShape]): RDFSaver[Unit] =
+    saveList(ts.toList, makePropertyShape(id))
+
+  def makePropertyShape(id: RDFNode)(p: PropertyShape): RDFSaver[Unit] = for {
+    node <- propertyShape(p)
+    _ <- addTriple(id, sh_property, node)
+  } yield ()
 
   def closed(id: RDFNode, b: Boolean): RDFSaver[Unit] =
     addTriple(id, sh_closed, BooleanLiteral(b))
@@ -71,24 +73,27 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     } else
       State.pure(())
 
-  def constraint(id: RDFNode)(t: Constraint): RDFSaver[Unit] = t match {
-    case PropertyShape(i,path,cs) => for {
-      node <- makeShapeId(i)
-      pathNode <- makePath(path)
-      _ <- addTriple(id, rdf_type, sh_PropertyShape)
-      _ <- addTriple(id, sh_property, node)
-      _ <- addTriple(node,sh_path,pathNode)
-      _ <- saveList(cs.toList, component(node))
-    } yield ()
-    case NodeShape(internalId,cs) => {
-      logger.info(s"Internal id: $internalId ignored but $id added")
-      for {
-        _ <- addTriple(id,rdf_type,sh_NodeShape)
+  def propertyShape(t: PropertyShape): RDFSaver[RDFNode] = for {
+      shapeNode <- makeShapeId(t.id)
+      _ <- addTriple(shapeNode, rdf_type, sh_PropertyShape)
+      _ <- targets(shapeNode, t.targets)
+      _ <- propertyShapes(shapeNode, t.propertyShapes)
+      _ <- closed(shapeNode, t.closed)
+      _ <- ignoredProperties(shapeNode, t.ignoredProperties)
+      pathNode <- makePath(t.path)
+      _ <- addTriple(shapeNode,sh_path,pathNode)
+      _ <- saveList(t.components.toList, component(shapeNode))
+    } yield (shapeNode)
 
-        _ <- saveList(cs.toList, component(id))
-      } yield ()
-    }
-  }
+  def nodeShape(n: NodeShape): RDFSaver[RDFNode] = for {
+    shapeNode <- makeShapeId(n.id)
+     _ <- addTriple(shapeNode,rdf_type,sh_NodeShape)
+    _ <- targets(shapeNode, n.targets)
+    _ <- propertyShapes(shapeNode, n.propertyShapes)
+    _ <- closed(shapeNode, n.closed)
+    _ <- ignoredProperties(shapeNode, n.ignoredProperties)
+    _ <- saveList(n.components, component(shapeNode))
+  } yield shapeNode
 
   def makePath(path: SHACLPath): RDFSaver[RDFNode] = path match {
     case PredicatePath(iri) => State.pure(iri)
