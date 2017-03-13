@@ -67,6 +67,7 @@ case class Schema(
 sealed abstract class Shape {
   def id: Option[IRI]
   def targets: Seq[Target]
+  def components: Seq[Component]
   def propertyShapes: Seq[PropertyShape]
   def closed: Boolean
   def ignoredProperties: List[IRI]

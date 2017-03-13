@@ -10,19 +10,28 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 	sh:property [
 		sh:path :parent ;
 		sh:minCount 2 ;
-		sh:maxCount 2 ;
+		sh:maxCount 2 ] ;
+	sh:property [	
+		sh:path :parent ;
 		sh:qualifiedValueShape :FemaleShape ;
 		sh:qualifiedMinCount 1
 	] 
 .
 
+:FemaleNodeShape a sh:NodeShape ;
+   sh:property :FemaleShape .
+   
+:FemaleNodeShape sh:targetNode :carol .   
+
 :FemaleShape a sh:PropertyShape ;
   sh:path :gender ;
-  sh:hasValue :female
+  sh:hasValue :female ;
+  sh:property [
+   sh:path :like ;
+   sh:hasValue :roses 
+  ]
 .
 
-:FemaleShape sh:targetNode :carol .
-	
 :NotUserShape a sh:NodeShape ;
   sh:not :UserShape .
 
@@ -32,8 +41,12 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
        :gender :female .
 
 :dave :parent :bob, :frank . # fails because no female parent
-:emily :parent :frank .  # fails because of only one parent
+:emily :parent :frank ;  # fails because of only one parent
+       :gender :female .
+:grace :gender :female .	   
+:female :like :roses .
 	   
-# :UserShape sh:targetNode :alice, :bob, :carol .
-# :NotUserShape sh:targetNode :dave .
+:UserShape sh:targetNode :alice, :bob, :carol .
+:NotUserShape sh:targetNode :dave .
+
 	 

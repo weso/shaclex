@@ -65,10 +65,13 @@ abstract class CheckerCats extends Checker {
     css.foldLeft(z)(comb)
   }
 
-  def checkOneOf[A](cs: List[Check[A]], errNotOne: Err): Check[A] = for {
+  def checkOneOf[A](cs: List[Check[A]], errNone: Err, errMoreThanOne: List[A] => Err): Check[A] = for {
     rs <- checkLs(cs)
-    v <- if (rs.length == 1) ok(rs.head)
-         else err[A](errNotOne)
+    v <- rs.length match {
+      case 0 => err[A](errNone)
+      case 1 => ok(rs.head)
+      case _ => err[A](errMoreThanOne(rs))
+    }
   } yield v
 
 

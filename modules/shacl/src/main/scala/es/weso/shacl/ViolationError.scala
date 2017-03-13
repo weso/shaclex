@@ -3,6 +3,7 @@ package es.weso.shacl
 import es.weso.rdf.nodes._
 import SHACLPrefixes._
 import es.weso.rdf.path.{PredicatePath, SHACLPath}
+import es.weso.shacl.Validator.ShapeTyping
 
 case class ViolationError(
     id: IRI,
@@ -120,15 +121,24 @@ object ViolationError {
   def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
-    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")}")
+  def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
+    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but none satisfied" )
+
+  def xoneErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape])(ls: List[ShapeTyping]) =
+    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but more than one satisfied: $ls")
 
   def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =
     basic("qualifiedShapeError", focusNode, attempt, s"qualified shape error. Expected $focusNode to satisfy qualifiedValueShape. Value = ${value}, min: ${min.map(_.toString).getOrElse("-")}, max: ${max.map(_.toString).getOrElse("-")}")
 
   def hasValueError(focusNode: RDFNode, attempt: Attempt, value: Value) =
     basic("hasValueError", focusNode, attempt, s"HasValue error. Expected $focusNode to be  $value")
-    
+
+  def hasValueErrorNoValue(focusNode: RDFNode, attempt: Attempt, value: Value, path: SHACLPath) =
+    basic("hasValueError", focusNode, attempt, s"HasValue error. Missing value for path $path on $focusNode. Value must be $value")
+
+  def hasValueErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, value: Value, path: SHACLPath, n: Int) =
+    basic("hasValueError", focusNode, attempt, s"HasValue error. More than one value ($n) for path $path on $focusNode. Value must be $value")
+
   def inError(focusNode: RDFNode, attempt: Attempt, values: Seq[Value]) =
     basic("inError", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
 
