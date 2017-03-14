@@ -55,16 +55,12 @@ case class Result(
 
     implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
       final def apply(a: Result): Json = {
-        val details: Json = if (isValid) {
-          solutions.toList.asJson
-        } else {
-          errors.toList.asJson
-        }
         Json.fromJsonObject(JsonObject.empty.
           add("valid",Json.fromBoolean(isValid)).
           add("type",Json.fromString("Result")).
           add("message",Json.fromString(message)).
-          add("details",details).
+          add("solutions",solutions.toList.asJson).
+          add("errors",errors.toList.asJson).
           add("trigger",trigger.asJson)
         )
       }

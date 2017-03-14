@@ -183,22 +183,55 @@ function resetResult(result) {
   $("#resultDiv").data("result", result);
 }
 
+
 function showResult(result) {
   result = $("#resultDiv").data("result");
   console.log("Show result: " + JSON.stringify(result));
   var validText;
   if (result.isValid || result.valid) {
    $("#resultDiv").removeClass("notValid").addClass("valid");
-   validText = "Valid";
   } else {
    $("#resultDiv").removeClass("valid").addClass("notValid");
-   validText = "Not valid";
   }
-  $("#resultDiv").append($("<h2>").text(validText));
+  $("#resultDiv").append($("<h2>").text("Result"));
   $("#resultDiv").append($("<p>").text(result.message));
+  result.solutions.forEach(showSolution);
+  showErrors(result.errors);
   var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
   var details = $("<details/>").append(pre);
   $("#resultDiv").append(details);
+}
+
+function showSolution(solution) {
+ console.log("Solution: " + JSON.stringify(solution));
+ var table = "";
+
+ table += "<tr><th>Node</th><th>Shape</th><th>Evidences</th>";
+ $.each(solution.solution, function(node,infoNodes) {
+   console.log("node: " + JSON.stringify(node) + " infoNodes: " + JSON.stringify(infoNodes));
+   $.each(infoNodes.hasShapes, function(shape,explanation) {
+     console.log("Row..." + node + ". shape: " + shape + " Explanation: " + explanation);
+     table += "<tr><td class='node'>&lt;" + node + "&gt;</td><td class='hasShape'>+ &lt;" + shape + "&gt;</td><td class='explanation'>" + explanation + "</td></tr>" ;
+   });
+   $.each(infoNodes.hasNoShapes, function(shape,explanation) {
+     console.log("Row..." + node + ". noShape: " + shape + " Explanation: " + explanation);
+     table += "<tr><td class='node'><pre>&lt;" + node + "&gt;</pre></td><td class='hasNoShape'><pre>- &lt;" + shape + "&gt;</pre></td><td class='explanation'>" + explanation + "</td></tr>" ;
+   });
+ });
+ $("#resultDiv").append("<h2>Solution</h2><table>" + table + "</table>");
+}
+
+function showErrors(errors) {
+ if (errors.length > 0) {
+  var table = "";
+  table += ""
+  console.log("Errors" + JSON.stringify(errors));
+  $.each(errors, function(error) {
+   console.log("Error" + JSON.stringify(error));
+   table += "<tr><td><pre>" + JSON.stringify(error.error) + "</pre></td></tr>";
+  });
+  $("#resultDiv").append("<h2>Errors</h2><table>" + table + "</table>");
+ }
 }
 
 function getDataFormat(element) {
