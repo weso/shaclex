@@ -1,5 +1,6 @@
 @import es.weso.schema.Result
 @import es.weso.schema.ShapeMap._
+@import io.circe._
 
 @(result: Option[Result],
   data:Option[String],
@@ -49,7 +50,7 @@
 
 <body>
 <h1><a href="/">Shaclex</a></h1>
-<div id="resultDiv">@{if(result.isDefined){showResult(result.get)}}</div>
+<div id="resultDiv" data-result='@{Html(result.map(_.toJson).getOrElse(Json.Null).spaces2)}'></div>
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)

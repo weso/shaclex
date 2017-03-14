@@ -177,18 +177,25 @@ function changeTriggerMode(value) {
  }
 }
 
+function resetResult(result) {
+ console.log("Reset result: " + JSON.stringify(result));
+  $("#resultDiv").empty();
+  $("#resultDiv").data("result", result);
+}
+
 function showResult(result) {
-  console.log("Result: " + result);
+  result = $("#resultDiv").data("result");
+  console.log("Show result: " + JSON.stringify(result));
   var validText;
-  if (result.isValid) {
+  if (result.isValid || result.valid) {
    $("#resultDiv").removeClass("notValid").addClass("valid");
    validText = "Valid";
   } else {
    $("#resultDiv").removeClass("valid").addClass("notValid");
    validText = "Not valid";
   }
-  $("#resultDiv").empty();
   $("#resultDiv").append($("<h2>").text(validText));
+  $("#resultDiv").append($("<p>").text(result.message));
   var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
   var details = $("<details/>").append(pre);
   $("#resultDiv").append(details);
@@ -216,6 +223,10 @@ function prepareShapeMap() {
 }
 
 $(document).ready(function(){
+
+// When loading document get result from data-result attribute and show it
+var result = $("#resultDiv").data("result");
+showResult(result);
 
 console.log("Main Url = " + urlShaclex);
 
@@ -294,6 +305,8 @@ $("#validateButton").click(function(e){
   })
   .done(function(result) {
      console.log("Done!: " + JSON.stringify(result));
+     resetResult(result);
+     console.log("After reseting result: " + JSON.stringify(result));
      showResult(result);
      history.pushState({},"validate",location);
   })
@@ -305,28 +318,4 @@ $("#validateButton").click(function(e){
   })
   });
 
-/*
-  $("#permalink").click(function(e){
-    e.preventDefault();
-    console.log("generating permalink");
-    var data = codeMirrorData.getValue();
-    var schema = codeMirrorSchema.getValue();
-    var dataFormat = $("#dataFormat").find(":selected").text();
-    var schemaFormat = $("#schemaFormat").find(":selected").text();
-    var schemaEngine = $("#schemaEngine").find(":selected").text();
-    var triggerMode = $("#triggerMode").find(":selected").text();
-    console.log("Trigger mode in permalink generation:" + triggerMode);
-    var shapeMap = prepareShapeMap();
-    var location = "/validate?" +
-                    "data=" + encodeURIComponent(data) +
-                    "&dataFormat=" + encodeURIComponent(dataFormat) +
-                    "&schema=" + encodeURIComponent(schema) +
-                    "&schemaFormat=" + encodeURIComponent(schemaFormat) +
-                    "&schemaEngine=" + encodeURIComponent(schemaEngine) +
-                    "&triggerMode=" + encodeURIComponent(triggerMode) +
-                    "&shapeMap=" + shapeMap ;
-    console.log("Permalink: " + location);
-    window.location = location;
-  });
-*/
  });
