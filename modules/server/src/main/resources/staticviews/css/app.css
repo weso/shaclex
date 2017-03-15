@@ -84,3 +84,15 @@ div.submit {
 .otherOptions {
  clear: both;
 }
+
+.hasShape {
+  color: green;
+}
+
+.hasNoShape {
+  color: red;
+}
+
+.explanation {
+  color: DimGray;
+}

@@ -54,10 +54,11 @@
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
-        <select id="toggleSchemaEmbedded" onchange="changeSchemaEmbedded(this.options[this.selectedIndex].value)">
-            <option value='schemaEmbedded' @{if(schemaEmbedded) { "selected" }}'>Schema embedded</option>
-            <option value="noSchemaEmbedded" @{if(!schemaEmbedded) { "selected" }}>Schema separated</option>
-        </select>
+        <label> Schema embedded:
+            <input type="checkbox" id="schemaEmbedded"
+               onchange="changeSchemaEmbedded(this.value)"
+               @{if(schemaEmbedded) { "checked" }}
+            /></label>
     </fieldset>
 
     <fieldset class="dataPanel">

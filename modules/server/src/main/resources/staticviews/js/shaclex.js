@@ -145,7 +145,7 @@ function changeTheme(theme) {
 
 function changeSchemaEmbedded(value) {
  console.log("Changing schemaEmbedded: " + value);
- if (value==="schemaEmbedded") {
+ if (value==="on") {
   $("#schemaDiv").hide();
  } else {
   $("#schemaDiv").show();
@@ -185,9 +185,9 @@ function resetResult(result) {
 
 
 function showResult(result) {
-  result = $("#resultDiv").data("result");
-  console.log("Show result: " + JSON.stringify(result));
-  var validText;
+ result = $("#resultDiv").data("result");
+ console.log("Show result: " + JSON.stringify(result));
+ if(result) {
   if (result.isValid || result.valid) {
    $("#resultDiv").removeClass("notValid").addClass("valid");
   } else {
@@ -200,6 +200,7 @@ function showResult(result) {
   var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
   var details = $("<details/>").append(pre);
   $("#resultDiv").append(details);
+ }
 }
 
 function showSolution(solution) {
@@ -210,15 +211,37 @@ function showSolution(solution) {
  $.each(solution.solution, function(node,infoNodes) {
    console.log("node: " + JSON.stringify(node) + " infoNodes: " + JSON.stringify(infoNodes));
    $.each(infoNodes.hasShapes, function(shape,explanation) {
-     console.log("Row..." + node + ". shape: " + shape + " Explanation: " + explanation);
-     table += "<tr><td class='node'>&lt;" + node + "&gt;</td><td class='hasShape'>+ &lt;" + shape + "&gt;</td><td class='explanation'>" + explanation + "</td></tr>" ;
+     console.log("Row..." + node + ". shape: " + shape + " Explanation: " + escapeHtml(explanation));
+     table += "<tr><td class='node'><code>&lt;" + node + "&gt;</code></td>" +
+                "<td class='hasShape'>+ <code>&lt;" + shape + "&gt;</code></td>" +
+                "<td class='explanation'>" + escapeHtml(explanation) + "</td></tr>" ;
    });
    $.each(infoNodes.hasNoShapes, function(shape,explanation) {
-     console.log("Row..." + node + ". noShape: " + shape + " Explanation: " + explanation);
-     table += "<tr><td class='node'><pre>&lt;" + node + "&gt;</pre></td><td class='hasNoShape'><pre>- &lt;" + shape + "&gt;</pre></td><td class='explanation'>" + explanation + "</td></tr>" ;
+     console.log("Row..." + node + ". noShape: " + shape + " Explanation: " + escapeHtml(explanation));
+     table += "<tr><td class='node'><code>&lt;" + node + "&gt;</code></td>" +
+              "<td class='hasNoShape'>- <code>&lt;" + shape + "&gt;</code></td>" +
+              "<td class='explanation'>" + escapeHtml(explanation) + "</td></tr>" ;
    });
  });
  $("#resultDiv").append("<h2>Solution</h2><table>" + table + "</table>");
+}
+
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;',
+  '\n': '<br/>'
+};
+
+function escapeHtml (string) {
+  return String(string).replace(/[&<>"'`=\/\n]/g, function (s) {
+    return entityMap[s];
+  });
 }
 
 function showErrors(errors) {
@@ -226,9 +249,9 @@ function showErrors(errors) {
   var table = "";
   table += ""
   console.log("Errors" + JSON.stringify(errors));
-  $.each(errors, function(error) {
-   console.log("Error" + JSON.stringify(error));
-   table += "<tr><td><pre>" + JSON.stringify(error.error) + "</pre></td></tr>";
+  $.each(errors, function(i,e) {
+   console.log("Error" + JSON.stringify(e));
+   table += "<tr><td><pre>" + escapeHtml(e.error) + "</pre></td></tr>";
   });
   $("#resultDiv").append("<h2>Errors</h2><table>" + table + "</table>");
  }
@@ -263,9 +286,17 @@ showResult(result);
 
 console.log("Main Url = " + urlShaclex);
 
-var schemaEmbeddedValue = $("#toggleSchemaEmbedded").val();
+var schemaEmbeddedValue = $("#schemaEmbedded").val();
 console.log("Schema embedded = " + schemaEmbeddedValue);
 changeSchemaEmbedded(schemaEmbeddedValue);
+
+$("#schemaEmbedded").change(function() {
+ if (this.checked) {
+     changeSchemaEmbedded("on");
+ } else {
+     changeSchemaEmbedded("off");
+ }
+});
 
 var triggerModeValue = $("#triggerMode").val();
 console.log("Trigger mode = " + triggerModeValue);
@@ -312,6 +343,7 @@ $("#validateButton").click(function(e){
     var schemaFormat = $("#schemaFormat").find(":selected").text();
     var schemaEngine = $("#schemaEngine").find(":selected").text();
     var triggerMode = $("#triggerMode").find(":selected").text();
+    var schemaEmbeded = $("#schemaEmbedded").val() == "on" ;
     console.log("Trigger mode in AJAX query:" + triggerMode);
     var shapeMap = prepareShapeMap();
     var location = "/validate?" +
@@ -321,6 +353,7 @@ $("#validateButton").click(function(e){
                     "&schemaFormat=" + encodeURIComponent(schemaFormat) +
                     "&schemaEngine=" + encodeURIComponent(schemaEngine) +
                     "&triggerMode=" + encodeURIComponent(triggerMode) +
+                    "&schemaEmbeded=" + encodeURIComponent(schemaEmbedded) +
                     "&shapeMap=" + shapeMap;
 
      $.ajax({ url: urlShaclex + "/api/validate",
@@ -331,7 +364,8 @@ $("#validateButton").click(function(e){
         schemaFormat: schemaFormat,
         shapeMap: shapeMap,
         schemaEngine: schemaEngine,
-        triggerMode: triggerMode
+        triggerMode: triggerMode,
+        schemaEmbedded: schemaEmbedded
      },
     type: "GET",
     dataType : "json"
