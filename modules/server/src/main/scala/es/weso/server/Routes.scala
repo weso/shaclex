@@ -56,7 +56,7 @@ class Routes {
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
   object ShapeMapParam extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
-  object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
+  object SchemaSeparated extends OptionalQueryParamDecoderMatcher[String]("schemaSeparated")
 
   val availableDataFormats = DataFormats.formatNames.toList
   val defaultDataFormat = DataFormats.defaultFormatName
@@ -66,6 +66,7 @@ class Routes {
   val defaultSchemaEngine = Schemas.defaultSchemaName
   val availableTriggerModes = Schemas.availableTriggerModes
   val defaultTriggerMode = Schemas.defaultTriggerMode
+  val defaultSchemaSeparated = "on"
 
   val service: HttpService = HttpService {
 
@@ -149,12 +150,12 @@ class Routes {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) +&
-      SchemaEmbedded(optSchemaEmbedded) => {
+      SchemaSeparated(optSchemaSeparated) => {
     val shapeMap = parseShapeMap(optShapeMap)
     val resultTrigger = optData.map(data =>
       validate(data,optDataFormat,optSchema,optSchemaFormat,optSchemaEngine,optTriggerMode,optNode,optShape,shapeMap)
     )
-    val schemaEmbedded = optSchemaEmbedded.getOrElse(false)
+    val schemaSeparated = optSchemaSeparated.getOrElse(defaultSchemaSeparated)
     logger.info(s"ShapeMap: $optShapeMap. Parsed as $shapeMap" )
     val recoveredTriggerName: String = resultTrigger match {
       case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
@@ -188,7 +189,7 @@ class Routes {
       availableTriggerModes,
       recoveredTriggerName,
       recoveredShapeMap,
-      schemaEmbedded
+      schemaSeparated
      ))
     }
 

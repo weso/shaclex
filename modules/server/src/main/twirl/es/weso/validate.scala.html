@@ -14,7 +14,7 @@
   availableTriggerModes: List[String],
   currentTriggerMode: String,
   shapeMap: List[(String,String)],
-  schemaEmbedded: Boolean
+  schemaSeparated: String
  )
 
 @import java.net.URLEncoder
@@ -54,10 +54,8 @@
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
-        <label> Schema embedded:
-            <input type="checkbox" id="schemaEmbedded"
-               onchange="changeSchemaEmbedded(this.value)"
-               @{if(schemaEmbedded) { "checked" }}
+        <label>Schema separated:
+            <input type="checkbox" id="schemaSeparated" @{if(schemaSeparated == "on") { "checked" }}
             /></label>
     </fieldset>
 

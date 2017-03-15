@@ -143,12 +143,12 @@ function changeTheme(theme) {
  codeMirrorSchema.setOption("theme",theme);
 }
 
-function changeSchemaEmbedded(value) {
- console.log("Changing schemaEmbedded: " + value);
+function changeSchemaSeparated(value) {
+ console.log("Changing schemaSeparated: " + value);
  if (value==="on") {
-  $("#schemaDiv").hide();
- } else {
   $("#schemaDiv").show();
+ } else {
+  $("#schemaDiv").hide();
  }
 }
 
@@ -286,15 +286,15 @@ showResult(result);
 
 console.log("Main Url = " + urlShaclex);
 
-var schemaEmbeddedValue = $("#schemaEmbedded").val();
-console.log("Schema embedded = " + schemaEmbeddedValue);
-changeSchemaEmbedded(schemaEmbeddedValue);
+var schemaSeparatedValue = $("#schemaSeparated").val();
+console.log("Schema separated = " + schemaSeparatedValue);
+changeSchemaSeparated(schemaSeparatedValue);
 
-$("#schemaEmbedded").change(function() {
+$("#schemaSeparated").change(function() {
  if (this.checked) {
-     changeSchemaEmbedded("on");
+     changeSchemaSeparated("on");
  } else {
-     changeSchemaEmbedded("off");
+     changeSchemaSeparated("off");
  }
 });
 
@@ -343,7 +343,10 @@ $("#validateButton").click(function(e){
     var schemaFormat = $("#schemaFormat").find(":selected").text();
     var schemaEngine = $("#schemaEngine").find(":selected").text();
     var triggerMode = $("#triggerMode").find(":selected").text();
-    var schemaEmbeded = $("#schemaEmbedded").val() == "on" ;
+    var schemaSeparated = $("#schemaSeparated").val();
+    if (schemaSeparated !== "on") {
+      schema = "";
+    }
     console.log("Trigger mode in AJAX query:" + triggerMode);
     var shapeMap = prepareShapeMap();
     var location = "/validate?" +
@@ -353,7 +356,7 @@ $("#validateButton").click(function(e){
                     "&schemaFormat=" + encodeURIComponent(schemaFormat) +
                     "&schemaEngine=" + encodeURIComponent(schemaEngine) +
                     "&triggerMode=" + encodeURIComponent(triggerMode) +
-                    "&schemaEmbeded=" + encodeURIComponent(schemaEmbedded) +
+                    "&schemaSeparated=" + encodeURIComponent(schemaSeparated) +
                     "&shapeMap=" + shapeMap;
 
      $.ajax({ url: urlShaclex + "/api/validate",
@@ -365,7 +368,7 @@ $("#validateButton").click(function(e){
         shapeMap: shapeMap,
         schemaEngine: schemaEngine,
         triggerMode: triggerMode,
-        schemaEmbedded: schemaEmbedded
+        schemaSeparated: schemaSeparated
      },
     type: "GET",
     dataType : "json"
