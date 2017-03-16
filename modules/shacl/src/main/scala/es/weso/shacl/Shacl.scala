@@ -6,6 +6,7 @@ import util._
 import SHACLPrefixes._
 import es.weso.rdf.path.SHACLPath
 import es.weso.shacl.converter.Shacl2RDF
+import sext._
 
 import scala.util.{Success, Try}
 
@@ -20,12 +21,57 @@ case class Schema(
   pm: PrefixMap,
   shapes: Seq[Shape]) {
 
+
   /**
    * Get the shape associated to an IRI
    * @param iri IRI that identifies a shape
    */
-  def shape(iri: IRI): Option[Shape] = {
-    shapes.filter(_.id contains(iri)).headOption
+  def shape(iri: IRI, allowDuplicates: Boolean = false): Either[String, Shape] = {
+    def shapeIds : Seq[String] = {
+      shapes.map(_.id).map(_.map(_.str)).map(_.getOrElse(""))
+    }
+
+    val found = shapes.filter(_.id contains(iri))
+    found.size match {
+      case 0 => Left(s"Not found $iri in Schema. Available shape Ids: ${shapeIds.mkString(",")}")
+      case 1 => Right(found.head)
+      case _ => if (allowDuplicates) {
+        Right(found.head)
+      } else {
+        Left(s"More than one shape found with IRI $iri. Found = $found")
+      }
+    }
+  }
+
+  def siblingQualifiedShapes(s: PropertyShape): Either[String,Seq[Shape]] = parent(s) match {
+    case Left(msg) => Left(msg)
+    case Right(shape) => Right(shape.propertyShapes.filter(p => p != s && hasQualifiedShape(p)))
+  }
+
+  def hasQualifiedShape(p: PropertyShape): Boolean = p.components.find(c => c match {
+    case x: QualifiedValueShape => true
+    case _ => false
+  }).isDefined
+
+  /* Find shape x such that x sh:property p
+   */
+  def parent(p: PropertyShape): Either[String,Shape] = {
+    findShapeWithPropertyShape(this.shapes,p)
+  }
+
+  private def findShapeWithPropertyShape(ls: Seq[Shape], p: PropertyShape): Either[String,Shape] = {
+    val zero: Either[String,Shape] = Left(s"Not found shape with propertyShape $p in shapes: ${ls.toString}")
+    def comb(s: Shape, rest: Either[String,Shape]): Either[String,Shape] = hasPropertyShape(s,p) match {
+      case Left(_) => rest
+      case Right(shape) => Right(shape)
+    }
+    ls.foldRight(zero)(comb)
+  }
+
+  private def hasPropertyShape(s: Shape, p: PropertyShape): Either[String,Shape] = {
+    if (s.propertyShapes.contains(p)) Right(s)
+    else
+      findShapeWithPropertyShape(s.propertyShapes, p)
   }
 
   /**
@@ -49,10 +95,10 @@ case class Schema(
     targetNodeShapes.map(p => (p._1,p._2.id.get))
   }
 
-  def serialize(format: String = "AST"): Try[String] = {
-    format match {
-      case "AST" => {
-        Success(toString)
+  def serialize(format: String = "TURTLE"): Try[String] = {
+    format.toUpperCase match {
+      case "TREE" => {
+        Success(s"PrefixMap ${pm.treeString}\nShapes: ${shapes.treeString}")
       }
       case _ =>
         new Shacl2RDF {}.serialize(this, format)
@@ -226,14 +272,17 @@ case class Or(shapes: List[Shape]) extends Component
 case class And(shapes: List[Shape]) extends Component
 case class Not(shape: Shape) extends Component
 case class Xone(shapes: List[Shape]) extends Component
-case class QualifiedValueShape(shape: Shape,
-                               qualifiedMinCount: Option[Int],
-                               qualifiedMaxCount: Option[Int],
-                               qualifiedValueShapesDisjoint: Option[Boolean]) extends Component
 case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component
 case class NodeComponent(shape: Shape) extends Component
 case class HasValue(value: Value) extends Component
 case class In(list: List[Value]) extends Component
+
+// TODO: Change representation to include optional parent shape
+case class QualifiedValueShape(shape: Shape,
+                               qualifiedMinCount: Option[Int],
+                               qualifiedMaxCount: Option[Int],
+                               qualifiedValueShapesDisjoint: Option[Boolean]
+                              ) extends Component
 
 
 sealed trait NodeKindType {

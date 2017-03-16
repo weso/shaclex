@@ -14,6 +14,7 @@ reStartArgs := Seq("--server")
 parallelExecution in Test := false
 
 // Versions of common packages
+lazy val antlrVersion     = "4.5"
 lazy val circeVersion     = "0.7.0"
 lazy val effVersion       = "3.0.2"
 lazy val catsVersion      = "0.9.0"
@@ -25,10 +26,11 @@ lazy val http4sVersion    = "0.16.0-cats-SNAPSHOT"
 //lazy val rhoVersion       = "0.12.0a"
 lazy val scalatagsVersion = "0.6.2"
 lazy val kindProjectorVersion = "0.9.3"
-lazy val scallopVersion = "2.0.6"
-lazy val jenaVersion = "3.1.1"
-lazy val diffsonVersion = "2.1.2"
-lazy val xercesVersion = "2.11.0"
+lazy val scallopVersion   = "2.0.6"
+lazy val jenaVersion      = "3.1.1"
+lazy val diffsonVersion   = "2.1.2"
+lazy val xercesVersion    = "2.11.0"
+lazy val sextVersion      = "0.2.4"
 
 herokuAppName in Compile := "shaclex"
 
@@ -95,6 +97,7 @@ lazy val shacl =
    libraryDependencies ++=
      Seq(
        "com.typesafe" % "config" % "1.3.0" % Test
+     , "com.github.nikita-volkov" % "sext" % sextVersion
      , "org.typelevel" %% "cats" % catsVersion
      )
   )
@@ -118,7 +121,7 @@ lazy val shex =
   settings(
     antlr4GenListener in Antlr4 := true,
     antlr4GenVisitor in Antlr4 := true,
-    antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % "4.5",
+    antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % antlrVersion,
     antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % "1.3.0" % Test

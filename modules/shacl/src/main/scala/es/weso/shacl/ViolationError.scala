@@ -34,6 +34,9 @@ object ViolationError {
     basic("RegEx error", node, attempt, msg)
 
 
+  def noSiblingsError(focusNode: RDFNode, p: PropertyShape, msg: String, attempt: Attempt) =
+    basic("noSiblingsError", focusNode, attempt, s"No siblings found for property shape $p in schema: $msg")
+
   def classError(focusNode: RDFNode, cls: RDFNode, attempt: Attempt) =
     basic("classError", focusNode, attempt, s"Node $focusNode doesn't belong to class $cls")
 

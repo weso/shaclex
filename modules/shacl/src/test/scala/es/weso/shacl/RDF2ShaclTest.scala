@@ -10,7 +10,7 @@ import es.weso.shacl.converter.RDF2Shacl
 import util._
 
 class RDF2ShaclTest extends
-  FunSpec with Matchers with TryValues with OptionValues
+  FunSpec with Matchers with TryValues with EitherValues
   with SchemaMatchers {
 
 describe("RDf2Shacl Syntax") {
@@ -49,8 +49,8 @@ describe("RDf2Shacl Syntax") {
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (schema.shape(s))
     val maybeShape = attempt.success.value
-    maybeShape shouldBe defined
-    val targetNodes = maybeShape.get.targetNodes
+    maybeShape should be ('right)
+    val targetNodes = maybeShape.right.get.targetNodes
     targetNodes should contain only(n1)
   }
 
@@ -93,7 +93,9 @@ describe("RDf2Shacl Syntax") {
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (schema)
     val schema = attempt.success.value
-    val shape = schema.shape(S).value
+    val maybeShape = schema.shape(S)
+    maybeShape should be ('right)
+    val shape = maybeShape.right.get
     val p1 = Shape.emptyPropertyShape(PredicatePath(p)).copy(components = Seq(NodeKind(IRIKind)))
     shape.propertyShapes should contain only(p1)
   }
@@ -118,7 +120,7 @@ describe("RDf2Shacl Syntax") {
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (schema)
     val schema = attempt.success.value
-    val shape = schema.shape(S).value
+    val shape = schema.shape(S).right.value
     val p1 = Shape.emptyPropertyShape(PredicatePath(p)).copy(components = Seq(
             NodeKind(IRIKind),
             MinCount(1),
@@ -148,7 +150,7 @@ describe("RDf2Shacl Syntax") {
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (schema)
     val schema = attempt.success.value
-    val shape = schema.shape(S).value
+    val shape = schema.shape(S).right.value
     shape.propertyShapes.length should be(1)
     val pc = shape.propertyShapes.head
     pc.id should be(None)
@@ -174,7 +176,7 @@ describe("RDf2Shacl Syntax") {
       schema <- RDF2Shacl.getShacl(rdf)
     } yield (schema)
     val schema = attempt.success.value
-    val shape = schema.shape(S).value
+    val shape = schema.shape(S).right.value
     val ip = InversePath(PredicatePath(p))
     shape.propertyShapes.length should be(1)
     val pc = shape.propertyShapes.head

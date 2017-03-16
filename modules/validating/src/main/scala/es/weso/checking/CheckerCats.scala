@@ -55,6 +55,9 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
+  /**
+    * Given a list of checks, return the list of values that pass
+    */
   def checkLs[A](cs: List[Check[A]]): Check[List[A]] = {
     lazy val z: Check[List[A]] = ok(List())
     val css : List[Check[List[A]]] = cs.map(c => c.map(List(_)).orElse(z))

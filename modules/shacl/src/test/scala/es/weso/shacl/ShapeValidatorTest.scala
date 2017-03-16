@@ -10,7 +10,7 @@ import Validator._
 import es.weso.shacl.converter.RDF2Shacl
 
 class ShapeValidatorTest extends
-  FunSpec with Matchers with TryValues with OptionValues {
+  FunSpec with Matchers with TryValues with EitherValues {
 
 describe("Shapes") {
   it("Should validate single shape") {
@@ -31,7 +31,7 @@ describe("Shapes") {
     val (rdf,schema) = attempt.success.value
     val s = ex + "S"
     val validator = Validator(schema)
-    val shape = schema.shape(s).value
+    val shape = schema.shape(s).right.value
     val checker = validator.shapeChecker(shape)
 //    val result = checker.
     //    result.isRight should be(true)

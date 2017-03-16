@@ -15,7 +15,7 @@ import scala.util.{Failure, Try}
 case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
 
-  override def formats = DataFormats.formatNames
+  override def formats = DataFormats.formatNames ++ Seq("TREE")
 
   override def defaultTriggerMode = TargetDeclarations
 
@@ -120,8 +120,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 object ShaclexSchema {
   def empty: ShaclexSchema = ShaclexSchema(schema = ShaclSchema.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShaclexSchema] = {
-    for {
+  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShaclexSchema] = format match {
+    case "TREE" => Failure(new Exception(s"Not implemented reading from format $format yet"))
+    case _ => for {
       rdf <- RDFAsJenaModel.fromChars(cs,format,base)
       schema <- RDF2Shacl.getShacl(rdf)
     } yield ShaclexSchema(schema)

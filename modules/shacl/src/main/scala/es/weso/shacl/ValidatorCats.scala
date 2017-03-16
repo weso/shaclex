@@ -156,7 +156,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     val path = ps.path
     val attempt = Attempt(NodeShapePair(node, ps), Some(path))
     logger.info(s"PropertyShape: $node, shape: $ps \nPath: $path")
-    val cs = ps.components.toList.map(component2PropertyChecker(_)(attempt,path))
+    val cs = ps.components.toList.map(component2PropertyChecker(_,ps)(attempt,path))
     val pss = ps.propertyShapes.toList.map(checkPropertyShapePath(_, path)(attempt)(node))
     for {
       ts1 <- runLocal(checkAll(cs), _.addType(node, ps))
@@ -189,7 +189,9 @@ case class Validator(schema: Schema) extends LazyLogging {
     val path = ps.path
     val newAttempt = Attempt(nodeShape = NodeShapePair(node,ps), Some(path))
     val components = ps.components
-    val propertyCheckers: Seq[PropertyChecker] = components.map(component2PropertyChecker)
+
+    // TODO: Not 100% sure if ps argument is right
+    val propertyCheckers: Seq[PropertyChecker] = components.map(component2PropertyChecker(_,ps))
     validatePathCheckers(newAttempt, path, propertyCheckers)
   }
 
@@ -234,13 +236,10 @@ case class Validator(schema: Schema) extends LazyLogging {
     } yield t
   }
 
-  // TODO: The following conversion is redundant and incomplete.
-  // Refactor the code to avoid this manual conversion
   def component2Checker(c: Component): NodeChecker = attempt => node => {
     logger.info(s"component2Checker: Checking component $c on node $node")
     c match {
       case NodeComponent(s) => nodeComponentChecker(s)(attempt)(node)
-      case ClassComponent(c) => classComponentChecker(c)(attempt)(node)
       case Datatype(d) => datatypeChecker(d)(attempt)(node)
       case NodeKind(k) => nodeKindChecker(k)(attempt)(node)
       case MinExclusive(n) => minExclusive(n)(attempt)(node)
@@ -250,7 +249,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       case MinLength(n) => minLength(n)(attempt)(node)
       case MaxLength(n) => maxLength(n)(attempt)(node)
       case Xone(shapes) => xone(shapes)(attempt)(node)
-      // case QualifiedValueShape(shape,min,max,disjoint) => qualifiedValueShape(shape,min,max,disjoint)(attempt)(node)
       case And(shapes) => and(shapes)(attempt)(node)
       case Or(shapes)  => or(shapes)(attempt)(node)
       case Not(shape)  => not(shape)(attempt)(node)
@@ -258,7 +256,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       case Datatype(d) => datatypeChecker(d)(attempt)(node)
       case HasValue(v) => hasValue(v)(attempt)(node)
       case In(ls) => inChecker(ls)(attempt)(node)
-//      case MinCount(m) => minCount(m)(attempt)(node)
       case _           => {
         logger.error(s"component2Checker: Unsupported component $c. Attempt: $attempt, node: $node")
         unsupportedNodeChecker(s"Node constraint: $c")(attempt)(node)
@@ -271,7 +268,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     t <- combineTypings(ts)
   } yield t
 
-  def component2PropertyChecker(c: Component): PropertyChecker = (attempt, path) => {
+  def component2PropertyChecker(c: Component, p: PropertyShape): PropertyChecker = (attempt, path) => {
       logger.info(s"component2PropertyChecker: Attempt: $attempt, path: $path, component: $c")
       for {
         rdf <- getRDF
@@ -287,7 +284,7 @@ case class Validator(schema: Schema) extends LazyLogging {
           case MaxCount(n) => maxCount(n, os, attempt, path)
           case UniqueLang(v) => uniqueLang(v, os, attempt, path)
           case QualifiedValueShape(shape,min,max,disjoint) =>
-            qualifiedValueShape(shape, min, max, disjoint, os, attempt, path)
+            qualifiedValueShape(shape, p, min, max, disjoint, os, attempt, path)
           case HasValue(v) => hasValuePropertyChecker(v, os, attempt, node, path)
           case _ => checkValues(os, component2Checker(c)(attempt)(_))
         }
@@ -473,22 +470,26 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   def qualifiedValueShape(shape: Shape,
+                          p: PropertyShape,
                           min: Option[Int],
                           max: Option[Int],
-                          disjoint: Option[Boolean],
-                          os: Seq[RDFNode],
+                          maybeDisjoint: Option[Boolean],
+                          values: Seq[RDFNode],
                           attempt: Attempt,
                           path: SHACLPath): Check[ShapeTyping] = {
-    logger.info(s"qualifiedValueShape. Constraint: $shape\nMinMax: $min, $max, $disjoint\nOS= $os\nAttempt: $attempt\n Path: $path ")
-    val cs : List[Check[ShapeTyping]] = os.toList.map(o => nodeShape(o, shape))
+    val disjoint = maybeDisjoint.getOrElse(false)
+    logger.info(s"qualifiedValueShape. Constraint: $shape\nMinMax: $min, $max, $disjoint\nOS= $values\nAttempt: $attempt\n Path: $path ")
     for {
+      vs <- if (disjoint) filterConformSiblings(values, p, attempt)
+            else ok(values)
+      cs : List[Check[ShapeTyping]] = values.toList.map(o => nodeShape(o, shape))
       ts <- {
         logger.info("--- Calling checkLs...")
         checkLs(cs)
       }
       value = {
         logger.info(s"--- After checkLs. $ts ")
-        ts.length
+        cs.length
       }
       t <- {
         logger.info(s"qualifiedValueShape: value: $value, min: $min, max: $max")
@@ -500,6 +501,23 @@ case class Validator(schema: Schema) extends LazyLogging {
       ts1 <- combineTypings(t :: ts)
     } yield ts1
   }
+
+  def filterConformSiblings(values: Seq[RDFNode], p: PropertyShape, attempt: Attempt): Check[Seq[RDFNode]] = {
+    schema.siblingQualifiedShapes(p) match {
+      case Left(msg) => err(noSiblingsError(attempt.node, p, msg, attempt))
+      case Right(shapes) => for {
+        rs <- filterConformShapes(values,shapes)
+      } yield rs
+    }
+  }
+
+  def filterConformShapes(values: Seq[RDFNode], shapes: Seq[Shape]): Check[Seq[RDFNode]] = for {
+    cs <- values.map(value => conformsNodeShapes(value,shapes)).toList.sequence
+  } yield cs.filter(_._2 == false).map(_._1).toSeq
+
+  def conformsNodeShapes(node: RDFNode, shapes: Seq[Shape]): Check[(RDFNode,Boolean)] = for {
+    ls <- checkLs(shapes.toList.map(nodeShape(node,_)))
+  } yield (node, !ls.isEmpty)
 
   def between(v: Int, maybeMin: Option[Int], maybeMax: Option[Int]): Boolean = (maybeMin, maybeMax) match {
     case (None, None) => true
