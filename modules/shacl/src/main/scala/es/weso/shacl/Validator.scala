@@ -248,6 +248,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       case MaxInclusive(n) => maxInclusive(n)(attempt)(node)
       case MinLength(n) => minLength(n)(attempt)(node)
       case MaxLength(n) => maxLength(n)(attempt)(node)
+      case Pattern(s,flags) => pattern(s,flags)(attempt)(node)
       case Xone(shapes) => xone(shapes)(attempt)(node)
       case And(shapes) => and(shapes)(attempt)(node)
       case Or(shapes)  => or(shapes)(attempt)(node)
