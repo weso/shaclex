@@ -259,7 +259,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       case Or(shapes)  => or(shapes)(attempt)(node)
       case Not(shape)  => not(shape)(attempt)(node)
       case ClassComponent(cls) => classComponentChecker(cls)(attempt)(node)
-      case Datatype(d) => datatypeChecker(d)(attempt)(node)
       case HasValue(v) => hasValue(v)(attempt)(node)
       case In(ls) => inChecker(ls)(attempt)(node)
       case _           => {
@@ -298,18 +297,21 @@ case class Validator(schema: Schema) extends LazyLogging {
       } yield t
   }
 
-  def nodeComponentChecker(s: Shape): NodeChecker = attempt => node => for {
-    typing <- getTyping
-    newTyping <- if (typing.getOkValues(node).contains(s))
-      getTyping
-    else if (typing.getFailedValues(node).contains(s)) {
-      err(failedNodeShape(
-        node, s, attempt,
-        s"Failed because $node doesn't match shape $s")) >>
+  def nodeComponentChecker(s: Shape): NodeChecker = attempt => node => {
+    logger.info(s"Node component checker: Node: $node - Shape: $s")
+    for {
+      typing <- getTyping
+      newTyping <- if (typing.getOkValues(node).contains(s))
         getTyping
-    } else runLocal(nodeShape(node, s), _.addType(node, s))
-    _ <- addEvidence(attempt.nodeShape, s"$node has shape ${s.id.getOrElse("?")}")
-  } yield newTyping
+      else if (typing.getFailedValues(node).contains(s)) {
+        err(failedNodeShape(
+          node, s, attempt,
+          s"Failed because $node doesn't match shape $s")) >>
+          getTyping
+      } else runLocal(nodeShape(node, s), _.addType(node, s))
+      _ <- addEvidence(attempt.nodeShape, s"$node has shape ${s.id.getOrElse("?")}")
+    } yield newTyping
+  }
 
   def classComponentChecker(cls: RDFNode): NodeChecker = attempt => node => {
     logger.debug(s"classChecker node: ${node.show} class ${cls.show}")

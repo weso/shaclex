@@ -16,24 +16,9 @@ import scala.util.{Failure, Success, Try}
 
 object RDF2Shacl extends RDFParser with LazyLogging {
 
-  // TODO: Move this declaration to RDFParser
-  implicit val applicativeRDFParser = new Applicative[RDFParser] {
-    def pure[A](x: A) = (n,rdf) => Success(x)
-
-    def ap[A,B](ff:RDFParser[A => B])(fa:RDFParser[A]): RDFParser[B] = (n,f) => {
-      fa(n,f) match {
-        case Success(a) => ff(n,f) match {
-          case Success(f) => Success(f(a))
-          case Failure(e) => Failure(e)
-        }
-        case Failure(e) => Failure(e)
-      }
-    }
-  }
-
   // Keep track of parsed shapes
-  // TODO: Refactor this codo to use a StateT
-  val parsedShapes = collection.mutable.Map[RDFNode,Shape]()
+  // TODO: Refactor this code to use a StateT
+  val parsedShapes = collection.mutable.Map[RDFNode,Option[Shape]]()
 
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap
@@ -55,14 +40,23 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   def shape: RDFParser[Shape] = (n,rdf) => {
-    if (parsedShapes.contains(n)) Success(parsedShapes(n))
+    if (parsedShapes.contains(n)) {
+      val maybeShape = parsedShapes(n)
+      maybeShape match {
+        case Some(shape) => Success(shape)
+        case None => {
+          logger.info(s"Recursive shape on node $n")
+          parseFail(s"Recursive shape on node $n")
+        }
+      }
+    }
     else {
-      val shape = Shape.empty
-      parsedShapes += (n -> shape)
+//      val shape = Shape.empty
+      parsedShapes += (n -> None)
       for {
         newShape <- firstOf(nodeShape, propertyShape)(n,rdf)
       } yield {
-        parsedShapes(n) = newShape
+        parsedShapes(n) = Some(newShape)
         newShape
       }
     }
@@ -345,10 +339,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     shape <- getShape(shapeNode.get)(n,rdf)
   } yield Not(shape)
 
-  def mapRDFParser[A,B](ls: List[A], p: A => RDFParser[B]): RDFParser[List[B]] = {
-    ls.map(v => p(v)).sequence
-  }
-
   def nodeComponent: RDFParser[NodeComponent] = (n, rdf) => {
     for {
      nodeShape <- objectFromPredicate(sh_node)(n,rdf)
@@ -367,8 +357,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   } yield QualifiedValueShape(shape, min,max, disjoint)
 
   def getShape(node: RDFNode): RDFParser[Shape] = (n, rdf) =>
-    if (parsedShapes.contains(node)) Success(parsedShapes(node))
-    else shape(node,rdf)
+    /* if (parsedShapes.contains(node)) {
+      val shape = parsedShapes(node)
+      logger.info(s"Shape already parsed for node $node with value: $shape")
+      Success(shape)
+    }
+    else */
+    shape(node,rdf)
 
   def minCount = parsePredicateInt(sh_minCount, MinCount)
   def maxCount = parsePredicateInt(sh_maxCount, MaxCount)

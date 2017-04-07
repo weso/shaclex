@@ -34,6 +34,20 @@ trait RDFParser {
    */
   type RDFParser[a] = (RDFNode, RDFReader) => Try[a]
 
+  implicit val applicativeRDFParser = new Applicative[RDFParser] {
+    def pure[A](x: A) = (n,rdf) => Success(x)
+
+    def ap[A,B](ff:RDFParser[A => B])(fa:RDFParser[A]): RDFParser[B] = (n,f) => {
+      fa(n,f) match {
+        case Success(a) => ff(n,f) match {
+          case Success(f) => Success(f(a))
+          case Failure(e) => Failure(e)
+        }
+        case Failure(e) => Failure(e)
+      }
+    }
+  }
+
   /*
    * returns an RDFParser which returns the IRI associated with a predicate
    * @param p predicate
@@ -369,6 +383,10 @@ trait RDFParser {
     } yield {
       vs1 ++ vs2
     }
+  }
+
+  def mapRDFParser[A,B](ls: List[A], p: A => RDFParser[B]): RDFParser[List[B]] = {
+    ls.map(v => p(v)).sequence
   }
 
   def rdfListForPredicateOptional(p: IRI): RDFParser[List[RDFNode]] = (n,rdf) => for {
