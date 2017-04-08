@@ -12,7 +12,7 @@ case class ViolationError(
     path: Option[SHACLPath],
     obj: Option[RDFNode],
     message: Option[String],
-    sourceConstraint: Option[RDFNode]) {
+    sourceConstraint: RDFNode) {
   override def toString = s"Violation error on $focusNode: ${message.getOrElse("")}"
 }
 
@@ -24,8 +24,14 @@ object ViolationError {
       subject = None,
       path = attempt.path,
       obj = None,
-      message = Some(msg + s" Node: ${attempt.node}, Constraint: ${attempt.shapeIRI.getOrElse(IRI(""))}, path: ${attempt.path.getOrElse(PredicatePath(IRI("")))}"),
-      sourceConstraint = attempt.shapeIRI)
+      message = Some(msg + s" Node: ${attempt.node}, Constraint: ${attempt.shapeId}, path: ${attempt.path.getOrElse(PredicatePath(IRI("")))}"),
+      sourceConstraint = attempt.shapeId)
+
+  def notFoundShapeRef(node: RDFNode, attempt: Attempt, msg: String) =
+    basic("NotFoundShapeRef", node, attempt, msg)
+
+  def expectedPropertyShape(node: RDFNode, attempt: Attempt, msg: String) =
+    basic("ExpectedPropertyShape", node, attempt, msg)
 
   def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) =
     basic("FailedNodeShape", node, attempt, msg)
@@ -115,19 +121,19 @@ object ViolationError {
   def iriOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) =
     basic("iriOrLiteralKindError", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
 
-  def notError(focusNode: RDFNode, attempt: Attempt, shape: Shape) =
+  def notError(focusNode: RDFNode, attempt: Attempt, shape: ShapeRef) =
     basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
-  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
+  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
     basic("andError", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
+  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape]) =
+  def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
     basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but none satisfied" )
 
-  def xoneErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, shapes: List[Shape])(ls: List[ShapeTyping]) =
+  def xoneErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef])(ls: List[ShapeTyping]) =
     basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but more than one satisfied: $ls")
 
   def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =

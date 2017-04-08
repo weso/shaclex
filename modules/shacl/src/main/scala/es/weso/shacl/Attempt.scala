@@ -10,9 +10,7 @@ import es.weso.rdf.path.SHACLPath
  * It may contain a predicate, path or nothing
  */
 case class Attempt(nodeShape: NodeShapePair, path: Option[SHACLPath]) {
-  def node = nodeShape.node
-  
-  def shapeIRI = nodeShape.shape.id
-
+  def node : RDFNode = nodeShape.node
+  def shapeId: RDFNode = nodeShape.shape.id
 }
 

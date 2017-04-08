@@ -58,10 +58,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     def cnvShapeResult(
       p:(ShaclNodeShape,TypingResult[ViolationError,String])
     ): (SchemaLabel,Explanation) = {
-      val shapeLabel = p._1.id match {
-        case Some(iri) => SchemaLabel(iri.getLexicalForm,schema.pm)
-        case None => SchemaLabel("<Unknown label>",schema.pm)
-      }
+      val shapeLabel = SchemaLabel(p._1.showId)
       val explanation = Explanation(cnvTypingResult(p._2))
     (shapeLabel,explanation)
     }
@@ -111,7 +108,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def empty: Schema = ShaclexSchema.empty
 
   override def shapes: List[String] = {
-    schema.shapes.map(_.id).filter(_.isDefined).map(_.get).map(_.toString).toList
+    schema.shapes.map(_.id).map(_.toString).toList
   }
 
   override def pm: PrefixMap = PrefixMap.empty // TODO: Improve this to add pm to Shaclex

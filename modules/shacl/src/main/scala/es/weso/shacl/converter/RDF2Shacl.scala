@@ -18,7 +18,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   // Keep track of parsed shapes
   // TODO: Refactor this code to use a StateT
-  val parsedShapes = collection.mutable.Map[RDFNode,Option[Shape]]()
+  val parsedShapes = collection.mutable.Map[ShapeRef,Shape]()
 
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap
@@ -27,37 +27,31 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     parsedShapes.clear()
     val pm = rdf.getPrefixMap
     for {
-      shapes <- shapes(rdf)
-    } yield (Schema(pm,shapes))
+      shapesMap <- shapesMap(rdf)
+    } yield (Schema(pm,shapesMap))
   }
 
-  def shapes(rdf: RDFReader): Try[Seq[Shape]] = {
+  def shapesMap(rdf: RDFReader): Try[Map[ShapeRef,Shape]] = {
    val nodeShapes = subjectsWithType(sh_NodeShape, rdf)
    val propertyShapes = subjectsWithType(sh_PropertyShape, rdf)
    val shapes = subjectsWithType(sh_Shape, rdf)
    val allShapes: Set[RDFNode] = nodeShapes ++ propertyShapes ++ shapes
-   filterSuccess(allShapes.toSeq.map(shape(_,rdf)))
+   for {
+     _ <- filterSuccess(allShapes.toSeq.map(shape(_,rdf)))
+   } yield parsedShapes.toMap
   }
 
-  def shape: RDFParser[Shape] = (n,rdf) => {
-    if (parsedShapes.contains(n)) {
-      val maybeShape = parsedShapes(n)
-      maybeShape match {
-        case Some(shape) => Success(shape)
-        case None => {
-          logger.info(s"Recursive shape on node $n")
-          parseFail(s"Recursive shape on node $n")
-        }
-      }
+  def shape: RDFParser[ShapeRef] = (n,rdf) => {
+    val shapeRef = ShapeRef(n)
+    if (parsedShapes.contains(shapeRef)) {
+      Success(shapeRef)
     }
     else {
-//      val shape = Shape.empty
-      parsedShapes += (n -> None)
       for {
-        newShape <- firstOf(nodeShape, propertyShape)(n,rdf)
+        shapeRef <- firstOf(nodeShape, propertyShape)(n,rdf)
       } yield {
-        parsedShapes(n) = Some(newShape)
-        newShape
+//        parsedShapes(shapeRef) = newShape
+        shapeRef
       }
     }
   }
@@ -67,7 +61,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     case _ => None
   }
 
-  def nodeShape: RDFParser[NodeShape] = (n,rdf) => for {
+  def nodeShape: RDFParser[ShapeRef] = (n,rdf) => for {
     types <- rdfTypes(n,rdf)
     _ <- failIf(types.contains(sh_PropertyShape), "Node shapes must not have rdf:type sh:PropertyShape")(n,rdf)
     targets <- targets(n, rdf)
@@ -76,15 +70,20 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     ignoredIRIs <- fromEitherString(nodes2iris(ignoredNodes))
-  } yield NodeShape(id = mkId(n),
-    components = components.toList,
-    targets = targets,
-    propertyShapes = propertyShapes,
-    closed = closed.getOrElse(false),
-    ignoredProperties = ignoredIRIs
-  )
+  } yield {
+   val shape: Shape = NodeShape(id = n,
+      components = components.toList,
+      targets = targets,
+      propertyShapes = propertyShapes,
+      closed = closed.getOrElse(false),
+      ignoredProperties = ignoredIRIs
+    )
+    val sref = ShapeRef(n)
+    parsedShapes += (sref -> shape)
+    sref
+  }
 
-  def propertyShape: RDFParser[PropertyShape] = (n,rdf) => for {
+  def propertyShape: RDFParser[ShapeRef] = (n,rdf) => for {
     types <- rdfTypes(n,rdf)
     _ <- failIf(types.contains(sh_NodeShape), "Property shapes must not have rdf:type sh:NodeShape")(n,rdf)
     targets <- targets(n, rdf)
@@ -95,14 +94,19 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     ignoredIRIs <- fromEitherString(nodes2iris(ignoredNodes))
-  } yield PropertyShape(id = mkId(n),
-    path = path,
-    components = components.toList,
-    targets = targets,
-    propertyShapes = propertyShapes,
-    closed = closed.getOrElse(false),
-    ignoredProperties = ignoredIRIs
-  )
+  } yield {
+    val ps = PropertyShape(id = n,
+      path = path,
+      components = components.toList,
+      targets = targets,
+      propertyShapes = propertyShapes,
+      closed = closed.getOrElse(false),
+      ignoredProperties = ignoredIRIs
+    )
+    val sref = ShapeRef(n)
+    parsedShapes += (sref -> ps)
+    sref
+  }
 
 
   def targets: RDFParser[Seq[Target]] =
@@ -193,7 +197,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
    } yield cs.map(c => NodeShape(id, components = List(c)))
   } */
 
-  def propertyShapes: RDFParser[Seq[PropertyShape]] = (n, rdf) => {
+  def propertyShapes: RDFParser[Seq[ShapeRef]] = (n, rdf) => {
     val attempts = for {
       ps <- objectsFromPredicate(sh_property)(n,rdf)
     } yield {
@@ -356,7 +360,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     disjoint <- booleanFromPredicateOptional(sh_qualifiedValueShapesDisjoint)(n,rdf)
   } yield QualifiedValueShape(shape, min,max, disjoint)
 
-  def getShape(node: RDFNode): RDFParser[Shape] = (n, rdf) =>
+  def getShape(node: RDFNode): RDFParser[ShapeRef] = (n, rdf) =>
     /* if (parsedShapes.contains(node)) {
       val shape = parsedShapes(node)
       logger.info(s"Shape already parsed for node $node with value: $shape")

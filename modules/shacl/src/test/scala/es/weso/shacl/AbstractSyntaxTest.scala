@@ -10,7 +10,7 @@ describe("Abstract Syntax") {
   it("should be able to create a shape") {
     val c : PropertyShape =
       PropertyShape(
-                id = None,
+                id = BNodeId("x"),
                 path = PredicatePath(IRI("http://example.org/p")),
                 components =
                   List(NodeKind(IRIKind),
@@ -22,15 +22,16 @@ describe("Abstract Syntax") {
         ignoredProperties = List()
       )
 
+    val id = IRI("http://example.org/s")
     val shape = NodeShape(
-        id = Some(IRI("http://example.org/s")),
+        id = id,
         components = List(),
         targets = List(),
         propertyShapes = List(c),
         false,
         List())
 
-    shape.id shouldBe defined
+    shape.id should be(id)
 
   }
 

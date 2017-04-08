@@ -41,7 +41,9 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     case ps: PropertyShape => propertyShape(ps)
   }
 
-  def makeShapeId(v: Option[IRI]): RDFSaver[RDFNode] = makeId(v)
+  def shapeRef(shape: ShapeRef): RDFSaver[RDFNode] = ok(shape.id)
+
+  def makeShapeId(v: RDFNode): RDFSaver[RDFNode] = ok(v)
 
   def targets(id: RDFNode, ts: Seq[Target]): RDFSaver[Unit] =
     saveList(ts.toList, target(id))
@@ -53,11 +55,11 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     case TargetObjectsOf(node) => addTriple(id,sh_targetObjectsOf,node)
   }
 
-  def propertyShapes(id: RDFNode, ts: Seq[PropertyShape]): RDFSaver[Unit] =
+  def propertyShapes(id: RDFNode, ts: Seq[ShapeRef]): RDFSaver[Unit] =
     saveList(ts.toList, makePropertyShape(id))
 
-  def makePropertyShape(id: RDFNode)(p: PropertyShape): RDFSaver[Unit] = for {
-    node <- propertyShape(p)
+  def makePropertyShape(id: RDFNode)(p: ShapeRef): RDFSaver[Unit] = for {
+    node <- ok(p.id) // propertyShape(p)
     _ <- addTriple(id, sh_property, node)
   } yield ()
 
@@ -157,26 +159,26 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     case LessThan(p) => addTriple(id,sh_lessThan,p)
     case LessThanOrEquals(p) => addTriple(id,sh_lessThanOrEquals,p)
     case And(shapes) => for {
-      ls <- saveToRDFList(shapes,shape)
+      ls <- saveToRDFList(shapes,shapeRef)
       _ <- addTriple(id,sh_and,ls)
     } yield ()
     case Or(shapes) => for {
-      ls <- saveToRDFList(shapes,shape)
+      ls <- saveToRDFList(shapes,shapeRef)
       _ <- addTriple(id,sh_or,ls)
     } yield ()
     case Xone(shapes) => for {
-      ls <- saveToRDFList(shapes,shape)
+      ls <- saveToRDFList(shapes,shapeRef)
       _ <- addTriple(id,sh_xone,ls)
     } yield ()
     case QualifiedValueShape(s,min,max,disjoint) => for {
-      nodeShape <- shape(s)
+      nodeShape <- shapeRef(s)
       _ <- addTriple(id,sh_qualifiedValueShape,nodeShape)
       _ <- maybeAddTriple(id,sh_qualifiedMinCount,min.map(IntegerLiteral(_)))
       _ <- maybeAddTriple(id,sh_qualifiedMaxCount,max.map(IntegerLiteral(_)))
       _ <- maybeAddTriple(id,sh_qualifiedValueShapesDisjoint,disjoint.map(BooleanLiteral(_)))
     } yield ()
     case Not(s) => for {
-      nodeS <- shape(s)
+      nodeS <- shapeRef(s)
       _ <- addTriple(id,sh_not,nodeS)
     } yield ()
     case Closed(b,ignoredPs) => for {
@@ -185,7 +187,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
       _ <- addTriple(id,sh_ignoredProperties,nodeList)
     } yield ()
     case NodeComponent(s) => for {
-      nodeS <- shape(s)
+      nodeS <- shapeRef(s)
       _ <- addTriple(id,sh_node,nodeS)
     } yield ()
     case HasValue(v) => addTriple(id,sh_hasValue,v.rdfNode)

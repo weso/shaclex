@@ -1,0 +1,13 @@
+prefix :       <http://example.org/> 
+prefix foaf:   <http://xmlns.com/foaf/0.1/>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+prefix schema: <http://schema.org/>
+prefix sh:     <http://www.w3.org/ns/shacl#> 
+prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
+        
+:User a sh:NodeShape, rdfs:Class ;  #\color{red}{Not a valid Shapes graph} 
+  sh:property [
+   sh:path schema:name ; 
+   sh:nodeKind sh:Literal ;
+  ] .
+

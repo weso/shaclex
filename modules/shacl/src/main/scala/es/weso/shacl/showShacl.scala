@@ -7,7 +7,7 @@ object showShacl {
 
   implicit def showShape = new Show[Shape] {
     def show(shape: Shape): String = {
-      shape.id.fold("_?")(iri => iri.str)
+      shape.id.toString // .fold("_?")(iri => iri.str)
     }
   }
 

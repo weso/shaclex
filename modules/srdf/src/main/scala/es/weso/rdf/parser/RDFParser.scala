@@ -32,6 +32,7 @@ trait RDFParser {
    * An RDFParser of values of type `a` takes a pointed node `RDFNode`
    * and an `RDFReader` and tries to obtain a value of type `a` 
    */
+  // TODO: refactor this code to use a reader monad...
   type RDFParser[a] = (RDFNode, RDFReader) => Try[a]
 
   implicit val applicativeRDFParser = new Applicative[RDFParser] {

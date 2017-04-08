@@ -17,7 +17,7 @@ object ShEx2Shacl extends Converter {
     getShaclShapes(schema).map(
       shapes => shacl.Schema(
         pm = schema.prefixMap,
-        shapes = shapes
+        shapesMap = ??? // shapes
       )
     )
 
@@ -35,8 +35,9 @@ object ShEx2Shacl extends Converter {
         case Some(lbl) => schema.resolveShapeLabel(lbl).toValidatedNel
       }
       val r2: Result[shacl.Shape] = cnvShapeExpr(shapeExpr, schema)
-      val r : Result[Shape] = (r1 |@| r2).map((iri, shape) => shape.addId(iri))
-      r.product(rs).map{ case (x,xs) => x +: xs }
+//      val r : Result[Shape] = (r1 |@| r2).map((iri, shape) => shape.addId(iri))
+//      r.product(rs).map{ case (x,xs) => x +: xs }
+      ???
     }
     shapesMap.foldLeft(zero)(comb)
   }
@@ -131,15 +132,17 @@ object ShEx2Shacl extends Converter {
      }
 //     max.getOrElse(Max(1)).map
    val components = minComponent ++ maxComponent
-   ok(Shape.emptyPropertyShape(path).copy(components = components))
+   // ok(Shape.emptyPropertyShape(path).copy(components = components))
+   ???
  }
 
   def cnvNodeConstraint(
        nc: shex.NodeConstraint,
        schema: shex.Schema): Result[shacl.Shape] = {
-    val nkShape: Result[List[Component]] =
+/*    val nkShape: Result[List[Component]] =
       nc.nodeKind.map(cnvNodeKind(_)).sequence.map(_.toList)
-    nkShape.map(nks => shacl.Shape.empty.copy(components = nks))
+    nkShape.map(nks => shacl.Shape.empty.copy(components = nks)) */
+    ???
   }
 
   def cnvNodeKind(nk: shex.NodeKind): Result[shacl.NodeKind] =
