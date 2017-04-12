@@ -6,23 +6,20 @@ import es.weso.rdf.nodes._
 
 trait SchemaMatchers {
 
-  class ContainShapesMatcher(shapeIDs: Set[IRI]) extends Matcher[Schema] {
+  class ContainShapesMatcher(shapeIDs: Set[RDFNode]) extends Matcher[Schema] {
 
     def apply(schema: Schema) = {
-      val iris = schema.shapes.
-         map(shape => shape.id).
-         filter(_.isDefined).
-         map(_.get).toSet
+      val shapes = schema.shapes.map(_.id)
 
       MatchResult(
-        iris == shapeIDs,
-        s"Schema $schema + has IDs $iris which is different to expected $shapeIDs",
-        s"Schema $schema + has IDs $iris which is equal to $shapeIDs"
+        shapeIDs == shapes.toSet,
+        s"Schema $schema + has shapes $shapes which is different to expected $shapeIDs",
+        s"Schema $schema + has shapes $shapes which is equal to $shapeIDs"
       )
     }
   }
 
-  def constainShapes(shapeIDs: Set[IRI]) =
+  def constainShapes(shapeIDs: Set[RDFNode]) =
     new ContainShapesMatcher(shapeIDs)
 
 }

@@ -72,13 +72,13 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             stripMargin
 
         val result = for {
-          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
+          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
           schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"),rdf)
         } yield schemas
 
         result match {
-          case Success(v) => v should be(Some(IRI("http://example.org/S")))
-          case Failure(e) => {
+          case Right(v) => v should be(Some(IRI("http://example.org/S")))
+          case Left(e) => {
             info(s"Failed $e")
             fail(e)
           }
@@ -95,13 +95,13 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             stripMargin
 
         val result = for {
-          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
+          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
           schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"),rdf)
         } yield schemas
 
         result match {
-          case Success(v) => v should be(None)
-          case Failure(e) => {
+          case Right(v) => v should be(None)
+          case Left(e) => {
             info(s"Failed $e")
             fail(e)
           }

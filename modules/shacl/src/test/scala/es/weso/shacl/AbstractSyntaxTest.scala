@@ -8,9 +8,10 @@ class AbstractSyntaxTest extends FunSpec with Matchers {
 
 describe("Abstract Syntax") {
   it("should be able to create a shape") {
+    val x = BNodeId("x")
     val c : PropertyShape =
       PropertyShape(
-                id = BNodeId("x"),
+                id = x,
                 path = PredicatePath(IRI("http://example.org/p")),
                 components =
                   List(NodeKind(IRIKind),
@@ -21,13 +22,12 @@ describe("Abstract Syntax") {
         closed = false,
         ignoredProperties = List()
       )
-
     val id = IRI("http://example.org/s")
     val shape = NodeShape(
         id = id,
         components = List(),
         targets = List(),
-        propertyShapes = List(c),
+        propertyShapes = List(ShapeRef(x)),
         false,
         List())
 

@@ -18,10 +18,10 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
 
   def getSchema(rdf: RDFReader): Either[String,Schema] = {
     val schemaNodes = rdf.triplesWithPredicateObject(rdf_type, sx_Schema).map(_.subj).toList
-    val trySchemas: Try[List[Schema]] = schemaNodes.map(schema(_,rdf)).sequence
+    val trySchemas: Either[String,List[Schema]] = parseNodes(schemaNodes, schema)(rdf)
     trySchemas match {
-      case Failure(e) => Left(s"Error parsing RDF as Schema: $e\nRDF: ${rdf.serialize("TURTLE")}")
-      case Success(schemas) => schemas.length match {
+      case Left(e) => Left(s"Error parsing RDF as Schema: $e\nRDF: ${rdf.serialize("TURTLE")}")
+      case Right(schemas) => schemas.length match {
         case 0 => Left(s"Empty schema parsing RDF\nRDF: ${rdf.serialize("TURTLE")}")
         case 1 => Right(schemas.head)
         case _ => {
@@ -46,12 +46,12 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     ps.map(cnvShapePair).sequence.map(_.toMap)
   } */
 
-  def cnvShapePair(p: (RDFNode,ShapeExpr)): Try[(ShapeLabel,ShapeExpr)] =
+  def cnvShapePair(p: (RDFNode,ShapeExpr)): Either[String,(ShapeLabel,ShapeExpr)] =
     toLabel(p._1).map(l => (l,p._2))
 
-  def toLabel(node: RDFNode): Try[ShapeLabel] = node match {
-    case i: IRI => Success(IRILabel(i))
-    case b: BNodeId => Success(BNodeLabel(b))
+  def toLabel(node: RDFNode): Either[String,ShapeLabel] = node match {
+    case i: IRI => parseOk(IRILabel(i))
+    case b: BNodeId => parseOk(BNodeLabel(b))
     case _ => parseFail(s"node $node must be an IRI or a BNode in order to be a ShapeLabel")
   }
 
@@ -140,9 +140,9 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield MaxExclusive(value)
 
   def numericLiteral: RDFParser[NumericLiteral] = (n,rdf) => n match {
-    case IntegerLiteral(n) => Success(NumericInt(n))
-    case DoubleLiteral(d) => Success(NumericDouble(d))
-    case DecimalLiteral(d) => Success(NumericDecimal(d))
+    case IntegerLiteral(n) => parseOk(NumericInt(n))
+    case DoubleLiteral(d) => parseOk(NumericDouble(d))
+    case DecimalLiteral(d) => parseOk(NumericDecimal(d))
     case _ => parseFail(s"Expected numeric literal but found $n")
   }
 
@@ -155,10 +155,10 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield TotalDigits(value)
 
   def nodeKind: RDFParser[NodeKind] = (n,rdf) => n match {
-    case `sx_iri` => Success(IRIKind)
-    case `sx_bnode` => Success(BNodeKind)
-    case `sx_literal` => Success(LiteralKind)
-    case `sx_nonliteral` => Success(NonLiteralKind)
+    case `sx_iri` => parseOk(IRIKind)
+    case `sx_bnode` => parseOk(BNodeKind)
+    case `sx_literal` => parseOk(LiteralKind)
+    case `sx_nonliteral` => parseOk(NonLiteralKind)
     case _ => parseFail(s"Expected nodekind, found: $n")
   }
 
@@ -233,7 +233,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     firstOf(objectValue, stem)
 
   def anyUri: RDFParser[String] = (n,rdf) => n match {
-    case DatatypeLiteral(str,iri) if iri == xsd_anyUri => Success(str)
+    case DatatypeLiteral(str,iri) if iri == xsd_anyUri => parseOk(str)
     case _ => parseFail(s"Expected typed literal with datatype xsd:anyUri. Obtained: $n")
   }
 
@@ -265,16 +265,16 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield Annotation(pred,obj)
 
   def objectValue: RDFParser[ObjectValue] = (n,rdf) => n match {
-    case iri: IRI => Success(IRIValue(iri))
-    case StringLiteral(str) => Success(StringValue(str))
-    case DatatypeLiteral(str,iri)=> Success(DatatypeString(str,iri))
-    case LangLiteral(lex,lan) => Success(LangString(lex,lan.lang))
+    case iri: IRI => parseOk(IRIValue(iri))
+    case StringLiteral(str) => parseOk(StringValue(str))
+    case DatatypeLiteral(str,iri)=> parseOk(DatatypeString(str,iri))
+    case LangLiteral(lex,lan) => parseOk(LangString(lex,lan.lang))
     case _ => parseFail(s"Unexpected object value: $n must be an IRI or a Literal")
   }
 
   def max: RDFParser[Max] = (n,rdf) => n match {
-    case IntegerLiteral(n) => Success(IntMax(n))
-    case StringLiteral("*") => Success(Star)
+    case IntegerLiteral(n) => parseOk(IntMax(n))
+    case StringLiteral("*") => parseOk(Star)
     case _ => parseFail(s"Unexpected node parsing max cardinality: $n")
   }
 

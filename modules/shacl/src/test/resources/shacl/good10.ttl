@@ -1,0 +1,14 @@
+@prefix : <http://example.org/>
+@prefix sh: <http://www.w3.org/ns/shacl#>
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+:S	a sh:NodeShape ;
+    sh:targetNode :x ; 
+	sh:and ( :c1 :c2 ) .
+	
+:c1 a sh:Shape; sh:property [ sh:path :p ; sh:datatype xsd:string ] .  
+:c2 a sh:Shape; sh:property [ sh:path :q ; sh:datatype xsd:string ] .
+	
+:x :p "Hi"; :q "Bie" .
+   

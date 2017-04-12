@@ -55,49 +55,41 @@ class SiblingsTest extends FunSpec
   val marriage = IRI(ex + "Marriage")
 
   describe("Parent") {
-  it("should be able to find parent of a shape") {
-    val tryParent: Try[Either[String,Shape]] = for {
-      rdf <- RDFAsJenaModel.fromChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-    } yield {
-      val eitherParent = schema.shape(psFemale) match {
-        case Right(p: PropertyShape) => schema.parent(p)
-        case s => Left(s"No property shape. Found: $s")
-      }
-      eitherParent
-    }
-    tryParent match {
-      case Success(Right(p)) => {
-        info(s"Parent found: $p")
-        p.id.value shouldBe(marriage)
-      }
-      case Success(Left(msg)) => fail(msg)
-      case Failure(e) => fail(e.getMessage)
-    }
-  }
 
-  }
-
- describe("SiblingQualifiedValueShapes") {
-    it("should be able to find siblings of a shape") {
-      val tryParent: Try[Either[String,Seq[Shape]]] = for {
-        rdf <- RDFAsJenaModel.fromChars(str,"TURTLE")
+    it("should be able to find parent of a shape") {
+      val eitherParent: Either[String, ShapeRef] = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
-      } yield {
-        val eitherSiblings = schema.shape(psFemale) match {
-          case Right(p: PropertyShape) => schema.siblingQualifiedShapes(p)
-          case s => Left(s"No property shape. Found: $s")
+//        shape <- schema.shape(psFemale)
+        parent <- schema.parent(ShapeRef(psFemale))
+      } yield parent
+      eitherParent match {
+        case Right(p) => {
+          info(s"Parent found: $p")
+          p.id shouldBe (marriage)
         }
-        eitherSiblings
+        case Left(e) => fail(e)
       }
-      tryParent match {
-        case Success(Right(ss)) => {
-          info(s"Siblings found: $ss")
-          ss.map(_.id) should contain only(Some(psMale))
+    }
+
+    describe("SiblingQualifiedValueShapes") {
+      it("should be able to find siblings of a shape") {
+
+        val eitherShapes: Either[String, Seq[ShapeRef]] = for {
+          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+          schema <- RDF2Shacl.getShacl(rdf)
+          shapes <- schema.siblingQualifiedShapes(ShapeRef(psFemale))
+        } yield (shapes)
+
+        eitherShapes match {
+          case Right(ss) => {
+            info(s"Siblings found: $ss")
+            ss.map(_.id) should contain only (psMale)
+          }
+          case Left(msg) => fail(msg)
         }
-        case Success(Left(msg)) => fail(msg)
-        case Failure(e) => fail(e.getMessage)
       }
     }
   }
+
 }

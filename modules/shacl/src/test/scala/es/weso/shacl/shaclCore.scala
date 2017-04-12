@@ -59,7 +59,7 @@ class ShaclCore
         println(s"iri: ${iri.str}")
         for {
           rdf <- RDFAsJenaModel.fromURI(iri.str, dataFormat)
-          schema <- RDF2Shacl.getShacl(rdf)
+          schema <- RDF2Shacl.tryGetShacl(rdf)
         } yield (schema,rdf)
       }
     }

@@ -65,7 +65,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     schema.targetNodeShapes
   }
 
-
   def runCheck[A: Show](c: Check[A], rdf: RDFReader): CheckResult[ViolationError, A, Log] = {
     val initial: ShapeTyping = Typing.empty
     val r = run(c)(rdf)(initial)
@@ -77,7 +76,7 @@ case class Validator(schema: Schema) extends LazyLogging {
    * Checks if all nodes/shapes are valid in a schema
    * Fails if any of them is not correct
    */
-  def checkSchemaAll: Schema => CheckTyping = schema => {
+  def checkSchemaAll: CheckTyping = {
     val shapes = schema.shapes
     val results = shapes.map(sh => shapeChecker(sh)).toList
     for {
@@ -85,13 +84,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       t <- combineTypings(ts)
     } yield t
   }
-
-  /*  def checkSchemaSome: Schema => Check[Schema] = schema => {
-    val shapes = schema.shapes
-    val results: Seq[Check[Constraint]] = shapes.map(sh => shapeChecker(sh))
-    val r = checkAll(results)
-    r.map(_ => schema)
-  } */
 
   def shapeChecker: ShapeChecker = shape => {
     logger.info(s"Checking shape ${shape.showId}")
@@ -181,14 +173,21 @@ case class Validator(schema: Schema) extends LazyLogging {
       ts1 <- checkComponents(shape.components.toList)(attempt)(node)
       ts2 <- checkPropertyShapes(shape.propertyShapes.toList)(attempt)(node)
       t <- combineTypings(Seq(ts1,ts2))
-      t1 <- if (shape.closed)
-        checkClosed(shape.ignoredProperties, shape.predicatesInPropertyConstraints)(attempt)(node)
+      t1 <- if (shape.closed) for {
+        predicates <- predicatesInPropertyConstraints(shape,attempt,node)
+        c <- checkClosed(shape.ignoredProperties, predicates) (attempt) (node)
+      } yield c
       else ok(t)
     } yield {
       logger.info(s"nodeShape checked ok with typing: ${t1.show}")
       t1
     }
   }
+
+  def predicatesInPropertyConstraints(shape: Shape, attempt: Attempt, node: RDFNode): Check[List[IRI]] = for {
+    shapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
+  } yield shapes.map(_.predicate)
+
 
   def checkPropertyShape(ps: PropertyShape): NodeChecker = attempt => node => {
     val path = ps.path
@@ -507,7 +506,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       }
       value = {
         logger.info(s"--- After checkLs. $ts ")
-        cs.length
+        ts.length
       }
       t <- {
         logger.info(s"qualifiedValueShape: value: $value, min: $min, max: $max")
@@ -522,10 +521,10 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   def filterConformSiblings(values: Seq[RDFNode], p: PropertyShape, attempt: Attempt): Check[Seq[RDFNode]] = {
     logger.info(s"filterComformSiblings: $values propertyShape: ${p.showId}")
-    schema.siblingQualifiedShapes(p) match {
+    schema.siblingQualifiedShapes(ShapeRef(p.id)) match {
       case Left(msg) => err(noSiblingsError(attempt.node, p, msg, attempt))
       case Right(shapes) => for {
-        rs <- filterConformShapes(values,shapes)
+        rs <- filterConformShapes(values,shapes,attempt)
       } yield {
         logger.info(s"filterComformSiblings: Result: $rs, original values: $values, propertyShape: ${p.showId}")
         rs
@@ -533,12 +532,12 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
-  def filterConformShapes(values: Seq[RDFNode], shapes: Seq[Shape]): Check[Seq[RDFNode]] = ??? /*for {
-    cs <- values.map(value => conformsNodeShapes(value,shapes)).toList.sequence
-  } yield cs.filter(_._2 == false).map(_._1).toSeq */
+  def filterConformShapes(values: Seq[RDFNode], shapes: Seq[ShapeRef], attempt: Attempt): Check[Seq[RDFNode]] = for {
+    cs <- values.map(value => conformsNodeShapes(value,shapes,attempt)).toList.sequence
+  } yield cs.filter(_._2 == false).map(_._1).toSeq
 
-  def conformsNodeShapes(node: RDFNode, shapes: Seq[Shape]): Check[(RDFNode,Boolean)] = for {
-    ls <- checkLs(shapes.toList.map(nodeShape(node,_)))
+  def conformsNodeShapes(node: RDFNode, shapes: Seq[ShapeRef], attempt: Attempt): Check[(RDFNode,Boolean)] = for {
+    ls <- checkLs(shapes.toList.map(nodeShapeRef(node,_,attempt)))
   } yield (node, !ls.isEmpty)
 
   def between(v: Int, maybeMin: Option[Int], maybeMax: Option[Int]): Boolean = (maybeMin, maybeMax) match {
@@ -812,37 +811,25 @@ case class Validator(schema: Schema) extends LazyLogging {
         s"Typing: ${e._1}\n Evidences: ${e._2}"
       }
     }
-    runCheck(checkSchemaAll(schema), rdf)
+    runCheck(checkSchemaAll, rdf)
   }
 
 }
 
 object Validator {
+ def empty = Validator(schema = Schema.empty)
 
-  def empty = Validator(schema = Schema.empty)
-
-  /* def runCheck[A](c: Check[A], rdf: RDFReader): Xor[NonEmptyList[ViolationError],List[(A,Evidences)]] = {
-   val initial : ShapeTyping = Typing.empty
-   val r = c.runState(Evidences.initial).runReader(rdf).runReader(initial).runChoose.runNel.runEval.run
-   r
- } */
-
-  type ShapeTyping = Typing[RDFNode,Shape,ViolationError,String]
-
-/*  type Comput = Fx.fx6[
-    Reader[RDFReader,?],
-    Reader[ShapeTyping,?],
-    State[Evidences,?],
-    Choose,
-    Validate[ViolationError, ?],
-    Eval] */
+ type ShapeTyping = Typing[RDFNode,Shape,ViolationError,String]
 
  type Result[A] =  Either[NonEmptyList[ViolationError],List[(A,Evidences)]]
 
  def isOK[A](r: Result[A]): Boolean =
     r.isRight && r.toList.isEmpty == false
 
-// type Check[A] = Eff[Comput,A]
+
+ def validate(schema: Schema, rdf: RDFReader): Either[ViolationError,ShapeTyping] = {
+   Validator(schema).validateAll(rdf).result
+ }
 
 
 }

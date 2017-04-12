@@ -5,18 +5,19 @@ import es.weso.rdf._
 
 import scala.util._
 import es.weso.rdf._
-import es.weso.rdf.PREFIXES._
+import es.weso.rdf.PREFIXES.{rdf, _}
 import es.weso.rdf.triples.RDFTriple
 import cats._
 import cats.data._
+import cats.data.EitherT._
 import cats.implicits._
 
 
 /**
  * Exceptions raised by the RDFParser
- */
 case class RDFParserException(msg: String)
   extends Exception(s"RDFParserException: " + msg)
+*/
 
 /**
  * Obtains data from an RDFReader
@@ -33,18 +34,18 @@ trait RDFParser {
    * and an `RDFReader` and tries to obtain a value of type `a` 
    */
   // TODO: refactor this code to use a reader monad...
-  type RDFParser[a] = (RDFNode, RDFReader) => Try[a]
+  type RDFParser[A] = (RDFNode, RDFReader) => Either[String,A]
 
   implicit val applicativeRDFParser = new Applicative[RDFParser] {
-    def pure[A](x: A) = (n,rdf) => Success(x)
+    def pure[A](x: A) = (n,rdf) => Right(x)
 
     def ap[A,B](ff:RDFParser[A => B])(fa:RDFParser[A]): RDFParser[B] = (n,f) => {
       fa(n,f) match {
-        case Success(a) => ff(n,f) match {
-          case Success(f) => Success(f(a))
-          case Failure(e) => Failure(e)
+        case Right(a) => ff(n,f) match {
+          case Right(f) => Right(f(a))
+          case Left(e) => Left(e)
         }
-        case Failure(e) => Failure(e)
+        case Left(e) => Left(e)
       }
     }
   }
@@ -56,10 +57,11 @@ trait RDFParser {
   def iriFromPredicate(p: IRI): RDFParser[IRI] = { (n, rdf) =>
     for {
       node <- objectFromPredicate(p)(n, rdf)
-    } yield node match {
-      case i: IRI => i
-      case _ => throw RDFParserException("Value of predicate " + p + " must be a IRI but it is: " + node)
-    }
+      iri <- node match {
+        case i: IRI => parseOk(i)
+        case _ => parseFail("Value of predicate " + p + " must be a IRI but it is: " + node)
+      }
+    } yield iri
   }
 
 
@@ -72,12 +74,11 @@ trait RDFParser {
   def stringFromPredicate(p:IRI): RDFParser[String] = { (n,rdf) =>
     for {
       obj <- objectFromPredicate(p)(n,rdf)
-    } yield {
-      obj match {
-        case StringLiteral(str) => str
-        case _ => throw RDFParserException("Value of predicate " + p + " must be a string literal but it is: " + obj)
+      str <- obj match {
+        case StringLiteral(str) => parseOk(str)
+        case _ => parseFail("Value of predicate " + p + " must be a string literal but it is: " + obj)
       }
-    }
+    } yield str
   }
   
   /**
@@ -95,18 +96,11 @@ trait RDFParser {
    * <p>
    * Fails if there are more than one type associated
    */
-  def rdfType: RDFParser[RDFNode] = { (n,rdf) =>
+  def rdfType: RDFParser[RDFNode] = { (n, rdf) =>
     for {
-      ts <- objectsFromPredicate(rdf_type)(n,rdf)
-    } yield 
-    if (ts.size == 1) 
-      ts.head
-    else if (ts.size== 0)
-      throw RDFParserException("Node " + n + " has no type")
-    else 
-      throw RDFParserException("Type for node " + n + " is not single. Found types = " + ts)
-  } 
-    
+      t <- objectFromPredicate(rdf_type)(n, rdf)
+    } yield t
+  }
     
   /**
    * Returns a parser that obtains the set of types associated 
@@ -126,7 +120,7 @@ trait RDFParser {
     val ts = rdf.triplesWithSubjectPredicate(n, p)
     ts.size match {
       case 0 => parseFail("objectFromPredicate: Not found triples with subject " + n + " and predicate " + p)
-      case 1 => Success(ts.head.obj)
+      case 1 => parseOk(ts.head.obj)
       case _ => parseFail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
     }
   }
@@ -139,7 +133,7 @@ trait RDFParser {
    */
   def objectsFromPredicate(p: IRI): RDFParser[Set[RDFNode]] = { (n, rdf) =>
     val triples = rdf.triplesWithSubjectPredicate(n, p)
-    Success(objectsFromTriples(triples))
+    parseOk(objectsFromTriples(triples))
   }
 
   /**
@@ -149,7 +143,7 @@ trait RDFParser {
    */
   def rdfList: RDFParser[List[RDFNode]] = { (n, rdf) =>
     n match {
-      case `rdf_nil` => Success(List())
+      case `rdf_nil` => parseOk(List())
       case x => {
         for {
           elem <- objectFromPredicate(rdf_first)(n, rdf)
@@ -226,8 +220,8 @@ trait RDFParser {
    */
   def optional[A](parser:RDFParser[A]): RDFParser[Option[A]] = { (n,rdf) =>
     parser(n,rdf) match {
-      case Success(v) => Success(Some(v))
-      case Failure(e) => Success(None)
+      case Right(v) => Right(Some(v))
+      case Left(e) => Right(None)
     }
   }
   
@@ -239,10 +233,10 @@ trait RDFParser {
   def someOf[A](ps: RDFParser[A]*): RDFParser[A] = { (n, rdf) =>
     {
       ps.foldLeft(parseFail("someOf: none of the RDFParsers passed")) {
-        case ((s: Try[A], parser)) =>
+        case ((s: Either[String,A], parser)) =>
           s match {
-            case Success(_) => s
-            case Failure(_) => parser(n, rdf)
+            case Right(_) => s
+            case Left(_) => parser(n, rdf)
           }
       }
     }
@@ -260,14 +254,14 @@ trait RDFParser {
    ): RDFParser[Seq[A]] = { (_, rdf) =>
     {
       val empty: Seq[A] = List()
-      nodes.foldRight(Success(empty)) {
+      nodes.foldRight(parseOk(empty)) {
         case (node, s) => {
           s match {
-            case Success(rs) => {
+            case Right(rs) => {
               parser(node, rdf) match {
-                case Success(a) => Success(a +: rs)
-                case Failure(f) => 
-                  throw RDFParserException("group: Unimplemented parsing node " + node + "\nException: " + f.getMessage) // TODO
+                case Right(a) => Right(a +: rs)
+                case Left(s) =>
+                  parseFail("group: Unimplemented parsing node " + node + "\nMessage: " + s) // TODO
               }
             }
             case _ => s
@@ -286,17 +280,17 @@ trait RDFParser {
   def anyOf[A](ps:RDFParser[A]*): RDFParser[Seq[A]] = {
     def comb(rest: RDFParser[Seq[A]], p: RDFParser[A]): RDFParser[Seq[A]] = (n,rdf) => {
       p(n,rdf) match {
-        case Failure(_) => {
+        case Left(_) => {
           rest(n,rdf)
         }
-        case Success(x) => {
+        case Right(x) => {
           for {
             xs <- rest(n,rdf)
           } yield (x +: xs)
         }
       }
     }
-    val zero : RDFParser[Seq[A]] = (n,rdf) => Success(Seq())
+    val zero : RDFParser[Seq[A]] = (n,rdf) => Right(Seq())
     ps.foldLeft(zero)(comb)
   }
 
@@ -308,8 +302,8 @@ trait RDFParser {
   def firstOf[A](ps:RDFParser[A]*): RDFParser[A] = {
     def comb(rest: RDFParser[A], p: RDFParser[A]): RDFParser[A] = (n,rdf) => {
       p(n,rdf) match {
-        case Failure(_) => rest(n,rdf)
-        case Success(x) => Success(x)
+        case Left(_) => rest(n,rdf)
+        case Right(x) => Right(x)
       }
     }
     val zero : RDFParser[A] = (n,rdf) => parseFail("firstOf: none of the parsers succeeded")
@@ -324,15 +318,15 @@ trait RDFParser {
   def oneOf[A](parsers: Seq[RDFParser[A]]): RDFParser[A] = { (n, rdf) =>
     {
       val r = parsers.foldLeft(parseFail("oneOf: none of the RDFParsers passed")) {
-        case ((current: Try[A], parser)) =>
+        case ((current: Either[String,A], parser: RDFParser[A])) =>
           current match {
-            case Success(_) => {
+            case Right(_) => {
               parser(n, rdf) match {
-                case Success(_) => parseFail("oneOf: More than one parser passes")
-                case Failure(_) => current
+                case Right(_) => parseFail("oneOf: More than one parser passes")
+                case Left(_) => current
               }
             }
-            case Failure(e) => {
+            case Left(e) => {
              parser(n, rdf) 
             }
           }
@@ -360,11 +354,11 @@ trait RDFParser {
     triples.map { case RDFTriple(_, _, o) => o }
   }
 
- def getIntegerLiteral(t: RDFTriple): Try[Int] = {
+ def getIntegerLiteral(t: RDFTriple): Either[String, Int] = {
     t.obj match {
-      case l: IntegerLiteral => Success(l.int)
+      case l: IntegerLiteral => parseOk(l.int)
       // TODO: case l: DatatypeLiteral(lexicalForm,datatype) => ...
-      case _                 => parseFail("getIntegerLiteral: Object " + t.obj + " must be a literal")
+      case _  => parseFail("getIntegerLiteral: Object " + t.obj + " must be a literal")
     }
   }
 
@@ -373,7 +367,7 @@ trait RDFParser {
  *
  */
   def combineAll[A](ps: RDFParser[Seq[A]]*): RDFParser[Seq[A]] = {
-    val zero : RDFParser[Seq[A]] = (_,_) => Success(Seq())
+    val zero : RDFParser[Seq[A]] = (_,_) => Right(Seq())
     ps.foldLeft(zero)(combine)
   }
 
@@ -397,31 +391,31 @@ trait RDFParser {
   def literalFromPredicate(p: IRI): RDFParser[Literal] = (n,rdf) => for {
     o <- objectFromPredicate(p)(n,rdf)
     r <- o match {
-      case l: Literal => Success(l)
+      case l: Literal => parseOk(l)
       case _ => parseFail("Value of predicate must be a literal")
     }
   } yield r
 
   def boolean : RDFParser[Boolean] = (n,rdf) => n match {
-    case BooleanLiteral.trueLiteral => Success(true)
-    case BooleanLiteral.falseLiteral => Success(false)
-    case DatatypeLiteral("true",xsd_boolean) => Success(true)
-    case DatatypeLiteral("false",xsd_boolean) => Success(false)
+    case BooleanLiteral.trueLiteral => parseOk(true)
+    case BooleanLiteral.falseLiteral => parseOk(false)
+    case DatatypeLiteral("true",xsd_boolean) => parseOk(true)
+    case DatatypeLiteral("false",xsd_boolean) => parseOk(false)
     case _ => parseFail(s"Expected boolean literal. Found $n")
   }
 
   def iri: RDFParser[IRI] = (n,rdf) => n match {
-    case i: IRI => Success(i)
+    case i: IRI => parseOk(i)
     case _ => parseFail(s"Expected IRI, found $n")
   }
 
   def integer: RDFParser[Int] = (n,rdf) => n match {
-    case IntegerLiteral(n) => Success(n)
+    case IntegerLiteral(n) => parseOk(n)
     case _ => parseFail(s"Expected integer literal for node $n")
   }
 
   def string: RDFParser[String] = (n,rdf) => n match {
-    case StringLiteral(str) => Success(str)
+    case StringLiteral(str) => parseOk(str)
     case _ => parseFail(s"Expected string literal for node $n")
   }
 
@@ -430,75 +424,76 @@ trait RDFParser {
 
   def booleanFromPredicateOptional(p: IRI): RDFParser[Option[Boolean]] = (n,rdf) => {
     objectFromPredicateOptional(p)(n,rdf) match {
-      case Success(None) => Success(None)
-      case Success(Some(BooleanLiteral(b))) => Success(Some(b))
-      case Success(Some(o)) => parseFail(s"value of $p must be a boolean literal. Obtained $o")
-      case Failure(e) => Failure(e)
+      case Right(None) => Right(None)
+      case Right(Some(BooleanLiteral(b))) => Right(Some(b))
+      case Right(Some(o)) => parseFail(s"value of $p must be a boolean literal. Obtained $o")
+      case Left(e) => Left(e)
     }
   }
 
   def irisFromPredicate(p: IRI): RDFParser[List[IRI]] = (n,rdf) => {
     val r = objectsFromPredicate(p)(n,rdf)
     r match {
-      case Success(ns) => {
+      case Right(ns) => {
         nodes2iris(ns.toList) match {
-          case Right(iris) => Success(iris)
+          case Right(iris) => Right(iris)
           case Left(msg) => parseFail(msg)
         }
       }
-      case Failure(f) => Failure(f)
+      case Left(f) => Left(f)
     }
   }
 
   def opt[A](pred: IRI, parser: RDFParser[A]): RDFParser[Option[A]] = (n,rdf) => {
     objectsFromPredicate(pred)(n,rdf) match {
-      case Success(os) => os.size match {
-        case 0 => Success(None)
+      case Right(os) => os.size match {
+        case 0 => Right(None)
         case 1 => parser(os.head,rdf).map(Some(_))
         case _ => parseFail(s"opt fails because $n has more than one value for pred $pred. Values: $os")
       }
-      case Failure(e) => Success(None)
+      case Left(e) => Right(None)
     }
   }
 
   def starWithNodes[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[(RDFNode, A)]] = (n,rdf) => {
     for {
       os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
-      vs : List[(RDFNode,A)] <- os.map(node => parser(node,rdf).map(v => (node,v))).sequence
-    } yield vs
+      vs <- parseNodes(os,parser)(rdf)
+    } yield os zip vs
   }
 
-  def star[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[A]] = (n,rdf) =>
+  def star[A](pred: IRI, parser: RDFParser[A]): RDFParser[List[A]] = (n,rdf) => {
     for {
       os <- objectsFromPredicate(pred)(n,rdf).map(_.toList)
-      vs : List[A] <- os.map(node => parser(node,rdf)).sequence
+      vs <- parseNodes(os,parser)(rdf)
     } yield vs
+  }
 
   def collect[A](ps: List[RDFParser[A]]): RDFParser[List[A]] = (n,rdf) => {
     val zero: List[A] = List()
     def combine(xs: List[A], parser: RDFParser[A]):List[A]= {
       parser(n,rdf) match {
-        case Success(x) => x :: xs
-        case Failure(_) => xs
+        case Right(x) => x :: xs
+        case Left(_) => xs
       }
     }
-    Success(ps.foldLeft(zero)(combine))
+    Right(ps.foldLeft(zero)(combine))
   }
 
   def checkType(expected: RDFNode): RDFParser[Boolean] = (n,rdf) => for {
     obtained <- objectFromPredicate(rdf_type)(n,rdf)
-    v <- if (obtained == expected) Success(true)
+    v <- if (obtained == expected) Right(true)
     else
       parseFail(s"Type of node $n must be $expected but obtained $obtained")
   } yield v
 
   def condition(cond: RDFNode => Boolean, name: String): RDFParser[RDFNode] = (n,_) =>
-    if (cond(n)) Success(n)
+    if (cond(n)) Right(n)
     else parseFail(s"Condition $name not satisfied on node $n")
 
   def failIf(cond: Boolean, msg: String): RDFParser[Unit] = (n,_) =>
     if (cond) parseFail(s"Condition failed: $msg. Current node: $n")
-    else Success(())
+    else Right(())
 
   def arc[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n,rdf) => for {
     obj <- objectFromPredicate(pred)(n,rdf)
@@ -522,14 +517,22 @@ trait RDFParser {
   def list1PlusAux[A](p:RDFParser[A], visited: List[RDFNode]): RDFParser[List[A]] = (n,rdf) => for {
     first <- arc(rdf_first, p)(n,rdf)
     restNode <- objectFromPredicate(rdf_rest)(n,rdf)
-    rest <- if (restNode == rdf_nil) Success(List())
-     else if (visited contains restNode)
-      parseFail(s"list1Plus error parsing list with nodes pointing to itself. visitedNodes: $visited, node: $restNode")
-     else list1PlusAux(p,restNode :: visited)(restNode,rdf)
+    rest <- parseRest(visited, restNode, p)(n,rdf)
   } yield first :: rest
 
+  def parseRest[A](visited: List[RDFNode],
+                   restNode: RDFNode,
+                   parser: RDFParser[A]): RDFParser[List[A]] = (n,rdf) =>
+    if (restNode == rdf_nil) parseOk(List[A]())
+    else if (visited contains restNode)
+     parseFail(s"Parsing list with recursive nodes. visitedNodes: $visited, node: $restNode")
+    else
+      list1PlusAux(parser, restNode :: visited)(restNode,rdf)
+
+  def ok[A](x:A): RDFParser[A] = (n,rdf) => Right(x)
+
   def rdfNil[A]: RDFParser[List[A]] = (n,rdf) =>
-    if (n == rdf_nil) Success(List())
+    if (n == rdf_nil) Right(List())
     else parseFail(s"Expected rdf_nil but got $n")
 
   def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = {
@@ -555,8 +558,8 @@ trait RDFParser {
     case _ => Left(s"$node is not an IRI\n")
   }
 
-  def fromEitherString[A](e: Either[String,A]): Try[A] =
-    e.fold(str => parseFail(str),v => Success(v))
+/*  def fromEitherString[A](e: Either[String,A]): Try[A] =
+    e.fold(str => parseFail(str),v => Success(v)) */
 
 
   // TODO: This method could be removed
@@ -564,8 +567,14 @@ trait RDFParser {
     rdf.triplesWithSubjectPredicate(n, p).size > 0
   }
 
-  def parseFail[A](str: String): Try[A] =
-    Failure(new Exception(str))
+  def parseFail[A](str: String): Either[String,A] =
+    Left(str)
 
+  def parseOk[A](x: A): Either[String,A] =
+    Right(x)
+
+  def parseNodes[A](nodes: List[RDFNode],
+                    parser: RDFParser[A]): RDFReader => Either[String, List[A]] = rdf =>
+    sequenceEither(nodes.map(parser(_,rdf)))
 
 }

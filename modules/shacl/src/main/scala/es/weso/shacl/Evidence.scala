@@ -1,16 +1,20 @@
 package es.weso.shacl
+import cats._, data._
+import cats.implicits._
+import NodeShapePair._
 
-case class Evidences(ls: List[(NodeShapePair,String)]) {
-  def addEvidence(ns: NodeShapePair, msg:String): Evidences = {
-    Evidences((ns,msg) :: ls)
+case class Evidences(ls: List[Evidence])
+
+abstract class Evidence {
+  def toString(e: Evidence): String = {
+    e match {
+      case NodeShapeEvidence(pair,msg) => s"$msg - ${pair}"
+      case MsgEvidence(msg) => msg
+    }
   }
-  
-  override def toString: String = 
-    ls.map{ case (ns,msg) => s"${ns.node} - ${ns.shape.showId}: $msg" }.mkString("\n") 
+//  override def toString = Show[Evidence].show(this)
 }
 
-object Evidences {
-  def initial = Evidences(List())
-}
+case class NodeShapeEvidence(pair: NodeShapePair, msg: String) extends Evidence
+case class MsgEvidence(msg: String) extends Evidence
 
-    

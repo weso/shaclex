@@ -1,0 +1,30 @@
+prefix :       <http://example.org/> 
+prefix sh:     <http://www.w3.org/ns/shacl#> 
+prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
+prefix schema: <http://schema.org/>
+prefix foaf:   <http://xmlns.com/foaf/0.1/>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+:User a sh:NodeShape ;
+	sh:property [
+		sh:path :bCode ;
+		sh:minCount 1 ;
+		sh:maxCount 1 ;
+		sh:pattern "^B" ;    # starts with 'B'
+		sh:flags "i" ;       # Ignore case
+	] .
+	
+:NotUser a sh:NodeShape ;
+  sh:not :User .
+
+:alice :bCode "B103" .            
+
+:bob :bCode "b234" .
+
+:carol :bCode "c432" .
+
+:dave :code "Other" .
+
+:User sh:targetNode :bob, :alice .
+:NotUser sh:targetNode :carol, :dave .
+	 

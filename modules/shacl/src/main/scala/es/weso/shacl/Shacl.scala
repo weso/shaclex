@@ -21,8 +21,11 @@ case class Schema(
   pm: PrefixMap,
   shapesMap: Map[ShapeRef, Shape]) {
 
-  def shapes: Seq[Shape] =
+  lazy val shapes: Seq[Shape] =
     shapesMap.toSeq.map(_._2)
+
+  lazy val shapeRefs: Seq[ShapeRef] =
+    shapesMap.keys.toSeq
 
   /**
    * Get the shape associated to an IRI
@@ -34,36 +37,48 @@ case class Schema(
       case Some(shape) => Right(shape)
   }
 
-  def siblingQualifiedShapes(s: PropertyShape): Either[String,Seq[Shape]] = ??? /*parent(s) match {
+  def siblingQualifiedShapes(s: ShapeRef): Either[String,Seq[ShapeRef]] = parent(s) match {
     case Left(msg) => Left(msg)
-    case Right(shape) => Right(shape.propertyShapes.filter(p => p != s && hasQualifiedShape(p)))
-  } */
+    case Right(parentRef) => {
+      shapesMap.get(parentRef) match {
+        case None => Left(s"siblingQualifiedShapes(${s.showId}): not found shape of parent ${parentRef.showId}")
+        case Some(parent) => Right(parent.propertyShapes.filter(p => p != s && hasQualifiedShape(p)))
+      }
+    }
+  }
 
-  def hasQualifiedShape(p: PropertyShape): Boolean = p.components.find(c => c match {
-    case x: QualifiedValueShape => true
-    case _ => false
-  }).isDefined
+  def hasQualifiedShape(p: ShapeRef): Boolean = shapesMap.get(p) match {
+    case None => false
+    case Some(shape) => shape.components.find(c => c match {
+      case x: QualifiedValueShape => true
+      case _ => false
+    }).isDefined
+  }
 
   /* Find shape x such that x sh:property p
    */
-  def parent(p: Shape): Either[String,Shape] = ??? /*{
-    findShapeWithPropertyShape(this.shapes,p)
-  } */
+  def parent(p: ShapeRef): Either[String,ShapeRef] = {
+    findShapeWithPropertyShape(this.shapeRefs,p)
+  }
 
-  private def findShapeWithPropertyShape(ls: Seq[PropertyShape], p: PropertyShape): Either[String,Shape] = ??? /*{
-    val zero: Either[String,Shape] = Left(s"Not found shape with propertyShape $p in shapes: ${ls.toString}")
+  private def findShapeWithPropertyShape(ls: Seq[ShapeRef], p: ShapeRef): Either[String,ShapeRef] = {
+    val zero: Either[String,ShapeRef] = Left(s"Not found shape with propertyShape $p in shapes: ${ls.map(_.showId).mkString(",")}")
     def comb(s: ShapeRef, rest: Either[String,ShapeRef]): Either[String,ShapeRef] = hasPropertyShape(s,p) match {
       case Left(_) => rest
-      case Right(shape) => Right(shape)
+      case Right(sref) => Right(sref)
     }
     ls.foldRight(zero)(comb)
-  } */
+  }
 
-  private def hasPropertyShape(s: Shape, p: PropertyShape): Either[String,Shape] = ??? /*{
-    if (s.propertyShapes.contains(ShapeRef(p.id))) Right(s)
-    else
-      findShapeWithPropertyShape(s.propertyShapes, p)
-  } */
+  private def hasPropertyShape(s: ShapeRef, p: ShapeRef): Either[String,ShapeRef] = {
+    shapesMap.get(s) match {
+      case None => Left(s"hasPropertyShape(${s.showId},${p.showId}): Not found shape with ref $s")
+      case Some(shape) =>
+        if (shape.propertyShapes.contains(p)) Right(s)
+        else
+          findShapeWithPropertyShape(shape.propertyShapes, p)
+    }
+  }
 
   /**
    * Get the sequence of sh:targetNode declarations
@@ -131,9 +146,6 @@ sealed abstract class Shape {
 
   def targetObjectsOf: Seq[IRI] =
     targets.map(_.toTargetObjectsOf).flatten.map(_.pred)
-
-  def predicatesInPropertyConstraints: List[IRI] =
-      ??? // propertyShapes.map(_.predicate).toList
 
 }
 

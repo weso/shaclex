@@ -10,7 +10,7 @@ import es.weso.shacl.converter.RDF2Shacl
 import util._
 import es.weso.typing._
 
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
@@ -88,15 +88,19 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema] = {
     for {
       rdf <- RDFAsJenaModel.fromChars(cs,format,base)
-      schema <- RDF2Shacl.getShacl(rdf)
+      schema <- tryGetShacl(rdf)
     } yield ShaclexSchema(schema)
   }
 
-  override def fromRDF(rdf: RDFReader): Try[Schema] = {
-    for {
-      schema <- RDF2Shacl.getShacl(rdf)
-    } yield ShaclexSchema(schema)
-  }
+  def tryGetShacl(rdf: RDFReader) =
+    RDF2Shacl.getShacl(rdf).fold(s =>
+      Failure(new Exception(s)),
+      Success(_)
+    )
+
+  override def fromRDF(rdf: RDFReader): Try[Schema] = for {
+    schemaShacl <- tryGetShacl(rdf)
+  } yield ShaclexSchema(schemaShacl)
 
   override def serialize(format: String): Try[String] = {
     if (formats.contains(format))
@@ -121,7 +125,10 @@ object ShaclexSchema {
     case "TREE" => Failure(new Exception(s"Not implemented reading from format $format yet"))
     case _ => for {
       rdf <- RDFAsJenaModel.fromChars(cs,format,base)
-      schema <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.getShacl(rdf) match {
+        case Left(s) => Failure(new Exception(s))
+        case Right(s) => Success(s)
+      }
     } yield ShaclexSchema(schema)
   }
 

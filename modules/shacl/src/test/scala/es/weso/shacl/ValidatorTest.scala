@@ -26,7 +26,7 @@ describe("Validator target Nodes") {
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.tryGetShacl(rdf)
     } yield (rdf,schema)
     info(s"attempt: $attempt")
     val (rdf,schema) = attempt.success.value
@@ -35,13 +35,11 @@ describe("Validator target Nodes") {
     val x = ex + "x"
     val y = ex + "y"
     val z = ex + "z"
-    val s = Shape.empty.copy(id = Some(S), targets = Seq(TargetNode(x),TargetNode(y)))
-    val t = Shape.empty.copy(id = Some(T), targets = Seq(TargetNode(z)))
-    val targetNodes = Validator(schema).targetNodes
+    val s = Shape.empty(S).copy(targets = Seq(TargetNode(y),TargetNode(x)))
+    val t = Shape.empty(S).copy(targets = Seq(TargetNode(z)))
+    val targetNodes = Validator(schema).targetNodes.map{ case(node,shape) => (node,shape.id)}
     targetNodes.size should be(3)
-    targetNodes should contain (x,s)
-    targetNodes should contain (y,s)
-    targetNodes should contain (z,t)
+    targetNodes should contain only ((x,S), (y,S), (z,T) )
   }
 
   it("should be able to validate minCount") {
@@ -51,9 +49,11 @@ describe("Validator target Nodes") {
                  |
                  |:S a sh:NodeShape;
                  |   sh:targetNode :x ;
-                 |   sh:property [ sh:path :p ;
-                 |                 sh:minCount 1
-                 |               ] .
+                 |   sh:property :PS .
+                 |
+                 |:PS sh:path :p ;
+                 |    sh:minCount 1 .
+                 |
                  |:x :p 1 .
                  |:good1 :p 1 .
                  |:good2 :p 1, 2 .
@@ -61,20 +61,21 @@ describe("Validator target Nodes") {
                  |""".stripMargin
     val attempt = for {
       rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.tryGetShacl(rdf)
     } yield (rdf,schema)
     val (rdf,schema) = attempt.success.value
     val S = ex + "S"
+    val PS = ex + "PS"
     val p = ex + "p"
     val x = ex + "x"
     val good1 = ex + "good1"
     val good2 = ex + "good2"
     val bad1 = ex + "bad1"
-    val ps = Shape.emptyPropertyShape(PredicatePath(p)).copy(components=Seq(MinCount(1)))
-    val s = Shape.empty.copy(
-      id = Some(S),
-      targets = List(TargetNode(x)),
-      propertyShapes = Seq(ps)
+    val ps = Shape.emptyPropertyShape(PS, PredicatePath(p)).copy(components=Seq(MinCount(1)))
+    val psRefs = Seq(ShapeRef(PS))
+    val s = Shape.empty(S).copy(
+      targets = Seq(TargetNode(x)),
+      propertyShapes = psRefs
     )
     val validator = Validator(schema)
     validator.targetNodes should contain only ((x,s))
@@ -95,7 +96,6 @@ describe("minCount") {
     val p = ex + "p"
     val validator = Validator(Schema.empty)
     val checked = validator.validateAll(rdf)
-    val s = Shape.empty
     checked.isOK should be(true)
   }
 /*

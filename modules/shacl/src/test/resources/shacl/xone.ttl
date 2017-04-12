@@ -1,0 +1,48 @@
+prefix :       <http://example.org/> 
+prefix sh:     <http://www.w3.org/ns/shacl#> 
+prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
+prefix schema: <http://schema.org/>
+prefix foaf:   <http://xmlns.com/foaf/0.1/>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+        
+:UserShape
+	a sh:NodeShape ;
+	sh:xone (
+		[ sh:property [
+			sh:path :fullName ;
+			sh:minCount 1 ;
+		  ]
+		]
+		[
+			sh:property [
+				sh:path :firstName ;
+				sh:minCount 1 ;
+			] ;
+			sh:property [
+				sh:path :lastName ;
+				sh:minCount 1 ;
+			]
+		]
+	) .
+	
+:NotUserShape a sh:NodeShape ;
+  sh:not :UserShape .
+
+:alice a :User;                            
+       :fullName           "Alice" .            
+
+:bob a :User;                            
+     :firstName "Robert" ;
+     :lastName "Smith" .
+
+:carol a :User;       # Fails
+     :fullName "Carol king" ;
+     :firstName "Robert" ;
+     :lastName "Smith" .
+
+:dave a :User;        # Fails
+     :name "David" .	
+	 
+:UserShape sh:targetNode :alice, :bob .
+:NotUserShape sh:targetNode :carol, :dave .
+	 

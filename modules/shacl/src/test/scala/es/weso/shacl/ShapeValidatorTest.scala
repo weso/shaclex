@@ -7,6 +7,7 @@ import es.weso.rdf._
 
 import util._
 import Validator._
+import es.weso.shacl.showShacl._
 import es.weso.shacl.converter.RDF2Shacl
 
 class ShapeValidatorTest extends
@@ -15,6 +16,7 @@ class ShapeValidatorTest extends
 describe("Shapes") {
   it("Should validate single shape") {
     val ex = IRI("http://example.org/")
+    val s = ex + "S"
     val str ="""|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
@@ -25,16 +27,16 @@ describe("Shapes") {
                  |:x :p "a" .
                  |""".stripMargin
     val attempt = for {
-      rdf : RDFReader <- RDFAsJenaModel.fromChars(str,"TURTLE")
+      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
       schema <- RDF2Shacl.getShacl(rdf)
-    } yield (rdf,schema)
-    val (rdf,schema) = attempt.success.value
-    val s = ex + "S"
-    val validator = Validator(schema)
-    val shape = schema.shape(s).right.value
-    val checker = validator.shapeChecker(shape)
-//    val result = checker.
-    //    result.isRight should be(true)
+      shape <- schema.shape(s)
+      validator = Validator(schema)
+      result <- Validator.validate(schema,rdf)
+    } yield (result)
+    attempt match {
+      case Right(result) => info(s"Result: $result")
+      case Left(e) => fail(s"Failed: $e")
+    }
     }
  }
 }

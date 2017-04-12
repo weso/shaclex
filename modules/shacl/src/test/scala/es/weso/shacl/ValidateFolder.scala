@@ -28,27 +28,29 @@ class ValidateFolder extends
   }
 
 describe("Validate folder") {
-    for (file <- getTtlFiles(shaclFolder)) {
-      it(s"Should validate file ${file.getName}") {
+  val files = getTtlFiles(shaclFolder)
+  info(s"Validating files from folder $shaclFolder: $files")
+  for (file <- getTtlFiles(shaclFolder)) {
+    val name = file.getName
+      it(s"Should validate file $name") {
         val str = Source.fromFile(file)("UTF-8").mkString
-        validate(str)
+        validate(name,str)
       }
     }
 }
 
-def validate(str: String): Unit = {
-  RDFAsJenaModel.fromChars(str,"TURTLE") match {
-    case Failure(e) => fail(s"Error: $e\nCannot parse as RDF. String: \n$str")
-    case Success(rdf) => RDF2Shacl.getShacl(rdf) match {
-      case Failure(e) => fail(s"Error: $e\nCannot get Schema from RDF. String: \n${rdf.serialize("TURTLE")}")
-      case Success(schema) => {
-        val validator = Validator(schema)
-        val result = validator.validateAll(rdf)
-        if (result.isOK) info("Valid")
-        else fail(s"Not valid\n${result.show}")
-      }
-
+def validate(name: String, str: String): Boolean = {
+  val attempt = for {
+    rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
+    schema <- RDF2Shacl.getShacl(rdf)
+    result <- Validator.validate(schema,rdf)
+  } yield result
+  attempt match {
+    case Left(e) => {
+      fail(s"Error validating $name: $e")
+      false
     }
+    case Right(typing) => true
   }
 }
 

@@ -112,6 +112,10 @@ abstract class CheckerCats extends Checker {
     checkAll(ls.map(check))
   }
 
+  /**
+  * Checks all elements in a list
+  * If any of the elements fail, fails
+  */
   def checkAll[A](xs: List[Check[A]]): Check[List[A]] = xs.sequence
 
   def checkPair1st[A,B](p: (Check[A],B)): Check[(A,B)] = for {

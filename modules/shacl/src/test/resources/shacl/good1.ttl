@@ -1,0 +1,14 @@
+@prefix : <http://example.org/>
+@prefix sh: <http://www.w3.org/ns/shacl#>
+
+:S a sh:NodeShape;
+   sh:targetNode :x, :y ;
+   sh:property [
+     sh:path :p;
+     sh:minCount 1 ;
+     sh:maxCount 2 ;
+   ] .
+
+:x :p "a" .
+
+:y :p 1, 2 .

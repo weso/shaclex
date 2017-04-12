@@ -254,6 +254,20 @@ object RDFAsJenaModel {
     }
   }
 
+  def parseChars(cs: CharSequence, format: String, base: Option[String] = None): Either[String, RDFAsJenaModel] = {
+    val result =
+      try {
+      RDFAsJenaModel.empty.parse(cs, format, base)
+    } catch {
+      case e: Exception => Failure(throw new Exception("Exception reading  " + formatLines(cs.toString) + "\n " + e.getMessage))
+    }
+    result match {
+      case Failure(e) => Left(e.getMessage)
+      case Success(v) => Right(v)
+    }
+  }
+
+
   def formatLines(cs: CharSequence): String = {
     cs.toString.lines.zipWithIndex.map(p => (p._2 + 1).toString + " " + p._1).mkString("\n")
   }

@@ -4,6 +4,8 @@ import cats.implicits._
 
 case class CheckResult[E: Show,A: Show, Log: Show](r: (Log, Either[E, A])) {
 
+  def result: Either[E,A] = r._2
+
   def isOK: Boolean = r._2.isRight
 
   def errors: Seq[E] =
