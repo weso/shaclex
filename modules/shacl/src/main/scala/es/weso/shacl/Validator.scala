@@ -294,7 +294,10 @@ case class Validator(schema: Schema) extends LazyLogging {
           case UniqueLang(v) => uniqueLang(v, os, attempt, path)
           case QualifiedValueShape(shape,min,max,disjoint) =>
             qualifiedValueShape(shape, p, min, max, disjoint, os, attempt, path)
-          case HasValue(v) => hasValuePropertyChecker(v, os, attempt, node, path)
+          case HasValue(v) => {
+            logger.info(s"HasValuePropertyChecker(v = $v, os=$os, node = $node, path= $path")
+            hasValuePropertyChecker(v, os, attempt, node, path)
+          }
           case _ => checkValues(os, component2Checker(c)(attempt)(_))
         }
         t <- check
@@ -494,7 +497,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     for {
       vs <- if (disjoint) filterConformSiblings(values, p, attempt)
             else ok(values)
-      cs : List[Check[ShapeTyping]] = values.toList.map(o => nodeShapeRef(o, shape, attempt))
+      cs : List[Check[ShapeTyping]] = vs.toList.map(o => nodeShapeRef(o, shape, attempt))
       ts <- checkLs(cs)
       value = ts.length
       t <- condition(between(value, min, max),attempt,
@@ -506,17 +509,31 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   def filterConformSiblings(values: Seq[RDFNode], p: PropertyShape, attempt: Attempt): Check[Seq[RDFNode]] = {
+    logger.info(s"FilterConformSiblings. values = $values, p = $p, attempt = $attempt")
     schema.siblingQualifiedShapes(ShapeRef(p.id)) match {
       case Left(msg) => err(noSiblingsError(attempt.node, p, msg, attempt))
       case Right(shapes) => for {
         rs <- filterConformShapes(values,shapes,attempt)
-      } yield rs
+      } yield {
+        logger.info(s"Result of filtering on filterConformSiblings($values,...) = $rs")
+        rs
+      }
     }
   }
 
-  def filterConformShapes(values: Seq[RDFNode], shapes: Seq[ShapeRef], attempt: Attempt): Check[Seq[RDFNode]] = for {
-    cs <- values.map(value => conformsNodeShapes(value,shapes,attempt)).toList.sequence
-  } yield cs.filter(_._2 == false).map(_._1).toSeq
+  def filterConformShapes(values: Seq[RDFNode], shapes: Seq[ShapeRef], attempt: Attempt): Check[Seq[RDFNode]] = {
+    logger.info(s"FilterConformShapes(values=$values, shapes=$shapes)")
+    def checkValuesShapes: Check[List[(RDFNode, Boolean)]] = {
+      values.toList.map(value => conformsNodeShapes(value,shapes,attempt)).sequence
+    }
+    for {
+      cs <- checkValuesShapes // values.map(value => conformsNodeShapes(value,shapes,attempt)).toList.sequence
+      rs = cs.collect { case (n, false) => n }
+    } yield {
+      logger.info(s"Result of FilterConformShapes = $rs")
+      rs.toSeq
+    }
+  }
 
   def conformsNodeShapes(node: RDFNode, shapes: Seq[ShapeRef], attempt: Attempt): Check[(RDFNode,Boolean)] = for {
     ls <- checkLs(shapes.toList.map(nodeShapeRef(node,_,attempt)))
@@ -596,10 +613,11 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"$node is a IRI or Literal")
   }
 
-  def hasValuePropertyChecker(v: Value, os: List[RDFNode], attempt: Attempt, node: RDFNode, path: SHACLPath): CheckTyping = os.size match {
-    case 0 => err(hasValueErrorNoValue(node, attempt, v, path))
-    case 1 => hasValue(v)(attempt)(os.head)
-    case n => err(hasValueErrorMoreThanOne(node, attempt, v, path,n))
+  def hasValuePropertyChecker(v: Value, os: List[RDFNode], attempt: Attempt, node: RDFNode, path: SHACLPath): CheckTyping =
+    os.size match {
+     case 0 => err(hasValueErrorNoValue(node, attempt, v, path))
+     case 1 => hasValue(v)(attempt)(os.head)
+     case n => err(hasValueErrorMoreThanOne(node, attempt, v, path,n))
   }
 
   def hasValue(value: Value): NodeChecker = attempt => currentNode => {
@@ -688,7 +706,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     addLog(List(MsgEvidence(msg)))
 
   def addEvidence(attempt: Attempt, msg: String): Check[ShapeTyping] = {
-    println(s"** Adding evidence: $msg")
     val nodeShape = attempt.nodeShape
     for {
       t <- getTyping
@@ -801,9 +818,10 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   def showResult(t: ShapeTyping): String = {
-    // TODO Simplified...
-    Typing.showTyping[RDFNode,Shape,ViolationError,String].show(t)
-
+    def showRes(res: Either[Shape,Shape]) = res.fold("-" + _.showId,"+" + _.showId)
+    t.simplified.map{
+      case (node,res) => s"${node.toString} ${showRes(res)} "
+    }.mkString(",")
   }
 }
 

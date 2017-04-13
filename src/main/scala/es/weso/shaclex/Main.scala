@@ -71,12 +71,16 @@ object Main extends App with LazyLogging {
           rdf.getPrefixMap, schema.pm
         )
 
-        val resultSerialized = result.serialize(opts.resultFormat())
-        if (opts.showResult()) {
-              println(resultSerialized)
+        if (opts.showLog()) {
+          logger.info("Show log info = true")
+          // TODO...show result
         }
-        if (opts.outputFile.isDefined) {
-              FileUtils.writeFile(opts.outputFile(), resultSerialized)
+
+        if (opts.showResult() || opts.outputFile.isDefined) {
+          val resultSerialized = result.serialize(opts.resultFormat())
+          if (opts.showResult()) println(resultSerialized)
+          if (opts.outputFile.isDefined)
+            FileUtils.writeFile(opts.outputFile(), resultSerialized)
         }
 
         if (opts.cnvEngine.isDefined) {

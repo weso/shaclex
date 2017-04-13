@@ -6,35 +6,66 @@ prefix foaf:   <http://xmlns.com/foaf/0.1/>
 prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 
 :Marriage a sh:NodeShape ;
-    sh:property [
-      sh:path :member ;
+    sh:property :memberMale ;
+	sh:property :memberFemale .
+
+:memberMale sh:path :member ;
       sh:qualifiedMinCount 1 ;
-      sh:qualifiedMaxCount 1 ;
+      sh:qualifiedValueShape :MaleShape ;
+    .
+
+:memberFemale sh:path :member ;
+      sh:qualifiedMinCount 1 ;
+      sh:qualifiedValueShape :FemaleShape ;
+    .
+
+:MarriageDisjoint a sh:NodeShape ;
+    sh:property :memberMaleDisjoint ;
+	sh:property :memberFemaleDisjoint .
+
+:memberMaleDisjoint sh:path :member ;
+      sh:qualifiedMinCount 1 ;
       sh:qualifiedValueShape :MaleShape ;
       sh:qualifiedValueShapesDisjoint true ;
-    ] ;
-    sh:property [
-      sh:path :member ;
+    .
+
+:memberFemaleDisjoint sh:path :member ;
       sh:qualifiedMinCount 1 ;
-      sh:qualifiedMaxCount 1 ;
       sh:qualifiedValueShape :FemaleShape ;
       sh:qualifiedValueShapesDisjoint true ;
-] .
-
+    .
+	
+	
 :MaleShape a sh:NodeShape ;
   sh:property [ 
-   sh:path :gender ;
-   sh:hasValue :male 
+   sh:path :isMale ;
+   sh:hasValue true
   ] .
   
 :FemaleShape a sh:NodeShape ;
  sh:property [ 
-  sh:path :gender ;
-  sh:hasValue :female 
+  sh:path :isFemale ;
+  sh:hasValue true
 ] .  
 
 :marriage1 :member :alice, :bob .
-:alice :gender :female .
-:bob :gender :male .
+:alice :isFemale true .
+:bob :isMale true .
 
-:Marriage sh:targetNode :marriage1 .
+:marriageX :member :x1, :x2 .
+:x1 :isFemale true; 
+    :isMale true .
+:x2 :isFemale :true; 
+    :isMale true .
+
+#:Marriage sh:targetNode 
+#  :marriage1 
+#  :marriageX 
+#  .
+:MarriageDisjoint sh:targetNode 
+  # :marriage1 
+  :marriageX 
+  .
+  
+#:MaleShape sh:targetNode :bob, :x1 .
+#:FemaleShape sh:targetNode :alice .

@@ -32,20 +32,22 @@ abstract class Typing[Key, Value, Err, Evidence] {
 
   def getMap: Map[Key, Map[Value, TypingResult[Err, Evidence]]]
 
-  def simplified: Seq[(Key, Either[Value, Value])] = ???
+  type SimpleSeq = Seq[(Key, Either[Value, Value])]
 
-  /*{
-      val rs = getMap.map {
-      case (key, values) =>
-        values.map {
-          case (value, result) =>
-            if (result.isOK)
-              (key, Right(value))
-            else
-              (key, Left(value))
-        }
+  def simplified: SimpleSeq  = {
+    val zero: SimpleSeq = Seq()
+    def comb(x: SimpleSeq, current: (Key, Map[Value, TypingResult[Err,Evidence]])): SimpleSeq = {
+      val (key,mapValues) = current
+      def combValues(rest: SimpleSeq, pair: (Value, TypingResult[Err,Evidence])): SimpleSeq = {
+        val (value,result) = pair
+        val r = if (result.isOK) Right(value) else Left(value)
+        (key,r) +: rest
+      }
+      mapValues.foldLeft(zero)(combValues) ++ x
     }
-  } */
+    getMap.foldLeft(zero)(comb)
+  }
+
 }
 
 object Typing {

@@ -57,6 +57,7 @@ abstract class CheckerCats extends Checker {
 
   /**
     * Given a list of checks, return the list of values that pass
+    * It never fails (in case of failure, it ignores the value)
     */
   def checkLs[A](cs: List[Check[A]]): Check[List[A]] = {
     lazy val z: Check[List[A]] = ok(List())

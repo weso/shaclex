@@ -110,6 +110,14 @@ class MainOpts(
     noshort = true
   )
 
+  val showLog = toggle("showLog",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show log info",
+    descrNo = "don't show log info",
+    noshort = true
+  )
+
   val resultFormat = opt[String]("resultFormat",
     default = Some(defaultResultFormat),
     descr = "format to show result",

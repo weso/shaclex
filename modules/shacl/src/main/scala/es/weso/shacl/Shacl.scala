@@ -112,10 +112,6 @@ case class Schema(
   }
 }
 
-// TODO: Refactor to define Shape as
-//     sealed abstract class
-// NodeShape extends Shape
-// PropertyShape extends Shape
 sealed abstract class Shape {
   def id: RDFNode
   def targets: Seq[Target]
