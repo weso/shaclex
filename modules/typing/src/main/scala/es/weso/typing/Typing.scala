@@ -4,35 +4,48 @@ import cats.implicits._
 
 abstract class Typing[Key, Value, Err, Evidence] {
 
- type Evidences = List[Evidence]
+  type Evidences = List[Evidence]
 
- def hasType(key: Key, value: Value): Boolean =
-   getOkValues(key) contains value
+  def hasType(key: Key, value: Value): Boolean =
+    getOkValues(key) contains value
 
- def getValues(key: Key): Map[Value,TypingResult[Err,Evidence]]
+  def getValues(key: Key): Map[Value, TypingResult[Err, Evidence]]
 
- def getOkValues(key: Key): Set[Value]
+  def getOkValues(key: Key): Set[Value]
 
- def getEvidences(key: Key, value: Value): Option[List[Evidence]]
+  def getEvidences(key: Key, value: Value): Option[List[Evidence]]
 
- def getFailedValues(key: Key): Set[Value]
+  def getFailedValues(key: Key): Set[Value]
 
   def addEvidences(key: Key, value: Value,
-      es: List[Evidence]): Typing[Key,Value,Err,Evidence]
+                   es: List[Evidence]): Typing[Key, Value, Err, Evidence]
 
-  def addEvidence(key: Key, value: Value,
-      es: Evidence): Typing[Key,Value,Err,Evidence]
+  def addEvidence(key: Key, value: Value, es: Evidence): Typing[Key, Value, Err, Evidence]
 
-  def addNotEvidence(key: Key, value: Value, e: Err): Typing[Key,Value,Err,Evidence]
+  def addNotEvidence(key: Key, value: Value, e: Err): Typing[Key, Value, Err, Evidence]
 
-  def addType(key:Key, value:Value,
-      evidences: List[Evidence] = List()): Typing[Key,Value,Err,Evidence] =
-        addEvidences(key,value,evidences)
+  def addType(key: Key, value: Value,
+              evidences: List[Evidence] = List()): Typing[Key, Value, Err, Evidence] =
+    addEvidences(key, value, evidences)
 
-  def combineTyping(t: Typing[Key,Value,Err,Evidence]): Typing[Key,Value,Err,Evidence]
+  def combineTyping(t: Typing[Key, Value, Err, Evidence]): Typing[Key, Value, Err, Evidence]
 
-  def getMap: Map[Key, Map[Value,TypingResult[Err,Evidence]]]
+  def getMap: Map[Key, Map[Value, TypingResult[Err, Evidence]]]
 
+  def simplified: Seq[(Key, Either[Value, Value])] = ???
+
+  /*{
+      val rs = getMap.map {
+      case (key, values) =>
+        values.map {
+          case (value, result) =>
+            if (result.isOK)
+              (key, Right(value))
+            else
+              (key, Left(value))
+        }
+    }
+  } */
 }
 
 object Typing {
@@ -50,7 +63,6 @@ object Typing {
     val zero : Typing[Key,Value,Err,Evidence] = Typing.empty
     ts.foldLeft(zero)(_.combineTyping(_))
   }
-
 
   implicit def showTyping[
     Key: Show,

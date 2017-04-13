@@ -30,7 +30,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     cnvResult(r,rdf)
   }
 
-  def cnvResult(r:CheckResult[ViolationError, ShapeTyping, List[(es.weso.shacl.NodeShapePair,String)]],
+  def cnvResult(r:CheckResult[ViolationError, ShapeTyping, List[Evidence]],
                 rdf: RDFReader): Result =
     Result(isValid = r.isOK,
            message = if (r.isOK) "Valid" else "Not valid",

@@ -1,10 +1,11 @@
 package es.weso.shacl.converter
-import es.weso.shacl
-import es.weso._
+
+import cats._
+import cats.data._
+import cats.implicits._
 import es.weso.converter._
 import es.weso.rdf.nodes._
-import cats._, data._
-import cats.implicits._
+import es.weso.{shacl, _}
 
 object Shacl2ShEx extends Converter {
   

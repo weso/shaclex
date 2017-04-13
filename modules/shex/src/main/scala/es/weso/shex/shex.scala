@@ -368,6 +368,10 @@ abstract sealed trait ShapeLabel {
     case IRILabel(iri) => pm.qualifyIRI(iri)
     case BNodeLabel(bn) => bn.toString
   }
+  def toRDFNode: RDFNode = this match {
+    case IRILabel(iri) => iri
+    case BNodeLabel(bn) => bn
+  }
 }
 case class IRILabel(iri: IRI) extends ShapeLabel
 case class BNodeLabel(bnode: BNodeId) extends ShapeLabel

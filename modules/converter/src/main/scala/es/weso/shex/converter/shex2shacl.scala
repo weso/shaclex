@@ -13,33 +13,45 @@ import es.weso.rdf._
 
 object ShEx2Shacl extends Converter {
 
-  def shex2Shacl(schema: shex.Schema): Result[shacl.Schema] =
+  // TODO: Refactor this code to use a StateT
+  var bNodeCounter: Int = 0
+
+  def newBNode: RDFNode = {
+    bNodeCounter += 1
+    BNodeId("shape" + (bNodeCounter))
+  }
+
+  var shapesMap: Map[shacl.ShapeRef,shacl.Shape] = Map()
+
+  def shex2Shacl(schema: shex.Schema): Result[shacl.Schema] = {
+    bNodeCounter = 0 // Reset counter
+    shapesMap = Map()
     getShaclShapes(schema).map(
-      shapes => shacl.Schema(
+      smap => shacl.Schema(
         pm = schema.prefixMap,
-        shapesMap = ??? // shapes
+        shapesMap = shapesMap
       )
     )
+  }
 
   def cnvPrefixMap(pm: PrefixMap): Map[String,IRI] = {
     pm.pm.map{ case (prefix,value) => (prefix.str,value) }
   }
 
-  def getShaclShapes(schema: shex.Schema): Result[Seq[shacl.Shape]] = {
-    val shapesMap: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())
-    val zero: Result[Seq[shacl.Shape]] = ok(Seq())
-    def comb(rs: Result[Seq[shacl.Shape]],
-             shapeExpr: shex.ShapeExpr): Result[Seq[shacl.Shape]] = {
-      val r1: Result[IRI] = shapeExpr.id match {
+  def getShaclShapes(schema: shex.Schema): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
+    val shexShapes: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())
+    val zero: Result[Map[shacl.ShapeRef, shacl.Shape]] = ok(Map())
+    def comb(rs: Result[Map[shacl.ShapeRef, shacl.Shape]],
+             shapeExpr: shex.ShapeExpr): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
+      val r1: Result[shacl.ShapeRef] = shapeExpr.id match {
         case None => err(s"shapeExpr $shapeExpr doesn't have id: Not implemented resolution of this case yet")
-        case Some(lbl) => schema.resolveShapeLabel(lbl).toValidatedNel
+        case Some(lbl) => ok(ShapeRef(lbl.toRDFNode))
       }
       val r2: Result[shacl.Shape] = cnvShapeExpr(shapeExpr, schema)
-//      val r : Result[Shape] = (r1 |@| r2).map((iri, shape) => shape.addId(iri))
-//      r.product(rs).map{ case (x,xs) => x +: xs }
-      ???
+      val r : Result[(shacl.ShapeRef, shacl.Shape)] = (r1 |@| r2).map { case (sref,shape) => (sref,shape)}
+      r.product(rs).map{ case (pair,smap) => smap + pair}
     }
-    shapesMap.foldLeft(zero)(comb)
+    shexShapes.foldLeft(zero)(comb)
   }
 
   def cnvShapeExpr(se: shex.ShapeExpr, schema: shex.Schema): Result[shacl.Shape] =
@@ -92,9 +104,9 @@ object ShEx2Shacl extends Converter {
 
   def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema): Result[shacl.Shape] = {
     te match {
-     case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf conversion")
-     case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf conversion")
-     case e: shex.Inclusion => err(s"cnvTripleExpr: Not implemented Inclusion conversion")
+     case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf conversion yet")
+     case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf conversion yet")
+     case e: shex.Inclusion => err(s"cnvTripleExpr: Not implemented Inclusion conversion yet")
      case tc: shex.TripleConstraint => cnvTripleConstraint(tc,schema)
     }
   }
@@ -139,9 +151,12 @@ object ShEx2Shacl extends Converter {
   def cnvNodeConstraint(
        nc: shex.NodeConstraint,
        schema: shex.Schema): Result[shacl.Shape] = {
-/*    val nkShape: Result[List[Component]] =
+
+    val nkShape: Result[List[Component]] =
       nc.nodeKind.map(cnvNodeKind(_)).sequence.map(_.toList)
-    nkShape.map(nks => shacl.Shape.empty.copy(components = nks)) */
+
+//    nkShape.map(nks => shacl.Shape.empty(newRef).copy(components = nks))
+//    nkShape
     ???
   }
 

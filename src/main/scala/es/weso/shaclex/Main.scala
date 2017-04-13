@@ -39,20 +39,15 @@ object Main extends App with LazyLogging {
    val validateOptions = for {
       rdf <- getRDFReader(opts,baseFolder)
       schema <- {
-        logger.info("RDF read...now reading schema")
         getSchema(opts,baseFolder,rdf)
       }
     } yield (rdf,schema)
 
-    logger.info("...processing...")
     validateOptions match {
       case Failure(e) => {
-        logger.info("Failing...")
-        logger.info(s"Exception: $e")
         println(s"Error: $e")
       }
       case Success((rdf,schema)) => {
-        logger.info("Success...")
         if (opts.showData()) {
           // If not specified uses the input schema format
           val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
@@ -69,8 +64,6 @@ object Main extends App with LazyLogging {
 
         val trigger: String = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
 
-        logger.info(s"Before validating with trigger $trigger")
-
         val result = schema.validate(rdf,
           trigger,
           Map(),
@@ -78,7 +71,6 @@ object Main extends App with LazyLogging {
           rdf.getPrefixMap, schema.pm
         )
 
-        logger.info(s"After validation, result=$result")
         val resultSerialized = result.serialize(opts.resultFormat())
         if (opts.showResult()) {
               println(resultSerialized)
