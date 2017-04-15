@@ -37,46 +37,53 @@ case class Schema(
       case Some(shape) => Right(shape)
   }
 
-  def siblingQualifiedShapes(s: ShapeRef): Either[String,Seq[ShapeRef]] = parent(s) match {
-    case Left(msg) => Left(msg)
-    case Right(parentRef) => {
-      shapesMap.get(parentRef) match {
-        case None => Left(s"siblingQualifiedShapes(${s.showId}): not found shape of parent ${parentRef.showId}")
-        case Some(parent) => Right(parent.propertyShapes.filter(p => p != s && hasQualifiedShape(p)))
-      }
-    }
+  def siblingQualifiedShapes(s: ShapeRef): List[ShapeRef] = {
+    println(s"siblingShapes $s")
+    val parentShapes: List[Shape] =
+      parents(s).
+        map(shapesMap.get(_)).
+        collect { case Some(shape) => shape}
+    println(s"parent shapes $parentShapes")
+    val qualifiedPropertyShapes =
+      parentShapes.
+        flatMap(_.propertyShapes) .
+        filter(_ != s)
+    println(s"step1 ${parentShapes.flatMap(_.propertyShapes)}")
+    println(s"step2 ${parentShapes.flatMap(_.propertyShapes).filter(_!=s)}")
+//    println(s"step2 ${parentShapes.map(_.propertyShapes).filter(_!=s)}")
+    println(s"qualified parent shapes $qualifiedPropertyShapes")
+    collectQualifiedValueShapes(qualifiedPropertyShapes)
   }
 
-  def hasQualifiedShape(p: ShapeRef): Boolean = shapesMap.get(p) match {
-    case None => false
-    case Some(shape) => shape.components.find(c => c match {
-      case x: QualifiedValueShape => true
-      case _ => false
-    }).isDefined
+  def collectQualifiedValueShapes(ls: List[ShapeRef]): List[ShapeRef] = {
+    val zero: List[ShapeRef] = List()
+    def comb(xs: List[ShapeRef], x: ShapeRef): List[ShapeRef] =
+      qualifiedShapes(x) ++ xs
+    ls.foldLeft(zero)(comb)
+  }
+
+  def qualifiedShapes(p: ShapeRef): List[ShapeRef] = shapesMap.get(p) match {
+    case None => List()
+    case Some(shape) =>
+      shape.components.collect{ case x: QualifiedValueShape => x.shape }.toList
   }
 
   /* Find shape x such that x sh:property p
    */
-  def parent(p: ShapeRef): Either[String,ShapeRef] = {
-    findShapeWithPropertyShape(this.shapeRefs,p)
+  def parents(p: ShapeRef): List[ShapeRef] = {
+    shapesWithPropertyShape(this.shapeRefs,p)
   }
 
-  private def findShapeWithPropertyShape(ls: Seq[ShapeRef], p: ShapeRef): Either[String,ShapeRef] = {
-    val zero: Either[String,ShapeRef] = Left(s"Not found shape with propertyShape $p in shapes: ${ls.map(_.showId).mkString(",")}")
-    def comb(s: ShapeRef, rest: Either[String,ShapeRef]): Either[String,ShapeRef] = hasPropertyShape(s,p) match {
-      case Left(_) => rest
-      case Right(sref) => Right(sref)
-    }
-    ls.foldRight(zero)(comb)
+  private def shapesWithPropertyShape(ls: Seq[ShapeRef], p: ShapeRef): List[ShapeRef] = {
+    ls.filter(hasPropertyShape(_,p)).toList
   }
 
-  private def hasPropertyShape(s: ShapeRef, p: ShapeRef): Either[String,ShapeRef] = {
+  private def hasPropertyShape(s: ShapeRef, p: ShapeRef): Boolean = {
     shapesMap.get(s) match {
-      case None => Left(s"hasPropertyShape(${s.showId},${p.showId}): Not found shape with ref $s")
+      case None => false  // TODO: Maybe raise an error
       case Some(shape) =>
-        if (shape.propertyShapes.contains(p)) Right(s)
-        else
-          findShapeWithPropertyShape(shape.propertyShapes, p)
+        if (shape.propertyShapes.contains(p)) true
+        else false
     }
   }
 

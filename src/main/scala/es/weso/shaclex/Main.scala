@@ -20,7 +20,16 @@ import java.io.File
 object Main extends App with LazyLogging {
 
   override def main(args: Array[String]): Unit = {
+    try {
+      run(args)
+    } catch {
+      case (e:Exception) => {
+        println(s"Error: ${e.getMessage}")
+      }
+    }
+  }
 
+  def run(args: Array[String]): Unit = {
    val opts = new MainOpts(args, errorDriver)
    opts.verify()
 

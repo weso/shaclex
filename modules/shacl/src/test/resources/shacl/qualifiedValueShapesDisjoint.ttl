@@ -37,10 +37,12 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 	
 	
 :MaleShape a sh:NodeShape ;
-  sh:property [ 
+  sh:property :propertyMaleShape .
+  
+:propertyMaleShape  
    sh:path :isMale ;
    sh:hasValue true
-  ] .
+  .
   
 :FemaleShape a sh:NodeShape ;
  sh:property [ 
@@ -55,7 +57,7 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 :marriageX :member :x1, :x2 .
 :x1 :isFemale true; 
     :isMale true .
-:x2 :isFemale :true; 
+:x2 :isFemale true; 
     :isMale true .
 
 #:Marriage sh:targetNode 
@@ -63,9 +65,15 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 #  :marriageX 
 #  .
 :MarriageDisjoint sh:targetNode 
-  # :marriage1 
-  :marriageX 
+  :marriage1 
   .
   
-#:MaleShape sh:targetNode :bob, :x1 .
-#:FemaleShape sh:targetNode :alice .
+:NotMarriageDisjoint a sh:NodeShape ;
+  sh:not :MarriageDisjoint .
+
+:NotMarriageDisjoint sh:targetNode :marriageX .
+  
+:MaleShape sh:targetNode 
+   :bob, :x1, :x2 .
+   
+:FemaleShape sh:targetNode :alice, :x1, :x2 .

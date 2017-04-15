@@ -12,3 +12,10 @@
 :x :p "a" .
 
 :y :p 1, 2 .
+
+:NotS a sh:NodeShape ;
+  sh:not :S .
+  
+:NotS sh:targetNode :z .
+
+:z :q 1 .

@@ -18,3 +18,10 @@
 :y :q 1, 2 .
 
 :z :p :y .
+
+:NotS a sh:NodeShape ;
+  sh:not :S .
+  
+:NotS sh:targetNode :bad1 .
+
+:bad1 :p [] .

@@ -120,7 +120,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
       _ <- addTriple(node,sh_oneOrMorePath,pathNode)
     } yield node
 /*    case SequencePath(ps) => for {
-      node <- createBNode
+      list <- saveRDFList(ps, )
       pathNodes <- makePath(p)
       _ <- addTriple(node,sh_oneOrMorePath,pathNode)
     } yield node
@@ -129,7 +129,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
       pathNodes <- makePath(p)
       _ <- addTriple(node,sh_oneOrMorePath,pathNode)
     } yield node */
-    case _ => throw new Exception(s"Not implemented path yet: $path")
+    case _ => throw new Exception(s"Not implemented path generation to RDF yet: $path")
   }
 
   def component(id: RDFNode)(c: Component): RDFSaver[Unit] = c match {

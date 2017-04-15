@@ -52,21 +52,22 @@ class SiblingsTest extends FunSpec
         |""".stripMargin
   val psFemale = IRI(ex + "PsFemale")
   val psMale = IRI(ex + "PsMale")
+  val maleShape = IRI(ex + "MaleShape")
+  val femaleShape = IRI(ex + "FemaleShape")
   val marriage = IRI(ex + "Marriage")
 
   describe("Parent") {
 
     it("should be able to find parent of a shape") {
-      val eitherParent: Either[String, ShapeRef] = for {
+      val eitherParents: Either[String, List[ShapeRef]] = for {
         rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
-//        shape <- schema.shape(psFemale)
-        parent <- schema.parent(ShapeRef(psFemale))
-      } yield parent
-      eitherParent match {
-        case Right(p) => {
-          info(s"Parent found: $p")
-          p.id shouldBe (marriage)
+      } yield schema.parents(ShapeRef(psFemale))
+
+      eitherParents match {
+        case Right(ps) => {
+          info(s"Parents found: $ps")
+          ps should contain only (ShapeRef(marriage))
         }
         case Left(e) => fail(e)
       }
@@ -75,16 +76,15 @@ class SiblingsTest extends FunSpec
     describe("SiblingQualifiedValueShapes") {
       it("should be able to find siblings of a shape") {
 
-        val eitherShapes: Either[String, Seq[ShapeRef]] = for {
+        val eitherShapes: Either[String, List[ShapeRef]] = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
           schema <- RDF2Shacl.getShacl(rdf)
-          shapes <- schema.siblingQualifiedShapes(ShapeRef(psFemale))
-        } yield (shapes)
+        } yield (schema.siblingQualifiedShapes(ShapeRef(psFemale)))
 
         eitherShapes match {
           case Right(ss) => {
             info(s"Siblings found: $ss")
-            ss.map(_.id) should contain only (psMale)
+            ss.map(_.id) should contain only (maleShape)
           }
           case Left(msg) => fail(msg)
         }

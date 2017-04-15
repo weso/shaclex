@@ -399,10 +399,17 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def maxCount = parsePredicateInt(sh_maxCount, MaxCount)
 
   def hasValue: RDFParser[Component] = (n,rdf) => {
+    logger.info(s"Parsing hasValue on $n")
     for {
      o <- objectFromPredicate(sh_hasValue)(n,rdf)
-     v <- node2Value(o)
-    } yield HasValue(v)
+     v <- {
+       logger.info(s"Object of hasValue $n = $o")
+       node2Value(o)
+     }
+    } yield {
+      logger.info(s"Value parsed: $v")
+      HasValue(v)
+    }
   }
 
   def in: RDFParser[Component] = (n,rdf) => {
@@ -415,6 +422,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def node2Value(n: RDFNode): Either[String, Value] = {
     n match {
       case i: IRI => parseOk(IRIValue(i))
+      case l: Literal => parseOk(LiteralValue(l))
       case _ => parseFail(s"Element $n must be a IRI or a Literal to be part of sh:in")
     }
   }
