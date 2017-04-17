@@ -1,5 +1,6 @@
 package es.weso.utils
 
+import es.weso.rdf.nodes.IRI
 import org.apache.jena.rdf.model.LiteralRequiredException
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
@@ -247,8 +248,7 @@ object JenaUtils {
     if (node.isResource()) Some(node.asResource())
     else None
   }
-  
-    
+
   /**
    * Given a class `cls`, obtains all nodes such as `node rdf:type/rdfs:subClassOf* cls`  
    */

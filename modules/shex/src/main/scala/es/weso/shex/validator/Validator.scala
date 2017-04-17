@@ -16,6 +16,7 @@ import es.weso.rdf.PREFIXES._
 import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
 import ShExChecker._
+import es.weso.rdf.jena.JenaMapper
 import es.weso.shex.compact.CompactShow
 
 import scala.util.{Failure, Success}
@@ -227,12 +228,18 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     checkSome(cs, ViolationError.msgErr(s"${node.show} doesn't belong to set ${values}"))
   }
 
+  def hasDatatype(node: RDFNode, datatype: IRI): Either[String,RDFNode] = {
+    JenaMapper.wellTypedDatatype(node,datatype)
+  }
+  
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
     node match {
-      case l: Literal =>
-        checkCond(l.dataType == datatype, attempt,
-          msgErr(s"${node.show} doesn't have datatype ${datatype.show}"),
-          s"${node.show} has datatype ${datatype.show}")
+      case l: Literal => hasDatatype(node, datatype) match {
+        case Left(s) => errStr(s"${attempt} ${node.show} doesn't have datatype ${datatype.show}: $s")
+        case Right(_) =>
+          checkCond(true, attempt, msgErr(s"${node.show} doesn't have datatype ${datatype.show}"),
+            s"${node.show} has datatype ${datatype.show}")
+      }
       case _ => errStr(
         s"${attempt} ${node.show} doesn't have datatype ${datatype.show} because it is not a literal"
        )

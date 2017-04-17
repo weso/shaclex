@@ -8,6 +8,7 @@ import cats.implicits._
 import showShacl._
 import es.weso.typing._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.rdf.jena.JenaMapper
 import es.weso.rdf.path.SHACLPath
 import es.weso.utils.RegEx
 
@@ -769,12 +770,8 @@ case class Validator(schema: Schema) extends LazyLogging {
     value.matchNode(node)
   }
 
-  def hasDatatype(node: RDFNode, d: IRI): Boolean = {
-    node match {
-      case l: Literal => l.dataType == d
-      case _          => false
-    }
-  }
+  def hasDatatype(node: RDFNode, d: IRI): Boolean =
+    JenaMapper.wellTypedDatatype(node,d).isRight
 
   // TODO: Refactor the following code...
   // move to SRDF and check SPARQL compatibility

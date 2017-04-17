@@ -19,6 +19,8 @@ object JenaMapper {
 
   val logger = Logger("JenaMapper")
 
+  lazy val emptyModel = ModelFactory.createDefaultModel()
+
   def RDFTriples2Model(triples: Set[RDFTriple], m: JenaModel): JenaModel = {
     for (t <- triples) {
       val subj = createResource(m, t.subj)
@@ -60,7 +62,9 @@ object JenaMapper {
     }
   }
 
-  def rdfNode2JenaNode(n: RDFNode, m: JenaModel): JenaRDFNode = {
+  def rdfNode2JenaNode(n: RDFNode, m: JenaModel): JenaRDFNode =
+   createRDFNode(m,n)
+  /*{
     n match {
       case i: IRI => m.getResource(i.str)
       case BNodeId(id) => {
@@ -76,7 +80,7 @@ object JenaMapper {
       case LangLiteral(str, Lang(lang)) => m.createLiteral(str, lang)
       case _                            => throw new Exception("rdfNode2JenaNode: unexpected node " + n)
     }
-  }
+  } */
 
   // TODO: Change this code to return an Either[String,RDFNode]
   def jenaNode2RDFNode(r: JenaRDFNode): RDFNode = {
@@ -219,6 +223,24 @@ object JenaMapper {
         val jenaPath = path2JenaPath(path,model)
         new P_OneOrMoreN(jenaPath)
       }
+    }
+  }
+
+  def wellTypedDatatype(node: RDFNode, expectedDatatype: IRI): Either[String, RDFNode] = {
+    node match {
+      case l: es.weso.rdf.nodes.Literal => {
+        Try{
+          val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm,l.dataType.str)
+          val value = jenaLiteral.getValue() // if it is ill-typed it raises an exception
+          (jenaLiteral.getDatatypeURI)
+        } match {
+          case Success(iri) =>
+            if (iri == expectedDatatype.str) Right(node)
+            else Left(s"Datatype obtained $iri != $expectedDatatype")
+          case Failure(e) => Left(e.getMessage())
+        }
+      }
+      case _ => Left(s"Node $node is not a typed literal")
     }
   }
 }

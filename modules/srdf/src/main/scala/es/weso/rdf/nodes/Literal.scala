@@ -5,6 +5,8 @@ trait Literal extends RDFNode {
 
   def isLangLiteral: Boolean
   def hasLang(lang: Lang): Boolean
+  def hasDatatype(iri: IRI): Boolean =
+    dataType == iri
   override def getLexicalForm: String
 }
 
@@ -14,6 +16,7 @@ case class DatatypeLiteral(lexicalForm: String, dataType: IRI) extends Literal {
   override def toString: String = {
     "\"" + lexicalForm + "\"^^" + dataType
   }
+
   override def getLexicalForm = lexicalForm
 }
 
