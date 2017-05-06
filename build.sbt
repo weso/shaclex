@@ -42,7 +42,7 @@ herokuProcessTypes in Compile := Map(
 
 lazy val commonSettings = Seq(
   organization := "es.weso",
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.12.2",
   version := shaclexVersion,
 //  scalaOrganization := "org.typelevel",
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),

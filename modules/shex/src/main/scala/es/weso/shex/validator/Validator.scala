@@ -231,7 +231,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   def hasDatatype(node: RDFNode, datatype: IRI): Either[String,RDFNode] = {
     JenaMapper.wellTypedDatatype(node,datatype)
   }
-  
+
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
     node match {
       case l: Literal => hasDatatype(node, datatype) match {
