@@ -14,23 +14,24 @@ reStartArgs := Seq("--server")
 parallelExecution in Test := false
 
 // Versions of common packages
-lazy val antlrVersion     = "4.5"
-lazy val circeVersion     = "0.7.0"
-lazy val effVersion       = "3.0.2"
-lazy val catsVersion      = "0.9.0"
-lazy val scalaTestVersion = "3.0.1"
-lazy val scalacticVersion = "3.0.1"
-lazy val logbackVersion   = "1.1.7"
-lazy val loggingVersion   = "3.5.0"
-lazy val http4sVersion    = "0.16.0-cats-SNAPSHOT"
-//lazy val rhoVersion       = "0.12.0a"
-lazy val scalatagsVersion = "0.6.2"
+lazy val antlrVersion         = "4.5"
+lazy val circeVersion         = "0.7.0"
+lazy val effVersion           = "3.0.2"
+lazy val catsVersion          = "0.9.0"
+lazy val scalaTestVersion     = "3.0.1"
+lazy val scalacticVersion     = "3.0.1"
+lazy val logbackVersion       = "1.1.7"
+lazy val loggingVersion       = "3.5.0"
+lazy val http4sVersion        = "0.16.0-cats-SNAPSHOT"
+//lazy val rhoVersion         = "0.12.0a"
+lazy val scalatagsVersion     = "0.6.2"
 lazy val kindProjectorVersion = "0.9.3"
-lazy val scallopVersion   = "2.0.6"
-lazy val jenaVersion      = "3.1.1"
-lazy val diffsonVersion   = "2.1.2"
-lazy val xercesVersion    = "2.11.0"
-lazy val sextVersion      = "0.2.4"
+lazy val scallopVersion       = "2.0.6"
+lazy val jenaVersion          = "3.1.1"
+lazy val diffsonVersion       = "2.1.2"
+lazy val xercesVersion        = "2.11.0"
+lazy val sextVersion          = "0.2.4"
+lazy val scalaGraphVersion    = "1.11.5"
 
 herokuAppName in Compile := "shaclex"
 
@@ -224,6 +225,17 @@ lazy val typing =
     )
   )
 
+lazy val cycleChecker =
+  project.in(file("modules/cycleChecker")).
+  settings(commonSettings: _*).
+  settings(publishSettings: _*).
+  settings(
+    libraryDependencies ++= Seq(
+      "org.scala-graph" %% "graph-core" % scalaGraphVersion, 
+      "org.typelevel" %% "cats" % catsVersion
+    )
+  )
+
 lazy val utils =
   project.in(file("modules/utils")).
   settings(commonSettings: _*).
@@ -272,7 +284,6 @@ lazy val docSettings = unidocSettings ++ Seq(
   git.remoteRepo := "git@github.com:labra/shaclex.git",
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.svg" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
-
 
 lazy val noPublishSettings = Seq(
   publish := (),
