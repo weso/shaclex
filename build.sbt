@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.62"
+lazy val shaclexVersion = "0.0.63"
 
 cancelable in Global := true
 fork := true
