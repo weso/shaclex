@@ -28,6 +28,7 @@ lazy val scalatagsVersion     = "0.6.2"
 lazy val kindProjectorVersion = "0.9.3"
 lazy val scallopVersion       = "2.0.6"
 lazy val jenaVersion          = "3.1.1"
+lazy val jgraphtVersion       = "1.0.1"
 lazy val diffsonVersion       = "2.1.2"
 lazy val xercesVersion        = "2.11.0"
 lazy val sextVersion          = "0.2.4"
@@ -81,6 +82,16 @@ lazy val schema =
   settings(publishSettings: _*).
   dependsOn(shex, shacl)
 
+lazy val graphs =
+  project.in(file("modules/graphs")).
+  settings(commonSettings: _*).
+  settings(publishSettings: _*).
+  settings(
+    libraryDependencies ++=
+      Seq(
+	   "org.jgrapht" % "jgrapht-core" % jgraphtVersion
+      )
+  )
 
 lazy val shacl =
   project.in(file("modules/shacl")).

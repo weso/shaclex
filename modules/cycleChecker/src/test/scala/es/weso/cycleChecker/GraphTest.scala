@@ -4,6 +4,7 @@ import scalax.collection.Graph
 import scalax.collection.GraphPredef._, scalax.collection.GraphEdge._
 import scalax.collection.edge.LDiEdge     // labeled directed edge
 import scalax.collection.edge.Implicits._ // shortcuts
+// import scalax.collection.connectivity._
 
 class GraphTest extends FunSpec with Matchers {
   it("Should be able to create a graph") {
