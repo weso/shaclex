@@ -40,6 +40,11 @@ case class Schema(
     shapeList.map(_.id).flatten
   }
 
+  def negCycles: Set[Set[ShapeLabel]] = {
+    // TODO
+    Set()
+  }
+
 }
 
 abstract sealed trait ShapeExpr {

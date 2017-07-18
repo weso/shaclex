@@ -16,7 +16,11 @@ trait DepGraph[Node] {
 
   def empty: DepGraph[Node]
   
-  def containsNegCycle: Boolean
+  def containsNegCycle: Boolean = {
+    !negCycles.isEmpty
+  }
+
+  def negCycles: Set[Set[Node]]
 
 }
 

@@ -33,8 +33,6 @@ class DepGraphTest
       val g = DepGraph.empty[String].
        addPosEdge("a","b").
        addNegEdge("a","c")
-
-      println(s"graph a->b, a->c: $g")
       g.containsNegCycle should be(false)
     }
     
@@ -49,13 +47,16 @@ class DepGraphTest
       g.containsNegCycle should be(false)
     }
 
-    it("Should calculate if graph has neg cycles when it has") {
+    it("Should calculate neg cycles") {
       val g = DepGraph.empty[String].
        addNegEdge("a","b").
        addPosEdge("a","c").
        addPosEdge("b","d").
        addPosEdge("d","a")
-      println(s"graph: $g")
+      val cycles = g.negCycles
+      cycles should have size 1
+      val cycle = cycles.head
+      cycle should contain theSameElementsAs Set("a","b","d")
       g.containsNegCycle should be(true)
     }
   }

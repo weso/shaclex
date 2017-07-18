@@ -69,7 +69,7 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     g.edgeSet.asScala.exists(e => e.posNeg == Neg) 
   }
   
-  def negCycles: Set[Set[Node]] = {
+  override def negCycles: Set[Set[Node]] = {
      val scAlg: StrongConnectivityAlgorithm[Node, Edge] = 
        new KosarajuStrongConnectivityInspector(graph)
      val sccSubgraphs =
@@ -81,17 +81,5 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     g.vertexSet.asScala.toSet
   }
   
-  override def containsNegCycle: Boolean = {
-     
-/*     println(s"SCC of graph $graph")  
-     for (s <- sccSubgraphs) {
-       println(s)
-       if (containsNegEdge(s)) println("Has neg!!")
-     } */
-    val nc = negCycles
-    println(s"Neg cycles: $nc") 
-    !nc.isEmpty     
-  }
-
 }
 
