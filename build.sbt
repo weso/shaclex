@@ -127,7 +127,8 @@ lazy val shex =
     utils % "test -> test; compile -> compile",
     validating,
     rbe, 
-    manifest).
+    manifest,
+    graphs).
   settings(antlr4Settings: _*).
   settings(inConfig(compatTest)(Defaults.testSettings): _*).
   settings(
@@ -347,6 +348,11 @@ resolvers +=
 
 
 // EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
+EclipseKeys.eclipseOutput := Some(".target")
+EclipseKeys.withJavadoc := true
+EclipseKeys.useProjectId := true
+EclipseKeys.skipParents in ThisBuild := false
+
 
 // Publishing settings to BinTray
 

@@ -1,4 +1,4 @@
-addSbtPlugin("org.scoverage"            % "sbt-scoverage"          % "1.4.0")
+addSbtPlugin("org.scoverage"            % "sbt-scoverage"          % "1.5.0-RC1")
 addSbtPlugin("org.scoverage"            % "sbt-coveralls"          % "1.1.0")
 // addSbtPlugin("com.eed3si9n"             % "sbt-buildinfo"          % "0.6.1")
 addSbtPlugin("com.eed3si9n"             % "sbt-unidoc"             % "0.3.3")
@@ -15,10 +15,10 @@ addSbtPlugin("org.scalastyle"           %% "scalastyle-sbt-plugin" % "0.8.0")
 addSbtPlugin("org.scoverage"            % "sbt-scoverage"          % "1.5.0-RC1")
 addSbtPlugin("org.wartremover"          % "sbt-wartremover"        % "1.2.1")
 addSbtPlugin("io.spray"                 % "sbt-revolver"           % "0.8.0")
-addSbtPlugin("org.scala-js"             % "sbt-scalajs"            % "0.6.12")
+addSbtPlugin("org.scala-js"             % "sbt-scalajs"            % "0.6.13")
 addSbtPlugin("com.typesafe.sbt"         % "sbt-twirl"              % "1.3.0")
 addSbtPlugin("com.typesafe.sbt" 		    % "sbt-scalariform" 	     % "1.3.0")
-addSbtPlugin("com.typesafe.sbteclipse"  % "sbteclipse-plugin"      % "5.0.1")
+addSbtPlugin("com.typesafe.sbteclipse"  % "sbteclipse-plugin"      % "5.1.0")
 
 resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 

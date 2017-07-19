@@ -1,4 +1,5 @@
 package es.weso.shex
+import es.weso.depgraphs.{DepGraph, Neg, Pos, PosNeg}
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
@@ -40,16 +41,32 @@ case class Schema(
     shapeList.map(_.id).flatten
   }
 
-  def negCycles: Set[Set[ShapeLabel]] = {
-    // TODO
-    Set()
+  lazy val negCycles: Set[Set[ShapeExpr]] = {
+    val depGraph : DepGraph[ShapeExpr] = calculateDepGraph()
+    depGraph.negCycles
   }
 
+  def calculateDepGraph(): DepGraph[ShapeExpr] = {
+    shapes match {
+      case None => DepGraph.empty
+      case Some(shapes) => shapes.foldLeft(DepGraph.empty[ShapeExpr])(addDependency)
+    }
+  }
+
+  def addDependency(graph: DepGraph[ShapeExpr], se: ShapeExpr): DepGraph[ShapeExpr] = {
+    graph
+  }
 }
 
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
   def addId(lbl: ShapeLabel): ShapeExpr
+
+  /**
+    * List of shapelabels on which this shapeExpression depends
+    * dependencies can be positive or negative
+    */
+  def dependencies: List[(PosNeg, ShapeExpr)]
 }
 
 object ShapeExpr {
@@ -58,14 +75,17 @@ object ShapeExpr {
 
 case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def dependencies = shapeExprs.map((Pos,_))
 }
 
 case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def dependencies = shapeExprs.map((Pos,_))
 }
 
 case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def dependencies = List((Neg,shapeExpr))
 }
 
 case class NodeConstraint(
@@ -75,7 +95,10 @@ case class NodeConstraint(
     xsFacets: List[XsFacet],
     values: Option[List[ValueSetValue]]
     ) extends ShapeExpr {
-  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  // TODO
+  override def dependencies = List()
 }
 
 
@@ -141,6 +164,8 @@ case class Shape(
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
+  // TODO
+  override def dependencies = List()
 }
 
 object Shape{
@@ -168,10 +193,15 @@ object Shape{
 case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
   def id = None
   def addId(lbl: ShapeLabel) = this
+
+  // TODO: is this ok?
+  override def dependencies = List()
 }
 
 case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  override def dependencies = List()
 }
 
 sealed trait XsFacet {
