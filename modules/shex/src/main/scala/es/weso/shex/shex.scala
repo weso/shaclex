@@ -31,7 +31,7 @@ case class Schema(
   def qualify(label: ShapeLabel): String =
     label.qualifiedShow(prefixMap)
 
-
+  // TODO: Convert to Either[String,ShapeExpr]
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
     shapes.getOrElse(List()).find(_.id == Some(label))
 
@@ -41,32 +41,14 @@ case class Schema(
     shapeList.map(_.id).flatten
   }
 
-  lazy val negCycles: Set[Set[ShapeExpr]] = {
-    val depGraph : DepGraph[ShapeExpr] = calculateDepGraph()
-    depGraph.negCycles
-  }
+  lazy val negCycles: Either[String, Set[Set[ShapeExpr]]] =
+   Dependencies.negCycles(this)
 
-  def calculateDepGraph(): DepGraph[ShapeExpr] = {
-    shapes match {
-      case None => DepGraph.empty
-      case Some(shapes) => shapes.foldLeft(DepGraph.empty[ShapeExpr])(addDependency)
-    }
-  }
-
-  def addDependency(graph: DepGraph[ShapeExpr], se: ShapeExpr): DepGraph[ShapeExpr] = {
-    graph
-  }
 }
 
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
   def addId(lbl: ShapeLabel): ShapeExpr
-
-  /**
-    * List of shapelabels on which this shapeExpression depends
-    * dependencies can be positive or negative
-    */
-  def dependencies: List[(PosNeg, ShapeExpr)]
 }
 
 object ShapeExpr {
@@ -75,17 +57,15 @@ object ShapeExpr {
 
 case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
-  override def dependencies = shapeExprs.map((Pos,_))
+
 }
 
 case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
-  override def dependencies = shapeExprs.map((Pos,_))
 }
 
 case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
-  override def dependencies = List((Neg,shapeExpr))
 }
 
 case class NodeConstraint(
@@ -97,8 +77,6 @@ case class NodeConstraint(
     ) extends ShapeExpr {
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
-  // TODO
-  override def dependencies = List()
 }
 
 
@@ -164,8 +142,6 @@ case class Shape(
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
-  // TODO
-  override def dependencies = List()
 }
 
 object Shape{
@@ -194,14 +170,11 @@ case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
   def id = None
   def addId(lbl: ShapeLabel) = this
 
-  // TODO: is this ok?
-  override def dependencies = List()
 }
 
 case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
-  override def dependencies = List()
 }
 
 sealed trait XsFacet {
@@ -299,8 +272,7 @@ case class SemAct(name: IRI, code: Option[String])
 
 abstract sealed trait TripleExpr
 
-object TripleExpr {
-}
+// object TripleExpr { }
 
 case class EachOf(
     id: Option[ShapeLabel],
@@ -312,6 +284,7 @@ case class EachOf(
 ) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+
 }
 
 case class OneOf(
@@ -328,6 +301,7 @@ case class OneOf(
 
 case class Inclusion(include: ShapeLabel)
   extends TripleExpr {
+
 }
 
 case class TripleConstraint(

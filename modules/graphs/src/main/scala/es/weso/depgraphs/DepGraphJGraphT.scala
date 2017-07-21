@@ -39,21 +39,17 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     if (!graph.containsVertex(node)) graph.addVertex(node)
   }
   
-  def addEdge(node1: Node, node2: Node, edge: Edge): DepGraph[Node] = {
+  private def addEdge(node1: Node, node2: Node, edge: Edge): DepGraph[Node] = {
     checkVertex(node1)
     checkVertex(node2)
     graph.addEdge(node1,node2,edge)
     this
   }
+
+  override def addEdge(node1: Node, posNeg: PosNeg, node2: Node): DepGraph[Node] = {
+    addEdge(node1,node2,Edge(node1,posNeg,node2))
+  }
   
-  override def addPosEdge(node1: Node, node2: Node): DepGraph[Node] = {
-    addEdge(node1,node2,Edge(node1,Pos,node2))
-  }
-
-  override def addNegEdge(node1: Node, node2: Node): DepGraph[Node] = {
-    addEdge(node1,node2,Edge(node1,Neg,node2))
-  }
-
   override def outEdges(node: Node): Either[String,Set[(PosNeg,Node)]] = {
     println("Node: " + node)
     if (graph.containsVertex(node)) {
