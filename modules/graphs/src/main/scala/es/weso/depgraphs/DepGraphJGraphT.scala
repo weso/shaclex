@@ -61,7 +61,7 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     }
   }
 
-  def containsNegEdge(g: DirectedSubgraph[Node,Edge]): Boolean = {
+  private def containsNegEdge(g: DirectedSubgraph[Node,Edge]): Boolean = {
     g.edgeSet.asScala.exists(e => e.posNeg == Neg) 
   }
   
@@ -73,8 +73,23 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     sccSubgraphs.filter(containsNegEdge(_)).map(getNodes(_))
   }
   
-  def getNodes(g: DirectedSubgraph[Node,Edge]): Set[Node] = {
+  private def getNodes(g: DirectedSubgraph[Node,Edge]): Set[Node] = {
     g.vertexSet.asScala.toSet
+  }
+
+  def showPosNeg(pn:PosNeg): String = {
+    pn match {
+      case Pos => "-(+)->"
+      case Neg => "-(-)->"
+    }
+  }
+
+  def showEdges(showNode:Node => String): String = {
+    val str = new StringBuilder
+    for (edge <- graph.edgeSet.asScala) {
+      str ++= s"${showNode(edge.source)} ${showPosNeg(edge.posNeg)} ${showNode(edge.target)}\n"
+    }
+    str.toString
   }
   
 }

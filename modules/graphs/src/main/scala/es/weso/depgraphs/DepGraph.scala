@@ -26,6 +26,7 @@ trait DepGraph[Node] {
 
   def negCycles: Set[Set[Node]]
 
+  def showEdges(showNode: Node => String = (x => x.toString)): String
 }
 
 object DepGraph {

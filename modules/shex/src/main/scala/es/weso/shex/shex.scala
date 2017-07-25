@@ -41,8 +41,11 @@ case class Schema(
     shapeList.map(_.id).flatten
   }
 
-  lazy val negCycles: Either[String, Set[Set[ShapeExpr]]] =
+  def negCycles: Either[String, Set[Set[ShapeLabel]]] =
    Dependencies.negCycles(this)
+
+  def depGraph: Either[String, DepGraph[ShapeLabel]] =
+    Dependencies.depGraph(this)
 
 }
 
