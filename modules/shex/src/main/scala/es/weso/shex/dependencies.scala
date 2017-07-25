@@ -57,6 +57,7 @@ object Dependencies {
                    shape: ShapeExpr,
                    source: ShapeLabel,
                    posNeg: PosNeg): Either[String, List[(ShapeLabel, PosNeg, ShapeLabel)]] = {
+    // println(s"Calculating dependencies of shape $shape with source label $source and posNeg $posNeg")
     shape match {
       case s: ShapeAnd =>
         s.shapeExprs.map(dependencies(schema,_,source, posNeg)).sequenceU.map(_.flatten)
@@ -65,13 +66,13 @@ object Dependencies {
         s.shapeExprs.map(dependencies(schema,_,source, posNeg)).sequenceU.map(_.flatten)
 
       case s: ShapeNot =>
-        dependencies(schema,s,source,Neg)
+        dependencies(schema,s.shapeExpr,source,Neg)
 
       case nc: NodeConstraint => Right(List())
 
       case s: Shape => {
         // TODO: Add negative dependencies to EXTRAs
-        s.expression.map(dependenciesTripleExpr(source, schema, _, posNeg)).getOrElse(Right(List()))
+        s.expression.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).getOrElse(Right(List()))
       }
 
       case s: ShapeRef => Right(List((source, posNeg, s.reference)))
@@ -79,15 +80,16 @@ object Dependencies {
     }
   }
 
-  def dependenciesTripleExpr(source: ShapeLabel, schema: Schema, tripleExpr: TripleExpr, posNeg: PosNeg): Either[String, List[(ShapeLabel, PosNeg, ShapeLabel)]] = {
+  def dependenciesTripleExpr(schema: Schema, source: ShapeLabel, tripleExpr: TripleExpr, posNeg: PosNeg): Either[String, List[(ShapeLabel, PosNeg, ShapeLabel)]] = {
+    // println(s"Calculating dependencies of tripleExpr $tripleExpr with source label $source and posNeg $posNeg")
     tripleExpr match {
       case t: EachOf => {
         // TODO: Take into account max cardinality = 0 as a negative dependency?
-        t.expressions.map(dependenciesTripleExpr(source, schema, _, posNeg)).sequenceU.map(_.flatten)
+        t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequenceU.map(_.flatten)
       }
       case t: OneOf => {
         // TODO: Take into account max cardinality = 0 as a negative dependency?
-        t.expressions.map(dependenciesTripleExpr(source, schema, _, posNeg)).sequenceU.map(_.flatten)
+        t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequenceU.map(_.flatten)
       }
       case i: Inclusion => {
         val label = i.include
@@ -100,7 +102,7 @@ object Dependencies {
             // TODO: Should it be negative dependency?
             dependencies(schema,ve,source, posNeg.change)
           } else {
-            dependencies(schema,ve,source, posNeg.change)
+            dependencies(schema,ve,source, posNeg)
           }
         }
     }
