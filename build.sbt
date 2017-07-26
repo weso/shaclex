@@ -129,6 +129,7 @@ lazy val shapeMaps =
       libraryDependencies ++=
         Seq(
             "com.github.nikita-volkov" % "sext" % sextVersion
+          , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
           , "org.typelevel" %% "cats" % catsVersion
         )
     )
