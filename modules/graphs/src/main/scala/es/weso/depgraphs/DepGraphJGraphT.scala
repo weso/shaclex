@@ -8,6 +8,10 @@ import org.jgrapht.alg.KosarajuStrongConnectivityInspector
 import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm
 import org.jgrapht.alg.ConnectivityInspector 
 import collection.JavaConverters._
+import cats._
+import cats.data._
+import cats.implicits._
+
 
 case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
 
@@ -91,6 +95,24 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     }
     str.toString
   }
-  
+
+  def isomorphicWith(other: DepGraph[Node]): Either[String,Unit] = {
+    val nodes1 = this.nodes
+    val nodes2 = other.nodes
+    if (nodes1 == nodes2) {
+      val rs: List[Either[String, Unit]] = nodes1.map(n => outEdges(n) match {
+        case Left(msg) => Left(s"Cannot find outEdges of $n in graph1: $msg")
+        case Right(es1) => other.outEdges(n) match {
+          case Left(msg) => Left(s"Cannot find outEdges of $n in graph2. Error: $msg")
+          case Right(es2) => if (es1 == es2) {
+            Right(())
+          } else {
+            Left(s"Outedges of $n are different. Graph1 = $es1, Graph2 = $es2")
+          }
+        }
+      }).toList
+      rs.sequenceU.map(_ => ())
+    } else Left(s"Set of nodes is different. Nodes1 = $nodes1, nodes2 = $nodes2")
+  }
 }
 

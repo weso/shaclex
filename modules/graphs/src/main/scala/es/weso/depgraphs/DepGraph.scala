@@ -27,9 +27,12 @@ trait DepGraph[Node] {
   def negCycles: Set[Set[Node]]
 
   def showEdges(showNode: Node => String = (x => x.toString)): String
+
+  def isomorphicWith(g: DepGraph[Node]): Boolean
 }
 
 object DepGraph {
   def empty[Node] = DepGraphJGraphT[Node]().empty
+
 }
 
