@@ -27,7 +27,7 @@ abstract class NodeSelector
 case class RDFNodeSelector(node: RDFNode) extends NodeSelector
 case class TriplePattern(subjectPattern: Pattern, predicate: IRI, objectPattern: Pattern) extends NodeSelector
 sealed abstract class Pattern
-case class IRIPattern(iri: IRI) extends Pattern
+case class NodePattern(node: RDFNodeSelector) extends Pattern
 case object WildCard extends Pattern
 case object Focus extends Pattern
 

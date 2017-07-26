@@ -9,8 +9,9 @@ subjectTerm      : iri | rdfType ;
 objectTerm       : subjectTerm | literal ;
 
 // TODO: Check why the spec has iri instead of predicate
-triplePattern    : '{' KW_FOCUS predicate (objectTerm | '_' ) '}'
-                 | '{' (subjectTerm | '_') predicate KW_FOCUS '}' ;
+triplePattern    : '{' KW_FOCUS predicate (objectTerm | '_' ) '}' # focusSubject
+                 | '{' (subjectTerm | '_') predicate KW_FOCUS '}' # focusObject
+                 ;
 
 literal         : rdfLiteral
 				| numericLiteral

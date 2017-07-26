@@ -17,4 +17,15 @@ describe("ShapeMaps") {
   }
  }
 
+  describe("ShapeMaps parser") {
+
+    it("should be able to parse a simple shape map") {
+      val str = "<http://example.org/x> @ Start"
+      val expected = ShapeMap(associations = List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=Start)))
+      Parser.parseSchema(str) match {
+        case Left(msg) => fail(s"Failed to parse $str: $msg")
+        case Right(shapeMap) => shapeMap should be(expected)
+      }
+    }
+  }
 }

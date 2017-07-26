@@ -21,13 +21,67 @@ import scala.collection.JavaConverters._
   */
 class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
 
-  override def visitShapeMap(ctx: ShapeMapContext): Builder[ShapeMap] = ???
+  override def visitShapeMap(ctx: ShapeMapContext): Builder[ShapeMap] = for {
+    associations <- visitList(visitShapeAssociation,ctx.shapeAssociation())
+  } yield ShapeMap(associations)
+
+
+  override def visitShapeAssociation(ctx: ShapeAssociationContext): Builder[Association] = for {
+    nodeSelector <- visitNodeSelector(ctx.nodeSelector())
+    shapeLabel <- visitShapeLabel(ctx.shapeLabel())
+  } yield Association(nodeSelector, shapeLabel)
+
+  override def visitNodeSelector(ctx: NodeSelectorContext): Builder[NodeSelector] = ctx match {
+    case _ if isDefined(ctx.objectTerm()) => visitObjectTerm(ctx.objectTerm())
+    case _ if isDefined(ctx.triplePattern()) => visitTriplePattern(ctx.triplePattern())
+    case _ => err(s"Internal error visitNodeSelector: unknown ctx $ctx")
+  }
+
+  override def visitSubjectTerm(ctx: SubjectTermContext): Builder[RDFNodeSelector] = ctx match {
+    case _ if isDefined(ctx.iri()) => for {
+      iri <- visitIri(ctx.iri())
+    } yield RDFNodeSelector(iri)
+    case _ if isDefined(ctx.rdfType()) => ok(RDFNodeSelector(rdf_type))
+  }
+
+  override def visitObjectTerm(ctx: ObjectTermContext): Builder[RDFNodeSelector] = ctx match {
+    case _ if isDefined(ctx.subjectTerm()) => visitSubjectTerm(ctx.subjectTerm())
+    case _ if isDefined(ctx.literal()) => for {
+      literal <- visitLiteral(ctx.literal())
+    } yield RDFNodeSelector(literal)
+  }
+
+  def visitTriplePattern(ctx: TriplePatternContext): Builder[TriplePattern] = ctx match {
+    case s: FocusSubjectContext => for {
+      predicate <- visitPredicate(s.predicate())
+      objectTerm <- visitObjectTerm(s.objectTerm())
+    } yield TriplePattern(Focus, predicate, NodePattern(objectTerm))
+    case s: FocusObjectContext => for {
+      predicate <- visitPredicate(s.predicate())
+      subjectTerm <- visitSubjectTerm(s.subjectTerm())
+    } yield TriplePattern(NodePattern(subjectTerm), predicate, Focus)
+  }
+
+  override def visitPredicate(ctx: PredicateContext): Builder[IRI] = ctx match {
+    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri())
+    case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
+  }
+
+  override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = ctx match {
+    case _ if isDefined(ctx.AT_START()) => ok(Start)
+    case _ if isDefined(ctx.iri()) => for {
+      iri <- visitIri(ctx.iri())
+    } yield IRILabel(iri)
+    case _ if isDefined(ctx.KW_START()) => ok(Start)
+    case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
+  }
 
   override def visitLiteral(ctx: LiteralContext): Builder[Literal] = {
     ctx match {
       case _ if (isDefined(ctx.rdfLiteral)) => visitRdfLiteral(ctx.rdfLiteral())
       case _ if (isDefined(ctx.numericLiteral)) => visitNumericLiteral(ctx.numericLiteral())
       case _ if (isDefined(ctx.booleanLiteral)) => visitBooleanLiteral(ctx.booleanLiteral())
+      case _ => err(s"Internal error visitLiteral: unknown ctx $ctx")
     }
   }
   override def visitRdfLiteral(ctx: RdfLiteralContext): Builder[Literal] = {
@@ -208,8 +262,10 @@ class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
   def isDefined[A](x: A): Boolean = x != null
 
   def visitList[A, B](visitFn: A => Builder[B],
-                      ls: java.util.List[A]): Builder[List[B]] =
+                      ls: java.util.List[A]): Builder[List[B]] = {
     ls.asScala.toList.map(visitFn(_)).sequence
+  }
+
 
   def visitOpt[A,B](visitFn: A => Builder[B],
                     v: A): Builder[Option[B]] =
