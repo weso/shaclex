@@ -59,12 +59,12 @@ lazy val shaclex =
   settings(unidocSettings: _*).
   settings(commonSettings:_*).
   settings(publishSettings:_*).
-//  enablePlugins(BuildInfoPlugin).
-  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server).
-  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server).
+  enablePlugins(BuildInfoPlugin).
+  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,graphs).
+  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,graphs).
   settings(
-//    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-//    buildInfoPackage := "es.weso.shaclex.buildinfo",
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "es.weso.shaclex.buildinfo",
     unidocProjectFilter in (ScalaUnidoc, unidoc) :=
       inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++=
@@ -89,7 +89,8 @@ lazy val graphs =
   settings(
     libraryDependencies ++=
       Seq(
-	   "org.jgrapht" % "jgrapht-core" % jgraphtVersion
+      "org.typelevel" %% "cats" % catsVersion,
+      "org.jgrapht" % "jgrapht-core" % jgraphtVersion
       )
   )
 
@@ -113,6 +114,25 @@ lazy val shacl =
      , "org.typelevel" %% "cats" % catsVersion
      )
   )
+
+lazy val shapeMaps =
+  project.in(file("modules/shapeMaps")).
+    settings(commonSettings: _*).
+    settings(publishSettings: _*).
+    dependsOn(srdfJena).
+    settings(antlr4Settings: _*).
+    settings(
+      antlr4GenListener in Antlr4 := true,
+      antlr4GenVisitor in Antlr4 := true,
+      antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % antlrVersion,
+      antlr4PackageName in Antlr4 := Some("es.weso.shapeMaps.parser"),
+      libraryDependencies ++=
+        Seq(
+            "com.github.nikita-volkov" % "sext" % sextVersion
+          , "org.typelevel" %% "cats" % catsVersion
+        )
+    )
+
 
 lazy val compatTest = config("compat") extend (Test) describedAs("Tests that check compatibility (some may fail)")
 

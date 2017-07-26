@@ -1,6 +1,6 @@
 addSbtPlugin("org.scoverage"            % "sbt-scoverage"          % "1.5.0-RC1")
 addSbtPlugin("org.scoverage"            % "sbt-coveralls"          % "1.1.0")
-// addSbtPlugin("com.eed3si9n"             % "sbt-buildinfo"          % "0.6.1")
+addSbtPlugin("com.eed3si9n"             % "sbt-buildinfo"          % "0.7.0")
 addSbtPlugin("com.eed3si9n"             % "sbt-unidoc"             % "0.3.3")
 addSbtPlugin("com.github.gseitz"    	  % "sbt-release"            % "1.0.0")
 addSbtPlugin("com.jsuereth"         	  % "sbt-pgp"                % "1.0.0")

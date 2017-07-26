@@ -2,6 +2,7 @@ package es.weso.shex
 
 import cats._
 import cats.implicits._
+import es.weso.depgraphs.{DepGraph, Neg, Pos, PosNeg}
 import es.weso.rdf.nodes._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
@@ -16,38 +17,66 @@ import scala.util.{Failure, Success}
 
 class dependenciesTest extends FunSpec with Matchers with EitherValues {
 
+  // Some common values
+  val e = "http://example.org/"
+  val r : ShapeLabel = IRILabel(IRI(e + "R"))
+  val s : ShapeLabel = IRILabel(IRI(e + "S"))
+  val t : ShapeLabel = IRILabel(IRI(e + "T"))
+
   describe("Dependency graph") {
 
-    def depGraphTest(schema: String, expectedGraph: Set[(String, Set[String])]): Unit = {
+    def depGraphTest(schema: String, expectedGraph: Set[(ShapeLabel, Set[(PosNeg,ShapeLabel)])]): Unit = {
       it(s"should check that dependency graph of $schema matches $expectedGraph") {
+        val expectedDepGraph = DepGraph.makeGraph(expectedGraph)
         Schema.fromString(schema, "SHEXC") match {
           case Failure(e) => fail(s"Error $e parsing $schema")
           case Success(schema) => {
             schema.depGraph match {
               case Left(msg) => fail(s"Error $msg calculating dependency graph")
               case Right(depGraph) => {
-                info(s"Dependency graph: ${depGraph.showEdges()}")
+                depGraph.isomorphicWith(expectedDepGraph) match {
+                  case Left(msg) => {
+                    info(s"DepGraph obtained: ${depGraph.showEdges()}")
+                    info(s"DepGraph expected: ${expectedDepGraph.showEdges()}")
+                    fail(s"Graphs are not isomorphic: $msg")
+                  }
+                  case Right(()) => info(s"Graphs are isomorphic")
+                }
               }
             }
           }
         }
       }
     }
-    val e = "http://example.org/"
-    val s = e + "S"
-    val t = e + "T"
+
+
    depGraphTest(
-     s"""
-       |prefix : <$e>
-       |
+     s"""prefix : <$e>
        |:S { :p @:T }
-     """.stripMargin, Set((s, Set(t))))
+     """.stripMargin, Set((s, Set((Pos, t)))))
+
+    depGraphTest(
+      s"""prefix : <$e>
+      |:S { :p @:S }
+     """.stripMargin, Set((s, Set((Pos, s)))))
+
+    depGraphTest(
+      s"""prefix : <$e>
+         |:S NOT { :p @:S }
+     """.stripMargin, Set((s, Set((Neg, s)))))
+
+    depGraphTest(
+      s"""prefix : <$e>
+         |:S { :p @:T; :q NOT @:R }
+     """.stripMargin,
+      Set((s, Set((Pos, t), (Neg, r))))
+    )
+
   }
 
   describe("Negative cycles test") {
 
-    def negCyclesTest(schemaStr: String, negCyclesLabels: Set[Set[String]]): Unit = {
-      val negCyclesExpected: Set[Set[IRILabel]] = negCyclesLabels.map((vs: Set[String]) => vs.map((s: String) => IRILabel(IRI(s))))
+    def negCyclesTest(schemaStr: String, negCyclesLabels: Set[Set[ShapeLabel]]): Unit = {
       it(s"should check that negCycles of $schemaStr are $negCyclesLabels") {
         Schema.fromString(schemaStr, "SHEXC")
         match {
@@ -69,7 +98,7 @@ class dependenciesTest extends FunSpec with Matchers with EitherValues {
                   fail(s"Expected negCycles to be $negCyclesLabels but found no neg cycles")
                 }
                 case (false, false) => {
-                  cycles should contain theSameElementsAs (negCyclesExpected)
+                  cycles should contain theSameElementsAs (negCyclesLabels)
                 }
               }
             }
@@ -88,14 +117,19 @@ class dependenciesTest extends FunSpec with Matchers with EitherValues {
         stripMargin, Set())
 
     negCyclesTest(
-      """
-      |prefix : <http://example.org/>
-      |
+      """prefix : <http://example.org/>
       |:S { :p @:T } AND NOT @:R
       |:T { :p @:S }
     """.
         stripMargin, Set())
 
+    negCyclesTest(
+      """prefix : <http://example.org/>
+        |:S { :p @:T } AND NOT @:R
+        |:R { :q @:S }
+        |:T { :p @:S }
+      """.
+        stripMargin, Set(Set(r,s,t)))
 }
 
 }

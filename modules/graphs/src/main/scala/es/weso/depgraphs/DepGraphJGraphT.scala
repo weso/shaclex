@@ -96,7 +96,7 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     str.toString
   }
 
-  def isomorphicWith(other: DepGraph[Node]): Either[String,Unit] = {
+  override def isomorphicWith(other: DepGraph[Node]): Either[String,Unit] = {
     val nodes1 = this.nodes
     val nodes2 = other.nodes
     if (nodes1 == nodes2) {
@@ -112,7 +112,8 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
         }
       }).toList
       rs.sequenceU.map(_ => ())
-    } else Left(s"Set of nodes is different. Nodes1 = $nodes1, nodes2 = $nodes2")
+    } else
+      Left(s"Set of nodes is different. Nodes1 = $nodes1, nodes2 = $nodes2")
   }
 }
 
