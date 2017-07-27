@@ -15,19 +15,38 @@ case class ShapeMap(associations: List[Association]) {
     */
   def fixShapeMap(rdf: RDFReader): Either[String, ShapeMap] = {
     val empty: Either[String,ShapeMap] = Right(ShapeMap.empty)
+    def addNode(a:Association)(node: RDFNode, current: Either[String,ShapeMap]): Either[String,ShapeMap] = for {
+      shapeMap <- current
+    } yield shapeMap.addAssociation(Association(RDFNodeSelector(node), a.shapeLabel))
     def combine(a: Association, current: Either[String,ShapeMap]): Either[String,ShapeMap] = {
       a.nodeSelector match {
         case RDFNodeSelector(node) => for {
           sm <- current
         } yield sm.addAssociation(a)
-        case TriplePattern(Focus,p,o) => {
-          o match {
-            case WildCard => ???
-            case NodePattern(obj) => ???
-            case Focus => Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.nodeSelector}")
+        case TriplePattern(Focus,p,o) => o match {
+            case WildCard => {
+              val nodes = rdf.triplesWithPredicate(p).map(_.subj)
+              nodes.foldRight(current)(addNode(a))
+            }
+            case NodePattern(obj) => {
+              val nodes = rdf.triplesWithPredicateObject(p,obj).map(_.subj)
+              nodes.foldRight(current)(addNode(a))
+            }
+            case Focus =>
+              Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.nodeSelector}")
           }
+        case TriplePattern(s,p,Focus) => s match {
+          case WildCard => {
+            val nodes = rdf.triplesWithPredicate(p).map(_.obj)
+            nodes.foldRight(current)(addNode(a))
+          }
+          case NodePattern(subj) => {
+            val nodes = rdf.triplesWithPredicateObject(p,subj).map(_.obj)
+            nodes.foldRight(current)(addNode(a))
+          }
+          case Focus =>
+            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.nodeSelector}")
         }
-        case TriplePattern(s,p,Focus) => ???
         case _ => Left(s"FixShapeMap: Inconsistent triple pattern in node selector ${a.nodeSelector}")
       }
     }

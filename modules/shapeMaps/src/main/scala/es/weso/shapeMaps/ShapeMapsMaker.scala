@@ -58,12 +58,20 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
   def visitTriplePattern(ctx: TriplePatternContext): Builder[TriplePattern] = ctx match {
     case s: FocusSubjectContext => for {
       predicate <- visitPredicate(s.predicate())
-      objectTerm <- visitObjectTerm(s.objectTerm())
-    } yield TriplePattern(Focus, predicate, NodePattern(objectTerm))
+      objectPattern <-
+       if (isDefined(s.objectTerm())) for {
+         obj <- visitObjectTerm(s.objectTerm())
+       } yield NodePattern(obj)
+       else ok(WildCard)
+    } yield TriplePattern(Focus, predicate, objectPattern)
     case s: FocusObjectContext => for {
       predicate <- visitPredicate(s.predicate())
-      subjectTerm <- visitSubjectTerm(s.subjectTerm())
-    } yield TriplePattern(NodePattern(subjectTerm), predicate, Focus)
+      subjectPattern <-
+        if (isDefined(s.subjectTerm())) for {
+          subj <- visitSubjectTerm(s.subjectTerm())
+        } yield NodePattern(subj)
+        else ok(WildCard)
+    } yield TriplePattern(subjectPattern, predicate, Focus)
   }
 
   override def visitPredicate(ctx: PredicateContext): Builder[IRI] = ctx match {
