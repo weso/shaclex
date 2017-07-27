@@ -21,22 +21,27 @@ object Parser extends LazyLogging {
 
   def err[A](msg: String): Builder[A] = Left(msg)
 
-  def parseSchema(str: String): Either[String, ShapeMap] = {
+  def removeBOM(str: String): String = {
     val UTF8_BOM = "\uFEFF"
-    val s =
-      if (str.startsWith(UTF8_BOM)) {
-        logger.info("BOM detected and removed")
-        str.substring(1)
-      }
-      else str
-    val reader: JavaReader =
-      new InputStreamReader(new
-          ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    logger.info(s"str:\n$s")
-    parseSchemaReader(reader)
+    if (str.startsWith(UTF8_BOM)) {
+      logger.info("BOM detected and removed")
+      str.substring(1)
+    }
+    else str
   }
 
-  def parseSchemaReader(reader: JavaReader): Either[String, ShapeMap] = {
+  def parse(str: String,
+            nodesPrefixMap: PrefixMap,
+            shapesPrefixMap: PrefixMap): Either[String, ShapeMap] = {
+    val s = removeBOM(str)
+    val reader: JavaReader = new InputStreamReader(new
+          ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
+    parseSchemaReader(reader, nodesPrefixMap,shapesPrefixMap)
+  }
+
+  def parseSchemaReader(reader: JavaReader,
+                        nodesPrefixMap: PrefixMap,
+                        shapesPrefixMap: PrefixMap): Either[String, ShapeMap] = {
     val input: ANTLRInputStream = new ANTLRInputStream(reader)
     val lexer: ShapeMapLexer = new ShapeMapLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
@@ -48,7 +53,7 @@ object Parser extends LazyLogging {
     lexer.addErrorListener(errorListener)
     parser.addErrorListener(errorListener)
 
-    val maker = new ShapeMapsMaker() // new DebugSchemaMaker()
+    val maker = new ShapeMapsMaker(nodesPrefixMap, shapesPrefixMap)
     val builder = maker.visit(parser.shapeMap()).asInstanceOf[Builder[ShapeMap]]
     val errors = errorListener.getErrors
     if (errors.length > 0) {

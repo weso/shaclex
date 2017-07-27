@@ -19,7 +19,9 @@ import scala.collection.JavaConverters._
 /**
   * Visits the AST and builds the corresponding ShapeMaps classes
   */
-class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
+class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
+                     shapesPrefixMap: PrefixMap = PrefixMap.empty
+                    ) extends ShapeMapBaseVisitor[Any] with LazyLogging {
 
   override def visitShapeMap(ctx: ShapeMapContext): Builder[ShapeMap] = for {
     associations <- visitList(visitShapeAssociation,ctx.shapeAssociation())
@@ -32,23 +34,25 @@ class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
   } yield Association(nodeSelector, shapeLabel)
 
   override def visitNodeSelector(ctx: NodeSelectorContext): Builder[NodeSelector] = ctx match {
-    case _ if isDefined(ctx.objectTerm()) => visitObjectTerm(ctx.objectTerm())
+    case _ if isDefined(ctx.objectTerm()) => for {
+      node <- visitObjectTerm(ctx.objectTerm())
+    } yield RDFNodeSelector(node)
     case _ if isDefined(ctx.triplePattern()) => visitTriplePattern(ctx.triplePattern())
     case _ => err(s"Internal error visitNodeSelector: unknown ctx $ctx")
   }
 
-  override def visitSubjectTerm(ctx: SubjectTermContext): Builder[RDFNodeSelector] = ctx match {
+  override def visitSubjectTerm(ctx: SubjectTermContext): Builder[RDFNode] = ctx match {
     case _ if isDefined(ctx.iri()) => for {
-      iri <- visitIri(ctx.iri())
-    } yield RDFNodeSelector(iri)
-    case _ if isDefined(ctx.rdfType()) => ok(RDFNodeSelector(rdf_type))
+      iri <- visitIri(ctx.iri(), nodesPrefixMap)
+    } yield iri
+    case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
   }
 
-  override def visitObjectTerm(ctx: ObjectTermContext): Builder[RDFNodeSelector] = ctx match {
+  override def visitObjectTerm(ctx: ObjectTermContext): Builder[RDFNode] = ctx match {
     case _ if isDefined(ctx.subjectTerm()) => visitSubjectTerm(ctx.subjectTerm())
     case _ if isDefined(ctx.literal()) => for {
       literal <- visitLiteral(ctx.literal())
-    } yield RDFNodeSelector(literal)
+    } yield literal
   }
 
   def visitTriplePattern(ctx: TriplePatternContext): Builder[TriplePattern] = ctx match {
@@ -63,14 +67,14 @@ class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitPredicate(ctx: PredicateContext): Builder[IRI] = ctx match {
-    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri())
+    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(),nodesPrefixMap)
     case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = ctx match {
     case _ if isDefined(ctx.AT_START()) => ok(Start)
     case _ if isDefined(ctx.iri()) => for {
-      iri <- visitIri(ctx.iri())
+      iri <- visitIri(ctx.iri(), shapesPrefixMap)
     } yield IRILabel(iri)
     case _ if isDefined(ctx.KW_START()) => ok(Start)
     case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
@@ -87,12 +91,13 @@ class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
   override def visitRdfLiteral(ctx: RdfLiteralContext): Builder[Literal] = {
     val str = visitString(ctx.string())
     if (isDefined(ctx.LANGTAG())) {
-      val lang = Lang(ctx.LANGTAG().getText())
+      // We get the langTag and remove the first character (@)
+      val lang = Lang(ctx.LANGTAG().getText().substring(1))
       str.map(s => LangLiteral(s, lang))
     } else if (isDefined(ctx.datatype)) {
       for {
         s <- str
-        d <- visitDatatype(ctx.datatype())
+        d <- visitDatatype(ctx.datatype(), nodesPrefixMap)
       } yield DatatypeLiteral(s, d)
     } else {
       str.map(StringLiteral(_))
@@ -159,34 +164,31 @@ class ShapeMapsMaker extends ShapeMapBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def visitDatatype(ctx: DatatypeContext): Builder[IRI] = {
-    visitIri(ctx.iri())
+  def visitDatatype(ctx: DatatypeContext, prefixMap: PrefixMap): Builder[IRI] = {
+    visitIri(ctx.iri(), prefixMap)
   }
 
   def getBase: Builder[Option[IRI]] = ok(None)
 
-  def getPrefixMap: Builder[PrefixMap] = ok(PrefixMap.empty)
-
-  override def visitIri(ctx: IriContext): Builder[IRI] =
+  def visitIri(ctx: IriContext, prefixMap: PrefixMap): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
     } yield
       extractIRIfromIRIREF(ctx.IRIREF().getText, base)
     else for {
       prefixedName <- visitPrefixedName(ctx.prefixedName())
-      iri <- resolve(prefixedName)
+      iri <- resolve(prefixedName, prefixMap)
     } yield iri
 
-  def resolve(prefixedName: String): Builder[IRI] = {
+  def resolve(prefixedName: String, prefixMap: PrefixMap): Builder[IRI] = {
     val (prefix, local) = splitPrefix(prefixedName)
     logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
-    getPrefixMap.flatMap(prefixMap =>
-      prefixMap.getIRI(prefix) match {
+    prefixMap.getIRI(prefix) match {
         case None =>
           err(s"Prefix $prefix not found in current prefix map $prefixMap")
         case Some(iri) =>
           ok(iri + local)
-      })
+    }
   }
 
   def splitPrefix(str: String): (String, String) = {
