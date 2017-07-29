@@ -28,7 +28,7 @@ import es.weso._
 import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
 import es.weso.shaclex.buildinfo.BuildInfo._
-import es.weso.schema.ShapeMap._
+import es.weso.schema.ShapeMapEncoder._
 
 class Routes {
 

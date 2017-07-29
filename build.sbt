@@ -80,7 +80,7 @@ lazy val schema =
   project.in(file("modules/schema")).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
-  dependsOn(shex, shacl)
+  dependsOn(shex, shacl, shapeMaps)
 
 lazy val graphs =
   project.in(file("modules/graphs")).
@@ -131,6 +131,9 @@ lazy val shapeMaps =
             "com.github.nikita-volkov" % "sext" % sextVersion
           , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
           , "org.typelevel" %% "cats" % catsVersion
+          , "io.circe" %% "circe-core" % circeVersion
+          , "io.circe" %% "circe-generic" % circeVersion
+          , "io.circe" %% "circe-parser" % circeVersion
         )
     )
 

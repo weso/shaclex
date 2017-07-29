@@ -11,7 +11,7 @@ class ShapeMapTest extends FunSpec with Matchers with EitherValues {
         "<a>" -> List("<x>","<y>"),
         "<b>" -> List("<z>")
       )
-      ShapeMap.parseShapeMap(Some(str)) should (be(expected))
+      ShapeMapEncoder.parseShapeMap(Some(str)) should (be(expected))
     }
     it("Parse simple shapeMap with some empty value") {
       val str="<a>@<x>,<a>@<y>,<b>@<z>,@"
@@ -20,7 +20,7 @@ class ShapeMapTest extends FunSpec with Matchers with EitherValues {
         "<b>" -> List("<z>"),
         "" -> List("")
       )
-      ShapeMap.parseShapeMap(Some(str)) should (be(expected))
+      ShapeMapEncoder.parseShapeMap(Some(str)) should (be(expected))
     }
   }
 }

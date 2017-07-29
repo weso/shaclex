@@ -23,9 +23,9 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
                      shapesPrefixMap: PrefixMap = PrefixMap.empty
                     ) extends ShapeMapBaseVisitor[Any] with LazyLogging {
 
-  override def visitShapeMap(ctx: ShapeMapContext): Builder[ShapeMap] = for {
+  override def visitShapeMap(ctx: ShapeMapContext): Builder[InputShapeMap] = for {
     associations <- visitList(visitShapeAssociation,ctx.shapeAssociation())
-  } yield ShapeMap(associations)
+  } yield InputShapeMap(associations)
 
 
   override def visitShapeAssociation(ctx: ShapeAssociationContext): Builder[Association] = for {
@@ -79,7 +79,7 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
     case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
   }
 
-  override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = ctx match {
+  override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeMapLabel] = ctx match {
     case _ if isDefined(ctx.AT_START()) => ok(Start)
     case _ if isDefined(ctx.iri()) => for {
       iri <- visitIri(ctx.iri(), shapesPrefixMap)

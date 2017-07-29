@@ -12,7 +12,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
 describe("ShapeMaps") {
 
   it("should be able to create a shape map") {
-    val map = ShapeMap(associations = List(
+    val map = InputShapeMap(associations = List(
       Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=Start)
      )
     )
@@ -29,42 +29,42 @@ describe("ShapeMaps") {
     val rdfType = IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
     shouldParse("<http://example.org/x> @ Start",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=Start))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=Start))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse("<http://example.org/x>@Start",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=Start))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=Start))),
       nodesPrefixMap,
       shapesPrefixMap)
 
     shouldParse("<http://example.org/x>@<http://example.org/S>",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=IRILabel(IRI("http://example.org/S"))))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),shapeLabel=IRILabel(IRI("http://example.org/S"))))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(":x@Start",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),shapeLabel=Start))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),shapeLabel=Start))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(":x@ :S",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),shapeLabel=IRILabel(IRI("http://default.shapes.org/S"))))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),shapeLabel=IRILabel(IRI("http://default.shapes.org/S"))))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse("\"hi\"@es @ :S",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(LangLiteral("hi", Lang("es"))),shapeLabel=IRILabel(IRI("http://default.shapes.org/S"))))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(LangLiteral("hi", Lang("es"))),shapeLabel=IRILabel(IRI("http://default.shapes.org/S"))))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(":x@ ex:S",
-      ShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),shapeLabel=IRILabel(IRI("http://shapes.org/S"))))),
+      InputShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),shapeLabel=IRILabel(IRI("http://shapes.org/S"))))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse("{ FOCUS a :A} @ ex:S",
-      ShapeMap(List(Association(
+      InputShapeMap(List(Association(
         nodeSelector = TriplePattern(Focus, rdfType, NodePattern(IRI("http://default.org/A"))),
         shapeLabel=IRILabel(IRI("http://shapes.org/S"))))),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse("{FOCUS :p _ }@ :S",
-      ShapeMap(List(Association(
+      InputShapeMap(List(Association(
         nodeSelector = TriplePattern(Focus, IRI("http://default.org/p"), WildCard),
         shapeLabel=IRILabel(IRI("http://default.shapes.org/S"))))),
       nodesPrefixMap,
@@ -115,7 +115,7 @@ describe("ShapeMaps") {
             val result = for {
             shapeMap <- Parser.parse(shapeMapStr, rdf.getPrefixMap, shapesPrefixMap)
             expected <- Parser.parse(expectedStr, rdf.getPrefixMap, shapesPrefixMap)
-            obtained <- shapeMap.fixShapeMap(rdf)
+            obtained <- ShapeMap.fixShapeMap(shapeMap,rdf)
           } yield (obtained,expected)
           result match {
               case Left(msg) => fail(s"Error $msg fixing map $shapeMapStr")

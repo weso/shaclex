@@ -1,9 +1,10 @@
 package es.weso.schema
 import java.net.{URLDecoder, URLEncoder}
+import es.weso.shapeMaps._
 
 import com.typesafe.scalalogging.LazyLogging
 
-object ShapeMap extends LazyLogging {
+object ShapeMapEncoder extends LazyLogging {
 
   /**
   * Transforms Map("<a>" -> List("<x>"), "<b>" -> List("<y>","<z>"))
