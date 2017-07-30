@@ -152,6 +152,13 @@ class JenaMapperTest
         case Right(node) => fail(s"Should fail but passed $node")
       }
     }
+    it("Should validate when checking dateTime lexical form with dateTime data type") {
+      val node = StringLiteral("2017-05-15T16:27:01-00:00")
+      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
+        case Left(e) => fail(s"Should pass but failed: $e")
+        case Right(node) => info(s"Passed as expected: $node")
+      }
+    }
 
     it("Should fail checking date with dateTime") {
       val node = DatatypeLiteral("2017-05-15", IRI("http://www.w3.org/2001/XMLSchema#date"))
@@ -160,7 +167,6 @@ class JenaMapperTest
         case Right(node) => fail(s"Should fail but passed $node")
       }
     }
-
 
   }
 

@@ -3,7 +3,7 @@ package es.weso.rdf.jena
 // TODO: Refactor this code
 import org.apache.jena.rdf.model.{AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator, Model => JenaModel, RDFNode => JenaRDFNode}
 import es.weso.rdf.nodes._
-import org.apache.jena.datatypes.BaseDatatype
+import org.apache.jena.datatypes.{BaseDatatype, TypeMapper}
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.PREFIXES._
@@ -230,7 +230,8 @@ object JenaMapper {
     node match {
       case l: es.weso.rdf.nodes.Literal => {
         Try{
-          val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm,l.dataType.str)
+          val expectedRDFDatatype = TypeMapper.getInstance().getSafeTypeByName(expectedDatatype.str)
+          val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm,expectedRDFDatatype)
           val value = jenaLiteral.getValue() // if it is ill-typed it raises an exception
           (jenaLiteral.getDatatypeURI)
         } match {
