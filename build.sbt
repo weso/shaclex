@@ -1,7 +1,9 @@
 import sbt._
 import sbt.Keys._
-import sbtunidoc.Plugin.UnidocKeys._
+// import sbtunidoc.Plugin.UnidocKeys._
 import com.typesafe.sbt.SbtGit.GitKeys._
+
+
 
 name := "shaclex"
 
@@ -44,7 +46,7 @@ herokuProcessTypes in Compile := Map(
 
 lazy val commonSettings = Seq(
   organization := "es.weso",
-  scalaVersion := "2.12.2",
+  scalaVersion := "2.12.3",
   version := shaclexVersion,
 //  scalaOrganization := "org.typelevel",
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint"),
@@ -56,7 +58,8 @@ lazy val commonSettings = Seq(
 
 lazy val shaclex =
   project.in(file(".")).
-  settings(unidocSettings: _*).
+  enablePlugins(ScalaUnidocPlugin).
+  enablePlugins(ScalaUnidocPlugin).
   settings(commonSettings:_*).
   settings(publishSettings:_*).
   enablePlugins(BuildInfoPlugin).
@@ -115,13 +118,16 @@ lazy val shacl =
      )
   )
 
+  
 lazy val shapeMaps =
   project.in(file("modules/shapeMaps")).
     settings(commonSettings: _*).
     settings(publishSettings: _*).
     dependsOn(srdfJena).
-    settings(antlr4Settings: _*).
+//    enablePlugins(Antlr4Plugin).
+//     settings(antlr4Settings: _*).
     settings(
+      antlr4Settings,
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
       antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % antlrVersion,
@@ -154,6 +160,7 @@ lazy val shex =
     manifest,
     graphs).
   settings(antlr4Settings: _*).
+//  enablePlugins(Antlr4Plugin) .
   settings(inConfig(compatTest)(Defaults.testSettings): _*).
   settings(
     antlr4GenListener in Antlr4 := true,
@@ -294,7 +301,7 @@ lazy val validating =
   settings(publishSettings: _*).
   dependsOn(srdfJena,
             utils % "test -> test; compile -> compile").
-  settings(antlr4Settings: _*).
+//  settings(antlr4Settings: _*).
   settings(
    addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
    libraryDependencies ++= Seq(
@@ -310,7 +317,7 @@ def noDocProjects: Seq[ProjectReference] = Seq[ProjectReference](
  validating
 )
 
-lazy val docSettings = unidocSettings ++ Seq(
+lazy val docSettings = Seq(
   scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "-groups",
     "-implicits",
@@ -393,7 +400,7 @@ bintrayOrganization in bintray := Some("weso")
 resolvers += Resolver.bintrayRepo("labra", "maven")
 resolvers += Resolver.bintrayRepo("weso", "weso-releases")
 
-ghpages.settings
+// ghpages.settings
 
 git.remoteRepo := "git@github.com:labra/shaclex.git"
 
@@ -435,4 +442,12 @@ lazy val publishSettings = Seq(
   )
 )
 
+//libraryDependencies += Defaults.sbtPluginExtra(
+//  "com.dwijnand" % "sbt-compat" % "1.0.0",
+//  (sbtBinaryVersion in pluginCrossBuild).value,
+//  (scalaBinaryVersion in update).value
+//)
 
+
+//enablePlugins(Antlr4Plugin)
+//enablePlugins(JavaAppPackaging)
