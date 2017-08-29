@@ -10,14 +10,13 @@ import Validator._
 import es.weso.shacl.showShacl._
 import es.weso.shacl.converter.RDF2Shacl
 
-class ShapeValidatorTest extends
-  FunSpec with Matchers with TryValues with EitherValues {
+class ShapeValidatorTest extends FunSpec with Matchers with TryValues with EitherValues {
 
-describe("Shapes") {
-  it("Should validate single shape") {
-    val ex = IRI("http://example.org/")
-    val s = ex + "S"
-    val str ="""|@prefix : <http://example.org/>
+  describe("Shapes") {
+    it("Should validate single shape") {
+      val ex = IRI("http://example.org/")
+      val s = ex + "S"
+      val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape;
@@ -26,17 +25,17 @@ describe("Shapes") {
                  |   sh:minCount 1] .
                  |:x :p "a" .
                  |""".stripMargin
-    val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-      shape <- schema.shape(s)
-      validator = Validator(schema)
-      result <- Validator.validate(schema,rdf)
-    } yield (result)
-    attempt match {
-      case Right(result) => info(s"Result: $result")
-      case Left(e) => fail(s"Failed: $e")
+      val attempt = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(s)
+        validator = Validator(schema)
+        result <- Validator.validate(schema, rdf)
+      } yield (result)
+      attempt match {
+        case Right(result) => info(s"Result: $result")
+        case Left(e) => fail(s"Failed: $e")
+      }
     }
-    }
- }
+  }
 }

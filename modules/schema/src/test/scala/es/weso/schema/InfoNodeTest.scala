@@ -8,16 +8,15 @@ class InfoNodeTest extends FunSpec with Matchers with EitherValues with JsonTest
 
   describe("Solution") {
     encodeDecodeTest(InfoNode(
-        hasShapes = Seq((SchemaLabel("S"), Explanation("ES"))),
-        hasNoShapes = Seq((SchemaLabel("T"), Explanation("ET"))),
-        pm = PrefixMap.empty
-      ))
+      hasShapes = Seq((SchemaLabel("S"), Explanation("ES"))),
+      hasNoShapes = Seq((SchemaLabel("T"), Explanation("ET"))),
+      pm = PrefixMap.empty))
     encodeDecodeTest(InfoNode(
-      hasShapes = Seq((SchemaLabel("S"), Explanation("ES")),
+      hasShapes = Seq(
+        (SchemaLabel("S"), Explanation("ES")),
         (SchemaLabel("T"), Explanation("ET"))),
       hasNoShapes = Seq(),
-      pm = PrefixMap.empty
-    ))
+      pm = PrefixMap.empty))
 
   }
 }

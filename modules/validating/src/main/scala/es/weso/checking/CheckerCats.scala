@@ -3,9 +3,9 @@ import cats._, data._
 import cats.implicits._
 
 abstract class CheckerCats extends Checker {
-//  import CanLog.ops._
+  //  import CanLog.ops._
   implicit val envMonoid: Monoid[Env]
-//  implicit val logCanLog: CanLog[Log]
+  //  implicit val logCanLog: CanLog[Log]
   implicit val logMonoid: Monoid[Log]
 
   type ReaderConfig[A] = Kleisli[Id, Config, A]
@@ -25,7 +25,7 @@ abstract class CheckerCats extends Checker {
     writerEC2check(WriterT.tell[ReaderEC, Log](log))
   }
 
-/*  def logStr(msg: String): Check[Unit] = {
+  /*  def logStr(msg: String): Check[Unit] = {
     addLog(CanLog[Log].log(msg))
   } */
 
@@ -48,20 +48,19 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
-  def checkSome[A](cs: List[Check[A]])
-                  (implicit ev: Monoid[Err]): Check[A] = {
+  def checkSome[A](cs: List[Check[A]])(implicit ev: Monoid[Err]): Check[A] = {
     lazy val z: Check[A] = err(ev.empty)
     def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
     cs.foldRight(z)(comb)
   }
 
   /**
-    * Given a list of checks, return the list of values that pass
-    * It never fails (in case of failure, it ignores the value)
-    */
+   * Given a list of checks, return the list of values that pass
+   * It never fails (in case of failure, it ignores the value)
+   */
   def checkLs[A](cs: List[Check[A]]): Check[List[A]] = {
     lazy val z: Check[List[A]] = ok(List())
-    val css : List[Check[List[A]]] = cs.map(c => c.map(List(_)).orElse(z))
+    val css: List[Check[List[A]]] = cs.map(c => c.map(List(_)).orElse(z))
     def comb(rest: Check[List[A]], current: Check[List[A]]): Check[List[A]] = for {
       xs <- rest
       ys <- current
@@ -78,54 +77,53 @@ abstract class CheckerCats extends Checker {
     }
   } yield v
 
-
   def attempt[A](c: Check[A]): Check[Either[Err, A]] = for {
     v <- MonadError[Check, Err].attempt(c)
   } yield v
 
   /**
-    * Returns the list of values whose computation is successful
-    * @param ls list of values
-    * @param check computation to check for each value
-    * @tparam A type of values
-    * @tparam B type returned by computation
-    * @return a computation with a list of pairs for whom the computation was successful
-    */
-  def filterSuccess[A,B](ls: List[A], check: A => Check[B]): Check[List[(A,B)]] = {
-    val zero: Check[List[(A,B)]] = ok(List())
-    def comb(rest: Check[List[(A,B)]], current: A): Check[List[(A,B)]] = for {
+   * Returns the list of values whose computation is successful
+   * @param ls list of values
+   * @param check computation to check for each value
+   * @tparam A type of values
+   * @tparam B type returned by computation
+   * @return a computation with a list of pairs for whom the computation was successful
+   */
+  def filterSuccess[A, B](ls: List[A], check: A => Check[B]): Check[List[(A, B)]] = {
+    val zero: Check[List[(A, B)]] = ok(List())
+    def comb(rest: Check[List[(A, B)]], current: A): Check[List[(A, B)]] = for {
       rs <- rest
       c <- attempt(check(current))
     } yield c match {
       case Left(err) => rs
-      case Right(b) => (current,b) +: rs
+      case Right(b) => (current, b) +: rs
     }
     ls.foldLeft(zero)(comb)
   }
 
-  def cond[A,B](
+  def cond[A, B](
     c: Check[A],
     thenPart: A => Check[B],
     elsePart: Err => Check[B]): Check[B] =
-   attempt(c).flatMap(_.fold(elsePart(_),thenPart(_)))
+    attempt(c).flatMap(_.fold(elsePart(_), thenPart(_)))
 
-  def checkList[A,B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
+  def checkList[A, B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
     checkAll(ls.map(check))
   }
 
   /**
-  * Checks all elements in a list
-  * If any of the elements fail, fails
-  */
+   * Checks all elements in a list
+   * If any of the elements fail, fails
+   */
   def checkAll[A](xs: List[Check[A]]): Check[List[A]] = xs.sequence
 
-  def checkPair1st[A,B](p: (Check[A],B)): Check[(A,B)] = for {
+  def checkPair1st[A, B](p: (Check[A], B)): Check[(A, B)] = for {
     v <- p._1
-  } yield (v,p._2)
+  } yield (v, p._2)
 
-  def checkPair2nd[A,B](p: (A,Check[B])): Check[(A,B)] = for {
+  def checkPair2nd[A, B](p: (A, Check[B])): Check[(A, B)] = for {
     v <- p._2
-  } yield (p._1,v)
+  } yield (p._1, v)
 
   /*  def optCheck[A,B](
     x: Option[A],
@@ -134,12 +132,10 @@ abstract class CheckerCats extends Checker {
     case Some(v) => f(v).map(Some(_))
   } */
 
-   def optCheck[A,B](
-     c: Option[A],
-     check: A => Check[B],
-     default: => Check[B]
-  ): Check[B] = c.fold(default)(check(_))
-
+  def optCheck[A, B](
+    c: Option[A],
+    check: A => Check[B],
+    default: => Check[B]): Check[B] = c.fold(default)(check(_))
 
   def validateCheck(condition: Boolean, e: Err): Check[Unit] = {
     if (condition) Monad[Check].pure(())
@@ -168,15 +164,15 @@ abstract class CheckerCats extends Checker {
 
   def readerEC2writer[A](c: ReaderEC[A]): WriterEC[A] =
     // c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]]
-    WriterT.lift[ReaderEC,Log,A](c)
+    WriterT.lift[ReaderEC, Log, A](c)
 
   def readerEC2check[A](c: ReaderEC[A]): Check[A] =
     // writerEC2check(c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]])
     writerEC2check(readerEC2writer(c))
 
   def writerEC2check[A](c: WriterEC[A]): Check[A] =
-     // c.liftT[λ[(F[_], A) => EitherT[F, Err, A]]]
-     EitherT.liftT(c)
+    // c.liftT[λ[(F[_], A) => EitherT[F, Err, A]]]
+    EitherT.liftT(c)
 
 }
 
@@ -191,7 +187,7 @@ object CheckerCatsStr extends CheckerCats {
     def combine(e1: Env, e2: Env) = e1 |+| e2
     def empty = Map()
   }
-/*  implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
+  /*  implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
     def log(str: String) = List(str)
   } */
   implicit val logMonoid: Monoid[Log] = new Monoid[Log] {

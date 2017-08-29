@@ -3,7 +3,7 @@ package es.weso.shex.report
 import org.scalatest.FunSpec
 import com.typesafe.config._
 import org.apache.jena.rdf.model.ModelFactory
-import java.io.{File, FileInputStream, FileOutputStream}
+import java.io.{ File, FileInputStream, FileOutputStream }
 import java.nio.file.Paths
 
 import scala.collection.JavaConverters._
@@ -12,13 +12,13 @@ import es.weso.manifest._
 import es.weso.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.{IRI, RDFNode}
+import es.weso.rdf.nodes.{ IRI, RDFNode }
 import es.weso.rdf.parser.RDFParser
 import es.weso.shex.validator.Validator
-import es.weso.shex.{IRILabel, Schema}
+import es.weso.shex.{ IRILabel, Schema }
 
 import scala.io.Source
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 class ReportGenerator extends FunSpec with Matchers with RDFParser {
 
@@ -28,14 +28,14 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
   val baseIRI: Option[String] = Some(Paths.get(manifestFile.getCanonicalPath()).normalize().toUri.toString)
 
   describe("Generate W3c EARL report") {
-    RDFAsJenaModel.fromFile(manifestFile,"TURTLE",baseIRI) match {
-        case Failure(e) => info(s"Error reading manifest file: $e")
-        case Success(rdf) => {
-          val report = prepareReport(rdf)
-          val earlModel = report.generateEARL
-          earlModel.write(new FileOutputStream(outFile), "TURTLE")
-//          info(s"Report written to $outFile")
-          /*for (item <- report.items) {
+    RDFAsJenaModel.fromFile(manifestFile, "TURTLE", baseIRI) match {
+      case Failure(e) => info(s"Error reading manifest file: $e")
+      case Success(rdf) => {
+        val report = prepareReport(rdf)
+        val earlModel = report.generateEARL
+        earlModel.write(new FileOutputStream(outFile), "TURTLE")
+        //          info(s"Report written to $outFile")
+        /*for (item <- report.items) {
             it(s"Should pass ${item.name}") {
               if (!item.passed) {
                 fail(s"Failed: ${item.testType}: ${item.moreInfo}")
@@ -44,7 +44,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
               }
             }
            }*/
-        }
+      }
     }
   }
 
@@ -60,19 +60,19 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
       numTests += 1
       val node = triple.subj
       val nodeStr = node.getLexicalForm
-      val name = rdf.triplesWithSubjectPredicate(node,mf_name).map(_.obj).head.getLexicalForm
+      val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
       val tryReport = for {
-        name <- stringFromPredicate(mf_name)(node,rdf)
-        action <- objectFromPredicate(mf_action)(node,rdf)
-        schemaIRI <- iriFromPredicate(sht_schema)(action,rdf)
+        name <- stringFromPredicate(mf_name)(node, rdf)
+        action <- objectFromPredicate(mf_action)(node, rdf)
+        schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
         str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str,"SHEXC",baseIRI)
-        dataIRI <- iriFromPredicate(sht_data)(action,rdf)
+        schema <- Schema.fromString(str, "SHEXC", baseIRI)
+        dataIRI <- iriFromPredicate(sht_data)(action, rdf)
         strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
-        data <- RDFAsJenaModel.fromChars(strData,"TURTLE",baseIRI)
-        focus <- iriFromPredicate(sht_focus)(action,rdf)
-        shape <- iriFromPredicate(sht_shape)(action,rdf)
-      } yield Validator(schema).validateNodeShape(data,focus,shape.getLexicalForm)
+        data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
+        focus <- iriFromPredicate(sht_focus)(action, rdf)
+        shape <- iriFromPredicate(sht_shape)(action, rdf)
+      } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
       val testReport = tryReport match {
         case Success(report) => if (report.isOK) {
           numPassed += 1
@@ -81,8 +81,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}"
-          )
+            moreInfo = s"${report.show}")
         } else {
           numFailed += 1
           SingleTestReport(
@@ -90,8 +89,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}"
-          )
+            moreInfo = s"${report.show}")
         }
         case Failure(e) => {
           numErrors += 1
@@ -100,8 +98,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = node.toIRI.str,
             testType = sht_ValidationTest.str,
-            moreInfo = s"Error ${e}"
-          )
+            moreInfo = s"Error ${e}")
         }
       }
       report.addTestReport(testReport)
@@ -112,19 +109,19 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
       numTests += 1
       val node = triple.subj
       val nodeStr = node.getLexicalForm
-      val name = rdf.triplesWithSubjectPredicate(node,mf_name).map(_.obj).head.getLexicalForm
+      val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
       val tryReport = for {
-        name <- stringFromPredicate(mf_name)(node,rdf)
-        action <- objectFromPredicate(mf_action)(node,rdf)
-        schemaIRI <- iriFromPredicate(sht_schema)(action,rdf)
+        name <- stringFromPredicate(mf_name)(node, rdf)
+        action <- objectFromPredicate(mf_action)(node, rdf)
+        schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
         str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str,"SHEXC",baseIRI)
-        dataIRI <- iriFromPredicate(sht_data)(action,rdf)
+        schema <- Schema.fromString(str, "SHEXC", baseIRI)
+        dataIRI <- iriFromPredicate(sht_data)(action, rdf)
         strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
-        data <- RDFAsJenaModel.fromChars(strData,"TURTLE",baseIRI)
-        focus <- iriFromPredicate(sht_focus)(action,rdf)
-        shape <- iriFromPredicate(sht_shape)(action,rdf)
-      } yield Validator(schema).validateNodeShape(data,focus,shape.getLexicalForm)
+        data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
+        focus <- iriFromPredicate(sht_focus)(action, rdf)
+        shape <- iriFromPredicate(sht_shape)(action, rdf)
+      } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
       val testReport = tryReport match {
         case Success(report) => if (!report.isOK) {
           numPassed += 1
@@ -133,8 +130,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}"
-          )
+            moreInfo = s"${report.show}")
         } else {
           numFailed += 1
           SingleTestReport(
@@ -142,8 +138,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}"
-          )
+            moreInfo = s"${report.show}")
         }
         case Failure(e) => {
           numErrors += 1
@@ -152,8 +147,7 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"Error ${e}"
-          )
+            moreInfo = s"Error ${e}")
         }
       }
       report.addTestReport(testReport)

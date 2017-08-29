@@ -2,9 +2,9 @@ package es.weso.shacl
 import cats._, data._
 import cats.implicits._
 
-case class CheckResult[E: Show,A: Show, Log: Show](r: (Log, Either[E, A])) {
+case class CheckResult[E: Show, A: Show, Log: Show](r: (Log, Either[E, A])) {
 
-  def result: Either[E,A] = r._2
+  def result: Either[E, A] = r._2
 
   def isOK: Boolean = r._2.isRight
 
@@ -19,14 +19,14 @@ case class CheckResult[E: Show,A: Show, Log: Show](r: (Log, Either[E, A])) {
     val result = if (isOK) {
       val first = results.head
       "OK. Result: " ++ "\n" ++
-      Show[A].show(first)
+        Show[A].show(first)
     } else
       "Not OK. Error: " ++ "\n" ++ errors.map(e => Show[E].show(e)).mkString("\n")
-   val sb = new StringBuilder
-   sb ++= result
-   sb ++= "\n----------------------------log-----------------------\n"
-   sb ++= r._1.show
-   sb.toString
+    val sb = new StringBuilder
+    sb ++= result
+    sb ++= "\n----------------------------log-----------------------\n"
+    sb ++= r._1.show
+    sb.toString
   }
 
   override def toString = show

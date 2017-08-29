@@ -6,13 +6,13 @@ import cats.implicits._
 
 /*
 class MapsTest extends FunSpec with Matchers with TryValues with OptionValues {
-  
+
   describe("Combining maps") {
     it("Should combine maps...") {
       type Evidence = List[String]
       type Error = NonEmptyList[String]
       case class TypingResult(r: Either[Error,Evidence])
-      
+
       type ShapeId = String
       type Node = String
       type Shapes = Map[ShapeId,TypingResult]
@@ -29,20 +29,20 @@ class MapsTest extends FunSpec with Matchers with TryValues with OptionValues {
           "contradict" -> Map("S" -> TypingResult(NonEmptyList.of("c!!!s").left)),
           "wrong" -> Map("S" -> TypingResult(NonEmptyList.of("w!S1","w!S3").left))
           )
-          
+
       implicit def semigroupTypingResult = new Semigroup[TypingResult] {
         override def combine(t1: TypingResult, t2: TypingResult): TypingResult =
           TypingResult(t1.r |+| t2.r)
       }
-      
+
       val comb = m1 |+| m2
-      
+
       def showResult(r: TypingResult): String = {
-        r.r.fold(error => "-" + error,evidence => "+" + evidence) 
+        r.r.fold(error => "-" + error,evidence => "+" + evidence)
       }
-      
+
       val r: TypingResult = TypingResult(List("x - S", "x - S2").right)
-      println(s"ShowResult = ${showResult(r)}") 
+      println(s"ShowResult = ${showResult(r)}")
       def showShapes(s: Shapes) = {
         s.map{case (s,r) => {
           s"$s: ${showResult(r)}" }
@@ -53,11 +53,11 @@ class MapsTest extends FunSpec with Matchers with TryValues with OptionValues {
           s"$k -> ${showShapes(v)}" }
         }.mkString("\n")
       }
-      println(s"comb: \n${showTyping(comb)}")  
+      println(s"comb: \n${showTyping(comb)}")
       comb should contain key "x"
       comb("x") should (contain key "S")
      // comb("x")("S") should contain ("x - S","x - S(2)")
     }
   }
 }
-*/
+*/ 

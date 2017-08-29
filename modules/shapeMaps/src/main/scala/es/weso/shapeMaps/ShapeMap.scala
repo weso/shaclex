@@ -13,25 +13,24 @@ import ShapeMap._
 abstract class ShapeMap {
   val associations: List[Association]
 
-  def addAssociation(a: Association): Either[String,ShapeMap]
+  def addAssociation(a: Association): Either[String, ShapeMap]
 
- def toJson: Json = {
-  this.asJson
-}
-
+  def toJson: Json = {
+    this.asJson
+  }
 
 }
 
 case class InputShapeMap(associations: List[Association]) extends ShapeMap {
 
-  override def addAssociation(a: Association): Either[String,InputShapeMap] = Right(InputShapeMap(a +: associations))
+  override def addAssociation(a: Association): Either[String, InputShapeMap] = Right(InputShapeMap(a +: associations))
 
 }
 
-case class Association(nodeSelector: NodeSelector,
-                       shapeLabel: ShapeMapLabel,
-                       info: Info = Info()
-                      ) {
+case class Association(
+  nodeSelector: NodeSelector,
+  shapeLabel: ShapeMapLabel,
+  info: Info = Info()) {
 
   def toJson: Json = {
     this.asJson
@@ -48,16 +47,16 @@ case class IRILabel(iri: IRI) extends ShapeMapLabel
 case object Start extends ShapeMapLabel
 
 abstract class NodeSelector {
-  def toJson : Json = this match {
+  def toJson: Json = this match {
     case RDFNodeSelector(node) => Json.fromString(node.toString)
-    case TriplePattern(subj,predicate,obj) => ???
+    case TriplePattern(subj, predicate, obj) => ???
   }
 }
 case class RDFNodeSelector(node: RDFNode) extends NodeSelector
 case class TriplePattern(subjectPattern: Pattern, predicate: IRI, objectPattern: Pattern) extends NodeSelector
 
 sealed abstract class Pattern
-case class  NodePattern(node: RDFNode) extends Pattern
+case class NodePattern(node: RDFNode) extends Pattern
 case object WildCard extends Pattern
 case object Focus extends Pattern
 
@@ -65,23 +64,24 @@ case class Info(status: Status = Conformant, reason: Option[String] = None, appI
 
 case class FixedShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends ShapeMap {
 
-  val associations: List[Association] = map.toList.map{ case (node,labelsMap) => {
-      labelsMap.toList.map { case (shapeLabel, info) => {
-        Association(RDFNodeSelector(node),shapeLabel,info)
+  val associations: List[Association] = map.toList.map {
+    case (node, labelsMap) => {
+      labelsMap.toList.map {
+        case (shapeLabel, info) => {
+          Association(RDFNodeSelector(node), shapeLabel, info)
+        }
       }
     }
-  }
   }.flatten
 
-
-  override def addAssociation(a: Association): Either[String,FixedShapeMap] = {
+  override def addAssociation(a: Association): Either[String, FixedShapeMap] = {
     a.nodeSelector match {
       case RDFNodeSelector(node) => {
         map.get(node) match {
-          case None => Right(FixedShapeMap(map.updated(node,Map(a.shapeLabel -> a.info))))
+          case None => Right(FixedShapeMap(map.updated(node, Map(a.shapeLabel -> a.info))))
           case Some(labelsMap) => {
             labelsMap.get(a.shapeLabel) match {
-              case None => Right(FixedShapeMap(map.updated(node, labelsMap.updated(a.shapeLabel,a.info))))
+              case None => Right(FixedShapeMap(map.updated(node, labelsMap.updated(a.shapeLabel, a.info))))
               case Some(info) =>
                 if (info.status == a.info.status) Right(this)
                 else Left(s"Cannot add association with contradictory status: Association: ${a}, Labels map: ${labelsMap}")
@@ -99,45 +99,44 @@ object FixedShapeMap {
   def empty = FixedShapeMap(Map())
 }
 
-
 object ShapeMap {
 
   /**
-    * Resolve triple patterns according to an RDF
-    */
+   * Resolve triple patterns according to an RDF
+   */
   def fixShapeMap(shapeMap: ShapeMap, rdf: RDFReader): Either[String, FixedShapeMap] = {
-    val empty: Either[String,FixedShapeMap] = Right(FixedShapeMap.empty)
+    val empty: Either[String, FixedShapeMap] = Right(FixedShapeMap.empty)
 
-    def addNode(a:Association)(node: RDFNode, current: Either[String,FixedShapeMap]): Either[String,FixedShapeMap] = for {
+    def addNode(a: Association)(node: RDFNode, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = for {
       fixed <- current
       newShapeMap <- fixed.addAssociation(Association(RDFNodeSelector(node), a.shapeLabel))
     } yield newShapeMap
 
-    def combine(a: Association, current: Either[String,FixedShapeMap]): Either[String,FixedShapeMap] = {
+    def combine(a: Association, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = {
       a.nodeSelector match {
         case RDFNodeSelector(node) => for {
           sm <- current
           newSm <- sm.addAssociation(a)
         } yield newSm
-        case TriplePattern(Focus,p,o) => o match {
+        case TriplePattern(Focus, p, o) => o match {
           case WildCard => {
             val nodes = rdf.triplesWithPredicate(p).map(_.subj)
             nodes.foldRight(current)(addNode(a))
           }
           case NodePattern(obj) => {
-            val nodes = rdf.triplesWithPredicateObject(p,obj).map(_.subj)
+            val nodes = rdf.triplesWithPredicateObject(p, obj).map(_.subj)
             nodes.foldRight(current)(addNode(a))
           }
           case Focus =>
             Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.nodeSelector}")
         }
-        case TriplePattern(s,p,Focus) => s match {
+        case TriplePattern(s, p, Focus) => s match {
           case WildCard => {
             val nodes = rdf.triplesWithPredicate(p).map(_.obj)
             nodes.foldRight(current)(addNode(a))
           }
           case NodePattern(subj) => {
-            val nodes = rdf.triplesWithPredicateObject(p,subj).map(_.obj)
+            val nodes = rdf.triplesWithPredicateObject(p, subj).map(_.obj)
             nodes.foldRight(current)(addNode(a))
           }
           case Focus =>
@@ -168,12 +167,11 @@ object ShapeMap {
     final def apply(nodeSelector: NodeSelector): Json = {
       nodeSelector match {
         case RDFNodeSelector(node) => Json.fromString(node.toString)
-        case TriplePattern(subj,pred,obj) => {
+        case TriplePattern(subj, pred, obj) => {
           Json.fromJsonObject(JsonObject.empty.
-            add("subject",subj.asJson).
-            add("predicate",Json.fromString(pred.toString)).
-            add("object",obj.asJson)
-          )
+            add("subject", subj.asJson).
+            add("predicate", Json.fromString(pred.toString)).
+            add("object", obj.asJson))
         }
       }
     }
@@ -188,7 +186,7 @@ object ShapeMap {
       }
     }
   }
-  
+
   implicit val encodeStatus: Encoder[Status] = new Encoder[Status] {
     final def apply(a: Status): Json = {
       a match {
@@ -201,12 +199,11 @@ object ShapeMap {
   implicit val encodeAssociation: Encoder[Association] = new Encoder[Association] {
     final def apply(a: Association): Json = {
       Json.fromJsonObject(JsonObject.empty.
-        add("nodeSelector",a.nodeSelector.asJson).
-        add("shapeLabel",a.shapeLabel.asJson).
-        add("status",a.info.status.asJson).
-        add("reason",a.info.reason.fold(Json.Null)(Json.fromString(_))).
-        add("appInfo",a.info.appInfo)
-      )
+        add("nodeSelector", a.nodeSelector.asJson).
+        add("shapeLabel", a.shapeLabel.asJson).
+        add("status", a.info.status.asJson).
+        add("reason", a.info.reason.fold(Json.Null)(Json.fromString(_))).
+        add("appInfo", a.info.appInfo))
     }
   }
 

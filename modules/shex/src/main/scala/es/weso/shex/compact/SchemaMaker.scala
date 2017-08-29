@@ -13,13 +13,13 @@ import org.antlr.v4.runtime._
 import org.antlr.v4.runtime.tree.ParseTree
 // import org.antlr.v4.runtime.atn.ATNConfigSet
 // import org.antlr.v4.runtime.dfa.DFA
-import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
+import es.weso.shex.parser.ShExDocParser.{ StringContext => ShExStringContext, _ }
 import es.weso.shex.parser._
 import scala.collection.JavaConverters._
 
 /**
-  * Visits the AST and builds the corresponding ShEx abstract syntax
-  */
+ * Visits the AST and builds the corresponding ShEx abstract syntax
+ */
 class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   type Start = Option[ShapeExpr]
@@ -32,8 +32,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   val optional = (Some(0), Some(IntMax(1)))
 
   override def visitShExDoc(
-                             ctx: ShExDocContext
-                           ): Builder[Schema] = {
+    ctx: ShExDocContext): Builder[Schema] = {
     for {
       directives <- visitList(visitDirective, ctx.directive())
       startActions <- visitStartActions(ctx.startActions())
@@ -50,39 +49,35 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         base = base,
         startActs = startActions,
         start = start,
-        shapes = if (!shapeMap.isEmpty) Some(shapesMap2List(shapeMap)) else None
-      )
+        shapes = if (!shapeMap.isEmpty) Some(shapesMap2List(shapeMap)) else None)
     }
   }
 
   def shapesMap2List(sm: ShapesMap): List[ShapeExpr] = {
-    sm.map{case (lbl,se) => se.addId(lbl)}.toList
+    sm.map { case (lbl, se) => se.addId(lbl) }.toList
   }
 
   override def visitStatement(
-                               ctx: StatementContext
-                             ): Builder[Unit] = ctx match {
+    ctx: StatementContext): Builder[Unit] = ctx match {
     case _ if (isDefined(ctx.directive())) =>
       visitDirective(ctx.directive()).map(_ => ())
     case _ if (isDefined(ctx.notStartAction())) =>
       visitNotStartAction(ctx.notStartAction()).map(_ => ())
   }
 
-  override def
-    visitNotStartAction(ctx: NotStartActionContext
-      ): Builder[NotStartAction] =
-  if (ctx == null) ok(Left(None))
-  else ctx match {
-    case _ if (isDefined(ctx.start())) => {
-      for {
-        s <- visitStart(ctx.start())
-      } yield Left(s)
+  override def visitNotStartAction(ctx: NotStartActionContext): Builder[NotStartAction] =
+    if (ctx == null) ok(Left(None))
+    else ctx match {
+      case _ if (isDefined(ctx.start())) => {
+        for {
+          s <- visitStart(ctx.start())
+        } yield Left(s)
+      }
+      case _ if (isDefined(ctx.shapeExprDecl())) =>
+        for {
+          s <- visitShapeExprDecl(ctx.shapeExprDecl())
+        } yield Right(s)
     }
-    case _ if (isDefined(ctx.shapeExprDecl())) =>
-      for {
-        s <- visitShapeExprDecl(ctx.shapeExprDecl())
-      } yield Right(s)
-  }
 
   override def visitStartActions(ctx: StartActionsContext): Builder[Option[List[SemAct]]] = {
     if (isDefined(ctx)) {
@@ -93,8 +88,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitStart(
-                           ctx: StartContext):
-  Builder[Option[(ShapeExpr)]] = {
+    ctx: StartContext): Builder[Option[(ShapeExpr)]] = {
     logger.info(s"Visiting start...$ctx")
     if (isDefined(ctx)) {
       logger.info(s"is defined...")
@@ -104,7 +98,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           logger.info(s"Shape expression for start: $shapeExpr")
           updateStart(Some(shapeExpr))
         }
-      // semActs <- visitSemanticActions(ctx.semanticActions())
+        // semActs <- visitSemanticActions(ctx.semanticActions())
       } yield {
         logger.info(s"Shape expression for start: $shapeExpr")
         Some(shapeExpr)
@@ -115,13 +109,13 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitSemanticActions(ctx: SemanticActionsContext): Builder[List[SemAct]] =
     for {
-    ls <- visitList(visitCodeDecl, ctx.codeDecl())
-  } yield {
+      ls <- visitList(visitCodeDecl, ctx.codeDecl())
+    } yield {
       ls
     }
 
   override def visitCodeDecl(
-                              ctx: CodeDeclContext): Builder[SemAct] =
+    ctx: CodeDeclContext): Builder[SemAct] =
     for {
       iri <- visitIri(ctx.iri())
       code <- optBuilder(ctx.CODE()).map(opt => opt.map(_.getText()))
@@ -143,9 +137,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       ok(Some(v))
 
   def optMapBuilder[A, B](
-                           x: Option[A],
-                           f: A => Builder[B]
-                         ): Builder[Option[B]] =
+    x: Option[A],
+    f: A => Builder[B]): Builder[Option[B]] =
     x match {
       case None => ok(None)
       case Some(v) => f(v).map(Some(_))
@@ -163,19 +156,18 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       // TODO: What happens if there are semantic actions after External??
       ok(ShapeExternal(None))
     } else
-    // TODO: Obtain stringFacet*
+      // TODO: Obtain stringFacet*
       visitShapeExpression(ctx.shapeExpression())
 
   override def visitShapeExpression(ctx: ShapeExpressionContext): Builder[ShapeExpr] =
     visitShapeOr(ctx.shapeOr())
 
   override def visitInlineShapeExpression(
-                                           ctx: InlineShapeExpressionContext): Builder[ShapeExpr] =
+    ctx: InlineShapeExpressionContext): Builder[ShapeExpr] =
     visitInlineShapeOr(ctx.inlineShapeOr())
 
   override def visitInlineShapeOr(
-                                   ctx: InlineShapeOrContext):
-  Builder[ShapeExpr] = for {
+    ctx: InlineShapeOrContext): Builder[ShapeExpr] = for {
     shapes <- {
       val r: List[Builder[ShapeExpr]] =
         ctx.inlineShapeAnd().asScala.map(visitInlineShapeAnd(_)).toList
@@ -185,8 +177,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   else ShapeOr(None, shapes)
 
   override def visitInlineShapeAnd(
-                                    ctx: InlineShapeAndContext):
-  Builder[ShapeExpr] = {
+    ctx: InlineShapeAndContext): Builder[ShapeExpr] = {
     for {
       shapes <- {
         val r: List[Builder[ShapeExpr]] =
@@ -194,32 +185,28 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         r.sequence
       }
     } yield if (shapes.length == 1) shapes.head
-    else ShapeAnd(None,shapes)
+    else ShapeAnd(None, shapes)
   }
 
   override def visitInlineShapeNot(
-                                    ctx: InlineShapeNotContext):
-  Builder[ShapeExpr] = for {
+    ctx: InlineShapeNotContext): Builder[ShapeExpr] = for {
     shapeAtom <- visitInlineShapeAtom(ctx.inlineShapeAtom())
-  } yield
-    if (isDefined(ctx.negation()))
-      ShapeNot(None,shapeAtom)
-    else
-      shapeAtom
+  } yield if (isDefined(ctx.negation()))
+    ShapeNot(None, shapeAtom)
+  else
+    shapeAtom
 
-  override def visitShapeOr(ctx: ShapeOrContext):
-  Builder[ShapeExpr] = for {
+  override def visitShapeOr(ctx: ShapeOrContext): Builder[ShapeExpr] = for {
     shapes <- {
       val r: List[Builder[ShapeExpr]] =
         ctx.shapeAnd().asScala.map(visitShapeAnd(_)).toList
       r.sequence
     }
   } yield if (shapes.length == 1) shapes.head
-  else ShapeOr(None,shapes)
+  else ShapeOr(None, shapes)
 
   override def visitShapeAnd(
-                              ctx: ShapeAndContext):
-  Builder[ShapeExpr] = {
+    ctx: ShapeAndContext): Builder[ShapeExpr] = {
     for {
       shapes <- {
         val r: List[Builder[ShapeExpr]] =
@@ -227,19 +214,17 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         r.sequence
       }
     } yield if (shapes.length == 1) shapes.head
-    else ShapeAnd(None,shapes)
+    else ShapeAnd(None, shapes)
   }
 
   override def visitShapeNot(
-                              ctx: ShapeNotContext):
-  Builder[ShapeExpr] = for {
+    ctx: ShapeNotContext): Builder[ShapeExpr] = for {
     shapeAtom <- visitShapeAtom(ctx.shapeAtom())
   } yield if (isDefined(ctx.negation()))
-    ShapeNot(None,shapeAtom)
+    ShapeNot(None, shapeAtom)
   else shapeAtom
 
-  def visitShapeAtom(ctx: ShapeAtomContext):
-  Builder[ShapeExpr] = {
+  def visitShapeAtom(ctx: ShapeAtomContext): Builder[ShapeExpr] = {
     ctx match {
       case s: ShapeAtomNodeConstraintContext =>
         for {
@@ -247,7 +232,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           sr <- visitOpt(visitShapeOrRef, s.shapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(None,List(nk,s))
+          case Some(s) => ShapeAnd(None, List(nk, s))
         }
 
       case s: ShapeAtomShapeOrRefContext =>
@@ -268,7 +253,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case s: NodeConstraintLiteralContext =>
         for {
           xsFacets <- visitList(visitXsFacet, s.xsFacet())
-        } yield NodeConstraint.nodeKind(LiteralKind,xsFacets)
+        } yield NodeConstraint.nodeKind(LiteralKind, xsFacets)
       case s: NodeConstraintNonLiteralContext =>
         for {
           nodeKind <- visitNonLiteralKind(s.nonLiteralKind())
@@ -281,15 +266,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         } yield NodeConstraint.datatype(datatype, xsFacets)
       case c: NodeConstraintValueSetContext =>
         for {
-         vs <- visitValueSet(c.valueSet())
-         xsFacets <- visitList(visitXsFacet, c.xsFacet())
+          vs <- visitValueSet(c.valueSet())
+          xsFacets <- visitList(visitXsFacet, c.xsFacet())
         } yield NodeConstraint.valueSet(vs, xsFacets)
 
       case c: NodeConstraintFacetContext => for {
         facets <- visitList(visitXsFacet, c.xsFacet)
       } yield NodeConstraint.empty.copy(
-        xsFacets = facets
-      )
+        xsFacets = facets)
     }
   }
 
@@ -301,16 +285,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           sr <- visitOpt(visitInlineShapeOrRef, s.inlineShapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(None, List(nk,s))
+          case Some(s) => ShapeAnd(None, List(nk, s))
         }
 
       case s: InlineShapeAtomShapeOrRefContext =>
         for {
-         sr <- visitInlineShapeOrRef(s.inlineShapeOrRef())
-          nk <- visitOpt(visitNodeConstraint,s.nodeConstraint())
+          sr <- visitInlineShapeOrRef(s.inlineShapeOrRef())
+          nk <- visitOpt(visitNodeConstraint, s.nodeConstraint())
         } yield nk match {
           case None => sr
-          case Some(n) => ShapeAnd(None,List(sr,n))
+          case Some(n) => ShapeAnd(None, List(sr, n))
         }
 
       case s: InlineShapeAtomShapeExpressionContext =>
@@ -322,12 +306,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitValueSet(
-                              ctx: ValueSetContext): Builder[List[ValueSetValue]] = {
+    ctx: ValueSetContext): Builder[List[ValueSetValue]] = {
     visitList(visitValueSetValue, ctx.valueSetValue())
   }
 
   override def visitValueSetValue(
-                                   ctx: ValueSetValueContext): Builder[ValueSetValue] = {
+    ctx: ValueSetValueContext): Builder[ValueSetValue] = {
     if (isDefined(ctx.iriRange()))
       visitIriRange(ctx.iriRange())
     else
@@ -335,23 +319,22 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitIriRange(
-                              ctx: IriRangeContext): Builder[ValueSetValue] = {
+    ctx: IriRangeContext): Builder[ValueSetValue] = {
     ctx match {
       case _ if isDefined(ctx.iri()) => // Rule: iri ('~' exclusion*)?
-        if (ctx.getChildCount == 1)   // Only iri
+        if (ctx.getChildCount == 1) // Only iri
           for {
+            iri <- visitIri(ctx.iri())
+          } yield IRIValue(iri)
+        else for { // iri '~' exclusion*
           iri <- visitIri(ctx.iri())
-        } yield IRIValue(iri)
-        else for {  // iri '~' exclusion*
-        iri <- visitIri(ctx.iri())
-        exclusions <-
-           if (isDefined(ctx.exclusion()))
-            visitList(visitExclusion,ctx.exclusion()).map(Some(_))
-           else ok(None)
-      } yield StemRange(IRIStem(iri), exclusions)
+          exclusions <- if (isDefined(ctx.exclusion()))
+            visitList(visitExclusion, ctx.exclusion()).map(Some(_))
+          else ok(None)
+        } yield StemRange(IRIStem(iri), exclusions)
       case _ => for {
         exclusions <- visitList(visitExclusion, ctx.exclusion())
-      } yield StemRange(Wildcard(),Some(exclusions))
+      } yield StemRange(Wildcard(), Some(exclusions))
     }
   }
 
@@ -385,7 +368,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitRdfLiteral(
-                                ctx: RdfLiteralContext): Builder[ValueSetValue] = {
+    ctx: RdfLiteralContext): Builder[ValueSetValue] = {
     val str = visitString(ctx.string())
     if (isDefined(ctx.LANGTAG())) {
       val lang = ctx.LANGTAG().getText()
@@ -401,7 +384,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitString(
-                            ctx: ShExStringContext): Builder[String] = {
+    ctx: ShExStringContext): Builder[String] = {
     if (isDefined(ctx.STRING_LITERAL_LONG1())) {
       ok(stripStringLiteralLong1(ctx.STRING_LITERAL_LONG1().getText()))
     } else if (isDefined(ctx.STRING_LITERAL_LONG2())) {
@@ -453,12 +436,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitIri(ctx: IriContext): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
-    } yield
-       extractIRIfromIRIREF(ctx.IRIREF().getText, base)
-   else for {
-    prefixedName <- visitPrefixedName(ctx.prefixedName())
-    iri <- resolve(prefixedName)
-  } yield iri
+    } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+    else for {
+      prefixedName <- visitPrefixedName(ctx.prefixedName())
+      iri <- resolve(prefixedName)
+    } yield iri
 
   def resolve(prefixedName: String): Builder[IRI] = {
     val (prefix, local) = splitPrefix(prefixedName)
@@ -483,7 +465,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitPrefixedName(ctx: PrefixedNameContext): Builder[String] = {
     ok(ctx.getText())
-/*    ctx match {
+    /*    ctx match {
       case _ if isDefined(ctx.PNAME_LN()) => ok(ctx.PNAME_LN().getText())
       case _ if isDefined(ctx.PNAME_NS()) => ok(ctx.PNAME_NS().getText())
       case _ => err("visitPrefixedName: Unknown value")
@@ -549,15 +531,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitBooleanLiteral(
-                                    ctx: BooleanLiteralContext): Builder[ValueSetValue] = {
+    ctx: BooleanLiteralContext): Builder[ValueSetValue] = {
     if (isDefined(ctx.KW_TRUE()))
       ok(DatatypeString("true", xsd_boolean))
     else
       ok(DatatypeString("false", xsd_boolean))
   }
-
-
-
 
   override def visitXsFacet(ctx: XsFacetContext): Builder[XsFacet] =
     ctx match {
@@ -569,7 +548,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
 
   override def visitStringFacet(
-                                 ctx: StringFacetContext): Builder[XsFacet] = {
+    ctx: StringFacetContext): Builder[XsFacet] = {
     if (isDefined(ctx.stringLength())) {
       for {
         n <- getInteger(ctx.INTEGER().getText())
@@ -579,12 +558,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       // TODO. Update pattern to handle flags
       for {
         str <- visitString(ctx.string())
-      } yield Pattern(str,None)
+      } yield Pattern(str, None)
     }
   }
 
   override def visitStringLength(
-                                  ctx: StringLengthContext): Int => Builder[StringFacet] = n => {
+    ctx: StringLengthContext): Int => Builder[StringFacet] = n => {
     if (isDefined(ctx.KW_LENGTH())) ok(Length(n))
     else if (isDefined(ctx.KW_MINLENGTH())) ok(MinLength(n))
     else if (isDefined(ctx.KW_MAXLENGTH())) ok(MaxLength(n))
@@ -602,24 +581,23 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   case object NLTotalDigits extends NumericLength
   case object NLFractionDigits extends NumericLength
 
-
   override def visitNumericFacet(ctx: NumericFacetContext): Builder[XsFacet] = {
     ctx match {
       case _ if isDefined(ctx.numericRange()) => for {
         nr <- visitNumericRange(ctx.numericRange())
         v <- if (isDefined(ctx.numericLiteral())) {
-               visitNumericLiteral(ctx.numericLiteral())
-             } else for {
-               lexicalForm <- visitString(ctx.string())
-               datatype <- visitDatatype(ctx.datatype())
-               numericLiteral <- makeNumericLiteral(lexicalForm,datatype)
-             } yield numericLiteral
+          visitNumericLiteral(ctx.numericLiteral())
+        } else for {
+          lexicalForm <- visitString(ctx.string())
+          datatype <- visitDatatype(ctx.datatype())
+          numericLiteral <- makeNumericLiteral(lexicalForm, datatype)
+        } yield numericLiteral
         nf <- makeNumericFacet(nr, v)
       } yield nf
       case _ if isDefined(ctx.numericLength()) => for {
         nl <- visitNumericLength(ctx.numericLength())
         n <- getInteger(ctx.INTEGER().getText)
-        numLength <- makeNumericLength(nl,n)
+        numLength <- makeNumericLength(nl, n)
       } yield numLength
       case _ => err("VisitNumericFacet. Unknown state for ctx")
     }
@@ -652,7 +630,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case `xsd_double` => for {
         d <- getDouble(lexicalForm)
       } yield NumericDouble(d)
-      case `xsd_float` => for {  // TODO: Check if floats and doubles are equivalent
+      case `xsd_float` => for { // TODO: Check if floats and doubles are equivalent
         d <- getDouble(lexicalForm)
       } yield NumericDouble(d)
       case _ => err(s"Numeric Literal '$lexicalForm' applied to unknown datatype $datatype ")
@@ -674,15 +652,13 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case NLFractionDigits => ok(FractionDigits(n))
     }
   }
-  override def
-    visitNodeConstraintLiteral(ctx: NodeConstraintLiteralContext): Builder[ShapeExpr] = for {
+  override def visitNodeConstraintLiteral(ctx: NodeConstraintLiteralContext): Builder[ShapeExpr] = for {
     facets <- visitList(visitXsFacet, ctx.xsFacet())
   } yield NodeConstraint.nodeKind(LiteralKind, facets)
 
-  override def
-     visitNodeConstraintNonLiteral(ctx: NodeConstraintNonLiteralContext): Builder[ShapeExpr] = for {
+  override def visitNodeConstraintNonLiteral(ctx: NodeConstraintNonLiteralContext): Builder[ShapeExpr] = for {
     nk <- visitNonLiteralKind(ctx.nonLiteralKind())
-    facets <- visitList(visitStringFacet,ctx.stringFacet())
+    facets <- visitList(visitStringFacet, ctx.stringFacet())
   } yield NodeConstraint.nodeKind(nk, facets)
 
   override def visitNonLiteralKind(ctx: NonLiteralKindContext): Builder[NodeKind] = {
@@ -729,7 +705,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitOneOfShape(ctx.oneOfShape())
-      shape <- makeShape(qualifiers,tripleExpr,List())
+      shape <- makeShape(qualifiers, tripleExpr, List())
     } yield shape
   }
 
@@ -738,16 +714,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitOneOfShape(ctx.oneOfShape())
       semActs <- visitSemanticActions(ctx.semanticActions())
-      anns <- visitList(visitAnnotation,ctx.annotation())
+      anns <- visitList(visitAnnotation, ctx.annotation())
       // newTripleExpr <- addAnnotations(tripleExpr,anns)
-      shape <- makeShape(qualifiers,tripleExpr,semActs)
+      shape <- makeShape(qualifiers, tripleExpr, semActs)
     } yield shape
   }
 
   // TODO: Maybe remove the following method
-  def addAnnotations(maybeTe: Option[TripleExpr],
-                     anns: List[Annotation]):
-      Builder[Option[TripleExpr]] =
+  def addAnnotations(
+    maybeTe: Option[TripleExpr],
+    anns: List[Annotation]): Builder[Option[TripleExpr]] =
     maybeTe match {
       case None => ok(None)
       case Some(te) => if (anns.isEmpty) ok(maybeTe)
@@ -760,9 +736,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
 
   def makeShape(
-                 qualifiers: List[Qualifier],
-                 tripleExpr: Option[TripleExpr],
-                 semActs: List[SemAct]): Builder[ShapeExpr] = {
+    qualifiers: List[Qualifier],
+    tripleExpr: Option[TripleExpr],
+    semActs: List[SemAct]): Builder[ShapeExpr] = {
     val containsClosed =
       if (qualifiers.contains(Closed))
         Some(true)
@@ -777,8 +753,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       closed = containsClosed,
       extra = extras,
       expression = tripleExpr,
-      semActs = if (semActs.isEmpty) None else Some(semActs)
-    )
+      semActs = if (semActs.isEmpty) None else Some(semActs))
     inheritList.length match {
       case 0 => ok(shape)
       case 1 => ok(shape.copy(inherit = Some(inheritList.head)))
@@ -796,10 +771,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def
-    visitIncludeSet(ctx: IncludeSetContext):
-       Builder[Qualifier] = for {
-    sl <- visitList(visitShapeLabel,ctx.shapeLabel())
+  override def visitIncludeSet(ctx: IncludeSetContext): Builder[Qualifier] = for {
+    sl <- visitList(visitShapeLabel, ctx.shapeLabel())
   } yield Include(sl)
 
   override def visitExtraPropertySet(ctx: ExtraPropertySetContext): Builder[Qualifier] = for {
@@ -807,7 +780,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   } yield Extra(ls)
 
   override def visitOneOfShape(
-                                 ctx: OneOfShapeContext): Builder[Option[TripleExpr]] = {
+    ctx: OneOfShapeContext): Builder[Option[TripleExpr]] = {
     if (isDefined(ctx)) {
       ctx match {
         case _ if (isDefined(ctx.groupShape())) => for {
@@ -822,7 +795,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitGroupShape(
-                                ctx: GroupShapeContext): Builder[TripleExpr] = {
+    ctx: GroupShapeContext): Builder[TripleExpr] = {
     ctx match {
       case _ if (isDefined(ctx.singleElementGroup())) =>
         visitSingleElementGroup(ctx.singleElementGroup())
@@ -832,53 +805,50 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def
-    visitUnaryShape(ctx: UnaryShapeContext): Builder[TripleExpr] =
+  override def visitUnaryShape(ctx: UnaryShapeContext): Builder[TripleExpr] =
     ctx match {
       case _ if (isDefined(ctx.include())) =>
         visitInclude(ctx.include())
-      case _  => for {
+      case _ => for {
         pl <- visitOpt(visitProductionLabel, ctx.productionLabel())
         te <- if (isDefined(ctx.encapsulatedShape()))
-                visitEncapsulatedShape(ctx.encapsulatedShape())
+          visitEncapsulatedShape(ctx.encapsulatedShape())
         else if (isDefined(ctx.tripleConstraint()))
-                 visitTripleConstraint(ctx.tripleConstraint())
-             else err(s"visitUnaryShape: unknown $ctx")
-    } yield te
-  }
+          visitTripleConstraint(ctx.tripleConstraint())
+        else err(s"visitUnaryShape: unknown $ctx")
+      } yield te
+    }
 
   // TODO: Where should I put ProductionLabels ?
   override def visitProductionLabel(ctx: ProductionLabelContext): Builder[Unit] =
     ok(())
 
-
-
   override def visitTripleConstraint(
-                                      ctx: TripleConstraintContext): Builder[TripleExpr] =
+    ctx: TripleConstraintContext): Builder[TripleExpr] =
     for {
       sense <- visitSenseFlags(ctx.senseFlags())
       predicate <- visitPredicate(ctx.predicate())
       shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
       semActs <- visitSemanticActions(ctx.semanticActions())
-      anns <- visitList(visitAnnotation,ctx.annotation())
+      anns <- visitList(visitAnnotation, ctx.annotation())
     } yield {
       TripleConstraint.
         emptyPred(predicate).copy(
-        optInverse = sense.optInverse,
-        optNegated = sense.optNegated,
-        valueExpr = Some(shapeExpr),
-        optMin = cardinality._1,
-        optMax = cardinality._2,
-        annotations = if (anns.isEmpty) None
-        else Some(anns),
-        semActs =
-          if (semActs.isEmpty) None
-          else Some(semActs)
-      )
+          optInverse = sense.optInverse,
+          optNegated = sense.optNegated,
+          valueExpr = Some(shapeExpr),
+          optMin = cardinality._1,
+          optMax = cardinality._2,
+          annotations = if (anns.isEmpty) None
+          else Some(anns),
+          semActs =
+            if (semActs.isEmpty) None
+            else Some(semActs))
     }
-  case class Sense(optInverse: Option[Boolean],
-                   optNegated: Option[Boolean])
+  case class Sense(
+    optInverse: Option[Boolean],
+    optNegated: Option[Boolean])
 
   override def visitSenseFlags(ctx: SenseFlagsContext): Builder[Sense] = {
     if (isDefined(ctx)) {
@@ -890,9 +860,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       ok(Sense(None, None))
   }
 
-
   def getCardinality(
-                      ctx: CardinalityContext): Builder[Cardinality] = {
+    ctx: CardinalityContext): Builder[Cardinality] = {
     if (isDefined(ctx))
       ctx match {
         case s: StarCardinalityContext => ok(star)
@@ -900,17 +869,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         case s: OptionalCardinalityContext => ok(optional)
         case s: RepeatCardinalityContext => visitRepeatCardinality(s)
         case _ => err(s"Not implemented cardinality ${ctx.getClass.getName}")
-      } else ok((None, None))
+      }
+    else ok((None, None))
   }
 
-  override def
-    visitRepeatCardinality(ctx: RepeatCardinalityContext
-                          ): Builder[Cardinality] = {
+  override def visitRepeatCardinality(ctx: RepeatCardinalityContext): Builder[Cardinality] = {
     visitRepeatRange(ctx.repeatRange())
   }
 
   override def visitRepeatRange(
-                                 ctx: RepeatRangeContext): Builder[Cardinality] = {
+    ctx: RepeatRangeContext): Builder[Cardinality] = {
     for {
       min <- visitMin_range(ctx.min_range())
       max <- visitMax_range(ctx.max_range())
@@ -923,14 +891,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitMin_range(
-                               ctx: Min_rangeContext): Builder[Option[Int]] = {
+    ctx: Min_rangeContext): Builder[Option[Int]] = {
     if (isDefined(ctx)) {
       getInteger(ctx.INTEGER().getText()).map(Some(_))
     } else ok(None)
   }
 
   override def visitMax_range(
-                               ctx: Max_rangeContext): Builder[Option[Max]] = {
+    ctx: Max_rangeContext): Builder[Option[Max]] = {
     if (isDefined(ctx)) {
       if (isDefined(ctx.INTEGER())) {
         getInteger(ctx.INTEGER().getText()).map(n => Some(IntMax(n)))
@@ -943,7 +911,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitPredicate(
-                               ctx: PredicateContext): Builder[IRI] = {
+    ctx: PredicateContext): Builder[IRI] = {
     ctx match {
       case _ if (isDefined(ctx.iri())) =>
         visitIri(ctx.iri())
@@ -953,24 +921,24 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitInclude(
-                             ctx: IncludeContext): Builder[TripleExpr] =
+    ctx: IncludeContext): Builder[TripleExpr] =
     for {
-    lbl <- visitShapeLabel(ctx.shapeLabel())
-  } yield Inclusion(lbl)
+      lbl <- visitShapeLabel(ctx.shapeLabel())
+    } yield Inclusion(lbl)
 
-  override def
-     visitEncapsulatedShape(ctx: EncapsulatedShapeContext): Builder[TripleExpr] =
-   for {
-    tripleExpr <- visitInnerShape(ctx.innerShape())
-    cardinality <- getCardinality(ctx.cardinality())
-    annotations <- visitList(visitAnnotation, ctx.annotation())
-    semActs <- visitSemanticActions(ctx.semanticActions())
-  } yield extendTripleExpr(tripleExpr,cardinality,annotations,semActs)
+  override def visitEncapsulatedShape(ctx: EncapsulatedShapeContext): Builder[TripleExpr] =
+    for {
+      tripleExpr <- visitInnerShape(ctx.innerShape())
+      cardinality <- getCardinality(ctx.cardinality())
+      annotations <- visitList(visitAnnotation, ctx.annotation())
+      semActs <- visitSemanticActions(ctx.semanticActions())
+    } yield extendTripleExpr(tripleExpr, cardinality, annotations, semActs)
 
-  def extendTripleExpr(te: TripleExpr,
-                       cardinality: Cardinality,
-                       anns: List[Annotation],
-                       sActs: List[SemAct]): TripleExpr =
+  def extendTripleExpr(
+    te: TripleExpr,
+    cardinality: Cardinality,
+    anns: List[Annotation],
+    sActs: List[SemAct]): TripleExpr =
     te match {
       case tc: TripleConstraint => tc.copy(
         optMin = cardinality._1,
@@ -980,8 +948,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           else Some(anns),
         semActs =
           if (sActs.isEmpty) None
-          else Some(sActs)
-      )
+          else Some(sActs))
       case eo: EachOf => eo.copy(
         optMin = cardinality._1,
         optMax = cardinality._2,
@@ -990,8 +957,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           else Some(anns),
         semActs =
           if (sActs.isEmpty) None
-          else Some(sActs)
-      )
+          else Some(sActs))
       case so: OneOf => so.copy(
         optMin = cardinality._1,
         optMax = cardinality._2,
@@ -1000,30 +966,28 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           else Some(anns),
         semActs =
           if (sActs.isEmpty) None
-          else Some(sActs)
-      )
+          else Some(sActs))
       case i: Inclusion =>
         // TODO: Check how to extend include
         i
     }
 
-  override def visitAnnotation(ctx: AnnotationContext):
-     Builder[Annotation] = for {
+  override def visitAnnotation(ctx: AnnotationContext): Builder[Annotation] = for {
     pred <- visitPredicate(ctx.predicate())
     obj <- if (isDefined(ctx.iri())) {
-      visitIri(ctx.iri()).map{ iri => {
-        val o : ObjectValue = IRIValue(iri)
-        o
-      } }
-    } else {
-       visitLiteral(ctx.literal()).map(v => v match {
-         case o: ObjectValue => o
-         case _ => throw new Exception(s"Unknown value in annotation $v")
-       }
-       )
+      visitIri(ctx.iri()).map { iri =>
+        {
+          val o: ObjectValue = IRIValue(iri)
+          o
+        }
       }
-    } yield Annotation(pred,obj)
-
+    } else {
+      visitLiteral(ctx.literal()).map(v => v match {
+        case o: ObjectValue => o
+        case _ => throw new Exception(s"Unknown value in annotation $v")
+      })
+    }
+  } yield Annotation(pred, obj)
 
   override def visitInnerShape(ctx: InnerShapeContext): Builder[TripleExpr] =
     ctx match {
@@ -1033,35 +997,33 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
 
   override def visitSingleElementGroup(
-                                        ctx: SingleElementGroupContext): Builder[TripleExpr] = {
+    ctx: SingleElementGroupContext): Builder[TripleExpr] = {
     visitUnaryShape(ctx.unaryShape())
   }
 
   override def visitMultiElementGroup(
-                                       ctx: MultiElementGroupContext): Builder[TripleExpr] =
-   for {
-    ses <- visitList(visitUnaryShape, ctx.unaryShape())
-  } yield ses.length match {
-    case 1 => ses.head
-    case _ => EachOf(None, expressions = ses, None,None,None,None)
-  }
+    ctx: MultiElementGroupContext): Builder[TripleExpr] =
+    for {
+      ses <- visitList(visitUnaryShape, ctx.unaryShape())
+    } yield ses.length match {
+      case 1 => ses.head
+      case _ => EachOf(None, expressions = ses, None, None, None, None)
+    }
 
-  override def
-     visitMultiElementOneOf(ctx: MultiElementOneOfContext):
-        Builder[TripleExpr] = for {
+  override def visitMultiElementOneOf(ctx: MultiElementOneOfContext): Builder[TripleExpr] = for {
     groups <- visitList(visitGroupShape, ctx.groupShape)
   } yield groups.length match {
     case 1 => groups.head
-    case _ => OneOf(None,expressions = groups, None,None,None,None)
+    case _ => OneOf(None, expressions = groups, None, None, None, None)
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeLabel] = {
     ctx match {
       case _ if (isDefined(ctx.iri())) => {
         for {
-           iri <- visitIri(ctx.iri())
+          iri <- visitIri(ctx.iri())
         } yield IRILabel(iri)
-       }
+      }
       case _ if (isDefined(ctx.blankNode())) => {
         for {
           bNode <- visitBlankNode(ctx.blankNode())
@@ -1089,7 +1051,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitDirective(
-                               ctx: DirectiveContext): Builder[Directive] = {
+    ctx: DirectiveContext): Builder[Directive] = {
     if (ctx.baseDecl() != null) {
       for {
         iri <- visitBaseDecl(ctx.baseDecl())
@@ -1158,12 +1120,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   def isDefined[A](x: A): Boolean = x != null
 
-  def visitList[A, B](visitFn: A => Builder[B],
-                      ls: java.util.List[A]): Builder[List[B]] =
+  def visitList[A, B](
+    visitFn: A => Builder[B],
+    ls: java.util.List[A]): Builder[List[B]] =
     ls.asScala.toList.map(visitFn(_)).sequence
 
-  def visitOpt[A,B](visitFn: A => Builder[B],
-                    v: A): Builder[Option[B]] =
+  def visitOpt[A, B](
+    visitFn: A => Builder[B],
+    v: A): Builder[Option[B]] =
     if (isDefined(v)) visitFn(v).map(Some(_))
     else ok(None)
 

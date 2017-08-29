@@ -15,7 +15,7 @@ case class SchemaLabel(str: String, pm: PrefixMap = PrefixMap.empty) {
       case _ => false
     }
   }
-//  def toHTML(pm: PrefixMap): String = "<span class=\"shape\">" + code(str) + "</span>"
+  //  def toHTML(pm: PrefixMap): String = "<span class=\"shape\">" + code(str) + "</span>"
 }
 
 object SchemaLabel {

@@ -1,9 +1,9 @@
 package es.weso.utils
 // import scala.util.matching.Regex
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.{ParseException, RegularExpression}
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.{ ParseException, RegularExpression }
 
 case class RegEx(pattern: String, maybeFlags: Option[String]) {
-  def matches(str: String): Either[String,Boolean] = {
+  def matches(str: String): Either[String, Boolean] = {
     try {
       val regex = new RegularExpression(pattern, maybeFlags.getOrElse(""))
       Right(regex.matches(str))
@@ -24,4 +24,4 @@ case class RegEx(pattern: String, maybeFlags: Option[String]) {
     pattern.matches(str)
   }
 
-}*/
+}*/ 

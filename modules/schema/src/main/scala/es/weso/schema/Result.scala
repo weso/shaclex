@@ -11,17 +11,17 @@ import cats.syntax.either._
 import cats.instances.either._
 
 case class Result(
-    isValid: Boolean,
-    message: String,
-    solutions: Seq[Solution],
-    errors: Seq[ErrorInfo],
-    trigger: Option[ValidationTrigger]) extends LazyLogging {
+  isValid: Boolean,
+  message: String,
+  solutions: Seq[Solution],
+  errors: Seq[ErrorInfo],
+  trigger: Option[ValidationTrigger]) extends LazyLogging {
 
   def noSolutions(sols: Seq[Solution]): Boolean = {
     sols.size == 0 || sols.head.nodes.isEmpty
   }
 
-  def solution: Either[String,Solution] = {
+  def solution: Either[String, Solution] = {
     solutions.size match {
       case 0 => Left("No solutions")
       case 1 => Right(solutions.head)
@@ -40,13 +40,12 @@ case class Result(
       if (solutions.size == 0) {
         sb ++= s"No solutions"
       } else {
-          for ((solution, n) <- solutions zip (1 to cut)) {
-            sb ++= "Result " + printNumber(n, cut)
-            sb ++= solution.show
-          }
+        for ((solution, n) <- solutions zip (1 to cut)) {
+          sb ++= "Result " + printNumber(n, cut)
+          sb ++= solution.show
         }
-    }
-    else
+      }
+    } else
       sb ++= errors.map(_.show).mkString("\n")
     sb.toString
   }
@@ -56,13 +55,12 @@ case class Result(
     implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
       final def apply(a: Result): Json = {
         Json.fromJsonObject(JsonObject.empty.
-          add("valid",Json.fromBoolean(isValid)).
-          add("type",Json.fromString("Result")).
-          add("message",Json.fromString(message)).
-          add("solutions",solutions.toList.asJson).
-          add("errors",errors.toList.asJson).
-          add("trigger",trigger.asJson)
-        )
+          add("valid", Json.fromBoolean(isValid)).
+          add("type", Json.fromString("Result")).
+          add("message", Json.fromString(message)).
+          add("solutions", solutions.toList.asJson).
+          add("errors", errors.toList.asJson).
+          add("trigger", trigger.asJson))
       }
     }
     this.asJson
@@ -95,12 +93,12 @@ case class Result(
 
 object Result extends LazyLogging {
   def empty =
-    Result(isValid = true,
+    Result(
+      isValid = true,
       message = "",
       solutions = Seq(),
-      errors=Seq(),
-      None
-    )
+      errors = Seq(),
+      None)
 
   def errStr(str: String) = Result(isValid = false, message = str, solutions = Seq(), errors = Seq(), None)
 
@@ -129,8 +127,7 @@ object Result extends LazyLogging {
       } else for {
         ls <- c.downField("details").as[List[ErrorInfo]]
       } yield ls.toSeq
-    } yield Result(isValid,message,solutions,errors,None)
+    } yield Result(isValid, message, solutions, errors, None)
   }
-
 
 }

@@ -5,8 +5,8 @@ import data._
 import implicits._
 import es.weso.checking.CheckerCats
 import es.weso.rdf.RDFReader
-import es.weso.rdf.nodes.{BNodeId, IRI, Literal, RDFNode}
-import es.weso.shex.{implicits => _, _}
+import es.weso.rdf.nodes.{ BNodeId, IRI, Literal, RDFNode }
+import es.weso.shex.{ implicits => _, _ }
 
 object ShExChecker extends CheckerCats {
 
@@ -18,7 +18,6 @@ object ShExChecker extends CheckerCats {
   type Evidence = (NodeShape, String)
   type Log = List[Evidence]
   type CheckTyping = Check[ShapeTyping]
-
 
   implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
     def combine(e1: Env, e2: Env): Env = e1 |+| e2
@@ -43,10 +42,10 @@ object ShExChecker extends CheckerCats {
     err[A](ViolationError.msgErr(msg))
 
   def checkCond(
-                 condition: Boolean,
-                 attempt: Attempt,
-                 error: ViolationError,
-                 evidence: String): CheckTyping = for {
+    condition: Boolean,
+    attempt: Attempt,
+    error: ViolationError,
+    evidence: String): CheckTyping = for {
     _ <- validateCheck(condition, error)
     newTyping <- addEvidence(attempt.nodeShape, evidence)
   } yield newTyping
@@ -67,8 +66,9 @@ object ShExChecker extends CheckerCats {
     } yield t.addNotEvidence(node, shape, e)
   }
 
-  def runLocal[A](c: Check[A],
-                  f: ShapeTyping => ShapeTyping): Check[A] =
+  def runLocal[A](
+    c: Check[A],
+    f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
   def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
@@ -79,17 +79,17 @@ object ShExChecker extends CheckerCats {
     ok(ShapeTyping.combineTypings(ts))
   }
 
-  def runCheck[A: Show](c: Check[A],
-                        rdf: RDFReader
-                       ): CheckResult[ViolationError, A, Log] = {
+  def runCheck[A: Show](
+    c: Check[A],
+    rdf: RDFReader): CheckResult[ViolationError, A, Log] = {
     val initial: ShapeTyping = Monoid[ShapeTyping].empty
-    runCheckWithTyping(c,rdf,initial)
+    runCheckWithTyping(c, rdf, initial)
   }
 
-  def runCheckWithTyping[A: Show](c: Check[A],
-                         rdf: RDFReader,
-                         typing: ShapeTyping
-                        ): CheckResult[ViolationError, A, Log] = {
+  def runCheckWithTyping[A: Show](
+    c: Check[A],
+    rdf: RDFReader,
+    typing: ShapeTyping): CheckResult[ViolationError, A, Log] = {
     val r = run(c)(rdf)(typing)
     CheckResult(r)
   }

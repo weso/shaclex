@@ -3,7 +3,7 @@ package es.weso.collection
 import scala.collection.SortedMap
 
 case class BagSortedMap[A: Ordering](smap: SortedMap[A, Int])
-    extends Bag[A] {
+  extends Bag[A] {
 
   def contains(elem: A): Boolean = smap.contains(elem)
 
@@ -20,15 +20,15 @@ case class BagSortedMap[A: Ordering](smap: SortedMap[A, Int])
         BagSortedMap(smap - elem)
       else
         BagSortedMap(smap + (elem -> (n - 1)))
-    } else // TODO: Consider returning some kind of error 
+    } else // TODO: Consider returning some kind of error
       this
 
   def multiplicity(elem: A): Int = {
-      if (smap.contains(elem))
-        smap(elem)
-      else 
-        0
-    }
+    if (smap.contains(elem))
+      smap(elem)
+    else
+      0
+  }
 
   /**
    * A more efficient version of add

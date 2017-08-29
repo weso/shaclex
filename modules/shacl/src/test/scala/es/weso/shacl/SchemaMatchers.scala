@@ -14,8 +14,7 @@ trait SchemaMatchers {
       MatchResult(
         shapeIDs == shapes.toSet,
         s"Schema $schema + has shapes $shapes which is different to expected $shapeIDs",
-        s"Schema $schema + has shapes $shapes which is equal to $shapeIDs"
-      )
+        s"Schema $schema + has shapes $shapes which is equal to $shapeIDs")
     }
   }
 

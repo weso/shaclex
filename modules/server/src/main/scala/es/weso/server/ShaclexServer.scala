@@ -8,7 +8,7 @@ import org.http4s._
 //import org.http4s.rho.swagger.models.Info
 import org.http4s.server.blaze._
 import org.http4s.server.middleware.CORS
-import org.http4s.server.{Server, ServerApp, ServerBuilder}
+import org.http4s.server.{ Server, ServerApp, ServerBuilder }
 import org.log4s.getLogger
 
 import scala.util.Properties.envOrNone
@@ -16,7 +16,7 @@ import scala.util.Properties.envOrNone
 
 class ShaclexServer(host: String, port: Int) {
   private val logger = getLogger
-  private val pool   = Executors.newCachedThreadPool()
+  private val pool = Executors.newCachedThreadPool()
 
   logger.info(s"Starting Http4s-blaze example on '$host:$port'")
 
@@ -36,7 +36,7 @@ class ShaclexServer(host: String, port: Int) {
 }
 
 object ShaclexServer extends ServerApp {
-  val ip   = "0.0.0.0"
+  val ip = "0.0.0.0"
   val port = envOrNone("PORT") map (_.toInt) getOrElse (8080)
 
   override def server(args: List[String]): Task[Server] =

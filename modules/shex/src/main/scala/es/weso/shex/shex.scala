@@ -1,23 +1,22 @@
 package es.weso.shex
-import es.weso.depgraphs.{DepGraph, Neg, Pos, PosNeg}
+import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
+import es.weso.shex.shexR.{ RDF2ShEx, ShEx2RDF }
 import es.weso.utils.MapUtils._
 
 import util._
 
 case class Schema(
-    prefixes: Option[PrefixMap],
-    base: Option[IRI],
-    startActs: Option[List[SemAct]],
-    start: Option[ShapeExpr],
-    shapes: Option[List[ShapeExpr]]
-) {
+  prefixes: Option[PrefixMap],
+  base: Option[IRI],
+  startActs: Option[List[SemAct]],
+  start: Option[ShapeExpr],
+  shapes: Option[List[ShapeExpr]]) {
 
-  def resolveShapeLabel(l: ShapeLabel): Either[String,IRI] = l match {
+  def resolveShapeLabel(l: ShapeLabel): Either[String, IRI] = l match {
     case IRILabel(iri) => Right(iri)
     case _ => Left(s"Label $l can't be converted to IRI")
   }
@@ -42,7 +41,7 @@ case class Schema(
   }
 
   def negCycles: Either[String, Set[Set[ShapeLabel]]] =
-   Dependencies.negCycles(this)
+    Dependencies.negCycles(this)
 
   def depGraph: Either[String, DepGraph[ShapeLabel]] =
     Dependencies.depGraph(this)
@@ -72,16 +71,14 @@ case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeE
 }
 
 case class NodeConstraint(
-    id: Option[ShapeLabel],
-    nodeKind: Option[NodeKind],
-    datatype: Option[IRI],
-    xsFacets: List[XsFacet],
-    values: Option[List[ValueSetValue]]
-    ) extends ShapeExpr {
+  id: Option[ShapeLabel],
+  nodeKind: Option[NodeKind],
+  datatype: Option[IRI],
+  xsFacets: List[XsFacet],
+  values: Option[List[ValueSetValue]]) extends ShapeExpr {
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
 }
-
 
 object NodeConstraint {
 
@@ -90,47 +87,43 @@ object NodeConstraint {
     nodeKind = None,
     datatype = None,
     xsFacets = List(),
-    values = None
-  )
+    values = None)
 
   def nodeKind(nk: NodeKind, facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       nodeKind = Some(nk),
-      xsFacets = facets
-    )
+      xsFacets = facets)
 
   def nodeKind(idLabel: Option[ShapeLabel], nk: NodeKind, facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       id = idLabel,
       nodeKind = Some(nk),
-      xsFacets = facets
-    )
+      xsFacets = facets)
 
-  def datatype(dt: IRI,
-               facets: List[XsFacet]): NodeConstraint =
+  def datatype(
+    dt: IRI,
+    facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
-     datatype = Some(dt),
-     xsFacets = facets
-    )
+      datatype = Some(dt),
+      xsFacets = facets)
 
-  def valueSet(vs: List[ValueSetValue],
-               facets: List[XsFacet]): NodeConstraint =
+  def valueSet(
+    vs: List[ValueSetValue],
+    facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       values = Some(vs),
-      xsFacets = facets
-  )
+      xsFacets = facets)
 }
 
 // TODO: Review if shapes should have annotations
 case class Shape(
-    id: Option[ShapeLabel],
-    virtual:Option[Boolean],
-    closed: Option[Boolean],
-    extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
-    expression: Option[TripleExpr],
-    inherit: Option[ShapeLabel],
-    semActs: Option[List[SemAct]]
-) extends ShapeExpr {
+  id: Option[ShapeLabel],
+  virtual: Option[Boolean],
+  closed: Option[Boolean],
+  extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
+  expression: Option[TripleExpr],
+  inherit: Option[ShapeLabel],
+  semActs: Option[List[SemAct]]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
@@ -147,16 +140,15 @@ case class Shape(
 
 }
 
-object Shape{
+object Shape {
   def empty: Shape = Shape(
-   id = None,
-   virtual = None,
-   closed = None,
-   extra = None,
-   expression = None,
-   inherit = None,
-   semActs = None
-  )
+    id = None,
+    virtual = None,
+    closed = None,
+    extra = None,
+    expression = None,
+    inherit = None,
+    semActs = None)
 
   def defaultVirtual = false
   def defaultClosed = false
@@ -190,11 +182,11 @@ case class Length(v: Int) extends StringFacet {
   val fieldName = "length"
 }
 
-case class MinLength(v:Int) extends StringFacet {
+case class MinLength(v: Int) extends StringFacet {
   val fieldName = "minlength"
 }
 
-case class MaxLength(v:Int) extends StringFacet {
+case class MaxLength(v: Int) extends StringFacet {
   val fieldName = "maxlength"
 }
 
@@ -244,18 +236,18 @@ object ObjectValue {
   def intValue(n: Int): ObjectValue =
     DatatypeString(n.toString, xsd_integer)
   def doubleValue(d: Double): ObjectValue =
-      DatatypeString(d.toString, xsd_double)
+    DatatypeString(d.toString, xsd_double)
   def decimalValue(d: BigDecimal): ObjectValue =
-      DatatypeString(d.toString, xsd_decimal)
+    DatatypeString(d.toString, xsd_decimal)
   def literalValue(l: Literal): ObjectValue =
     l match {
-      case DatatypeLiteral(lex,dt) => DatatypeString(lex,dt)
+      case DatatypeLiteral(lex, dt) => DatatypeString(lex, dt)
       case IntegerLiteral(n) => intValue(n)
       case DecimalLiteral(d) => decimalValue(d)
       case DoubleLiteral(d) => doubleValue(d)
-      case StringLiteral(s) => DatatypeString(s,xsd_string)
+      case StringLiteral(s) => DatatypeString(s, xsd_string)
       case BooleanLiteral(b) => if (b) trueValue else falseValue
-      case LangLiteral(lex,lang) => LangString(lex,lang.lang)
+      case LangLiteral(lex, lang) => LangString(lex, lang.lang)
     }
 }
 
@@ -264,40 +256,35 @@ case class StemRange(
   stem: StemValue,
   exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
 
-
 sealed trait StemValue
 case class IRIStem(iri: IRI) extends StemValue
 case class Wildcard() extends StemValue
 
-
 case class SemAct(name: IRI, code: Option[String])
-
 
 abstract sealed trait TripleExpr
 
 // object TripleExpr { }
 
 case class EachOf(
-    id: Option[ShapeLabel],
-    expressions: List[TripleExpr],
-    optMin: Option[Int],
-    optMax: Option[Max],
-    semActs: Option[List[SemAct]],
-    annotations: Option[List[Annotation]]
-) extends TripleExpr {
+  id: Option[ShapeLabel],
+  expressions: List[TripleExpr],
+  optMin: Option[Int],
+  optMax: Option[Max],
+  semActs: Option[List[SemAct]],
+  annotations: Option[List[Annotation]]) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
 
 }
 
 case class OneOf(
-    id: Option[ShapeLabel],
-    expressions: List[TripleExpr],
-    optMin: Option[Int],
-    optMax: Option[Max],
-    semActs: Option[List[SemAct]],
-    annotations: Option[List[Annotation]]
-) extends TripleExpr {
+  id: Option[ShapeLabel],
+  expressions: List[TripleExpr],
+  optMin: Option[Int],
+  optMax: Option[Max],
+  semActs: Option[List[SemAct]],
+  annotations: Option[List[Annotation]]) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
 }
@@ -308,40 +295,38 @@ case class Inclusion(include: ShapeLabel)
 }
 
 case class TripleConstraint(
-    id: Option[ShapeLabel],
-    optInverse: Option[Boolean],
-    optNegated: Option[Boolean],
-    predicate: IRI,
-    valueExpr: Option[ShapeExpr],
-    optMin: Option[Int],
-    optMax: Option[Max],
-    semActs: Option[List[SemAct]],
-    annotations: Option[List[Annotation]]
-    ) extends TripleExpr {
- lazy val inverse = optInverse.getOrElse(false)
- lazy val direct = !inverse
- lazy val negated = optNegated.getOrElse(false)
- lazy val min = optMin.getOrElse(Cardinality.defaultMin)
- lazy val max = optMax.getOrElse(Cardinality.defaultMax)
- lazy val path: Path =
+  id: Option[ShapeLabel],
+  optInverse: Option[Boolean],
+  optNegated: Option[Boolean],
+  predicate: IRI,
+  valueExpr: Option[ShapeExpr],
+  optMin: Option[Int],
+  optMax: Option[Max],
+  semActs: Option[List[SemAct]],
+  annotations: Option[List[Annotation]]) extends TripleExpr {
+  lazy val inverse = optInverse.getOrElse(false)
+  lazy val direct = !inverse
+  lazy val negated = optNegated.getOrElse(false)
+  lazy val min = optMin.getOrElse(Cardinality.defaultMin)
+  lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+  lazy val path: Path =
     if (direct) Direct(predicate)
     else Inverse(predicate)
 
- def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
 }
 
 object TripleConstraint {
   def emptyPred(pred: IRI): TripleConstraint =
     TripleConstraint(
-      None,None,None,pred,None,None,None,None,None
-    )
+      None, None, None, pred, None, None, None, None, None)
 
   def valueExpr(pred: IRI, ve: ShapeExpr): TripleConstraint =
     emptyPred(pred).copy(valueExpr = Some(ve))
 
   def datatype(pred: IRI, iri: IRI, facets: List[XsFacet]): TripleConstraint =
-   emptyPred(pred).copy(valueExpr = Some(NodeConstraint.datatype(iri,facets)))
+    emptyPred(pred).copy(valueExpr = Some(NodeConstraint.datatype(iri, facets)))
 }
 
 case class Annotation(predicate: IRI, obj: ObjectValue)
@@ -357,10 +342,10 @@ object Cardinality {
 
 abstract sealed trait Max {
   def show = this match {
-      case IntMax(v) => v.toString
-      case Star => "*"
-    }
-  
+    case IntMax(v) => v.toString
+    case Star => "*"
+  }
+
   def biggerThanOrEqual(x: Int) = this match {
     case IntMax(v) => v >= x
     case Star => true
@@ -393,36 +378,37 @@ object Schema {
   lazy val rdfDataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase)
 
   def empty: Schema =
-    Schema(None,None,None,None,None)
+    Schema(None, None, None, None, None)
 
-  def fromString(cs: CharSequence,
-                 format: String,
-                 base: Option[String] = None): Try[Schema] = {
+  def fromString(
+    cs: CharSequence,
+    format: String,
+    base: Option[String] = None): Try[Schema] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
         import compact.Parser.parseSchema
         parseSchema(cs.toString) match {
-        case Left(e) => Failure(new Exception(e))
-        case Right(schema) => Success(schema)
+          case Left(e) => Failure(new Exception(e))
+          case Right(schema) => Success(schema)
+        }
       }
-      }
-      case "SHEXJ" =>{
+      case "SHEXJ" => {
         import io.circe.parser._
         import es.weso.shex.implicits.decoderShEx._
         decode[Schema](cs.toString).
-          fold(e => Failure(new Exception(e.toString)),
-               s => Success(s))
+          fold(
+            e => Failure(new Exception(e.toString)),
+            s => Success(s))
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
-        rdf <- RDFAsJenaModel.fromChars(cs,formatUpperCase,None)
+        rdf <- RDFAsJenaModel.fromChars(cs, formatUpperCase, None)
         schema <- RDF2ShEx.tryRDF2Schema(rdf)
       } yield schema
 
       case _ =>
         Failure(
-          new Exception(s"Not implemented ShEx parser for format $format")
-        )
+          new Exception(s"Not implemented ShEx parser for format $format"))
     }
   }
 
@@ -441,7 +427,7 @@ object Schema {
         schema.asJson.spaces4
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => {
-        val model = ShEx2RDF.shEx2Model(schema,None)
+        val model = ShEx2RDF.shEx2Model(schema, None)
         val rdf = RDFAsJenaModel(model)
         rdf.serialize(formatUpperCase)
       }

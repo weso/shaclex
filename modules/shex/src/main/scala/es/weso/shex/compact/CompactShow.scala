@@ -10,8 +10,8 @@ import scala.text.Document._
 import scala.text._
 
 /**
-  * Convert Abstract syntax to ShEx Compact syntax
-  */
+ * Convert Abstract syntax to ShEx Compact syntax
+ */
 object CompactShow {
 
   type Doc = Document
@@ -35,10 +35,14 @@ object CompactShow {
     else d1 :/: d2
 
   private def schemaDoc(s: Schema): Document = {
-    comb(prefixesDoc(s.prefixes),
-      comb(baseDoc(s.base),
-        comb(startActsDoc(s.prefixMap)(s.startActs),
-          comb(startDoc(s.prefixMap)(s.start),
+    comb(
+      prefixesDoc(s.prefixes),
+      comb(
+        baseDoc(s.base),
+        comb(
+          startActsDoc(s.prefixMap)(s.startActs),
+          comb(
+            startDoc(s.prefixMap)(s.start),
             optShapesDoc(s.shapes, s.prefixMap)))))
   }
 
@@ -46,11 +50,11 @@ object CompactShow {
     ps match {
       case None => empty
       case Some(pm) =>
-        mapDocWithSeps(pm.pm,
+        mapDocWithSeps(
+          pm.pm,
           text("prefix") :: space, space, newline,
           prefixDoc,
-          unqualifiedIriDoc
-        )
+          unqualifiedIriDoc)
     }
 
   private def prefixDoc(p: Prefix): Document =
@@ -61,8 +65,7 @@ object CompactShow {
 
   private def baseDoc(b: Option[IRI]): Document =
     optDoc(b, (iri: IRI) =>
-      str("base") :: space :: unqualifiedIriDoc(iri)
-    )
+      str("base") :: space :: unqualifiedIriDoc(iri))
 
   private def startActsDoc(pm: PrefixMap)(s: Option[List[SemAct]]): Document =
     optDoc(s, semActsDoc(pm))
@@ -78,12 +81,11 @@ object CompactShow {
 
   private def startDoc(pm: PrefixMap)(s: Option[ShapeExpr]): Document =
     optDoc(s, (v: ShapeExpr) =>
-      str("start") :: space :: eq :: space :: shapeExprDoc(pm)(v)
-    )
+      str("start") :: space :: eq :: space :: shapeExprDoc(pm)(v))
 
-  private def optShapesDoc(s: Option[List[ShapeExpr]],
-                         pm: PrefixMap
-                       ): Document =
+  private def optShapesDoc(
+    s: Option[List[ShapeExpr]],
+    pm: PrefixMap): Document =
     optDoc(s, shapeExprsDoc(pm))
 
   private def shapeExprsDoc(pm: PrefixMap)(shapes: List[ShapeExpr]): Document =
@@ -105,16 +107,16 @@ object CompactShow {
 
   private def shapeExprDoc(pm: PrefixMap)(se: ShapeExpr): Document =
     se match {
-        // TODO...review ids generation...
-      case ShapeOr(id,es) =>
+      // TODO...review ids generation...
+      case ShapeOr(id, es) =>
         idDoc(id, pm) :: space ::
-        listDocIntersperse(es, shapeExprDoc(pm), keyword("OR"))
-      case ShapeAnd(id,es) =>
+          listDocIntersperse(es, shapeExprDoc(pm), keyword("OR"))
+      case ShapeAnd(id, es) =>
         idDoc(id, pm) :: space ::
-        listDocIntersperse(es, shapeExprDoc(pm), keyword("AND"))
-      case ShapeNot(id,e) =>
+          listDocIntersperse(es, shapeExprDoc(pm), keyword("AND"))
+      case ShapeNot(id, e) =>
         idDoc(id, pm) :: space ::
-        keyword("NOT") :: shapeExprDoc(pm)(e)
+          keyword("NOT") :: shapeExprDoc(pm)(e)
       case nc: NodeConstraint =>
         nodeConstraintDoc(pm)(nc)
       case s: Shape =>
@@ -123,7 +125,7 @@ object CompactShow {
         str("@") :: shapeLabelDoc(pm)(r)
       case ShapeExternal(id) =>
         idDoc(id, pm) :: space ::
-        str("EXTERNAL")
+          str("EXTERNAL")
     }
 
   private def nodeConstraintDoc(pm: PrefixMap)(nc: NodeConstraint): Document =
@@ -151,7 +153,7 @@ object CompactShow {
       case Length(v) => f.fieldName :: space :: text(v.toString)
       case MinLength(v) => f.fieldName :: space :: text(v.toString)
       case MaxLength(v) => f.fieldName :: space :: text(v.toString)
-      case Pattern(p,flags) => text("~/") :: text(p) :: text("/") :: text(flags.getOrElse(""))
+      case Pattern(p, flags) => text("~/") :: text(p) :: text("/") :: text(flags.getOrElse(""))
       case MinInclusive(n) => f.fieldName :: space :: numericDoc(n)
       case MaxInclusive(n) => f.fieldName :: space :: numericDoc(n)
       case MinExclusive(n) => f.fieldName :: space :: numericDoc(n)
@@ -165,7 +167,6 @@ object CompactShow {
     case NumericDouble(d) => doubleDoc(d.toString)
     case NumericDecimal(d) => decimalDoc(d.toString)
   }
-
 
   private def valueSetDoc(pm: PrefixMap)(vs: List[ValueSetValue]): Document =
     keyword("[") ::
@@ -218,14 +219,14 @@ object CompactShow {
 
   private def shapeDoc(pm: PrefixMap)(s: Shape): Document = {
     idDoc(s.id, pm) :: space ::
-    optDocConst(s.virtual, keyword("VIRTUAL")) ::
+      optDocConst(s.virtual, keyword("VIRTUAL")) ::
       maybeClosed(s.isClosed) ::
       optDoc(s.extra, extraDoc(pm)) ::
-      optDoc(s.expression,
+      optDoc(
+        s.expression,
         (te: TripleExpr) =>
-          text("{") :: tripleExprDoc(pm)(te) :: text("}") :: newline
-      ) ::
-      optDoc(s.semActs, semActsDoc(pm))
+          text("{") :: tripleExprDoc(pm)(te) :: text("}") :: newline) ::
+        optDoc(s.semActs, semActsDoc(pm))
   }
 
   private def extraDoc(pm: PrefixMap)(ls: List[IRI]): Document =
@@ -245,12 +246,12 @@ object CompactShow {
     } else {
       openParen ::
         listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";")) ::
-      closeParen ::
-      cardinalityDoc(e.optMin, e.optMax)
+        closeParen ::
+        cardinalityDoc(e.optMin, e.optMax)
     }
     kernel ::
-    optDoc(e.semActs, semActsDoc(pm)) ::
-    optDoc(e.annotations, annotationsDoc(pm))
+      optDoc(e.semActs, semActsDoc(pm)) ::
+      optDoc(e.annotations, annotationsDoc(pm))
   }
   private def someOfDoc(pm: PrefixMap)(e: OneOf): Document = {
     val kernel = if (Cardinality.isDefault(e.min, e.max)) {
@@ -262,8 +263,8 @@ object CompactShow {
         cardinalityDoc(e.optMin, e.optMax)
     }
     kernel ::
-    optDoc(e.semActs, semActsDoc(pm)) ::
-    optDoc(e.annotations, annotationsDoc(pm))
+      optDoc(e.semActs, semActsDoc(pm)) ::
+      optDoc(e.annotations, annotationsDoc(pm))
   }
 
   private def tripleConstraintDoc(pm: PrefixMap)(t: TripleConstraint): Document =
@@ -271,11 +272,10 @@ object CompactShow {
       optDocConst(t.optNegated, str("!")) ::
       iriDoc(pm)(t.predicate) :: space ::
       optDoc(t.valueExpr, shapeExprDoc(pm)) ::
-      ( if (Cardinality.isDefault(t.min,t.max)) none
-        else cardinalityDoc(t.optMin, t.optMax))::
+      (if (Cardinality.isDefault(t.min, t.max)) none
+      else cardinalityDoc(t.optMin, t.optMax)) ::
       optDoc(t.semActs, semActsDoc(pm)) ::
       optDoc(t.annotations, annotationsDoc(pm))
-
 
   private def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Document =
     str("todo: Annotations")
@@ -284,43 +284,40 @@ object CompactShow {
     str(s" {${min.getOrElse(1)},${max.getOrElse(IntMax(1)).show}}")
 
   private def listDocSep[A](
-                             xs: Seq[A],
-                             toDoc: A => Document,
-                             sep: Document
-                           ): Document = xs.foldLeft(empty: Document)(
+    xs: Seq[A],
+    toDoc: A => Document,
+    sep: Document): Document = xs.foldLeft(empty: Document)(
     (d: Document, x: A) => d :: sep :: toDoc(x))
 
-  private def listDocIntersperse[A](s: Seq[A],
-                                    toDoc: A => Document,
-                                    sep: Document
-                                   ): Document =
+  private def listDocIntersperse[A](
+    s: Seq[A],
+    toDoc: A => Document,
+    sep: Document): Document =
     flatten(intersperse(sep, s.toList.map(toDoc(_))))
 
   private def flatten(ls: Seq[Doc]): Doc =
     ls.foldLeft(empty: Document)(
-      (d1, d2) => d1 :: d2
-    )
+      (d1, d2) => d1 :: d2)
 
-  private def pairDoc[A, B](doc1: A => Doc,
-                            sep: Doc,
-                            doc2: B => Doc)(pair: (A, B)): Document = {
+  private def pairDoc[A, B](
+    doc1: A => Doc,
+    sep: Doc,
+    doc2: B => Doc)(pair: (A, B)): Document = {
     doc1(pair._1) :: sep :: doc2(pair._2)
   }
 
   private def mapDocWithSeps[A, B](
-                                    m: Map[A, B],
-                                    beforeKey: Document,
-                                    betweenKeyValue: Document,
-                                    afterValue: Document,
-                                    toDocKey: A => Document,
-                                    toDocValue: B => Document
-                                  ): Document = {
+    m: Map[A, B],
+    beforeKey: Document,
+    betweenKeyValue: Document,
+    afterValue: Document,
+    toDocKey: A => Document,
+    toDocValue: B => Document): Document = {
     listDocSep(
       m.toList,
       (p: (A, B)) => beforeKey ::
         pairDoc(toDocKey, betweenKeyValue, toDocValue)(p),
-      afterValue
-    )
+      afterValue)
   }
 
   private def optDoc[A](x: Option[A], f: A => Doc): Doc =

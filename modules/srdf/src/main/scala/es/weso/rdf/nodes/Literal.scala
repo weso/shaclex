@@ -71,7 +71,7 @@ case class StringLiteral(lexicalForm: String) extends Literal {
   override def hasLang(lang: Lang) = false
 
   override def toString: String = {
-    // TODO: Check if literal contains extended chars 
+    // TODO: Check if literal contains extended chars
     "\"" + lexicalForm + "\""
   }
 

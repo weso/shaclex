@@ -8,7 +8,7 @@ import es.weso.rdf.path.SHACLPath
 import es.weso.shacl.converter.Shacl2RDF
 import sext._
 
-import scala.util.{Success, Try}
+import scala.util.{ Success, Try }
 
 object Shacl {
   case object Unbounded
@@ -35,22 +35,22 @@ case class Schema(
     shapesMap.get(ShapeRef(node)) match {
       case None => Left(s"Not found $node in Schema")
       case Some(shape) => Right(shape)
-  }
+    }
 
   def siblingQualifiedShapes(s: ShapeRef): List[ShapeRef] = {
     println(s"siblingShapes $s")
     val parentShapes: List[Shape] =
       parents(s).
         map(shapesMap.get(_)).
-        collect { case Some(shape) => shape}
+        collect { case Some(shape) => shape }
     println(s"parent shapes $parentShapes")
     val qualifiedPropertyShapes =
       parentShapes.
-        flatMap(_.propertyShapes) .
+        flatMap(_.propertyShapes).
         filter(_ != s)
     println(s"step1 ${parentShapes.flatMap(_.propertyShapes)}")
-    println(s"step2 ${parentShapes.flatMap(_.propertyShapes).filter(_!=s)}")
-//    println(s"step2 ${parentShapes.map(_.propertyShapes).filter(_!=s)}")
+    println(s"step2 ${parentShapes.flatMap(_.propertyShapes).filter(_ != s)}")
+    //    println(s"step2 ${parentShapes.map(_.propertyShapes).filter(_!=s)}")
     println(s"qualified parent shapes $qualifiedPropertyShapes")
     collectQualifiedValueShapes(qualifiedPropertyShapes)
   }
@@ -65,22 +65,22 @@ case class Schema(
   def qualifiedShapes(p: ShapeRef): List[ShapeRef] = shapesMap.get(p) match {
     case None => List()
     case Some(shape) =>
-      shape.components.collect{ case x: QualifiedValueShape => x.shape }.toList
+      shape.components.collect { case x: QualifiedValueShape => x.shape }.toList
   }
 
   /* Find shape x such that x sh:property p
    */
   def parents(p: ShapeRef): List[ShapeRef] = {
-    shapesWithPropertyShape(this.shapeRefs,p)
+    shapesWithPropertyShape(this.shapeRefs, p)
   }
 
   private def shapesWithPropertyShape(ls: Seq[ShapeRef], p: ShapeRef): List[ShapeRef] = {
-    ls.filter(hasPropertyShape(_,p)).toList
+    ls.filter(hasPropertyShape(_, p)).toList
   }
 
   private def hasPropertyShape(s: ShapeRef, p: ShapeRef): Boolean = {
     shapesMap.get(s) match {
-      case None => false  // TODO: Maybe raise an error
+      case None => false // TODO: Maybe raise an error
       case Some(shape) =>
         if (shape.propertyShapes.contains(p)) true
         else false
@@ -90,21 +90,21 @@ case class Schema(
   /**
    * Get the sequence of sh:targetNode declarations
    */
-  def targetNodeShapes: Seq[(RDFNode,Shape)] = {
-    val zero : Seq[(RDFNode,Shape)] = Seq()
-    def comb(rs:Seq[(RDFNode,Shape)], s: Shape): Seq[(RDFNode,Shape)] = {
-      val ns : Seq[RDFNode] = s.targetNodes
-      ns.map(n => (n,s)) ++ rs
+  def targetNodeShapes: Seq[(RDFNode, Shape)] = {
+    val zero: Seq[(RDFNode, Shape)] = Seq()
+    def comb(rs: Seq[(RDFNode, Shape)], s: Shape): Seq[(RDFNode, Shape)] = {
+      val ns: Seq[RDFNode] = s.targetNodes
+      ns.map(n => (n, s)) ++ rs
     }
     shapes.foldLeft(zero)(comb)
   }
 
- /**
+  /**
    * Get the sequence of `sh:targetNode` declarations
    * @return a list of pairs (n,s) where n is the IRI of a node
    * and s is the IRI of a shape
    */
-  def targetNodeDeclarations: Seq[(RDFNode,IRI)] = {
+  def targetNodeDeclarations: Seq[(RDFNode, IRI)] = {
     targetNodeShapes.collect { case (node, shape) if shape.id.isIRI => (node, shape.id.toIRI) }
   }
 
@@ -127,9 +127,8 @@ sealed abstract class Shape {
   def closed: Boolean
   def ignoredProperties: List[IRI]
 
-
   def hasId(iri: IRI): Boolean = {
-    id  == iri
+    id == iri
   }
 
   def showId: String =
@@ -176,47 +175,46 @@ case class TargetSubjectsOf(pred: IRI) extends Target
 case class TargetObjectsOf(pred: IRI) extends Target
 
 /**
-* Captures the common parts of NodeShapes and PropertyShapes
-*/
+ * Captures the common parts of NodeShapes and PropertyShapes
+ */
 /*sealed abstract class Constraint {
   def isPropertyConstraint: Boolean
   def toPropertyConstraint: Option[PropertyShape] = None
   def components: Seq[Component]
 } */
 
-case class NodeShape(id: RDFNode,
-                     components: List[Component],
-                     targets: Seq[Target],
-                     propertyShapes: Seq[ShapeRef],
-                     closed: Boolean,
-                     ignoredProperties: List[IRI]
-                    ) extends Shape {
+case class NodeShape(
+  id: RDFNode,
+  components: List[Component],
+  targets: Seq[Target],
+  propertyShapes: Seq[ShapeRef],
+  closed: Boolean,
+  ignoredProperties: List[IRI]) extends Shape {
 
   def isPropertyConstraint = false
 }
 
-case class PropertyShape(id:RDFNode,
-                         path: SHACLPath,
-                         components: Seq[Component],
-                         targets: Seq[Target],
-                         propertyShapes: Seq[ShapeRef],
-                         closed: Boolean,
-                         ignoredProperties: List[IRI]
-) extends Shape {
+case class PropertyShape(
+  id: RDFNode,
+  path: SHACLPath,
+  components: Seq[Component],
+  targets: Seq[Target],
+  propertyShapes: Seq[ShapeRef],
+  closed: Boolean,
+  ignoredProperties: List[IRI]) extends Shape {
 
   def isPropertyConstraint = true
 
-  def predicate : IRI = path.predicate.get
+  def predicate: IRI = path.predicate.get
 
 }
-
 
 sealed abstract class Component
 
 /**
  * Represents IRIs or Literals (no Blank nodes)
  */
-trait Value  {
+trait Value {
   /**
    * `true` if `node` matches this value
    */
@@ -282,12 +280,11 @@ case class HasValue(value: Value) extends Component
 case class In(list: List[Value]) extends Component
 
 // TODO: Change representation to include optional parent shape
-case class QualifiedValueShape(shape: ShapeRef,
-                               qualifiedMinCount: Option[Int],
-                               qualifiedMaxCount: Option[Int],
-                               qualifiedValueShapesDisjoint: Option[Boolean]
-                              ) extends Component
-
+case class QualifiedValueShape(
+  shape: ShapeRef,
+  qualifiedMinCount: Option[Int],
+  qualifiedMaxCount: Option[Int],
+  qualifiedValueShapesDisjoint: Option[Boolean]) extends Component
 
 sealed trait NodeKindType {
   def id: IRI
@@ -316,29 +313,28 @@ object Schema {
   val empty =
     Schema(
       pm = SHACLPrefixes.defaultPrefixMap,
-      shapesMap=Map[ShapeRef,Shape]()
-    )
+      shapesMap = Map[ShapeRef, Shape]())
 }
 
 object Shape {
 
-  def empty(id: RDFNode) = NodeShape(id = id,
+  def empty(id: RDFNode) = NodeShape(
+    id = id,
     components = List(),
     targets = Seq(),
     propertyShapes = Seq(),
     closed = false,
-    ignoredProperties = List()
-  )
+    ignoredProperties = List())
 
-  def emptyPropertyShape(id: RDFNode,
-                         path: SHACLPath): PropertyShape = PropertyShape(
+  def emptyPropertyShape(
+    id: RDFNode,
+    path: SHACLPath): PropertyShape = PropertyShape(
     id = id,
     path = path,
     components = Seq(),
     targets = Seq(),
     propertyShapes = Seq(),
     closed = false,
-    ignoredProperties = List()
-  )
+    ignoredProperties = List())
 }
 

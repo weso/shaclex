@@ -2,24 +2,25 @@ package es.weso.shacl
 
 import es.weso.rdf.nodes._
 import SHACLPrefixes._
-import es.weso.rdf.path.{PredicatePath, SHACLPath}
+import es.weso.rdf.path.{ PredicatePath, SHACLPath }
 import es.weso.shacl.Validator.ShapeTyping
 
 case class ViolationError(
-    id: IRI,
-    focusNode: RDFNode,
-    subject: Option[RDFNode],
-    path: Option[SHACLPath],
-    obj: Option[RDFNode],
-    message: Option[String],
-    sourceConstraint: RDFNode) {
+  id: IRI,
+  focusNode: RDFNode,
+  subject: Option[RDFNode],
+  path: Option[SHACLPath],
+  obj: Option[RDFNode],
+  message: Option[String],
+  sourceConstraint: RDFNode) {
   override def toString = s"Violation error on $focusNode: ${message.getOrElse("")}"
 }
 
 object ViolationError {
 
   def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) =
-    ViolationError(id = sh + suffix,
+    ViolationError(
+      id = sh + suffix,
       focusNode = focusNode,
       subject = None,
       path = attempt.path,
@@ -38,7 +39,6 @@ object ViolationError {
 
   def regexError(node: RDFNode, attempt: Attempt, msg: String) =
     basic("RegEx error", node, attempt, msg)
-
 
   def noSiblingsError(focusNode: RDFNode, p: PropertyShape, msg: String, attempt: Attempt) =
     basic("noSiblingsError", focusNode, attempt, s"No siblings found for property shape $p in schema: $msg")
@@ -84,19 +84,19 @@ object ViolationError {
 
   def equalsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
     comparisonError("equals", focusNode, attempt, p, vs)
-    
+
   def disjointError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
     comparisonError("disjoint", focusNode, attempt, p, vs)
-    
+
   def lessThanError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
     comparisonError("lessThan", focusNode, attempt, p, vs)
-    
+
   def lessThanOrEqualsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
     comparisonError("lessThanOrEquals", focusNode, attempt, p, vs)
 
   def comparisonError(name: String, focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
     basic(s"${name}Error", focusNode, attempt, s"$name violation. Expected $focusNode to match $name '$p', values: $vs")
-    
+
   def minCountError(focusNode: RDFNode, attempt: Attempt, minCount: Int, count: Int) =
     basic("minCountError", focusNode, attempt, s"MinCount violation. Expected $minCount, obtained: $count")
 
@@ -131,7 +131,7 @@ object ViolationError {
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
-    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but none satisfied" )
+    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but none satisfied")
 
   def xoneErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef])(ls: List[ShapeTyping]) =
     basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but more than one satisfied: $ls")
@@ -152,11 +152,11 @@ object ViolationError {
     basic("inError", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
 
   def closedError(
-      focusNode: RDFNode, 
-      attempt: Attempt, 
-      allowedProperties: List[IRI],
-      ignoredProperties: List[IRI],
-      notAllowed: List[IRI]) =
-    basic("closedError", focusNode, attempt, 
-        s"closed violation. $focusNode has more properties than $allowedProperties. Extra properties found: $notAllowed, ignoredProperties: $ignoredProperties")
+    focusNode: RDFNode,
+    attempt: Attempt,
+    allowedProperties: List[IRI],
+    ignoredProperties: List[IRI],
+    notAllowed: List[IRI]) =
+    basic("closedError", focusNode, attempt,
+      s"closed violation. $focusNode has more properties than $allowedProperties. Extra properties found: $notAllowed, ignoredProperties: $ignoredProperties")
 }

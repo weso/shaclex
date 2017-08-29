@@ -11,11 +11,10 @@ object DataFormats {
   lazy val RDFJSON = DataFormats("RDF/JSON")
   lazy val TRIG = DataFormats("TRIG")
 
-
-  lazy val availableFormats : Seq[DataFormats] =
+  lazy val availableFormats: Seq[DataFormats] =
     List(TURTLE, RDFXML, NTRIPLES, RDFJSON, TRIG)
 
-  lazy val formatNames : Seq[String] =
+  lazy val formatNames: Seq[String] =
     availableFormats.map(_.name)
 
   def available(format: String): Boolean = {

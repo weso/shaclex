@@ -16,28 +16,28 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
 
   // TODO Review these definitions in case of anonymous shapes...
   def hasType(node: RDFNode, label: ShapeLabel): Boolean = {
-    ! getOkValues(node).filter(_.hasLabel(label)).isEmpty
+    !getOkValues(node).filter(_.hasLabel(label)).isEmpty
   }
 
   def hasNoType(node: RDFNode, label: ShapeLabel): Boolean = {
-    ! getFailedValues(node).filter(_.hasLabel(label)).isEmpty
+    !getFailedValues(node).filter(_.hasLabel(label)).isEmpty
   }
 
   def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping =
-    this.copy(t = t.addType(node,shapeType))
+    this.copy(t = t.addType(node, shapeType))
 
   def addEvidence(node: RDFNode, shapeType: ShapeType, evidence: String): ShapeTyping =
-    this.copy(t = t.addEvidence(node,shapeType,evidence))
+    this.copy(t = t.addEvidence(node, shapeType, evidence))
 
   def addNotEvidence(node: RDFNode, shapeType: ShapeType, err: ViolationError): ShapeTyping =
-    this.copy(t = t.addNotEvidence(node,shapeType,err))
+    this.copy(t = t.addNotEvidence(node, shapeType, err))
 
-  def getMap: Map[RDFNode,Map[ShapeType,TypingResult[ViolationError,String]]] =
+  def getMap: Map[RDFNode, Map[ShapeType, TypingResult[ViolationError, String]]] =
     t.getMap
 
   override def toString = showShapeTyping
 
-  def showShapeTyping : String = {
+  def showShapeTyping: String = {
     import ShapeTyping._
     t.show
   }
@@ -63,7 +63,8 @@ object ShapeTyping {
   implicit def monoidShapeTyping = new Monoid[ShapeTyping] {
     override def empty: ShapeTyping = emptyShapeTyping
 
-    override def combine(t1: ShapeTyping,
+    override def combine(
+      t1: ShapeTyping,
       t2: ShapeTyping): ShapeTyping =
       ShapeTyping(t1.t.combineTyping(t2.t))
   }

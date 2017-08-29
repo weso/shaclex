@@ -1,19 +1,18 @@
 package es.weso.shex.shexR
 
-import es.weso.rdf.{PrefixMap, RDFReader}
+import es.weso.rdf.{ PrefixMap, RDFReader }
 import es.weso.shex._
 import org.scalatest._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.{BNodeId, IRI}
+import es.weso.rdf.nodes.{ BNodeId, IRI }
 import es.weso.shex.shexR.PREFIXES._
 import org.apache.jena.rdf.model.Model
 import es.weso.rdf.PREFIXES._
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValues {
   val rdf2Shex = new RDF2ShEx {}
-
 
   describe("Simple schema") {
     it("should parse simple schema") {
@@ -34,8 +33,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         None,
         None,
         None,
-        Some(List(NodeConstraint.nodeKind(IRIKind, List())))
-      )
+        Some(List(NodeConstraint.nodeKind(IRIKind, List()))))
 
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
@@ -44,20 +42,20 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
       result match {
         case Success(schema) => {
-            val model1 = ShEx2RDF.shEx2Model(schema, Some(IRI("http://example.org/x")))
-            val model2 = ShEx2RDF.shEx2Model(expected, Some(IRI("http://example.org/x")))
-            if (model1.isIsomorphicWith(model2)) {
-              info(s"Models are isomorphic")
-            } else {
-              info(s"Schema obtained: ${model1}\nSchema expected: ${model2} are not isomorphic")
-              fail("Schemas are not isomorphic")
-            }
-          }
-      case Failure(e) => {
-            info(s"Failed $e")
-            fail(e)
+          val model1 = ShEx2RDF.shEx2Model(schema, Some(IRI("http://example.org/x")))
+          val model2 = ShEx2RDF.shEx2Model(expected, Some(IRI("http://example.org/x")))
+          if (model1.isIsomorphicWith(model2)) {
+            info(s"Models are isomorphic")
+          } else {
+            info(s"Schema obtained: ${model1}\nSchema expected: ${model2} are not isomorphic")
+            fail("Schemas are not isomorphic")
           }
         }
+        case Failure(e) => {
+          info(s"Failed $e")
+          fail(e)
+        }
+      }
     }
 
     describe("opt") {
@@ -73,7 +71,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
         val result = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
-          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"),rdf)
+          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
         } yield schemas
 
         result match {
@@ -96,7 +94,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
         val result = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
-          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"),rdf)
+          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
         } yield schemas
 
         result match {
@@ -134,12 +132,12 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         schema <- RDF2ShEx.tryRDF2Schema(rdf)
       } yield schema
 
-      val nc = NodeConstraint.datatype(xsd_string,List()).addId(v)
-      val tc = TripleConstraint.valueExpr(p,nc).addId(expr)
+      val nc = NodeConstraint.datatype(xsd_string, List()).addId(v)
+      val tc = TripleConstraint.valueExpr(p, nc).addId(expr)
       val shape = Shape.expr(tc).addId(user)
 
       result match {
-        case Success(schema) => schema.shapes should be (Some(List(shape)))
+        case Success(schema) => schema.shapes should be(Some(List(shape)))
         case Failure(e) => {
           info(s"Failed $e")
           fail(e)
@@ -179,14 +177,14 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         schema <- RDF2ShEx.tryRDF2Schema(rdf)
       } yield schema
 
-      val nc = NodeConstraint.datatype(xsd_string,List()).addId(v)
-      val te: TripleExpr = TripleConstraint.valueExpr(p,nc).addId(tc)
+      val nc = NodeConstraint.datatype(xsd_string, List()).addId(v)
+      val te: TripleExpr = TripleConstraint.valueExpr(p, nc).addId(tc)
       val se1: ShapeExpr = Shape.expr(te).addId(expr1)
-      val se2: ShapeExpr = NodeConstraint.nodeKind(IRIKind,List()).addId(expr2)
-      val shape = ShapeAnd(Some(user), List(se1,se2))
+      val se2: ShapeExpr = NodeConstraint.nodeKind(IRIKind, List()).addId(expr2)
+      val shape = ShapeAnd(Some(user), List(se1, se2))
 
       result match {
-        case Success(schema) => schema.shapes should be (Some(List(shape)))
+        case Success(schema) => schema.shapes should be(Some(List(shape)))
         case Failure(e) => {
           info(s"Failed $e")
           fail(e)
@@ -195,8 +193,5 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
     }
 
   }
-
-
-
 
 }

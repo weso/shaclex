@@ -2,7 +2,7 @@ package es.weso.server
 
 import io.circe.Json
 import io.circe.parser._
-import org.http4s.{Query, Request, Response, Uri}
+import org.http4s.{ Query, Request, Response, Uri }
 import org.scalatest._
 import org.http4s.dsl._
 import cats.syntax.either._
@@ -11,7 +11,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
 
   val ip = "0.0.0.0"
   val port = 8080
-  val server = new ShaclexServer(ip,port)
+  val server = new ShaclexServer(ip, port)
 
   def serve(req: Request): Response =
     server.service.run(req).unsafeRun().orNotFound
@@ -23,9 +23,11 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
     }
 
     it("Should run test API method") {
-      val response = serve(Request(GET,
-        Uri(path = "/api/test",
-          query = Query.fromPairs(("name","<John>")))))
+      val response = serve(Request(
+        GET,
+        Uri(
+          path = "/api/test",
+          query = Query.fromPairs(("name", "<John>")))))
       response.status should be(Ok)
       response.as[String].unsafeRun() should be("Hello <John>")
     }
@@ -43,17 +45,18 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
           |:S { :p . }
           |""".stripMargin
 
-      val response = serve(Request(GET,
-        Uri(path = "/api/validate",
+      val response = serve(Request(
+        GET,
+        Uri(
+          path = "/api/validate",
           query = Query.fromPairs(
-            ("data",dataStr),("schema",schemaStr),
-            ("schemaFormat","SHEXC"),("schemaEngine","ShEx"))
-        )))
+            ("data", dataStr), ("schema", schemaStr),
+            ("schemaFormat", "SHEXC"), ("schemaEngine", "ShEx")))))
 
       response.status should be(Ok)
       val strResponse = response.as[String].unsafeRun()
       val jsonResponse = parse(strResponse).getOrElse(Json.Null)
-      val isValid : Option[Boolean] =
+      val isValid: Option[Boolean] =
         jsonResponse.hcursor.get[Boolean]("isValid").toOption
       isValid shouldBe Some(true)
     }

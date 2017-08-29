@@ -15,8 +15,7 @@ object SPARQLQueries {
       s"""|construct {?x ?p ?y } where {
          |?x ?p ?y .
        |}
-         |""".stripMargin
-    )
+         |""".stripMargin)
   }
 
   def queryTriplesWithSubject(subj: IRI) = {
@@ -25,8 +24,7 @@ object SPARQLQueries {
       s"""|construct {<${s}> ?p ?y } where {
          |<${s}> ?p ?y .
        |}
-         |""".stripMargin
-    )
+         |""".stripMargin)
   }
 
   def queryTriplesWithObject(obj: IRI) = {
@@ -35,8 +33,7 @@ object SPARQLQueries {
       s"""|construct {?x ?p <${s}> } where {
          | ?x ?p <${s}> .
        |}
-         |""".stripMargin
-    )
+         |""".stripMargin)
   }
 
   def queryTriplesWithPredicate(obj: IRI) = {
@@ -45,8 +42,7 @@ object SPARQLQueries {
       s"""|construct {?x <${s}> ?y } where {
           | ?x <${s}> ?y .
           |}
-          |""".stripMargin
-    )
+          |""".stripMargin)
   }
 
   def queryTriplesWithPredicateObject(p: IRI, o: IRI) = {
@@ -54,8 +50,7 @@ object SPARQLQueries {
       s"""|construct {?x <${p.str}> <${o.str}> } where {
           | ?x <${p.str}> <${o.str}> .
           |}
-          |""".stripMargin
-    )
+          |""".stripMargin)
   }
 
   lazy val findIRIs = QueryFactory.create(
@@ -63,38 +58,33 @@ object SPARQLQueries {
          | ?x ?p ?y .
          | filter (isIRI(?x))
        |}
-         |""".stripMargin
-  )
+         |""".stripMargin)
 
   lazy val findRDFTriples = QueryFactory.create(
     """|construct { ?x ?p ?y } where {
          | ?x ?p ?y .
        |}
-         |""".stripMargin
-  )
+         |""".stripMargin)
 
   lazy val findSubjects = QueryFactory.create(
     """|select ?x where {
          | ?x ?p ?y .
          | filter (isIRI(?x))
        |}
-         |""".stripMargin
-  )
+         |""".stripMargin)
 
   lazy val findPredicates = QueryFactory.create(
     """|select ?p where {
          | ?x ?p ?y .
          | filter (isIRI(?p))
        |}
-         |""".stripMargin
-  )
+         |""".stripMargin)
 
   lazy val findObjects = QueryFactory.create(
     """|select ?y where {
          | ?x ?p ?y .
          | filter (isIRI(?y))
        |}
-         |""".stripMargin
-  )
+         |""".stripMargin)
 
 }

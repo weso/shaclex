@@ -3,14 +3,14 @@ package es.weso.shex.compact
 import java.io.File
 import cats._
 import cats.data._
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import es.weso.json.JsonTest
 import es.weso.shex._
 import es.weso.shex.implicits.showShEx._
 import es.weso.utils.FileUtils._
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.{ EitherValues, FunSpec, Matchers }
 import scala.io._
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class ParseSchemaFileSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
@@ -19,7 +19,7 @@ class ParseSchemaFileSingle extends FunSpec with JsonTest with Matchers with Eit
   val schemasFolder = conf.getString("schemasFolder")
 
   describe(s"Parsing single File $name") {
-    val file : File = getFileFromFolderWithExt(schemasFolder,name,"shex")
+    val file: File = getFileFromFolderWithExt(schemasFolder, name, "shex")
     val fileName = schemasFolder + "/" + name + ".shex"
     it(s"Should read Schema from file ${fileName}") {
       Parser.parseSchemaFromFile(fileName) match {

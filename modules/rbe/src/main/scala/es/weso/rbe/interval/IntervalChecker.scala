@@ -25,9 +25,9 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
         if (interval.contains(1))
           Right(bag)
         else
-        // In case of fail, check using derivatives to obtain better error message
-        // TODO: Could it be optimized knowing that it will fail?
-        // derivChecker.check(bag, open)
+          // In case of fail, check using derivatives to obtain better error message
+          // TODO: Could it be optimized knowing that it will fail?
+          // derivChecker.check(bag, open)
           Left(s"Interval checker failed with value $interval")
 
       }

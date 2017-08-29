@@ -10,9 +10,9 @@ import scala.collection.immutable.StringOps._
 import scala.util.Try
 import es.weso.rdf.triples._
 import es.weso.rdf._
-import org.apache.jena.rdf.model.{Model, ModelFactory, Property, Resource, Statement, StmtIterator, RDFNode => JenaRDFNode, RDFReader => JenaRDFReader}
+import org.apache.jena.rdf.model.{ Model, ModelFactory, Property, Resource, Statement, StmtIterator, RDFNode => JenaRDFNode, RDFReader => JenaRDFReader }
 import org.slf4j._
-import org.apache.jena.riot.{Lang => JenaLang}
+import org.apache.jena.riot.{ Lang => JenaLang }
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import java.io._
@@ -30,8 +30,8 @@ import es.weso.utils.JenaUtils
 import org.apache.jena.sparql.path.Path
 
 case class RDFAsJenaModel(model: Model)
-    extends RDFReader
-    with RDFBuilder {
+  extends RDFReader
+  with RDFBuilder {
 
   type Rdf = RDFAsJenaModel
 
@@ -45,7 +45,7 @@ case class RDFAsJenaModel(model: Model)
       RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       Success(RDFAsJenaModel(m))
     } catch {
-      case e: Exception => Failure(new Exception(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs" ))
+      case e: Exception => Failure(new Exception(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs"))
     }
   }
 
@@ -59,7 +59,6 @@ case class RDFAsJenaModel(model: Model)
     val infModel = ModelFactory.createRDFSModel(model)
     RDFAsJenaModel(infModel)
   }
-
 
   // TODO: this implementation only returns subjects
   override def iris(): Set[IRI] = {
@@ -91,20 +90,19 @@ case class RDFAsJenaModel(model: Model)
    * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
    */
   override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    val cJena : JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model)
-    JenaUtils.getSHACLInstances(cJena,model).map(n => JenaMapper.jenaNode2RDFNode(n))
+    val cJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model)
+    JenaUtils.getSHACLInstances(cJena, model).map(n => JenaMapper.jenaNode2RDFNode(n))
   }
 
   override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    val nJena : JenaRDFNode = JenaMapper.rdfNode2JenaNode(n, model)
-    val cJena : JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model)
-    JenaUtils.hasClass(nJena,cJena,model)
+    val nJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(n, model)
+    val cJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model)
+    JenaUtils.hasClass(nJena, cJena, model)
   }
 
-
   override def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode] = {
-    val jenaNode : JenaRDFNode = JenaMapper.rdfNode2JenaNode(node, model)
-    val jenaPath: Path = JenaMapper.path2JenaPath(path,model)
+    val jenaNode: JenaRDFNode = JenaMapper.rdfNode2JenaNode(node, model)
+    val jenaPath: Path = JenaMapper.path2JenaPath(path, model)
     val nodes = JenaUtils.getValuesFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
     nodes
   }
@@ -140,7 +138,7 @@ case class RDFAsJenaModel(model: Model)
     }
   }
 
-  // TODO: Check if it can be optimized in Jena 
+  // TODO: Check if it can be optimized in Jena
   /*  override def triplesWithType(expectedType:IRI): Set[RDFTriple] = {
     triplesWithPredicateObject(rdf_type,expectedType)
   } */
@@ -153,8 +151,7 @@ case class RDFAsJenaModel(model: Model)
     RDFTriple(
       JenaMapper.jenaNode2RDFNode(st.getSubject),
       property2iri(st.getPredicate),
-      JenaMapper.jenaNode2RDFNode(st.getObject)
-    )
+      JenaMapper.jenaNode2RDFNode(st.getObject))
   }
 
   def property2iri(p: Property): IRI = {
@@ -165,13 +162,13 @@ case class RDFAsJenaModel(model: Model)
     PrefixMap(
       model.getNsPrefixMap.toMap.map {
         case (alias, iri) => (Prefix(alias), IRI(iri))
-      }
-    )
+      })
   }
 
   override def addPrefixMap(pm: PrefixMap): RDFAsJenaModel = {
     val map: Map[String, String] = pm.pm.map {
-      case (Prefix(str), iri) => (str, iri.str) }
+      case (Prefix(str), iri) => (str, iri.str)
+    }
     model.setNsPrefixes(map)
     this
   }
@@ -257,16 +254,15 @@ object RDFAsJenaModel {
   def parseChars(cs: CharSequence, format: String, base: Option[String] = None): Either[String, RDFAsJenaModel] = {
     val result =
       try {
-      RDFAsJenaModel.empty.parse(cs, format, base)
-    } catch {
-      case e: Exception => Failure(throw new Exception("Exception reading  " + formatLines(cs.toString) + "\n " + e.getMessage))
-    }
+        RDFAsJenaModel.empty.parse(cs, format, base)
+      } catch {
+        case e: Exception => Failure(throw new Exception("Exception reading  " + formatLines(cs.toString) + "\n " + e.getMessage))
+      }
     result match {
       case Failure(e) => Left(e.getMessage)
       case Success(v) => Right(v)
     }
   }
-
 
   def formatLines(cs: CharSequence): String = {
     cs.toString.lines.zipWithIndex.map(p => (p._2 + 1).toString + " " + p._1).mkString("\n")

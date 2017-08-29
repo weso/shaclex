@@ -5,28 +5,27 @@ import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.{Prefix, PrefixMap}
+import es.weso.rdf.{ Prefix, PrefixMap }
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import Parser._
 import org.antlr.v4.runtime._
 import org.antlr.v4.runtime.tree.ParseTree
-import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext, _}
+import es.weso.shapeMaps.parser.ShapeMapParser.{ StringContext => ShapeMapStringContext, _ }
 import es.weso.shapeMaps.parser._
 
 import scala.collection.JavaConverters._
 
 /**
-  * Visits the AST and builds the corresponding ShapeMaps classes
-  */
-class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
-                     shapesPrefixMap: PrefixMap = PrefixMap.empty
-                    ) extends ShapeMapBaseVisitor[Any] with LazyLogging {
+ * Visits the AST and builds the corresponding ShapeMaps classes
+ */
+class ShapeMapsMaker(
+  nodesPrefixMap: PrefixMap,
+  shapesPrefixMap: PrefixMap = PrefixMap.empty) extends ShapeMapBaseVisitor[Any] with LazyLogging {
 
   override def visitShapeMap(ctx: ShapeMapContext): Builder[InputShapeMap] = for {
-    associations <- visitList(visitShapeAssociation,ctx.shapeAssociation())
+    associations <- visitList(visitShapeAssociation, ctx.shapeAssociation())
   } yield InputShapeMap(associations)
-
 
   override def visitShapeAssociation(ctx: ShapeAssociationContext): Builder[Association] = for {
     nodeSelector <- visitNodeSelector(ctx.nodeSelector())
@@ -58,24 +57,22 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
   def visitTriplePattern(ctx: TriplePatternContext): Builder[TriplePattern] = ctx match {
     case s: FocusSubjectContext => for {
       predicate <- visitPredicate(s.predicate())
-      objectPattern <-
-       if (isDefined(s.objectTerm())) for {
-         obj <- visitObjectTerm(s.objectTerm())
-       } yield NodePattern(obj)
-       else ok(WildCard)
+      objectPattern <- if (isDefined(s.objectTerm())) for {
+        obj <- visitObjectTerm(s.objectTerm())
+      } yield NodePattern(obj)
+      else ok(WildCard)
     } yield TriplePattern(Focus, predicate, objectPattern)
     case s: FocusObjectContext => for {
       predicate <- visitPredicate(s.predicate())
-      subjectPattern <-
-        if (isDefined(s.subjectTerm())) for {
-          subj <- visitSubjectTerm(s.subjectTerm())
-        } yield NodePattern(subj)
-        else ok(WildCard)
+      subjectPattern <- if (isDefined(s.subjectTerm())) for {
+        subj <- visitSubjectTerm(s.subjectTerm())
+      } yield NodePattern(subj)
+      else ok(WildCard)
     } yield TriplePattern(subjectPattern, predicate, Focus)
   }
 
   override def visitPredicate(ctx: PredicateContext): Builder[IRI] = ctx match {
-    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(),nodesPrefixMap)
+    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(), nodesPrefixMap)
     case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
   }
 
@@ -125,7 +122,6 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
       case _ => err("Unknown ctx in numericLiteral")
     }
   }
-
 
   override def visitString(ctx: ShapeMapStringContext): Builder[String] = {
     if (isDefined(ctx.STRING_LITERAL_LONG1())) {
@@ -181,8 +177,7 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
   def visitIri(ctx: IriContext, prefixMap: PrefixMap): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
-    } yield
-      extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+    } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
     else for {
       prefixedName <- visitPrefixedName(ctx.prefixedName())
       iri <- resolve(prefixedName, prefixMap)
@@ -192,10 +187,10 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
     val (prefix, local) = splitPrefix(prefixedName)
     logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
     prefixMap.getIRI(prefix) match {
-        case None =>
-          err(s"Prefix $prefix not found in current prefix map $prefixMap")
-        case Some(iri) =>
-          ok(iri + local)
+      case None =>
+        err(s"Prefix $prefix not found in current prefix map $prefixMap")
+      case Some(iri) =>
+        ok(iri + local)
     }
   }
 
@@ -271,14 +266,15 @@ class ShapeMapsMaker(nodesPrefixMap: PrefixMap,
 
   def isDefined[A](x: A): Boolean = x != null
 
-  def visitList[A, B](visitFn: A => Builder[B],
-                      ls: java.util.List[A]): Builder[List[B]] = {
+  def visitList[A, B](
+    visitFn: A => Builder[B],
+    ls: java.util.List[A]): Builder[List[B]] = {
     ls.asScala.toList.map(visitFn(_)).sequence
   }
 
-
-  def visitOpt[A,B](visitFn: A => Builder[B],
-                    v: A): Builder[Option[B]] =
+  def visitOpt[A, B](
+    visitFn: A => Builder[B],
+    v: A): Builder[Option[B]] =
     if (isDefined(v)) visitFn(v).map(Some(_))
     else ok(None)
 

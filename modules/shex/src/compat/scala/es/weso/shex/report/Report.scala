@@ -1,25 +1,25 @@
 package es.weso.shex.report
 
 import java.text.SimpleDateFormat
-import java.util.{Calendar, GregorianCalendar}
+import java.util.{ Calendar, GregorianCalendar }
 
-import org.apache.jena.datatypes.xsd.{XSDDatatype, XSDDateTime}
-import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.datatypes.xsd.{ XSDDatatype, XSDDateTime }
+import org.apache.jena.rdf.model.{ Model, ModelFactory }
 
 case class Report(
- var items: List[SingleTestReport]
-) {
+  var items: List[SingleTestReport]) {
 
   def addTestReport(r: SingleTestReport): Report = {
     items = r :: items
     this
   }
 
-  def addTestReport(passed: Boolean,
-                    name: String,
-                    uriTest: String,
-                    testType: String,
-                    msg: String): Report = {
+  def addTestReport(
+    passed: Boolean,
+    name: String,
+    uriTest: String,
+    testType: String,
+    msg: String): Report = {
     items = SingleTestReport(passed, name, uriTest, testType, msg) :: items
     this
   }

@@ -1,6 +1,6 @@
 package es.weso.shacl
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import java.io.File
 import java.nio.file.Paths
 
@@ -13,13 +13,13 @@ import scala.io.Source
 import util._
 import Validator._
 import es.weso.utils.FileUtils._
-import es.weso.manifest.{Entry => ManifestEntry, Result => ManifestResult, _}
+import es.weso.manifest.{ Entry => ManifestEntry, Result => ManifestResult, _ }
 import java.net._
 
 import es.weso.shacl.converter.RDF2Shacl
 
 class ShaclCore
-    extends FunSpec with Matchers with TryValues with OptionValues
+  extends FunSpec with Matchers with TryValues with OptionValues
 
   with SchemaMatchers {
 
@@ -46,12 +46,12 @@ class ShaclCore
     it(s"Should check entry ${e.name}") {
       getSchemaRdf(e.action) match {
         case Failure(f) => fail(s"Error processing Entry: $e \n $f")
-        case Success((schema,rdf)) => validate(schema,rdf,e.result)
+        case Success((schema, rdf)) => validate(schema, rdf, e.result)
       }
     }
   }
 
-  def getSchemaRdf(a: ManifestAction): Try[(Schema,RDFReader)] = {
+  def getSchemaRdf(a: ManifestAction): Try[(Schema, RDFReader)] = {
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
     a.data match {
       case None => Success(Schema.empty, RDFAsJenaModel.empty)
@@ -60,30 +60,30 @@ class ShaclCore
         for {
           rdf <- RDFAsJenaModel.fromURI(iri.str, dataFormat)
           schema <- RDF2Shacl.tryGetShacl(rdf)
-        } yield (schema,rdf)
+        } yield (schema, rdf)
       }
     }
   }
 
   def validate(schema: Schema, rdf: RDFReader, expectedResult: ManifestResult): Unit = {
-     val validator = Validator(schema)
-     val result = validator.validateAll(rdf)
-     expectedResult match {
-       case NotValidResult(report,pairs) => {
-         if (result.isOK)
-           fail(s"Valid when expected to be not valid\n${result.show}\nExpected result: $report")
-         else {
-           info(s"Not valid as expected: $result. Failing nodes = ${report.failingNodes}\n Errors: ${result.errors}")
-         }
-       }
-       case BooleanResult(b) =>
-         if (result.isOK == b)
-           info(s"Expected result = obtainedResult = $b.\nResult:\n${result}")
-         else {
-           fail(s"Expected result($b)!= obtained result\n$result")
-         }
-       case _ => fail(s"Unsupported manifest result $result")
-     }
+    val validator = Validator(schema)
+    val result = validator.validateAll(rdf)
+    expectedResult match {
+      case NotValidResult(report, pairs) => {
+        if (result.isOK)
+          fail(s"Valid when expected to be not valid\n${result.show}\nExpected result: $report")
+        else {
+          info(s"Not valid as expected: $result. Failing nodes = ${report.failingNodes}\n Errors: ${result.errors}")
+        }
+      }
+      case BooleanResult(b) =>
+        if (result.isOK == b)
+          info(s"Expected result = obtainedResult = $b.\nResult:\n${result}")
+        else {
+          fail(s"Expected result($b)!= obtained result\n$result")
+        }
+      case _ => fail(s"Unsupported manifest result $result")
+    }
   }
 
 }

@@ -21,7 +21,7 @@ trait BagMatchers extends FunSpec with Matchers {
 
   def equalInterval[A](rbe: Rbe[A], bag: Bag[A], expected: Interval) = {
     it(s"Interval of ${bag} with ${rbe} should be ${expected}") {
-      IntervalChecker.interval(rbe,bag) should be(expected)
+      IntervalChecker.interval(rbe, bag) should be(expected)
     }
   }
 

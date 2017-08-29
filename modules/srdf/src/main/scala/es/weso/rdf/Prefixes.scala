@@ -26,13 +26,12 @@ object PREFIXES {
   lazy val rdf_rest = rdf.add("rest")
   lazy val rdf_langString = rdf.add("langString")
 
-
   private val basicMap: Map[String, IRI] =
-    Map("rdf" -> rdf,
-        "xsd" -> xsd,
-        "rdfs" -> rdfs,
-        "owl" -> owl,
-        "sh" -> sh
-    )
+    Map(
+      "rdf" -> rdf,
+      "xsd" -> xsd,
+      "rdfs" -> rdfs,
+      "owl" -> owl,
+      "sh" -> sh)
 
 }

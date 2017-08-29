@@ -15,9 +15,7 @@ import es.weso.rdf._
 import es.weso.json.DecoderUtils._
 import es.weso.rdf.PREFIXES.rdf_langString
 
-
 object decoderShEx {
-
 
   implicit lazy val decodeSchema: Decoder[Schema] = Decoder.instance { c =>
     for {
@@ -40,7 +38,7 @@ object decoderShEx {
   implicit lazy val decodeShapeLabel: Decoder[ShapeLabel] =
     Decoder[String].emap(str => parseShapeLabel(str))
 
-/*  implicit lazy val keyDecoderShapeLabel: KeyDecoder[ShapeLabel] =
+  /*  implicit lazy val keyDecoderShapeLabel: KeyDecoder[ShapeLabel] =
     KeyDecoder.instance { str => parseShapeLabel(str).toOption } */
 
   implicit lazy val decodeBNodeId: Decoder[BNodeId] =
@@ -70,12 +68,12 @@ object decoderShEx {
 
   lazy val decoderLabeledShapeExpr: Decoder[ShapeExpr] = Decoder.instance { c =>
     c.downField("type").as[String] match {
-      case Right("ShapeOr")  => c.as[ShapeOr]
+      case Right("ShapeOr") => c.as[ShapeOr]
       case Right("ShapeAnd") => c.as[ShapeAnd]
       case Right("ShapeNot") => c.as[ShapeNot]
       case Right("NodeConstraint") => c.as[NodeConstraint]
-      case Right("Shape")          => c.as[Shape]
-      case Right("ShapeExternal")  => c.as[ShapeExternal]
+      case Right("Shape") => c.as[Shape]
+      case Right("ShapeExternal") => c.as[ShapeExternal]
       case other =>
         Either.left(DecodingFailure(s"Decoding ShapeExpr. Unexpected value $other", Nil))
     }
@@ -84,44 +82,44 @@ object decoderShEx {
   implicit lazy val decodeShapeOr: Decoder[ShapeOr] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeOr").right
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       ses <- fieldDecode[List[ShapeExpr]](c, "shapeExprs").right
-    } yield ShapeOr(id,ses)
+    } yield ShapeOr(id, ses)
   }
 
   implicit lazy val decodeShapeAnd: Decoder[ShapeAnd] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeAnd").right
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       ses <- fieldDecode[List[ShapeExpr]](c, "shapeExprs").right
-    } yield ShapeAnd(id,ses)
+    } yield ShapeAnd(id, ses)
   }
 
   implicit lazy val decodeShapeNot: Decoder[ShapeNot] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeNot").right
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       se <- fieldDecode[ShapeExpr](c, "shapeExpr").right
-    } yield ShapeNot(id,se)
+    } yield ShapeNot(id, se)
   }
 
   implicit lazy val decodeNodeConstraint: Decoder[NodeConstraint] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "NodeConstraint").right
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       nodeKind <- optFieldDecode[NodeKind](c, "nodeKind").right
       datatype <- optFieldDecode[IRI](c, "datatype").right
       values <- optFieldDecode[List[ValueSetValue]](c, "values").right
       xsFacets <- getXsFacets(c).right
-    } yield NodeConstraint(id,nodeKind, datatype, xsFacets, values)
+    } yield NodeConstraint(id, nodeKind, datatype, xsFacets, values)
   }
 
   def getXsFacets(c: HCursor): Decoder.Result[List[XsFacet]] = {
     val fields: Vector[String] = c.fields.getOrElse(Vector[String]())
-    val rs : List[Either[DecodingFailure, Option[XsFacet]]] =
-       fields.toList.map(extractXsFacet(_, c))
+    val rs: List[Either[DecodingFailure, Option[XsFacet]]] =
+      fields.toList.map(extractXsFacet(_, c))
     sequenceEither(rs)
-//    val r: Xor[DecodingFailure, List[Option[XsFacet]]] = rs.sequence
+    //    val r: Xor[DecodingFailure, List[Option[XsFacet]]] = rs.sequence
     /*rs match {
       case Xor.Left(e)   => Xor.Left(e)
       case Xor.Right(ls) => Xor.Right(ls.filter(_.isDefined).sequence.getOrElse(List()))
@@ -130,9 +128,9 @@ object decoderShEx {
   }
 
   // Todo: Use "sequence" when I find why it gives a type error...
-  def sequenceEither[E,A](xs: List[Either[E,Option[A]]]): Either[E,List[A]] = {
-    val zero: Either[E,List[A]] = Either.right(List())
-    def next(r: Either[E,List[A]], x: Either[E,Option[A]]): Either[E,List[A]] =
+  def sequenceEither[E, A](xs: List[Either[E, Option[A]]]): Either[E, List[A]] = {
+    val zero: Either[E, List[A]] = Either.right(List())
+    def next(r: Either[E, List[A]], x: Either[E, Option[A]]): Either[E, List[A]] =
       x match {
         case Left(e) => Left(e)
         case Right(None) => r
@@ -146,21 +144,21 @@ object decoderShEx {
 
   def extractXsFacet(name: String, c: HCursor): Either[DecodingFailure, Option[XsFacet]] = {
     name match {
-      case "length"       => c.get[Int](name).map(n => Some(Length(n)))
-      case "minlength"    => c.get[Int](name).map(n => Some(MinLength(n)))
-      case "maxlength"    => c.get[Int](name).map(n => Some(MaxLength(n)))
-      case "pattern"      => c.get[String](name).map(p => Some(Pattern(p,None)))  // TODO
+      case "length" => c.get[Int](name).map(n => Some(Length(n)))
+      case "minlength" => c.get[Int](name).map(n => Some(MinLength(n)))
+      case "maxlength" => c.get[Int](name).map(n => Some(MaxLength(n)))
+      case "pattern" => c.get[String](name).map(p => Some(Pattern(p, None))) // TODO
       case "mininclusive" => c.get[NumericLiteral](name).map(p => Some(MinInclusive(p)))
       case "minexclusive" => c.get[NumericLiteral](name).map(p => Some(MinExclusive(p)))
       case "maxinclusive" => c.get[NumericLiteral](name).map(p => Some(MaxInclusive(p)))
       case "maxexclusive" => c.get[NumericLiteral](name).map(p => Some(MaxExclusive(p)))
       case "fractiondigits" => c.get[Int](name).map(p => Some(FractionDigits(p)))
       case "totaldigits" => c.get[Int](name).map(p => Some(TotalDigits(p)))
-      case _              => Right(None)
+      case _ => Right(None)
     }
   }
 
-  def mapEither[A,B,C](v: Either[A,B], f: B => C): Either[A,C] = {
+  def mapEither[A, B, C](v: Either[A, B], f: B => C): Either[A, C] = {
     v match {
       case Left(e) => Left(e)
       case Right(x) => Right(f(x))
@@ -174,10 +172,10 @@ object decoderShEx {
 
   implicit lazy val decodeNodeKind: Decoder[NodeKind] = Decoder.instance { c =>
     c.field("nodeKind").as[String].flatMap {
-      case "iri"        => Right(IRIKind)
-      case "bnode"      => Right(BNodeKind)
+      case "iri" => Right(IRIKind)
+      case "bnode" => Right(BNodeKind)
       case "nonliteral" => Right(NonLiteralKind)
-      case "literal"    => Right(LiteralKind)
+      case "literal" => Right(LiteralKind)
       case other =>
         Left(DecodingFailure(s"Decoding nodeKind. Unexpected value $other", Nil))
     }
@@ -186,7 +184,7 @@ object decoderShEx {
   implicit lazy val decodeShape: Decoder[Shape] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Shape")
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       virtual <- optFieldDecode[Boolean](c, "virtual")
       closed <- optFieldDecode[Boolean](c, "closed")
       extra <- optFieldDecode[List[IRI]](c, "extra")
@@ -204,9 +202,9 @@ object decoderShEx {
 
   lazy val decoderLabeledTripleExpr: Decoder[TripleExpr] = Decoder.instance { c =>
     c.downField("type").as[String].flatMap {
-      case "EachOf"           => c.as[EachOf]
-      case "OneOf"           => c.as[OneOf]
-//      case "Inclusion"        => c.as[Inclusion]
+      case "EachOf" => c.as[EachOf]
+      case "OneOf" => c.as[OneOf]
+      //      case "Inclusion"        => c.as[Inclusion]
       case "TripleConstraint" => c.as[TripleConstraint]
       case other =>
         Either.left(DecodingFailure(s"Decoding TripleExpr. Unexpected value $other", Nil))
@@ -216,25 +214,25 @@ object decoderShEx {
   implicit lazy val decodeEachOf: Decoder[EachOf] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "EachOf")
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       expressions <- fieldDecode[List[TripleExpr]](c, "expressions")
       min <- optFieldDecode[Int](c, "min")
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield EachOf(id,expressions, min, max, semActs, annotations)
+    } yield EachOf(id, expressions, min, max, semActs, annotations)
   }
 
   implicit lazy val decodeOneOf: Decoder[OneOf] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "OneOf")
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       expressions <- fieldDecode[List[TripleExpr]](c, "expressions")
       min <- optFieldDecode[Int](c, "min")
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield OneOf(id,expressions, min, max, semActs, annotations)
+    } yield OneOf(id, expressions, min, max, semActs, annotations)
   }
 
   implicit lazy val decodeAnnotation: Decoder[Annotation] = Decoder.instance { c =>
@@ -245,14 +243,14 @@ object decoderShEx {
     } yield Annotation(predicate, obj)
   }
 
-/*  implicit lazy val decodeInclusion: Decoder[Inclusion] = Decoder.instance { c =>
+  /*  implicit lazy val decodeInclusion: Decoder[Inclusion] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Inclusion")
       include <- fieldDecode[ShapeLabel](c, "include")
     } yield Inclusion(include)
   } */
 
-/*  implicit lazy val decodeShapeRef: Decoder[ShapeRef] = Decoder.instance { c =>
+  /*  implicit lazy val decodeShapeRef: Decoder[ShapeRef] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeRef")
       reference <- fieldDecode[ShapeLabel](c, "reference")
@@ -262,7 +260,7 @@ object decoderShEx {
   implicit lazy val decodeShapeExternal: Decoder[ShapeExternal] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "ShapeExternal")
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
     } yield ShapeExternal(id)
   }
 
@@ -276,29 +274,28 @@ object decoderShEx {
 
   lazy val decodeObjectLiteral: Decoder[ObjectValue] = Decoder.instance { c =>
     for {
-      value <- fieldDecode[String](c,"value").right
-      optLang <- optFieldDecode[String](c,"language").right
-      optType <- optFieldDecode[IRI](c,"type").right
-    } yield (optLang,optType) match {
-      case (None,None) => StringValue(value)
-      case (Some(lang),None) => LangString(value,lang)
-      case (None,Some(iri)) => DatatypeString(value,iri)
+      value <- fieldDecode[String](c, "value").right
+      optLang <- optFieldDecode[String](c, "language").right
+      optType <- optFieldDecode[IRI](c, "type").right
+    } yield (optLang, optType) match {
+      case (None, None) => StringValue(value)
+      case (Some(lang), None) => LangString(value, lang)
+      case (None, Some(iri)) => DatatypeString(value, iri)
       case (Some(lang), Some(iri)) => if (iri == rdf_langString) {
-        LangString(value,lang)
+        LangString(value, lang)
       } else {
         throw new Exception(s"Unsupported language tagged literal $value^^$lang with datatype $iri != $rdf_langString")
       }
     }
   }
 
-
   def parseObjectValue(s: String): Either[String, ObjectValue] = {
     s match {
-      case langRegex(s, l)     => Right(LangString(s, l))
+      case langRegex(s, l) => Right(LangString(s, l))
       case datatypeRegex(s, d) => parseIRI(d).map(i => DatatypeString(s, i))
-      case stringRegex(str)    => Right(StringValue(str))
-      case iriRegex(str)         => parseIRI(str).map(i => IRIValue(i))
-      case _                   => Left(s"$s doesn't match valueset value")
+      case stringRegex(str) => Right(StringValue(str))
+      case iriRegex(str) => parseIRI(str).map(i => IRIValue(i))
+      case _ => Left(s"$s doesn't match valueset value")
     }
   }
 
@@ -333,7 +330,7 @@ object decoderShEx {
   implicit lazy val decodeTripleConstraint: Decoder[TripleConstraint] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "TripleConstraint")
-      id <- optFieldDecode[ShapeLabel](c,"id").right
+      id <- optFieldDecode[ShapeLabel](c, "id").right
       inverse <- optFieldDecode[Boolean](c, "inverse")
       negated <- optFieldDecode[Boolean](c, "negated")
       predicate <- fieldDecode[IRI](c, "predicate")
@@ -348,22 +345,22 @@ object decoderShEx {
   def parsePrefix(str: String): Either[String, Prefix] =
     str match {
       case prefixRegex(p) => Either.right(Prefix(p))
-      case _              => Either.left(s"$str doesn't match prefix regex $prefixRegex")
+      case _ => Either.left(s"$str doesn't match prefix regex $prefixRegex")
     }
 
   def parseShapeLabel(str: String): Either[String, ShapeLabel] = {
     str match {
       // Be careful with the order...
       case bNodeRegex(bNodeId) => Either.right(BNodeLabel(BNodeId(bNodeId)))
-      case iriRegex(i)         => parseIRI(i).map(iri => IRILabel(iri))
-      case _                   => Either.left(s"$str doesn't match IRI or BNode")
+      case iriRegex(i) => parseIRI(i).map(iri => IRILabel(iri))
+      case _ => Either.left(s"$str doesn't match IRI or BNode")
     }
   }
 
   def parseLang(str: String): Either[String, LangString] =
     str match {
       case langRegex(s, l) => Either.right(LangString(s, l))
-      case _               => Either.left(s"$str doesn't match IRI regex $iriRegex")
+      case _ => Either.left(s"$str doesn't match IRI regex $iriRegex")
     }
 
   lazy val prefixRegex: Regex = "^(.*)$".r // PN_PREFIX_STR.r

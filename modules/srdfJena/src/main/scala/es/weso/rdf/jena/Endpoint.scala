@@ -9,17 +9,17 @@ import es.weso.rdf.triples.RDFTriple
 import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
 import scala.util.Try
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
 
 case class Endpoint(endpoint: String) extends RDFReader {
   // TODO: check that endpoint is a well formed URI
@@ -60,18 +60,17 @@ case class Endpoint(endpoint: String) extends RDFReader {
     val resultSet = QueryExecutionFactory.sparqlService(endpoint, findIRIs).execSelect()
     resultSet.map(qs => IRI(qs.get("y").asResource.getURI)).toSet
   }
-  
+
   override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    throw new Exception(s"Undefined getSHACLInstances at Endpoint. Node $c") 
+    throw new Exception(s"Undefined getSHACLInstances at Endpoint. Node $c")
   }
 
   override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    throw new Exception(s"Undefined hasSHACL at Endpoint. Node: $n Class: $c") 
+    throw new Exception(s"Undefined hasSHACL at Endpoint. Node: $n Class: $c")
   }
 
   override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
     throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
-
 
   def rdfTriples(): Set[RDFTriple] = {
     val model = QueryExecutionFactory.sparqlService(endpoint, queryTriples).execConstruct()
@@ -112,8 +111,7 @@ case class Endpoint(endpoint: String) extends RDFReader {
     RDFTriple(
       jena2rdfnode(st.getSubject),
       property2iri(st.getPredicate),
-      jena2rdfnode(st.getObject)
-    )
+      jena2rdfnode(st.getObject))
   }
 
   def property2iri(p: Property): IRI = {

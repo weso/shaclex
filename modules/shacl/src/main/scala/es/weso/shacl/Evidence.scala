@@ -15,7 +15,7 @@ case class MsgEvidence(msg: String) extends Evidence
 object Evidence {
   implicit val evidenceShow = new Show[Evidence] {
     def show(e: Evidence) = e match {
-      case NodeShapeEvidence(pair,msg) => s"${pair}: $msg"
+      case NodeShapeEvidence(pair, msg) => s"${pair}: $msg"
       case MsgEvidence(msg) => msg
     }
   }

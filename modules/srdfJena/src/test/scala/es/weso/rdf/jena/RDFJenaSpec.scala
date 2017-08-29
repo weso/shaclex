@@ -11,9 +11,9 @@ import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
 
 class RDFJenaSpec
-    extends FunSpec
-    with JenaBased
-    with Matchers {
+  extends FunSpec
+  with JenaBased
+  with Matchers {
   describe("Adding triples") {
     it("should be able to add a single triple with IRIs") {
       val emptyModel = ModelFactory.createDefaultModel
@@ -33,13 +33,11 @@ class RDFJenaSpec
       val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
       val map: Map[Prefix, IRI] = Map(
         Prefix("") -> IRI("http://example.org#"),
-        Prefix("foaf") -> IRI("http://foaf.org#")
-      )
+        Prefix("foaf") -> IRI("http://foaf.org#"))
       val pm: PrefixMap = PrefixMap(map)
       rdf.addPrefixMap(pm)
       rdf.addTriples(Set(
-        RDFTriple(IRI("http://example.org#a"), IRI("http://foaf.org#knows"), BNodeId("b" + 1)), RDFTriple(BNodeId("b" + 1), IRI("http://foaf.org#knows"), BNodeId("b" + 2)), RDFTriple(BNodeId("b" + 2), IRI("http://foaf.org#name"), StringLiteral("pepe"))
-      ))
+        RDFTriple(IRI("http://example.org#a"), IRI("http://foaf.org#knows"), BNodeId("b" + 1)), RDFTriple(BNodeId("b" + 1), IRI("http://foaf.org#knows"), BNodeId("b" + 2)), RDFTriple(BNodeId("b" + 2), IRI("http://foaf.org#name"), StringLiteral("pepe"))))
       val m2 = str2model("""|@prefix : <http://example.org#> .
                             |@prefix foaf: <http://foaf.org#> .
                             |:a foaf:knows _:x .
@@ -155,58 +153,11 @@ class RDFJenaSpec
     }
 
   }
-  
- describe("hasClass") {
-   it("check hasClass") {
-    val ex = "http://example.org"                  
-    val rdfStr = s"""|@prefix : <$ex> .
-                   |@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-                   |@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. 
-                   |:person1 a :Person .
-                   |:teacher1 a :Teacher .
-                   |:teacher2 a :UniversityTeacher .
-                   |:Teacher rdfs:subClassOf :Person .
-                   |:UniversityTeacher rdfs:subClassOf :Teacher .
-                   |:dog1 a :Dog .""".stripMargin
-  val e = IRI(ex)
-  val model = RDFAsJenaModel.empty.parse(rdfStr).get
-  val person1 = e + "person1"
-  val teacher1 = e + "teacher1"
-  val teacher2 = e + "teacher2"
-  val dog1 = e + "dog1"
-  val any = e + "any"
-  val _Person = e + "Person"
-  val _Teacher = e + "Teacher"
-  val _UniversityTeacher = e + "UniversityTeacher"
-  val _Dog = e + "Dog"
-  val _Any = e + "Any"
-  
-  model.hasSHACLClass(person1, _Person) should be(true)
-  model.hasSHACLClass(person1, _Teacher) should be(false)
-  model.hasSHACLClass(person1, _UniversityTeacher) should be(false)
-  model.hasSHACLClass(person1, _Dog) should be(false)
-  model.hasSHACLClass(teacher1, _Person) should be(true)
-  model.hasSHACLClass(teacher1, _Teacher) should be(true)
-  model.hasSHACLClass(teacher1, _UniversityTeacher) should be(false)
-  model.hasSHACLClass(teacher1, _Dog) should be(false)
-  model.hasSHACLClass(teacher2, _Person) should be(true)
-  model.hasSHACLClass(teacher2, _Teacher) should be(true)
-  model.hasSHACLClass(teacher2, _UniversityTeacher) should be(true)
-  model.hasSHACLClass(teacher2, _Dog) should be(false)
-  model.hasSHACLClass(dog1, _Person) should be(false)
-  model.hasSHACLClass(dog1, _Teacher) should be(false)
-  model.hasSHACLClass(dog1, _UniversityTeacher) should be(false)
-  model.hasSHACLClass(dog1, _Dog) should be(true)
-  model.hasSHACLClass(any, _Dog) should be(false)
-  model.hasSHACLClass(any, _Any) should be(false)
-  model.hasSHACLClass(dog1,_Any) should be(false)
- }
-}
 
- describe("getSHACLInstances") {
-   it("getSHACLInstances") {
-    val ex = "http://example.org"                  
-    val rdfStr = s"""|@prefix : <$ex> .
+  describe("hasClass") {
+    it("check hasClass") {
+      val ex = "http://example.org"
+      val rdfStr = s"""|@prefix : <$ex> .
                    |@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
                    |@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. 
                    |:person1 a :Person .
@@ -215,25 +166,72 @@ class RDFJenaSpec
                    |:Teacher rdfs:subClassOf :Person .
                    |:UniversityTeacher rdfs:subClassOf :Teacher .
                    |:dog1 a :Dog .""".stripMargin
-    val e = IRI(ex)
-    val model = RDFAsJenaModel.empty.parse(rdfStr).get
-    val person1 = e + "person1"
-    val teacher1 = e + "teacher1"
-    val teacher2 = e + "teacher2"
-    val dog1 = e + "dog1"
-    val any = e + "any"
-    val _Person = e + "Person"
-    val _Teacher = e + "Teacher"
-    val _UniversityTeacher = e + "UniversityTeacher"
-    val _Dog = e + "Dog"
-    val _Any = e + "Any"
-    
-    model.getSHACLInstances(_Person) should contain only(person1, teacher1, teacher2)
-    model.getSHACLInstances(_Teacher) should contain only(teacher1, teacher2)
-    model.getSHACLInstances(_UniversityTeacher) should contain only(teacher2)
-    model.getSHACLInstances(_Dog) should contain only(dog1)
-    model.getSHACLInstances(_Any) shouldBe empty
- }
-}
+      val e = IRI(ex)
+      val model = RDFAsJenaModel.empty.parse(rdfStr).get
+      val person1 = e + "person1"
+      val teacher1 = e + "teacher1"
+      val teacher2 = e + "teacher2"
+      val dog1 = e + "dog1"
+      val any = e + "any"
+      val _Person = e + "Person"
+      val _Teacher = e + "Teacher"
+      val _UniversityTeacher = e + "UniversityTeacher"
+      val _Dog = e + "Dog"
+      val _Any = e + "Any"
+
+      model.hasSHACLClass(person1, _Person) should be(true)
+      model.hasSHACLClass(person1, _Teacher) should be(false)
+      model.hasSHACLClass(person1, _UniversityTeacher) should be(false)
+      model.hasSHACLClass(person1, _Dog) should be(false)
+      model.hasSHACLClass(teacher1, _Person) should be(true)
+      model.hasSHACLClass(teacher1, _Teacher) should be(true)
+      model.hasSHACLClass(teacher1, _UniversityTeacher) should be(false)
+      model.hasSHACLClass(teacher1, _Dog) should be(false)
+      model.hasSHACLClass(teacher2, _Person) should be(true)
+      model.hasSHACLClass(teacher2, _Teacher) should be(true)
+      model.hasSHACLClass(teacher2, _UniversityTeacher) should be(true)
+      model.hasSHACLClass(teacher2, _Dog) should be(false)
+      model.hasSHACLClass(dog1, _Person) should be(false)
+      model.hasSHACLClass(dog1, _Teacher) should be(false)
+      model.hasSHACLClass(dog1, _UniversityTeacher) should be(false)
+      model.hasSHACLClass(dog1, _Dog) should be(true)
+      model.hasSHACLClass(any, _Dog) should be(false)
+      model.hasSHACLClass(any, _Any) should be(false)
+      model.hasSHACLClass(dog1, _Any) should be(false)
+    }
+  }
+
+  describe("getSHACLInstances") {
+    it("getSHACLInstances") {
+      val ex = "http://example.org"
+      val rdfStr = s"""|@prefix : <$ex> .
+                   |@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+                   |@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. 
+                   |:person1 a :Person .
+                   |:teacher1 a :Teacher .
+                   |:teacher2 a :UniversityTeacher .
+                   |:Teacher rdfs:subClassOf :Person .
+                   |:UniversityTeacher rdfs:subClassOf :Teacher .
+                   |:dog1 a :Dog .""".stripMargin
+      val e = IRI(ex)
+      val model = RDFAsJenaModel.empty.parse(rdfStr).get
+      val person1 = e + "person1"
+      val teacher1 = e + "teacher1"
+      val teacher2 = e + "teacher2"
+      val dog1 = e + "dog1"
+      val any = e + "any"
+      val _Person = e + "Person"
+      val _Teacher = e + "Teacher"
+      val _UniversityTeacher = e + "UniversityTeacher"
+      val _Dog = e + "Dog"
+      val _Any = e + "Any"
+
+      model.getSHACLInstances(_Person) should contain only (person1, teacher1, teacher2)
+      model.getSHACLInstances(_Teacher) should contain only (teacher1, teacher2)
+      model.getSHACLInstances(_UniversityTeacher) should contain only (teacher2)
+      model.getSHACLInstances(_Dog) should contain only (dog1)
+      model.getSHACLInstances(_Any) shouldBe empty
+    }
+  }
 
 }

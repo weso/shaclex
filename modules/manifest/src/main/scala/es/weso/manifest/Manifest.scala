@@ -3,28 +3,26 @@ import es.weso.rdf.nodes._
 import ManifestPrefixes._
 
 case class Manifest(
-    label: Option[String],
-    comment: Option[String],
-    entries: List[Entry],
-    includes: List[(IRI, Option[Manifest])]
-    )
+  label: Option[String],
+  comment: Option[String],
+  entries: List[Entry],
+  includes: List[(IRI, Option[Manifest])])
 
 object Manifest {
-  def empty: Manifest = Manifest(None,None,List(),List())
+  def empty: Manifest = Manifest(None, None, List(), List())
 }
 
 case class Entry(
-    node: RDFNode,
-    entryType: EntryType,
-    name: String,
-    action: ManifestAction,
-    result: Result,
-    status: Status,
-    specRef: Option[IRI]
-)
+  node: RDFNode,
+  entryType: EntryType,
+  name: String,
+  action: ManifestAction,
+  result: Result,
+  status: Status,
+  specRef: Option[IRI])
 
 sealed trait EntryType {
-  def iri : IRI
+  def iri: IRI
 }
 final case object Validate extends EntryType {
   override def iri = sht_Validate
@@ -49,15 +47,14 @@ final case object ConvertSchemaSyntax extends EntryType {
 }
 
 case class ManifestAction(
-    schema: Option[IRI],
-    schemaFormat: Option[String],
-    data: Option[IRI],
-    dataFormat: Option[String],
-    schemaOutputFormat: Option[IRI],
-    triggerMode: Option[IRI],
-    node: Option[IRI],
-    shape: Option[IRI]
-    ) {
+  schema: Option[IRI],
+  schemaFormat: Option[String],
+  data: Option[IRI],
+  dataFormat: Option[String],
+  schemaOutputFormat: Option[IRI],
+  triggerMode: Option[IRI],
+  node: Option[IRI],
+  shape: Option[IRI]) {
   def setSchema(iri: IRI): ManifestAction = {
     this.copy(schema = Some(iri))
   }
@@ -70,14 +67,15 @@ case class ManifestAction(
 object ManifestAction {
 
   def apply(): ManifestAction = {
-    ManifestAction(schema = None,
-        schemaFormat = None,
-        data = None,
-        dataFormat = None,
-        schemaOutputFormat = None,
-        triggerMode = None,
-        node = None,
-        shape = None)
+    ManifestAction(
+      schema = None,
+      schemaFormat = None,
+      data = None,
+      dataFormat = None,
+      schemaOutputFormat = None,
+      triggerMode = None,
+      node = None,
+      shape = None)
   }
 }
 
@@ -94,37 +92,32 @@ sealed trait Result {
 }
 
 final case class ValidResult(
- validatedPairs: List[ValidPair]
-) extends Result {
+  validatedPairs: List[ValidPair]) extends Result {
   override val isValid = true
 }
 
 final case class NotValidResult(
-    report: ValidationReport,
-    validatedPairs: Set[ValidPair]
-) extends Result {
+  report: ValidationReport,
+  validatedPairs: Set[ValidPair]) extends Result {
   override val isValid = false
 }
 
 case class ValidPair(
   node: RDFNode,
-  shape: RDFNode
-)
+  shape: RDFNode)
 
 final case class BooleanResult(
-    value: Boolean
-    ) extends Result {
+  value: Boolean) extends Result {
   override val isValid = value
 }
 
 final case class IRIResult(
-    value: IRI
-    ) extends Result {
+  value: IRI) extends Result {
   override val isValid = false
 }
 
 final case object EmptyResult
-    extends Result {
+  extends Result {
   override val isValid = true
 }
 
@@ -134,13 +127,12 @@ final case class ValidationReport(violationErrors: Set[ViolationError]) {
 }
 
 final case class ViolationError(
-    errorType: Option[IRI],
-    focusNode: Option[IRI],
-    path: Option[IRI],
-    severity: Option[IRI],
-    sourceConstraintComponent: Option[IRI],
-    sourceShape: Option[IRI],
-    value: Option[RDFNode]
-    )
+  errorType: Option[IRI],
+  focusNode: Option[IRI],
+  path: Option[IRI],
+  severity: Option[IRI],
+  sourceConstraintComponent: Option[IRI],
+  sourceShape: Option[IRI],
+  value: Option[RDFNode])
 
 final case class Status(value: IRI)

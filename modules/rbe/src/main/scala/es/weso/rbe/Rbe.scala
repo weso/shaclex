@@ -25,12 +25,12 @@ sealed trait Rbe[+A] {
     this match {
       case Fail(_) => false
       case Empty => false
-      case Symbol(_,_,_) => false
-      case And(e1,e2) => e1.containsRepeats || e2.containsRepeats
-      case Or(e1,e2) => e1.containsRepeats || e2.containsRepeats
+      case Symbol(_, _, _) => false
+      case And(e1, e2) => e1.containsRepeats || e2.containsRepeats
+      case Or(e1, e2) => e1.containsRepeats || e2.containsRepeats
       case Star(e) => e.containsRepeats
       case Plus(e) => e.containsRepeats
-      case Repeat(e,m,n) => true
+      case Repeat(e, m, n) => true
     }
   }
 
@@ -45,12 +45,12 @@ sealed trait Rbe[+A] {
     this match {
       case Fail(_) => List()
       case Empty => List()
-      case Symbol(a,_,_) => List(a)
-      case And(v1,v2) => v1.symbols union v2.symbols
-      case Or(v1,v2) => v1.symbols union v2.symbols
+      case Symbol(a, _, _) => List(a)
+      case And(v1, v2) => v1.symbols union v2.symbols
+      case Or(v1, v2) => v1.symbols union v2.symbols
       case Star(v) => v.symbols
       case Plus(v) => v.symbols
-      case Repeat(v,_,_) => v.symbols
+      case Repeat(v, _, _) => v.symbols
     }
   }
 
@@ -69,7 +69,7 @@ sealed trait Rbe[+A] {
   def derivBag[U >: A](bag: Bag[U], open: Boolean, controlled: Seq[U]): Rbe[U] = {
     val e: Rbe[U] = this
     def f(x: U, rest: Rbe[U]): Rbe[U] = {
-      val r = rest.deriv(x,open,controlled)
+      val r = rest.deriv(x, open, controlled)
       r
     }
     bag.toSeq.foldRight(e)(f)
@@ -82,23 +82,22 @@ sealed trait Rbe[+A] {
     val r = this match {
       case Fail(_) => false
       case Empty => true
-      case Symbol(_,0,IntLimit(0)) => true
-      case Symbol(_,0,_) => true
-      case Symbol(_,_,_) => false
-      case And(e1,e2) => e1.nullable && e2.nullable
-      case Or(e1,e2) => e1.nullable || e2.nullable
+      case Symbol(_, 0, IntLimit(0)) => true
+      case Symbol(_, 0, _) => true
+      case Symbol(_, _, _) => false
+      case And(e1, e2) => e1.nullable && e2.nullable
+      case Or(e1, e2) => e1.nullable || e2.nullable
       case Star(e) => true
       case Plus(e) => false
       // case Repeat(e,0,IntLimit(0)) => true
-      case Repeat(e,0,_) => true //
-      case Repeat(e,_,_) => e.nullable
+      case Repeat(e, 0, _) => true //
+      case Repeat(e, _, _) => e.nullable
     }
     println(s"$this nullable?: $r")
     r
   }
 
-
-   private def mkAnd[U >: A](r1: => Rbe[U], r2: => Rbe[U]): Rbe[U]= {
+  private def mkAnd[U >: A](r1: => Rbe[U], r2: => Rbe[U]): Rbe[U] = {
     val r = (r1, r2) match {
       case (Empty, e2) => e2
       case (e1, Empty) => e1
@@ -128,14 +127,14 @@ sealed trait Rbe[+A] {
     else if (m > n) Fail("Range with lower bound " + m + " bigger than upper bound " + n)
     else {
       (m, n) match {
-//        case (0, IntLimit(0)) => Empty
-//        case (1, IntLimit(1)) => Empty
+        //        case (0, IntLimit(0)) => Empty
+        //        case (1, IntLimit(1)) => Empty
         case (m, n) => Symbol(x, m, n)
       }
     }
   }
 
-  private def mkOr[U >: A](r1: => Rbe[U], r2: => Rbe[U]): Rbe[U]= {
+  private def mkOr[U >: A](r1: => Rbe[U], r2: => Rbe[U]): Rbe[U] = {
     val r = (r1, r2) match {
       case (Fail(_), e2) => e2
       case (e1, Fail(_)) => e1
@@ -146,8 +145,8 @@ sealed trait Rbe[+A] {
     r
   }
 
-  private def mkRepeat[U >: A](r: => Rbe[U], m: Int, n: IntOrUnbounded): Rbe[U]= {
-    Repeat(r,m,n)
+  private def mkRepeat[U >: A](r: => Rbe[U], m: Int, n: IntOrUnbounded): Rbe[U] = {
+    Repeat(r, m, n)
   }
 
   private def derivSymbol[U >: A](x: U, s: Symbol[U], open: Boolean, controlled: Seq[U]): Rbe[U] = {
@@ -156,8 +155,7 @@ sealed trait Rbe[+A] {
         Fail(s"Found $x but max. cardinality is 0. Current deriv: $s")
       else
         mkRangeSymbol(s.a, math.max(s.n - 1, 0), s.m minusOne)
-    }
-    else if (open && !(controlled contains x)) {
+    } else if (open && !(controlled contains x)) {
       this
     } else {
       Fail(s"symbol: Unexpected $x doesn't match $s. open: $open, controlled: $controlled")
@@ -170,46 +168,46 @@ sealed trait Rbe[+A] {
    * @param open allows extra symbols
    * @param controlled defines the symbols that are allowed in closed expressions
    */
-  def deriv[U >: A](x: U, open: Boolean, controlled: Seq[U]) : Rbe[U] = {
+  def deriv[U >: A](x: U, open: Boolean, controlled: Seq[U]): Rbe[U] = {
     this match {
-      case f@Fail(_) => f
+      case f @ Fail(_) => f
       case Empty =>
         if (open && !(controlled contains x))
           Empty
         else
           Fail(s"Unexpected $x doesn't match empty, open: $open, controlled: $controlled")
-      case s@Symbol(_,_,_) => {
-       derivSymbol(x,s,open,controlled)
+      case s @ Symbol(_, _, _) => {
+        derivSymbol(x, s, open, controlled)
       }
-      case And(e1,e2) => {
-        lazy val d1 = e1.deriv(x,open,controlled)
-        lazy val d2 = e2.deriv(x,open,controlled)
+      case And(e1, e2) => {
+        lazy val d1 = e1.deriv(x, open, controlled)
+        lazy val d2 = e2.deriv(x, open, controlled)
         mkOr(mkAnd(d1, e2), mkAnd(d2, e1))
       }
-      case Or(e1,e2) => {
-        lazy val d1 = e1.deriv(x,open,controlled)
-        lazy val d2 = e2.deriv(x,open,controlled)
+      case Or(e1, e2) => {
+        lazy val d1 = e1.deriv(x, open, controlled)
+        lazy val d2 = e2.deriv(x, open, controlled)
         mkOr(d1, d2)
       }
       case Star(e) => {
-        val d = e.deriv(x,open,controlled)
+        val d = e.deriv(x, open, controlled)
         mkAnd(d, e)
       }
       case Plus(e) => {
-        val d = e.deriv(x,open,controlled)
+        val d = e.deriv(x, open, controlled)
         mkAnd(d, Star(e))
       }
-      case Repeat(e,0,IntLimit(0)) => {
-        val d = e.deriv(x,open,controlled)
+      case Repeat(e, 0, IntLimit(0)) => {
+        val d = e.deriv(x, open, controlled)
         if (d.nullable) Fail(s"Cardinality 0,0 but deriv. of $e/$x = $d is nullable")
         else Empty
       }
-      case Repeat(e,m,n) => {
-        lazy val d = e.deriv(x,open,controlled)
+      case Repeat(e, m, n) => {
+        lazy val d = e.deriv(x, open, controlled)
         println(s"Repeat: deriv of $e/$x = $d")
         lazy val rest = mkRange(e, math.max(m - 1, 0), n minusOne)
         println(s"Repeat: rest $rest")
-        val r = mkAnd(d,rest)
+        val r = mkAnd(d, rest)
         println(s"Repeat: and: $r")
         r
       }
@@ -218,11 +216,10 @@ sealed trait Rbe[+A] {
 
 }
 
-
 /**
  * Fail RBE doesn't match
  */
-case class Fail(msg:String) extends Rbe[Nothing]
+case class Fail(msg: String) extends Rbe[Nothing]
 
 /**
  * Empty RBE

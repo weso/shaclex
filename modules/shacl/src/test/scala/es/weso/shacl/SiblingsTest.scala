@@ -6,7 +6,7 @@ import es.weso.rdf.path.PredicatePath
 import es.weso.shacl.converter.RDF2Shacl
 import org.scalatest._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 class SiblingsTest extends FunSpec
   with Matchers with EitherValues with OptionValues {

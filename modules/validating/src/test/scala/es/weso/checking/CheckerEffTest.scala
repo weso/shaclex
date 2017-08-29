@@ -7,10 +7,10 @@ import cats.implicits._
 class CheckerEffTest extends FunSpec with Matchers with OptionValues {
 
     import CheckerEffStr._
-    
+
     def runValue_(c:Check[Int]) = runValue(c)(c0)(e0)(i0)
     def runLog_(c:Check[Int]) = runLog(c)(c0)(e0)(i0)
-    
+
     describe(s"Checker Eff") {
       it("Should be able to return a value") {
         val c: Check[Int] = ok(2)
@@ -71,7 +71,7 @@ class CheckerEffTest extends FunSpec with Matchers with OptionValues {
         } yield 1
         val log = runLog_(x1 >> x2)
         log should ===(List("L1", "L2"))
-      } 
+      }
       it("Should be able to collect two logs with checkSome") {
         val x: Check[Int] = logStr("L1") >> ok(1)
         val e: Check[Int] = logStr("E") >> err("Err")
@@ -95,13 +95,13 @@ class CheckerEffTest extends FunSpec with Matchers with OptionValues {
         println("Run(c1):" + runCheck(c1)(c0)(e0)(i0))
         runValue_(c1) should ===(Left("Err"))
         runLog_(c1) should ===(List("x1", "E"))
-      } 
+      }
       it("Should be able to update info") {
         def add(x: Int): CheckInfo => CheckInfo = x :: _
         def c : Check[Int] = logStr("X") >> updateInfo(add(1)) >> ok(2)
-        runCheck(c)(c0)(e0)(i0) should ===(List("X"),(Right(2),List(1)))  
+        runCheck(c)(c0)(e0)(i0) should ===(List("X"),(Right(2),List(1)))
       }
  }
 }
 
-*/
+*/ 

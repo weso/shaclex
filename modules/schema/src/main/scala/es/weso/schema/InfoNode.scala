@@ -3,7 +3,7 @@ import Explanation._
 import es.weso.rdf.PrefixMap
 import cats._
 import data._
-import es.weso.rdf.nodes.{IRI, RDFNode}
+import es.weso.rdf.nodes.{ IRI, RDFNode }
 import implicits._
 import es.weso.shex.implicits.showShEx
 import io.circe._
@@ -13,11 +13,9 @@ import cats.syntax.either._
 import es.weso.json.DecoderUtils._
 
 case class InfoNode(
-    hasShapes: Seq[(SchemaLabel,Explanation)],
-    hasNoShapes: Seq[(SchemaLabel,Explanation)],
-    pm: PrefixMap
-    ) {
-
+  hasShapes: Seq[(SchemaLabel, Explanation)],
+  hasNoShapes: Seq[(SchemaLabel, Explanation)],
+  pm: PrefixMap) {
 
   def contains(label: SchemaLabel): Boolean = {
     hasShapes.map(_._1).contains(label)
@@ -27,32 +25,30 @@ case class InfoNode(
 
   def show: String = {
     val sb = new StringBuilder
-    for ((s,e) <- hasShapes) {
+    for ((s, e) <- hasShapes) {
       sb ++= ("+" + s.show + " " + e.str)
     }
-    for ((s,e) <- hasNoShapes) {
+    for ((s, e) <- hasNoShapes) {
       sb ++= ("-" + s.show + " " + e.str)
     }
     sb.toString
   }
 
   def conditionalAdd(cond: Boolean, obj: JsonObject, key: String, value: Json): JsonObject = {
-    if (cond) obj.add(key,value)
+    if (cond) obj.add(key, value)
     else obj
   }
 
   def toJson: Json = {
     val jsonPositive: Json = Json.fromJsonObject(
-      JsonObject.from(hasShapes.toList.map{ case (label,e) => (label.str, Json.fromString(e.str))})
-    )
+      JsonObject.from(hasShapes.toList.map { case (label, e) => (label.str, Json.fromString(e.str)) }))
     val jsonNegative: Json = Json.fromJsonObject(
-      JsonObject.from(hasNoShapes.toList.map{case (label,e) => (label.str, Json.fromString(e.str))})
-    )
-    Json.fromJsonObject{
-     val obj = JsonObject.empty
-     val pos = conditionalAdd(!hasShapes.isEmpty, obj, "hasShapes", jsonPositive)
-     val neg = conditionalAdd(!hasNoShapes.isEmpty, pos, "hasNoShapes", jsonNegative)
-     neg
+      JsonObject.from(hasNoShapes.toList.map { case (label, e) => (label.str, Json.fromString(e.str)) }))
+    Json.fromJsonObject {
+      val obj = JsonObject.empty
+      val pos = conditionalAdd(!hasShapes.isEmpty, obj, "hasShapes", jsonPositive)
+      val neg = conditionalAdd(!hasNoShapes.isEmpty, pos, "hasNoShapes", jsonNegative)
+      neg
     }
   }
 }
@@ -73,27 +69,26 @@ object InfoNode {
     final def apply(c: HCursor): Decoder.Result[InfoNode] = for {
       hasShapes <- getPair(c.downField("hasShapes"))
       hasNoShapes <- getPair(c.downField("hasNoShapes"))
-    // solutionMap <- decodeMap(c.downField("solution"))
+      // solutionMap <- decodeMap(c.downField("solution"))
     } yield InfoNode(
       hasShapes = hasShapes,
       hasNoShapes = hasNoShapes,
-      PrefixMap.empty
-    )
+      PrefixMap.empty)
   }
 
-  def getPair(c: ACursor): Decoder.Result[Seq[(SchemaLabel,Explanation)]] =
-   if (c.fields.isDefined) {
-    val fields: Either[DecodingFailure, Vector[String]] = c.fields.toRight(DecodingFailure(s"getPair: no fields for $c", c.history))
-    for {
-      fs <- fields
-      rs <- fs.map(field => getSchemaLabelExplanation(field, c)).sequence
-    } yield rs.toSeq
-  } else {
-     val result: Either[DecodingFailure,Seq[(SchemaLabel,Explanation)]] = Right(Seq())
-     result
-   }
+  def getPair(c: ACursor): Decoder.Result[Seq[(SchemaLabel, Explanation)]] =
+    if (c.fields.isDefined) {
+      val fields: Either[DecodingFailure, Vector[String]] = c.fields.toRight(DecodingFailure(s"getPair: no fields for $c", c.history))
+      for {
+        fs <- fields
+        rs <- fs.map(field => getSchemaLabelExplanation(field, c)).sequence
+      } yield rs.toSeq
+    } else {
+      val result: Either[DecodingFailure, Seq[(SchemaLabel, Explanation)]] = Right(Seq())
+      result
+    }
 
-  def getSchemaLabelExplanation(field: String,c : ACursor): Decoder.Result[(SchemaLabel,Explanation)] = {
+  def getSchemaLabelExplanation(field: String, c: ACursor): Decoder.Result[(SchemaLabel, Explanation)] = {
     for {
       e <- c.downField(field).as[String]
     } yield (SchemaLabel(field), Explanation(e))

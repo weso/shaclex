@@ -13,13 +13,13 @@ import org.antlr.v4.runtime._
 import org.antlr.v4.runtime.tree.ParseTree
 // import org.antlr.v4.runtime.atn.ATNConfigSet
 // import org.antlr.v4.runtime.dfa.DFA
-import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
+import es.weso.shex.parser.ShExDocParser.{ StringContext => ShExStringContext, _ }
 import es.weso.shex.parser._
 import scala.collection.JavaConverters._
 
 /**
-  * Visits the AST and builds the corresponding ShEx abstract syntax
-  */
+ * Visits the AST and builds the corresponding ShEx abstract syntax
+ */
 class DebugSchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitShExDoc(ctx: ShExDocContext): Builder[Schema] = {

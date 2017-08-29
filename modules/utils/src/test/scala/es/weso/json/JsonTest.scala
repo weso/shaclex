@@ -8,7 +8,7 @@ import io.circe.parser._
 import JsonCompare._
 
 trait JsonTest extends FunSpec {
-  
+
   def shouldDecodeEncodeEqual[A: Encoder: Decoder: Show](str: String): Unit = {
     parse(str) match {
       case Left(e) => fail(s"Cannot obtain Json from string. Error $e\nContents:\n$str")

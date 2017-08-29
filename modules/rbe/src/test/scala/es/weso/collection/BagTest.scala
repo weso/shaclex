@@ -3,9 +3,9 @@ package es.weso.collection
 import org.scalatest._
 import org.scalatest.prop._
 
-class BagTest 
-  extends FunSpec 
-  with Matchers 
+class BagTest
+  extends FunSpec
+  with Matchers
   with Checkers {
 
   describe("A Bag") {
@@ -32,7 +32,7 @@ class BagTest
 
     it("Should add one element three times and have multiplicity 3") {
       val emptyBag: Bag[Char] = Bag.empty
-      emptyBag.add('a',3).multiplicity('a') should be(3)
+      emptyBag.add('a', 3).multiplicity('a') should be(3)
     }
 
     it("Should add one element twice and have size 1") {
@@ -41,13 +41,13 @@ class BagTest
     }
 
     it("should calculate delta") {
-      val bag = Bag.toBag(List(1,1,2,2,3))
-      val delta = Bag.delta(Seq(1,2),bag)
-      val expected = Bag.toBag(List(1,1,2,2))
-      delta should be(expected) 
+      val bag = Bag.toBag(List(1, 1, 2, 2, 3))
+      val delta = Bag.delta(Seq(1, 2), bag)
+      val expected = Bag.toBag(List(1, 1, 2, 2))
+      delta should be(expected)
     }
 
-/*  TODO: I have removed the following checkers because there seem to be an
+    /*  TODO: I have removed the following checkers because there seem to be an
     incompatibility problem with the scalacheck library and scalatest...
      I need to see where is that problem...
 
@@ -75,7 +75,7 @@ class BagTest
       }
       )
     }
-     
+
 */
   }
 

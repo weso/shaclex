@@ -13,15 +13,15 @@ import es.weso.rbe.deriv._
 import org.scalacheck._
 
 class RbeTest extends FunSpec with Matchers with GeneratorDrivenPropertyChecks {
-  
+
   describe("Symbols") {
-    val rbe = Or(And(Symbol("a",1,3),Symbol("b",1,1)),Symbol("b",2,3))
-    rbe.symbols should contain only ("a","b")
+    val rbe = Or(And(Symbol("a", 1, 3), Symbol("b", 1, 1)), Symbol("b", 2, 3))
+    rbe.symbols should contain only ("a", "b")
   }
 
   describe("No symbols in bag") {
-    val rbe = Or(And(Symbol("a",1,3),Symbol("b",1,1)),Symbol("b",2,3))
-    rbe.noSymbolsInBag(Bag("a","c")) should be (false)
+    val rbe = Or(And(Symbol("a", 1, 3), Symbol("b", 1, 1)), Symbol("b", 2, 3))
+    rbe.noSymbolsInBag(Bag("a", "c")) should be(false)
   }
 
 }

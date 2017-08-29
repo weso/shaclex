@@ -1,7 +1,7 @@
 package es.weso.rdf.jena
 
 // TODO: Refactor this code
-import org.apache.jena.rdf.model.{AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator, Model => JenaModel, RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator, Model => JenaModel, RDFNode => JenaRDFNode }
 import es.weso.rdf.nodes._
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
@@ -47,7 +47,7 @@ object JenaMapper {
   def rdfNode2Property(n: RDFNode, m: JenaModel): Property = {
     n match {
       case i: IRI => m.getProperty(i.str)
-      case _      => throw new Exception("rdfNode2Property: unexpected node " + n)
+      case _ => throw new Exception("rdfNode2Property: unexpected node " + n)
     }
   }
 
@@ -63,7 +63,7 @@ object JenaMapper {
   }
 
   def rdfNode2JenaNode(n: RDFNode, m: JenaModel): JenaRDFNode =
-   createRDFNode(m,n)
+    createRDFNode(m, n)
   /*{
     n match {
       case i: IRI => m.getResource(i.str)
@@ -98,27 +98,27 @@ object JenaMapper {
         if (maybeDatatype == null) {
           StringLiteral(lit.getString())
         } else {
-        val datatype = IRI(maybeDatatype)
-        datatype match {
-          case RDFNode.StringDatatypeIRI     => StringLiteral(lit.getLexicalForm)
-          case RDFNode.IntegerDatatypeIRI    =>
-            Try(IntegerLiteral(lit.getLexicalForm.toInt)).getOrElse{
-              logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as an integer to create literal")
-              DatatypeLiteral(lit.getLexicalForm, datatype)
-            }
-          case RDFNode.DecimalDatatypeIRI    =>
-            Try(DecimalLiteral(lit.getLexicalForm.toDouble)).getOrElse{
-              logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a decimal to create literal")
-              DatatypeLiteral(lit.getLexicalForm, datatype)
-            }
-          case RDFNode.BooleanDatatypeIRI    =>
-            Try(BooleanLiteral(lit.getLexicalForm.toBoolean)).getOrElse {
-              logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as boolean to create literal")
-              DatatypeLiteral(lit.getLexicalForm, datatype)
-            }
-          case RDFNode.LangStringDatatypeIRI => LangLiteral(lit.getLexicalForm, Lang(lit.getLanguage))
-          case _                => DatatypeLiteral(lit.getLexicalForm, datatype)
-        }
+          val datatype = IRI(maybeDatatype)
+          datatype match {
+            case RDFNode.StringDatatypeIRI => StringLiteral(lit.getLexicalForm)
+            case RDFNode.IntegerDatatypeIRI =>
+              Try(IntegerLiteral(lit.getLexicalForm.toInt)).getOrElse {
+                logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as an integer to create literal")
+                DatatypeLiteral(lit.getLexicalForm, datatype)
+              }
+            case RDFNode.DecimalDatatypeIRI =>
+              Try(DecimalLiteral(lit.getLexicalForm.toDouble)).getOrElse {
+                logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a decimal to create literal")
+                DatatypeLiteral(lit.getLexicalForm, datatype)
+              }
+            case RDFNode.BooleanDatatypeIRI =>
+              Try(BooleanLiteral(lit.getLexicalForm.toBoolean)).getOrElse {
+                logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as boolean to create literal")
+                DatatypeLiteral(lit.getLexicalForm, datatype)
+              }
+            case RDFNode.LangStringDatatypeIRI => LangLiteral(lit.getLexicalForm, Lang(lit.getLanguage))
+            case _ => DatatypeLiteral(lit.getLexicalForm, datatype)
+          }
         }
       }
     } else throw new Exception(s"resource2RDFNode: unexpected type of resource: $r")
@@ -129,8 +129,8 @@ object JenaMapper {
   def createResource(m: JenaModel, node: RDFNode): Resource = {
     node match {
       case BNodeId(id) => m.createResource(new AnonId(id.toString))
-      case i: IRI      => m.createResource(i.str)
-      case _           => throw new Exception("Cannot create a resource from " + node)
+      case i: IRI => m.createResource(i.str)
+      case _ => throw new Exception("Cannot create a resource from " + node)
     }
   }
 
@@ -151,10 +151,10 @@ object JenaMapper {
       case DatatypeLiteral(str, i: IRI) =>
         i.str match {
           case `xsdinteger` => m.createTypedLiteral(str, XSDDatatype.XSDinteger)
-          case `xsddouble`  => m.createTypedLiteral(str, XSDDatatype.XSDdouble)
+          case `xsddouble` => m.createTypedLiteral(str, XSDDatatype.XSDdouble)
           case `xsddecimal` => m.createTypedLiteral(str, XSDDatatype.XSDdecimal)
           case `xsdboolean` => m.createTypedLiteral(str, XSDDatatype.XSDboolean)
-          case _            => m.createTypedLiteral(str, new BaseDatatype(i.str))
+          case _ => m.createTypedLiteral(str, new BaseDatatype(i.str))
         }
       case DecimalLiteral(d) =>
         m.createTypedLiteral(d.toString(), XSDDatatype.XSDdecimal)
@@ -194,33 +194,33 @@ object JenaMapper {
   def path2JenaPath(path: SHACLPath, model: JenaModel): Path = {
     path match {
       case PredicatePath(iri) => {
-        val prop = rdfNode2Property(iri,model)
+        val prop = rdfNode2Property(iri, model)
         new P_Link(prop.asNode)
       }
       case InversePath(path) => {
-        val jenaPath = path2JenaPath(path,model)
+        val jenaPath = path2JenaPath(path, model)
         new P_Inverse(jenaPath)
       }
       case SequencePath(paths) => {
-        val jenaPaths = paths.map(path => path2JenaPath(path,model))
-        def seq(p1: Path,p2: Path): Path = new P_Seq(p1,p2)
+        val jenaPaths = paths.map(path => path2JenaPath(path, model))
+        def seq(p1: Path, p2: Path): Path = new P_Seq(p1, p2)
         jenaPaths.reduce(seq)
       }
       case AlternativePath(paths) => {
-        val jenaPaths = paths.map(path => path2JenaPath(path,model))
-        def alt(p1: Path,p2: Path): Path = new P_Alt(p1,p2)
+        val jenaPaths = paths.map(path => path2JenaPath(path, model))
+        def alt(p1: Path, p2: Path): Path = new P_Alt(p1, p2)
         jenaPaths.reduce(alt)
       }
       case ZeroOrMorePath(path) => {
-        val jenaPath = path2JenaPath(path,model)
+        val jenaPath = path2JenaPath(path, model)
         new P_ZeroOrMoreN(jenaPath)
       }
       case ZeroOrOnePath(path) => {
-        val jenaPath = path2JenaPath(path,model)
+        val jenaPath = path2JenaPath(path, model)
         new P_ZeroOrOne(jenaPath)
       }
       case OneOrMorePath(path) => {
-        val jenaPath = path2JenaPath(path,model)
+        val jenaPath = path2JenaPath(path, model)
         new P_OneOrMoreN(jenaPath)
       }
     }
@@ -229,8 +229,8 @@ object JenaMapper {
   def wellTypedDatatype(node: RDFNode, expectedDatatype: IRI): Either[String, RDFNode] = {
     node match {
       case l: es.weso.rdf.nodes.Literal => {
-        Try{
-          val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm,l.dataType.str)
+        Try {
+          val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm, l.dataType.str)
           val value = jenaLiteral.getValue() // if it is ill-typed it raises an exception
           (jenaLiteral.getDatatypeURI)
         } match {

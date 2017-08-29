@@ -10,8 +10,8 @@ import org.scalacheck.Gen
 // I obtain the error:
 //  java.lang.IncompatibleClassChangeError: Found interface org.scalacheck.Test$Parameters, but class was expected
 /*class BagSpec
-  extends PropSpec 
-  with Matchers 
+  extends PropSpec
+  with Matchers
   with GeneratorDrivenPropertyChecks
   with GenBag
   {
@@ -26,7 +26,7 @@ import org.scalacheck.Gen
     forAll (bagOfCharFromContainer)((bag: Bag[Char]) => {
       (bag.insert('a').size) should equal (bag.size + 1)
     })
-  } 
+  }
 
 }
-*/
+*/ 

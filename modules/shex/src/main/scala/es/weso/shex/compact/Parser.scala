@@ -1,6 +1,6 @@
 package es.weso.shex.compact
 
-import java.io.{ByteArrayInputStream, FileInputStream, InputStream, InputStreamReader, Reader => JavaReader}
+import java.io.{ ByteArrayInputStream, FileInputStream, InputStream, InputStreamReader, Reader => JavaReader }
 import java.util
 
 import cats._
@@ -11,14 +11,14 @@ import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.shex._
-import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
+import es.weso.shex.parser.ShExDocParser.{ StringContext => ShExStringContext, _ }
 import es.weso.shex.parser._
 import org.antlr.v4.runtime._
 import java.nio.charset.StandardCharsets
 
 import es.weso.utils.FileUtils
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 object Parser extends LazyLogging {
 
@@ -82,11 +82,9 @@ object Parser extends LazyLogging {
       if (str.startsWith(UTF8_BOM)) {
         logger.info("BOM detected and removed")
         str.substring(1)
-      }
-      else str
+      } else str
     val reader: JavaReader =
-      new InputStreamReader(new
-          ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
+      new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
     logger.info(s"str:\n$s")
     parseSchemaReader(reader)
   }
@@ -128,13 +126,12 @@ object Parser extends LazyLogging {
       PrefixMap.empty,
       None,
       None,
-      Map()
-    )
+      Map())
 
-  case class BuilderState(prefixMap: PrefixMap,
-                          base: Option[IRI],
-                          start: Option[ShapeExpr],
-                          shapesMap: ShapesMap
-                         )
+  case class BuilderState(
+    prefixMap: PrefixMap,
+    base: Option[IRI],
+    start: Option[ShapeExpr],
+    shapesMap: ShapesMap)
 
 }

@@ -23,40 +23,40 @@ object Main extends App with LazyLogging {
     try {
       run(args)
     } catch {
-      case (e:Exception) => {
+      case (e: Exception) => {
         println(s"Error: ${e.getMessage}")
       }
     }
   }
 
   def run(args: Array[String]): Unit = {
-   val opts = new MainOpts(args, errorDriver)
-   opts.verify()
+    val opts = new MainOpts(args, errorDriver)
+    opts.verify()
 
-   if (opts.server()) {
+    if (opts.server()) {
       ShaclexServer.main(args)
-   }
+    }
 
-   val baseFolder : Path = if (opts.baseFolder.isDefined) {
-     Paths.get(opts.baseFolder())
-   } else {
-     Paths.get(".")
-   }
+    val baseFolder: Path = if (opts.baseFolder.isDefined) {
+      Paths.get(opts.baseFolder())
+    } else {
+      Paths.get(".")
+    }
 
-   val startTime = System.nanoTime()
+    val startTime = System.nanoTime()
 
-   val validateOptions = for {
-      rdf <- getRDFReader(opts,baseFolder)
+    val validateOptions = for {
+      rdf <- getRDFReader(opts, baseFolder)
       schema <- {
-        getSchema(opts,baseFolder,rdf)
+        getSchema(opts, baseFolder, rdf)
       }
-    } yield (rdf,schema)
+    } yield (rdf, schema)
 
     validateOptions match {
       case Failure(e) => {
         println(s"Error: $e")
       }
-      case Success((rdf,schema)) => {
+      case Success((rdf, schema)) => {
         if (opts.showData()) {
           // If not specified uses the input schema format
           val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
@@ -73,12 +73,12 @@ object Main extends App with LazyLogging {
 
         val trigger: String = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
 
-        val result = schema.validate(rdf,
+        val result = schema.validate(
+          rdf,
           trigger,
           Map(),
-          opts.node.toOption,opts.shapeLabel.toOption,
-          rdf.getPrefixMap, schema.pm
-        )
+          opts.node.toOption, opts.shapeLabel.toOption,
+          rdf.getPrefixMap, schema.pm)
 
         if (opts.showLog()) {
           logger.info("Show log info = true")
@@ -98,7 +98,7 @@ object Main extends App with LazyLogging {
 
         if (opts.time()) {
           val endTime = System.nanoTime()
-          val time : Long = endTime - startTime
+          val time: Long = endTime - startTime
           printTime("Time", opts, time)
         }
 
@@ -130,7 +130,7 @@ object Main extends App with LazyLogging {
   def getRDFReader(opts: MainOpts, baseFolder: Path): Try[RDFReader] = {
     if (opts.data.isDefined) {
       val path = baseFolder.resolve(opts.data())
-      val rdf = RDFAsJenaModel.fromFile(path.toFile(),opts.dataFormat())
+      val rdf = RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat())
       rdf
     } else {
       logger.info("RDF Data option not specified")
@@ -141,10 +141,11 @@ object Main extends App with LazyLogging {
   def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Try[Schema] = {
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
-      val schema = Schemas.fromFile(path.toFile(),
-                       opts.schemaFormat(),
-                       opts.engine(),
-                       None)
+      val schema = Schemas.fromFile(
+        path.toFile(),
+        opts.schemaFormat(),
+        opts.engine(),
+        None)
       schema
     } else {
       logger.info("Schema not specified. Extracting schema from data")

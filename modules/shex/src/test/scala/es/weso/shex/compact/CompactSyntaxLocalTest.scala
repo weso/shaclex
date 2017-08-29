@@ -46,7 +46,7 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
           case Left(e) =>
             fail(s"$str\n-- parsed as schema:\n${newStr}, but previous string doesn't parse\nError: $e")
           case Right(newSchema) =>
-            if (Eq.eqv(schema,newSchema))
+            if (Eq.eqv(schema, newSchema))
               info("Both schemas are equal")
             else
               fail(s"Schema1:\n$schema\n--Schema2:\n$newSchema\n")

@@ -11,7 +11,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
 
     describe("iriFromPredicate") {
       it("iriFromPredicate simple") {
-        val cs ="""|prefix : <http://example.org/>
+        val cs = """|prefix : <http://example.org/>
                    |:x :p :T .""".stripMargin
         val try1 = for {
           rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
@@ -99,33 +99,33 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
 
     describe(
       "rdfList") {
-      it("rdfList happy path") {
-        val cs = """|prefix : <http://example.org/>
+        it("rdfList happy path") {
+          val cs = """|prefix : <http://example.org/>
                   |:x :p (1 2 3) .""".stripMargin
-        val try1 = for {
-          rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
-          n: RDFNode = IRI("http://example.org/x")
-          p = IRI("http://example.org/p")
-          nodeLs <- objectFromPredicate(p)(n, rdf)
-          ls <- rdfList(nodeLs, rdf)
-        } yield (ls)
-        try1.right.value should be(List(IntegerLiteral(1), IntegerLiteral(2), IntegerLiteral(3)))
-      }
+          val try1 = for {
+            rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
+            n: RDFNode = IRI("http://example.org/x")
+            p = IRI("http://example.org/p")
+            nodeLs <- objectFromPredicate(p)(n, rdf)
+            ls <- rdfList(nodeLs, rdf)
+          } yield (ls)
+          try1.right.value should be(List(IntegerLiteral(1), IntegerLiteral(2), IntegerLiteral(3)))
+        }
 
-      it("rdfList empty") {
-        val cs = """|prefix : <http://example.org/>
+        it("rdfList empty") {
+          val cs = """|prefix : <http://example.org/>
                   |:x :p () .""".stripMargin
-        val try1 = for {
-          rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
-          n: RDFNode = IRI("http://example.org/x")
-          p = IRI("http://example.org/p")
-          nodeLs <- objectFromPredicate(p)(n, rdf)
-          ls <- rdfList(nodeLs, rdf)
-        } yield (ls)
-        try1.right.value should be(List())
-      }
+          val try1 = for {
+            rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
+            n: RDFNode = IRI("http://example.org/x")
+            p = IRI("http://example.org/p")
+            nodeLs <- objectFromPredicate(p)(n, rdf)
+            ls <- rdfList(nodeLs, rdf)
+          } yield (ls)
+          try1.right.value should be(List())
+        }
 
-    }
+      }
     describe("rdfListForPredicate") {
       it("rdfListForPredicate happy path") {
         val cs = """|prefix : <http://example.org/>
@@ -164,61 +164,60 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
           n: RDFNode = IRI("http://example.org/x")
           p = IRI("http://example.org/p")
           q = IRI("http://example.org/q")
-          n <- anyOf(objectFromPredicate(p),objectFromPredicate(q))(n, rdf)
+          n <- anyOf(objectFromPredicate(p), objectFromPredicate(q))(n, rdf)
         } yield (n)
-        try1
-        match {
+        try1 match {
           case Left(e) => fail(s"Error: $e")
           case Right(value) => value should contain only (y)
         }
-    }
+      }
 
-    it(
-      "anyOf when some all fail should fail") {
-      val cs =
-        """|prefix : <http://example.org/>
+      it(
+        "anyOf when some all fail should fail") {
+          val cs =
+            """|prefix : <http://example.org/>
                   |:x :p :y .""".stripMargin
-      val y = IRI("http://example.org/y")
-      val q = IRI("http://example.org/q")
-      val r = IRI("http://example.org/r")
-      val try1 = for {
-        rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
-        n: RDFNode = IRI(
-          "http://example.org/x")
-        n <- anyOf(objectFromPredicate(q),
-          objectFromPredicate(r))(n, rdf)
-      } yield (n)
-      try1
-      match {
-        case Left(e) => fail(s"Failed with $e")
-        case Right(values) => values shouldBe empty
-      }
-    }
+          val y = IRI("http://example.org/y")
+          val q = IRI("http://example.org/q")
+          val r = IRI("http://example.org/r")
+          val try1 = for {
+            rdf <- RDFAsJenaModel.parseChars(cs, "TURTLE")
+            n: RDFNode = IRI(
+              "http://example.org/x")
+            n <- anyOf(
+              objectFromPredicate(q),
+              objectFromPredicate(r))(n, rdf)
+          } yield (n)
+          try1 match {
+            case Left(e) => fail(s"Failed with $e")
+            case Right(values) => values shouldBe empty
+          }
+        }
     }
 
-  describe("arc") {
-    it("parses single arc") {
-      val ex ="http://example.org/"
-      val iriEx = IRI(ex)
-      val str =s"""|prefix : <$ex>
+    describe("arc") {
+      it("parses single arc") {
+        val ex = "http://example.org/"
+        val iriEx = IRI(ex)
+        val str = s"""|prefix : <$ex>
                    |:x :p () .""".stripMargin
-      val x = iriEx + "x"
-      val p = iriEx + "p"
-      val try1 = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
-        v <- arc(p,rdfNil)(x, rdf)
-      } yield (v)
-      try1 match {
-        case Left(e) => fail(s"Failed with $e")
-        case Right(value) => value shouldBe List()
+        val x = iriEx + "x"
+        val p = iriEx + "p"
+        val try1 = for {
+          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+          v <- arc(p, rdfNil)(x, rdf)
+        } yield (v)
+        try1 match {
+          case Left(e) => fail(s"Failed with $e")
+          case Right(value) => value shouldBe List()
+        }
       }
     }
-  }
-  describe("list1Plus") {
+    describe("list1Plus") {
       it("parses list1Plus ") {
         val ex = "http://example.org/"
         val iriEx = IRI(ex)
-        val str =s"""|prefix : <$ex>
+        val str = s"""|prefix : <$ex>
                      |:x :p (:y :z) .""".stripMargin
         val x = iriEx + "x"
         val p = iriEx + "p"
@@ -227,18 +226,18 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
         def isIri(n: RDFNode): Boolean = n.isIRI
         val try1 = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
-          v <- arc(p, list1Plus(condition(isIri,"isIRI")))(x, rdf)
+          v <- arc(p, list1Plus(condition(isIri, "isIRI")))(x, rdf)
         } yield (v)
         try1 match {
           case Left(e) => fail(s"Failed with $e")
-          case Right(values) => values should contain theSameElementsAs List(y,z)
+          case Right(values) => values should contain theSameElementsAs List(y, z)
         }
       }
 
       it("fails list1Plus with recursive nodes in RDF list") {
         val ex = "http://example.org/"
         val iriEx = IRI(ex)
-        val str =s"""|prefix : <$ex>
+        val str = s"""|prefix : <$ex>
                      |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                      |:x :p _:1 .
                      |_:1 rdf:first :y .
@@ -250,7 +249,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
         def isIri(n: RDFNode): Boolean = n.isIRI
         val try1 = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
-          v <- arc(p, list1Plus(condition(isIri,"isIRI")))(x, rdf)
+          v <- arc(p, list1Plus(condition(isIri, "isIRI")))(x, rdf)
         } yield (v)
         try1 match {
           case Left(e) => info("fails as expected")
@@ -264,7 +263,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
       it("parses list2Plus ") {
         val ex = "http://example.org/"
         val iriEx = IRI(ex)
-        val str =s"""|prefix : <$ex>
+        val str = s"""|prefix : <$ex>
                      |:x :p (:y :z) .""".stripMargin
         val x = iriEx + "x"
         val p = iriEx + "p"
@@ -273,18 +272,18 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
         def isIri(n: RDFNode): Boolean = n.isIRI
         val try1 = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
-          v <- arc(p, list2Plus(condition(isIri,"isIRI")))(x, rdf)
+          v <- arc(p, list2Plus(condition(isIri, "isIRI")))(x, rdf)
         } yield (v)
         try1 match {
           case Left(e) => fail(s"Failed with $e")
-          case Right(values) => values should contain theSameElementsAs List(y,z)
+          case Right(values) => values should contain theSameElementsAs List(y, z)
         }
       }
 
       it("fails list2Plus if only one") {
         val ex = "http://example.org/"
         val iriEx = IRI(ex)
-        val str =s"""|prefix : <$ex>
+        val str = s"""|prefix : <$ex>
                      |:x :p (:y ) .""".stripMargin
         val x = iriEx + "x"
         val p = iriEx + "p"
@@ -293,7 +292,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
         def isIri(n: RDFNode): Boolean = n.isIRI
         val try1 = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
-          v <- arc(p, list2Plus(condition(isIri,"isIRI")))(x, rdf)
+          v <- arc(p, list2Plus(condition(isIri, "isIRI")))(x, rdf)
         } yield (v)
         try1 match {
           case Left(e) => info(s"Failed as expected $e")
@@ -304,7 +303,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
       it("fails list2Plus with recursive nodes in RDF list") {
         val ex = "http://example.org/"
         val iriEx = IRI(ex)
-        val str =s"""|prefix : <$ex>
+        val str = s"""|prefix : <$ex>
                      |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                      |:x :p _:1 .
                      |_:1 rdf:first :y .
@@ -316,7 +315,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
         def isIri(n: RDFNode): Boolean = n.isIRI
         val try1 = for {
           rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
-          v <- arc(p, list2Plus(condition(isIri,"isIRI")))(x, rdf)
+          v <- arc(p, list2Plus(condition(isIri, "isIRI")))(x, rdf)
         } yield (v)
         try1 match {
           case Left(e) => info("fails as expected")

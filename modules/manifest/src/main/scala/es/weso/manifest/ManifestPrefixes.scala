@@ -26,14 +26,14 @@ object ManifestPrefixes {
   lazy val sh_focusNode = sh + "focusNode"
   lazy val sh_path = sh + "path"
   lazy val sh_severity = sh + "severity"
-  lazy val sh_sourceConstraintComponent  = sh + "sourceConstraintComponent"
-  lazy val sh_sourceShape  = sh + "sourceConstraintComponent"
-  lazy val sh_value  = sh + "value"
-  lazy val sh_result  = sh + "result"
+  lazy val sh_sourceConstraintComponent = sh + "sourceConstraintComponent"
+  lazy val sh_sourceShape = sh + "sourceConstraintComponent"
+  lazy val sh_value = sh + "value"
+  lazy val sh_result = sh + "result"
 
   lazy val rdfs_label = rdfs.add("label")
   lazy val rdfs_comment = rdfs.add("comment")
-  
+
   lazy val sht_proposed = sht.add("proposed")
   lazy val sht_approved = sht.add("approved")
   lazy val sht_rejected = sht.add("rejected")

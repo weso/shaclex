@@ -11,9 +11,9 @@ import es.weso.rdf.jena._
 import es.weso.rdf.triples.RDFTriple
 
 class JenaMapperTest
-    extends FunSpec
-    with JenaBased
-    with Matchers {
+  extends FunSpec
+  with JenaBased
+  with Matchers {
 
   describe("Jena Mapper") {
     it("Should compare one triple with 2 different bNodes") {
@@ -89,8 +89,7 @@ class JenaMapperTest
       val ts = Set(
         RDFTriple(BNodeId("b" + 0), IRI("http://example.org#p"), BNodeId("b" + 0)),
         RDFTriple(BNodeId("b" + 0), IRI("http://example.org#p"), IntegerLiteral(4)),
-        RDFTriple(BNodeId("b" + 0), IRI("http://example.org#p"), LangLiteral("pepe", Lang("es")))
-      )
+        RDFTriple(BNodeId("b" + 0), IRI("http://example.org#p"), LangLiteral("pepe", Lang("es"))))
       val empty = ModelFactory.createDefaultModel
       val m1 = RDFTriples2Model(ts, empty)
       val m2 = str2model("""|@prefix : <http://example.org#> .
@@ -104,42 +103,42 @@ class JenaMapperTest
   describe("wellTypedDatatype") {
     it("Should check integer ok") {
       val node = IntegerLiteral(23)
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#integer")) match {
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#integer")) match {
         case Left(e) => fail(s"Should be integer: $e")
         case Right(node) => ()
       }
     }
     it("Should check string ok") {
       val node = StringLiteral("Pepe")
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#string")) match {
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#string")) match {
         case Left(e) => fail(s"Should be string: $e")
         case Right(node) => ()
       }
     }
     it("Should check lang string ok") {
-      val node = LangLiteral("Pepe",Lang("es"))
-      wellTypedDatatype(node,IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")) match {
+      val node = LangLiteral("Pepe", Lang("es"))
+      wellTypedDatatype(node, IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")) match {
         case Left(e) => fail(s"Should be lang string: $e")
         case Right(node) => ()
       }
     }
     it("Should check date ok") {
-      val node = DatatypeLiteral("1981-07-03",IRI("http://www.w3.org/2001/XMLSchema#date"))
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#date")) match {
+      val node = DatatypeLiteral("1981-07-03", IRI("http://www.w3.org/2001/XMLSchema#date"))
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#date")) match {
         case Left(e) => fail(s"Should be date: $e")
         case Right(node) => ()
       }
     }
     it("Should check bad string") {
-      val node = DatatypeLiteral("john",IRI("http://www.w3.org/2001/XMLSchema#string"))
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#date")) match {
+      val node = DatatypeLiteral("john", IRI("http://www.w3.org/2001/XMLSchema#string"))
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#date")) match {
         case Left(e) => info(s"Fails as expected: $e")
         case Right(node) => fail(s"Should fail but passed $node")
       }
     }
     it("Should check bad date") {
-      val node = DatatypeLiteral("john",IRI("http://www.w3.org/2001/XMLSchema#date"))
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#date")) match {
+      val node = DatatypeLiteral("john", IRI("http://www.w3.org/2001/XMLSchema#date"))
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#date")) match {
         case Left(e) => info(s"Fails as expected: $e")
         case Right(node) => fail(s"Should fail but passed $node")
       }
@@ -147,7 +146,7 @@ class JenaMapperTest
 
     it("Should fail checking single string with dateTime") {
       val node = StringLiteral("not_a_date")
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
         case Left(e) => info(s"Fails as expected: $e")
         case Right(node) => fail(s"Should fail but passed $node")
       }
@@ -155,12 +154,11 @@ class JenaMapperTest
 
     it("Should fail checking date with dateTime") {
       val node = DatatypeLiteral("2017-05-15", IRI("http://www.w3.org/2001/XMLSchema#date"))
-      wellTypedDatatype(node,IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
+      wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
         case Left(e) => info(s"Fails as expected: $e")
         case Right(node) => fail(s"Should fail but passed $node")
       }
     }
-
 
   }
 

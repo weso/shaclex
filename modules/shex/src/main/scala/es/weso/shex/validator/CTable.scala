@@ -1,10 +1,9 @@
 package es.weso.shex.validator
 
 import cats._
-import es.weso.rbe.interval.{IntLimit, IntOrUnbounded, Unbounded}
-import es.weso.rbe.{Schema => _, Star => _, _}
+import es.weso.rbe.interval.{ IntLimit, IntOrUnbounded, Unbounded }
+import es.weso.rbe.{ Schema => _, Star => _, _ }
 import es.weso.shex._
-
 
 object table {
 
@@ -28,11 +27,11 @@ object table {
   }
 
   // Constraints table
-  case class CTable(constraints: ConstraintsMap,
-                    paths: PathsMap,
-                    elems: Int,
-                    schema: Schema
-                   ) {
+  case class CTable(
+    constraints: ConstraintsMap,
+    paths: PathsMap,
+    elems: Int,
+    schema: Schema) {
 
     def addPath(p: Path, n: ConstraintRef): PathsMap =
       paths.updated(p, paths.get(p).getOrElse(Set()) + n)
@@ -40,7 +39,7 @@ object table {
     def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
       constraints.get(cref).map(ce => ce match {
         case Pos(se) => se
-        case Neg(se) => ShapeNot(None,se)
+        case Neg(se) => ShapeNot(None, se)
       })
     }
 
@@ -55,10 +54,10 @@ object table {
 
     def simplify(rbe: Rbe_): Rbe_ = {
       rbe match {
-        case And(Empty,e1) => e1
-        case Or(Empty,e1) => e1
-        case And(e1,e2) => And(simplify(e1),e2)
-        case Or(e1,e2) => Or(simplify(e1),e2)
+        case And(Empty, e1) => e1
+        case Or(Empty, e1) => e1
+        case And(e1, e2) => And(simplify(e1), e2)
+        case Or(e1, e2) => Or(simplify(e1), e2)
         case e => e
       }
     }
@@ -73,29 +72,29 @@ object table {
           def comb(pair: ResultPair, currentTe: TripleExpr): ResultPair = {
             val (currentTable, currentRbe) = pair
             val (newTable, newRbe) = mkTableAux(currentTe, currentTable)
-            (newTable, And(currentRbe,newRbe))
+            (newTable, And(currentRbe, newRbe))
           }
-          val (newTable,rbe) = e.expressions.foldLeft(zero)(comb)
+          val (newTable, rbe) = e.expressions.foldLeft(zero)(comb)
           val simplifiedRbe: Rbe_ = simplify(rbe) // e.expressions.map(_ ).reduce(And)
           val groupRbe =
             if (Cardinality.isDefault(e.min, e.max)) simplifiedRbe
             else Repeat(simplifiedRbe, e.min, max2IntOrUnbounded(e.max))
-          (newTable,groupRbe)
+          (newTable, groupRbe)
         }
         case e: OneOf => {
           val zero: ResultPair = (current, Empty)
           def comb(pair: ResultPair, currentTe: TripleExpr): ResultPair = {
             val (currentTable, currentRbe) = pair
             val (newTable, newRbe) = mkTableAux(currentTe, currentTable)
-            (newTable, Or(currentRbe,newRbe))
+            (newTable, Or(currentRbe, newRbe))
           }
-          val (newTable,rbe) = e.expressions.foldLeft(zero)(comb)
+          val (newTable, rbe) = e.expressions.foldLeft(zero)(comb)
           val simplifiedRbe: Rbe_ = simplify(rbe)
           val groupRbe =
             if (Cardinality.isDefault(e.min, e.max))
               simplifiedRbe
             else Repeat(simplifiedRbe, e.min, max2IntOrUnbounded(e.max))
-          (newTable,groupRbe)
+          (newTable, groupRbe)
         }
         case i: Inclusion =>
           throw new Exception("CTable: Not implemented table generation for inclusion")
@@ -116,15 +115,14 @@ object table {
             elems = newElems,
             constraints =
               current.constraints +
-                (cref -> valueExpr ),
-            paths = current.addPath(tc.path, cref)
-          )
+                (cref -> valueExpr),
+            paths = current.addPath(tc.path, cref))
           val posSymbol = Symbol(cref, tc.min, max2IntOrUnbounded(tc.max))
           val symbol = if (tc.negated) {
             Repeat(posSymbol, 0, IntLimit(1))
           } else posSymbol
           println(s"Making table for tc $tc. Negated: ${tc.negated}. Symbol: $symbol")
-          (newTable,symbol)
+          (newTable, symbol)
         }
       }
     }

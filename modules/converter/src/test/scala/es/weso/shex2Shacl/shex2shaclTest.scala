@@ -12,12 +12,10 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
     ignore("Should convert simple node constraint") {
       val shexSchema: shex.Schema =
         shex.Schema.empty.
-        copy(shapes = Some(List(
-              shex.NodeConstraint.empty.copy(
-                id = Some(shex.IRILabel(IRI("http://example.org/S"))),
-                nodeKind = Some(shex.BNodeKind))
-         ))
-      )
+          copy(shapes = Some(List(
+            shex.NodeConstraint.empty.copy(
+              id = Some(shex.IRILabel(IRI("http://example.org/S"))),
+              nodeKind = Some(shex.BNodeKind)))))
 
       val iriS = IRI("http://example.org/S")
 
@@ -26,16 +24,12 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
           pm = PrefixMap.empty,
           shapesMap = Map(ShapeRef(iriS) ->
             shacl.Shape.empty(iriS).copy(
-             components = List(NodeKind(BlankNodeKind))
-           )
-          )
-        )
+              components = List(NodeKind(BlankNodeKind)))))
 
       val r = ShEx2Shacl.shex2Shacl(shexSchema)
       r.fold(
         e => fail(s"Conversion failed: error: $e"),
-        v => v should be(shaclSchema)
-      )
+        v => v should be(shaclSchema))
     }
   }
 
@@ -43,13 +37,11 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
     ignore("Should convert simple node constraint") {
       val shexSchema: shex.Schema =
         shex.Schema.empty.
-        copy(
+          copy(
             shapes = Some(List(
               shex.NodeConstraint.empty.copy(
                 id = Some(shex.IRILabel(IRI("http://example.org/S"))),
-                nodeKind = Some(shex.BNodeKind))
-         ))
-      )
+                nodeKind = Some(shex.BNodeKind)))))
 
       val iriS = IRI("http://example.org/S")
 
@@ -57,15 +49,12 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
         shacl.Schema(
           pm = PrefixMap.empty,
           shapesMap = Map(ShapeRef(iriS) -> shacl.Shape.empty(iriS).copy(
-            components = List(NodeKind(BlankNodeKind))
-          ))
-        )
+            components = List(NodeKind(BlankNodeKind)))))
 
       val r = Shacl2ShEx.shacl2ShEx(shaclSchema)
       r.fold(
         e => fail(s"Conversion failed: error: $e"),
-        v => v should be(shexSchema)
-      )
+        v => v should be(shexSchema))
     }
   }
 

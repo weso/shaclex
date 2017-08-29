@@ -17,12 +17,12 @@ class shexJson extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val ignoreFiles = List("coverage")
 
- def getJsonFiles(schemasDir: String): List[File] = {
+  def getJsonFiles(schemasDir: String): List[File] = {
     getFilesFromFolderWithExt(schemasDir, "json", ignoreFiles)
- }
+  }
 
   describe("Parsing Schemas from Json") {
-    for(file <- getJsonFiles(schemasFolder)) {
+    for (file <- getJsonFiles(schemasFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
         shouldDecodeEncodeEqual[Schema](str)

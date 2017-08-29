@@ -99,7 +99,7 @@ trait RDFReader {
   def hasPredicateWithSubject(n: RDFNode, p: IRI): Boolean = {
     triplesWithSubjectPredicate(n, p).size > 0
   }
-  
+
   /**
    * Prefix map
    */
@@ -109,7 +109,7 @@ trait RDFReader {
    * `true` if `node rdf:type/rdfs:subClassOf* cls`
    */
   def hasSHACLClass(node: RDFNode, cls: RDFNode): Boolean
-  
+
   /**
    * return the SHACL instances of a node `cls`
    * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
@@ -117,13 +117,13 @@ trait RDFReader {
   def getSHACLInstances(cls: RDFNode): Seq[RDFNode]
 
   /**
-  * return the values associated with a node by a path
-  * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
-  */
+   * return the values associated with a node by a path
+   * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
+   */
   def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode]
 
   def getTypes(node: RDFNode): Set[RDFNode] = {
-    triplesWithSubjectPredicate(node,rdf_type).map(_.obj)
+    triplesWithSubjectPredicate(node, rdf_type).map(_.obj)
   }
 
 }

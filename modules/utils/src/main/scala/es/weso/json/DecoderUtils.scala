@@ -5,7 +5,6 @@ import io.circe.syntax._
 import cats.syntax.either._
 import cats.instances.either._
 
-
 object DecoderUtils {
 
   // Utils...
@@ -31,8 +30,7 @@ object DecoderUtils {
         case Left(e) => Left(e)
         case Right(v) => Right(Some(v))
       }
-    }
-    else Either.right(None)
+    } else Either.right(None)
   }
 
   def optFieldDecodeMap[A: KeyDecoder, B: Decoder](c: HCursor, name: String): Decoder.Result[Option[Map[A, B]]] = {
@@ -42,20 +40,18 @@ object DecoderUtils {
         case Left(e) => Left(e)
         case Right(v) => Right(Some(v))
       }
-    }
-    else Either.right(None)
+    } else Either.right(None)
   }
 
-
   /**
-  * Explicit mapDecoder which needs the key decoder as well as the value decoder
-  * It should not be needed, but I found some problems about implicits resolution which I solved by
-  * using this method
-  */
-  def mapDecoder[A,B](c: ACursor)(ka: KeyDecoder[A], db: Decoder[B]): Decoder.Result[Map[A,B]] = {
+   * Explicit mapDecoder which needs the key decoder as well as the value decoder
+   * It should not be needed, but I found some problems about implicits resolution which I solved by
+   * using this method
+   */
+  def mapDecoder[A, B](c: ACursor)(ka: KeyDecoder[A], db: Decoder[B]): Decoder.Result[Map[A, B]] = {
     implicit val ika = ka
     implicit val idb = db
-    c.as[Map[A,B]]
+    c.as[Map[A, B]]
   }
 
 }

@@ -1,17 +1,17 @@
 package es.weso.shapeMaps
 
-import java.io.{ByteArrayInputStream, InputStreamReader, Reader => JavaReader}
+import java.io.{ ByteArrayInputStream, InputStreamReader, Reader => JavaReader }
 import java.nio.charset.StandardCharsets
 
 import cats.data._
 import com.typesafe.scalalogging._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import es.weso.shapeMaps.parser.{ShapeMapLexer, ShapeMapParser}
-import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext,_}
+import es.weso.shapeMaps.parser.{ ShapeMapLexer, ShapeMapParser }
+import es.weso.shapeMaps.parser.ShapeMapParser.{ StringContext => ShapeMapStringContext, _ }
 import org.antlr.v4.runtime._
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 object Parser extends LazyLogging {
 
@@ -26,22 +26,22 @@ object Parser extends LazyLogging {
     if (str.startsWith(UTF8_BOM)) {
       logger.info("BOM detected and removed")
       str.substring(1)
-    }
-    else str
+    } else str
   }
 
-  def parse(str: String,
-            nodesPrefixMap: PrefixMap,
-            shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
+  def parse(
+    str: String,
+    nodesPrefixMap: PrefixMap,
+    shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
     val s = removeBOM(str)
-    val reader: JavaReader = new InputStreamReader(new
-          ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    parseSchemaReader(reader, nodesPrefixMap,shapesPrefixMap)
+    val reader: JavaReader = new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
+    parseSchemaReader(reader, nodesPrefixMap, shapesPrefixMap)
   }
 
-  def parseSchemaReader(reader: JavaReader,
-                        nodesPrefixMap: PrefixMap,
-                        shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
+  def parseSchemaReader(
+    reader: JavaReader,
+    nodesPrefixMap: PrefixMap,
+    shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
     val input: ANTLRInputStream = new ANTLRInputStream(reader)
     val lexer: ShapeMapLexer = new ShapeMapLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)

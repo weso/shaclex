@@ -15,7 +15,7 @@ trait Checker {
 
   def addLog(log: Log): Check[Unit]
 
-//  def logStr(msg: String): Check[Unit]
+  //  def logStr(msg: String): Check[Unit]
 
   def local[A](f: Env => Env)(c: Check[A]): Check[A]
 
@@ -27,11 +27,11 @@ trait Checker {
 
   def checkSome[A](cs: List[Check[A]], errorIfNone: Err): Check[A]
 
-  def attempt[A](c: Check[A]): Check[Either[Err,A]]
+  def attempt[A](c: Check[A]): Check[Either[Err, A]]
 
   def run[A](c: Check[A])(config: Config)(env: Env): (Log, Either[Err, A])
 
-  def runCheck[A](c: Check[A])(config: Config)(env: Env): (Either[Err, A],Log) =
+  def runCheck[A](c: Check[A])(config: Config)(env: Env): (Either[Err, A], Log) =
     run(c)(config)(env).swap
 
   def runValue[A](c: Check[A])(config: Config)(env: Env): Either[Err, A] =

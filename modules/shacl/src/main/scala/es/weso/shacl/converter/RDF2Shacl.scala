@@ -12,7 +12,7 @@ import es.weso.shacl.SHACLPrefixes._
 import es.weso.shacl._
 import es.weso.utils.TryUtils._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object RDF2Shacl extends RDFParser with LazyLogging {
 
@@ -23,11 +23,10 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   // TODO: Refactor this code to avoid imperative style
   var pendingNodes = List[RDFNode]()
 
-  def tryGetShacl(rdf:RDFReader): Try[Schema] =
+  def tryGetShacl(rdf: RDFReader): Try[Schema] =
     getShacl(rdf).fold(
       str => Failure(new Exception(str)),
-      Success(_)
-    )
+      Success(_))
 
   /**
    * Parses RDF content and obtains a SHACL Schema and a PrefixMap
@@ -73,8 +72,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     val shapeRef = ShapeRef(n)
     if (parsedShapes.contains(shapeRef)) {
       parseOk(shapeRef)
-    }
-    else {
+    } else {
       for {
         shapeRef <- firstOf(nodeShape, propertyShape)(n, rdf)
       } yield {
@@ -99,13 +97,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     ignoredIRIs <- nodes2iris(ignoredNodes)
   } yield {
-    val shape: Shape = NodeShape(id = n,
+    val shape: Shape = NodeShape(
+      id = n,
       components = components.toList,
       targets = targets,
       propertyShapes = propertyShapes,
       closed = closed.getOrElse(false),
-      ignoredProperties = ignoredIRIs
-    )
+      ignoredProperties = ignoredIRIs)
     val sref = ShapeRef(n)
     parsedShapes += (sref -> shape)
     sref
@@ -123,19 +121,18 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     ignoredIRIs <- nodes2iris(ignoredNodes)
   } yield {
-    val ps = PropertyShape(id = n,
+    val ps = PropertyShape(
+      id = n,
       path = path,
       components = components.toList,
       targets = targets,
       propertyShapes = propertyShapes,
       closed = closed.getOrElse(false),
-      ignoredProperties = ignoredIRIs
-    )
+      ignoredProperties = ignoredIRIs)
     val sref = ShapeRef(n)
     parsedShapes += (sref -> ps)
     sref
   }
-
 
   def targets: RDFParser[Seq[Target]] =
     combineAll(
@@ -143,8 +140,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       targetClasses,
       implicitTargetClass,
       targetSubjectsOf,
-      targetObjectsOf
-    )
+      targetObjectsOf)
 
   def targetNodes: RDFParser[Seq[Target]] = (n, rdf) => {
     for {
@@ -258,7 +254,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     path <- parsePath(pathNode, rdf)
   } yield InversePath(path)
 
-
   def oneOrMorePath: RDFParser[SHACLPath] = (n, rdf) => for {
     pathNode <- objectFromPredicate(sh_oneOrMorePath)(n, rdf)
     path <- parsePath(pathNode, rdf)
@@ -300,9 +295,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       or, and, not, xone, qualifiedValueShape,
       nodeComponent,
       hasValue,
-      in
-    )
-
+      in)
 
   def classComponent = parsePredicate(sh_class, ClassComponent)
 
@@ -398,24 +391,24 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def minCount = parsePredicateInt(sh_minCount, MinCount)
   def maxCount = parsePredicateInt(sh_maxCount, MaxCount)
 
-  def hasValue: RDFParser[Component] = (n,rdf) => {
+  def hasValue: RDFParser[Component] = (n, rdf) => {
     logger.info(s"Parsing hasValue on $n")
     for {
-     o <- objectFromPredicate(sh_hasValue)(n,rdf)
-     v <- {
-       logger.info(s"Object of hasValue $n = $o")
-       node2Value(o)
-     }
+      o <- objectFromPredicate(sh_hasValue)(n, rdf)
+      v <- {
+        logger.info(s"Object of hasValue $n = $o")
+        node2Value(o)
+      }
     } yield {
       logger.info(s"Value parsed: $v")
       HasValue(v)
     }
   }
 
-  def in: RDFParser[Component] = (n,rdf) => {
+  def in: RDFParser[Component] = (n, rdf) => {
     for {
-     ns <- rdfListForPredicate(sh_in)(n,rdf)
-     vs <- convert2Values(ns.map(node2Value(_)))
+      ns <- rdfListForPredicate(sh_in)(n, rdf)
+      vs <- convert2Values(ns.map(node2Value(_)))
     } yield In(vs)
   }
 
@@ -427,7 +420,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
 
-  def convert2Values[A](cs: List[Either[String,A]]): Either[String, List[A]] = {
+  def convert2Values[A](cs: List[Either[String, A]]): Either[String, List[A]] = {
     if (cs.isEmpty)
       parseFail("The list of values associated with sh:in must not be empty")
     else {
@@ -435,16 +428,16 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
 
-  def nodeKind: RDFParser[Component] = (n,rdf) => {
+  def nodeKind: RDFParser[Component] = (n, rdf) => {
     for {
-      os <- objectsFromPredicate(sh_nodeKind)(n,rdf)
+      os <- objectsFromPredicate(sh_nodeKind)(n, rdf)
       nk <- parseNodeKind(os)
     } yield {
       nk
     }
   }
 
-  def parseNodeKind(os: Set[RDFNode]): Either[String,Component] = {
+  def parseNodeKind(os: Set[RDFNode]): Either[String, Component] = {
     os.size match {
       case 0 => parseFail("no iriObjects of nodeKind property")
       case 1 => {
@@ -464,32 +457,31 @@ object RDF2Shacl extends RDFParser with LazyLogging {
           case x => {
             logger.error(s"incorrect value of nodeKind property $x")
             parseFail(s"incorrect value of nodeKind property $x")
+          }
         }
-       }
       }
       case n => parseFail(s"iriObjects of nodeKind property > 1. $os")
     }
   }
 
-
-  def parsePredicateLiteral[A](p: IRI, maker: Literal => A): RDFParser[A] = (n,rdf) => for {
-    v <- literalFromPredicate(p)(n,rdf)
+  def parsePredicateLiteral[A](p: IRI, maker: Literal => A): RDFParser[A] = (n, rdf) => for {
+    v <- literalFromPredicate(p)(n, rdf)
   } yield maker(v)
 
-  def parsePredicateInt[A](p: IRI, maker: Int => A): RDFParser[A] = (n,rdf) => for {
-    v <- integerLiteralForPredicate(p)(n,rdf)
+  def parsePredicateInt[A](p: IRI, maker: Int => A): RDFParser[A] = (n, rdf) => for {
+    v <- integerLiteralForPredicate(p)(n, rdf)
   } yield maker(v.intValue())
 
-  def parsePredicateString[A](p: IRI, maker: String => A): RDFParser[A] = (n,rdf) => for {
-    v <- stringFromPredicate(p)(n,rdf)
+  def parsePredicateString[A](p: IRI, maker: String => A): RDFParser[A] = (n, rdf) => for {
+    v <- stringFromPredicate(p)(n, rdf)
   } yield maker(v)
 
-  def parsePredicate[A](p: IRI, maker: RDFNode => A): RDFParser[A] = (n,rdf) => for {
-    o <- objectFromPredicate(p)(n,rdf)
+  def parsePredicate[A](p: IRI, maker: RDFNode => A): RDFParser[A] = (n, rdf) => for {
+    o <- objectFromPredicate(p)(n, rdf)
   } yield maker(o)
 
-  def parsePredicateIRI[A](p: IRI, maker: IRI => A): RDFParser[A] = (n,rdf) => for {
-    iri <- iriFromPredicate(p)(n,rdf)
+  def parsePredicateIRI[A](p: IRI, maker: IRI => A): RDFParser[A] = (n, rdf) => for {
+    iri <- iriFromPredicate(p)(n, rdf)
   } yield maker(iri)
 
   def noTarget: Seq[Target] = Seq()

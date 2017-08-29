@@ -2,8 +2,8 @@ package es.weso.rbe
 
 /**
  * Represents directed edges
- * 
- * It can be [[DirectEdge direct]] or [[InverseEdge inverse]]  
+ *
+ * It can be [[DirectEdge direct]] or [[InverseEdge inverse]]
  */
 trait DirectedEdge[Edge]
 

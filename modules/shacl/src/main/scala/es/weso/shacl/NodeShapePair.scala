@@ -6,7 +6,7 @@ import cats.implicits._
 
 case class NodeShapePair(node: RDFNode, shape: ShapeRef) {
 
- override def toString = NodeShapePair.nodeShapeShow.show(this)
+  override def toString = NodeShapePair.nodeShapeShow.show(this)
 
 }
 

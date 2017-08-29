@@ -4,7 +4,7 @@ import java.io._
 import scala.io._
 import util._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object FileUtils {
 
@@ -25,9 +25,10 @@ object FileUtils {
     }
   }
 
-  def getFileFromFolderWithExt(path: String,
-                               name: String,
-                               ext: String): File = {
+  def getFileFromFolderWithExt(
+    path: String,
+    name: String,
+    ext: String): File = {
     new File(path + "/" + name + "." + ext)
   }
 
@@ -36,7 +37,7 @@ object FileUtils {
     (splits.init.mkString("."), splits.last)
   }
 
- /**
+  /**
    * Ensures to close a file.
    * Follows the [[https://wiki.scala-lang.org/display/SYGN/Loan Loan pattern]]
    */
@@ -49,11 +50,11 @@ object FileUtils {
   }
 
   /**
-    * Gets the contents of a file
-    *
-    * @param file file
-    *
-    */
+   * Gets the contents of a file
+   *
+   * @param file file
+   *
+   */
   def getContents(file: File): Try[CharSequence] = {
     try {
       using(Source.fromFile(file)("UTF-8")) { source =>
@@ -92,9 +93,10 @@ object FileUtils {
 
   def getStream(fileName: String): Try[InputStreamReader] = {
     try {
-      using(Source.fromFile(fileName)("UTF-8")) { source => {
-        Success(source.reader())
-       }
+      using(Source.fromFile(fileName)("UTF-8")) { source =>
+        {
+          Success(source.reader())
+        }
       }
     } catch {
       case e: FileNotFoundException => {
@@ -105,7 +107,7 @@ object FileUtils {
       }
     }
   }
-    /**
+  /**
    * Write contents to a file
    *
    * @param name name of the file

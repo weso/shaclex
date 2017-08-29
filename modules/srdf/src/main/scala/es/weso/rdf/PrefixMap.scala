@@ -4,7 +4,6 @@ import es.weso.rdf.nodes._
 import scala.collection.immutable.Map
 import com.typesafe.scalalogging.LazyLogging
 
-
 /**
  * PrefixMap representation
  */
@@ -60,22 +59,22 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
     node match {
       case iri: IRI => qualifyIRI(iri)
       case _ => node.toString
-  }
+    }
 
   /**
-    * If prefixMap contains a: -> http://example.org/
-    * then qualifyString("http://example.org/x") = "a:x"
-    * else <http://example.org/x>
-    */
+   * If prefixMap contains a: -> http://example.org/
+   * then qualifyString("http://example.org/x") = "a:x"
+   * else <http://example.org/x>
+   */
   def qualifyString(str: String): String = {
-      def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
-        str.startsWith(p._2.str)
-      }
+    def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
+      str.startsWith(p._2.str)
+    }
 
-      pm.find(startsWithPredicate) match {
-        case None => "<" ++ str ++ ">"
-        case Some(p) => p._1.str + ":" + str.stripPrefix(p._2.str)
-      }
+    pm.find(startsWithPredicate) match {
+      case None => "<" ++ str ++ ">"
+      case Some(p) => p._1.str + ":" + str.stripPrefix(p._2.str)
+    }
   }
 
   def prefixes: List[String] = {

@@ -1,6 +1,6 @@
 package es.weso.rdf.nodes
 
-import java.net.{URI, URISyntaxException}
+import java.net.{ URI, URISyntaxException }
 import scala.util.Try
 import scala.util.matching.Regex
 import scala.util.Either._
@@ -43,10 +43,10 @@ case class IRI(uri: URI) extends RDFNode {
 
 object IRI {
   /**
-    * Unsafe can raise an exception if the URI is not well formed
-    * @param str
-    * @return
-    */
+   * Unsafe can raise an exception if the URI is not well formed
+   * @param str
+   * @return
+   */
   def apply(str: String): IRI = {
     IRI(new URI(str))
   }

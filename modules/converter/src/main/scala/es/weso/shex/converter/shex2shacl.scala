@@ -21,7 +21,7 @@ object ShEx2Shacl extends Converter {
     BNodeId("shape" + (bNodeCounter))
   }
 
-  var shapesMap: Map[shacl.ShapeRef,shacl.Shape] = Map()
+  var shapesMap: Map[shacl.ShapeRef, shacl.Shape] = Map()
 
   def shex2Shacl(schema: shex.Schema): Result[shacl.Schema] = {
     bNodeCounter = 0 // Reset counter
@@ -29,27 +29,26 @@ object ShEx2Shacl extends Converter {
     getShaclShapes(schema).map(
       smap => shacl.Schema(
         pm = schema.prefixMap,
-        shapesMap = shapesMap
-      )
-    )
+        shapesMap = shapesMap))
   }
 
-  def cnvPrefixMap(pm: PrefixMap): Map[String,IRI] = {
-    pm.pm.map{ case (prefix,value) => (prefix.str,value) }
+  def cnvPrefixMap(pm: PrefixMap): Map[String, IRI] = {
+    pm.pm.map { case (prefix, value) => (prefix.str, value) }
   }
 
   def getShaclShapes(schema: shex.Schema): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
     val shexShapes: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())
     val zero: Result[Map[shacl.ShapeRef, shacl.Shape]] = ok(Map())
-    def comb(rs: Result[Map[shacl.ShapeRef, shacl.Shape]],
-             shapeExpr: shex.ShapeExpr): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
+    def comb(
+      rs: Result[Map[shacl.ShapeRef, shacl.Shape]],
+      shapeExpr: shex.ShapeExpr): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
       val r1: Result[shacl.ShapeRef] = shapeExpr.id match {
         case None => err(s"shapeExpr $shapeExpr doesn't have id: Not implemented resolution of this case yet")
         case Some(lbl) => ok(ShapeRef(lbl.toRDFNode))
       }
       val r2: Result[shacl.Shape] = cnvShapeExpr(shapeExpr, schema)
-      val r : Result[(shacl.ShapeRef, shacl.Shape)] = (r1 |@| r2).map { case (sref,shape) => (sref,shape)}
-      r.product(rs).map{ case (pair,smap) => smap + pair}
+      val r: Result[(shacl.ShapeRef, shacl.Shape)] = (r1 |@| r2).map { case (sref, shape) => (sref, shape) }
+      r.product(rs).map { case (pair, smap) => smap + pair }
     }
     shexShapes.foldLeft(zero)(comb)
   }
@@ -60,12 +59,12 @@ object ShEx2Shacl extends Converter {
       case s: shex.ShapeOr => ??? // cnvShapeOr(s,schema)
       case s: shex.ShapeNot => ??? // cnvShapeNot(s,schema)
       case nc: shex.NodeConstraint => cnvNodeConstraint(nc, schema)
-      case s: shex.Shape => cnvShape(s,schema)
+      case s: shex.Shape => cnvShape(s, schema)
       case s: shex.ShapeRef => err(s"mkShape: Not implemented $s")
       case s: shex.ShapeExternal => err(s"mkShape: Not implemented $s")
     }
 
-/*  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.Shape] = {
+  /*  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.Shape] = {
     shapeAnd.shapeExprs.
          map(cnvShapeExpr(_,schema)).
          sequence.
@@ -97,66 +96,66 @@ object ShEx2Shacl extends Converter {
   def cnvShape(shape: shex.Shape, schema: shex.Schema): Result[shacl.Shape] = {
     // TODO: Error handling when virtual, inherit, extra, semActs are defined...
     shape.expression match {
-     case None => err(s"No expression in shape $shape")
-     case Some(te) => cnvTripleExpr(te,schema)
+      case None => err(s"No expression in shape $shape")
+      case Some(te) => cnvTripleExpr(te, schema)
     }
   }
 
   def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema): Result[shacl.Shape] = {
     te match {
-     case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf conversion yet")
-     case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf conversion yet")
-     case e: shex.Inclusion => err(s"cnvTripleExpr: Not implemented Inclusion conversion yet")
-     case tc: shex.TripleConstraint => cnvTripleConstraint(tc,schema)
+      case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf conversion yet")
+      case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf conversion yet")
+      case e: shex.Inclusion => err(s"cnvTripleExpr: Not implemented Inclusion conversion yet")
+      case tc: shex.TripleConstraint => cnvTripleConstraint(tc, schema)
     }
   }
 
   def cnvTripleConstraint(
-                           tc: shex.TripleConstraint,
-                           schema: shex.Schema
-                         ): Result[shacl.Shape] = {
+    tc: shex.TripleConstraint,
+    schema: shex.Schema): Result[shacl.Shape] = {
     if (tc.negated)
       err(s"cnvTripleConstraint: Not implemented negated")
     else {
-    val path = if (!tc.inverse) PredicatePath(tc.predicate)
-               else InversePath(PredicatePath(tc.predicate))
-     val pc: Result[PropertyShape] =
-       mkPropertyShape(path,
-         tc.valueExpr, tc.min, tc.max, schema)
-//     ok(Constraint.empty.copy(constraints = Seq(pc)))
-    ??? // pc
-   }
+      val path = if (!tc.inverse) PredicatePath(tc.predicate)
+      else InversePath(PredicatePath(tc.predicate))
+      val pc: Result[PropertyShape] =
+        mkPropertyShape(
+          path,
+          tc.valueExpr, tc.min, tc.max, schema)
+      //     ok(Constraint.empty.copy(constraints = Seq(pc)))
+      ??? // pc
+    }
   }
 
- def mkPropertyShape(
-   path: SHACLPath,
-   valueExpr: Option[shex.ShapeExpr],
-   min: Int,
-   max: shex.Max,
-   schema: shex.Schema): Result[PropertyShape] = {
-   val minComponent: List[Component] =
-     if (min == Shacl.defaultMin) List()
-     else List(MinCount(min))
-   val maxComponent: List[Component] =
-     max match {
-       case shex.Star => List()
-       case shex.IntMax(n) => List(MaxCount(n))
-     }
-//     max.getOrElse(Max(1)).map
-   val components = minComponent ++ maxComponent
-   // ok(Shape.emptyPropertyShape(path).copy(components = components))
-   ???
- }
+  def mkPropertyShape(
+    path: SHACLPath,
+    valueExpr: Option[shex.ShapeExpr],
+    min: Int,
+    max: shex.Max,
+    schema: shex.Schema): Result[PropertyShape] = {
+    val minComponent: List[Component] =
+      if (min == Shacl.defaultMin) List()
+      else List(MinCount(min))
+    val maxComponent: List[Component] =
+      max match {
+        case shex.Star => List()
+        case shex.IntMax(n) => List(MaxCount(n))
+      }
+    //     max.getOrElse(Max(1)).map
+    val components = minComponent ++ maxComponent
+    // ok(Shape.emptyPropertyShape(path).copy(components = components))
+    ???
+  }
 
   def cnvNodeConstraint(
-       nc: shex.NodeConstraint,
-       schema: shex.Schema): Result[shacl.Shape] = {
+    nc: shex.NodeConstraint,
+    schema: shex.Schema): Result[shacl.Shape] = {
 
     val nkShape: Result[List[Component]] =
       nc.nodeKind.map(cnvNodeKind(_)).sequence.map(_.toList)
 
-//    nkShape.map(nks => shacl.Shape.empty(newRef).copy(components = nks))
-//    nkShape
+    //    nkShape.map(nks => shacl.Shape.empty(newRef).copy(components = nks))
+    //    nkShape
     ???
   }
 

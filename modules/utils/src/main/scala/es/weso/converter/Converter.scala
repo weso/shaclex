@@ -6,12 +6,12 @@ trait Converter {
 
   type Err = String
 
-  type Result[A] = ValidatedNel[Err,A]
+  type Result[A] = ValidatedNel[Err, A]
 
   def ok[A](x: A): Result[A] =
     Validated.valid(x)
 
-  def err[A](msg:String): Result[A] =
+  def err[A](msg: String): Result[A] =
     Validated.invalidNel(msg)
 
 }

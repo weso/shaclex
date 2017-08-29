@@ -6,45 +6,41 @@ import cats.implicits._
 import es.weso.rdf.nodes._
 import es.weso.rdf._
 
-
 class shexDiffTest extends FunSpec with Matchers with EitherValues {
 
   describe("shexDiff") {
-    it ("should calculate diffs of base values") {
+    it("should calculate diffs of base values") {
       val iri = IRI("http://example.org/")
       val x1 = Schema.empty.copy(base = Some(iri))
       val x2 = Schema.empty.copy(base = Some(iri))
-      val d = ShExDiff.schemaDiff(x1,x2)
+      val d = ShExDiff.schemaDiff(x1, x2)
       shouldBeOK(d)
     }
-    it ("should calculate diffs of start actions") {
+    it("should calculate diffs of start actions") {
       val iri = IRI("http://example.org/")
-      val x1 = Schema.empty.copy(startActs = Some(List(SemAct(iri,Some("code")))))
-      val x2 = Schema.empty.copy(startActs = Some(List(SemAct(iri,Some("code")))))
-      val d = ShExDiff.schemaDiff(x1,x2)
+      val x1 = Schema.empty.copy(startActs = Some(List(SemAct(iri, Some("code")))))
+      val x2 = Schema.empty.copy(startActs = Some(List(SemAct(iri, Some("code")))))
+      val d = ShExDiff.schemaDiff(x1, x2)
       shouldBeOK(d)
     }
-    it ("should calculate diffs of prefixes") {
+    it("should calculate diffs of prefixes") {
       val iri = IRI("http://example.org/")
       val x1 = Schema.empty.copy(
         prefixes = Some(
-          PrefixMap(Map(Prefix(":") -> iri))
-        )
-      )
+          PrefixMap(Map(Prefix(":") -> iri))))
       val x2 = Schema.empty.copy(
         prefixes =
           Some(
             PrefixMap(
-              Map(Prefix(":") -> iri))
-          ))
-      val d = ShExDiff.schemaDiff(x1,x2)
+              Map(Prefix(":") -> iri))))
+      val d = ShExDiff.schemaDiff(x1, x2)
       shouldBeOK(d)
     }
   }
 
   def shouldBeOK[A](x: ShExDiff.Result[A]): Unit = {
     if (!x.isValid) {
-        fail(s"Different: $x")
-      }
+      fail(s"Different: $x")
+    }
   }
 }

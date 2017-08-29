@@ -4,94 +4,93 @@ import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
-import es.weso.rdf.path.{InversePath, PredicatePath}
+import es.weso.rdf.path.{ InversePath, PredicatePath }
 import es.weso.shacl.converter.RDF2Shacl
 
 import util._
 
-class RDF2ShaclTest extends
-  FunSpec with Matchers with TryValues with EitherValues
+class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValues
   with SchemaMatchers {
 
-describe("RDf2Shacl Syntax") {
+  describe("RDf2Shacl Syntax") {
 
-  it("should be able to get the list of shapes") {
-    val ex = IRI("http://example.org/")
-    val str =
-      """|@prefix : <http://example.org/>
+    it("should be able to get the list of shapes") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape .
                  |:T a sh:Shape .
                  |""".stripMargin
-    val attempt: Either[String,Schema] = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-    } yield (schema)
-    val s = ex + "S"
-    val t = ex + "T"
-    info(s"Attempt: $attempt")
-    attempt match {
-      case Left(e) => fail(s"Failed: $e")
-      case Right(v) => v should constainShapes(Set(s,t))
+      val attempt: Either[String, Schema] = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+      } yield (schema)
+      val s = ex + "S"
+      val t = ex + "T"
+      info(s"Attempt: $attempt")
+      attempt match {
+        case Left(e) => fail(s"Failed: $e")
+        case Right(v) => v should constainShapes(Set(s, t))
+      }
     }
-  }
 
-  it("should be able to get the list of target nodes") {
-    val ex = IRI("http://example.org/")
-    val str =
-      """|@prefix : <http://example.org/>
+    it("should be able to get the list of target nodes") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape; sh:targetNode :n1 .
                  |:T a sh:Shape .
                  |""".stripMargin
-    val s =ex + "S"
-    val t = ex + "T"
-    val n1 = ex + "n1"
-    val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-      shape <- schema.shape(s)
-    } yield (shape)
-    attempt match {
-      case Left(e) => fail(s"Failed $e")
-      case Right(shape) => {
-        shape.targetNodes should contain only(n1)
+      val s = ex + "S"
+      val t = ex + "T"
+      val n1 = ex + "n1"
+      val attempt = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(s)
+      } yield (shape)
+      attempt match {
+        case Left(e) => fail(s"Failed $e")
+        case Right(shape) => {
+          shape.targetNodes should contain only (n1)
+        }
       }
     }
-  }
 
-  it("should be able to get the target node declarations") {
-    val ex = IRI("http://example.org/")
-    val str =
-      """|@prefix : <http://example.org/>
+    it("should be able to get the target node declarations") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape; sh:targetNode :s1, :s2 .
                  |:T a sh:Shape; sh:targetNode :t1 .
                  |""".stripMargin
-    val S = ex + "S"
-    val T = ex + "T"
-    val s1 = ex + "s1"
-    val s2 = ex + "s2"
-    val t1 = ex + "t1"
-    val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-    } yield (schema)
-    attempt match {
-      case Left(e) => fail(s"Failed $e")
-      case Right(schema) => {
-        schema.targetNodeDeclarations should contain only((s2,S), (s1,S),(t1,T))
+      val S = ex + "S"
+      val T = ex + "T"
+      val s1 = ex + "s1"
+      val s2 = ex + "s2"
+      val t1 = ex + "t1"
+      val attempt = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+      } yield (schema)
+      attempt match {
+        case Left(e) => fail(s"Failed $e")
+        case Right(schema) => {
+          schema.targetNodeDeclarations should contain only ((s2, S), (s1, S), (t1, T))
+        }
       }
     }
-  }
 
-  it("should be able to get some property constraints") {
-    val ex = IRI("http://example.org/")
-    val str =
-      """|@prefix : <http://example.org/>
+    it("should be able to get some property constraints") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
          |@prefix sh: <http://www.w3.org/ns/shacl#>
          |
          |:S a sh:Shape;
@@ -100,28 +99,28 @@ describe("RDf2Shacl Syntax") {
          | :prop sh:path :p;
          |       sh:nodeKind sh:IRI .
          |""".stripMargin
-    val S = ex + "S"
-    val p = ex + "p"
-    val prop = ex + "prop"
-    val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-      shape <- schema.shape(S)
-    } yield (shape)
-    //val p1 = Shape.emptyPropertyShape(prop, PredicatePath(p)).copy(components = Seq(NodeKind(IRIKind)))
-    attempt match {
+      val S = ex + "S"
+      val p = ex + "p"
+      val prop = ex + "prop"
+      val attempt = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(S)
+      } yield (shape)
+      //val p1 = Shape.emptyPropertyShape(prop, PredicatePath(p)).copy(components = Seq(NodeKind(IRIKind)))
+      attempt match {
         case Left(e) => fail(s"Failed $e")
         case Right(shape) => {
-          shape.propertyShapes should contain only(ShapeRef(prop))
+          shape.propertyShapes should contain only (ShapeRef(prop))
         }
       }
 
-  }
+    }
 
-  it("should be able to get a property constraint with cardinalities") {
-    val ex = IRI("http://example.org/")
-    val str =
-      """|@prefix : <http://example.org/>
+    it("should be able to get a property constraint with cardinalities") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape;
@@ -133,18 +132,18 @@ describe("RDf2Shacl Syntax") {
                  |    sh:maxCount 1
                  |    .
                  |""".stripMargin
-    val S = ex + "S"
-    val p = ex + "p"
-    val prop = ex + "prop"
-    val attempt:Either[String,(Shape,Schema)] = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-      shape <- schema.shape(S)
-    } yield ((shape,schema))
+      val S = ex + "S"
+      val p = ex + "p"
+      val prop = ex + "prop"
+      val attempt: Either[String, (Shape, Schema)] = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(S)
+      } yield ((shape, schema))
 
-    attempt match {
+      attempt match {
         case Left(e) => fail(s"Failed $e")
-        case Right((shape,schema)) => {
+        case Right((shape, schema)) => {
           shape.propertyShapes.length should be(1)
           val sref = shape.propertyShapes.head
           info(s"Shape ref: $sref")
@@ -152,17 +151,17 @@ describe("RDf2Shacl Syntax") {
             case Some(pc: PropertyShape) => {
               pc.id should be(prop)
               pc.predicate should be(p)
-              pc.components should contain only(NodeKind(IRIKind),MinCount(1), MaxCount(1))
+              pc.components should contain only (NodeKind(IRIKind), MinCount(1), MaxCount(1))
             }
             case other => fail("Failed with $other")
           }
         }
       }
-  }
+    }
 
-  it("should be able to get the property constraint with minCount cardinality only") {
-    val ex = "http://example.org/"
-    val str = s"""|prefix : <$ex>
+    it("should be able to get the property constraint with minCount cardinality only") {
+      val ex = "http://example.org/"
+      val str = s"""|prefix : <$ex>
                  |prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape;
@@ -170,35 +169,35 @@ describe("RDf2Shacl Syntax") {
                  |:prop sh:path :p;
                  |    sh:minCount 1 .
                  |""".stripMargin
-    val S = IRI(ex) + "S"
-    val p = IRI(ex) + "p"
-    val prop = IRI(ex) + "prop"
-    val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-      shape <- schema.shape(S)
-    } yield (shape,schema)
-    attempt match {
-      case Left(e) => fail(s"Failed $e")
-      case Right((shape,schema)) => {
-        shape.propertyShapes.length should be(1)
-        val sref = shape.propertyShapes.head
-        schema.shapesMap.get(sref) match {
-          case None => fail(s"Not found shape with ref $sref in $schema")
-          case Some(ps: PropertyShape)  => {
-            ps.id should be(prop)
-            ps.predicate should be(p)
-            ps.components should contain only (MinCount(1))
+      val S = IRI(ex) + "S"
+      val p = IRI(ex) + "p"
+      val prop = IRI(ex) + "prop"
+      val attempt = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(S)
+      } yield (shape, schema)
+      attempt match {
+        case Left(e) => fail(s"Failed $e")
+        case Right((shape, schema)) => {
+          shape.propertyShapes.length should be(1)
+          val sref = shape.propertyShapes.head
+          schema.shapesMap.get(sref) match {
+            case None => fail(s"Not found shape with ref $sref in $schema")
+            case Some(ps: PropertyShape) => {
+              ps.id should be(prop)
+              ps.predicate should be(p)
+              ps.components should contain only (MinCount(1))
+            }
+            case other => fail(s"Unexpected value $other")
           }
-          case other => fail(s"Unexpected value $other")
         }
       }
     }
-   }
 
-  it("should be able to get a path") {
-    val ex = "http://example.org/"
-    val str = s"""|prefix : <$ex>
+    it("should be able to get a path") {
+      val ex = "http://example.org/"
+      val str = s"""|prefix : <$ex>
                  |prefix sh: <http://www.w3.org/ns/shacl#>
                  |
                  |:S a sh:Shape;
@@ -206,33 +205,32 @@ describe("RDf2Shacl Syntax") {
                  |:prop sh:path [ sh:inversePath :p ];
                  |    sh:minCount 1 .
                  |""".stripMargin
-    val S = IRI(ex) + "S"
-    val p = IRI(ex) + "p"
-    val prop = IRI(ex) + "prop"
-    val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str,"TURTLE")
-      schema <- RDF2Shacl.getShacl(rdf)
-      shape <- schema.shape(S)
-    } yield ((shape,schema))
-    attempt match {
-      case Left(e) => fail(s"Error parsing $e")
-      case Right((shape,schema)) => {
-        val ip = InversePath(PredicatePath(p))
-        shape.propertyShapes.length should be(1)
-        val sref = shape.propertyShapes.head
-        schema.shapesMap.get(sref) match {
-          case Some(ps: PropertyShape) => {
-            ps.id should be(prop)
-            ps.path should be(ip)
-            ps.components should contain only (MinCount(1))
+      val S = IRI(ex) + "S"
+      val p = IRI(ex) + "p"
+      val prop = IRI(ex) + "prop"
+      val attempt = for {
+        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(S)
+      } yield ((shape, schema))
+      attempt match {
+        case Left(e) => fail(s"Error parsing $e")
+        case Right((shape, schema)) => {
+          val ip = InversePath(PredicatePath(p))
+          shape.propertyShapes.length should be(1)
+          val sref = shape.propertyShapes.head
+          schema.shapesMap.get(sref) match {
+            case Some(ps: PropertyShape) => {
+              ps.id should be(prop)
+              ps.path should be(ip)
+              ps.components should contain only (MinCount(1))
+            }
+            case other => fail(s"Unexpected value $other")
           }
-          case other => fail(s"Unexpected value $other")
         }
+      }
     }
+
   }
-}
-
-}
-
 
 }

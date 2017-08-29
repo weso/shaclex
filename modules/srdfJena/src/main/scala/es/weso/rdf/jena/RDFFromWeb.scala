@@ -9,19 +9,19 @@ import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
 import scala.util.Try
 import es.weso.rdf.triples._
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
 
 case class RDFFromWeb() extends RDFReader {
   type Rdf = RDFFromWeb
@@ -88,11 +88,11 @@ case class RDFFromWeb() extends RDFReader {
   }
 
   override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    throw new Exception(s"Undefined getSHACLInstances at RDFFromWeb. Node $c") 
+    throw new Exception(s"Undefined getSHACLInstances at RDFFromWeb. Node $c")
   }
 
   override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    throw new Exception(s"Undefined hasSHACL at RDFFromWeb. Node: $n Class: $c") 
+    throw new Exception(s"Undefined hasSHACL at RDFFromWeb. Node: $n Class: $c")
   }
 
   def model2triples(model: Model): Set[RDFTriple] = {
@@ -103,8 +103,7 @@ case class RDFFromWeb() extends RDFReader {
     RDFTriple(
       jena2rdfnode(st.getSubject),
       property2iri(st.getPredicate),
-      jena2rdfnode(st.getObject)
-    )
+      jena2rdfnode(st.getObject))
   }
 
   def property2iri(p: Property): IRI = {
@@ -132,8 +131,7 @@ case class RDFFromWeb() extends RDFReader {
       throw new Exception("Unknown type of resource")
   }
 
-override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
-  throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
-
+  override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
+    throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
 
 }

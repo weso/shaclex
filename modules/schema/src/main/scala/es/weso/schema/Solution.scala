@@ -13,11 +13,10 @@ import es.weso.json.DecoderUtils._
 import es.weso.rdf.nodes.IRI.parseIRI
 import io.circe.Decoder._
 
-case class Solution
-  ( nodes: Map[RDFNode,InfoNode],
-    nodeMap: PrefixMap,
-    schemaMap: PrefixMap
-  ) {
+case class Solution(
+  nodes: Map[RDFNode, InfoNode],
+  nodeMap: PrefixMap,
+  schemaMap: PrefixMap) {
 
   override def toString: String = show
 
@@ -34,24 +33,22 @@ case class Solution
     if (nodes.isEmpty) {
       sb ++= "No nodes in solution"
     } else
-    for (pair <- nodes.toSeq) {
-      val (node,info) = pair
-      sb ++= ( nodeMap.qualify(node) + " " + info.show + "\n" )
-    }
+      for (pair <- nodes.toSeq) {
+        val (node, info) = pair
+        sb ++= (nodeMap.qualify(node) + " " + info.show + "\n")
+      }
     sb.toString
   }
 
   def toJson: Json = {
     val jsonMap: Json = Json.fromJsonObject(JsonObject.fromMap(
-      nodes.map{ case (node,info) => (node.getLexicalForm, info.asJson) }
-    ))
+      nodes.map { case (node, info) => (node.getLexicalForm, info.asJson) }))
     Json.fromJsonObject(
-      singleton("type",Json.fromString("Solution"))
-        .add("solution",jsonMap)
-    )
+      singleton("type", Json.fromString("Solution"))
+        .add("solution", jsonMap))
   }
 
-  def isEmpty : Boolean = {
+  def isEmpty: Boolean = {
     nodes.isEmpty
   }
 
@@ -60,8 +57,8 @@ case class Solution
 object Solution {
   implicit val showSolution = new Show[Solution] {
     override def show(s: Solution): String = {
-     s.show
-   }
+      s.show
+    }
   }
 
   implicit val encodeSolution: Encoder[Solution] = new Encoder[Solution] {
@@ -74,15 +71,14 @@ object Solution {
     val keyDecoderRDFNode: KeyDecoder[RDFNode] =
       KeyDecoder.instance { str => parseIRI(str).toOption }
 
-    val decoderInfoNode : Decoder[InfoNode] =
+    val decoderInfoNode: Decoder[InfoNode] =
       InfoNode.decodeInfoNode
 
     final def apply(c: HCursor): Decoder.Result[Solution] = for {
-      _ <- fixedFieldValue(c,"type","Solution")
-      solutionMap <- mapDecoder(c.downField("solution"))(keyDecoderRDFNode,decoderInfoNode)
-    } yield Solution(solutionMap,PrefixMap.empty,PrefixMap.empty)
+      _ <- fixedFieldValue(c, "type", "Solution")
+      solutionMap <- mapDecoder(c.downField("solution"))(keyDecoderRDFNode, decoderInfoNode)
+    } yield Solution(solutionMap, PrefixMap.empty, PrefixMap.empty)
 
   }
-
 
 }

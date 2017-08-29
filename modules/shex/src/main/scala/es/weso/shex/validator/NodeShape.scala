@@ -12,10 +12,10 @@ case class NodeShape(node: RDFNode, shape: ShapeType) {
 object NodeShape {
 
   implicit val nodeShapeShow = new Show[NodeShape] {
-   import es.weso.shex.implicits.showShEx._
+    import es.weso.shex.implicits.showShEx._
 
-   def show(ns: NodeShape) = s"[${ns.node},${ns.shape}]"
+    def show(ns: NodeShape) = s"[${ns.node},${ns.shape}]"
 
- }
+  }
 
 }
