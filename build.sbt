@@ -17,7 +17,7 @@ parallelExecution in Test := false
 
 // Versions of common packages
 lazy val antlrVersion         = "4.5"
-lazy val circeVersion         = "0.8.0"
+lazy val circeVersion         = "0.9.0-M1"
 lazy val effVersion           = "3.0.2"
 lazy val catsVersion          = "1.0.0-MF"
 lazy val scalaTestVersion     = "3.0.1"
@@ -31,7 +31,7 @@ lazy val kindProjectorVersion = "0.9.3"
 lazy val scallopVersion       = "2.0.6"
 lazy val jenaVersion          = "3.1.1"
 lazy val jgraphtVersion       = "1.0.1"
-lazy val diffsonVersion       = "2.1.2"
+lazy val diffsonVersion       = "2.2.2"
 lazy val xercesVersion        = "2.11.0"
 lazy val sextVersion          = "0.2.4"
 lazy val scalaGraphVersion    = "1.11.5"
@@ -246,6 +246,7 @@ lazy val rbe =
    libraryDependencies ++= 
      Seq(
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+   , "com.github.mpilquist" %% "simulacrum" % "0.10.0"
    , "org.typelevel" %% "cats-core" % catsVersion
    , "org.typelevel" %% "cats-kernel" % catsVersion
    , "org.typelevel" %% "cats-macros" % catsVersion

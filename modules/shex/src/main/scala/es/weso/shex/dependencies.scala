@@ -61,10 +61,10 @@ object Dependencies {
     // println(s"Calculating dependencies of shape $shape with source label $source and posNeg $posNeg")
     shape match {
       case s: ShapeAnd =>
-        s.shapeExprs.map(dependencies(schema, _, source, posNeg)).sequenceU.map(_.flatten)
+        s.shapeExprs.map(dependencies(schema, _, source, posNeg)).sequence.map(_.flatten)
 
       case s: ShapeOr =>
-        s.shapeExprs.map(dependencies(schema, _, source, posNeg)).sequenceU.map(_.flatten)
+        s.shapeExprs.map(dependencies(schema, _, source, posNeg)).sequence.map(_.flatten)
 
       case s: ShapeNot =>
         dependencies(schema, s.shapeExpr, source, Neg)
@@ -86,11 +86,11 @@ object Dependencies {
     tripleExpr match {
       case t: EachOf => {
         // TODO: Take into account max cardinality = 0 as a negative dependency?
-        t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequenceU.map(_.flatten)
+        t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequence.map(_.flatten)
       }
       case t: OneOf => {
         // TODO: Take into account max cardinality = 0 as a negative dependency?
-        t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequenceU.map(_.flatten)
+        t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequence.map(_.flatten)
       }
       case i: Inclusion => {
         val label = i.include

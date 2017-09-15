@@ -20,7 +20,7 @@ object ShExDiff {
     val pm = prefixesDiff(s1.prefixes, s2.prefixes)
     val db = baseDiff(s1.base, s2.base)
     val ds = startActsDiff(s1.startActs, s2.startActs)
-    (pm |@| db |@| ds).map((_, _, _) => ((s1, s2)))
+    (pm, db, ds).mapN((_, _, _) => ((s1, s2)))
   }
 
   def prefixesDiff: Diff[Option[PrefixMap]] =
@@ -37,8 +37,7 @@ object ShExDiff {
   def pairDiff[A, B](
     diffA: Diff[A],
     diffB: Diff[B]): Diff[(A, B)] = (p1, p2) =>
-    (diffA(p1._1, p2._1) |@|
-      diffB(p1._2, p2._2)).map((_, _) => (p1, p2))
+    (diffA(p1._1, p2._1), diffB(p1._2, p2._2)).mapN((_, _) => (p1, p2))
 
   def prefixDiff: Diff[Prefix] = (p1, p2) =>
     valueDiff(p1.str, p2.str).map(_ => (p1, p2))
@@ -53,14 +52,13 @@ object ShExDiff {
     listDiff(semActDiff)
 
   def semActDiff: Diff[SemAct] = (s1, s2) =>
-    (iriDiff(s1.name, s2.name) |@|
-      valueDiff(s1.code, s2.code)).map((_, _) => (s1, s2))
+    (iriDiff(s1.name, s2.name), valueDiff(s1.code, s2.code)).mapN((_, _) => (s1, s2))
 
   def listDiff[A](cmp: Diff[A]): Diff[List[A]] = (ls1, ls2) => {
     val ps = ls1.zip(ls2)
     val zero: Result[List[A]] = ok((Nil, Nil))
     def comb(rest: Result[List[A]], p: (A, A)): Result[List[A]] = {
-      (cmp(p._1, p._2) |@| rest).map((x, xs) => (x._1 :: xs._1, x._2 :: xs._2))
+      (cmp(p._1, p._2), rest).mapN((x, xs) => (x._1 :: xs._1, x._2 :: xs._2))
     }
     ps.foldLeft(zero)(comb)
   }
