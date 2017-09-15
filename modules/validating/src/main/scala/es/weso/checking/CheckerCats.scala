@@ -34,10 +34,10 @@ abstract class CheckerCats extends Checker {
   }
 
   def ok[A](x: A): Check[A] =
-    EitherT.pure[WriterEC, Err, A](x)
+    EitherT.pure[WriterEC, Err](x)
 
   def err[A](e: Err): Check[A] =
-    EitherT.left[WriterEC, Err, A](mkErr[WriterEC](e))
+    EitherT.left[A](mkErr[WriterEC](e))
 
   def orElse[A](c1: Check[A], c2: => Check[A]): Check[A] =
     c1.orElse(c2)
@@ -160,7 +160,8 @@ abstract class CheckerCats extends Checker {
   }
 
   def readerConfig2check[A](c: ReaderConfig[A]): Check[A] =
-    readerEC2check(c.liftT[λ[(F[_], A) => Kleisli[F, Env, A]]])
+    ???
+    // readerEC2check(c.liftT[λ[(F[_], A) => Kleisli[F, Env, A]]])
 
   def readerEC2writer[A](c: ReaderEC[A]): WriterEC[A] =
     // c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]]

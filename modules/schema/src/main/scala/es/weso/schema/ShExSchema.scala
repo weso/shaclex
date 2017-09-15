@@ -32,7 +32,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result = (trigger match {
     case TargetDeclarations => validateTargetDecls(rdf)
-    case ShapeMapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
+    case MapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
   }).addTrigger(trigger)
 
   def validateTargetDecls(rdf: RDFReader): Result = {

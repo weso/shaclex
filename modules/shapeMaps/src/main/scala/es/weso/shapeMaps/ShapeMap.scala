@@ -4,7 +4,7 @@ import es.weso.rdf.nodes._
 import cats._
 import cats.data._
 import cats.implicits._
-import es.weso.rdf.RDFReader
+import es.weso.rdf.{ PrefixMap, RDFReader }
 import io.circe.JsonObject._
 import io.circe._
 import io.circe.syntax._
@@ -100,6 +100,12 @@ object FixedShapeMap {
 }
 
 object ShapeMap {
+
+  def empty: ShapeMap = FixedShapeMap.empty
+
+  def parse(str: String, nodesPrefixMap: PrefixMap, shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
+    Parser.parse(str, nodesPrefixMap, shapesPrefixMap)
+  }
 
   /**
    * Resolve triple patterns according to an RDF

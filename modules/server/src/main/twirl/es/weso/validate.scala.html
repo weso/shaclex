@@ -13,7 +13,7 @@
   currentSchemaEngine: String,
   availableTriggerModes: List[String],
   currentTriggerMode: String,
-  shapeMap: List[(String,String)],
+  shapeMap: String,
   schemaSeparated: String
  )
 
@@ -73,18 +73,8 @@
     </fieldset>
     </div>
         @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
-        <div id="nodeShapeContainer">
-        @for(entries <- shapeMap.zipWithIndex) {
-            <div id=@{s"nodeDiv${entries._2}"} class="nodeDiv">
-                <label>Node</label>
-                <textarea placeholder="Node" id=@{s"node${entries._2}"}>@{entries._1._1}</textarea>
-            </div>
-            <div id=@{s"shapeDiv${entries._2}"} class="shapeDiv">
-                <label>Shape</label>
-                <textarea placeholder="Shape" id=@{s"shape${entries._2}"}>@{entries._1._2}</textarea>
-            </div>
-            <div style="clear:both"></div>
-            }
+        <div id="ShapeMap">
+            <textarea>@shapeMap</textarea>
         </div>
         <div id="rowsCounter" data-value="@{shapeMap.length}" />
         </div>
@@ -108,10 +98,6 @@
 </label>
 </div>
 <hr/>
-
-<!--
-<a id="permalink" href='/validate?data=@(URLEncoder.encode(data.getOrElse("")))&schema=@{URLEncoder.encode(schema.getOrElse(""))}&dataFormat=@currentDataFormat&schemaFormat=@currentSchemaFormat&schemaEngine=@currentSchemaEngine&triggerMode=@currentTriggerMode&@{shapeMapEncoder(shapeMap)}'>Generate permalink</a>
--->
 
 <script src="js/shaclex.js" ></script>
 </body>

@@ -21,7 +21,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result = trigger match {
     case TargetDeclarations => validateTargetDecls(rdf).addTrigger(trigger)
-    case ShapeMapTrigger(sm, ts) => Result.errStr("Not implemented ShapeMap for SHACL yet")
+    case MapTrigger(sm, ts) => Result.errStr("Not implemented ShapeMap for SHACL yet")
   }
 
   def validateTargetDecls(rdf: RDFReader): Result = {

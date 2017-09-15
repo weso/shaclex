@@ -8,8 +8,12 @@ import org.jgrapht.alg.KosarajuStrongConnectivityInspector
 import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm
 import org.jgrapht.alg.ConnectivityInspector
 import collection.JavaConverters._
-import cats._
-import cats.data._
+import cats.Applicative
+// import cats.data.EitherT
+//import cats.syntax.either._
+//import cats.instances.list._
+//import cats.instances.string._
+//import cats.instances.either._
 import cats.implicits._
 
 case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
@@ -110,7 +114,7 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
           }
         }
       }).toList
-      rs.sequenceU.map(_ => ())
+      rs.sequence.map(_ => ())
     } else
       Left(s"Set of nodes is different. Nodes1 = $nodes1, nodes2 = $nodes2")
   }

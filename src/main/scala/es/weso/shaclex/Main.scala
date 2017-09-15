@@ -73,11 +73,7 @@ object Main extends App with LazyLogging {
 
         val trigger: String = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
 
-        val result = schema.validate(
-          rdf,
-          trigger,
-          Map(),
-          opts.node.toOption, opts.shapeLabel.toOption,
+        val result = schema.validate(rdf, trigger, "", opts.node.toOption, opts.shapeLabel.toOption,
           rdf.getPrefixMap, schema.pm)
 
         if (opts.showLog()) {

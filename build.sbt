@@ -7,7 +7,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 name := "shaclex"
 
-lazy val shaclexVersion = "0.0.63"
+lazy val shaclexVersion = "0.0.64"
 
 cancelable in Global := true
 fork := true
@@ -19,7 +19,7 @@ parallelExecution in Test := false
 lazy val antlrVersion         = "4.5"
 lazy val circeVersion         = "0.8.0"
 lazy val effVersion           = "3.0.2"
-lazy val catsVersion          = "0.9.0"
+lazy val catsVersion          = "1.0.0-MF"
 lazy val scalaTestVersion     = "3.0.1"
 lazy val scalacticVersion     = "3.0.1"
 lazy val logbackVersion       = "1.1.7"
@@ -63,8 +63,8 @@ lazy val shaclex =
   settings(commonSettings:_*).
   settings(publishSettings:_*).
   enablePlugins(BuildInfoPlugin).
-  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,graphs).
-  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,graphs).
+  aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,depGraphs).
+  dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,depGraphs).
   settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "es.weso.shaclex.buildinfo",
@@ -85,14 +85,16 @@ lazy val schema =
   settings(publishSettings: _*).
   dependsOn(shex, shacl, shapeMaps)
 
-lazy val graphs =
-  project.in(file("modules/graphs")).
+lazy val depGraphs =
+  project.in(file("modules/depGraphs")).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(
     libraryDependencies ++=
       Seq(
-      "org.typelevel" %% "cats" % catsVersion,
+      "org.typelevel" %% "cats-core" % catsVersion,
+      "org.typelevel" %% "cats-kernel" % catsVersion,
+      "org.typelevel" %% "cats-macros" % catsVersion,
       "org.jgrapht" % "jgrapht-core" % jgraphtVersion
       )
   )
@@ -114,7 +116,9 @@ lazy val shacl =
      Seq(
        "com.typesafe" % "config" % "1.3.0" % Test
      , "com.github.nikita-volkov" % "sext" % sextVersion
-     , "org.typelevel" %% "cats" % catsVersion
+     , "org.typelevel" %% "cats-core" % catsVersion
+     , "org.typelevel" %% "cats-kernel" % catsVersion
+     , "org.typelevel" %% "cats-macros" % catsVersion
      )
   )
 
@@ -136,7 +140,9 @@ lazy val shapeMaps =
         Seq(
             "com.github.nikita-volkov" % "sext" % sextVersion
           , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
-          , "org.typelevel" %% "cats" % catsVersion
+          , "org.typelevel" %% "cats-core" % catsVersion
+          , "org.typelevel" %% "cats-kernel" % catsVersion
+          , "org.typelevel" %% "cats-macros" % catsVersion
           , "io.circe" %% "circe-core" % circeVersion
           , "io.circe" %% "circe-generic" % circeVersion
           , "io.circe" %% "circe-parser" % circeVersion
@@ -158,7 +164,7 @@ lazy val shex =
     validating,
     rbe, 
     manifest,
-    graphs).
+    depGraphs).
   settings(antlr4Settings: _*).
 //  enablePlugins(Antlr4Plugin) .
   settings(inConfig(compatTest)(Defaults.testSettings): _*).
@@ -223,7 +229,9 @@ lazy val srdf =
   settings(publishSettings: _*).
   settings(
       libraryDependencies ++= Seq(
-        "org.typelevel" %% "cats" % catsVersion
+        "org.typelevel" %% "cats-core" % catsVersion
+      , "org.typelevel" %% "cats-kernel" % catsVersion
+      , "org.typelevel" %% "cats-macros" % catsVersion
       , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
       )
   )
@@ -238,7 +246,9 @@ lazy val rbe =
    libraryDependencies ++= 
      Seq(
       compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-   , "org.typelevel" %% "cats" % catsVersion
+   , "org.typelevel" %% "cats-core" % catsVersion
+   , "org.typelevel" %% "cats-kernel" % catsVersion
+   , "org.typelevel" %% "cats-macros" % catsVersion
 	 )
   )
   
@@ -254,7 +264,9 @@ lazy val srdfJena =
     , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
     , "com.typesafe" % "config" % "1.3.0" % Test
     , "org.apache.jena" % "jena-arq" % jenaVersion
-    , "org.typelevel" %% "cats" % catsVersion
+    , "org.typelevel" %% "cats-core" % catsVersion
+    , "org.typelevel" %% "cats-kernel" % catsVersion
+    , "org.typelevel" %% "cats-macros" % catsVersion
     )
   )
 
@@ -264,7 +276,9 @@ lazy val typing =
   settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats" % catsVersion
+      "org.typelevel" %% "cats-core" % catsVersion
+    , "org.typelevel" %% "cats-kernel" % catsVersion
+    , "org.typelevel" %% "cats-macros" % catsVersion
     )
   )
 
@@ -275,7 +289,9 @@ lazy val cycleChecker =
   settings(
     libraryDependencies ++= Seq(
       "org.scala-graph" %% "graph-core" % scalaGraphVersion, 
-      "org.typelevel" %% "cats" % catsVersion
+      "org.typelevel" %% "cats-core" % catsVersion,
+      "org.typelevel" %% "cats-kernel" % catsVersion,
+      "org.typelevel" %% "cats-macros" % catsVersion
     )
   )
 
@@ -289,7 +305,9 @@ lazy val utils =
     , "io.circe" %% "circe-core" % circeVersion
     , "io.circe" %% "circe-generic" % circeVersion
     , "io.circe" %% "circe-parser" % circeVersion
-    , "org.typelevel" %% "cats" % catsVersion
+    , "org.typelevel" %% "cats-core" % catsVersion
+      , "org.typelevel" %% "cats-kernel" % catsVersion
+      , "org.typelevel" %% "cats-macros" % catsVersion
     , "org.gnieh" %% "diffson-circe" % diffsonVersion
     , "xerces" % "xercesImpl" % xercesVersion
     )
@@ -306,7 +324,11 @@ lazy val validating =
    addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
    libraryDependencies ++= Seq(
      "org.atnos" %% "eff" % effVersion
-   , "org.typelevel" %% "cats" % catsVersion
+   , "org.typelevel" %% "cats-core" % catsVersion
+   , "org.typelevel" %% "cats-kernel" % catsVersion
+   , "org.typelevel" %% "cats-macros" % catsVersion
+   , "org.typelevel" %%% "cats-mtl-core" % "0.0.2"
+// , "org.typelevel" %% "cats-mtl" % catsVersion
    )
   )
 

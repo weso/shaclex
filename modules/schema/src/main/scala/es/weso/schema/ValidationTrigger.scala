@@ -5,9 +5,11 @@ import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.shapeMaps.ShapeMap
 import io.circe._
 import io.circe.syntax._
 import io.circe.JsonObject._
+
 import util._
 
 abstract class ValidationTrigger {
@@ -26,11 +28,17 @@ case object TargetDeclarations extends ValidationTrigger {
     singleton("type", Json.fromString("TargetDecls")))
 }
 
-case class ShapeMapTrigger(
+case class ShapeMapTrigger(shapeMap: ShapeMap) extends ValidationTrigger {
+  override def explain = "Shape Map"
+  override def name = "ShapeMap"
+  override def toJson = shapeMap.toJson
+}
+
+case class MapTrigger(
   map: Map[RDFNode, Set[String]],
   nodes: Set[RDFNode]) extends ValidationTrigger {
-  override def explain = "A shape map"
-  override def name = "ShapeMap"
+  override def explain = "A Map"
+  override def name = "Map"
 
   implicit val rdfNodeKeyEncoder = new KeyEncoder[RDFNode] {
     override def apply(node: RDFNode): String = node.toString
@@ -52,7 +60,7 @@ case class ShapeMapTrigger(
 }
 
 object ShapeMapTrigger {
-  def empty = ShapeMapTrigger(Map(), Set())
+  def empty = ShapeMapTrigger(ShapeMap.empty)
 }
 
 object ValidationTrigger extends LazyLogging {
@@ -60,7 +68,7 @@ object ValidationTrigger extends LazyLogging {
   lazy val default: ValidationTrigger = TargetDeclarations
 
   def nodeShape(node: String, shape: String): ValidationTrigger =
-    ShapeMapTrigger(Map(IRI(node) -> Set(shape)), Set())
+    MapTrigger(Map(IRI(node) -> Set(shape)), Set())
 
   lazy val targetDeclarations: ValidationTrigger = TargetDeclarations
 
@@ -70,7 +78,7 @@ object ValidationTrigger extends LazyLogging {
 
   def findTrigger(
     name: String,
-    shapeMap: Map[String, List[String]],
+    shapeMapStr: String,
     optNode: Option[String],
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,
@@ -78,8 +86,8 @@ object ValidationTrigger extends LazyLogging {
     name.toUpperCase match {
       case "TARGETDECLS" => Right(TargetDeclarations)
 
-      case "SHAPEMAP" => {
-        val cleanedShapeMap = shapeMap - ""
+      case "SHAPEMAP" =>
+        /*        val cleanedShapeMap = shapeMap - ""
         val cnvShapeMap: List[Either[String, (RDFNode, Set[String])]] = cleanedShapeMap.map {
           case (node, ls) => for {
             rdfNode <- removeLTGT(node, nodePrefixMap)
@@ -89,14 +97,16 @@ object ValidationTrigger extends LazyLogging {
         val eitherList: Either[String, List[(RDFNode, Set[String])]] = cnvShapeMap.sequenceU
         for {
           ls <- eitherList
-        } yield ShapeMapTrigger(Map(ls: _*), Set())
-      }
+        } yield MapTrigger(Map(ls: _*), Set()) */
+        for {
+          shapeMap <- ShapeMap.parse(shapeMapStr, nodePrefixMap, shapePrefixMap)
+        } yield ShapeMapTrigger(shapeMap)
       case "NODESHAPE" => (optNode, optShape) match {
         case (Some(strNode), Some(strShape)) => for {
           node <- removeLTGT(strNode, nodePrefixMap)
           shape <- removeLTGT(strShape, shapePrefixMap)
         } yield {
-          val shapeMap = ShapeMapTrigger(Map(node -> Set(shape.str)), Set())
+          val shapeMap = MapTrigger(Map(node -> Set(shape.str)), Set())
           logger.info(s"Shape trigger converted to $shapeMap")
           shapeMap
         }
@@ -105,7 +115,7 @@ object ValidationTrigger extends LazyLogging {
       case "NODESTART" => (optNode, optShape) match {
         case (Some(strNode), None) => for {
           node <- removeLTGT(strNode, nodePrefixMap)
-        } yield ShapeMapTrigger(Map(), Set(node))
+        } yield MapTrigger(Map(), Set(node))
         case _ => Left(s"Cannot be NodeStart trigger with nnode = $optNode, shape = $optShape")
       }
       case _ =>
