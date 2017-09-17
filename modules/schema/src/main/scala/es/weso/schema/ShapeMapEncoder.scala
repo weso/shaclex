@@ -16,9 +16,9 @@ object ShapeMapEncoder extends LazyLogging {
     }.mkString(",")
   }
 
-  def flattenShapeMap(sm: Map[String, List[String]]): List[(String, String)] = {
+  /*  def flattenShapeMap(sm: Map[String, List[String]]): List[(String, String)] = {
     sm.map { case (x, ys) => ys.map(y => (x, y)) }.toList.flatten
-  }
+  } */
 
   /**
    * Given a string like "<a>@<x>,<b>@<y>,<b>@<z>"
@@ -28,6 +28,7 @@ object ShapeMapEncoder extends LazyLogging {
     case None => Map("" -> List("")) // Initialize with an empty row
     case Some("") => Map("" -> List(""))
     case Some(str) => {
+
       logger.info(s"ParseShapeMap: $str")
       // Obtain the list of pairs
       val pairs = str.split(",").map(s => s match {

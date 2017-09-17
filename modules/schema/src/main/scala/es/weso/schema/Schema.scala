@@ -26,7 +26,7 @@ abstract class Schema {
   def validate(
     rdf: RDFReader,
     triggerMode: String,
-    shapeMap: Map[String, List[String]],
+    shapeMap: String,
     optNode: Option[String],
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,

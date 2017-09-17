@@ -22,6 +22,10 @@ addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.19")
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.3.4")
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.0")
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.1")
+addSbtPlugin("org.lyranthe.sbt" % "partial-unification" % "1.1.0")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.5.0-RC2")
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
+
 
 resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 

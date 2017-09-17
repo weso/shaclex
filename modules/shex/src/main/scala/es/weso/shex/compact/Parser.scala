@@ -34,7 +34,7 @@ object Parser extends LazyLogging {
 
   def err[A](msg: String): Builder[A] = {
     val r: S[String] = StateT.pure(msg)
-    val v: Builder[A] = EitherT.left[S, String, A](r)
+    val v: Builder[A] = EitherT.left[A](r)
     v
   }
 

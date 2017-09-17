@@ -13,7 +13,9 @@ import org.http4s.websocket.WebsocketBits._
 import org.http4s.{ EntityEncoder, HttpService, LanguageTag, Status }
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
-import org.http4s.client.impl.DefaultExecutor
+// import org.http4s.client.impl.DefaultExecutor
+import cats.effect._, org.http4s._
+// import org.http4s.dsl.
 import org.http4s.server.websocket.WS
 import org.http4s.headers._
 import org.http4s.circe._
@@ -38,9 +40,9 @@ class Routes {
   private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   // Get the static content
-  private val static = cachedResource(Config("/static", "/static", executor = scheduledEC))
-  private val views = cachedResource(Config("/staticviews", "/", executor = scheduledEC))
-  private val swagger = cachedResource(Config("/swagger", "/swagger", executor = scheduledEC))
+  private val static = cachedResource(Config("/static", "/static")) // , executor = scheduledEC))
+  private val views = cachedResource(Config("/staticviews", "/")) // , executor = scheduledEC))
+  private val swagger = cachedResource(Config("/swagger", "/swagger")) // , executor = scheduledEC))
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
@@ -68,7 +70,7 @@ class Routes {
   val defaultTriggerMode = Schemas.defaultTriggerMode
   val defaultSchemaSeparated = "on"
 
-  val service: HttpService = HttpService {
+  val service: HttpService[IO] = HttpService[IO] {
 
     // Web site
     case req @ GET -> Root => {
@@ -148,32 +150,33 @@ class Routes {
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) +&
       SchemaSeparated(optSchemaSeparated) => {
-      val shapeMap = parseShapeMap(optShapeMap)
-      val resultTrigger = optData.map(data =>
-        validate(data, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, shapeMap))
+      val shapeMap = optShapeMap.getOrElse("")
+      val result =
+        optData.map(validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap))
+
       val schemaSeparated = optSchemaSeparated.getOrElse(defaultSchemaSeparated)
-      logger.info(s"ShapeMap: $optShapeMap. Parsed as $shapeMap")
-      val recoveredTriggerName: String = resultTrigger match {
+
+      val recoveredTriggerName: String = result match {
         case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
         case Some((_, maybeTrigger)) => maybeTrigger match {
           case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
           case Some(trigger) => trigger.name
         }
       }
-      val recoveredShapeMap: List[(String, String)] = resultTrigger match {
+      /*      val recoveredShapeMap: List[(String, String)] = result match {
         case None => flattenShapeMap(shapeMap)
         case Some((_, maybeTrigger)) => maybeTrigger match {
           case None => flattenShapeMap(shapeMap)
-          case Some(ShapeMapTrigger(sm, nodes)) => sm.map {
+          case Some(MapTrigger(sm, nodes)) => sm.map {
             case (node, vs) => vs.map(v => (node.toString, s"<$v>"))
           }.flatten.toList
           case Some(_) => flattenShapeMap(shapeMap)
         }
       }
       logger.info(s"Recovered shapeMap: $recoveredShapeMap")
-
+*/
       Ok(html.validate(
-        resultTrigger.map(_._1),
+        result.map(_._1),
         optData,
         availableDataFormats,
         optDataFormat.getOrElse(defaultDataFormat),
@@ -184,7 +187,7 @@ class Routes {
         optSchemaEngine.getOrElse(Schemas.shEx.name),
         availableTriggerModes,
         recoveredTriggerName,
-        recoveredShapeMap,
+        shapeMap,
         schemaSeparated))
     }
 
@@ -369,10 +372,9 @@ class Routes {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) => {
-      val shapeMap = parseShapeMap(optShapeMap)
       val result = validate(data, optDataFormat,
         optSchema, optSchemaFormat, optSchemaEngine,
-        optTriggerMode, optNode, optShape, shapeMap)
+        optTriggerMode, optNode, optShape, optShapeMap)
       val default = Ok(result._1.asJson)
         .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {
@@ -407,8 +409,8 @@ class Routes {
 
   }
 
-  private def cachedResource(config: Config): HttpService = {
-    val cachedConfig = config.copy(cacheStrategy = staticcontent.MemoryCache())
+  private def cachedResource(config: Config[IO]): HttpService[IO] = {
+    val cachedConfig: Config[IO] = config.copy(cacheStrategy = staticcontent.MemoryCache())
     staticcontent.resourceService(cachedConfig)
   }
 
@@ -425,7 +427,7 @@ class Routes {
     optTriggerMode: Option[String],
     optNode: Option[String],
     optShape: Option[String],
-    shapeMap: Map[String, List[String]]): (Result, Option[ValidationTrigger]) = {
+    optShapeMap: Option[String]): (Result, Option[ValidationTrigger]) = {
     val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
     val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
     val schemaFormat = optSchema match {
@@ -445,6 +447,7 @@ class Routes {
             (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
           case Success(rdf) => {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+            val shapeMap = optShapeMap.getOrElse("")
             ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
               case Left(msg) => (Result.errStr(s"Cannot obtain trigger: $msg"), None)
               case Right(trigger) => (schema.validate(rdf, trigger), Some(trigger))

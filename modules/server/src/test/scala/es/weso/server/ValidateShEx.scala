@@ -1,5 +1,6 @@
 package es.weso.server
 
+import cats.effect.IO
 import io.circe.Json
 import io.circe.parser._
 import org.http4s.{ Query, Request, Response, Uri }
@@ -13,8 +14,8 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
   val port = 8080
   val server = new ShaclexServer(ip, port)
 
-  def serve(req: Request): Response =
-    server.service.run(req).unsafeRun().orNotFound
+  def serve(req: Request[IO]): Response[IO] =
+    server.service.run(req).unsafeRunSync().orNotFound
 
   describe("ValidateShEx") {
     it("Should return 200 when asking for root") {
@@ -29,7 +30,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
           path = "/api/test",
           query = Query.fromPairs(("name", "<John>")))))
       response.status should be(Ok)
-      response.as[String].unsafeRun() should be("Hello <John>")
+      response.as[String].unsafeRunSync() should be("Hello <John>")
     }
 
     it("Should validate a single example using ShEx") {
@@ -54,7 +55,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
             ("schemaFormat", "SHEXC"), ("schemaEngine", "ShEx")))))
 
       response.status should be(Ok)
-      val strResponse = response.as[String].unsafeRun()
+      val strResponse = response.as[String].unsafeRunSync()
       val jsonResponse = parse(strResponse).getOrElse(Json.Null)
       val isValid: Option[Boolean] =
         jsonResponse.hcursor.get[Boolean]("isValid").toOption
