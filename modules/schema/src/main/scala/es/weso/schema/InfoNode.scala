@@ -77,8 +77,8 @@ object InfoNode {
   }
 
   def getPair(c: ACursor): Decoder.Result[Seq[(SchemaLabel, Explanation)]] =
-    if (c.fields.isDefined) {
-      val fields: Either[DecodingFailure, Vector[String]] = c.fields.toRight(DecodingFailure(s"getPair: no fields for $c", c.history))
+    if (c.keys.isDefined) {
+      val fields: Either[DecodingFailure, Vector[String]] = c.keys.map(_.toVector).toRight(DecodingFailure(s"getPair: no fields for $c", c.history))
       for {
         fs <- fields
         rs <- fs.map(field => getSchemaLabelExplanation(field, c)).sequence

@@ -73,7 +73,7 @@ object ValidationTrigger extends LazyLogging {
   lazy val targetDeclarations: ValidationTrigger = TargetDeclarations
 
   def cnvShapes(ss: List[String], pm: PrefixMap): Either[String, Set[String]] = {
-    ss.map(removeLTGT(_, pm).map(_.str)).sequenceU.map(_.toSet)
+    ss.map(removeLTGT(_, pm).map(_.str)).sequence.map(_.toSet)
   }
 
   def findTrigger(

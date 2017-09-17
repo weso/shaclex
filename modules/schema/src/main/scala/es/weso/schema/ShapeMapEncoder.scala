@@ -24,7 +24,7 @@ object ShapeMapEncoder extends LazyLogging {
    * Given a string like "<a>@<x>,<b>@<y>,<b>@<z>"
    * Returns a Map("<a>" -> List("<x>"), "<b>" -> List("<y>","<z>"))
    */
-  /*def parseShapeMap(maybeStr: Option[String]): Map[String, List[String]] = maybeStr match {
+  def parseShapeMap(maybeStr: Option[String]): Map[String, List[String]] = maybeStr match {
     case None => Map("" -> List("")) // Initialize with an empty row
     case Some("") => Map("" -> List(""))
     case Some(str) => {
@@ -47,7 +47,7 @@ object ShapeMapEncoder extends LazyLogging {
         }
       }
     }
-  } */
+  }
 
   def decodeUrl(str: String): String =
     URLDecoder.decode(str, "UTF-8")

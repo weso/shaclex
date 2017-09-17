@@ -29,7 +29,7 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
       val tryResult: Try[Result] = for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
         rdf <- RDFAsJenaModel.fromChars(data, dataFormat)
-      } yield schema.validate(rdf, triggerMode, Map(), None, None, schema.pm)
+      } yield schema.validate(rdf, triggerMode, "", None, None, schema.pm)
       tryResult match {
         case Success(result) => {
           info(s"Result: ${result.serialize(Result.TEXT)}")

@@ -13,7 +13,9 @@ import org.http4s.websocket.WebsocketBits._
 import org.http4s.{ EntityEncoder, HttpService, LanguageTag, Status }
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
-import org.http4s.client.impl.DefaultExecutor
+// import org.http4s.client.impl.DefaultExecutor
+import cats.effect._, org.http4s._
+// import org.http4s.dsl.
 import org.http4s.server.websocket.WS
 import org.http4s.headers._
 import org.http4s.circe._
@@ -38,9 +40,9 @@ class Routes {
   private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   // Get the static content
-  private val static = cachedResource(Config("/static", "/static", executor = scheduledEC))
-  private val views = cachedResource(Config("/staticviews", "/", executor = scheduledEC))
-  private val swagger = cachedResource(Config("/swagger", "/swagger", executor = scheduledEC))
+  private val static = cachedResource(Config("/static", "/static")) // , executor = scheduledEC))
+  private val views = cachedResource(Config("/staticviews", "/")) // , executor = scheduledEC))
+  private val swagger = cachedResource(Config("/swagger", "/swagger")) // , executor = scheduledEC))
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
@@ -68,7 +70,7 @@ class Routes {
   val defaultTriggerMode = Schemas.defaultTriggerMode
   val defaultSchemaSeparated = "on"
 
-  val service: HttpService = HttpService {
+  val service: HttpService[IO] = HttpService[IO] {
 
     // Web site
     case req @ GET -> Root => {
@@ -407,8 +409,8 @@ class Routes {
 
   }
 
-  private def cachedResource(config: Config): HttpService = {
-    val cachedConfig = config.copy(cacheStrategy = staticcontent.MemoryCache())
+  private def cachedResource(config: Config[IO]): HttpService[IO] = {
+    val cachedConfig: Config[IO] = config.copy(cacheStrategy = staticcontent.MemoryCache())
     staticcontent.resourceService(cachedConfig)
   }
 
