@@ -32,8 +32,9 @@ abstract class Schema {
     nodePrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = pm): Result = {
     ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, nodePrefixMap, shapesPrefixMap) match {
-      case Left(err) =>
+      case Left(err) => {
         Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm")
+      }
       case Right(trigger) =>
         validate(rdf, trigger)
     }

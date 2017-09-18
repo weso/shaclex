@@ -31,11 +31,10 @@ class ShaclexServer(host: String, port: Int) {
     req
   }
 
-  def build(): Stream[IO, Nothing] = // ServerBuilder[IO] =
+  def build(): Stream[IO, Nothing] =
     BlazeBuilder[IO]
       .bindHttp(port, host)
       .mountService(service).serve
-  //      .withServiceExecutor(pool)
 }
 
 object ShaclexServer extends StreamApp[IO] {
@@ -45,8 +44,5 @@ object ShaclexServer extends StreamApp[IO] {
   override def stream(args: List[String], requestShutdown: IO[Unit]): Stream[IO, Nothing] = {
     new ShaclexServer(ip, port).build()
   }
-  /*
-      .build().unsafeRunSync() */
-  //      .start
 
 }

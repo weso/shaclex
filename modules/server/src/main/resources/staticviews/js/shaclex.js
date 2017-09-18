@@ -9,6 +9,7 @@ console.log("urlShaclex: " + urlShaclex);
 
 var codeMirrorData ;
 var codeMirrorSchema ;
+var codeMirrorShapeMap ;
 var codeMirrorNodes = new Array();
 var codeMirrorShapes = new Array();
 var inputRows = 0;
@@ -321,6 +322,16 @@ if (schema) {
  });
 }
 
+var shapeMap = document.getElementById("shapeMap")
+if (shapeMap) {
+ codeMirrorShapeMap = CodeMirror.fromTextArea(shapeMap, {
+   lineNumbers: true,
+   mode: "shex",
+   viewportMargin: Infinity,
+   matchBrackets: true
+ });
+}
+
 var inputRows = getInputRows();
 console.log("Creating " + inputRows + " codeMirrors");
 
@@ -343,12 +354,13 @@ $("#validateButton").click(function(e){
     var schemaFormat = $("#schemaFormat").find(":selected").text();
     var schemaEngine = $("#schemaEngine").find(":selected").text();
     var triggerMode = $("#triggerMode").find(":selected").text();
+    var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
     var schemaSeparated = $("#schemaSeparated").val();
     if (schemaSeparated !== "on") {
       schema = "";
     }
     console.log("Trigger mode in AJAX query:" + triggerMode);
-    var shapeMap = prepareShapeMap();
+//    var shapeMap = prepareShapeMap();
     var location = "/validate?" +
                     "data=" + encodeURIComponent(data) +
                     "&dataFormat=" + encodeURIComponent(dataFormat) +
@@ -357,7 +369,7 @@ $("#validateButton").click(function(e){
                     "&schemaEngine=" + encodeURIComponent(schemaEngine) +
                     "&triggerMode=" + encodeURIComponent(triggerMode) +
                     "&schemaSeparated=" + encodeURIComponent(schemaSeparated) +
-                    "&shapeMap=" + shapeMap;
+                    "&shapeMap=" + encodeURIComponent(shapeMap);
 
      $.ajax({ url: urlShaclex + "/api/validate",
       data: {

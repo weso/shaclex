@@ -5,7 +5,7 @@ import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapeMaps._
 import io.circe._
 import io.circe.syntax._
 import io.circe.JsonObject._
@@ -60,6 +60,7 @@ case class MapTrigger(
 }
 
 object ShapeMapTrigger {
+  def apply: ShapeMapTrigger = empty
   def empty = ShapeMapTrigger(ShapeMap.empty)
 }
 
@@ -83,6 +84,7 @@ object ValidationTrigger extends LazyLogging {
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,
     shapePrefixMap: PrefixMap = PrefixMap.empty): Either[String, ValidationTrigger] = {
+    logger.info(s"Finding trigger $name, shapeMapStr: $shapeMapStr")
     name.toUpperCase match {
       case "TARGETDECLS" => Right(TargetDeclarations)
 
@@ -106,9 +108,9 @@ object ValidationTrigger extends LazyLogging {
           node <- removeLTGT(strNode, nodePrefixMap)
           shape <- removeLTGT(strShape, shapePrefixMap)
         } yield {
-          val shapeMap = MapTrigger(Map(node -> Set(shape.str)), Set())
-          logger.info(s"Shape trigger converted to $shapeMap")
-          shapeMap
+          val shapeMapTrigger = ShapeMapTrigger(QueryShapeMap(List(Association(RDFNodeSelector(node), IRILabel(IRI(shape.str))))))
+          logger.info(s"NodeShape triggerMode converted to $shapeMapTrigger")
+          shapeMapTrigger
         }
         case _ => Left(s"Cannot be Shape trigger if no node or shape. Node = $optNode, shape = $optShape")
       }

@@ -150,7 +150,6 @@ class Routes {
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) +&
       SchemaSeparated(optSchemaSeparated) => {
-      val shapeMap = optShapeMap.getOrElse("")
       val result =
         optData.map(validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap))
 
@@ -187,7 +186,7 @@ class Routes {
         optSchemaEngine.getOrElse(Schemas.shEx.name),
         availableTriggerModes,
         recoveredTriggerName,
-        shapeMap,
+        optShapeMap,
         schemaSeparated))
     }
 
@@ -449,7 +448,7 @@ class Routes {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
             val shapeMap = optShapeMap.getOrElse("")
             ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
-              case Left(msg) => (Result.errStr(s"Cannot obtain trigger: $msg"), None)
+              case Left(msg) => (Result.errStr(s"Cannot obtain trigger triggerMode: $triggerMode, shapeMap: $shapeMap, msg: $msg"), None)
               case Right(trigger) => (schema.validate(rdf, trigger), Some(trigger))
             }
           }

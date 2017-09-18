@@ -32,7 +32,7 @@ object Parser extends LazyLogging {
   def parse(
     str: String,
     nodesPrefixMap: PrefixMap,
-    shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
+    shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
     val s = removeBOM(str)
     val reader: JavaReader = new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
     parseSchemaReader(reader, nodesPrefixMap, shapesPrefixMap)
@@ -41,7 +41,7 @@ object Parser extends LazyLogging {
   def parseSchemaReader(
     reader: JavaReader,
     nodesPrefixMap: PrefixMap,
-    shapesPrefixMap: PrefixMap): Either[String, InputShapeMap] = {
+    shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
     val input: ANTLRInputStream = new ANTLRInputStream(reader)
     val lexer: ShapeMapLexer = new ShapeMapLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
@@ -54,7 +54,7 @@ object Parser extends LazyLogging {
     parser.addErrorListener(errorListener)
 
     val maker = new ShapeMapsMaker(nodesPrefixMap, shapesPrefixMap)
-    val builder = maker.visit(parser.shapeMap()).asInstanceOf[Builder[InputShapeMap]]
+    val builder = maker.visit(parser.shapeMap()).asInstanceOf[Builder[QueryShapeMap]]
     val errors = errorListener.getErrors
     if (errors.length > 0) {
       Left(errors.mkString("\n"))

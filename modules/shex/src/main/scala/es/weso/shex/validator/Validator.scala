@@ -54,6 +54,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     t <- combineTypings(ts)
   } yield t
 
+  // TODO: Refactor to remove this method
   def checkShapeMap(shapeMap: Map[RDFNode, Set[String]], nodesStart: Set[RDFNode]): CheckTyping = for {
     rdf <- getRDF
     t1 <- checkNodesShapes(shapeMap, rdf)

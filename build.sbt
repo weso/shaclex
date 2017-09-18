@@ -16,7 +16,7 @@ reStartArgs := Seq("--server")
 parallelExecution in Test := false
 
 // Versions of common packages
-lazy val antlrVersion         = "4.5"
+lazy val antlrVersion         = "4.6"
 lazy val circeVersion         = "0.9.0-M1"
 lazy val effVersion           = "3.0.2"
 lazy val catsVersion          = "1.0.0-MF"
@@ -162,6 +162,7 @@ lazy val shex =
     typing,
     utils % "test -> test; compile -> compile",
     validating,
+    shapeMaps,
     rbe, 
     manifest,
     depGraphs).
