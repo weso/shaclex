@@ -27,6 +27,11 @@ case class TypingResult[Err, Evidence](
 
   def getEvidences: Option[List[Evidence]] =
     t.toOption
+
+  def getErrors: Option[List[Err]] = {
+    t.fold(es => Some(es.toList),_ => None)
+  }
+
 }
 
 object TypingResult {

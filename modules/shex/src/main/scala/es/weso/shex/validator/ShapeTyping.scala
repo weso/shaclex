@@ -4,8 +4,9 @@ import data._
 import cats.implicits._
 import es.weso.typing._
 import es.weso.rdf.nodes._
-import es.weso.shapeMaps.{ BNodeLabel, IRILabel => IRIMapLabel, _ }
-import es.weso.shex.{ IRILabel, _ }
+import es.weso.shapeMaps.{BNodeLabel, IRILabel => IRIMapLabel, _}
+import es.weso.shex.{IRILabel, _}
+import io.circe.Json
 
 case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
 
@@ -47,7 +48,14 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
     }
   }
 
-  private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = ???
+  private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
+    val status = if (t.isOK) Conformant else NonConformant
+    val reason =
+      if (t.isOK) t.getEvidences.map(_.mkString("\n"))
+      else t.getErrors.map(_.mkString("\n"))
+    val appInfo = Json.fromString("Shaclex")
+    Info(status,reason,appInfo)
+  }
 
   def toShapeMap: Either[String, ResultShapeMap] = {
     def processTyping(
