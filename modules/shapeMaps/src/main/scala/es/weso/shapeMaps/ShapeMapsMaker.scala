@@ -25,7 +25,7 @@ class ShapeMapsMaker(
 
   override def visitShapeMap(ctx: ShapeMapContext): Builder[QueryShapeMap] = for {
     associations <- visitList(visitShapeAssociation, ctx.shapeAssociation())
-  } yield QueryShapeMap(associations)
+  } yield QueryShapeMap(associations, nodesPrefixMap, shapesPrefixMap)
 
   override def visitShapeAssociation(ctx: ShapeAssociationContext): Builder[Association] = for {
     nodeSelector <- visitNodeSelector(ctx.nodeSelector())

@@ -154,26 +154,15 @@ class Routes {
         optData.map(validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap))
 
       val schemaSeparated = optSchemaSeparated.getOrElse(defaultSchemaSeparated)
+      val triggerMode: ValidationTrigger = result.
+        map(_._2.getOrElse(ValidationTrigger.default)).
+        getOrElse(ValidationTrigger.default)
 
-      val recoveredTriggerName: String = result match {
-        case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
-        case Some((_, maybeTrigger)) => maybeTrigger match {
-          case None => optTriggerMode.getOrElse(ValidationTrigger.default.name)
-          case Some(trigger) => trigger.name
-        }
+      val shapeMap = triggerMode match {
+        case TargetDeclarations => None
+        case ShapeMapTrigger(sm) => Some(sm.toString)
       }
-      /*      val recoveredShapeMap: List[(String, String)] = result match {
-        case None => flattenShapeMap(shapeMap)
-        case Some((_, maybeTrigger)) => maybeTrigger match {
-          case None => flattenShapeMap(shapeMap)
-          case Some(MapTrigger(sm, nodes)) => sm.map {
-            case (node, vs) => vs.map(v => (node.toString, s"<$v>"))
-          }.flatten.toList
-          case Some(_) => flattenShapeMap(shapeMap)
-        }
-      }
-      logger.info(s"Recovered shapeMap: $recoveredShapeMap")
-*/
+
       Ok(html.validate(
         result.map(_._1),
         optData,
@@ -185,8 +174,8 @@ class Routes {
         availableSchemaEngines,
         optSchemaEngine.getOrElse(Schemas.shEx.name),
         availableTriggerModes,
-        recoveredTriggerName,
-        optShapeMap,
+        triggerMode.name,
+        shapeMap,
         schemaSeparated))
     }
 

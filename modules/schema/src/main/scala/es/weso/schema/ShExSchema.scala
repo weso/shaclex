@@ -33,9 +33,9 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result = (trigger match {
     case TargetDeclarations => validateTargetDecls(rdf)
-    case MapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
+    //    case MapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
     case ShapeMapTrigger(sm) => {
-      ShapeMap.fixShapeMap(sm, rdf) match {
+      ShapeMap.fixShapeMap(sm, rdf, rdf.getPrefixMap(), schema.prefixes.getOrElse(PrefixMap.empty)) match {
         case Left(msg) => Result.errStr(s"Error fixing shape map: $msg")
         case Right(fixedShapeMap) => validateFixedShapeMap(fixedShapeMap, rdf)
       }
@@ -86,8 +86,8 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       }
       m.foldLeft(Map[RDFNode, Set[String]]())(f)
     }
-    val nodesStart: Set[RDFNode] = fixedShapeMap.map.toList.filter(isStart).map(_._1).toSet
-    val mapNodesShapes: Map[RDFNode, Set[String]] = cnvShapeMap(fixedShapeMap.map)
+    val nodesStart: Set[RDFNode] = fixedShapeMap.shapeMap.toList.filter(isStart).map(_._1).toSet
+    val mapNodesShapes: Map[RDFNode, Set[String]] = cnvShapeMap(fixedShapeMap.shapeMap)
     validateShapeMap(mapNodesShapes, nodesStart, rdf)
 
   }

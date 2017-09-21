@@ -161,17 +161,17 @@ function changeTriggerMode(value) {
     $("#nodeShapeContainer").hide();
     console.log("Hiding all: " + value);
     break;
-  case "NODESHAPE":
+/*  case "NODESHAPE":
     $("#nodeShapeContainer").show();
     console.log("Showing all: " + value);
     break;
   case "NODESTART":
     $("#nodeShapeContainer").show();
     console.log("Showing node only: " + value);
-    break;
+    break; */
   case "SHAPEMAP":
     $("#nodeShapeContainer").show();
-    console.log("Showing node only: " + value);
+    console.log("Showing shape map: " + value);
     break;
 
   }
@@ -327,9 +327,10 @@ if (shapeMap) {
  codeMirrorShapeMap = CodeMirror.fromTextArea(shapeMap, {
    lineNumbers: true,
    mode: "shex",
-   viewportMargin: Infinity,
+   height: 1,
    matchBrackets: true
  });
+ codeMirrorShapeMap.setSize(null,"1.5em");
 }
 
 var inputRows = getInputRows();

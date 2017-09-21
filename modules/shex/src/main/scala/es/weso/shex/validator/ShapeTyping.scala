@@ -2,10 +2,11 @@ package es.weso.shex.validator
 import cats._
 import data._
 import cats.implicits._
+import es.weso.rdf.PrefixMap
 import es.weso.typing._
 import es.weso.rdf.nodes._
-import es.weso.shapeMaps.{BNodeLabel, IRILabel => IRIMapLabel, _}
-import es.weso.shex.{IRILabel, _}
+import es.weso.shapeMaps.{ BNodeLabel, IRILabel => IRIMapLabel, _ }
+import es.weso.shex.{ IRILabel, _ }
 import io.circe.Json
 
 case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
@@ -39,7 +40,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
 
   override def toString = showShapeTyping
 
-  private def cnvShapeType(s: ShapeType): Either[String, ShapeMapLabel] = s.label match {
+  private def cnvShapeType(s: ShapeType, shapesPrefixMap: PrefixMap): Either[String, ShapeMapLabel] = s.label match {
     case None => Left(s"Can't create Result shape map for a shape expression without label. ShapeExpr: ${s.shape}")
     case Some(lbl) => lbl.toRDFNode match {
       case i: IRI => Either.right(IRIMapLabel(i))
@@ -54,10 +55,10 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
       if (t.isOK) t.getEvidences.map(_.mkString("\n"))
       else t.getErrors.map(_.mkString("\n"))
     val appInfo = Json.fromString("Shaclex")
-    Info(status,reason,appInfo)
+    Info(status, reason, appInfo)
   }
 
-  def toShapeMap: Either[String, ResultShapeMap] = {
+  def toShapeMap(shapesPrefixMap: PrefixMap): Either[String, ResultShapeMap] = {
     def processTyping(
       m: Either[String, ResultShapeMap],
       current: (RDFNode, Map[ShapeType, TypingResult[ViolationError, String]])): Either[String, ResultShapeMap] = {
@@ -66,7 +67,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
           m: Either[String, Map[ShapeMapLabel, Info]],
           current: (ShapeType, TypingResult[ViolationError, String])): Either[String, Map[ShapeMapLabel, Info]] = {
           for {
-            lbl <- cnvShapeType(current._1)
+            lbl <- cnvShapeType(current._1, shapesPrefixMap)
             currentMap <- m
           } yield {
             val info = cnvTypingResult(current._2)

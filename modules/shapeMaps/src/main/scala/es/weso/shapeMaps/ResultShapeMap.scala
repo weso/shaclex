@@ -1,10 +1,14 @@
 package es.weso.shapeMaps
 
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 
-case class ResultShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends ShapeMap {
+case class ResultShapeMap(
+  map: Map[RDFNode, Map[ShapeMapLabel, Info]],
+  nodesPrefixMap: PrefixMap,
+  shapesPrefixMap: PrefixMap) extends ShapeMap {
   def addNodeAssociations(node: RDFNode, mapLabels: Map[ShapeMapLabel, Info]): ResultShapeMap = {
-    ResultShapeMap(map.updated(node, map(node) ++ mapLabels))
+    this.copy(map = this.map.updated(node, map(node) ++ mapLabels))
   }
 
   val associations: List[Association] = map.toList.flatMap {
@@ -21,10 +25,10 @@ case class ResultShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends S
     a.nodeSelector match {
       case RDFNodeSelector(node) => {
         map.get(node) match {
-          case None => Right(ResultShapeMap(map.updated(node, Map(a.shapeLabel -> a.info))))
+          case None => Right(this.copy(map = map.updated(node, Map(a.shapeLabel -> a.info))))
           case Some(labelsMap) => {
             labelsMap.get(a.shapeLabel) match {
-              case None => Right(ResultShapeMap(map.updated(node, labelsMap.updated(a.shapeLabel, a.info))))
+              case None => Right(this.copy(map = map.updated(node, labelsMap.updated(a.shapeLabel, a.info))))
               case Some(info) =>
                 if (info.status == a.info.status) Right(this)
                 else Left(s"Cannot add association with contradictory status: Association: ${a}, Labels map: ${labelsMap}")
@@ -39,6 +43,6 @@ case class ResultShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends S
 }
 
 object ResultShapeMap {
-  def empty = ResultShapeMap(Map())
+  def empty = ResultShapeMap(Map(), PrefixMap.empty, PrefixMap.empty)
 }
 

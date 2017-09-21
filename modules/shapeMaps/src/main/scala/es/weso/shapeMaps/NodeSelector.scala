@@ -1,13 +1,18 @@
 package es.weso.shapeMaps
 
+import cats.Show
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.{ IRI, RDFNode }
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._
 
 abstract class NodeSelector {
   def toJson: Json = this match {
-    case RDFNodeSelector(node) => Json.fromString(node.toString)
-    case TriplePattern(subj, predicate, obj) => ???
+    case RDFNodeSelector(node) => Json.fromString(node.getLexicalForm)
+    case TriplePattern(subj, predicate, obj) => {
+      println("Not implemented TriplePattern toJson yet")
+      ???
+    }
   }
 }
 case class RDFNodeSelector(node: RDFNode) extends NodeSelector
@@ -17,7 +22,7 @@ object NodeSelector {
   implicit val encodeNodeSelector: Encoder[NodeSelector] = new Encoder[NodeSelector] {
     final def apply(nodeSelector: NodeSelector): Json = {
       nodeSelector match {
-        case RDFNodeSelector(node) => Json.fromString(node.toString)
+        case RDFNodeSelector(node) => Json.fromString(node.getLexicalForm)
         case TriplePattern(subj, pred, obj) => {
           Json.fromJsonObject(JsonObject.empty.
             add("subject", subj.asJson).
@@ -27,4 +32,5 @@ object NodeSelector {
       }
     }
   }
+
 }

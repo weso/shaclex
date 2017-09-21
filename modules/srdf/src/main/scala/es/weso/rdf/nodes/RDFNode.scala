@@ -1,5 +1,7 @@
 package es.weso.rdf.nodes
 
+import cats.Show
+
 abstract class RDFNode {
   def isIRI = this match {
     case _: IRI => true
@@ -66,6 +68,10 @@ object RDFNode {
 
   def qNameIRI(prefix: IRI, local: String): IRI = {
     IRI(prefix.str + local)
+  }
+
+  implicit val showRDFNode: Show[RDFNode] = new Show[RDFNode] {
+    final def show(n: RDFNode): String = ???
   }
 
 }

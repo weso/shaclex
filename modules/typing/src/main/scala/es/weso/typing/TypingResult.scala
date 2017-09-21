@@ -29,7 +29,7 @@ case class TypingResult[Err, Evidence](
     t.toOption
 
   def getErrors: Option[List[Err]] = {
-    t.fold(es => Some(es.toList),_ => None)
+    t.fold(es => Some(es.toList), _ => None)
   }
 
 }

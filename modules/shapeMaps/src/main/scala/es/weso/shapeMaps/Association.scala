@@ -1,7 +1,11 @@
 package es.weso.shapeMaps
 
+import cats.Show
+import cats.syntax.show._
 import io.circe._
 import io.circe.syntax._
+import NodeSelector._
+import ShapeMapLabel._
 
 case class Association(
   nodeSelector: NodeSelector,
@@ -15,8 +19,6 @@ case class Association(
 }
 
 object Association {
-  import NodeSelector._
-  import ShapeMapLabel._
 
   implicit val encodeAssociation: Encoder[Association] = new Encoder[Association] {
     final def apply(a: Association): Json = {

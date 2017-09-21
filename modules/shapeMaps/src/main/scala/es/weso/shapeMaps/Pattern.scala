@@ -1,5 +1,6 @@
 package es.weso.shapeMaps
 
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 import io.circe.{ Encoder, Json }
 
@@ -14,7 +15,7 @@ object Pattern {
       pattern match {
         case Focus => Json.fromString("focus")
         case WildCard => Json.fromString("_")
-        case NodePattern(node) => Json.fromString(node.toString)
+        case NodePattern(node) => Json.fromString(node.getLexicalForm)
       }
     }
   }

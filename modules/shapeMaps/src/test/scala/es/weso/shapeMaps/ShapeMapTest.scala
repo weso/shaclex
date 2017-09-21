@@ -12,8 +12,10 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
   describe("ShapeMaps") {
 
     it("should be able to create a shape map") {
-      val map = QueryShapeMap(associations = List(
-        Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)))
+      val map = QueryShapeMap(
+        List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)),
+        PrefixMap.empty,
+        PrefixMap.empty)
     }
   }
 
@@ -28,52 +30,65 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
 
     shouldParse(
       "<http://example.org/x> @ Start",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start))),
+      QueryShapeMap(
+        List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       "<http://example.org/x>@Start",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start))),
+      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
     shouldParse(
       "<http://example.org/x>@<http://example.org/S>",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = IRILabel(IRI("http://example.org/S"))))),
+      QueryShapeMap(
+        List(Association(
+          nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),
+          shapeLabel = IRILabel(IRI("http://example.org/S")))),
+        nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       ":x@Start",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")), shapeLabel = Start))),
+      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       ":x@ :S",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")), shapeLabel = IRILabel(IRI("http://default.shapes.org/S"))))),
+      QueryShapeMap(
+        List(
+          Association(
+            nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),
+            shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       "\"hi\"@es @ :S",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(LangLiteral("hi", Lang("es"))), shapeLabel = IRILabel(IRI("http://default.shapes.org/S"))))),
+      QueryShapeMap(List(Association(
+        nodeSelector = RDFNodeSelector(LangLiteral("hi", Lang("es"))),
+        shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       ":x@ ex:S",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")), shapeLabel = IRILabel(IRI("http://shapes.org/S"))))),
+      QueryShapeMap(List(Association(
+        nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),
+        shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       "{ FOCUS a :A} @ ex:S",
       QueryShapeMap(List(Association(
         nodeSelector = TriplePattern(Focus, rdfType, NodePattern(IRI("http://default.org/A"))),
-        shapeLabel = IRILabel(IRI("http://shapes.org/S"))))),
+        shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       "{FOCUS :p _ }@ :S",
       QueryShapeMap(List(Association(
         nodeSelector = TriplePattern(Focus, IRI("http://default.org/p"), WildCard),
-        shapeLabel = IRILabel(IRI("http://default.shapes.org/S"))))),
+        shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
@@ -120,12 +135,44 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
             val result = for {
               shapeMap <- Parser.parse(shapeMapStr, rdf.getPrefixMap, shapesPrefixMap)
               expected <- Parser.parse(expectedStr, rdf.getPrefixMap, shapesPrefixMap)
-              obtained <- ShapeMap.fixShapeMap(shapeMap, rdf)
+              obtained <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
             } yield (obtained, expected)
             result match {
               case Left(msg) => fail(s"Error $msg fixing map $shapeMapStr")
               case Right((obtained, expected)) =>
                 obtained.associations should contain theSameElementsAs (expected.associations)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  describe("Show and parse shapeMaps") {
+    val rdfStr =
+      """
+        |prefix : <http://example.org/>
+        |
+        |:x a :X .
+        |
+      """.stripMargin
+    shouldShowAndParse(":a @ :S", rdfStr)
+    shouldShowAndParse("{FOCUS a :X}@ :S", rdfStr)
+    shouldShowAndParse("{FOCUS a _}@ :S", rdfStr)
+    shouldShowAndParse("{FOCUS :p :X}@ :S", rdfStr)
+
+    def shouldShowAndParse(shapeMapStr: String, rdfStr: String): Unit = {
+      val shapesPrefixMap = PrefixMap.empty.addPrefix("", IRI("http://example.org/"))
+      it(s"Should show and parse $shapeMapStr") {
+        RDFAsJenaModel.fromChars(rdfStr, "TURTLE") match {
+          case Failure(e) => fail(s"Error parsing $rdfStr")
+          case Success(rdf) => {
+            Parser.parse(shapeMapStr, rdf.getPrefixMap, shapesPrefixMap) match {
+              case Left(msg) => fail(s"Error parsing ${shapeMapStr}: ${msg}")
+              case Right(shapeMap) => Parser.parse(shapeMap.toString, rdf.getPrefixMap, shapesPrefixMap) match {
+                case Left(msg) => fail(s"Error parsing shown shapeMap ${shapeMap.toString} of ${shapeMapStr}: ${msg}")
+                case Right(shownShapeMap) => shapeMap should be(shownShapeMap)
+              }
             }
           }
         }

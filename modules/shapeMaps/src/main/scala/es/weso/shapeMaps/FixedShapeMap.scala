@@ -1,10 +1,15 @@
 package es.weso.shapeMaps
 
+import cats.Show
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 
-case class FixedShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends ShapeMap {
+case class FixedShapeMap(
+  shapeMap: Map[RDFNode, Map[ShapeMapLabel, Info]],
+  nodesPrefixMap: PrefixMap,
+  shapesPrefixMap: PrefixMap) extends ShapeMap {
 
-  val associations: List[Association] = map.toList.flatMap {
+  val associations: List[Association] = shapeMap.toList.flatMap {
     case (node, labelsMap) => {
       labelsMap.toList.map {
         case (shapeLabel, info) => {
@@ -17,11 +22,11 @@ case class FixedShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends Sh
   override def addAssociation(a: Association): Either[String, FixedShapeMap] = {
     a.nodeSelector match {
       case RDFNodeSelector(node) => {
-        map.get(node) match {
-          case None => Right(FixedShapeMap(map.updated(node, Map(a.shapeLabel -> a.info))))
+        shapeMap.get(node) match {
+          case None => Right(this.copy(shapeMap = shapeMap.updated(node, Map(a.shapeLabel -> a.info))))
           case Some(labelsMap) => {
             labelsMap.get(a.shapeLabel) match {
-              case None => Right(FixedShapeMap(map.updated(node, labelsMap.updated(a.shapeLabel, a.info))))
+              case None => Right(this.copy(shapeMap = shapeMap.updated(node, labelsMap.updated(a.shapeLabel, a.info))))
               case Some(info) =>
                 if (info.status == a.info.status) Right(this)
                 else Left(s"Cannot add association with contradictory status: Association: ${a}, Labels map: ${labelsMap}")
@@ -36,5 +41,6 @@ case class FixedShapeMap(map: Map[RDFNode, Map[ShapeMapLabel, Info]]) extends Sh
 }
 
 object FixedShapeMap {
-  def empty = FixedShapeMap(Map())
+  def empty = FixedShapeMap(Map(), PrefixMap.empty, PrefixMap.empty)
+
 }
