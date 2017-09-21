@@ -30,7 +30,8 @@ numericLiteral  : INTEGER
 				| DECIMAL
 				| DOUBLE
 				;
-rdfLiteral      : string (LANGTAG | '^^' datatype)? ;
+rdfLiteral      : string ( // LANGTAG |     # Remove support for language tagged literals by now
+                           '^^' datatype)? ;
 booleanLiteral  : KW_TRUE
 				| KW_FALSE
 				;
@@ -64,8 +65,8 @@ RDF_TYPE              : 'a' ;
 IRIREF                : '<' (~[\u0000-\u0020=<>\"{}|^`\\] | UCHAR)* '>' ; /* #x00=NULL #01-#x1F=control codes #x20=space */
 PNAME_NS              : PN_PREFIX? ':' ;
 PNAME_LN              : PNAME_NS PN_LOCAL ;
-ATPNAME_NS			  : '@' PN_PREFIX? ':' ;
-ATPNAME_LN			  : '@' PNAME_NS PN_LOCAL ;
+// ATPNAME_NS			  : '@' PN_PREFIX? ':' ;
+// ATPNAME_LN			  : '@' PNAME_NS PN_LOCAL ;
 BLANK_NODE_LABEL      : '_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)? ;
 LANGTAG               : '@' [a-zA-Z]+ ('-' [a-zA-Z0-9]+)* ;
 INTEGER               : [+-]? [0-9]+ ;

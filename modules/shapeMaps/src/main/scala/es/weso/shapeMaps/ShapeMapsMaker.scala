@@ -95,11 +95,12 @@ class ShapeMapsMaker(
   }
   override def visitRdfLiteral(ctx: RdfLiteralContext): Builder[Literal] = {
     val str = visitString(ctx.string())
+/*  Language tagged literals disabled until we fix the grammar (see issue #48
     if (isDefined(ctx.LANGTAG())) {
       // We get the langTag and remove the first character (@)
       val lang = Lang(ctx.LANGTAG().getText().substring(1))
       str.map(s => LangLiteral(s, lang))
-    } else if (isDefined(ctx.datatype)) {
+    } else */ if (isDefined(ctx.datatype)) {
       for {
         s <- str
         d <- visitDatatype(ctx.datatype(), nodesPrefixMap)
