@@ -6,7 +6,7 @@ import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConversions._
-import scala.collection.immutable.StringOps._
+// import scala.collection.immutable.StringOps._
 import scala.util.Try
 import es.weso.rdf.triples._
 import es.weso.rdf._
@@ -26,7 +26,7 @@ import org.apache.jena.riot.RDFLanguages
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
-import es.weso.utils.JenaUtils
+import es.weso.utils._
 import org.apache.jena.sparql.path.Path
 
 case class RDFAsJenaModel(model: Model)
@@ -247,7 +247,8 @@ object RDFAsJenaModel {
     try {
       RDFAsJenaModel.empty.parse(cs, format, base)
     } catch {
-      case e: Exception => Failure(throw new Exception("Exception reading  " + formatLines(cs.toString) + "\n " + e.getMessage))
+      case e: Exception =>
+        Failure(throw new Exception("Exception reading  " + FileUtils.formatLines(cs.toString) + "\n " + e.getMessage))
     }
   }
 
@@ -256,16 +257,13 @@ object RDFAsJenaModel {
       try {
         RDFAsJenaModel.empty.parse(cs, format, base)
       } catch {
-        case e: Exception => Failure(throw new Exception("Exception reading  " + formatLines(cs.toString) + "\n " + e.getMessage))
+        case e: Exception =>
+          Failure(throw new Exception("Exception reading  " + FileUtils.formatLines(cs.toString) + "\n " + e.getMessage))
       }
     result match {
       case Failure(e) => Left(e.getMessage)
       case Success(v) => Right(v)
     }
-  }
-
-  def formatLines(cs: CharSequence): String = {
-    cs.toString.lines.zipWithIndex.map(p => (p._2 + 1).toString + " " + p._1).mkString("\n")
   }
 
   def extractModel(rdf: RDFAsJenaModel): Model = {

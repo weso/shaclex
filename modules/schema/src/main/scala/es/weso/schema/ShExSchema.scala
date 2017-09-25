@@ -60,44 +60,14 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   }
 
   def validateFixedShapeMap(fixedShapeMap: FixedShapeMap, rdf: RDFReader): Result = {
-    def isStart(m: (RDFNode, Map[ShapeMapLabel, Info])): Boolean = {
-      m._2.keys.filter(_.isStart).size != 0
-    }
-    def cnvShapeMap(m: Map[RDFNode, Map[ShapeMapLabel, Info]]): Map[RDFNode, Set[String]] = {
-      def f(m: Map[RDFNode, Set[String]], current: (RDFNode, Map[ShapeMapLabel, Info])): Map[RDFNode, Set[String]] = {
-        def cnvLabels(lbls: Map[ShapeMapLabel, Info]): Set[String] = {
-          val ss: Set[Set[String]] = lbls.map {
-            case (lbl, info) => info.status match {
-              case Conformant => lbl match {
-                case es.weso.shapeMaps.IRILabel(iri) => Set(iri.getLexicalForm)
-                case Start => Set[String]()
-              }
-              case NonConformant => Set[String]() // TODO: Add negation of shape
-            }
-          }.toSet
-          ss.flatten
-        }
-        val labels: Set[String] = cnvLabels(current._2)
-        if (labels.isEmpty) {
-          m
-        } else {
-          m.updated(current._1, labels)
-        }
-      }
-      m.foldLeft(Map[RDFNode, Set[String]]())(f)
-    }
-    val nodesStart: Set[RDFNode] = fixedShapeMap.shapeMap.toList.filter(isStart).map(_._1).toSet
-    val mapNodesShapes: Map[RDFNode, Set[String]] = cnvShapeMap(fixedShapeMap.shapeMap)
-    validateShapeMap(mapNodesShapes, nodesStart, rdf)
-
+    validateShapeMap(fixedShapeMap, rdf)
   }
 
   def validateShapeMap(
-    map: Map[RDFNode, Set[String]],
-    nodesStart: Set[RDFNode],
+    shapeMap: FixedShapeMap,
     rdf: RDFReader): Result = {
     val validator = Validator(schema)
-    val r = validator.validateShapeMap(rdf, map, nodesStart)
+    val r = validator.validateShapeMap(rdf, shapeMap)
     cnvResult(r, rdf)
   }
 

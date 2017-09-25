@@ -1,10 +1,11 @@
 package es.weso.shex.validator
 
-import org.scalatest._
-import es.weso.shex._
-import es.weso.rdf.nodes._
 import es.weso.rdf.jena._
-import util._
+import es.weso.rdf.nodes._
+import es.weso.shex._
+import org.scalatest._
+
+import scala.util._
 
 class ValidatorTest extends FunSpec with Matchers with EitherValues {
 

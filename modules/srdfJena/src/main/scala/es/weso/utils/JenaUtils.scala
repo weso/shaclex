@@ -37,7 +37,7 @@ import org.apache.jena.query.ParameterizedSparqlString
 import org.apache.jena.sparql.core.{ TriplePath, Var }
 import org.apache.jena.sparql.path.Path
 import org.apache.jena.sparql.syntax.ElementGroup
-import org.apache.jena.util.FileUtils
+import org.apache.jena.util.{ FileUtils => FileJenaUtils }
 import org.apache.jena.vocabulary.DC
 
 sealed abstract class ParserReport[+A, +B]
@@ -50,10 +50,10 @@ final case class NotParsed[B](error: B)
 
 object JenaUtils {
 
-  lazy val RdfXML = FileUtils.langXML
-  lazy val RdfXMLAbbr = FileUtils.langXMLAbbrev
-  lazy val NTriple = FileUtils.langNTriple
-  lazy val Turtle = FileUtils.langTurtle
+  lazy val RdfXML = FileJenaUtils.langXML
+  lazy val RdfXMLAbbr = FileJenaUtils.langXMLAbbrev
+  lazy val NTriple = FileJenaUtils.langNTriple
+  lazy val Turtle = FileJenaUtils.langTurtle
   lazy val TTL = "TTL"
   lazy val N3 = "N3"
 

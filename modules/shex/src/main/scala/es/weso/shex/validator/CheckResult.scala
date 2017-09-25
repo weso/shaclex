@@ -26,5 +26,8 @@ case class CheckResult[E: Show, A: Show, Log: Show](r: (Log, Either[E, A])) {
     sb ++= r._1.show
     sb.toString
   }
+
+  def toEither: Either[E, A] = r._2
+
 }
 

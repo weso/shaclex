@@ -24,7 +24,10 @@ predicate       : iri
 				;
 rdfType			: RDF_TYPE ;
 datatype        : iri ;
-shapeLabel      : '@' (iri | KW_START) | AT_START ;
+shapeLabel      : '@' negation? (iri | KW_START)
+                | AT_START ;
+
+negation        : KW_NOT | '!' ;
 
 numericLiteral  : INTEGER
 				| DECIMAL
@@ -52,6 +55,7 @@ blankNode       : BLANK_NODE_LABEL ;
 // Keywords
 KW_START        	: S T A R T ;
 KW_FOCUS            : F O C U S ;
+KW_NOT				: N O T ;
 KW_TRUE         	: 'true' ;
 KW_FALSE        	: 'false' ;
 AT_START            : '@' S T A R T ;

@@ -257,7 +257,7 @@ lazy val rbe =
 
 lazy val srdfJena =
   project.in(file("modules/srdfJena")).
-  dependsOn(srdf).
+  dependsOn(srdf, utils).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(

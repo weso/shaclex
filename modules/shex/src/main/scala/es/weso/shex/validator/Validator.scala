@@ -17,7 +17,11 @@ import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
 import ShExChecker._
 import es.weso.rdf.jena.JenaMapper
+import es.weso.shapeMaps.{ IRILabel => IRIMapLabel, BNodeLabel => BNodeMapLabel, _ }
+
 import es.weso.shex.compact.CompactShow
+import es.weso.typing.TypingResult
+import io.circe.Json
 
 import scala.util.{ Failure, Success }
 
@@ -54,12 +58,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     t <- combineTypings(ts)
   } yield t
 
-  // TODO: Refactor to remove this method
-  def checkShapeMap(shapeMap: Map[RDFNode, Set[String]], nodesStart: Set[RDFNode]): CheckTyping = for {
+  def checkShapeMap(shapeMap: FixedShapeMap): CheckTyping = for {
     rdf <- getRDF
-    t1 <- checkNodesShapes(shapeMap, rdf)
-    ts <- checkAll(nodesStart.map(node => checkNodeStart(node)).toList)
-    t <- combineTypings(t1 :: ts)
+    t <- checkNodesShapes(shapeMap, rdf)
   } yield t
 
   def getTargetNodeDeclarations(rdf: RDFReader): Check[List[(RDFNode, ShapeLabel)]] = {
@@ -68,15 +69,30 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       toList.map(checkPair2nd))
   }
 
-  def checkNodesShapes(shapeMap: Map[RDFNode, Set[String]], rdf: RDFReader): CheckTyping = for {
-    ts <- checkAll(shapeMap.map {
-      case (node, shapeSet) => checkNodeShapes(node, shapeSet, rdf)
+  def checkNodesShapes(fixedShapeMap: FixedShapeMap, rdf: RDFReader): CheckTyping = for {
+    ts <- checkAll(fixedShapeMap.shapeMap.map {
+      case (node, shapesMap) => {
+        checkNodeShapesMap(node, shapesMap, rdf)
+      }
     }.toList)
     t <- combineTypings(ts)
   } yield t
 
-  def checkNodeShapes(node: RDFNode, shapes: Set[String], rdf: RDFReader): CheckTyping = for {
-    ts <- checkAll(shapes.toList.map(checkNodeShapeName(node, _)))
+  def checkNodeShapeMapLabel(node: RDFNode, label: ShapeMapLabel, info: Info): CheckTyping = info.status match {
+    case Conformant => label match {
+      case Start => checkNodeStart(node)
+      case IRIMapLabel(iri) => checkNodeShapeName(node, iri.getLexicalForm)
+      case BNodeMapLabel(b) => checkNodeShapeName(node, b.getLexicalForm)
+    }
+    case NonConformant => errStr(s"checkNodeShapeMapLabel: Not implemented negative info yet. Node: $node, label: $label")
+  }
+
+  def checkNodeShapesMap(node: RDFNode, shapesMap: Map[ShapeMapLabel, Info], rdf: RDFReader): CheckTyping = for {
+    ts <- checkAll(shapesMap.map {
+      case (label, info) => {
+        checkNodeShapeMapLabel(node, label, info)
+      }
+    }.toList)
     t <- combineTypings(ts)
   } yield t
 
@@ -96,13 +112,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case Some(shape) => ok(shape)
     }
 
-  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
-    logger.info(s"nodeShape. Node: ${node.show} Label: ${shapeName}")
-    for {
-      shapeLabel <- getShapeLabel(shapeName)
-      r <- checkNodeLabel(node, shapeLabel)
-    } yield r
-  }
+  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping =
+    cond(getShapeLabel(shapeName), (shapeLabel: ShapeLabel) => checkNodeLabel(node, shapeLabel), err => for {
+      t <- getTyping
+    } yield t.addNotEvidence(node, ShapeType(ShapeExpr.fail, Some(IRILabel(IRI(shapeName))), schema), err))
 
   def checkNodeStart(node: RDFNode): CheckTyping =
     schema.start match {
@@ -134,24 +147,33 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
   }
 
+  def checkNodeLabelSafe(node: RDFNode, label: ShapeLabel, shape: ShapeExpr): CheckTyping = for {
+    typing <- getTyping
+    shapeType = ShapeType(shape, Some(label), schema)
+    attempt = Attempt(NodeShape(node, shapeType), None)
+    t <- {
+      runLocalSafe(
+        checkNodeShapeExpr(attempt, node, shape),
+        _.addType(node, shapeType),
+        (err, t) => {
+          t.addNotEvidence(node, shapeType, err)
+        })
+    }
+  } yield t
+
   def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
-    logger.info(s"nodeLabel. Node: ${node.show} Label: ${label.show}")
+    def addNot(typing: ShapeTyping)(err: ViolationError): CheckTyping = {
+      val shapeType = ShapeType(ShapeExpr.fail, Some(label), schema)
+      ok(typing.addNotEvidence(node, shapeType, err))
+    }
+
     for {
       typing <- getTyping
-      newTyping <- if (typing.hasType(node, label))
+      newTyping <- if (typing.hasInfoAbout(node, label)) {
         ok(typing)
-      else if (typing.hasNoType(node, label)) {
-        errStr[ShapeTyping](s"Failed because ${node.show} doesn't match shape ${label.show}")
-      } else for {
-        shapeExpr <- getShape(label)
-        shapeType = ShapeType(shapeExpr, Some(label), schema)
-        attempt = Attempt(NodeShape(node, shapeType), None)
-        t <- runLocal(checkNodeShapeExpr(attempt, node, shapeExpr), _.addType(node, shapeType))
-      } yield t
-    } yield {
-      logger.info(s"Result of nodeLabel. Node: ${node.show} Label: ${label.show}: $newTyping")
-      newTyping
-    }
+      } else
+        cond(getShape(label), (shape: ShapeExpr) => checkNodeLabelSafe(node, label, shape), addNot(typing))
+    } yield newTyping
   }
 
   def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
@@ -207,8 +229,18 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   def checkRef(
     attempt: Attempt,
     node: RDFNode,
-    ref: ShapeLabel): CheckTyping =
-    checkNodeLabel(node, ref)
+    ref: ShapeLabel): CheckTyping = for {
+    t <- checkNodeLabel(node, ref)
+    _ <- if (t.hasNoType(node, ref)) {
+      t.getTypingResult(node, ref) match {
+        case None => errStr(s"Node $node has no shape $ref. Reason unknown")
+        case Some(tr) => tr.getErrors match {
+          case None => errStr(s"Node $node has no shape $ref. Reason typing result $tr with no errors")
+          case Some(es) => errStr(s"Node $node has no shape $ref. Errors: $es")
+        }
+      }
+    } else ok(())
+  } yield t
 
   def checkNodeConstraint(
     attempt: Attempt,
@@ -376,8 +408,6 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     bagChecker: BagChecker_,
     table: CTable)(cl: CandidateLine): CheckTyping = {
     val bag = Bag.toBag(cl.map(_._2))
-    println(s"Bag: $bag, rbe: ${bagChecker.rbe}")
-    // parameter open=false because open has been checked before
     bagChecker.check(bag, false) match {
       case Right(_) => {
         val nodeShapes: List[(RDFNode, ShapeExpr)] =
@@ -427,8 +457,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     runCheck(checkNodeStart(node), rdf)
   }
 
-  def validateShapeMap(rdf: RDFReader, shapeMap: Map[RDFNode, Set[String]], nodesStart: Set[RDFNode]): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkShapeMap(shapeMap, nodesStart), rdf)
+  def validateShapeMap(rdf: RDFReader, shapeMap: FixedShapeMap): CheckResult[ViolationError, ShapeTyping, Log] = {
+    runCheck(checkShapeMap(shapeMap), rdf)
   }
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {
@@ -453,6 +483,14 @@ object Validator {
 
   def isOK[A](r: Result[A]): Boolean =
     r.isRight && r.toList.isEmpty == false
+
+  def validate(schema: Schema, fixedShapeMap: FixedShapeMap, rdf: RDFReader): Either[String, ResultShapeMap] = {
+    val validator = Validator(schema)
+    for {
+      shapeTyping <- validator.validateShapeMap(rdf, fixedShapeMap).toEither.leftMap(_.msg)
+      result <- shapeTyping.toShapeMap(schema.prefixMap)
+    } yield result
+  }
 
 }
 

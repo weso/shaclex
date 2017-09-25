@@ -29,8 +29,11 @@ class ShapeMapsMaker(
 
   override def visitShapeAssociation(ctx: ShapeAssociationContext): Builder[Association] = for {
     nodeSelector <- visitNodeSelector(ctx.nodeSelector())
-    shapeLabel <- visitShapeLabel(ctx.shapeLabel())
-  } yield Association(nodeSelector, shapeLabel)
+    pair <- visitShapeLabel(ctx.shapeLabel())
+  } yield {
+    val (shapeLabel, info) = pair
+    Association(nodeSelector, shapeLabel, info)
+  }
 
   override def visitNodeSelector(ctx: NodeSelectorContext): Builder[NodeSelector] = ctx match {
     case _ if isDefined(ctx.objectTerm()) => for {
@@ -76,13 +79,20 @@ class ShapeMapsMaker(
     case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
   }
 
-  override def visitShapeLabel(ctx: ShapeLabelContext): Builder[ShapeMapLabel] = ctx match {
-    case _ if isDefined(ctx.AT_START()) => ok(Start)
-    case _ if isDefined(ctx.iri()) => for {
-      iri <- visitIri(ctx.iri(), shapesPrefixMap)
-    } yield IRILabel(iri)
-    case _ if isDefined(ctx.KW_START()) => ok(Start)
-    case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
+  override def visitShapeLabel(ctx: ShapeLabelContext): Builder[(ShapeMapLabel, Info)] = {
+    val info = if (isDefined(ctx.negation())) {
+      Info(status = NonConformant)
+    } else {
+      Info(status = Conformant)
+    }
+    ctx match {
+      case _ if isDefined(ctx.AT_START()) => ok((Start, info))
+      case _ if isDefined(ctx.iri()) => for {
+        iri <- visitIri(ctx.iri(), shapesPrefixMap)
+      } yield (IRILabel(iri), info)
+      case _ if isDefined(ctx.KW_START()) => ok((Start, info))
+      case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
+    }
   }
 
   override def visitLiteral(ctx: LiteralContext): Builder[Literal] = {
@@ -95,7 +105,7 @@ class ShapeMapsMaker(
   }
   override def visitRdfLiteral(ctx: RdfLiteralContext): Builder[Literal] = {
     val str = visitString(ctx.string())
-/*  Language tagged literals disabled until we fix the grammar (see issue #48
+    /*  Language tagged literals disabled until we fix the grammar (see issue #48
     if (isDefined(ctx.LANGTAG())) {
       // We get the langTag and remove the first character (@)
       val lang = Lang(ctx.LANGTAG().getText().substring(1))

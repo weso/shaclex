@@ -30,9 +30,20 @@ object ShapeMap {
 
   def empty: ShapeMap = FixedShapeMap.empty
 
-  def parse(str: String, nodesPrefixMap: PrefixMap, shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
+  def parse(
+    str: String,
+    nodesPrefixMap: PrefixMap = PrefixMap.empty,
+    shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
     Parser.parse(str, nodesPrefixMap, shapesPrefixMap)
   }
+
+  def parseResultMap(
+    str: String,
+    rdf: RDFReader,
+    shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ResultShapeMap] = for {
+    queryMap <- Parser.parse(str, rdf.getPrefixMap, shapesPrefixMap)
+    fixMap <- fixShapeMap(queryMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
+  } yield ResultShapeMap(fixMap.shapeMap, rdf.getPrefixMap, shapesPrefixMap)
 
   /**
    * Resolve triple patterns according to an RDF

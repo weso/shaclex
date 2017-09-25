@@ -120,4 +120,13 @@ object FileUtils {
     ()
   }
 
+  /**
+   * Format a char sequence including the line numbers
+   * @param cs
+   * @return String with the line numbers of the char sequence
+   */
+  def formatLines(cs: CharSequence): String = {
+    cs.toString.lines.zipWithIndex.map(p => (p._2 + 1).toString + " " + p._1).mkString("\n")
+  }
+
 }

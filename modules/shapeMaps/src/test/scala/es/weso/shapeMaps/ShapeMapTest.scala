@@ -63,9 +63,9 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
             shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
-/*    Ignore this test until we solve issue #48
+    /*    Ignore this test until we solve issue #48
       https://github.com/labra/shaclex/issues/48
-      
+
       shouldParse(
       "\"hi\"@es @ :S",
       QueryShapeMap(List(Association(

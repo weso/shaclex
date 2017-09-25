@@ -5,7 +5,9 @@ import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.shexR.{ RDF2ShEx, ShEx2RDF }
+import es.weso.utils.FileUtils
 import es.weso.utils.MapUtils._
+import cats.syntax.either._
 
 import util._
 
@@ -55,6 +57,7 @@ abstract sealed trait ShapeExpr {
 
 object ShapeExpr {
   def any: ShapeExpr = NodeConstraint.empty
+  def fail: ShapeExpr = NodeConstraint.valueSet(List(), List())
 }
 
 case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
@@ -379,6 +382,15 @@ object Schema {
 
   def empty: Schema =
     Schema(None, None, None, None, None)
+
+  def parse(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
+    val result = try {
+      fromString(cs, format, base)
+    } catch {
+      case e: Exception => Failure(throw new Exception("Exception reading string:\n" + FileUtils.formatLines(cs.toString) + "\nError: " + e.getMessage))
+    }
+    Either.fromTry(result).leftMap(_.getMessage)
+  }
 
   def fromString(
     cs: CharSequence,

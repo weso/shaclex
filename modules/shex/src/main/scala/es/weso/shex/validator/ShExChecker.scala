@@ -71,6 +71,14 @@ object ShExChecker extends CheckerCats {
     f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
+  def runLocalSafe[A](
+    c: Check[ShapeTyping],
+    f: ShapeTyping => ShapeTyping,
+    safe: (Err, ShapeTyping) => ShapeTyping): Check[ShapeTyping] =
+    cond(local(f)(c), (t: ShapeTyping) => ok(t), err => for {
+      t <- getTyping
+    } yield safe(err, t))
+
   def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
 
   def getTyping: Check[ShapeTyping] = getEnv // ask[Comput,ShapeTyping]

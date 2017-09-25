@@ -37,7 +37,6 @@ case class FixedShapeMap(
       case _ => Left(s"Only RDFNode's can be added as associations to fixedShapeMaps. Value = ${a.nodeSelector}")
     }
   }
-
 }
 
 object FixedShapeMap {

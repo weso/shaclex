@@ -18,6 +18,9 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
     t.getFailedValues(node)
 
   // TODO Review these definitions in case of anonymous shapes...
+  def hasInfoAbout(node: RDFNode, label: ShapeLabel): Boolean =
+    hasType(node, label) || hasNoType(node, label)
+
   def hasType(node: RDFNode, label: ShapeLabel): Boolean = {
     !getOkValues(node).filter(_.hasLabel(label)).isEmpty
   }
@@ -25,6 +28,9 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) {
   def hasNoType(node: RDFNode, label: ShapeLabel): Boolean = {
     !getFailedValues(node).filter(_.hasLabel(label)).isEmpty
   }
+
+  def getTypingResult(node: RDFNode, label: ShapeLabel): Option[TypingResult[ViolationError, String]] =
+    t.getMap.get(node).map(_.toList.filter(_._1.label == Some(label)).map(_._2).head)
 
   def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping =
     this.copy(t = t.addType(node, shapeType))
