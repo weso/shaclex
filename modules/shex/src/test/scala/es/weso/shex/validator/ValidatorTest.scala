@@ -32,17 +32,14 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
     rdfStr: String,
     schema: Schema): Unit = {
     val v = Validator(schema)
-    RDFAsJenaModel.fromChars(rdfStr, "TURTLE") match {
-      case Failure(e) => fail(s"Can't parse $rdfStr as RDF. Error: $e")
-      case Success(rdf) => {
-        val check = v.checkNodeLabel(node, label)
-        val r = ShExChecker.runCheck(check, rdf)
-        if (r.isOK) info("OK")
-        else {
-          fail(s"Failed\n$r")
-        }
-      }
-    }
+    val eitherResult = for {
+      rdf <- RDFAsJenaModel.parseChars(rdfStr, "TURTLE")
+      check = v.checkNodeLabel(node, label)
+      result <- ShExChecker.runCheck(check, rdf).toEither
+    } yield result
+    eitherResult.fold(err => fail(s"Error validating: $err"),
+      _.hasType(node,label) should be(true)
+    )
   }
 
   def shouldNotValidate(
@@ -51,16 +48,13 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
     rdfStr: String,
     schema: Schema): Unit = {
     val v = Validator(schema)
-    RDFAsJenaModel.fromChars(rdfStr, "TURTLE") match {
-      case Failure(e) => fail(s"Can't parse $rdfStr as RDF. Error: $e")
-      case Success(rdf) => {
-        val check = v.checkNodeLabel(node, label)
-        val r = ShExChecker.runCheck(check, rdf)
-        if (r.isOK) fail(s"Validated when expected to fail\n$r")
-        else {
-          info(s"Failed as expected\n$r")
-        }
-      }
-    }
+    val eitherResult = for {
+      rdf <- RDFAsJenaModel.parseChars(rdfStr,"TURTLE")
+      check = v.checkNodeLabel(node, label)
+      shapeTyping <- ShExChecker.runCheck(check, rdf).toEither
+    } yield shapeTyping
+   eitherResult.fold(err => fail(s"Error validating: $err"),
+     _.hasNoType(node,label) should be(true)
+   )
   }
 }
