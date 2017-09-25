@@ -46,16 +46,26 @@ case class ResultShapeMap(
   }
 
   def compareWith(other: ResultShapeMap): Either[String, Boolean] = {
-    resultMap.map {
-      case (node, shapes1) => other.resultMap.get(node) match {
-        case None => Left(s"Node $node appears in map1 with shapes $shapes1 but not in map2")
-        case Some(shapes2) => compareShapes(node, shapes1, shapes2)
-      }
-    }.toList.sequence.map(_ => true)
+    val nodes1 = resultMap.keySet
+    val nodes2 = other.resultMap.keySet
+    val delta = (nodes1 diff nodes2) union (nodes2 diff nodes1)
+    if (!delta.isEmpty) {
+      Left(s"Nodes in map1 != nodes in map2. Delta: $delta\nNodes1 = ${nodes1}\nNodes2=${nodes2}")
+    } else {
+      resultMap.map {
+        case (node, shapes1) => other.resultMap.get(node) match {
+          case None => Left(s"Node $node appears in map1 with shapes $shapes1 but not in map2")
+          case Some(shapes2) => compareShapes(node, shapes1, shapes2)
+        }
+      }.toList.sequence.map(_ => true)
+    }
   }
 
-  private def compareShapes(node: RDFNode, shapes1: Map[ShapeMapLabel, Info], shapes2: Map[ShapeMapLabel, Info]): Either[String, Boolean] = {
-    if (shapes1.keySet.size != shapes2.keySet.size) Left(s"Node $node has different values. Map1: $shapes1, Map2: $shapes2")
+  private def compareShapes(node: RDFNode,
+                            shapes1: Map[ShapeMapLabel, Info],
+                            shapes2: Map[ShapeMapLabel, Info]): Either[String, Boolean] = {
+    if (shapes1.keySet.size != shapes2.keySet.size)
+      Left(s"Node $node has different values. Map1: $shapes1, Map2: $shapes2")
     else {
       val es: List[Either[String, Boolean]] = shapes1.map {
         case (label, info1) => shapes2.get(label) match {

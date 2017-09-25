@@ -42,8 +42,26 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S,:b@:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S", ":a@:S,:b@:S,:c@:S")
-    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S,:d@:S", ":a@:S,:b@:S,:c@:S,:d@!:S,1@!:S")
-    shouldValidateWithShapeMap(rdfStr, shexStr, ":d@:S", ":d@!:S,1@!:S")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S,:d@:S", ":a@:S,:b@:S,:c@:S,:d@!:S")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":d@:S", ":d@!:S")
+  }
+
+  describe("Two recursive shapes") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:S { :p @:T }
+        |:T { :q @:S }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p :b .
+         |:b :q :a .
+         |:c :p :c .
+         |:d :p 1 .""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S,:b@:T")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":b@:T", ":a@:S,:b@:T")
   }
 
   def shouldValidateWithShapeMap(
