@@ -220,7 +220,7 @@ case class Validator(schema: Schema) extends LazyLogging {
   def checkPropertyShapePath(sref: ShapeRef, path: SHACLPath): NodeChecker = attempt => node => for {
     ps <- getPropertyShapeRef(sref, attempt, node)
     rdf <- getRDF
-    os = rdf.getValuesFromPath(node, path).toList
+    os = rdf.objectsWithPath(node, path).toList
     ts <- checkAll(os.map(o => {
       val newAttempt = Attempt(NodeShapePair(o, ShapeRef(ps.id)), Some(path))
       checkPropertyShape(ps)(newAttempt)(o)
@@ -302,7 +302,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     for {
       rdf <- getRDF
       node = attempt.node
-      os = rdf.getValuesFromPath(node, path).toList
+      os = rdf.objectsWithPath(node, path).toList
       // rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
       check: Check[ShapeTyping] = c match {
         case MinCount(n) => minCount(n, os, attempt, path)

@@ -100,11 +100,25 @@ case class RDFAsJenaModel(model: Model)
     JenaUtils.hasClass(nJena, cJena, model)
   }
 
-  override def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode] = {
-    val jenaNode: JenaRDFNode = JenaMapper.rdfNode2JenaNode(node, model)
+  override def nodesWithPath(path: SHACLPath): Set[(RDFNode, RDFNode)] = {
     val jenaPath: Path = JenaMapper.path2JenaPath(path, model)
-    val nodes = JenaUtils.getValuesFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
-    nodes
+    val pairs = JenaUtils.getNodesFromPath(jenaPath, model).
+      map(p => (JenaMapper.jenaNode2RDFNode(p._1), JenaMapper.jenaNode2RDFNode(p._2)))
+    pairs.toSet
+  }
+
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
+    val jenaNode: JenaRDFNode = JenaMapper.rdfNode2JenaNode(subj, model)
+    val jenaPath: Path = JenaMapper.path2JenaPath(path, model)
+    val nodes = JenaUtils.objectsFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
+    nodes.toSet
+  }
+
+  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Set[RDFNode] = {
+    val jenaNode: JenaRDFNode = JenaMapper.rdfNode2JenaNode(obj, model)
+    val jenaPath: Path = JenaMapper.path2JenaPath(path, model)
+    val nodes = JenaUtils.subjectsFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n))
+    nodes.toSet
   }
 
   def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {

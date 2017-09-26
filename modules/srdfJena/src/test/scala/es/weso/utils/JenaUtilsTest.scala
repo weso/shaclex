@@ -112,8 +112,8 @@ class JenaUtilsTest extends FunSpec with Matchers {
 
       val parent1 = new P_Link(parent.asNode)
       val parentPlus = new P_OneOrMoreN(parent1)
-      JenaUtils.getValuesFromPath(abraham, parent1, model) should contain only (herb, homer)
-      JenaUtils.getValuesFromPath(abraham, parentPlus, model) should contain only (bart, lisa, maggie, herb, homer)
+      JenaUtils.objectsFromPath(abraham, parent1, model) should contain only (herb, homer)
+      JenaUtils.objectsFromPath(abraham, parentPlus, model) should contain only (bart, lisa, maggie, herb, homer)
 
     }
   }

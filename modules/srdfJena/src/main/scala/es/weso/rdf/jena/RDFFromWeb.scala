@@ -95,6 +95,18 @@ case class RDFFromWeb() extends RDFReader {
     throw new Exception(s"Undefined hasSHACL at RDFFromWeb. Node: $n Class: $c")
   }
 
+  override def nodesWithPath(p: SHACLPath): Set[(RDFNode, RDFNode)] = {
+    throw new Exception(s"Undefined nodesWithPath at RDFFromWeb. Path: $p")
+  }
+
+  override def subjectsWithPath(p: SHACLPath, o: RDFNode): Set[RDFNode] = {
+    throw new Exception(s"Undefined subjectsWithPath at RDFFromWeb. Path: $p")
+  }
+
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
+    throw new Exception(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
+  }
+
   def model2triples(model: Model): Set[RDFTriple] = {
     model.listStatements().map(st => statement2triple(st)).toSet
   }
@@ -130,8 +142,5 @@ case class RDFFromWeb() extends RDFReader {
     } else
       throw new Exception("Unknown type of resource")
   }
-
-  override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
-    throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
 
 }

@@ -3,6 +3,7 @@ package es.weso.shapeMaps
 import cats.Show
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.{ IRI, RDFNode }
+import es.weso.rdf.path.SHACLPath
 import io.circe.{ Encoder, Json, JsonObject }
 import io.circe.syntax._
 
@@ -16,7 +17,7 @@ abstract class NodeSelector {
   }
 }
 case class RDFNodeSelector(node: RDFNode) extends NodeSelector
-case class TriplePattern(subjectPattern: Pattern, predicate: IRI, objectPattern: Pattern) extends NodeSelector
+case class TriplePattern(subjectPattern: Pattern, path: SHACLPath, objectPattern: Pattern) extends NodeSelector
 
 object NodeSelector {
   implicit val encodeNodeSelector: Encoder[NodeSelector] = new Encoder[NodeSelector] {

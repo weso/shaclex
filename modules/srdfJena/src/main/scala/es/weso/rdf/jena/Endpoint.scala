@@ -69,8 +69,17 @@ case class Endpoint(endpoint: String) extends RDFReader {
     throw new Exception(s"Undefined hasSHACL at Endpoint. Node: $n Class: $c")
   }
 
-  override def getValuesFromPath(node: RDFNode, path: SHACLPath) =
-    throw new Exception(s"Undefined getValuesFromPath at RDFFromWeb. Node $node, path: $path")
+  override def nodesWithPath(p: SHACLPath): Set[(RDFNode, RDFNode)] = {
+    throw new Exception(s"Undefined nodesWithPath at RDFFromWeb. Path: $p")
+  }
+
+  override def subjectsWithPath(p: SHACLPath, o: RDFNode): Set[RDFNode] = {
+    throw new Exception(s"Undefined subjectsWithPath at RDFFromWeb. Path: $p")
+  }
+
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
+    throw new Exception(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
+  }
 
   def rdfTriples(): Set[RDFTriple] = {
     val model = QueryExecutionFactory.sparqlService(endpoint, queryTriples).execConstruct()

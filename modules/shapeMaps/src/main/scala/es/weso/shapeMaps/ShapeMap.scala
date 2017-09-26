@@ -10,6 +10,7 @@ import io.circe._
 import io.circe.syntax._
 import ShapeMap._
 import es.weso.rdf.PREFIXES._
+import es.weso.rdf.path._
 
 abstract class ShapeMap {
   val associations: List[Association]
@@ -69,11 +70,11 @@ object ShapeMap {
         } yield newSm
         case TriplePattern(Focus, p, o) => o match {
           case WildCard => {
-            val nodes = rdf.triplesWithPredicate(p).map(_.subj)
+            val nodes = rdf.nodesWithPath(p).map(_._1)
             nodes.foldRight(current)(addNode(a))
           }
           case NodePattern(obj) => {
-            val nodes = rdf.triplesWithPredicateObject(p, obj).map(_.subj)
+            val nodes = rdf.subjectsWithPath(p, obj)
             nodes.foldRight(current)(addNode(a))
           }
           case Focus =>
@@ -81,11 +82,11 @@ object ShapeMap {
         }
         case TriplePattern(s, p, Focus) => s match {
           case WildCard => {
-            val nodes = rdf.triplesWithPredicate(p).map(_.obj)
+            val nodes = rdf.nodesWithPath(p).map(_._2)
             nodes.foldRight(current)(addNode(a))
           }
           case NodePattern(subj) => {
-            val nodes = rdf.triplesWithPredicateObject(p, subj).map(_.obj)
+            val nodes = rdf.objectsWithPath(subj, p)
             nodes.foldRight(current)(addNode(a))
           }
           case Focus =>
@@ -124,11 +125,24 @@ object ShapeMap {
         }
       }
 
+      implicit val showPath: Show[SHACLPath] = new Show[SHACLPath] {
+        final def show(path: SHACLPath): String = path match {
+          case PredicatePath(`rdf_type`) => "a"
+          case PredicatePath(iri) => a.nodesPrefixMap.qualify(iri)
+          case InversePath(path) => s"^${show(path)}"
+          case SequencePath(paths) => paths.map(show(_)).mkString("/")
+          case AlternativePath(paths) => paths.map(show(_)).mkString("|")
+          case OneOrMorePath(path) => s"${show(path)}+"
+          case ZeroOrMorePath(path) => s"${show(path)}*"
+          case ZeroOrOnePath(path) => s"${show(path)}?"
+        }
+      }
+
       implicit val showNodeSelector: Show[NodeSelector] = new Show[NodeSelector] {
         final def show(n: NodeSelector): String = {
           n match {
             case RDFNodeSelector(node) => a.nodesPrefixMap.qualify(node)
-            case TriplePattern(sub, pred, obj) => s"{${sub.show} ${pred.show} ${obj.show}}"
+            case TriplePattern(sub, path, obj) => s"{${sub.show} ${path.show} ${obj.show}}"
           }
         }
       }

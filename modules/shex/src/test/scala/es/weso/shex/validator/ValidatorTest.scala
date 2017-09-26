@@ -37,9 +37,9 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
       check = v.checkNodeLabel(node, label)
       result <- ShExChecker.runCheck(check, rdf).toEither
     } yield result
-    eitherResult.fold(err => fail(s"Error validating: $err"),
-      _.hasType(node,label) should be(true)
-    )
+    eitherResult.fold(
+      err => fail(s"Error validating: $err"),
+      _.hasType(node, label) should be(true))
   }
 
   def shouldNotValidate(
@@ -49,12 +49,12 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
     schema: Schema): Unit = {
     val v = Validator(schema)
     val eitherResult = for {
-      rdf <- RDFAsJenaModel.parseChars(rdfStr,"TURTLE")
+      rdf <- RDFAsJenaModel.parseChars(rdfStr, "TURTLE")
       check = v.checkNodeLabel(node, label)
       shapeTyping <- ShExChecker.runCheck(check, rdf).toEither
     } yield shapeTyping
-   eitherResult.fold(err => fail(s"Error validating: $err"),
-     _.hasNoType(node,label) should be(true)
-   )
+    eitherResult.fold(
+      err => fail(s"Error validating: $err"),
+      _.hasNoType(node, label) should be(true))
   }
 }

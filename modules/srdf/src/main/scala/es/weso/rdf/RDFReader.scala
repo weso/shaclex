@@ -66,7 +66,7 @@ trait RDFReader {
   def triplesWithSubject(n: RDFNode): Set[RDFTriple]
 
   /**
-   * Set of RDFTriples that contain a node as predicate
+   * Set of RDFTriples that relate two nodes by a predicate
    * @param p predicate
    */
   def triplesWithPredicate(p: IRI): Set[RDFTriple]
@@ -83,6 +83,25 @@ trait RDFReader {
    * @param o object
    */
   def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple]
+
+  /**
+   * Set of RDFTriples that relate two nodes by a SHACL path
+   * @param p path
+   */
+  def nodesWithPath(p: SHACLPath): Set[(RDFNode, RDFNode)]
+
+  /**
+   * Set of RDFTriples that relate a node with some object by a path
+   * @param p path
+   * @param o object
+   */
+  def subjectsWithPath(p: SHACLPath, o: RDFNode): Set[RDFNode]
+
+  /**
+   * return the values associated with a node by a path
+   * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
+   */
+  def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode]
 
   def triplesWithType(expectedType: IRI): Set[RDFTriple] = {
     triplesWithPredicateObject(rdf_type, expectedType)
@@ -115,12 +134,6 @@ trait RDFReader {
    * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
    */
   def getSHACLInstances(cls: RDFNode): Seq[RDFNode]
-
-  /**
-   * return the values associated with a node by a path
-   * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
-   */
-  def getValuesFromPath(node: RDFNode, path: SHACLPath): Seq[RDFNode]
 
   def getTypes(node: RDFNode): Set[RDFNode] = {
     triplesWithSubjectPredicate(node, rdf_type).map(_.obj)

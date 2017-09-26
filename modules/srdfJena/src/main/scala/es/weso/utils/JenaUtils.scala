@@ -270,22 +270,48 @@ object JenaUtils {
     QueryExecutionFactory.create(pss.asQuery, model).execAsk
   }
 
-  def getValuesFromPath(n: RDFNode, path: Path, model: Model): Seq[RDFNode] = {
+  def getNodesFromPath(path: Path, model: Model): Seq[(RDFNode, RDFNode)] = {
+    // Build the following query:
+    // SELECT ?sub ?obj { ?sub ?path ?obj }
+    val query: Query = QueryFactory.make()
+    query.setQuerySelectType()
+    val sub = Var.alloc("sub")
+    val obj = Var.alloc("obj")
+    val e = new ElementPathBlock()
+    e.addTriple(new TriplePath(sub, path, obj))
+    query.addResultVar(sub)
+    query.addResultVar(obj)
+    query.setQueryPattern(e)
+    val result = QueryExecutionFactory.create(query, model).execSelect
+    result.asScala.toSeq.map(qs => (qs.get("sub"), qs.get("obj")))
+  }
+
+  def objectsFromPath(subj: RDFNode, path: Path, model: Model): Seq[RDFNode] = {
     // Build the following query:
     // SELECT ?obj { ?n ?path ?obj }
     val query: Query = QueryFactory.make()
     query.setQuerySelectType()
     val obj = Var.alloc("obj")
     val e = new ElementPathBlock()
-    e.addTriple(new TriplePath(n.asNode, path, obj))
+    e.addTriple(new TriplePath(subj.asNode, path, obj))
     query.addResultVar(obj)
     query.setQueryPattern(e)
-    // val pss : ParameterizedSparqlString = new ParameterizedSparqlString()
-    // pss.setCommandText("SELECT ?o { ?n ?path ?o . }")
-    // pss.setParam("n",n)
-    //     pss.setParam("path",path)
     val result = QueryExecutionFactory.create(query, model).execSelect
     result.asScala.toSeq.map(qs => qs.get("obj"))
+  }
+
+  def subjectsFromPath(obj: RDFNode, path: Path, model: Model): Seq[RDFNode] = {
+    // Build the following query:
+    // SELECT ?sub { ?sub ?path ?obj }
+    val query: Query = QueryFactory.make()
+    query.setQuerySelectType()
+    val subj = Var.alloc("subj")
+    val e = new ElementPathBlock()
+    e.addTriple(new TriplePath(subj, path, obj.asNode))
+    query.addResultVar(subj)
+    query.setQueryPattern(e)
+    val result = QueryExecutionFactory.create(query, model).execSelect
+    result.asScala.toSeq.map(qs => qs.get("subj"))
   }
 
   /**

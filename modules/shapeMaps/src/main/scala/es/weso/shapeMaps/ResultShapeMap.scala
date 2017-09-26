@@ -61,9 +61,10 @@ case class ResultShapeMap(
     }
   }
 
-  private def compareShapes(node: RDFNode,
-                            shapes1: Map[ShapeMapLabel, Info],
-                            shapes2: Map[ShapeMapLabel, Info]): Either[String, Boolean] = {
+  private def compareShapes(
+    node: RDFNode,
+    shapes1: Map[ShapeMapLabel, Info],
+    shapes2: Map[ShapeMapLabel, Info]): Either[String, Boolean] = {
     if (shapes1.keySet.size != shapes2.keySet.size)
       Left(s"Node $node has different values. Map1: $shapes1, Map2: $shapes2")
     else {

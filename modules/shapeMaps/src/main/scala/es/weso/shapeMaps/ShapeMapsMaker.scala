@@ -9,6 +9,7 @@ import es.weso.rdf.{ Prefix, PrefixMap }
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import Parser._
+import es.weso.rdf.path._
 import org.antlr.v4.runtime._
 import org.antlr.v4.runtime.tree.ParseTree
 import es.weso.shapeMaps.parser.ShapeMapParser.{ StringContext => ShapeMapStringContext, _ }
@@ -59,24 +60,56 @@ class ShapeMapsMaker(
 
   def visitTriplePattern(ctx: TriplePatternContext): Builder[TriplePattern] = ctx match {
     case s: FocusSubjectContext => for {
-      predicate <- visitPredicate(s.predicate())
+      path <- visitPath(s.path())
       objectPattern <- if (isDefined(s.objectTerm())) for {
         obj <- visitObjectTerm(s.objectTerm())
       } yield NodePattern(obj)
       else ok(WildCard)
-    } yield TriplePattern(Focus, predicate, objectPattern)
+    } yield TriplePattern(Focus, path, objectPattern)
     case s: FocusObjectContext => for {
-      predicate <- visitPredicate(s.predicate())
+      path <- visitPath(s.path())
       subjectPattern <- if (isDefined(s.subjectTerm())) for {
         subj <- visitSubjectTerm(s.subjectTerm())
       } yield NodePattern(subj)
       else ok(WildCard)
-    } yield TriplePattern(subjectPattern, predicate, Focus)
+    } yield TriplePattern(subjectPattern, path, Focus)
   }
 
-  override def visitPredicate(ctx: PredicateContext): Builder[IRI] = ctx match {
-    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(), nodesPrefixMap)
-    case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
+  override def visitPath(ctx: PathContext): Builder[SHACLPath] =
+    visitPathAlternative(ctx.pathAlternative())
+
+  override def visitPathAlternative(ctx: PathAlternativeContext): Builder[SHACLPath] =
+    for {
+      alts <- {
+        val r: List[Builder[SHACLPath]] = ctx.pathSequence().asScala.map(visitPathSequence(_)).toList
+        r.sequence
+      }
+    } yield if (alts.length == 1) alts.head
+    else AlternativePath(alts)
+
+  override def visitPathSequence(ctx: PathSequenceContext): Builder[SHACLPath] =
+    for {
+      seqs <- {
+        val r: List[Builder[SHACLPath]] = ctx.pathEltOrInverse().asScala.map(visitPathEltOrInverse(_)).toList
+        r.sequence
+      }
+    } yield if (seqs.length == 1) seqs.head
+    else SequencePath(seqs)
+
+  override def visitPathEltOrInverse(ctx: PathEltOrInverseContext): Builder[SHACLPath] = for {
+    pathElt <- visitPathElt(ctx.pathElt())
+  } yield {
+    if (isDefined(ctx.inverse())) InversePath(pathElt)
+    else pathElt
+  }
+
+  // TODO: pathMod
+  override def visitPathElt(ctx: PathEltContext): Builder[SHACLPath] =
+    visitPathPrimary(ctx.pathPrimary())
+
+  override def visitPathPrimary(ctx: PathPrimaryContext): Builder[SHACLPath] = ctx match {
+    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(), nodesPrefixMap).map(PredicatePath(_))
+    case _ if isDefined(ctx.rdfType()) => ok(PredicatePath(rdf_type))
   }
 
   override def visitShapeLabel(ctx: ShapeLabelContext): Builder[(ShapeMapLabel, Info)] = {

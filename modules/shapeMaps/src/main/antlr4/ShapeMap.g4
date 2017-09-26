@@ -9,8 +9,36 @@ subjectTerm      : iri | rdfType ;
 objectTerm       : subjectTerm | literal ;
 
 // TODO: Check why the spec has iri instead of predicate
-triplePattern    : '{' KW_FOCUS predicate (objectTerm | '_' ) '}' # focusSubject
-                 | '{' (subjectTerm | '_') predicate KW_FOCUS '}' # focusObject
+triplePattern    : '{' KW_FOCUS path (objectTerm | '_' ) '}' # focusSubject
+                 | '{' (subjectTerm | '_') path KW_FOCUS '}' # focusObject
+                 ;
+
+// SPARQL Grammar rule 82
+path             : pathAlternative ;
+
+pathAlternative  : pathSequence ( '|' pathSequence ) *
+                 ;
+
+pathSequence     : pathEltOrInverse ( '/' pathEltOrInverse ) *
+                 ;
+
+pathEltOrInverse : pathElt | inverse pathElt
+                 ;
+
+inverse          : '^'
+                 ;
+
+pathElt          : pathPrimary pathMod?
+                 ;
+
+// Todo: Add pathNegatedPrimarySet
+pathPrimary      : iri | rdfType | '(' path ')'
+                 ;
+
+// Todo: Add integer ranges
+pathMod          : '*'    # star
+                 | '?'    # optional
+                 | '+'    # plus
                  ;
 
 literal         : rdfLiteral

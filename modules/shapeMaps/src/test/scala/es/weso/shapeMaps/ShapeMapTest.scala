@@ -4,6 +4,7 @@ import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
+import es.weso.rdf.path.PredicatePath
 
 import scala.util.{ Failure, Success }
 
@@ -83,14 +84,14 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
     shouldParse(
       "{ FOCUS a :A} @ ex:S",
       QueryShapeMap(List(Association(
-        nodeSelector = TriplePattern(Focus, rdfType, NodePattern(IRI("http://default.org/A"))),
+        nodeSelector = TriplePattern(Focus, PredicatePath(rdfType), NodePattern(IRI("http://default.org/A"))),
         shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       "{FOCUS :p _ }@ :S",
       QueryShapeMap(List(Association(
-        nodeSelector = TriplePattern(Focus, IRI("http://default.org/p"), WildCard),
+        nodeSelector = TriplePattern(Focus, PredicatePath(IRI("http://default.org/p")), WildCard),
         shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
