@@ -198,6 +198,7 @@ case class Pattern(p: String, flags: Option[String]) extends StringFacet {
 }
 
 sealed trait NumericFacet extends XsFacet
+
 case class MinInclusive(n: NumericLiteral) extends NumericFacet {
   val fieldName = "mininclusive"
 }

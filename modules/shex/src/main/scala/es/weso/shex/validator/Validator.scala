@@ -112,12 +112,13 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case Some(shape) => ok(shape)
     }
 
-  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping =
+  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
     cond(getShapeLabel(shapeName), (shapeLabel: ShapeLabel) => checkNodeLabel(node, shapeLabel), err => for {
       t <- getTyping
     } yield t.addNotEvidence(node, ShapeType(ShapeExpr.fail, Some(IRILabel(IRI(shapeName))), schema), err))
+  }
 
-  def checkNodeStart(node: RDFNode): CheckTyping =
+  def checkNodeStart(node: RDFNode): CheckTyping = {
     schema.start match {
       case None => errStr(s"checking node $node against start declaration of schema. No start declaration found")
       case Some(shape) => {
@@ -127,6 +128,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         checkNodeShapeExpr(attempt, node, shape)
       }
     }
+  }
 
   def getShapeLabel(str: String): Check[ShapeLabel] = {
     logger.info(s"getShapeLabel. Label: ${str}")

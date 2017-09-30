@@ -3,6 +3,7 @@ package es.weso.shex.validator
 import cats._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.checking.Checker
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.nodes._
 import es.weso.shex.ViolationError._
@@ -60,6 +61,27 @@ case class FacetChecker(schema: Schema)
           case Left(msg) => errStr(msg)
         }
       }
+      case MinInclusive(m) => for {
+        d <- minInclusive(m,node)
+        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MinInclusive($m) with $node"),
+          s"${node.show} satisfies MinInclusive($m)")
+      } yield r
+      case MinExclusive(m) => for {
+        d <- minExclusive(m,node)
+        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MinExclusive($m) with $node"),
+          s"${node.show} satisfies MinExclusive($m)")
+      } yield r
+      case MaxInclusive(m) => for {
+        d <- maxInclusive(m,node)
+        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MaxInclusive($m) with $node"),
+          s"${node.show} satisfies MaxInclusive($m)")
+      } yield r
+      case MaxExclusive(m) => for {
+        d <- maxExclusive(m,node)
+        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MaxExclusive($m) with $node"),
+          s"${node.show} satisfies MaxExclusive($m)")
+      } yield r
+
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")
         errStr(s"Not implemented checkFacet: $facet")
@@ -67,7 +89,96 @@ case class FacetChecker(schema: Schema)
     }
   }
 
-  def matchRegex(pattern: String, str: String) = {
+/*  def matchRegex(pattern: String, str: String) = {
 
+  } */
+
+  // TODO: I'd like to refactor the following code to avoid DRY...
+  // Problem, how to do it in a compatible way with type safety
+  type Comparator = (NumericLiteral, RDFNode) => Check[Boolean]
+
+  def minInclusive: Comparator = (nl,node) => nl match {
+    case NumericInt(ni) => node match {
+      case IntegerLiteral(nodeInt) => ok(ni <= nodeInt)
+      case DoubleLiteral(d) => ok(ni <= d)
+      case DecimalLiteral(d) => ok(ni <= d)
+      case _ => errStr(s"Cannot compare minInclusive($ni) with node $node")
+    }
+    case NumericDouble(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd <= nodeInt)
+      case DoubleLiteral(d) => ok(nd <= d)
+      case DecimalLiteral(d) => ok(nd <= d)
+      case _ => errStr(s"Cannot compare minInclusive($nd) with node $node")
+    }
+    case NumericDecimal(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd <= nodeInt)
+      case DoubleLiteral(d) => ok(nd <= d)
+      case DecimalLiteral(d) => ok(nd <= d)
+      case _ => errStr(s"Cannot compare minInclusive($nd) with node $node")
+    }
   }
+
+  def minExclusive: Comparator = (nl,node) => nl match {
+    case NumericInt(ni) => node match {
+      case IntegerLiteral(nodeInt) => ok(ni < nodeInt)
+      case DoubleLiteral(d) => ok(ni < d)
+      case DecimalLiteral(d) => ok(ni < d)
+      case _ => errStr(s"Cannot compare minExclusive($ni) with node $node")
+    }
+    case NumericDouble(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd < nodeInt)
+      case DoubleLiteral(d) => ok(nd < d)
+      case DecimalLiteral(d) => ok(nd < d)
+      case _ => errStr(s"Cannot compare minExclusive($nd) with node $node")
+    }
+    case NumericDecimal(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd < nodeInt)
+      case DoubleLiteral(d) => ok(nd < d)
+      case DecimalLiteral(d) => ok(nd < d)
+      case _ => errStr(s"Cannot compare minExclusive($nd) with node $node")
+    }
+  }
+
+  def maxInclusive: Comparator = (nl,node) => nl match {
+    case NumericInt(ni) => node match {
+      case IntegerLiteral(nodeInt) => ok(ni >= nodeInt)
+      case DoubleLiteral(d) => ok(ni >= d)
+      case DecimalLiteral(d) => ok(ni >= d)
+      case _ => errStr(s"Cannot compare maxInclusive($ni) with node $node")
+    }
+    case NumericDouble(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd >= nodeInt)
+      case DoubleLiteral(d) => ok(nd >= d)
+      case DecimalLiteral(d) => ok(nd >= d)
+      case _ => errStr(s"Cannot compare maxInclusive($nd) with node $node")
+    }
+    case NumericDecimal(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd >= nodeInt)
+      case DoubleLiteral(d) => ok(nd >= d)
+      case DecimalLiteral(d) => ok(nd >= d)
+      case _ => errStr(s"Cannot compare maxInclusive($nd) with node $node")
+    }
+  }
+
+  def maxExclusive: Comparator = (nl,node) => nl match {
+    case NumericInt(ni) => node match {
+      case IntegerLiteral(nodeInt) => ok(ni > nodeInt)
+      case DoubleLiteral(d) => ok(ni > d)
+      case DecimalLiteral(d) => ok(ni > d)
+      case _ => errStr(s"Cannot compare maxExclusive($ni) with node $node")
+    }
+    case NumericDouble(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd > nodeInt)
+      case DoubleLiteral(d) => ok(nd > d)
+      case DecimalLiteral(d) => ok(nd > d)
+      case _ => errStr(s"Cannot compare maxExclusive($nd) with node $node")
+    }
+    case NumericDecimal(nd) => node match {
+      case IntegerLiteral(nodeInt) => ok(nd > nodeInt)
+      case DoubleLiteral(d) => ok(nd > d)
+      case DecimalLiteral(d) => ok(nd > d)
+      case _ => errStr(s"Cannot compare maxExclusive($nd) with node $node")
+    }
+  }
+
 }

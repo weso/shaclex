@@ -14,20 +14,24 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     val shexStr =
       """
         |prefix : <http://example.org/>
+        |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+        |
         |:S { :p . }
+        |:CanVote xsd:integer MinInclusive 18
       """.stripMargin
     val rdfStr =
       """|prefix : <http://example.org/>
          |:a :p :b .
          |:c :p 1 .""".stripMargin
 
-    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
+/*    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S", ":a@:S,:b@!:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S", ":a@:S,:b@!:S,:c@:S")
-    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:a@:T", ":a@:S,:a@!:T")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:a@:T", ":a@:S,:a@!:T") */
+    shouldValidateWithShapeMap(rdfStr, shexStr, "23@:CanVote", "23@:CanVote")
   }
 
-  describe("Recursive shape") {
+/*  describe("Recursive shape") {
     val shexStr =
       """
         |prefix : <http://example.org/>
@@ -63,7 +67,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S,:b@:T")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":b@:T", ":a@:S,:b@:T")
   }
-
+*/
   def shouldValidateWithShapeMap(
     rdfStr: String,
     shexStr: String,

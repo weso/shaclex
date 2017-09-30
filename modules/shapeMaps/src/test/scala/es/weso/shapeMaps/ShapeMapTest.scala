@@ -21,6 +21,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
   }
 
   describe("ShapeMaps parser") {
+
     val nodesPrefixMap = PrefixMap.empty.
       addPrefix("", IRI("http://default.org/")).
       addPrefix("ex", IRI("http://example.org/"))
@@ -35,6 +36,16 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
         List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
+
+    shouldParse(
+      "23@Start",
+      QueryShapeMap(
+        List(Association(
+          nodeSelector = RDFNodeSelector(IntegerLiteral(23)), shapeLabel = Start)),
+         nodesPrefixMap, shapesPrefixMap),
+      nodesPrefixMap,
+      shapesPrefixMap)
+
     shouldParse(
       "<http://example.org/x>@Start",
       QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
@@ -81,6 +92,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
         shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
+
     shouldParse(
       "{ FOCUS a :A} @ ex:S",
       QueryShapeMap(List(Association(
@@ -88,6 +100,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
         shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
+
     shouldParse(
       "{FOCUS :p _ }@ :S",
       QueryShapeMap(List(Association(
