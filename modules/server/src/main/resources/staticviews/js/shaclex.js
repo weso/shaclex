@@ -10,10 +10,10 @@ console.log("urlShaclex: " + urlShaclex);
 var codeMirrorData ;
 var codeMirrorSchema ;
 var codeMirrorShapeMap ;
-var codeMirrorNodes = new Array();
-var codeMirrorShapes = new Array();
-var inputRows = 0;
-
+// var codeMirrorNodes = new Array();
+// var codeMirrorShapes = new Array();
+// var inputRows = 0;
+/*
 function newCodeMirrorNode(n) {
  var nodeId = document.getElementById("node" + n);
  if (nodeId) {
@@ -115,6 +115,7 @@ function noNewLine(instance,change) {
     change.update(change.from, change.to, [newtext]);
     return true;
 }
+*/
 
 function changeMode(element,syntax) {
  var mode = "turtle";
@@ -142,6 +143,7 @@ function changeMode(element,syntax) {
 function changeTheme(theme) {
  codeMirrorData.setOption("theme",theme);
  codeMirrorSchema.setOption("theme",theme);
+ codeMirrorShapeMap.setOption("theme",theme);
 }
 
 function changeSchemaSeparated(value) {
@@ -158,8 +160,9 @@ function changeTriggerMode(value) {
  console.log("Changing triggermode: " + value);
  switch (value.toUpperCase()) {
   case "TARGETDECLS":
-    $("#nodeShapeContainer").hide();
-    console.log("Hiding all: " + value);
+//    $("#nodeShapeContainer").hide();
+    $("#shapeMapDiv").hide();
+//    console.log("Hiding all: " + value);
     break;
 /*  case "NODESHAPE":
     $("#nodeShapeContainer").show();
@@ -170,7 +173,8 @@ function changeTriggerMode(value) {
     console.log("Showing node only: " + value);
     break; */
   case "SHAPEMAP":
-    $("#nodeShapeContainer").show();
+//    $("#nodeShapeContainer").show();
+    $("#shapeMapDiv").show();
     console.log("Showing shape map: " + value);
     break;
 
@@ -263,6 +267,7 @@ function getDataFormat(element) {
  window.alert("Data format of " + element + " format: " + format);
 }
 
+/*
 function prepareShapeMap() {
  console.log("Preparing shape map:" );
  inputRows = getInputRows();
@@ -278,7 +283,7 @@ function prepareShapeMap() {
  console.log("pairs: " + JSON.stringify(pairs) + ". Shape-map = " + str);
  return str;
 }
-
+*/
 $(document).ready(function(){
 
 // When loading document get result from data-result attribute and show it
@@ -327,12 +332,13 @@ if (shapeMap) {
  codeMirrorShapeMap = CodeMirror.fromTextArea(shapeMap, {
    lineNumbers: true,
    mode: "shex",
-   height: 1,
+   viewportMargin: Infinity,
    matchBrackets: true
  });
- codeMirrorShapeMap.setSize(null,"1.5em");
+ codeMirrorShapeMap.setSize(null,"5em");
 }
 
+/*
 var inputRows = getInputRows();
 console.log("Creating " + inputRows + " codeMirrors");
 
@@ -344,6 +350,7 @@ for(i = 0; i < inputRows; i++) {
 
 console.log("Adding empty node shape entry..."); // Adds an empty entry
 addNodeShapeEntry();
+*/
 
 console.log("Adding handler to validateButton...");
 $("#validateButton").click(function(e){

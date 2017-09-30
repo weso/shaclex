@@ -10,7 +10,8 @@ h1 {
 }
 
 #data,
-#schema {
+#schema,
+#shapeMap {
  font-family: monospace;
 }
 
@@ -95,4 +96,9 @@ div.submit {
 
 .explanation {
   color: DimGray;
+}
+
+.CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
 }
