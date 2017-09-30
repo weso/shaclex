@@ -24,14 +24,14 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
          |:a :p :b .
          |:c :p 1 .""".stripMargin
 
-/*    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
+    /*    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S", ":a@:S,:b@!:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S", ":a@:S,:b@!:S,:c@:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:a@:T", ":a@:S,:a@!:T") */
     shouldValidateWithShapeMap(rdfStr, shexStr, "23@:CanVote", "23@:CanVote")
   }
 
-/*  describe("Recursive shape") {
+  /*  describe("Recursive shape") {
     val shexStr =
       """
         |prefix : <http://example.org/>

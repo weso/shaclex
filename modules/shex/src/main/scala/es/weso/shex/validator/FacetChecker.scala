@@ -62,22 +62,22 @@ case class FacetChecker(schema: Schema)
         }
       }
       case MinInclusive(m) => for {
-        d <- minInclusive(m,node)
+        d <- minInclusive(m, node)
         r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MinInclusive($m) with $node"),
           s"${node.show} satisfies MinInclusive($m)")
       } yield r
       case MinExclusive(m) => for {
-        d <- minExclusive(m,node)
+        d <- minExclusive(m, node)
         r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MinExclusive($m) with $node"),
           s"${node.show} satisfies MinExclusive($m)")
       } yield r
       case MaxInclusive(m) => for {
-        d <- maxInclusive(m,node)
+        d <- maxInclusive(m, node)
         r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MaxInclusive($m) with $node"),
           s"${node.show} satisfies MaxInclusive($m)")
       } yield r
       case MaxExclusive(m) => for {
-        d <- maxExclusive(m,node)
+        d <- maxExclusive(m, node)
         r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MaxExclusive($m) with $node"),
           s"${node.show} satisfies MaxExclusive($m)")
       } yield r
@@ -89,7 +89,7 @@ case class FacetChecker(schema: Schema)
     }
   }
 
-/*  def matchRegex(pattern: String, str: String) = {
+  /*  def matchRegex(pattern: String, str: String) = {
 
   } */
 
@@ -97,7 +97,7 @@ case class FacetChecker(schema: Schema)
   // Problem, how to do it in a compatible way with type safety
   type Comparator = (NumericLiteral, RDFNode) => Check[Boolean]
 
-  def minInclusive: Comparator = (nl,node) => nl match {
+  def minInclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => node match {
       case IntegerLiteral(nodeInt) => ok(ni <= nodeInt)
       case DoubleLiteral(d) => ok(ni <= d)
@@ -118,7 +118,7 @@ case class FacetChecker(schema: Schema)
     }
   }
 
-  def minExclusive: Comparator = (nl,node) => nl match {
+  def minExclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => node match {
       case IntegerLiteral(nodeInt) => ok(ni < nodeInt)
       case DoubleLiteral(d) => ok(ni < d)
@@ -139,7 +139,7 @@ case class FacetChecker(schema: Schema)
     }
   }
 
-  def maxInclusive: Comparator = (nl,node) => nl match {
+  def maxInclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => node match {
       case IntegerLiteral(nodeInt) => ok(ni >= nodeInt)
       case DoubleLiteral(d) => ok(ni >= d)
@@ -160,7 +160,7 @@ case class FacetChecker(schema: Schema)
     }
   }
 
-  def maxExclusive: Comparator = (nl,node) => nl match {
+  def maxExclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => node match {
       case IntegerLiteral(nodeInt) => ok(ni > nodeInt)
       case DoubleLiteral(d) => ok(ni > d)

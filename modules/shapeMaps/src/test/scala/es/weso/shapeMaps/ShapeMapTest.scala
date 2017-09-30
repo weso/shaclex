@@ -42,7 +42,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       QueryShapeMap(
         List(Association(
           nodeSelector = RDFNodeSelector(IntegerLiteral(23)), shapeLabel = Start)),
-         nodesPrefixMap, shapesPrefixMap),
+        nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 

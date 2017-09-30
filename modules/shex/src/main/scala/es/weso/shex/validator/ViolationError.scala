@@ -2,7 +2,9 @@ package es.weso.shex
 import cats._, data._
 import implicits._
 
-case class ViolationError(msg: String)
+case class ViolationError(msg: String) {
+  override def toString = ViolationError.showViolationError.show(this)
+}
 
 object ViolationError {
 
