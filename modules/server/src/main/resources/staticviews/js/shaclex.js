@@ -219,7 +219,7 @@ function showQualify(node, prefix) {
  if (node.match(/^[0-9\"\'\_]/)) return node;
  for (var key in prefix) {
      if (node.startsWith(prefix[key])) {
-         return "<abbr title=\"%lt;" + node + "&gt;\">" + key + ":" + node.slice(prefix[key].length) + "</abbr>";
+         return "<abbr title=\"&lt;" + node + "&gt;\">" + key + ":" + node.slice(prefix[key].length) + "</abbr>";
      }
  }
  return "&lt;" + node + "&gt;" ;
