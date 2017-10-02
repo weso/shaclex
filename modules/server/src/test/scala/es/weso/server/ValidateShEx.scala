@@ -56,9 +56,11 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
 
       response.status should be(Ok)
       val strResponse = response.as[String].unsafeRunSync()
+      println(s"strResponse=$strResponse")
       val jsonResponse = parse(strResponse).getOrElse(Json.Null)
+      println(s"jsonResponse=$jsonResponse")
       val isValid: Option[Boolean] =
-        jsonResponse.hcursor.get[Boolean]("isValid").toOption
+        jsonResponse.hcursor.get[Boolean]("valid").toOption
       isValid shouldBe Some(true)
     }
   }

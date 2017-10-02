@@ -244,8 +244,8 @@ function showSolution(solution,nodesPrefixMap, shapesPrefixMap) {
    });
    $.each(infoNodes.hasNoShapes, function(shape,explanation) {
      console.log("Row..." + node + ". noShape: " + shape + " Explanation: " + escapeHtml(explanation));
-     table += "<tr><td class='node'><code>&lt;" + node + "&gt;</code></td>" +
-              "<td class='hasNoShape'>- <code>&lt;" + shape + "&gt;</code></td>" +
+     table += "<tr><td class='node'><code>" + showQualify(node, nodesPrefixMap) + "</code></td>" +
+              "<td class='hasNoShape'>- <code>" + showQualify(shape, shapesPrefixMap) + "</code></td>" +
               "<td class='explanation'>" + escapeHtml(explanation) + "</td></tr>" ;
    });
  });
