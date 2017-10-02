@@ -5,7 +5,9 @@ import cats.implicits
 import es.weso.rdf.PrefixMap
 
 case class SchemaLabel(str: String, pm: PrefixMap = PrefixMap.empty) {
-  def show: String = pm.qualifyString(str)
+  def show: String = {
+    pm.qualifyString(str)
+  }
 
   def canEqual(a: Any) = a.isInstanceOf[SchemaLabel]
 

@@ -20,10 +20,16 @@ object table {
     override def toString(): String = s"C$n"
   }
 
-  implicit lazy val orderingConstraintRef = new Ordering[ConstraintRef] {
-    def compare(c1: ConstraintRef, c2: ConstraintRef): Int = {
-      Ordering[Int].compare(c1.n, c2.n)
+  object ConstraintRef {
+    implicit lazy val orderingConstraintRef = new Ordering[ConstraintRef] {
+      def compare(c1: ConstraintRef, c2: ConstraintRef): Int = {
+        Ordering[Int].compare(c1.n, c2.n)
+      }
     }
+
+    implicit lazy val showConstraintRef =
+      Show.fromToString[ConstraintRef]
+
   }
 
   // Constraints table
@@ -33,17 +39,17 @@ object table {
     elems: Int,
     schema: Schema) {
 
-    def addPath(p: Path, n: ConstraintRef): PathsMap =
+    private[validator] def addPath(p: Path, n: ConstraintRef): PathsMap =
       paths.updated(p, paths.get(p).getOrElse(Set()) + n)
 
-    def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
+    private[validator] def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
       constraints.get(cref).map(ce => ce match {
         case Pos(se) => se
         case Neg(se) => ShapeNot(None, se)
       })
     }
 
-    lazy val isAmbiguous: Boolean = {
+    private[validator] lazy val isAmbiguous: Boolean = {
       paths.values.map(_.size).exists(_ > 1)
     }
 
@@ -62,10 +68,10 @@ object table {
       }
     }
 
-    def mkTable(te: TripleExpr): ResultPair =
+    private[validator] def mkTable(te: TripleExpr): ResultPair =
       mkTableAux(te, CTable.empty)
 
-    def mkTableAux(te: TripleExpr, current: CTable): ResultPair = {
+    private def mkTableAux(te: TripleExpr, current: CTable): ResultPair = {
       te match {
         case e: EachOf => {
           val zero: ResultPair = (current, Empty)

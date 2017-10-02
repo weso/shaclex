@@ -192,6 +192,11 @@ function resetResult(result) {
 function showResult(result) {
  result = $("#resultDiv").data("result");
  console.log("Show result: " + JSON.stringify(result));
+ console.log("Result.nodesPrefixMap: " + JSON.stringify(result.nodesPrefixMap));
+ var nodesPrefixMap = result.nodesPrefixMap ;
+ var shapesPrefixMap = result.shapesPrefixMap ;
+ console.log("nodesPrefixMap: " + JSON.stringify(nodesPrefixMap));
+ console.log("shapesPrefixMap: " + JSON.stringify(shapesPrefixMap));
  if(result) {
   if (result.isValid || result.valid) {
    $("#resultDiv").removeClass("notValid").addClass("valid");
@@ -200,7 +205,9 @@ function showResult(result) {
   }
   $("#resultDiv").append($("<h2>").text("Result"));
   $("#resultDiv").append($("<p>").text(result.message));
-  result.solutions.forEach(showSolution);
+  result.solutions.forEach(function(solution) {
+   showSolution(solution,nodesPrefixMap,shapesPrefixMap);
+  });
   showErrors(result.errors);
   var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
   var details = $("<details/>").append(pre);
@@ -208,8 +215,22 @@ function showResult(result) {
  }
 }
 
-function showSolution(solution) {
+function showQualify(node, prefix) {
+ if (node.match(/^[0-9\"\'\_]/)) return node;
+ for (var key in prefix) {
+     if (node.startsWith(prefix[key])) {
+         return "<abbr title=\"%lt;" + node + "&gt;\">" + key + ":" + node.slice(prefix[key].length) + "</abbr>";
+     }
+ }
+ return "&lt;" + node + "&gt;" ;
+}
+
+
+
+function showSolution(solution,nodesPrefixMap, shapesPrefixMap) {
  console.log("Solution: " + JSON.stringify(solution));
+ console.log("Solution, nodesPrefixMap: " + JSON.stringify(nodesPrefixMap));
+ console.log("Solution, shapesPrefixMap: " + JSON.stringify(shapesPrefixMap));
  var table = "";
 
  table += "<tr><th>Node</th><th>Shape</th><th>Evidences</th>";
@@ -217,8 +238,8 @@ function showSolution(solution) {
    console.log("node: " + JSON.stringify(node) + " infoNodes: " + JSON.stringify(infoNodes));
    $.each(infoNodes.hasShapes, function(shape,explanation) {
      console.log("Row..." + node + ". shape: " + shape + " Explanation: " + escapeHtml(explanation));
-     table += "<tr><td class='node'><code>&lt;" + node + "&gt;</code></td>" +
-                "<td class='hasShape'>+ <code>&lt;" + shape + "&gt;</code></td>" +
+     table += "<tr><td class='node'><code>" + showQualify(node, nodesPrefixMap) + "</code></td>" +
+                "<td class='hasShape'>+ <code>" + showQualify(shape, shapesPrefixMap) + "</code></td>" +
                 "<td class='explanation'>" + escapeHtml(explanation) + "</td></tr>" ;
    });
    $.each(infoNodes.hasNoShapes, function(shape,explanation) {

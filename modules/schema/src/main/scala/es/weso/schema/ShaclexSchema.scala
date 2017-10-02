@@ -38,7 +38,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       message = if (r.isOK) "Valid" else "Not valid",
       solutions = r.results.map(cnvShapeTyping(_, rdf)),
       errors = r.errors.map(cnvViolationError(_)),
-      trigger = None)
+      trigger = None,
+      nodesPrefixMap = rdf.getPrefixMap(),
+      shapesPrefixMap = schema.pm)
 
   def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): Solution = {
     Solution(

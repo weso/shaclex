@@ -21,9 +21,9 @@ object showShEx {
 
   implicit lazy val showShapeExpr: Show[ShapeExpr] = new Show[ShapeExpr] {
     final def show(a: ShapeExpr): String = a match {
-      case ShapeOr(id, shapes) => s"ShapeOr(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
-      case ShapeAnd(id, shapes) => s"ShapeAnd(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
-      case ShapeNot(id, shape) => s"ShapeNot(${optShow(id)}, ${shape.show})"
+      case ShapeOr(id, shapes) => s"Or(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
+      case ShapeAnd(id, shapes) => s"And(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
+      case ShapeNot(id, shape) => s"Not(${optShow(id)}, ${shape.show})"
       case s: Shape => s.show
       case nc: NodeConstraint => nc.show
       case ShapeRef(r) => s"ShapeRef(${r.show})"
@@ -75,9 +75,10 @@ object showShEx {
     }
   }
 
+  // TODO: It should qualify with schema's prefixMap
   implicit lazy val showIRI: Show[IRI] = new Show[IRI] {
     final def show(iri: IRI): String =
-      iri.str
+      iri.toString
   }
 
   implicit lazy val showPrefix: Show[Prefix] = new Show[Prefix] {

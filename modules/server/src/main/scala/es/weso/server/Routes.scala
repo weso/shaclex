@@ -363,7 +363,7 @@ class Routes {
       val result = validate(data, optDataFormat,
         optSchema, optSchemaFormat, optSchemaEngine,
         optTriggerMode, optNode, optShape, optShapeMap)
-      val default = Ok(result._1.asJson)
+      val default = Ok(result._1.toJson)
         .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {
                       case Some(ah) => {

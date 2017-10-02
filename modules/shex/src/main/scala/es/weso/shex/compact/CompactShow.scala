@@ -24,6 +24,10 @@ object CompactShow {
     doc2String(shapeExprDoc(pm)(shapeExpr))
   }
 
+  def showValueSet(values: List[ValueSetValue], pm: PrefixMap): String = {
+    doc2String(valueSetDoc(pm)(values))
+  }
+
   def doc2String(doc: Doc): String = {
     val writer = new java.io.StringWriter
     doc.format(1, writer)

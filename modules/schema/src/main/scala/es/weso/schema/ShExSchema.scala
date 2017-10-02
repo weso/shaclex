@@ -77,7 +77,9 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       message = if (r.isOK) "Valid" else "Not valid",
       solutions = r.results.map(cnvShapeTyping(_, rdf)),
       errors = r.errors.map(cnvViolationError(_)),
-      None)
+      None,
+      rdf.getPrefixMap(),
+      schema.prefixMap)
 
   def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
     Solution(
@@ -98,7 +100,11 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   def cnvShapeResult(
     p: (ShapeType, TypingResult[ViolationError, String])): (SchemaLabel, Explanation) = {
     val shapeLabel = p._1.label match {
-      case Some(lbl) => SchemaLabel(lbl.show, schema.prefixMap)
+      case Some(lbl) => {
+        val str = lbl.toRDFNode.getLexicalForm
+        println(s"Converting shapeLabel: $str")
+        SchemaLabel(str, schema.prefixMap)
+      }
       case None => SchemaLabel("_", schema.prefixMap)
     }
     val explanation = Explanation(cnvTypingResult(p._2))
@@ -136,7 +142,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def shapes: List[String] = {
     val pm = schema.prefixMap
-    schema.labels.map(_.qualifiedShow(pm))
+    schema.labels.map(lbl => pm.qualify(lbl.toRDFNode))
   }
 
   override def pm: PrefixMap = schema.prefixMap

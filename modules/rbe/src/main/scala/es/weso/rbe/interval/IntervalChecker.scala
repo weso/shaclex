@@ -43,7 +43,7 @@ case class IntervalChecker[A](rbe: Rbe[A]) extends BagChecker[A] {
 object IntervalChecker {
 
   def interval[A](rbe: Rbe[A], bag: Bag[A]): Interval = {
-    println(s"Interval of $rbe with $bag")
+    // println(s"Interval of $rbe with $bag")
     rbe match {
       case Fail(_) => Interval(1, 0)
       case Empty => Interval(0, Unbounded)
@@ -73,7 +73,7 @@ object IntervalChecker {
       // Adding Repetitions on expressions breaks the single-occurrence bag expression
       // This case is handled by detecting repetitions and invoking the derivatives algorithm
       case Repeat(v, n, m) =>
-        throw new Exception("Intervals algorithm doesn't work with repetitions. RBE expr: " + this)
+        throw new Exception("Intervals algorithm does not work with repetitions. RBE expr: " + this)
 
     }
 

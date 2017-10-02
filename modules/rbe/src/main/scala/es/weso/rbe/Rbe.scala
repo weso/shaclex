@@ -3,6 +3,8 @@ package es.weso.rbe
 import es.weso.collection._
 import interval._
 import IntOrUnbounded._
+import cats._
+import cats.implicits._
 
 /**
  * This trait defines Single Occurrence Regular Bag Expressions (Rbe)
@@ -57,7 +59,7 @@ sealed trait Rbe[+A] {
   /**
    * Checks that there are no symbols in common with a bag
    */
-  def noSymbolsInBag[U >: A](bag: Bag[U]): Boolean = {
+  private[rbe] def noSymbolsInBag[U >: A](bag: Bag[U]): Boolean = {
     this.symbols.forall(x => bag.multiplicity(x) == 0)
   }
 
@@ -204,11 +206,11 @@ sealed trait Rbe[+A] {
       }
       case Repeat(e, m, n) => {
         lazy val d = e.deriv(x, open, controlled)
-        println(s"Repeat: deriv of $e/$x = $d")
+        // println(s"Repeat: deriv of $e/$x = $d")
         lazy val rest = mkRange(e, math.max(m - 1, 0), n minusOne)
-        println(s"Repeat: rest $rest")
+        // println(s"Repeat: rest $rest")
         val r = mkAnd(d, rest)
-        println(s"Repeat: and: $r")
+        // println(s"Repeat: and: $r")
         r
       }
     }
@@ -255,3 +257,4 @@ case class Plus[A](v: Rbe[A]) extends Rbe[A]
  * Repeat(v,n,m) represents between n and m apperances of v
  */
 case class Repeat[A](v: Rbe[A], n: Int, m: IntOrUnbounded) extends Rbe[A]
+

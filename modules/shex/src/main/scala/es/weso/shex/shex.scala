@@ -1,4 +1,5 @@
 package es.weso.shex
+import cats._
 import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
@@ -7,7 +8,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.shexR.{ RDF2ShEx, ShEx2RDF }
 import es.weso.utils.FileUtils
 import es.weso.utils.MapUtils._
-import cats.syntax.either._
+import cats.implicits._
 
 import util._
 
@@ -30,7 +31,7 @@ case class Schema(
     prefixMap.qualify(node)
 
   def qualify(label: ShapeLabel): String =
-    label.qualifiedShow(prefixMap)
+    prefixMap.qualify(label.toRDFNode)
 
   // TODO: Convert to Either[String,ShapeExpr]
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
@@ -53,10 +54,16 @@ case class Schema(
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
   def addId(lbl: ShapeLabel): ShapeExpr
+
+  def showPrefixMap(pm: PrefixMap) = {
+    import es.weso.shex.compact.CompactShow._
+    showShapeExpr(this, pm)
+  }
 }
 
 object ShapeExpr {
   def any: ShapeExpr = NodeConstraint.empty
+
   def fail: ShapeExpr = NodeConstraint.valueSet(List(), List())
 }
 
@@ -365,10 +372,10 @@ case object NonLiteralKind extends NodeKind
 case object LiteralKind extends NodeKind
 
 abstract sealed trait ShapeLabel {
-  def qualifiedShow(pm: PrefixMap): String = this match {
+  /*  def qualifiedShow(pm: PrefixMap): String = this match {
     case IRILabel(iri) => pm.qualifyIRI(iri)
     case BNodeLabel(bn) => bn.toString
-  }
+  } */
   def toRDFNode: RDFNode = this match {
     case IRILabel(iri) => iri
     case BNodeLabel(bn) => bn

@@ -2,6 +2,7 @@ package es.weso.server
 
 import io.circe.Json
 import cats.syntax.either._
+import es.weso.rdf.PrefixMap
 import es.weso.schema.{ ErrorInfo, InfoNode, Result, Solution }
 import org.http4s._
 import org.http4s.circe._
@@ -20,6 +21,8 @@ case class ValidateResult(
   triggerMode: String,
   node: Option[String],
   shape: Option[String],
+  nodesPrefixMap: PrefixMap,
+  shapesPrefixMap: PrefixMap,
   result: Json) {
 
   def toHTML: String = {
@@ -78,7 +81,7 @@ case class ValidateResult(
       table(cls := "nodeInfoNode")(
         tr(td("Node"), td("Info")),
         for ((node, infoNode) <- solution.nodes.toSeq) yield {
-          tr(td(node.getLexicalForm), td(infoNode2Html(infoNode)))
+          tr(td(nodesPrefixMap.qualify(node)), td(infoNode2Html(infoNode)))
         }))
   }
 
@@ -86,7 +89,7 @@ case class ValidateResult(
     val hasShapes: Seq[HTMLFragment] =
       for ((shape, explanation) <- infoNode.hasShapes) yield {
         tr(
-          td("+ " + shape.str),
+          td("+ " + shapesPrefixMap.qualifyString(shape.str)),
           td(explanation.str))
       }
 
