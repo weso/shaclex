@@ -259,27 +259,14 @@ trait RDF2Manifest
 
 object RDF2Manifest extends RDF2Manifest {
 
-  def read(fileName: String, format: String, base: Option[String]): Try[Manifest] = {
+  def read(fileName: String, format: String, base: Option[String]): Either[String, Manifest] = {
     for {
-      cs <- {
-        println(s"RDF2Manifest...$fileName")
-        getContents(fileName)
-      }
-      rdf <- {
-        println(s"Contents: ${cs.length} chars, format: $format, base: $base")
-        RDFAsJenaModel.fromChars(cs, format, base)
-      }
-      mfs <- {
-        println(s"Contents: ${cs.length} chars, format: $format, base: $base, rdf: ${rdf.model.size} triples")
-        eitherToTry(rdf2Manifest(rdf, false))
-      }
-      if mfs.size == 1
-    } yield mfs.head
-  }
-
-  def eitherToTry[A](e: Either[String, A]): Try[A] = e match {
-    case Left(msg) => Failure(new Exception(msg))
-    case Right(ms) => Success(ms)
+      cs <- getContents(fileName)
+      rdf <- RDFAsJenaModel.parseChars(cs, format, base)
+      mfs <- rdf2Manifest(rdf, false)
+      manifest <- if (mfs.size == 1) Right(mfs.head)
+      else Left(s"More than one manifests found: ${mfs}")
+    } yield manifest
   }
 
 }

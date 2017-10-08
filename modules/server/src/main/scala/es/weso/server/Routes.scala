@@ -59,6 +59,7 @@ class Routes {
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
   object ShapeMapParam extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
   object SchemaSeparated extends OptionalQueryParamDecoderMatcher[String]("schemaSeparated")
+  object InferenceParam extends OptionalQueryParamDecoderMatcher[String]("inference")
 
   val availableDataFormats = DataFormats.formatNames.toList
   val defaultDataFormat = DataFormats.defaultFormatName
@@ -149,9 +150,10 @@ class Routes {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) +&
-      SchemaSeparated(optSchemaSeparated) => {
+      SchemaSeparated(optSchemaSeparated) +&
+      InferenceParam(optInference) => {
       val result =
-        optData.map(validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap))
+        optData.map(validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap, optInference))
 
       val schemaSeparated = optSchemaSeparated.getOrElse(defaultSchemaSeparated)
       val triggerMode: ValidationTrigger = result.
@@ -262,8 +264,8 @@ class Routes {
         case Some(schema) => schema
       }
       Schemas.fromString(schemaStr, schemaFormat, schemaEngine, None) match {
-        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
-        case Success(schema) => {
+        case Left(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
+        case Right(schema) => {
           val shapes: List[String] = schema.shapes
           val jsonShapes = Json.fromValues(shapes.map(Json.fromString(_)))
           val pm: Json = prefixMap2Json(schema.pm)
@@ -283,9 +285,9 @@ class Routes {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       val resultDataFormat = optResultDataFormat.getOrElse(DataFormats.defaultFormatName)
 
-      RDFAsJenaModel.fromChars(data, dataFormat, None) match {
-        case Failure(e) => BadRequest(s"Error reading RDF Data: $e\nString: $data")
-        case Success(rdf) => {
+      RDFAsJenaModel.parseChars(data, dataFormat, None) match {
+        case Left(e) => BadRequest(s"Error reading RDF Data: $e\nString: $data")
+        case Right(rdf) => {
           val resultStr = rdf.serialize(resultDataFormat)
           val result = DataConversionResult(data, dataFormat, resultDataFormat, resultStr)
           val default = Ok(result.asJson)
@@ -320,11 +322,11 @@ class Routes {
         case Some(schema) => schema
       }
       Schemas.fromString(schemaStr, schemaFormat, schemaEngine, None) match {
-        case Failure(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
-        case Success(schema) => {
+        case Left(e) => BadRequest(s"Error reading schema: $e\nString: $schemaStr")
+        case Right(schema) => {
           if (schemaEngine.toUpperCase == resultSchemaEngine.toUpperCase) {
             schema.serialize(resultSchemaFormat) match {
-              case Success(resultStr) => {
+              case Right(resultStr) => {
                 val result = SchemaConversionResult(schemaStr, schemaFormat, schemaEngine,
                   resultSchemaFormat, resultSchemaEngine, resultStr)
                 val default = Ok(result.asJson)
@@ -340,7 +342,7 @@ class Routes {
                   case None => default
                 }
               }
-              case Failure(e) =>
+              case Left(e) =>
                 BadRequest(s"Error serializing $schemaStr with $resultSchemaFormat/$resultSchemaEngine: $e")
             }
           } else {
@@ -359,10 +361,11 @@ class Routes {
       TriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
-      ShapeMapParam(optShapeMap) => {
+      ShapeMapParam(optShapeMap) +&
+      InferenceParam(optInference) => {
       val result = validate(data, optDataFormat,
         optSchema, optSchemaFormat, optSchemaEngine,
-        optTriggerMode, optNode, optShape, optShapeMap)
+        optTriggerMode, optNode, optShape, optShapeMap, optInference)
       val default = Ok(result._1.toJson)
         .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {
@@ -415,7 +418,8 @@ class Routes {
     optTriggerMode: Option[String],
     optNode: Option[String],
     optShape: Option[String],
-    optShapeMap: Option[String]): (Result, Option[ValidationTrigger]) = {
+    optShapeMap: Option[String],
+    optInference: Option[String]): (Result, Option[ValidationTrigger]) = {
     val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
     val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
     val schemaFormat = optSchema match {
@@ -426,18 +430,19 @@ class Routes {
       case None => data
       case Some(schema) => schema
     }
+
     Schemas.fromString(schemaStr, schemaFormat, schemaEngine, None) match {
-      case Failure(e) =>
+      case Left(e) =>
         (Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr"), None)
-      case Success(schema) => {
-        RDFAsJenaModel.fromChars(data, dataFormat, None) match {
-          case Failure(e) =>
+      case Right(schema) => {
+        RDFAsJenaModel.parseChars(data, dataFormat, None) match {
+          case Left(e) =>
             (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
-          case Success(rdf) => {
+          case Right(rdf) => {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
             val shapeMap = optShapeMap.getOrElse("")
             ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
-              case Left(msg) => (Result.errStr(s"Cannot obtain trigger triggerMode: $triggerMode, shapeMap: $shapeMap, msg: $msg"), None)
+              case Left(msg) => (Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"), None)
               case Right(trigger) => (schema.validate(rdf, trigger), Some(trigger))
             }
           }

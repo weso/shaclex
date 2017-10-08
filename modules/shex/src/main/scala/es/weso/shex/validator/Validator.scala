@@ -281,7 +281,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
             s"${node.show} has datatype ${datatype.show}")
       }
       case _ => errStr(
-        s"${attempt} ${node.show} doesn't have datatype ${datatype.show} because it is not a literal")
+        s"${attempt.show} ${node.show} doesn't have datatype ${datatype.show} because it is not a literal")
     }
   }
 

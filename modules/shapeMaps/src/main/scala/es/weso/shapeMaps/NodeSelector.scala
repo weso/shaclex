@@ -24,10 +24,10 @@ object NodeSelector {
     final def apply(nodeSelector: NodeSelector): Json = {
       nodeSelector match {
         case RDFNodeSelector(node) => Json.fromString(node.getLexicalForm)
-        case TriplePattern(subj, pred, obj) => {
+        case TriplePattern(subj, path, obj) => {
           Json.fromJsonObject(JsonObject.empty.
             add("subject", subj.asJson).
-            add("predicate", Json.fromString(pred.toString)).
+            add("path", Json.fromString(path.toString)).
             add("object", obj.asJson))
         }
       }

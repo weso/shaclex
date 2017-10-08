@@ -108,10 +108,10 @@ case class Schema(
     targetNodeShapes.collect { case (node, shape) if shape.id.isIRI => (node, shape.id.toIRI) }
   }
 
-  def serialize(format: String = "TURTLE"): Try[String] = {
+  def serialize(format: String = "TURTLE"): Either[String, String] = {
     format.toUpperCase match {
       case "TREE" => {
-        Success(s"PrefixMap ${pm.treeString}\nShapes: ${shapes.treeString}")
+        Right(s"PrefixMap ${pm.treeString}\nShapes: ${shapes.treeString}")
       }
       case _ =>
         new Shacl2RDF {}.serialize(this, format)

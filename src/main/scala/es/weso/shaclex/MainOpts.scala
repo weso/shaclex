@@ -20,8 +20,10 @@ class MainOpts(
   lazy val triggerModes = ValidationTrigger.triggerValues.map(_._1.toUpperCase).distinct
   lazy val resultFormats = Result.availableResultFormats
   lazy val defaultResultFormat = Result.defaultResultFormat
+  lazy val defaultShapeMapFormat = "COMPACT"
+  lazy val shapeMapFormats = List(defaultShapeMapFormat)
 
-  banner("""| shaclex: SHACL processor
+  banner("""| shaclex: SHACL/ShEx processor
             | Options:
             |""".stripMargin)
 
@@ -51,6 +53,19 @@ class MainOpts(
     default = Some(defaultDataFormat),
     descr = s"Data format. Default ($defaultDataFormat). Possible values = ${showLs(dataFormats)}",
     validate = isMemberOf(dataFormats),
+    noshort = true)
+
+  val shapeMap = opt[String](
+    "shapeMap",
+    default = None,
+    descr = s"Shape map",
+    noshort = true)
+
+  val shapeMapFormat = opt[String](
+    "shapeMapFormat",
+    default = Some(defaultShapeMapFormat),
+    descr = s"Shape Map format. Default ($defaultShapeMapFormat). Possible values = ${showLs(shapeMapFormats)}",
+    validate = isMemberOf(shapeMapFormats),
     noshort = true)
 
   val engine = opt[String](
@@ -156,6 +171,12 @@ class MainOpts(
     default = None,
     required = false,
     descr = "Label (IRI) of Constraint in Schema")
+
+  val inference = opt[String](
+    "inference",
+    default = None,
+    required = false,
+    descr = "Apply some inference before. Available values: RDFS")
 
   val server = toggle(
     "server",

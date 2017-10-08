@@ -122,20 +122,18 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     ErrorInfo(v.show)
   }
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShExSchema] = {
+  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, ShExSchema] = {
     ShExSchema.fromString(cs, format, base)
   }
 
-  override def fromRDF(rdf: RDFReader): Try[Schema] =
-    RDF2ShEx.tryRDF2Schema(rdf).map(ShExSchema(_))
+  override def fromRDF(rdf: RDFReader): Either[String, Schema] =
+    RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
 
-  override def serialize(format: String): Try[String] = {
+  override def serialize(format: String): Either[String, String] = {
     if (formatsUpperCase.contains(format.toUpperCase()))
-      Success(Schema_.serialize(schema, format))
+      Right(Schema_.serialize(schema, format))
     else
-      Failure(
-        new Exception(
-          s"Can't serialize to format $format. Supported formats=$formats"))
+      Left(s"Can't serialize to format $format. Supported formats=$formats")
   }
 
   override def empty: ShExSchema = ShExSchema.empty
@@ -155,7 +153,7 @@ object ShExSchema {
   def fromString(
     cs: CharSequence,
     format: String,
-    base: Option[String]): Try[ShExSchema] = {
+    base: Option[String]): Either[String, ShExSchema] = {
     Schema_.fromString(cs, format, base).map(p => ShExSchema(p))
   }
 

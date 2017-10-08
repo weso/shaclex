@@ -48,11 +48,11 @@ abstract class Schema {
 
   // def validateShapeMap(map: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader): Result
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[Schema]
+  def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema]
 
-  def fromRDF(rdf: RDFReader): Try[Schema]
+  def fromRDF(rdf: RDFReader): Either[String, Schema]
 
-  def serialize(format: String): Try[String]
+  def serialize(format: String): Either[String, String]
 
   def defaultFormat: String = formats.head
 

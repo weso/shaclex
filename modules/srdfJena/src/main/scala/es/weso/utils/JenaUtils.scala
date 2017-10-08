@@ -7,7 +7,11 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.rdf.model.ResourceRequiredException
 import org.apache.jena.rdf.model.Statement
+import org.apache.jena.reasoner.ReasonerFactory
+import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory
 import org.apache.jena.sparql.syntax.ElementPathBlock
+import org.apache.jena.rdf.model.InfModel
+import org.apache.jena.rdf.model.ModelFactory
 // import org.apache.jena.arq.querybuilder.SelectBuilder
 import org.apache.jena.graph.{ Triple => JenaTriple }
 import java.io.InputStreamReader
@@ -415,4 +419,13 @@ object JenaUtils {
     }
   }
 
+  def inference(rdf: Model, inference: String): Either[String, Model] = {
+    inference match {
+      case "RDFS" => {
+        val inf = ModelFactory.createRDFSModel(rdf)
+        Right(inf)
+      }
+      case _ => Left(s"Unsupported inference $inference")
+    }
+  }
 }

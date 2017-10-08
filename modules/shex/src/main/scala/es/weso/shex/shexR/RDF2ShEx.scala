@@ -295,10 +295,4 @@ object RDF2ShEx extends RDF2ShEx {
   def rdf2Schema(rdf: RDFReader): Either[String, Schema] =
     getSchema(rdf)
 
-  def tryRDF2Schema(rdf: RDFReader): Try[Schema] =
-    getSchema(rdf) match {
-      case Left(str) => Failure(new Exception(s"fromRDF error: $str"))
-      case Right(s) => Success(s)
-    }
-
 }

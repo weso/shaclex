@@ -89,13 +89,10 @@ object Parser extends LazyLogging {
     parseSchemaReader(reader)
   }
 
-  def parseSchemaFromFile(fileName: String): Either[String, Schema] = {
-    FileUtils.getStream(fileName) match {
-      case Success(reader) => parseSchemaReader(reader)
-      case Failure(err) => Left(s"Exception reading $fileName: $err")
-    }
-
-  }
+  def parseSchemaFromFile(fileName: String): Either[String, Schema] = for {
+    reader <- FileUtils.getStream(fileName)
+    schema <- parseSchemaReader(reader)
+  } yield schema
 
   def parseSchemaReader(reader: JavaReader): Either[String, Schema] = {
     val input: ANTLRInputStream = new ANTLRInputStream(reader)

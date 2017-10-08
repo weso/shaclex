@@ -391,44 +391,27 @@ object Schema {
   def empty: Schema =
     Schema(None, None, None, None, None)
 
-  def parse(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
-    val result = try {
-      fromString(cs, format, base)
-    } catch {
-      case e: Exception => Failure(throw new Exception("Exception reading string:\n" + FileUtils.formatLines(cs.toString) + "\nError: " + e.getMessage))
-    }
-    Either.fromTry(result).leftMap(_.getMessage)
-  }
-
   def fromString(
     cs: CharSequence,
     format: String,
-    base: Option[String] = None): Try[Schema] = {
+    base: Option[String] = None): Either[String, Schema] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
         import compact.Parser.parseSchema
-        parseSchema(cs.toString) match {
-          case Left(e) => Failure(new Exception(e))
-          case Right(schema) => Success(schema)
-        }
+        parseSchema(cs.toString)
       }
       case "SHEXJ" => {
         import io.circe.parser._
         import es.weso.shex.implicits.decoderShEx._
-        decode[Schema](cs.toString).
-          fold(
-            e => Failure(new Exception(e.toString)),
-            s => Success(s))
+        decode[Schema](cs.toString).leftMap(_.getMessage)
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
-        rdf <- RDFAsJenaModel.fromChars(cs, formatUpperCase, None)
-        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+        rdf <- RDFAsJenaModel.parseChars(cs, formatUpperCase, None)
+        schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
-      case _ =>
-        Failure(
-          new Exception(s"Not implemented ShEx parser for format $format"))
+      case _ => Left(s"Not implemented ShEx parser for format $format")
     }
   }
 

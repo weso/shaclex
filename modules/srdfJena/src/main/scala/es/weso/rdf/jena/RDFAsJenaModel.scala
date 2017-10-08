@@ -152,11 +152,6 @@ case class RDFAsJenaModel(model: Model)
     }
   }
 
-  // TODO: Check if it can be optimized in Jena
-  /*  override def triplesWithType(expectedType:IRI): Set[RDFTriple] = {
-    triplesWithPredicateObject(rdf_type,expectedType)
-  } */
-
   def model2triples(model: Model): Set[RDFTriple] = {
     model.listStatements().map(st => statement2triple(st)).toSet
   }
@@ -245,15 +240,15 @@ object RDFAsJenaModel {
     }
   }
 
-  def fromFile(file: File, format: String, base: Option[String] = None): Try[RDFAsJenaModel] = {
+  def fromFile(file: File, format: String, base: Option[String] = None): Either[String, RDFAsJenaModel] = {
     val baseURI = base.getOrElse("")
     try {
       val m = ModelFactory.createDefaultModel()
       val is: InputStream = new FileInputStream(file)
       RDFDataMgr.read(m, is, baseURI, shortnameToLang(format))
-      Success(RDFAsJenaModel(m))
+      Right(RDFAsJenaModel(m))
     } catch {
-      case e: Exception => Failure(throw new Exception("Exception accessing  " + file.getName + ": " + e.getMessage))
+      case e: Exception => Left(s"Exception accessing  " + file.getName + ": " + e.getMessage)
     }
   }
 

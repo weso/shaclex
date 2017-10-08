@@ -29,8 +29,8 @@ class dependenciesTest extends FunSpec with Matchers with EitherValues {
       it(s"should check that dependency graph of $schema matches $expectedGraph") {
         val expectedDepGraph = DepGraph.makeGraph(expectedGraph)
         Schema.fromString(schema, "SHEXC") match {
-          case Failure(e) => fail(s"Error $e parsing $schema")
-          case Success(schema) => {
+          case Left(e) => fail(s"Error $e parsing $schema")
+          case Right(schema) => {
             schema.depGraph match {
               case Left(msg) => fail(s"Error $msg calculating dependency graph")
               case Right(depGraph) => {
@@ -77,8 +77,8 @@ class dependenciesTest extends FunSpec with Matchers with EitherValues {
     def negCyclesTest(schemaStr: String, negCyclesLabels: Set[Set[ShapeLabel]]): Unit = {
       it(s"should check that negCycles of $schemaStr are $negCyclesLabels") {
         Schema.fromString(schemaStr, "SHEXC") match {
-          case Failure(e) => fail(s"Error $e parsing $schemaStr")
-          case Success(schema) => {
+          case Left(e) => fail(s"Error $e parsing $schemaStr")
+          case Right(schema) => {
             schema.negCycles match {
               case Left(msg) => fail(s"Error $msg calculating negative cycles of $schema")
               case Right(cycles) => (negCyclesLabels.isEmpty, cycles.isEmpty) match {

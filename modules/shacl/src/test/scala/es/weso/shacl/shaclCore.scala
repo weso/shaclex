@@ -30,10 +30,10 @@ class ShaclCore
 
   describe(s"Validate shacl Core from manifest file located at $fileName") {
     RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI)) match {
-      case Failure(e) => println(s"Error reading manifest file:$e")
-      case Success(m) => {
-        processManifest(m)
+      case Left(e) => {
+        println(s"Error reading manifest file:$e")
       }
+      case Right(m) => processManifest(m)
     }
   }
 

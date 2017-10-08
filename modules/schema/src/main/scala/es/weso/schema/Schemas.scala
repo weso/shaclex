@@ -10,7 +10,7 @@ import scala.util.{ Failure, Success, Try }
 
 object Schemas {
 
-  type SchemaParser = (CharSequence, String, Option[String]) => Try[Schema]
+  type SchemaParser = (CharSequence, String, Option[String]) => Either[String, Schema]
 
   lazy val shEx = ShExSchema.empty
   lazy val shaclex = ShaclexSchema.empty
@@ -34,20 +34,20 @@ object Schemas {
   val defaultTriggerMode: String =
     ValidationTrigger.default.name
 
-  def lookupSchema(schemaName: String): Try[Schema] = {
-    if (schemaName == "") Success(defaultSchema)
+  def lookupSchema(schemaName: String): Either[String, Schema] = {
+    if (schemaName == "") Right(defaultSchema)
     else {
       val found = availableSchemas.filter(_.name.compareToIgnoreCase(schemaName) == 0)
       if (found.isEmpty)
-        Failure(new Exception("Schema \"" + schemaName + "\" not found. Available schemas: " + availableSchemaNames.mkString(",")))
+        Left(s"Schema $schemaName not found. Available schemas: ${availableSchemaNames.mkString(",")}")
       else
-        Success(found.head)
+        Right(found.head)
     }
   }
 
-  def getSchemaParser(schemaName: String): Try[SchemaParser] = {
-    lookupSchema(schemaName).map(_.fromString _)
-  }
+  def getSchemaParser(schemaName: String): Either[String, SchemaParser] = for {
+    schema <- lookupSchema(schemaName)
+  } yield schema.fromString _
 
   val schemaNames: List[String] = availableSchemas.map(_.name)
 
@@ -55,7 +55,7 @@ object Schemas {
     file: File,
     format: String,
     schemaName: String,
-    base: Option[String] = None): Try[Schema] = for {
+    base: Option[String] = None): Either[String, Schema] = for {
     cs <- FileUtils.getContents(file)
     schema <- fromString(cs, format, schemaName, base)
   } yield schema
@@ -64,18 +64,16 @@ object Schemas {
     cs: CharSequence,
     format: String,
     schemaName: String,
-    base: Option[String] = None): Try[Schema] = {
-    lookupSchema(schemaName) match {
-      case Success(schema) =>
-        if (cs.length == 0) Success(schema.empty)
-        else schema.fromString(cs, format, base)
-      case Failure(e) => Failure(e)
-    }
-  }
+    base: Option[String] = None): Either[String, Schema] = for {
+    schema <- lookupSchema(schemaName)
+    schemaParsed <- if (cs.length == 0) Right(schema.empty)
+    else schema.fromString(cs, format, base)
+  } yield schemaParsed
 
-  def fromRDF(rdf: RDFReader, schemaName: String): Try[Schema] = {
+  def fromRDF(rdf: RDFReader, schemaName: String): Either[String, Schema] = {
     for {
-      defaultSchema <- lookupSchema(schemaName); schema <- defaultSchema.fromRDF(rdf)
+      defaultSchema <- lookupSchema(schemaName)
+      schema <- defaultSchema.fromRDF(rdf)
     } yield schema
   }
 

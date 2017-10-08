@@ -104,8 +104,17 @@ class ShapeMapsMaker(
   }
 
   // TODO: pathMod
-  override def visitPathElt(ctx: PathEltContext): Builder[SHACLPath] =
-    visitPathPrimary(ctx.pathPrimary())
+  override def visitPathElt(ctx: PathEltContext): Builder[SHACLPath] = for {
+    pathPrimary <- visitPathPrimary(ctx.pathPrimary())
+  } yield {
+    if (isDefined(ctx.pathMod())) {
+      ctx.pathMod() match {
+        case s: StarContext => ZeroOrMorePath(pathPrimary)
+        case s: OptionalContext => ZeroOrOnePath(pathPrimary)
+        case s: PlusContext => OneOrMorePath(pathPrimary)
+      }
+    } else pathPrimary
+  }
 
   override def visitPathPrimary(ctx: PathPrimaryContext): Builder[SHACLPath] = ctx match {
     case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(), nodesPrefixMap).map(PredicatePath(_))
