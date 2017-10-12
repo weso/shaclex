@@ -58,9 +58,7 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
   }
 
   override def outEdges(node: Node): Either[String, Set[(PosNeg, Node)]] = {
-    println("Node: " + node)
     if (graph.containsVertex(node)) {
-      println(s"Graph constains $node")
       val edges: Set[Edge] = graph.outgoingEdgesOf(node).asScala.toSet
       Right(edges.map(e => (e.posNeg, e.target)))
     } else {

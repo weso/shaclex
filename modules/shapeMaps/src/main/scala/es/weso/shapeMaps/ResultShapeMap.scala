@@ -9,12 +9,19 @@ case class ResultShapeMap(
   resultMap: Map[RDFNode, Map[ShapeMapLabel, Info]],
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap) extends ShapeMap {
+
   def addNodeAssociations(node: RDFNode, mapLabels: Map[ShapeMapLabel, Info]): ResultShapeMap = {
     resultMap.get(node) match {
       case None => this.copy(resultMap = this.resultMap.updated(node, mapLabels))
       case Some(vs) => this.copy(resultMap = this.resultMap.updated(node, vs ++ mapLabels))
     }
   }
+
+  def hasShapes(node: RDFNode): Seq[ShapeMapLabel] = {
+    resultMap.get(node).map(_.keySet.toSeq).getOrElse(Seq())
+  }
+
+  def noSolutions = resultMap.isEmpty
 
   val associations: List[Association] = resultMap.toList.flatMap {
     case (node, labelsMap) => {
@@ -85,5 +92,6 @@ case class ResultShapeMap(
 
 object ResultShapeMap {
   def empty = ResultShapeMap(Map(), PrefixMap.empty, PrefixMap.empty)
+
 }
 

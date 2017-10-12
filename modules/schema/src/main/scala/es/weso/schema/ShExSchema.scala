@@ -47,6 +47,18 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     cnvResult(r, rdf)
   }
 
+  def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader): Result = r match {
+    case Left(msg) => Result(
+      false,
+      message = "Error validating",
+      shapeMaps = Seq(),
+      errors = Seq(ErrorInfo(msg)), None, rdf.getPrefixMap(), schema.prefixMap)
+    case Right(resultShapeMap) =>
+      Result(true, "Validated",
+        shapeMaps = Seq(resultShapeMap),
+        errors = Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
+  }
+
   def validateNodeShape(node: IRI, shape: String, rdf: RDFReader): Result = {
     val validator = Validator(schema)
     val r = validator.validateNodeShape(rdf, node, shape)
@@ -66,22 +78,26 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   def validateShapeMap(
     shapeMap: FixedShapeMap,
     rdf: RDFReader): Result = {
-    val validator = Validator(schema)
-    val r = validator.validateShapeMap(rdf, shapeMap)
-    cnvResult(r, rdf)
+    Validator.validate(schema, shapeMap, rdf) match {
+      case Left(error) =>
+        Result(false, "Error validating", Seq(), Seq(ErrorInfo(error)), None, rdf.getPrefixMap(), schema.prefixMap)
+      case Right(resultShapeMap) =>
+        Result(true, "Validated", Seq(resultShapeMap), Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
+    }
   }
 
-  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shex.validator.NodeShape, String)]], rdf: RDFReader): Result =
+  /*  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shex.validator.NodeShape, String)]], rdf: RDFReader): Result =
     Result(
       isValid = r.isOK,
       message = if (r.isOK) "Valid" else "Not valid",
-      solutions = r.results.map(cnvShapeTyping(_, rdf)),
+      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
       errors = r.errors.map(cnvViolationError(_)),
       None,
       rdf.getPrefixMap(),
       schema.prefixMap)
 
-  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
+  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): ResultShapeMap = ???  */
+  /*{
     Solution(
       st.t.getMap.mapValues(cnvResult),
       rdf.getPrefixMap(),
@@ -95,9 +111,9 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       oks.map(cnvShapeResult(_)),
       bads.map(cnvShapeResult(_)),
       schema.prefixMap)
-  }
+  } */
 
-  def cnvShapeResult(
+  /*  def cnvShapeResult(
     p: (ShapeType, TypingResult[ViolationError, String])): (SchemaLabel, Explanation) = {
     val shapeLabel = p._1.label match {
       case Some(lbl) => {
@@ -116,7 +132,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       es => "Errors: " +
         es.toList.mkString(","), rs => "Evidences:" +
         rs.map(" " + _).mkString(","))
-  }
+  } */
 
   def cnvViolationError(v: ViolationError): ErrorInfo = {
     ErrorInfo(v.show)

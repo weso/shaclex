@@ -3,17 +3,18 @@ import cats._
 import data._
 import cats.implicits
 import es.weso.rdf.PrefixMap
+import es.weso.rdf.nodes.RDFNode
 
-case class SchemaLabel(str: String, pm: PrefixMap = PrefixMap.empty) {
+case class SchemaLabel(node: RDFNode, pm: PrefixMap = PrefixMap.empty) {
   def show: String = {
-    pm.qualifyString(str)
+    pm.qualify(node)
   }
 
   def canEqual(a: Any) = a.isInstanceOf[SchemaLabel]
 
   override def equals(other: Any): Boolean = {
     other match {
-      case s: SchemaLabel => s.canEqual(this) && s.str == str
+      case s: SchemaLabel => s.canEqual(this) && s.node == node
       case _ => false
     }
   }

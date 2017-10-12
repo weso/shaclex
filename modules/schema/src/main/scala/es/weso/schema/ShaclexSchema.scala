@@ -1,4 +1,5 @@
 package es.weso.schema
+import cats.Show
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -6,9 +7,11 @@ import es.weso.shacl.{ Schema => ShaclSchema, Shape => ShaclNodeShape, _ }
 import es.weso.shacl.Validator._
 import es.weso.shacl._
 import es.weso.shacl.converter.RDF2Shacl
+import es.weso.shapeMaps._
 
 import util._
 import es.weso.typing._
+import es.weso.utils.MapUtils
 
 case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
@@ -34,43 +37,41 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     Result(
       isValid = r.isOK,
       message = if (r.isOK) "Valid" else "Not valid",
-      solutions = r.results.map(cnvShapeTyping(_, rdf)),
+      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
       errors = r.errors.map(cnvViolationError(_)),
       trigger = None,
       nodesPrefixMap = rdf.getPrefixMap(),
       shapesPrefixMap = schema.pm)
 
-  def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): Solution = {
-    Solution(
-      t.getMap.mapValues(cnvResultNodeShape),
-      rdf.getPrefixMap(),
-      schema.pm)
+  def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): ResultShapeMap = {
+    ResultShapeMap(
+      t.getMap.mapValues(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
   }
 
-  def cnvResultNodeShape(
-    r: Map[ShaclNodeShape, TypingResult[ViolationError, String]]): InfoNode = {
-    val (oks, bads) = r.toSeq.partition(_._2.isOK)
-    InfoNode(
-      oks.map(cnvShapeResult(_)),
-      bads.map(cnvShapeResult(_)),
-      schema.pm)
+  private def cnvMapShapeResult(m: Map[Shape, TypingResult[ViolationError, String]]): Map[ShapeMapLabel, Info] = {
+
+    MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
   }
 
-  def cnvShapeResult(
-    p: (ShaclNodeShape, TypingResult[ViolationError, String])): (SchemaLabel, Explanation) = {
-    val shapeLabel = SchemaLabel(p._1.showId)
-    val explanation = Explanation(cnvTypingResult(p._2))
-    (shapeLabel, explanation)
+  private def cnvShape(s: Shape): ShapeMapLabel = {
+    s.id match {
+      case iri: IRI => IRILabel(iri)
+      case bnode: BNodeId => BNodeLabel(bnode)
+      case _ => throw new Exception(s"cnvShape: unexpected ${s.id}")
+    }
   }
 
-  def cnvTypingResult(result: TypingResult[ViolationError, String]): String = {
-    result.t.fold(
-      es => "Errors: " +
-        es.map(_.message.getOrElse("")).toList.mkString("\n"), rs => "OK. Evidences:" +
-        rs.map(" " + _).mkString("\n"))
+  private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
+    import showShacl._
+    import TypingResult._
+    Info(
+      status = if (t.isOK) Conformant else NonConformant,
+      reason = Some(Show[TypingResult[ViolationError, String]].show(t))
+    // TODO: Convert typing result to JSON and add it to appInfo
+    )
   }
 
-  def cnvViolationError(v: ViolationError): ErrorInfo = {
+  private def cnvViolationError(v: ViolationError): ErrorInfo = {
     val pm = schema.pm
     ErrorInfo(
       pm.qualify(v.id) +

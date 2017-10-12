@@ -42,6 +42,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   type Bag_ = Bag[ConstraintRef]
   type Rbe_ = Rbe[ConstraintRef]
   type BagChecker_ = BagChecker[ConstraintRef]
+  type Result = Either[String, ResultShapeMap]
 
   lazy val sh_targetNode = sh + "targetNode"
 
@@ -456,24 +457,32 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     outgoing ++ incoming
   }
 
-  lazy val emptyTyping: ShapeTyping =
-    Monoid[ShapeTyping].empty
+  lazy val emptyTyping: ShapeTyping = Monoid[ShapeTyping].empty
 
-  def validateNodeDecls(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkTargetNodeDeclarations, rdf)
+  def validateNodeDecls(rdf: RDFReader): Result = {
+    runValidator(checkTargetNodeDeclarations, rdf)
   }
 
-  def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkNodeShapeName(node, shape), rdf)
+  def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): Result = {
+    runValidator(checkNodeShapeName(node, shape), rdf)
   }
 
-  def validateNodeStart(rdf: RDFReader, node: IRI): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkNodeStart(node), rdf)
+  def validateNodeStart(rdf: RDFReader, node: IRI): Result = {
+    runValidator(checkNodeStart(node), rdf)
   }
 
-  def validateShapeMap(rdf: RDFReader, shapeMap: FixedShapeMap): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkShapeMap(shapeMap), rdf)
+  def validateShapeMap(rdf: RDFReader, shapeMap: FixedShapeMap): Result = {
+    runValidator(checkShapeMap(shapeMap), rdf)
   }
+
+  def runValidator(chk: Check[ShapeTyping], rdf: RDFReader): Result = {
+    cnvResult(runCheck(chk, rdf))
+  }
+
+  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log]): Result = for {
+    shapeTyping <- r.toEither.leftMap(_.msg)
+    result <- shapeTyping.toShapeMap(schema.prefixMap)
+  } yield result
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {
     override def show(cl: CandidateLine): String = {
@@ -500,10 +509,7 @@ object Validator {
 
   def validate(schema: Schema, fixedShapeMap: FixedShapeMap, rdf: RDFReader): Either[String, ResultShapeMap] = {
     val validator = Validator(schema)
-    for {
-      shapeTyping <- validator.validateShapeMap(rdf, fixedShapeMap).toEither.leftMap(_.msg)
-      result <- shapeTyping.toShapeMap(schema.prefixMap)
-    } yield result
+    validator.validateShapeMap(rdf, fixedShapeMap)
   }
 
 }

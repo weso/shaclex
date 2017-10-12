@@ -205,8 +205,8 @@ function showResult(result) {
   }
   $("#resultDiv").append($("<h2>").text("Result"));
   $("#resultDiv").append($("<p>").text(result.message));
-  result.solutions.forEach(function(solution) {
-   showSolution(solution,nodesPrefixMap,shapesPrefixMap);
+  result.shapeMaps.forEach(function(shapeMap) {
+   showShapeMap(shapeMap,nodesPrefixMap,shapesPrefixMap);
   });
   showErrors(result.errors);
   var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
@@ -227,14 +227,13 @@ function showQualify(node, prefix) {
 
 
 
-function showSolution(solution,nodesPrefixMap, shapesPrefixMap) {
+function showShapeMap(shapeMap,nodesPrefixMap, shapesPrefixMap) {
  console.log("Solution: " + JSON.stringify(solution));
  console.log("Solution, nodesPrefixMap: " + JSON.stringify(nodesPrefixMap));
  console.log("Solution, shapesPrefixMap: " + JSON.stringify(shapesPrefixMap));
- var table = "";
 
- table += "<tr><th>Node</th><th>Shape</th><th>Evidences</th>";
- $.each(solution.solution, function(node,infoNodes) {
+ var table = "<tr><th>Node</th><th>Shape</th><th>Evidences</th>";
+/* $.each(shapeMap.solution, function(node,infoNodes) {
    console.log("node: " + JSON.stringify(node) + " infoNodes: " + JSON.stringify(infoNodes));
    $.each(infoNodes.hasShapes, function(shape,explanation) {
      console.log("Row..." + node + ". shape: " + shape + " Explanation: " + escapeHtml(explanation));
@@ -248,7 +247,7 @@ function showSolution(solution,nodesPrefixMap, shapesPrefixMap) {
               "<td class='hasNoShape'>- <code>" + showQualify(shape, shapesPrefixMap) + "</code></td>" +
               "<td class='explanation'>" + escapeHtml(explanation) + "</td></tr>" ;
    });
- });
+ }); */
  $("#resultDiv").append("<h2>Solution</h2><table>" + table + "</table>");
 }
 
