@@ -14,7 +14,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
 
     it("should be able to create a shape map") {
       val map = QueryShapeMap(
-        List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)),
+        List(Association(node = RDFNodeSelector(IRI("http://example.org/x")), shape = Start)),
         PrefixMap.empty,
         PrefixMap.empty)
     }
@@ -33,7 +33,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
     shouldParse(
       "<http://example.org/x> @ Start",
       QueryShapeMap(
-        List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
+        List(Association(node = RDFNodeSelector(IRI("http://example.org/x")), shape = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
@@ -41,14 +41,14 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       "23@Start",
       QueryShapeMap(
         List(Association(
-          nodeSelector = RDFNodeSelector(IntegerLiteral(23)), shapeLabel = Start)),
+          node = RDFNodeSelector(IntegerLiteral(23)), shape = Start)),
         nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
     shouldParse(
       "<http://example.org/x>@Start",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://example.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
+      QueryShapeMap(List(Association(node = RDFNodeSelector(IRI("http://example.org/x")), shape = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
@@ -56,14 +56,14 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       "<http://example.org/x>@<http://example.org/S>",
       QueryShapeMap(
         List(Association(
-          nodeSelector = RDFNodeSelector(IRI("http://example.org/x")),
-          shapeLabel = IRILabel(IRI("http://example.org/S")))),
+          node = RDFNodeSelector(IRI("http://example.org/x")),
+          shape = IRILabel(IRI("http://example.org/S")))),
         nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
       ":x@Start",
-      QueryShapeMap(List(Association(nodeSelector = RDFNodeSelector(IRI("http://default.org/x")), shapeLabel = Start)), nodesPrefixMap, shapesPrefixMap),
+      QueryShapeMap(List(Association(node = RDFNodeSelector(IRI("http://default.org/x")), shape = Start)), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     shouldParse(
@@ -71,8 +71,8 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       QueryShapeMap(
         List(
           Association(
-            nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),
-            shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
+            node = RDFNodeSelector(IRI("http://default.org/x")),
+            shape = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
     /*    Ignore this test until we solve issue #48
@@ -81,31 +81,31 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       shouldParse(
       "\"hi\"@es @ :S",
       QueryShapeMap(List(Association(
-        nodeSelector = RDFNodeSelector(LangLiteral("hi", Lang("es"))),
-        shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
+        node = RDFNodeSelector(LangLiteral("hi", Lang("es"))),
+        shape = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap) */
     shouldParse(
       ":x@ ex:S",
       QueryShapeMap(List(Association(
-        nodeSelector = RDFNodeSelector(IRI("http://default.org/x")),
-        shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
+        node = RDFNodeSelector(IRI("http://default.org/x")),
+        shape = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
     shouldParse(
       "{ FOCUS a :A} @ ex:S",
       QueryShapeMap(List(Association(
-        nodeSelector = TriplePattern(Focus, PredicatePath(rdfType), NodePattern(IRI("http://default.org/A"))),
-        shapeLabel = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
+        node = TriplePattern(Focus, PredicatePath(rdfType), NodePattern(IRI("http://default.org/A"))),
+        shape = IRILabel(IRI("http://shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 
     shouldParse(
       "{FOCUS :p _ }@ :S",
       QueryShapeMap(List(Association(
-        nodeSelector = TriplePattern(Focus, PredicatePath(IRI("http://default.org/p")), WildCard),
-        shapeLabel = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
+        node = TriplePattern(Focus, PredicatePath(IRI("http://default.org/p")), WildCard),
+        shape = IRILabel(IRI("http://default.shapes.org/S")))), nodesPrefixMap, shapesPrefixMap),
       nodesPrefixMap,
       shapesPrefixMap)
 

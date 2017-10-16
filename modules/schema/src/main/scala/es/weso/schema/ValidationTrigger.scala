@@ -94,7 +94,7 @@ object ValidationTrigger extends LazyLogging {
       case "TARGETDECLS" => Right(TargetDeclarations)
       case "SHAPEMAP" =>
         for {
-          shapeMap <- ShapeMap.parse(shapeMapStr, nodePrefixMap, shapePrefixMap)
+          shapeMap <- ShapeMap.fromString(shapeMapStr, nodePrefixMap, shapePrefixMap)
         } yield ShapeMapTrigger(shapeMap)
       case "NODESHAPE" => (optNode, optShape) match {
         case (Some(strNode), Some(strShape)) => for {

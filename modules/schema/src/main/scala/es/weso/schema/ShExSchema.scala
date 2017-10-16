@@ -81,8 +81,10 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     Validator.validate(schema, shapeMap, rdf) match {
       case Left(error) =>
         Result(false, "Error validating", Seq(), Seq(ErrorInfo(error)), None, rdf.getPrefixMap(), schema.prefixMap)
-      case Right(resultShapeMap) =>
+      case Right(resultShapeMap) => {
+        println(s"Validated, result=$resultShapeMap")
         Result(true, "Validated", Seq(resultShapeMap), Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
+      }
     }
   }
 

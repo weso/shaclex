@@ -28,7 +28,9 @@ case class Result(
   def solution: Either[String, ResultShapeMap] = {
     shapeMaps.size match {
       case 0 => Left("No solutions")
-      case 1 => Right(shapeMaps.head)
+      case 1 => {
+        Right(shapeMaps.head)
+      }
       case _ => {
         logger.warn(s"More than one solution. Only considering the first one. Solutions:\n$shapeMaps")
         Right(shapeMaps.head)
@@ -175,6 +177,7 @@ object Result extends LazyLogging {
       ??? //Right(None)
     }
   }
+
   // TODO: implement this
   implicit val decodeResultShapeMap: Decoder[ResultShapeMap] = Decoder.instance { c =>
     {

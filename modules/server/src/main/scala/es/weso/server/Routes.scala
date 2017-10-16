@@ -30,12 +30,11 @@ import es.weso._
 import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
 import es.weso.shaclex.buildinfo.BuildInfo._
-import es.weso.schema.ShapeMapEncoder._
 
 class Routes {
 
   private val logger = getLogger
-  val API = "api"
+  val api = "api"
 
   private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
@@ -153,7 +152,8 @@ class Routes {
       SchemaSeparated(optSchemaSeparated) +&
       InferenceParam(optInference) => {
       val result =
-        optData.map(validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap, optInference))
+        optData.map(
+          validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap, optInference))
 
       val schemaSeparated = optSchemaSeparated.getOrElse(defaultSchemaSeparated)
       val triggerMode: ValidationTrigger = result.
@@ -183,41 +183,42 @@ class Routes {
 
     // API methods
 
-    case GET -> Root / API / "schema" / "engines" => {
+    case GET -> Root / `api` / "schema" / "engines" => {
       val engines = Schemas.availableSchemaNames
       val json = Json.fromValues(engines.map(str => Json.fromString(str)))
       Ok(json)
     }
 
-    case GET -> Root / API / "schema" / "engines" / "default" => {
+    case GET -> Root / `api` / "schema" / "engines" / "default" => {
       val schemaEngine = Schemas.defaultSchemaName
-      Ok(schemaEngine)
+      val json = Json.fromString(schemaEngine)
+      Ok(json)
     }
 
-    case GET -> Root / API / "schema" / "formats" => {
+    case GET -> Root / `api` / "schema" / "formats" => {
       val formats = Schemas.availableFormats
       val json = Json.fromValues(formats.map(str => Json.fromString(str)))
       Ok(json)
     }
 
-    case GET -> Root / API / "schema" / "triggerModes" => {
+    case GET -> Root / `api` / "schema" / "triggerModes" => {
       val triggerModes = ValidationTrigger.triggerValues.map(_._1)
       val json = Json.fromValues(triggerModes.map(Json.fromString(_)))
       Ok(json)
     }
 
-    case GET -> Root / API / "data" / "formats" => {
+    case GET -> Root / `api` / "data" / "formats" => {
       val formats = DataFormats.formatNames
       val json = Json.fromValues(formats.map(str => Json.fromString(str)))
       Ok(json)
     }
 
-    case GET -> Root / API / "schema" / "engines" / "default" => {
+    case GET -> Root / `api` / "schema" / "engines" / "default" => {
       val schemaEngine = Schemas.defaultSchemaName
-      Ok(schemaEngine)
+      Ok(Json.fromString(schemaEngine))
     }
 
-    case req @ GET -> Root / API / "test" :? NameParam(name) => {
+    case req @ GET -> Root / `api` / "test" :? NameParam(name) => {
       val default = Ok(s"Hello ${name.getOrElse("World")}")
       req.headers.get(`Accept-Language`) match {
         case Some(al) => {
@@ -231,7 +232,7 @@ class Routes {
       }
     }
 
-    case req @ GET -> Root / API / "data" / "info" :?
+    case req @ GET -> Root / `api` / "data" / "info" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
@@ -253,7 +254,7 @@ class Routes {
       }
     }
 
-    case req @ GET -> Root / API / "schema" / "info" :?
+    case req @ GET -> Root / `api` / "schema" / "info" :?
       SchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
       SchemaEngineParam(optSchemaEngine) => {
@@ -278,7 +279,7 @@ class Routes {
       }
     }
 
-    case req @ GET -> Root / API / "data" / "convert" :?
+    case req @ GET -> Root / `api` / "data" / "convert" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
       TargetDataFormatParam(optResultDataFormat) => {
@@ -306,7 +307,7 @@ class Routes {
       }
     }
 
-    case req @ GET -> Root / API / "schema" / "convert" :?
+    case req @ GET -> Root / `api` / "schema" / "convert" :?
       SchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
       SchemaEngineParam(optSchemaEngine) +&
@@ -352,7 +353,7 @@ class Routes {
       }
     }
 
-    case req @ (GET | POST) -> Root / API / "validate" :?
+    case req @ (GET | POST) -> Root / `api` / "validate" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
       SchemaParam(optSchema) +&
@@ -442,7 +443,9 @@ class Routes {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
             val shapeMap = optShapeMap.getOrElse("")
             ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
-              case Left(msg) => (Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"), None)
+              case Left(msg) => (
+                Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"),
+                None)
               case Right(trigger) => (schema.validate(rdf, trigger), Some(trigger))
             }
           }
