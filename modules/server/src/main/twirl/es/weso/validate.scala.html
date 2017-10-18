@@ -54,7 +54,8 @@
 </head>
 
 <body>
-<h1><a href="/">Shaclex</a></h1>
+@navBar()
+<div class="container">
 <div id="resultDiv" data-result='@{Html(result.map(_.toJson).getOrElse(Json.Null).spaces2)}'></div>
 <form action="/validate" method="GET" id="validate">
     <fieldset>
@@ -105,7 +106,8 @@
     </select>
 </label>
 </div>
-<hr/>
+
+</div>
 
 <script src="js/jquery.min.js"></script>
 

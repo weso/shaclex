@@ -234,11 +234,18 @@ function showResult(result) {
 
 function showShape(status,shape,shapesPrefixMap) {
     var shapeClass;
-    if (status == 'conformant') shapeClass = "hasShape success"
-    else shapeClass = "hasNoShape danger";
+    var textHasShape = '';
+    if (status == 'conformant') {
+      shapeClass = "hasShape success table-success"
+      textHasShape = '+';
+    }
+    else {
+     shapeClass = "hasNoShape danger table-danger";
+     textHasShape = '-';
+    }
     return "<td class=\"" + shapeClass + "\">" +
         "<code>" +
-         showQualify(shape, shapesPrefixMap) +
+         textHasShape + showQualify(shape, shapesPrefixMap) +
         "</code></td>" ;
 }
 
