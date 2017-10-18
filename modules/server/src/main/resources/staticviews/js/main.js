@@ -1,8 +1,75 @@
-$(document).ready(function(){
-
 var codeMirrorData ;
 var codeMirrorSchema ;
 var codeMirrorShapeMap ;
+
+function changeMode(element,syntax) {
+    var mode = "turtle";
+    switch (syntax.toUpperCase()) {
+        case "TURTLE": mode = "turtle" ;
+            break ;
+        case "N-TRIPLES": mode = "turtle" ;
+            break ;
+        case "RDF/XML": mode = "xml" ;
+            break ;
+        case "TRIX": mode = "xml" ;
+            break ;
+        case "SHEXJ" : mode = "javascript" ;
+            break ;
+        case "RDF/JSON" : mode = "javascript" ;
+            break ;
+        case "JSON-LD" : mode = "javascript" ;
+            break ;
+        case "SHEXC": mode = "shex" ;
+            break ;
+    }
+    element.setOption("mode",mode);
+}
+
+function changeTheme(theme) {
+    codeMirrorData.setOption("theme",theme);
+    codeMirrorSchema.setOption("theme",theme);
+    codeMirrorShapeMap.setOption("theme",theme);
+}
+
+function changeSchemaSeparated(value) {
+    console.log("Changing schemaSeparated: " + value);
+    if (value==="on") {
+        $("#schemaDiv").show();
+    } else {
+        $("#schemaDiv").hide();
+    }
+}
+
+function changeTriggerMode(value) {
+    if (value) {
+        console.log("Changing triggermode: " + value);
+        switch (value.toUpperCase()) {
+            case "TARGETDECLS":
+//    $("#nodeShapeContainer").hide();
+                $("#shapeMapDiv").hide();
+//    console.log("Hiding all: " + value);
+                break;
+            /*  case "NODESHAPE":
+                $("#nodeShapeContainer").show();
+                console.log("Showing all: " + value);
+                break;
+              case "NODESTART":
+                $("#nodeShapeContainer").show();
+                console.log("Showing node only: " + value);
+                break; */
+            case "SHAPEMAP":
+//    $("#nodeShapeContainer").show();
+                $("#shapeMapDiv").show();
+                console.log("Showing shape map: " + value);
+                break;
+
+        }
+    }
+}
+
+
+$(document).ready(function(){
+
 
 function getHost() {
     var port = window.location.port;
@@ -136,70 +203,7 @@ function noNewLine(instance,change) {
 }
 */
 
-function changeMode(element,syntax) {
-    var mode = "turtle";
-    switch (syntax.toUpperCase()) {
-        case "TURTLE": mode = "turtle" ;
-            break ;
-        case "N-TRIPLES": mode = "turtle" ;
-            break ;
-        case "RDF/XML": mode = "xml" ;
-            break ;
-        case "TRIX": mode = "xml" ;
-            break ;
-        case "SHEXJ" : mode = "javascript" ;
-            break ;
-        case "RDF/JSON" : mode = "javascript" ;
-            break ;
-        case "JSON-LD" : mode = "javascript" ;
-            break ;
-        case "SHEXC": mode = "shex" ;
-            break ;
-    }
-    element.setOption("mode",mode);
-}
 
-function changeTheme(theme) {
-    codeMirrorData.setOption("theme",theme);
-    codeMirrorSchema.setOption("theme",theme);
-    codeMirrorShapeMap.setOption("theme",theme);
-}
-
-function changeSchemaSeparated(value) {
-    console.log("Changing schemaSeparated: " + value);
-    if (value==="on") {
-        $("#schemaDiv").show();
-    } else {
-        $("#schemaDiv").hide();
-    }
-}
-
-function changeTriggerMode(value) {
-    if (value) {
-        console.log("Changing triggermode: " + value);
-        switch (value.toUpperCase()) {
-            case "TARGETDECLS":
-//    $("#nodeShapeContainer").hide();
-                $("#shapeMapDiv").hide();
-//    console.log("Hiding all: " + value);
-                break;
-            /*  case "NODESHAPE":
-                $("#nodeShapeContainer").show();
-                console.log("Showing all: " + value);
-                break;
-              case "NODESTART":
-                $("#nodeShapeContainer").show();
-                console.log("Showing node only: " + value);
-                break; */
-            case "SHAPEMAP":
-//    $("#nodeShapeContainer").show();
-                $("#shapeMapDiv").show();
-                console.log("Showing shape map: " + value);
-                break;
-
-        }
-    }
-}
 
 function resetResult(result) {
     console.log("Reset result: " + JSON.stringify(result));
@@ -219,13 +223,11 @@ function showResult(result) {
         console.log("shapesPrefixMap: " + JSON.stringify(shapesPrefixMap));
         if (result.isValid || result.valid) {
             $("#resultDiv").removeClass("notValid").addClass("valid");
+            showShapeMap(result.shapeMap,nodesPrefixMap,shapesPrefixMap);
         } else {
             $("#resultDiv").removeClass("valid").addClass("notValid");
+            $("#resultDiv").append($("<p>").text(result.message));
         }
-//        $("#resultDiv").append($("<h2>").text("Result"));
-//        $("#resultDiv").append($("<p>").text(result.message));
-        showShapeMap(result.shapeMap,nodesPrefixMap,shapesPrefixMap);
-        showErrors(result.errors);
         var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
         var details = $("<details/>").append(pre);
         $("#resultDiv").append(details);

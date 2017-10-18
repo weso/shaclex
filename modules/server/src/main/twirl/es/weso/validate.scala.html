@@ -1,4 +1,5 @@
 @import es.weso.schema.Result
+@import es.weso.json.JsonTwirl
 @import io.circe._
 
 @(result: Option[Result],
@@ -56,7 +57,7 @@
 <body>
 @navBar()
 <div class="container">
-<div id="resultDiv" data-result='@{Html(result.map(_.toJson).getOrElse(Json.Null).spaces2)}'></div>
+<div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.map(_.toJson).getOrElse(Json.Null)))}'></div>
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
