@@ -2,6 +2,7 @@ package es.weso.shacl
 
 import es.weso.rdf.nodes._
 import SHACLPrefixes._
+import cats.Show
 import es.weso.rdf.path.{ PredicatePath, SHACLPath }
 import es.weso.shacl.Validator.ShapeTyping
 
@@ -159,4 +160,5 @@ object ViolationError {
     notAllowed: List[IRI]) =
     basic("closedError", focusNode, attempt,
       s"closed violation. $focusNode has more properties than $allowedProperties. Extra properties found: $notAllowed, ignoredProperties: $ignoredProperties")
+
 }

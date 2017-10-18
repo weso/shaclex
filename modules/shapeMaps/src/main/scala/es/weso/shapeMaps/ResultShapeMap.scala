@@ -2,19 +2,29 @@ package es.weso.shapeMaps
 
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
+import io.circe._
+import io.circe.syntax._
 
 case class ResultShapeMap(
   resultMap: Map[RDFNode, Map[ShapeMapLabel, Info]],
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap) extends ShapeMap {
+
   def addNodeAssociations(node: RDFNode, mapLabels: Map[ShapeMapLabel, Info]): ResultShapeMap = {
     resultMap.get(node) match {
       case None => this.copy(resultMap = this.resultMap.updated(node, mapLabels))
       case Some(vs) => this.copy(resultMap = this.resultMap.updated(node, vs ++ mapLabels))
     }
   }
+
+  def hasShapes(node: RDFNode): Seq[ShapeMapLabel] = {
+    resultMap.get(node).map(_.keySet.toSeq).getOrElse(Seq())
+  }
+
+  def noSolutions = resultMap.isEmpty
 
   val associations: List[Association] = resultMap.toList.flatMap {
     case (node, labelsMap) => {
@@ -27,13 +37,13 @@ case class ResultShapeMap(
   }
 
   override def addAssociation(a: Association): Either[String, ResultShapeMap] = {
-    a.nodeSelector match {
+    a.node match {
       case RDFNodeSelector(node) => {
         resultMap.get(node) match {
-          case None => Right(this.copy(resultMap = resultMap.updated(node, Map(a.shapeLabel -> a.info))))
+          case None => Right(this.copy(resultMap = resultMap.updated(node, Map(a.shape -> a.info))))
           case Some(labelsMap) => {
-            labelsMap.get(a.shapeLabel) match {
-              case None => Right(this.copy(resultMap = resultMap.updated(node, labelsMap.updated(a.shapeLabel, a.info))))
+            labelsMap.get(a.shape) match {
+              case None => Right(this.copy(resultMap = resultMap.updated(node, labelsMap.updated(a.shape, a.info))))
               case Some(info) =>
                 if (info.status == a.info.status) Right(this)
                 else Left(s"Cannot add association with contradictory status: Association: ${a}, Labels map: ${labelsMap}")
@@ -41,7 +51,7 @@ case class ResultShapeMap(
           }
         }
       }
-      case _ => Left(s"Only RDFNode's can be added as associations to fixedShapeMaps. Value = ${a.nodeSelector}")
+      case _ => Left(s"Only RDFNode's can be added as associations to fixedShapeMaps. Value = ${a.node}")
     }
   }
 
@@ -85,5 +95,6 @@ case class ResultShapeMap(
 
 object ResultShapeMap {
   def empty = ResultShapeMap(Map(), PrefixMap.empty, PrefixMap.empty)
+
 }
 

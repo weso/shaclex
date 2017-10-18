@@ -32,7 +32,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       info(s"Attempt: $attempt")
       attempt match {
         case Left(e) => fail(s"Failed: $e")
-        case Right(v) => v should constainShapes(Set(s, t))
+        case Right(v) => v should containShapes(Set(s, t))
       }
     }
 

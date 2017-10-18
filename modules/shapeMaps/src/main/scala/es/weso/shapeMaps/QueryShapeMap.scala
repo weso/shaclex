@@ -3,7 +3,8 @@ package es.weso.shapeMaps
 import cats.Show
 import cats.syntax.show._
 import es.weso.rdf.PrefixMap
-import io.circe.Json
+import io.circe._
+import io.circe.syntax._
 
 /**
  * Input shape map also known as Query shape map
@@ -14,7 +15,14 @@ case class QueryShapeMap(
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap) extends ShapeMap {
 
-  override def addAssociation(a: Association): Either[String, QueryShapeMap] = Right(this.copy(associations = a +: associations))
+  override def addAssociation(a: Association): Either[String, QueryShapeMap] =
+    Right(this.copy(associations = a +: associations))
 
+}
+
+object QueryShapeMap {
+  implicit val encodeShapeMap: Encoder[QueryShapeMap] = new Encoder[QueryShapeMap] {
+    final def apply(a: QueryShapeMap): Json = a.associations.asJson
+  }
 }
 

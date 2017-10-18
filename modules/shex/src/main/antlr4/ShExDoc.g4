@@ -81,7 +81,7 @@ nonLiteralKind  : KW_IRI
 xsFacet			: stringFacet
 				| numericFacet;
 stringFacet     : stringLength INTEGER
-			    | KW_PATTERN string
+			    | KW_PATTERN string     // deprecated
 				| '~' string			// shortcut for "PATTERN"
 				;
 stringLength	: KW_LENGTH

@@ -41,9 +41,9 @@ case class InfoNode(
 
   def toJson: Json = {
     val jsonPositive: Json = Json.fromJsonObject(
-      JsonObject.from(hasShapes.toList.map { case (label, e) => (label.str, Json.fromString(e.str)) }))
+      JsonObject.fromFoldable(hasShapes.toList.map { case (label, e) => (label.show, Json.fromString(e.str)) }))
     val jsonNegative: Json = Json.fromJsonObject(
-      JsonObject.from(hasNoShapes.toList.map { case (label, e) => (label.str, Json.fromString(e.str)) }))
+      JsonObject.fromFoldable(hasNoShapes.toList.map { case (label, e) => (label.show, Json.fromString(e.str)) }))
     Json.fromJsonObject {
       val obj = JsonObject.empty
       val pos = conditionalAdd(!hasShapes.isEmpty, obj, "hasShapes", jsonPositive)
@@ -88,11 +88,13 @@ object InfoNode {
       result
     }
 
-  def getSchemaLabelExplanation(field: String, c: ACursor): Decoder.Result[(SchemaLabel, Explanation)] = {
+  def getSchemaLabelExplanation(field: String, c: ACursor): Decoder.Result[(SchemaLabel, Explanation)] =
+    throw new Exception("Unimplemented getSchemaLabelExplanation...")
+  /*{
     for {
       e <- c.downField(field).as[String]
-    } yield (SchemaLabel(field), Explanation(e))
-  }
+    } yield (SchemaLabel(field,pm), Explanation(e))
+  } */
 
   implicit val rdfNodeKeyDecoder = new KeyDecoder[RDFNode] {
     override def apply(key: String): Option[RDFNode] = Some(IRI(key))

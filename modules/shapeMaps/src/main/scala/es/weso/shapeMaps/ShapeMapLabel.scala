@@ -19,7 +19,7 @@ object ShapeMapLabel {
   implicit val encodeShapeMapLabel: Encoder[ShapeMapLabel] = new Encoder[ShapeMapLabel] {
     final def apply(label: ShapeMapLabel): Json = {
       label match {
-        case Start => Json.fromString("start")
+        case Start => Json.fromString(IRI("http://www.w3.org/ns/shex#Start").toString)
         case IRILabel(iri) => Json.fromString(iri.toString)
         case BNodeLabel(bnode) => Json.fromString(bnode.toString)
       }

@@ -25,7 +25,7 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
       val triggerMode = "TARGETDECLS"
       val schemaEngine = "SHEX"
       val node: RDFNode = IRI("http://example.org/x")
-      val shape: SchemaLabel = SchemaLabel("http://example.org/S")
+      val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
       val tryResult: Either[String, Result] = for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
         rdf <- RDFAsJenaModel.parseChars(data, dataFormat)

@@ -9,27 +9,31 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import cats.syntax.either._
 import cats.instances.either._
+import es.weso.shapeMaps._
+import es.weso.utils.MapUtils._
 
 case class Result(
   isValid: Boolean,
   message: String,
-  solutions: Seq[Solution],
+  shapeMaps: Seq[ResultShapeMap],
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap) extends LazyLogging {
 
-  def noSolutions(sols: Seq[Solution]): Boolean = {
-    sols.size == 0 || sols.head.nodes.isEmpty
+  def noSolutions(shapeMaps: Seq[ResultShapeMap]): Boolean = {
+    shapeMaps.size == 0 || shapeMaps.head.noSolutions
   }
 
-  def solution: Either[String, Solution] = {
-    solutions.size match {
+  def solution: Either[String, ResultShapeMap] = {
+    shapeMaps.size match {
       case 0 => Left("No solutions")
-      case 1 => Right(solutions.head)
+      case 1 => {
+        Right(shapeMaps.head)
+      }
       case _ => {
-        logger.warn(s"More than one solution. Only considering the first one. Solutions:\n$solutions")
-        Right(solutions.head)
+        logger.warn(s"More than one solution. Only considering the first one. Solutions:\n$shapeMaps")
+        Right(shapeMaps.head)
       }
     }
   }
@@ -39,12 +43,12 @@ case class Result(
   def show: String = {
     val sb = new StringBuilder
     if (isValid) {
-      if (solutions.size == 0) {
+      if (shapeMaps.size == 0) {
         sb ++= s"No solutions"
       } else {
-        for ((solution, n) <- solutions zip (1 to cut)) {
+        for ((solution, n) <- shapeMaps zip (1 to cut)) {
           sb ++= "Result " + printNumber(n, cut)
-          sb ++= solution.show
+          sb ++= solution.toString
         }
       }
     } else
@@ -68,6 +72,22 @@ case class Result(
         Json.fromJsonObject(JsonObject.fromMap(newMap))
       }
     }
+    implicit val encodeShapeMap: Encoder[ResultShapeMap] = new Encoder[ResultShapeMap] {
+      final def apply(a: ResultShapeMap): Json = {
+        def node2String(n: RDFNode): String = a.nodesPrefixMap.qualify(n)
+        def shapeMapLabel2String(s: ShapeMapLabel): String = s match {
+          case IRILabel(iri) => a.shapesPrefixMap.qualify(iri)
+          case BNodeLabel(b) => b.getLexicalForm
+          case _ => throw new Exception(s"encodeShapeMap. shapeMapLabel2String: unsupported $s")
+        }
+        def info2Json(i: Info): Json = i.asJson
+        def result2Json(s: Map[ShapeMapLabel, Info]): Json = {
+          Json.fromJsonObject(JsonObject.fromMap(cnvMap(s, shapeMapLabel2String, info2Json)))
+        }
+
+        Json.fromJsonObject(JsonObject.fromMap(cnvMap(a.resultMap, node2String, result2Json)))
+      }
+    }
 
     implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
       final def apply(a: Result): Json = {
@@ -75,7 +95,10 @@ case class Result(
           add("valid", Json.fromBoolean(isValid)).
           add("type", Json.fromString("Result")).
           add("message", Json.fromString(message)).
-          add("solutions", solutions.toList.asJson).
+          add("shapeMap", solution match {
+            case Left(msg) => Json.fromString(msg)
+            case Right(r) => r.toJson
+          }).
           add("errors", errors.toList.asJson).
           add("nodesPrefixMap", nodesPrefixMap.asJson).
           add("shapesPrefixMap", shapesPrefixMap.asJson))
@@ -103,10 +126,17 @@ case class Result(
   def hasShapes(node: RDFNode): Seq[SchemaLabel] = {
     solution match {
       case Left(str) => Seq()
-      case Right(s) => s.hasShapes(node)
+      case Right(s) => s.hasShapes(node).map(cnvLabel)
     }
   }
 
+  def cnvLabel(lbl: ShapeMapLabel): SchemaLabel = {
+    lbl match {
+      case IRILabel(iri) => SchemaLabel(iri, shapesPrefixMap)
+      case BNodeLabel(bn) => SchemaLabel(bn, shapesPrefixMap)
+      case Start => throw new Exception("Result.cnvLabel: Unexpected conversion from Start to SchemaLabel")
+    }
+  }
 }
 
 object Result extends LazyLogging {
@@ -114,7 +144,7 @@ object Result extends LazyLogging {
     Result(
       isValid = true,
       message = "",
-      solutions = Seq(),
+      shapeMaps = Seq(),
       errors = Seq(),
       None,
       PrefixMap.empty,
@@ -148,6 +178,13 @@ object Result extends LazyLogging {
     }
   }
 
+  // TODO: implement this
+  implicit val decodeResultShapeMap: Decoder[ResultShapeMap] = Decoder.instance { c =>
+    {
+      throw new Exception("unimplemented decodeResulShapeMap")
+    }
+  }
+
   implicit val decodeResult: Decoder[Result] = Decoder.instance { c =>
     for {
       isValid <- c.get[Boolean]("valid")
@@ -157,13 +194,13 @@ object Result extends LazyLogging {
       trigger <- c.get[Option[ValidationTrigger]]("trigger")
       solutions <- if (isValid) {
         for {
-          ls <- c.downField("details").as[List[Solution]]
+          ls <- c.downField("shapeMap").as[List[ResultShapeMap]]
         } yield ls.toSeq
       } else Right(Seq())
       errors <- if (isValid) {
         Right(Seq())
       } else for {
-        ls <- c.downField("details").as[List[ErrorInfo]]
+        ls <- c.downField("shapeMap").as[List[ErrorInfo]]
       } yield ls.toSeq
     } yield Result(
       isValid,

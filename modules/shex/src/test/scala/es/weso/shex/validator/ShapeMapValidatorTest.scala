@@ -24,14 +24,14 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
          |:a :p :b .
          |:c :p 1 .""".stripMargin
 
-    /*    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S", ":a@:S,:b@!:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S", ":a@:S,:b@!:S,:c@:S")
-    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:a@:T", ":a@:S,:a@!:T") */
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:a@:T", ":a@:S,:a@!:T")
     shouldValidateWithShapeMap(rdfStr, shexStr, "23@:CanVote", "23@:CanVote")
   }
 
-  /*  describe("Recursive shape") {
+  describe("Recursive shape") {
     val shexStr =
       """
         |prefix : <http://example.org/>
@@ -67,7 +67,21 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S,:b@:T")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":b@:T", ":a@:S,:b@:T")
   }
-*/
+
+  describe("Regular expressions") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:A { :p PATTERN "\\d{2}" }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p "23" .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
+  }
+
   def shouldValidateWithShapeMap(
     rdfStr: String,
     shexStr: String,
@@ -77,7 +91,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
       val validate = for {
         rdf <- RDFAsJenaModel.parseChars(rdfStr, "Turtle")
         shex <- Schema.fromString(shexStr, "ShExC", None)
-        shapeMap <- ShapeMap.parse(shapeMapStr, rdf.getPrefixMap, shex.prefixMap)
+        shapeMap <- ShapeMap.fromString(shapeMapStr, rdf.getPrefixMap, shex.prefixMap)
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)
         result <- Validator.validate(shex, fixedShapeMap, rdf)
         expectedShapeMap <- ShapeMap.parseResultMap(expected, rdf, shex.prefixMap)

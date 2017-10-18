@@ -33,7 +33,7 @@ case class FacetChecker(schema: Schema)
         checkCond(
           l == n,
           attempt,
-          msgErr(s"${node.show} doesn't satisfy facet Length($n) with length $l"),
+          msgErr(s"${node.show} does not satisfy facet Length($n) with length $l"),
           s"${node.show} satisfies Length($n) with length $l")
       }
       case MinLength(n) => {
@@ -41,7 +41,7 @@ case class FacetChecker(schema: Schema)
         checkCond(
           length(node) >= n,
           attempt,
-          msgErr(s"${node.show} doesn't satisfy facet MinLength($n) with length $l"),
+          msgErr(s"${node.show} does not satisfy facet MinLength($n) with length $l"),
           s"${node.show} satisfies MinLength($n) with length $l")
       }
       case MaxLength(n) => {
@@ -49,36 +49,36 @@ case class FacetChecker(schema: Schema)
         checkCond(
           length(node) <= n,
           attempt,
-          msgErr(s"${node.show} doesn't satisfy facet MaxLength($n) with length $l"),
+          msgErr(s"${node.show} does not satisfy facet MaxLength($n) with length $l"),
           s"${node.show} satisfies MaxLength($n) with length $l")
       }
       case Pattern(p, flags) => {
         val str = node.getLexicalForm
         RegEx(p, flags).matches(str) match {
           case Right(b) => checkCond(b, attempt,
-            msgErr(s"${node.show} doesn't match Pattern($p) with lexical form $str"),
+            msgErr(s"${node.show} does not match Pattern($p) with lexical form $str"),
             s"${node.show} satisfies Pattern($p) with lexical form $str")
           case Left(msg) => errStr(msg)
         }
       }
       case MinInclusive(m) => for {
         d <- minInclusive(m, node)
-        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MinInclusive($m) with $node"),
+        r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MinInclusive($m) with $node"),
           s"${node.show} satisfies MinInclusive($m)")
       } yield r
       case MinExclusive(m) => for {
         d <- minExclusive(m, node)
-        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MinExclusive($m) with $node"),
+        r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MinExclusive($m) with $node"),
           s"${node.show} satisfies MinExclusive($m)")
       } yield r
       case MaxInclusive(m) => for {
         d <- maxInclusive(m, node)
-        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MaxInclusive($m) with $node"),
+        r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MaxInclusive($m) with $node"),
           s"${node.show} satisfies MaxInclusive($m)")
       } yield r
       case MaxExclusive(m) => for {
         d <- maxExclusive(m, node)
-        r <- checkCond(d, attempt, msgErr(s"${node.show} doesn't match MaxExclusive($m) with $node"),
+        r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MaxExclusive($m) with $node"),
           s"${node.show} satisfies MaxExclusive($m)")
       } yield r
 

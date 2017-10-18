@@ -1,5 +1,4 @@
 @import es.weso.schema.Result
-@import es.weso.schema.ShapeMapEncoder._
 @import io.circe._
 
 @(result: Option[Result],
@@ -22,8 +21,13 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Shaclex</title>
-    <script src="js/jquery-3.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-table.min.css">
+
+    <!--    <script src="js/delete_jquery-3.1.1.min.js"></script> -->
     <script src="codemirror-5.24.2/lib/codemirror.js"></script>
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
@@ -39,6 +43,7 @@
     <script src="codemirror-5.24.2/addon/edit/closebrackets.js"></script>
     <script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
     <script src="codemirror-5.24.2/addon/display/placeholder.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
 
     <style type="text/css">
       .CodeMirror {
@@ -82,8 +87,11 @@
         <button type="button" onclick="addNodeShapeEntry()">+</button>  *@ -->
     </fieldset>
 
-    <div class="submit">
+<!--    <div class="submit">
      <input type="button" value="validate" id="validateButton"/>
+    </div> -->
+    <div class="submit">
+        <input type="button" value="validate" id="validateButton"/>
     </div>
 </form>
 <div class="otherOptions">
@@ -99,7 +107,14 @@
 </div>
 <hr/>
 
-<script src="js/shaclex.js" ></script>
+<script src="js/jquery.min.js"></script>
+
+<script src="js/main.js" ></script>
+
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/bootstrap-table.min.js"></script>
+
 </body>
 </html>
 
