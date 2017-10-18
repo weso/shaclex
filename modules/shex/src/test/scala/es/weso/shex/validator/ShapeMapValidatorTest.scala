@@ -72,7 +72,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     val shexStr =
       """
         |prefix : <http://example.org/>
-        |:A { :p PATTERN "\\d{2}" }
+        |:A { :p /\\d{2}/ }
       """.stripMargin
     val rdfStr =
       """|prefix : <http://example.org/>

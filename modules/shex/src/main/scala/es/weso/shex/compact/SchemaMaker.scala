@@ -548,20 +548,30 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
 
   override def visitStringFacet(
-    ctx: StringFacetContext): Builder[XsFacet] = {
-    if (isDefined(ctx.stringLength())) {
-      for {
-        n <- getInteger(ctx.INTEGER().getText())
-        stringLength <- visitStringLength(ctx.stringLength)(n)
-      } yield stringLength
-    } else {
-      // TODO. Update pattern to handle flags
-      for {
-        str <- visitString(ctx.string())
-      } yield Pattern(str, None)
+    ctx: StringFacetContext): Builder[XsFacet] = ctx match {
+    case _ if (isDefined(ctx.stringLength())) => for {
+      n <- getInteger(ctx.INTEGER().getText())
+      stringLength <- visitStringLength(ctx.stringLength)(n)
+    } yield stringLength
+    case _ if (isDefined(ctx.REGEXP())) => {
+      ok(Pattern(
+        removeBackSlashes(ctx.REGEXP().getText()),
+        if (isDefined(ctx.REGEXP_FLAGS())) Some(ctx.REGEXP_FLAGS().getText())
+        else None))
     }
+    case _ if (isDefined(ctx.KW_PATTERN())) => for {
+      str <- visitString(ctx.string())
+    } yield Pattern(str, None)
+    case _ => err(s"visitStringFacet: Unsupported ${ctx.getClass.getName}")
   }
 
+  private def removeBackSlashes(str: String): String = {
+    val slashedRegex = "/(.*)/".r
+    str match {
+      case slashedRegex(s) => s
+      case _ => str
+    }
+  }
   override def visitStringLength(
     ctx: StringLengthContext): Int => Builder[StringFacet] = n => {
     if (isDefined(ctx.KW_LENGTH())) ok(Length(n))
