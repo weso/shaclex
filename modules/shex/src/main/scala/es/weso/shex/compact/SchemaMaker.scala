@@ -555,7 +555,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     } yield stringLength
     case _ if (isDefined(ctx.REGEXP())) => {
       ok(Pattern(
-        removeBackSlashes(ctx.REGEXP().getText()),
+        removeSlashes(ctx.REGEXP().getText()),
         if (isDefined(ctx.REGEXP_FLAGS())) Some(ctx.REGEXP_FLAGS().getText())
         else None))
     }
@@ -565,7 +565,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     case _ => err(s"visitStringFacet: Unsupported ${ctx.getClass.getName}")
   }
 
-  private def removeBackSlashes(str: String): String = {
+  private def removeSlashes(str: String): String = {
     val slashedRegex = "/(.*)/".r
     str match {
       case slashedRegex(s) => s
