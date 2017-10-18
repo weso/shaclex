@@ -202,8 +202,8 @@ function showResult(result) {
         } else {
             $("#resultDiv").removeClass("valid").addClass("notValid");
         }
-        $("#resultDiv").append($("<h2>").text("Result"));
-        $("#resultDiv").append($("<p>").text(result.message));
+//        $("#resultDiv").append($("<h2>").text("Result"));
+//        $("#resultDiv").append($("<p>").text(result.message));
         showShapeMap(result.shapeMap,nodesPrefixMap,shapesPrefixMap);
         showErrors(result.errors);
         var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
@@ -227,15 +227,24 @@ function showShapeMap(shapeMap,nodesPrefixMap, shapesPrefixMap) {
     console.log("Solution, nodesPrefixMap: " + JSON.stringify(nodesPrefixMap));
     console.log("Solution, shapesPrefixMap: " + JSON.stringify(shapesPrefixMap));
 
-    var table = "<thead><tr><th data-sortable=\"true\">Node</th><th data-sortable=\"true\">Shape</th><th>Evidences</th></thead>";
+    var tableHead = "<thead><tr>" +
+        "<th data-sortable=\"true\">Node</th>" +
+        "<th data-sortable=\"true\">Shape</th>" +
+        "<th>Evidences</th> " +
+        "</tr></thead>";
+
+    var tableBody = '';
     $.each(shapeMap, function(i) {
        var row = shapeMap[i];
        console.log("Association: " + JSON.stringify(shapeMap[i]) );
-       table += "<tr><td class='node'><code>" + qualify.showQualify(row.node, nodesPrefixMap) + "</code></td>" +
+       tableBody += "<tr><td class='node'><code>" + qualify.showQualify(row.node, nodesPrefixMap) + "</code></td>" +
             showShape(row.status, row.shape, shapesPrefixMap) +
             "<td class='explanation'>" + escapeHtml(row.reason) + "</td></tr>" ;
      });
-    $("#resultDiv").append("<h2>Solution</h2><table data-toggle=\"table\" data-sort-order=\"desc\" data-sort-name=\"node\"" + table + "</table>");
+    $("#resultDiv").append("<table data-toggle=\"table\" data-sort-order=\"desc\" data-sort-name=\"node\">" +
+        tableHead +
+        tableBody +
+        "</table>");
 }
 
 var entityMap = {

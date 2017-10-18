@@ -1,0 +1,249 @@
+<html><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Shaclex</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-table.min.css">
+
+    <!--    <script src="js/delete_jquery-3.1.1.min.js"></script> -->
+    <script src="codemirror-5.24.2/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
+    <link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
+
+    <!-- some modes -->
+    <script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
+    <script src="codemirror-5.24.2/mode/shex/shex.js"></script>
+    <script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
+    <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
+    <script src="codemirror-5.24.2/addon/edit/closebrackets.js"></script>
+    <script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
+    <script src="codemirror-5.24.2/addon/display/placeholder.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <style type="text/css">
+      .CodeMirror {
+        border: 1px solid black;
+        height: auto;
+      }
+    </style>
+</head>
+
+<body>
+<h1><a href="/">Shaclex</a></h1>
+<div id="resultDiv" data-result="{
+  &quot;valid&quot; : true,
+  &quot;type&quot; : &quot;Result&quot;,
+  &quot;message&quot; : &quot;Validated&quot;,
+  &quot;shapeMap&quot; : [
+    {
+      &quot;node&quot; : &quot;<http://example.org/alice>&quot;,
+      &quot;shape&quot; : &quot;<http://example.org/User>&quot;,
+      &quot;status&quot; : &quot;conformant&quot;,
+      &quot;appInfo&quot; : &quot;Shaclex&quot;,
+      &quot;reason&quot; : &quot;:alice is an IRI\nschema:Female == schema:Female\nAlice has datatype xsd:string&quot;
+    },
+    {
+      &quot;node&quot; : &quot;<http://example.org/bob>&quot;,
+      &quot;shape&quot; : &quot;<http://example.org/User>&quot;,
+      &quot;status&quot; : &quot;conformant&quot;,
+      &quot;appInfo&quot; : &quot;Shaclex&quot;,
+      &quot;reason&quot; : &quot;:bob is an IRI\n1980-03-10 has datatype xsd:date\nRobert has datatype xsd:string\nschema:Male == schema:Male&quot;
+    }
+  ],
+  &quot;errors&quot; : [
+  ],
+  &quot;nodesPrefixMap&quot; : {
+    &quot;&quot; : &quot;http://example.org/&quot;,
+    &quot;schema&quot; : &quot;http://schema.org/&quot;,
+    &quot;xsd&quot; : &quot;http://www.w3.org/2001/XMLSchema#&quot;,
+    &quot;foaf&quot; : &quot;http://xmlns.com/foaf/0.1/&quot;
+  },
+  &quot;shapesPrefixMap&quot; : {
+    &quot;&quot; : &quot;http://example.org/&quot;,
+    &quot;schema&quot; : &quot;http://schema.org/&quot;,
+    &quot;xsd&quot; : &quot;http://www.w3.org/2001/XMLSchema#&quot;
+  }
+}" class="valid"><table data-toggle="table" data-sort-order="desc" data-sort-name="node"><thead><tr><th data-sortable="true">Node</th><th data-sortable="true">Shape</th><th>Evidences</th> </tr></thead><tbody><tr><td class="node"><code><abbr title="<http://example.org/pepe>">:pepe</abbr></code></td><td class="hasNoShape table-danger"><code><abbr title="<http://example.org/User>">:User</abbr></code></td><td class="explanation">Error: No candidates match. Neighs: List(), Table: CTable { constraints: Map(C1 -&gt; Pos(NodeConstraint(None,None,Some(&lt;http://www.w3.org/2001/XMLSchema#string&gt;),List(),None)), C2 -&gt; Pos(NodeConstraint(None,None,Some(&lt;http://www.w3.org/2001/XMLSchema#date&gt;),List(),None)), C3 -&gt; Pos(NodeConstraint(None,None,None,List(),Some(List(IRIValue(&lt;http://schema.org/Male&gt;), IRIValue(&lt;http://schema.org/Female&gt;))))), C4 -&gt; Pos(ShapeRef(IRILabel(&lt;http://example.org/User&gt;))))<br>
+<br> paths: Map(Direct(&lt;http://schema.org/name&gt;) -&gt; Set(C1), Direct(&lt;http://schema.org/birthDate&gt;) -&gt; Set(C2), Direct(&lt;http://schema.org/gender&gt;) -&gt; Set(C3), Direct(&lt;http://schema.org/knows&gt;) -&gt; Set(C4))</td></tr></tbody></table><details><pre>{
+  "valid": true,
+  "type": "Result",
+  "message": "Validated",
+  "shapeMap": [
+    {
+      "node": "&lt;http://example.org/pepe&gt;",
+      "shape": "&lt;http://example.org/User&gt;",
+      "status": "nonconformant",
+      "appInfo": "Shaclex",
+      "reason": "Error: No candidates match. Neighs: List(), Table: CTable { constraints: Map(C1 -&gt; Pos(NodeConstraint(None,None,Some(&lt;http://www.w3.org/2001/XMLSchema#string&gt;),List(),None)), C2 -&gt; Pos(NodeConstraint(None,None,Some(&lt;http://www.w3.org/2001/XMLSchema#date&gt;),List(),None)), C3 -&gt; Pos(NodeConstraint(None,None,None,List(),Some(List(IRIValue(&lt;http://schema.org/Male&gt;), IRIValue(&lt;http://schema.org/Female&gt;))))), C4 -&gt; Pos(ShapeRef(IRILabel(&lt;http://example.org/User&gt;))))\n\r\n paths: Map(Direct(&lt;http://schema.org/name&gt;) -&gt; Set(C1), Direct(&lt;http://schema.org/birthDate&gt;) -&gt; Set(C2), Direct(&lt;http://schema.org/gender&gt;) -&gt; Set(C3), Direct(&lt;http://schema.org/knows&gt;) -&gt; Set(C4))"
+    }
+  ],
+  "errors": [],
+  "nodesPrefixMap": {
+    "": "http://example.org/",
+    "schema": "http://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "foaf": "http://xmlns.com/foaf/0.1/"
+  },
+  "shapesPrefixMap": {
+    "": "http://example.org/",
+    "schema": "http://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  }
+}</pre></details></div>
+<form action="/validate" method="GET" id="validate">
+    <fieldset>
+        
+<label for="schemaEngine">Schema Engine (current: ShEx)</label>
+<select id="schemaEngine" form="validate" name="schemaEngine">
+ 
+  <option value="ShEx" selected="">ShEx</option>
+ 
+  <option value="SHACLex">SHACLex</option>
+ 
+</select>
+
+        <label>Schema separated:
+            <input id="schemaSeparated" checked="" type="checkbox"></label>
+    </fieldset>
+
+    <fieldset class="dataPanel">
+        <legend>RDF Data</legend>
+        <textarea id="rdfData" placeholder="RDF data" style="display: none;">PREFIX :       &lt;http://example.org/&gt;
+PREFIX schema: &lt;http://schema.org/&gt;
+PREFIX xsd:    &lt;http://www.w3.org/2001/XMLSchema#&gt;
+PREFIX foaf:   &lt;http://xmlns.com/foaf/0.1/&gt;
+
+:alice schema:name           "Alice" ;            # %* \Passes{:User} *)
+       schema:gender         schema:Female ;
+       schema:knows          :bob .
+
+:bob   schema:gender         schema:Male ;        # %* \Passes{:User} *)
+       schema:name           "Robert";            
+       schema:birthDate      "1980-03-10"^^xsd:date .
+
+:carol schema:name           "Carol" ;            # %* \Passes{:User} *)
+       schema:gender         schema:Female ;  
+       foaf:name             "Carol" .</textarea><div class="CodeMirror cm-s-default"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 5px; left: 35px;"><textarea style="position: absolute; bottom: -1em; padding: 0px; width: 1px; height: 1em; outline: medium none;" autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" wrap="off"></textarea></div><div class="CodeMirror-vscrollbar" cm-not-content="true"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" cm-not-content="true" style="display: block; right: 0px; left: 30px;"><div style="height: 100%; min-height: 1px; width: 583px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1" draggable="true"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: -17px; border-right-width: 13px; min-height: 328px; min-width: 583px; padding-right: 0px; padding-bottom: 17px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines"><div style="position: relative; outline: medium none;"><div class="CodeMirror-measure"><span><span>​</span>x</span></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 20px;">&nbsp;</div></div><div class="CodeMirror-code" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-comment">PREFIX</span> <span class="cm-operator">:</span>       <span class="cm-atom">&lt;http://example.org/&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-comment">PREFIX</span> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span> <span class="cm-atom">&lt;http://schema.org/&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-comment">PREFIX</span> <span class="cm-variable-3">xsd</span><span class="cm-operator">:</span>    <span class="cm-atom">&lt;http://www.w3.org/2001/XMLSchema#&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-comment">PREFIX</span> <span class="cm-variable-3">foaf</span><span class="cm-operator">:</span>   <span class="cm-atom">&lt;http://xmlns.com/foaf/0.1/&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-operator">:</span><span class="cm-keyword">alice</span> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">name</span>           <span class="cm-string">"Alice"</span> ;            <span class="cm-comment"># %* \Passes{:User} *)</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">       <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">gender</span>         <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-comment">Female</span> ;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">       <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">knows</span>          <span class="cm-operator">:</span><span class="cm-keyword">bob</span> .</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-operator">:</span><span class="cm-keyword">bob</span>   <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">gender</span>         <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-comment">Male</span> ;        <span class="cm-comment"># %* \Passes{:User} *)</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">11</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">       <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">name</span>           <span class="cm-string">"Robert"</span>;            </span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">12</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">       <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">birthDate</span>      <span class="cm-string">"1980-03-10"</span><span class="cm-keyword">^</span><span class="cm-variable-3">^xsd</span><span class="cm-operator">:</span><span class="cm-keyword">date</span> .</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">13</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">14</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-operator">:</span><span class="cm-keyword">carol</span> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">name</span>           <span class="cm-string">"Carol"</span> ;            <span class="cm-comment"># %* \Passes{:User} *)</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">15</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">       <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">gender</span>         <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-comment">Female</span> ;  </span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">16</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">       <span class="cm-variable-3">foaf</span><span class="cm-operator">:</span><span class="cm-keyword">name</span>             <span class="cm-string">"Carol"</span> .</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 13px; width: 1px; border-bottom: 17px solid transparent; top: 328px;"></div><div class="CodeMirror-gutters" style="height: 358px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div>
+        
+<label for="dataFormat">Data Format</label>
+<select id="dataFormat" form="validate" name="dataFormat" onchange="changeMode(codeMirrorData, this.options[this.selectedIndex].value)">
+ 
+  <option value="TURTLE" selected="">TURTLE</option>
+ 
+  <option value="RDF/XML">RDF/XML</option>
+ 
+  <option value="N-TRIPLES">N-TRIPLES</option>
+ 
+  <option value="RDF/JSON">RDF/JSON</option>
+ 
+  <option value="TRIG">TRIG</option>
+ 
+</select>
+
+    </fieldset>
+
+    <div id="schemaDiv">
+    <fieldset class="schemaPanel">
+        <legend>Schema</legend>
+        <textarea id="schema" placeholder="Schema" style="display: none;">PREFIX :       &lt;http://example.org/&gt;
+PREFIX schema: &lt;http://schema.org/&gt;
+PREFIX xsd:  &lt;http://www.w3.org/2001/XMLSchema#&gt;
+
+:User IRI { 
+ schema:name          xsd:string  ;
+ schema:birthDate     xsd:date?  ;
+ schema:gender        [ schema:Male schema:Female ];
+ schema:knows         @:User*
+}</textarea><div class="CodeMirror cm-s-default"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 5px; left: 35px;"><textarea style="position: absolute; bottom: -1em; padding: 0px; width: 1px; height: 1em; outline: medium none;" autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" wrap="off"></textarea></div><div class="CodeMirror-vscrollbar" cm-not-content="true"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" cm-not-content="true"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1" draggable="true"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: -17px; border-right-width: 13px; min-height: 208px; min-width: 423px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines"><div style="position: relative; outline: medium none;"><div class="CodeMirror-measure"><div class="CodeMirror-linenumber CodeMirror-gutter-elt"><div>10</div></div></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 20px;">&nbsp;</div></div><div class="CodeMirror-code" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-meta">PREFIX</span> <span class="cm-operator">:</span>       <span class="cm-atom">&lt;http://example.org/&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-meta">PREFIX</span> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span> <span class="cm-atom">&lt;http://schema.org/&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-meta">PREFIX</span> <span class="cm-variable-3">xsd</span><span class="cm-operator">:</span>  <span class="cm-atom">&lt;http://www.w3.org/2001/XMLSchema#&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-operator">:</span><span class="cm-comment">User</span> <span class="cm-meta">IRI</span> { </span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">name</span>          <span class="cm-variable-3">xsd</span><span class="cm-operator">:</span><span class="cm-keyword">string</span>  ;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">birthDate</span>     <span class="cm-variable-3">xsd</span><span class="cm-operator">:</span><span class="cm-keyword">date?</span>  ;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">gender</span>        [ <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-comment">Male</span> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-comment">Female</span> ];</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"> <span class="cm-variable-3">schema</span><span class="cm-operator">:</span><span class="cm-keyword">knows</span>         <span class="cm-variable-3">@</span><span class="cm-operator">:</span><span class="cm-comment">User</span>*</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">10</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation">}</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 13px; width: 1px; border-bottom: 0px solid transparent; top: 208px;"></div><div class="CodeMirror-gutters" style="height: 221px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div>
+        
+<label for="schemaFormat">Schema Format</label>
+<select id="schemaFormat" form="validate" name="schemaFormat" onchange="changeMode(codeMirrorSchema, this.options[this.selectedIndex].value)">
+ 
+  <option value="ShExC" selected="">ShExC</option>
+ 
+  <option value="ShExJ">ShExJ</option>
+ 
+  <option value="N-Quads">N-Quads</option>
+ 
+  <option value="N3">N3</option>
+ 
+  <option value="N-Triples">N-Triples</option>
+ 
+  <option value="CSV">CSV</option>
+ 
+  <option value="JSON-LD">JSON-LD</option>
+ 
+  <option value="RDF/XML">RDF/XML</option>
+ 
+  <option value="rdf/null">rdf/null</option>
+ 
+  <option value="TriX">TriX</option>
+ 
+  <option value="RDF-THRIFT">RDF-THRIFT</option>
+ 
+  <option value="Turtle">Turtle</option>
+ 
+  <option value="RDF/JSON">RDF/JSON</option>
+ 
+  <option value="TriG">TriG</option>
+ 
+  <option value="TURTLE">TURTLE</option>
+ 
+  <option value="N-TRIPLES">N-TRIPLES</option>
+ 
+  <option value="TRIG">TRIG</option>
+ 
+  <option value="TREE">TREE</option>
+ 
+</select>
+
+    </fieldset>
+    </div>
+        
+<fieldset class="triggerModePanel">
+<legend>Trigger mode</legend>
+<label for="triggerMode">Mode</label>
+<select id="triggerMode" form="validate" name="triggerMode" onchange="changeTriggerMode(this.options[this.selectedIndex].value)">
+ 
+  <option value="TargetDecls">TargetDecls</option>
+ 
+  <option value="ShapeMap" selected="">ShapeMap</option>
+ 
+</select>
+</fieldset>
+
+        <div id="shapeMapDiv">
+            <legend>Shape map</legend>
+            <textarea id="shapeMap" placeholder="Shape map" style="display: none;">:alice @ :User</textarea><div class="CodeMirror cm-s-default" style="height: 5em;"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 5px; left: 75px;"><textarea style="position: absolute; bottom: -1em; padding: 0px; width: 1px; height: 1em; outline: medium none;" autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" wrap="off"></textarea></div><div class="CodeMirror-vscrollbar" cm-not-content="true"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" cm-not-content="true"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1" draggable="true"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: -17px; border-right-width: 13px; min-height: 28px; min-width: 111px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines"><div style="position: relative; outline: medium none;"><div class="CodeMirror-measure"><pre>x</pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors" style="visibility: hidden;"><div class="CodeMirror-cursor" style="left: 44px; top: 0px; height: 20px;">&nbsp;</div></div><div class="CodeMirror-code"><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation"><span class="cm-operator">:</span><span class="cm-keyword">pepe</span> <span class="cm-keyword">@</span> <span class="cm-operator">:</span><span class="cm-comment">User</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 13px; width: 1px; border-bottom: 0px solid transparent; top: 28px;"></div><div class="CodeMirror-gutters" style="height: 41px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div>
+        </div>
+<!--      -->
+    
+
+    <div class="submit">
+     <input value="validate" id="validateButton" type="button">
+    </div>
+</form>
+<div class="otherOptions">
+<hr>
+<h2>Other options</h2>
+<label>Editor theme:
+    <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">
+        <option value="eclipse">Eclipse</option>
+        <option value="elegant">Elegant</option>
+        <option value="monokai">Monokai</option>
+    </select>
+</label>
+</div>
+<hr>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/bootstrap-table.min.js"></script>
+<script src="js/bundle.js"></script>
+
+</body></html>
