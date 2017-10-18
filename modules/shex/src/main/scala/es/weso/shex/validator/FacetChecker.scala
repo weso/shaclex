@@ -97,86 +97,129 @@ case class FacetChecker(schema: Schema)
   // Problem, how to do it in a compatible way with type safety
   type Comparator = (NumericLiteral, RDFNode) => Check[Boolean]
 
+  private def str2NumericInt(str: String): Either[String, NumericInt] = try {
+    val n: Int = Integer.parseInt(str)
+    Right(NumericInt(n))
+  } catch {
+    case e: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
+  }
+
+  private def str2NumericDecimal(str: String): Either[String, NumericDecimal] = try {
+    val n: BigDecimal = BigDecimal(str)
+    Right(NumericDecimal(n))
+  } catch {
+    case e: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
+  }
+
+  private def str2NumericDouble(str: String): Either[String, NumericDouble] = try {
+    val n: Double = str.toDouble
+    Right(NumericDouble(n))
+  } catch {
+    case e: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
+  }
+
+  private def numericValue(node: RDFNode): Either[String, NumericLiteral] = node match {
+    case IntegerLiteral(i) => Right(NumericInt(i))
+    case DoubleLiteral(d) => Right(NumericDouble(d))
+    case DecimalLiteral(d) => Right(NumericDecimal(d))
+    case DatatypeLiteral(str, `xsd_byte`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_decimal`) => str2NumericDecimal(str)
+    case DatatypeLiteral(str, `xsd_double`) => str2NumericDouble(str)
+    case DatatypeLiteral(str, `xsd_int`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_integer`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_long`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_positiveInteger`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_negativeInteger`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_nonPositiveInteger`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_nonNegativeInteger`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_short`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_unsignedLong`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_unsignedInt`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_unsignedShort`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_unsignedByte`) => str2NumericInt(str)
+    case DatatypeLiteral(str, `xsd_float`) => str2NumericDouble(str)
+  }
+
   def minInclusive: Comparator = (nl, node) => nl match {
-    case NumericInt(ni) => node match {
-      case IntegerLiteral(nodeInt) => ok(ni <= nodeInt)
-      case DoubleLiteral(d) => ok(ni <= d)
-      case DecimalLiteral(d) => ok(ni <= d)
+    case NumericInt(ni) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(ni <= nodeInt)
+      case Right(NumericDouble(d)) => ok(ni <= d)
+      case Right(NumericDecimal(d)) => ok(ni <= d)
       case _ => errStr(s"Cannot compare minInclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd <= nodeInt)
-      case DoubleLiteral(d) => ok(nd <= d)
-      case DecimalLiteral(d) => ok(nd <= d)
+    case NumericDouble(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd <= nodeInt)
+      case Right(NumericDouble(d)) => ok(nd <= d)
+      case Right(NumericDecimal(d)) => ok(nd <= d)
       case _ => errStr(s"Cannot compare minInclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd <= nodeInt)
-      case DoubleLiteral(d) => ok(nd <= d)
-      case DecimalLiteral(d) => ok(nd <= d)
+    case NumericDecimal(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd <= nodeInt)
+      case Right(NumericDouble(d)) => ok(nd <= d)
+      case Right(NumericDecimal(d)) => ok(nd <= d)
       case _ => errStr(s"Cannot compare minInclusive($nd) with node $node")
     }
   }
 
   def minExclusive: Comparator = (nl, node) => nl match {
-    case NumericInt(ni) => node match {
-      case IntegerLiteral(nodeInt) => ok(ni < nodeInt)
-      case DoubleLiteral(d) => ok(ni < d)
-      case DecimalLiteral(d) => ok(ni < d)
+    case NumericInt(ni) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(ni < nodeInt)
+      case Right(NumericDouble(d)) => ok(ni < d)
+      case Right(NumericDecimal(d)) => ok(ni < d)
       case _ => errStr(s"Cannot compare minExclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd < nodeInt)
-      case DoubleLiteral(d) => ok(nd < d)
-      case DecimalLiteral(d) => ok(nd < d)
+    case NumericDouble(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd < nodeInt)
+      case Right(NumericDouble(d)) => ok(nd < d)
+      case Right(NumericDecimal(d)) => ok(nd < d)
       case _ => errStr(s"Cannot compare minExclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd < nodeInt)
-      case DoubleLiteral(d) => ok(nd < d)
-      case DecimalLiteral(d) => ok(nd < d)
+    case NumericDecimal(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd < nodeInt)
+      case Right(NumericDouble(d)) => ok(nd < d)
+      case Right(NumericDecimal(d)) => ok(nd < d)
       case _ => errStr(s"Cannot compare minExclusive($nd) with node $node")
     }
   }
 
   def maxInclusive: Comparator = (nl, node) => nl match {
-    case NumericInt(ni) => node match {
-      case IntegerLiteral(nodeInt) => ok(ni >= nodeInt)
-      case DoubleLiteral(d) => ok(ni >= d)
-      case DecimalLiteral(d) => ok(ni >= d)
+    case NumericInt(ni) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(ni >= nodeInt)
+      case Right(NumericDouble(d)) => ok(ni >= d)
+      case Right(NumericDecimal(d)) => ok(ni >= d)
       case _ => errStr(s"Cannot compare maxInclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd >= nodeInt)
-      case DoubleLiteral(d) => ok(nd >= d)
-      case DecimalLiteral(d) => ok(nd >= d)
+    case NumericDouble(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd >= nodeInt)
+      case Right(NumericDouble(d)) => ok(nd >= d)
+      case Right(NumericDecimal(d)) => ok(nd >= d)
       case _ => errStr(s"Cannot compare maxInclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd >= nodeInt)
-      case DoubleLiteral(d) => ok(nd >= d)
-      case DecimalLiteral(d) => ok(nd >= d)
+    case NumericDecimal(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd >= nodeInt)
+      case Right(NumericDouble(d)) => ok(nd >= d)
+      case Right(NumericDecimal(d)) => ok(nd >= d)
       case _ => errStr(s"Cannot compare maxInclusive($nd) with node $node")
     }
   }
 
   def maxExclusive: Comparator = (nl, node) => nl match {
-    case NumericInt(ni) => node match {
-      case IntegerLiteral(nodeInt) => ok(ni > nodeInt)
-      case DoubleLiteral(d) => ok(ni > d)
-      case DecimalLiteral(d) => ok(ni > d)
+    case NumericInt(ni) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(ni > nodeInt)
+      case Right(NumericDouble(d)) => ok(ni > d)
+      case Right(NumericDecimal(d)) => ok(ni > d)
       case _ => errStr(s"Cannot compare maxExclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd > nodeInt)
-      case DoubleLiteral(d) => ok(nd > d)
-      case DecimalLiteral(d) => ok(nd > d)
+    case NumericDouble(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd > nodeInt)
+      case Right(NumericDouble(d)) => ok(nd > d)
+      case Right(NumericDecimal(d)) => ok(nd > d)
       case _ => errStr(s"Cannot compare maxExclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => node match {
-      case IntegerLiteral(nodeInt) => ok(nd > nodeInt)
-      case DoubleLiteral(d) => ok(nd > d)
-      case DecimalLiteral(d) => ok(nd > d)
+    case NumericDecimal(nd) => numericValue(node) match {
+      case Right(NumericInt(nodeInt)) => ok(nd > nodeInt)
+      case Right(NumericDouble(d)) => ok(nd > d)
+      case Right(NumericDecimal(d)) => ok(nd > d)
       case _ => errStr(s"Cannot compare maxExclusive($nd) with node $node")
     }
   }
