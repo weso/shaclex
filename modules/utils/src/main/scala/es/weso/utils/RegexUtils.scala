@@ -6,7 +6,7 @@ case class RegEx(pattern: String, maybeFlags: Option[String]) {
   val cleanPattern = cleanBackslashes(pattern)
 
   def cleanBackslashes(str: String): String = {
-    str.replaceAllLiterally("\\\\\\\\","\\")
+    str.replaceAllLiterally("\\\\","\\")
   }
   def matches(str: String): Either[String, Boolean] = {
     println(s"Trying to match /$cleanPattern/${maybeFlags.getOrElse("")} with $str")
