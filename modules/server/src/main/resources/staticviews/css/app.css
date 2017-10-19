@@ -101,3 +101,8 @@ div.submit {
     border: 1px solid #eee;
     height: auto;
 }
+
+/* For bootstrap-table height */
+.fixed-table-body {
+    height: auto; /\*  before 100%*/
+}
