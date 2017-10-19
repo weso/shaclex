@@ -3,33 +3,9 @@
   currentDataFormat: String,
   currentTargetDataFormat: String)
 <html lang="en">
-<meta charset="utf-8">
-<title>Data conversions</title>
-<script src="js/jquery-3.1.1.min.js"></script>
-<script src="codemirror-5.24.2/lib/codemirror.js"></script>
-<link rel="stylesheet" href="css/app.css">
-<link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
-<link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
-<link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
-<link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
-
-<!-- some modes -->
-<script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
-<script src="codemirror-5.24.2/mode/shex/shex.js"></script>
-<script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
-<script src="codemirror-5.24.2/mode/xml/xml.js"></script>
-<script src="codemirror-5.24.2/addon/edit/closebrackets.js"></script>
-<script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
-
-<style type="text/css">
-.CodeMirror {
- border: 1px solid black;
- height: auto;
-}
-</style>
-</head>
-
+@head("Data Conversions")
 <body>
+@navBar()
 <h1><a href="/">SHACLex</a>: Parse & Convert RDF Data</h1>
 <form action="/api/data/convert" method="get" id="convert">
     <label for="rdfData">RDF Data</label>
@@ -41,6 +17,6 @@
         <button type="submit">Convert</button>
     </div>
 </form>
-<script src="js/shaclex.js" ></script>
+@scripts()
 </body>
 </html>

@@ -4,13 +4,10 @@
  currentSchemaEngine: String
 )
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>API Shaclex - Schema Info</title>
-    <link rel="stylesheet" href="static/css/app.css">
-
-</head>
+@head("SHACLex: Schema info")
 <body>
+@navBar()
+<div class="container">
 <h1>Schema Info</h1>
 <form action="/api/schema/info" method="get" id="info">
     <label for="schema">Schema</label>
@@ -20,5 +17,7 @@
 
     <button type="submit">Schema Info</button>
 </form>
+</div>
 </body>
+@scripts()
 </html>

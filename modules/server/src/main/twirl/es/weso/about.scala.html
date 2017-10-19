@@ -1,11 +1,14 @@
 @import es.weso.shaclex.buildinfo.BuildInfo._
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>About SHACLex</title>
-</head>
+@head("About")
 <body>
-<h1>About SHACLEX</h1>
+@navBar()
+<div class="container">
+<h1>SHACLEX</h1>
+<p>An implementation of
+    <a href="https://www.w3.org/TR/shacl/">SHACL</a> (Shapes Constraint Language) and
+    <a href="http://shex.io/">ShEx</a> (Shape Expressions)</p>
+<p>Author: <a href="http://di.uniovi.es/~labra">Jose Emilio Labra Gayo</a></p>
 <ul>
 <li>Project name: @name, version: @version</li>
     <li>Built with
@@ -15,5 +18,7 @@
 <li><a href="https://github.com/labra/shaclex/issues/4">SHEX Features</a></li>
 <li><a href="https://github.com/labra/shaclex/issues/2">SHACL Features</a></li>
 </ul>
+</div>
 </body>
+@scripts()
 </html>

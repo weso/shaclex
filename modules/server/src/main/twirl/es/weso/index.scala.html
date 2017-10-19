@@ -1,21 +1,17 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Shaclex</title>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/app.css">
-</head>
+@head("SHACLex")
 <body>
 @navBar()
+<div class="container">
+<h1>SHACLex: SHACL and ShEx playground</h1>
+<p>Playground to validate RDF data using either
+    <a href="https://www.w3.org/TR/shacl/">SHACL</a> (Shapes Constraint Language) or
+    <a href="http://shex.io/">ShEx</a> (Shape Expressions)</p>
+<p>More info about those languages:
+ <a href="http://www.morganclaypoolpublishers.com/catalog_Orig/product_info.php?products_id=1091">Validating RDF Data Book</a>
+</p>
+</div>
 </body>
 </html>
-<script src="js/jquery.min.js"></script>
-<script src="js/popper.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script>
-(function () {
-  document.getElementById('swaggerId').href = window.location.origin + '/swagger/index.html';
- })();
-</script>
+@scripts()
