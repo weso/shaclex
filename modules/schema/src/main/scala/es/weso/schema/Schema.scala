@@ -1,6 +1,8 @@
 package es.weso.schema
 import es.weso.rdf._
 import es.weso.rdf.nodes._
+import es.weso.utils.FileUtils
+
 import util._
 
 abstract class Schema {
@@ -31,7 +33,8 @@ abstract class Schema {
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = pm): Result = {
-    ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, nodePrefixMap, shapesPrefixMap) match {
+    val base = Some(FileUtils.currentFolderURL)
+    ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, nodePrefixMap, shapesPrefixMap) match {
       case Left(err) => {
         Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm")
       }

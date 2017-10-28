@@ -132,8 +132,8 @@ class JenaMapperTest
     it("Should check bad string") {
       val node = DatatypeLiteral("john", IRI("http://www.w3.org/2001/XMLSchema#string"))
       wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#date")) match {
-        case Left(e) => info(s"Fails as expected: $e")
-        case Right(node) => fail(s"Should fail but passed $node")
+        case Right(false) => info(s"Fails as expected")
+        case r => fail(s"Should return false but returned $r")
       }
     }
     it("Should check bad date") {
@@ -147,16 +147,16 @@ class JenaMapperTest
     it("Should fail checking single string with dateTime") {
       val node = StringLiteral("not_a_date")
       wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
-        case Left(e) => info(s"Fails as expected: $e")
-        case Right(node) => fail(s"Should fail but passed $node")
+        case Right(false) => info(s"Fails as expected")
+        case r => fail(s"Should return false but returned $r")
       }
     }
 
     it("Should fail checking date with dateTime") {
       val node = DatatypeLiteral("2017-05-15", IRI("http://www.w3.org/2001/XMLSchema#date"))
       wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#dateTime")) match {
-        case Left(e) => info(s"Fails as expected: $e")
-        case Right(node) => fail(s"Should fail but passed $node")
+        case Right(false) => info(s"Fails as expected")
+        case r => fail(s"Should return false but returned $r")
       }
     }
 

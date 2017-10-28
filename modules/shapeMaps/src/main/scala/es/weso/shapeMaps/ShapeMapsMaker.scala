@@ -5,15 +5,16 @@ import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.{ Prefix, PrefixMap }
+import es.weso.rdf.{Prefix, PrefixMap}
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import Parser._
 import es.weso.rdf.path._
 import org.antlr.v4.runtime._
 import org.antlr.v4.runtime.tree.ParseTree
-import es.weso.shapeMaps.parser.ShapeMapParser.{ StringContext => ShapeMapStringContext, _ }
+import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext, _}
 import es.weso.shapeMaps.parser._
+import es.weso.utils.FileUtils
 
 import scala.collection.JavaConverters._
 
@@ -21,8 +22,11 @@ import scala.collection.JavaConverters._
  * Visits the AST and builds the corresponding ShapeMaps classes
  */
 class ShapeMapsMaker(
+  base: Option[String],
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap = PrefixMap.empty) extends ShapeMapBaseVisitor[Any] with LazyLogging {
+
+  val baseIRI = IRI(base.getOrElse(FileUtils.currentFolderURL))
 
   override def visitShapeMap(ctx: ShapeMapContext): Builder[QueryShapeMap] = for {
     associations <- visitList(visitShapeAssociation, ctx.shapeAssociation())
@@ -225,7 +229,7 @@ class ShapeMapsMaker(
     visitIri(ctx.iri(), prefixMap)
   }
 
-  def getBase: Builder[Option[IRI]] = ok(None)
+  def getBase: Builder[Option[IRI]] = ok(Some(baseIRI))
 
   def visitIri(ctx: IriContext, prefixMap: PrefixMap): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
@@ -238,7 +242,7 @@ class ShapeMapsMaker(
 
   def resolve(prefixedName: String, prefixMap: PrefixMap): Builder[IRI] = {
     val (prefix, local) = splitPrefix(prefixedName)
-    logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
+    // logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
     prefixMap.getIRI(prefix) match {
       case None =>
         err(s"Prefix $prefix not found in current prefix map $prefixMap")

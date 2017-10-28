@@ -7,21 +7,21 @@ import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
-import scala.util.Try
+import scala.util.{Either, Try}
 import es.weso.rdf.triples._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
 case class RDFFromWeb() extends RDFReader {
   type Rdf = RDFFromWeb
@@ -106,6 +106,10 @@ case class RDFFromWeb() extends RDFReader {
   override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
     throw new Exception(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
   }
+
+  override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
+    JenaMapper.wellTypedDatatype(node, datatype)
+
 
   def model2triples(model: Model): Set[RDFTriple] = {
     model.listStatements().map(st => statement2triple(st)).toSet

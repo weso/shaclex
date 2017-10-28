@@ -139,5 +139,13 @@ trait RDFReader {
     triplesWithSubjectPredicate(node, rdf_type).map(_.obj)
   }
 
+  /**
+    * Checks if a node has a given datatype
+    * @param node RDF node to check
+    * @param datatype Datatype IRI to check
+    * @return In case of a bad formed literal, a Left with a message, otherwise the check
+    */
+  def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean]
+
 }
 

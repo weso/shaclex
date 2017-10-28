@@ -3,14 +3,16 @@ package es.weso.server
 import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.rdf.nodes.IRI
 import es.weso.schema._
+import es.weso.utils.FileUtils
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import org.http4s.dsl.{ OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher, _ }
+import org.http4s.dsl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher, _}
 import org.http4s.websocket.WebsocketBits._
-import org.http4s.{ EntityEncoder, HttpService, LanguageTag, Status }
+import org.http4s.{EntityEncoder, HttpService, LanguageTag, Status}
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 // import org.http4s.client.impl.DefaultExecutor
@@ -85,7 +87,8 @@ class Routes {
         optData,
         availableDataFormats,
         optDataFormat.getOrElse(defaultDataFormat),
-        optTargetDataFormat.getOrElse(defaultDataFormat)))
+        optTargetDataFormat.getOrElse(defaultDataFormat),
+        dataConvert(optData, optDataFormat, optTargetDataFormat)))
     }
 
     case req @ GET -> Root / "dataInfo" => {
@@ -410,6 +413,20 @@ class Routes {
     Json.fromFields(pm.pm.map { case (prefix, iri) => (prefix.str, Json.fromString(iri.getLexicalForm)) })
   }
 
+  def dataConvert(
+    optData: Option[String],
+    optDataFormat: Option[String],
+    optTargetDataFormat: Option[String]): Either[String, Option[String]] = optData match {
+    case None => Right(None)
+    case Some(data) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      val resultDataFormat = optTargetDataFormat.getOrElse(DataFormats.defaultFormatName)
+      for {
+        rdf <- RDFAsJenaModel.parseChars(data, dataFormat, None)
+      } yield Some(rdf.serialize(resultDataFormat))
+    }
+  }
+
   def validate(
     data: String,
     optDataFormat: Option[String],
@@ -432,17 +449,19 @@ class Routes {
       case Some(schema) => schema
     }
 
-    Schemas.fromString(schemaStr, schemaFormat, schemaEngine, None) match {
+    val base = Some(FileUtils.currentFolderURL)
+
+    Schemas.fromString(schemaStr, schemaFormat, schemaEngine, base) match {
       case Left(e) =>
         (Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr"), None)
       case Right(schema) => {
-        RDFAsJenaModel.parseChars(data, dataFormat, None) match {
+        RDFAsJenaModel.parseChars(data, dataFormat, base) match {
           case Left(e) =>
             (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
           case Right(rdf) => {
             val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
             val shapeMap = optShapeMap.getOrElse("")
-            ValidationTrigger.findTrigger(triggerMode, shapeMap, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
+            ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
               case Left(msg) => (
                 Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"),
                 None)

@@ -1,6 +1,7 @@
 var codeMirrorData ;
 var codeMirrorSchema ;
 var codeMirrorShapeMap ;
+var codeMirrorTargetData ;
 
 function changeMode(element,syntax) {
     var mode = "turtle";
@@ -358,6 +359,17 @@ function prepareShapeMap() {
             matchBrackets: true,
         });
     }
+
+    var targetDataArea = document.getElementById("targetDataArea");
+    if (targetDataArea) {
+      codeMirrorTargetData = CodeMirror.fromTextArea(targetDataArea, {
+      lineNumbers: true,
+      mode: "turtle",
+      viewportMargin: Infinity,
+       matchBrackets: true,
+      });
+    }
+
     var schema = document.getElementById("schema")
     if (schema) {
         codeMirrorSchema = CodeMirror.fromTextArea(schema, {

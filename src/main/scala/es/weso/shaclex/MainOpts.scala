@@ -5,6 +5,7 @@ import org.rogach.scallop.exceptions._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger
+import es.weso.shapeMaps.ShapeMap
 
 class MainOpts(
   arguments: Array[String],
@@ -20,8 +21,8 @@ class MainOpts(
   lazy val triggerModes = ValidationTrigger.triggerValues.map(_._1.toUpperCase).distinct
   lazy val resultFormats = Result.availableResultFormats
   lazy val defaultResultFormat = Result.defaultResultFormat
-  lazy val defaultShapeMapFormat = "COMPACT"
-  lazy val shapeMapFormats = List(defaultShapeMapFormat)
+  lazy val defaultShapeMapFormat = ShapeMap.defaultFormat
+  lazy val shapeMapFormats = ShapeMap.formats
 
   banner("""| shaclex: SHACL/ShEx processor
             | Options:
@@ -112,6 +113,14 @@ class MainOpts(
     descrNo = "don't show data",
     noshort = true)
 
+  val showShapeMap = toggle(
+    "showShapeMap",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show input shape map",
+    descrNo = "don't input show map",
+    noshort = true)
+
   val outputFile = opt[String](
     "outputFile",
     default = None,
@@ -120,8 +129,14 @@ class MainOpts(
 
   val outSchemaFormat = opt[String](
     "outSchemaFormat",
-    default = None,
+    default = Some(defaultSchemaFormat),
     descr = "schema format to show",
+    noshort = true)
+
+  val outShapeMapFormat = opt[String](
+    "outShapeMapFormat",
+    default = Some(defaultShapeMapFormat),
+    descr = "format of shape map to show",
     noshort = true)
 
   val showLog = toggle(

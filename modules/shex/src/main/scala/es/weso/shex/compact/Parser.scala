@@ -61,7 +61,7 @@ object Parser extends LazyLogging {
   }
 
   def updateStart(s: Start): Builder[Unit] = {
-    logger.info(s"New start: $s")
+    // logger.info(s"New start: $s")
     updateState(_.copy(start = s))
   }
 
@@ -72,29 +72,29 @@ object Parser extends LazyLogging {
   def addPrefix(prefix: Prefix, iri: IRI): Builder[Unit] = {
     updateState(s => {
       val newS = s.copy(prefixMap = s.prefixMap.addPrefix(prefix, iri))
-      logger.info(s"Updating prefix map. New prefix map=${newS.prefixMap}")
+      // logger.info(s"Updating prefix map. New prefix map=${newS.prefixMap}")
       newS
     })
   }
-  def parseSchema(str: String): Either[String, Schema] = {
+  def parseSchema(str: String, base: Option[String]): Either[String, Schema] = {
     val UTF8_BOM = "\uFEFF"
     val s =
       if (str.startsWith(UTF8_BOM)) {
-        logger.info("BOM detected and removed")
+        // logger.info("BOM detected and removed")
         str.substring(1)
       } else str
     val reader: JavaReader =
       new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    logger.info(s"str:\n$s")
-    parseSchemaReader(reader)
+    // logger.info(s"str:\n$s")
+    parseSchemaReader(reader, base)
   }
 
-  def parseSchemaFromFile(fileName: String): Either[String, Schema] = for {
+  def parseSchemaFromFile(fileName: String, base: Option[String]): Either[String, Schema] = for {
     reader <- FileUtils.getStream(fileName)
-    schema <- parseSchemaReader(reader)
+    schema <- parseSchemaReader(reader, base)
   } yield schema
 
-  def parseSchemaReader(reader: JavaReader): Either[String, Schema] = {
+  def parseSchemaReader(reader: JavaReader, base: Option[String]): Either[String, Schema] = {
     val input: ANTLRInputStream = new ANTLRInputStream(reader)
     val lexer: ShExDocLexer = new ShExDocLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
@@ -112,16 +112,18 @@ object Parser extends LazyLogging {
     if (errors.length > 0) {
       Left(errors.mkString("\n"))
     } else {
-      run(builder)._2
+      run(builder, base)._2
     }
   }
 
-  def run[A](c: Builder[A]): (BuilderState, Either[String, A]) = c.value.run(initialState).value
+  def run[A](c: Builder[A],
+             base: Option[String]
+            ): (BuilderState, Either[String, A]) = c.value.run(initialState(base)).value
 
-  def initialState =
+  def initialState(base: Option[String]) =
     BuilderState(
       PrefixMap.empty,
-      None,
+      base.map(IRI(_)),
       None,
       Map())
 

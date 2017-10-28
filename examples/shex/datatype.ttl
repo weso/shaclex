@@ -3,7 +3,8 @@ prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 prefix sh: <http://www.w3.org/ns/shacl#>
 base <http://example.org/>
 
-:x1 :p "13/12/2014"^^xsd:date .
+# :x1 :p "13/12/2014"^^xsd:date .
+:x1 :p "pepe"^^xsd:string .
 :y1 :p "kiko"^^:myType .
 
 <S> sh:targetNode :x1 .

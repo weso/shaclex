@@ -399,7 +399,7 @@ object Schema {
     formatUpperCase match {
       case "SHEXC" => {
         import compact.Parser.parseSchema
-        parseSchema(cs.toString)
+        parseSchema(cs.toString, base)
       }
       case "SHEXJ" => {
         import io.circe.parser._
@@ -407,7 +407,7 @@ object Schema {
         decode[Schema](cs.toString).leftMap(_.getMessage)
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
-        rdf <- RDFAsJenaModel.parseChars(cs, formatUpperCase, None)
+        rdf <- RDFAsJenaModel.parseChars(cs, formatUpperCase, base)
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 

@@ -8,18 +8,18 @@ import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.StringOps._
-import scala.util.Try
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import scala.util.{Either, Try}
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
-import org.apache.jena.rdf.model.{ RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
 case class Endpoint(endpoint: String) extends RDFReader {
   // TODO: check that endpoint is a well formed URI
@@ -80,6 +80,10 @@ case class Endpoint(endpoint: String) extends RDFReader {
   override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
     throw new Exception(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
   }
+
+  override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
+    JenaMapper.wellTypedDatatype(node, datatype)
+
 
   def rdfTriples(): Set[RDFTriple] = {
     val model = QueryExecutionFactory.sparqlService(endpoint, queryTriples).execConstruct()

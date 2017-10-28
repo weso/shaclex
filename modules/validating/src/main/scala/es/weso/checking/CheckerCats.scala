@@ -132,6 +132,15 @@ abstract class CheckerCats extends Checker {
     case Some(v) => f(v).map(Some(_))
   } */
 
+  /**
+    * If `c` is some value, applies `check`, otherwise applies `default`
+    * @param c
+    * @param check
+    * @param default
+    * @tparam A
+    * @tparam B
+    * @return
+    */
   def optCheck[A, B](
     c: Option[A],
     check: A => Check[B],

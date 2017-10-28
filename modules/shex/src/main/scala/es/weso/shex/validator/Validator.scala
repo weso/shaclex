@@ -269,22 +269,20 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     checkSome(cs, ViolationError.msgErr(s"${node.show} does not belong to [${values.map(_.show).mkString(",")}]"))
   }
 
-  def hasDatatype(node: RDFNode, datatype: IRI): Either[String, RDFNode] = {
-    JenaMapper.wellTypedDatatype(node, datatype)
-  }
-
-  def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
-    node match {
-      case l: Literal => hasDatatype(node, datatype) match {
-        case Left(s) => errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}\nDetails: $s")
-        case Right(_) =>
-          checkCond(true, attempt, msgErr(s"${node.show} does not have datatype ${datatype.show}"),
-            s"${node.show} has datatype ${datatype.show}")
+  def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = for {
+    rdf <- getRDF
+    check <- rdf.checkDatatype(node, datatype) match {
+      case Left(s) => {
+        println(s"Result of check datatype: $s")
+        errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}\nDetails: $s")
       }
-      case _ => errStr(
-        s"${attempt.show} ${node.show} does not have datatype ${datatype.show} because it is not a literal")
+      case Right(false) => errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}")
+      case Right(true) => {
+        println(s"Result of check datatype = true")
+        addEvidence(attempt.nodeShape, s"${node.show} has datatype ${datatype.show}")
+      }
     }
-  }
+  } yield check
 
   def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
     if (xsFacets.isEmpty) getTyping

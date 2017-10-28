@@ -26,6 +26,13 @@ abstract class ShapeMap {
 
   override def toString = Show[ShapeMap].show(this)
 
+  def serialize(format: String): String = {
+    format match {
+      case "JSON" => this.toJson.spaces2
+      case "COMPACT" => this.toString
+    }
+  }
+
 }
 
 object ShapeMap {
@@ -34,9 +41,10 @@ object ShapeMap {
 
   def fromString(
     str: String,
+    base: Option[String],
     nodesPrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
-    Parser.parse(str, nodesPrefixMap, shapesPrefixMap)
+    Parser.parse(str, base, nodesPrefixMap, shapesPrefixMap)
   }
 
   def fromJson(jsonStr: String): Either[String, ShapeMap] = {
@@ -45,9 +53,10 @@ object ShapeMap {
 
   def parseResultMap(
     str: String,
+    base: Option[String],
     rdf: RDFReader,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ResultShapeMap] = for {
-    queryMap <- Parser.parse(str, rdf.getPrefixMap, shapesPrefixMap)
+    queryMap <- Parser.parse(str, base, rdf.getPrefixMap, shapesPrefixMap)
     fixMap <- fixShapeMap(queryMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
   } yield ResultShapeMap(fixMap.shapeMap, rdf.getPrefixMap, shapesPrefixMap)
 
@@ -175,4 +184,7 @@ object ShapeMap {
     } yield QueryShapeMap(associations, PrefixMap.empty, PrefixMap.empty)
   }
 
+  def formats: List[String] = List("COMPACT", "JSON")
+
+  def defaultFormat = formats.head
 }

@@ -34,7 +34,8 @@ class ShaclexServer(host: String, port: Int) {
   def build(): Stream[IO, Nothing] =
     BlazeBuilder[IO]
       .bindHttp(port, host)
-      .mountService(service).serve
+      .mountService(service).
+      serve
 }
 
 object ShaclexServer extends StreamApp[IO] {

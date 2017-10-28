@@ -89,18 +89,18 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitStart(
     ctx: StartContext): Builder[Option[(ShapeExpr)]] = {
-    logger.info(s"Visiting start...$ctx")
+    // logger.info(s"Visiting start...$ctx")
     if (isDefined(ctx)) {
-      logger.info(s"is defined...")
+      // logger.info(s"is defined...")
       for {
         shapeExpr <- visitShapeExpression(ctx.shapeExpression())
         _ <- {
-          logger.info(s"Shape expression for start: $shapeExpr")
+          // logger.info(s"Shape expression for start: $shapeExpr")
           updateStart(Some(shapeExpr))
         }
         // semActs <- visitSemanticActions(ctx.semanticActions())
       } yield {
-        logger.info(s"Shape expression for start: $shapeExpr")
+        // logger.info(s"Shape expression for start: $shapeExpr")
         Some(shapeExpr)
       }
     } else
@@ -444,7 +444,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   def resolve(prefixedName: String): Builder[IRI] = {
     val (prefix, local) = splitPrefix(prefixedName)
-    logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
+    // logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
     getPrefixMap.flatMap(prefixMap =>
       prefixMap.getIRI(prefix) match {
         case None =>

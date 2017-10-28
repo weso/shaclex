@@ -1,16 +1,24 @@
 @(data: Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
-  currentTargetDataFormat: String)
+  currentTargetDataFormat: String,
+  result: Either[String, Option[String]]
+)
 <html lang="en">
 @head("Data Conversions")
 <body>
 @navBar()
 <h1><a href="/">SHACLex</a>: Parse & Convert RDF Data</h1>
-<form action="/api/data/convert" method="get" id="convert">
+@if(result.isLeft) {
+  <p class="error">Error in conversion: @{result.left}</p>
+} else if(result.right.get.isDefined) {
+  <textarea id="targetDataArea">@{result.right.get.get}</textarea>
+} else {
+ <!-- No result -->
+    }
+<form action="/dataConversions" method="get" id="convert">
     <label for="rdfData">RDF Data</label>
-    <textarea id="rdfData" rows="20" cols="70" name="data" placeholder="data">@{data.getOrElse("")}</textarea>
-
+    <textarea id="rdfData" name="data" placeholder="data">@{data.getOrElse("")}</textarea>
     @selectDataFormat("convert",availableDataFormats,currentDataFormat)
     @selectTargetDataFormat("convert",availableDataFormats,currentDataFormat)
     <div class="submit">

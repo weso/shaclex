@@ -46,16 +46,23 @@ object Main extends App with LazyLogging {
 
     val startTime = System.nanoTime()
 
-    val validateOptions: Either[String, (RDFReader, Schema)] = for {
+    val base = Some(FileUtils.currentFolderURL)
+
+    val validateOptions: Either[String, (RDFReader, Schema, ValidationTrigger)] = for {
       rdf <- getRDFReader(opts, baseFolder)
       schema <- getSchema(opts, baseFolder, rdf)
-    } yield (rdf, schema)
+      triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
+      shapeMapStr <- getShapeMapStr(opts)
+      trigger <- ValidationTrigger.findTrigger(triggerName,shapeMapStr,base,
+        opts.node.toOption,opts.shapeLabel.toOption,
+        rdf.getPrefixMap(),schema.pm)
+    } yield (rdf, schema, trigger)
 
     validateOptions match {
       case Left(e) => {
         println(s"Error: $e")
       }
-      case Right((rdf, schema)) => {
+      case Right((rdf, schema, trigger)) => {
         if (opts.showData()) {
           // If not specified uses the input schema format
           val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
@@ -70,15 +77,23 @@ object Main extends App with LazyLogging {
           }
         }
 
-        val trigger: String = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
+        if(opts.showShapeMap()) {
+          println(s"Trigger shapemap: ${trigger.shapeMap}")
+          println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat())}")
+          println(s"Trigger json: ${trigger.toJson.spaces2}")
+        }
 
-        val result = schema.validate(rdf, trigger, "", opts.node.toOption, opts.shapeLabel.toOption,
-          rdf.getPrefixMap, schema.pm)
+        val result = schema.validate(rdf, trigger)
 
         if (opts.showLog()) {
           logger.info("Show log info = true")
-          // TODO...show result
+          logger.info(s"Result: ${result.show}")
+          logger.info(s"JSON result: ${result.toJsonString2spaces}")
+          logger.info(s"Plain result: ${result.toString}")
         }
+        println(s"JSON result: ${result.toJsonString2spaces}")
+        println(s"Plain result: ${result.toString}")
+
 
         if (opts.showResult() || opts.outputFile.isDefined) {
           val resultSerialized = result.serialize(opts.resultFormat())
@@ -122,11 +137,23 @@ object Main extends App with LazyLogging {
     }
   }
 
+  def getShapeMapStr(opts: MainOpts): Either[String, String] = {
+    if (opts.shapeMap.isDefined) {
+      val shapeMapFormat = opts.shapeMapFormat.toOption.getOrElse("COMPACT")
+      for {
+        // TODO: Allow different shapeMap formats
+        content <- FileUtils.getContents(opts.shapeMap())
+      } yield content.toString
+    } else Right("")
+  }
+
   def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
+    val base = Some(FileUtils.currentFolderURL)
+    println(s"RDF Reader base = $base")
     if (opts.data.isDefined) {
       val path = baseFolder.resolve(opts.data())
       for {
-        rdf <- RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat())
+        rdf <- RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
       } yield {
         if (opts.inference.isDefined) {
           JenaUtils.inference(rdf.model, opts.inference()) match {
@@ -145,13 +172,11 @@ object Main extends App with LazyLogging {
   }
 
   def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Either[String, Schema] = {
+    val base = Some(FileUtils.currentFolderURL)
+    println(s"Schema base = $base")
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
-      val schema = Schemas.fromFile(
-        path.toFile(),
-        opts.schemaFormat(),
-        opts.engine(),
-        None)
+      val schema = Schemas.fromFile(path.toFile(),opts.schemaFormat(),opts.engine(),base)
       schema
     } else {
       logger.info("Schema not specified. Extracting schema from data")

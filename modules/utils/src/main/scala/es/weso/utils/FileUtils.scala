@@ -1,5 +1,6 @@
 package es.weso.utils
 import java.io._
+import java.nio.file.Paths
 
 import scala.io._
 import util._
@@ -126,5 +127,9 @@ object FileUtils {
   def formatLines(cs: CharSequence): String = {
     cs.toString.lines.zipWithIndex.map(p => (p._2 + 1).toString + " " + p._1).mkString("\n")
   }
+
+  lazy val currentFolderURL: String =
+    // Paths.get("/").normalize.toUri.toURL.toExternalForm
+    ""
 
 }

@@ -115,7 +115,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       nodesPrefixMap: PrefixMap,
       shapesPrefixMap: PrefixMap): Unit = {
       it(s"should parse $str and obtain $expected") {
-        Parser.parse(str, nodesPrefixMap, shapesPrefixMap) match {
+        Parser.parse(str, None, nodesPrefixMap, shapesPrefixMap) match {
           case Left(msg) => fail(s"Failed to parse $str: $msg")
           case Right(shapeMap) => shapeMap shouldBe (expected)
         }
@@ -150,8 +150,8 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
           case Failure(e) => fail(s"Error parsing $rdfStr")
           case Success(rdf) => {
             val result = for {
-              shapeMap <- Parser.parse(shapeMapStr, rdf.getPrefixMap, shapesPrefixMap)
-              expected <- Parser.parse(expectedStr, rdf.getPrefixMap, shapesPrefixMap)
+              shapeMap <- Parser.parse(shapeMapStr, None, rdf.getPrefixMap, shapesPrefixMap)
+              expected <- Parser.parse(expectedStr, None, rdf.getPrefixMap, shapesPrefixMap)
               obtained <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
             } yield (obtained, expected)
             result match {
@@ -184,9 +184,9 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
         RDFAsJenaModel.fromChars(rdfStr, "TURTLE") match {
           case Failure(e) => fail(s"Error parsing $rdfStr")
           case Success(rdf) => {
-            Parser.parse(shapeMapStr, rdf.getPrefixMap, shapesPrefixMap) match {
+            Parser.parse(shapeMapStr, None, rdf.getPrefixMap, shapesPrefixMap) match {
               case Left(msg) => fail(s"Error parsing ${shapeMapStr}: ${msg}")
-              case Right(shapeMap) => Parser.parse(shapeMap.toString, rdf.getPrefixMap, shapesPrefixMap) match {
+              case Right(shapeMap) => Parser.parse(shapeMap.toString, None, rdf.getPrefixMap, shapesPrefixMap) match {
                 case Left(msg) => fail(s"Error parsing shown shapeMap ${shapeMap.toString} of ${shapeMapStr}: ${msg}")
                 case Right(shownShapeMap) => shapeMap should be(shownShapeMap)
               }

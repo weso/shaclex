@@ -217,6 +217,10 @@ case class RDFAsJenaModel(model: Model)
     RDFAsJenaModel.empty
   }
 
+  override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
+    JenaMapper.wellTypedDatatype(node, datatype)
+
+
 }
 
 object RDFAsJenaModel {
@@ -230,7 +234,7 @@ object RDFAsJenaModel {
   }
 
   def fromURI(uri: String, format: String = "TURTLE", base: Option[String] = None): Try[RDFAsJenaModel] = {
-    val baseURI = base.getOrElse("")
+    val baseURI = base.getOrElse(FileUtils.currentFolderURL)
     try {
       val m = ModelFactory.createDefaultModel()
       RDFDataMgr.read(m, uri, baseURI, shortnameToLang(format))
@@ -245,7 +249,8 @@ object RDFAsJenaModel {
     try {
       val m = ModelFactory.createDefaultModel()
       val is: InputStream = new FileInputStream(file)
-      RDFDataMgr.read(m, is, baseURI, shortnameToLang(format))
+      println(s"Readinf RDF from file: Base = $baseURI")
+      RDFDataMgr.read(m, is, null, shortnameToLang(format))
       Right(RDFAsJenaModel(m))
     } catch {
       case e: Exception => Left(s"Exception accessing  " + file.getName + ": " + e.getMessage)
