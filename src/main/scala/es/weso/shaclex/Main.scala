@@ -156,10 +156,10 @@ object Main extends App with LazyLogging {
         rdf <- RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
       } yield {
         if (opts.inference.isDefined) {
-          JenaUtils.inference(rdf.model, opts.inference()) match {
-            case Right(model) => RDFAsJenaModel(model)
-            case Left(s) => {
-              logger.info(s)
+          rdf.applyInference(opts.inference()) match {
+            case Right(newRdf) => newRdf
+            case Left(msg) => {
+              logger.info(s"Error applying inference: $msg")
               rdf
             }
           }

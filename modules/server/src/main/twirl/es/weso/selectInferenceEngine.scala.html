@@ -1,0 +1,14 @@
+@( formId: String,
+   inferenceEngines: List[String],
+   current: String
+)
+<fieldset class="inferenceBefore">
+<legend>Inference before</legend>
+<label for="inferenceBefore">Mode</label>
+<select id="inferenceBefore" form="@formId" name="inferenceBefore" >
+ @for(t <- inferenceEngines) {
+  <option value="@t"
+     @{if(t == current) { "selected" }}>@t</option>
+ }
+</select>
+</fieldset>

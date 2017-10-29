@@ -14,8 +14,10 @@
   availableTriggerModes: List[String],
   currentTriggerMode: String,
   shapeMap: Option[String],
-  schemaSeparated: String
- )
+  schemaEmbedded: Boolean,
+  availableInferenceEngines: List[String],
+  currentInferenceEngine: String
+)
 
 @import java.net.URLEncoder
 
@@ -28,8 +30,9 @@
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
-        <label>Schema separated:
-            <input type="checkbox" id="schemaSeparated" @{if(schemaSeparated == "on") { "checked" }}
+        <label>Schema embedded:
+            <input type="checkbox" id="schemaEmbedded" @{if(schemaEmbedded == true) { "checked" }}
+                   onChange="changeSchemaEmbedded(this);"
             /></label>
     </fieldset>
 
@@ -37,6 +40,8 @@
         <legend>RDF Data</legend>
         <textarea id="rdfData" placeHolder="RDF data">@{data.getOrElse("")}</textarea>
         @selectDataFormat("validate",availableDataFormats,currentDataFormat)
+
+        @selectInferenceEngine("validate", availableInferenceEngines,currentInferenceEngine)
     </fieldset>
 
     <div id="schemaDiv">
@@ -46,11 +51,13 @@
         @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
     </fieldset>
     </div>
-        @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
-        <div id="shapeMapDiv">
-            <legend>Shape map</legend>
-            <textarea id="shapeMap" placeHolder="Shape map">@{shapeMap.getOrElse("")}</textarea>
-        </div>
+
+    @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
+    <div id="shapeMapDiv">
+      <legend>Shape map</legend>
+      <textarea id="shapeMap" placeHolder="Shape map">@{shapeMap.getOrElse("")}</textarea>
+    </div>
+
 <!--     @*   <div id="rowsCounter" data-value="@{shapeMap.length}" /> </div>
         <button type="button" onclick="removeNodeShapeEntry()">-</button>
         <button type="button" onclick="addNodeShapeEntry()">+</button>  *@ -->
@@ -64,6 +71,7 @@
     </div>
 </form>
 <div class="otherOptions">
+<a id="permalink">Permalink</a>
 <hr/>
 <h2>Other options</h2>
 <label>Editor theme:

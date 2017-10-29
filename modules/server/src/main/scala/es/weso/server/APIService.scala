@@ -59,7 +59,7 @@ class Routes {
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
   object ShapeMapParam extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
-  object SchemaSeparated extends OptionalQueryParamDecoderMatcher[String]("schemaSeparated")
+  object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
   object InferenceParam extends OptionalQueryParamDecoderMatcher[String]("inference")
 
   val availableDataFormats = DataFormats.formatNames.toList
@@ -70,7 +70,7 @@ class Routes {
   val defaultSchemaEngine = Schemas.defaultSchemaName
   val availableTriggerModes = Schemas.availableTriggerModes
   val defaultTriggerMode = Schemas.defaultTriggerMode
-  val defaultSchemaSeparated = "on"
+  val defaultSchemaEmbedded = false
 
   val service: HttpService[IO] = HttpService[IO] {
 
@@ -152,13 +152,13 @@ class Routes {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) +&
-      SchemaSeparated(optSchemaSeparated) +&
+      SchemaEmbedded(optSchemaEmbedded) +&
       InferenceParam(optInference) => {
       val result =
         optData.map(
           validate(_, optDataFormat, optSchema, optSchemaFormat, optSchemaEngine, optTriggerMode, optNode, optShape, optShapeMap, optInference))
 
-      val schemaSeparated = optSchemaSeparated.getOrElse(defaultSchemaSeparated)
+      val schemaEmbedded = optSchemaEmbedded.getOrElse(defaultSchemaEmbedded)
       val triggerMode: ValidationTrigger = result.
         map(_._2.getOrElse(ValidationTrigger.default)).
         getOrElse(ValidationTrigger.default)
@@ -167,6 +167,9 @@ class Routes {
         case TargetDeclarations => None
         case ShapeMapTrigger(sm) => Some(sm.toString)
       }
+
+      val availableInferenceEngines = RDFAsJenaModel.empty.availableInferenceEngines
+      val inference = optInference.getOrElse("NONE")
 
       Ok(html.validate(
         result.map(_._1),
@@ -181,7 +184,10 @@ class Routes {
         availableTriggerModes,
         triggerMode.name,
         shapeMap,
-        schemaSeparated))
+        schemaEmbedded,
+        availableInferenceEngines,
+        inference
+      ))
     }
 
     // API methods
@@ -459,18 +465,22 @@ class Routes {
           case Left(e) =>
             (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
           case Right(rdf) => {
-            val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
-            val shapeMap = optShapeMap.getOrElse("")
-            ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
-              case Left(msg) => (
-                Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"),
-                None)
-              case Right(trigger) => (schema.validate(rdf, trigger), Some(trigger))
+            rdf.applyInference(optInference.getOrElse("None")) match {
+              case Left(msg) => (Result.errStr(s"Error applying inference to RDF: $msg"), None)
+              case Right(newRdf) => {
+                val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
+                val shapeMap = optShapeMap.getOrElse("")
+                ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
+                  case Left(msg) => (
+                    Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"),
+                    None)
+                  case Right(trigger) => (schema.validate(newRdf, trigger), Some(trigger))
+                }
+              }
             }
           }
         }
       }
     }
   }
-
 }

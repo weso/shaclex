@@ -31,7 +31,8 @@ import org.apache.jena.sparql.path.Path
 
 case class RDFAsJenaModel(model: Model)
   extends RDFReader
-  with RDFBuilder {
+  with RDFBuilder
+  with RDFReasoner {
 
   type Rdf = RDFAsJenaModel
 
@@ -229,6 +230,17 @@ case class RDFAsJenaModel(model: Model)
     )
   }
 
+  def applyInference(inference: String): Either[String, Rdf] = {
+    println(s"############## Inference $inference")
+    inference.toUpperCase match {
+      case "NONE" => Right(this)
+      case "RDFS" => JenaUtils.inference(model, "RDFS").map(RDFAsJenaModel(_))
+      case other => Left(s"Unsupported inference $other")
+    }
+  }
+
+  def availableInferenceEngines: List[String] = List("None", "RDFS")
+
 }
 
 object RDFAsJenaModel {
@@ -277,5 +289,6 @@ object RDFAsJenaModel {
   def availableFormats: List[String] = {
     RDFLanguages.getRegisteredLanguages().asScala.map(_.getName).toList.distinct
   }
+
 
 }

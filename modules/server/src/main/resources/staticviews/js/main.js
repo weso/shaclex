@@ -32,13 +32,18 @@ function changeTheme(theme) {
     codeMirrorShapeMap.setOption("theme",theme);
 }
 
-function changeSchemaSeparated(value) {
-    console.log("Changing schemaSeparated: " + value);
-    if (value==="on") {
-        $("#schemaDiv").show();
-    } else {
+function hideShowSchema(show) {
+   if (show) {
         $("#schemaDiv").hide();
+    } else {
+        $("#schemaDiv").show();
     }
+}
+
+function changeSchemaEmbedded(cb) {
+    console.log("changeSchemaEmbedded: " + cb);
+    console.log(cb);
+    hideShowSchema(cb.checked);
 }
 
 function changeTriggerMode(value) {
@@ -327,24 +332,23 @@ function prepareShapeMap() {
 }
 */
 
-    var urlShaclex = getHost();
-    console.log("urlShaclex: " + urlShaclex);
+  var urlShaclex = getHost();
+  console.log("urlShaclex: " + urlShaclex);
 
     // When loading document get result from data-result attribute and show it
     var result = $("#resultDiv").data("result");
     showResult(result);
 
-    var schemaSeparatedValue = $("#schemaSeparated").val();
-    console.log("Schema separated = " + schemaSeparatedValue);
-    changeSchemaSeparated(schemaSeparatedValue);
+   $("#permalink").prop("href",window.location);
 
-    $("#schemaSeparated").change(function() {
-        if (this.checked) {
-            changeSchemaSeparated("on");
-        } else {
-            changeSchemaSeparated("off");
-        }
-    });
+   /*$("#schemaEmbedded").change(function() {
+       changeSchemaEmbedded(this.checked);
+   }); */
+
+    var schemaEmbeddedValue = $("#schemaEmbedded").is(":checked");
+    console.log("Main...schemaEmbedded = " + schemaEmbeddedValue);
+    hideShowSchema(schemaEmbeddedValue);
+
 
     var triggerModeValue = $("#triggerMode").val();
     console.log("Trigger mode = " + triggerModeValue);
@@ -414,11 +418,10 @@ function prepareShapeMap() {
         var schemaFormat = $("#schemaFormat").find(":selected").text();
         var schemaEngine = $("#schemaEngine").find(":selected").text();
         var triggerMode = $("#triggerMode").find(":selected").text();
+        var inference = $("#inferenceBefore").find(":selected").text();
         var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
-        var schemaSeparated = $("#schemaSeparated").val();
-        if (schemaSeparated !== "on") {
-            schema = "";
-        }
+        var schemaEmbedded = $("#schemaEmbedded").is(":checked");
+        if (schemaEmbedded) {  schema = ""; }
         console.log("Trigger mode in AJAX query:" + triggerMode);
         var location = "/validate?" +
             "data=" + encodeURIComponent(data) +
@@ -427,10 +430,12 @@ function prepareShapeMap() {
             "&schemaFormat=" + encodeURIComponent(schemaFormat) +
             "&schemaEngine=" + encodeURIComponent(schemaEngine) +
             "&triggerMode=" + encodeURIComponent(triggerMode) +
-            "&schemaSeparated=" + encodeURIComponent(schemaSeparated) +
+            "&schemaEmbedded=" + encodeURIComponent(schemaEmbedded) +
+            "&inference=" + encodeURIComponent(inference) +
             "&shapeMap=" + encodeURIComponent(shapeMap);
         var href = urlShaclex + location
         console.log("NewHRef: " + href)
+        $("#permalink").prop("href",href);
         window.location.assign(href) ;
 
 /*        $.ajax({ url: urlShaclex + "/api/validate",
