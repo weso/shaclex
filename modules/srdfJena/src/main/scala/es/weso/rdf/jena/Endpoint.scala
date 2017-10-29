@@ -6,9 +6,8 @@ import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples._
 import es.weso.rdf.triples.RDFTriple
 
-import scala.collection.JavaConversions._
-import scala.collection.immutable.StringOps._
-import scala.util.{Either, Try}
+import scala.collection.JavaConverters._
+import scala.util.Either
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
@@ -32,7 +31,7 @@ case class Endpoint(endpoint: String) extends RDFReader {
 
   val log = LoggerFactory.getLogger("Endpoint")
 
-  override def parse(cs: CharSequence, format: String, base: Option[String]): Try[Endpoint] = {
+  override def parse(cs: CharSequence, format: String, base: Option[String]): Either[String, Endpoint] = {
     throw new Exception("Cannot parse into an endpoint. endpoint = " + endpoint)
   }
 
@@ -42,23 +41,23 @@ case class Endpoint(endpoint: String) extends RDFReader {
 
   override def iris(): Set[IRI] = {
     val resultSet = QueryExecutionFactory.sparqlService(endpoint, findIRIs).execSelect()
-    resultSet.map(qs => IRI(qs.get("x").asResource.getURI)).toSet
+    resultSet.asScala.map(qs => IRI(qs.get("x").asResource.getURI)).toSet
   }
 
   override def subjects(): Set[RDFNode] = {
     // TODO: The following code only returns resource IRIs (no BNodes)
     val resultSet = QueryExecutionFactory.sparqlService(endpoint, findIRIs).execSelect()
-    resultSet.map(qs => IRI(qs.get("x").asResource.getURI)).toSet
+    resultSet.asScala.map(qs => IRI(qs.get("x").asResource.getURI)).toSet
   }
 
   override def predicates(): Set[IRI] = {
     val resultSet = QueryExecutionFactory.sparqlService(endpoint, findIRIs).execSelect()
-    resultSet.map(qs => IRI(qs.get("p").asResource.getURI)).toSet
+    resultSet.asScala.map(qs => IRI(qs.get("p").asResource.getURI)).toSet
   }
 
   override def iriObjects(): Set[IRI] = {
     val resultSet = QueryExecutionFactory.sparqlService(endpoint, findIRIs).execSelect()
-    resultSet.map(qs => IRI(qs.get("y").asResource.getURI)).toSet
+    resultSet.asScala.map(qs => IRI(qs.get("y").asResource.getURI)).toSet
   }
 
   override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
@@ -117,7 +116,7 @@ case class Endpoint(endpoint: String) extends RDFReader {
   }
 
   def model2triples(model: Model): Set[RDFTriple] = {
-    model.listStatements().map(st => statement2triple(st)).toSet
+    model.listStatements().asScala.map(st => statement2triple(st)).toSet
   }
 
   def statement2triple(st: Statement): RDFTriple = {

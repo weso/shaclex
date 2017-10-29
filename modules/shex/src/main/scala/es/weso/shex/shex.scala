@@ -407,7 +407,7 @@ object Schema {
         decode[Schema](cs.toString).leftMap(_.getMessage)
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
-        rdf <- RDFAsJenaModel.parseChars(cs, formatUpperCase, base)
+        rdf <- RDFAsJenaModel.fromChars(cs, formatUpperCase, base)
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 

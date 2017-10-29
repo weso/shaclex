@@ -40,7 +40,7 @@ class ValidateFolder extends FunSpec with Matchers with TryValues with OptionVal
 
   def validate(name: String, str: String): Boolean = {
     val attempt = for {
-      rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+      rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
       schema <- RDF2Shacl.getShacl(rdf)
       result <- Validator.validate(schema, rdf)
     } yield result

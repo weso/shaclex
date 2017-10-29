@@ -57,7 +57,7 @@ class RDFJenaSpec
                           |""".stripMargin)
       val str_triples = "<http://example.org#a> <http://example.org#b> <http://example.org#c> ."
       val rdf: RDFAsJenaModel = RDFAsJenaModel(ModelFactory.createDefaultModel())
-      val rdf2 = rdf.parse(str_triples, "NTRIPLES").get
+      val rdf2 = rdf.parse(str_triples, "NTRIPLES").right.get
       val m2 = RDFAsJenaModel.extractModel(rdf2)
       shouldBeIsomorphic(m1, m2)
     }
@@ -69,7 +69,7 @@ class RDFJenaSpec
                    |:a a :C ; :p 1 .
                    |:b a :C, :D .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").right.get
       val typeC = IRI("http://example.org#C")
       val triples = rdf.triplesWithType(typeC)
       val a = IRI("http://example.org#a")
@@ -84,7 +84,7 @@ class RDFJenaSpec
                    |:a a :C ; :p 1 .
                    |:b a :C, :D .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
       val b = IRI("http://example.org#b")
       val p = IRI("http://example.org#p")
@@ -101,7 +101,7 @@ class RDFJenaSpec
                    |@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
                    |:a :date "25/10/2015"^^xsd:date .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
       val date = IRI("http://example.org#date")
       val value = DatatypeLiteral("25/10/2015", IRI("http://www.w3.org/2001/XMLSchema#date"))
@@ -115,7 +115,7 @@ class RDFJenaSpec
                    |@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
                    |:a :age 15 .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
       val value = IntegerLiteral(15)
@@ -129,7 +129,7 @@ class RDFJenaSpec
                    |@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
                    |:a :age "15"^^:xxx .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
       val value = DatatypeLiteral("15", IRI("http://example.org#xxx"))
@@ -143,7 +143,7 @@ class RDFJenaSpec
                    |@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
                    |:a :age "hi"@en .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.empty.parse(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
       val value = LangLiteral("hi", Lang("en"))
@@ -167,7 +167,7 @@ class RDFJenaSpec
                    |:UniversityTeacher rdfs:subClassOf :Teacher .
                    |:dog1 a :Dog .""".stripMargin
       val e = IRI(ex)
-      val model = RDFAsJenaModel.empty.parse(rdfStr).get
+      val model = RDFAsJenaModel.empty.parse(rdfStr).right.get
       val person1 = e + "person1"
       val teacher1 = e + "teacher1"
       val teacher2 = e + "teacher2"
@@ -214,7 +214,7 @@ class RDFJenaSpec
                    |:UniversityTeacher rdfs:subClassOf :Teacher .
                    |:dog1 a :Dog .""".stripMargin
       val e = IRI(ex)
-      val model = RDFAsJenaModel.empty.parse(rdfStr).get
+      val model = RDFAsJenaModel.empty.parse(rdfStr).right.get
       val person1 = e + "person1"
       val teacher1 = e + "teacher1"
       val teacher2 = e + "teacher2"

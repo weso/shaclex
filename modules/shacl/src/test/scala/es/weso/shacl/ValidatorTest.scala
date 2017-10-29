@@ -24,21 +24,24 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
                  |:T a sh:Shape; sh:targetNode :z .
                  |""".stripMargin
       val attempt = for {
-        rdf: RDFReader <- RDFAsJenaModel.fromChars(str, "TURTLE")
-        schema <- RDF2Shacl.tryGetShacl(rdf)
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
       } yield (rdf, schema)
-      info(s"attempt: $attempt")
-      val (rdf, schema) = attempt.success.value
-      val S = ex + "S"
-      val T = ex + "T"
-      val x = ex + "x"
-      val y = ex + "y"
-      val z = ex + "z"
-      val s = Shape.empty(S).copy(targets = Seq(TargetNode(y), TargetNode(x)))
-      val t = Shape.empty(S).copy(targets = Seq(TargetNode(z)))
-      val targetNodes = Validator(schema).targetNodes.map { case (node, shape) => (node, shape.id) }
-      targetNodes.size should be(3)
-      targetNodes should contain only ((x, S), (y, S), (z, T))
+      attempt match {
+        case Left(e) => fail(s"Error: $e")
+        case Right((rdf,schema)) => {
+          val S = ex + "S"
+          val T = ex + "T"
+          val x = ex + "x"
+          val y = ex + "y"
+          val z = ex + "z"
+          val s = Shape.empty(S).copy(targets = Seq(TargetNode(y), TargetNode(x)))
+          val t = Shape.empty(S).copy(targets = Seq(TargetNode(z)))
+          val targetNodes = Validator(schema).targetNodes.map { case (node, shape) => (node, shape.id) }
+          targetNodes.size should be(3)
+          targetNodes should contain only ((x, S), (y, S), (z, T))
+        }
+      }
     }
 
     it("should be able to validate minCount") {
@@ -59,10 +62,10 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
                  |:bad1 :q 1 .
                  |""".stripMargin
       val attempt = for {
-        rdf: RDFReader <- RDFAsJenaModel.fromChars(str, "TURTLE")
-        schema <- RDF2Shacl.tryGetShacl(rdf)
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
       } yield (rdf, schema)
-      val (rdf, schema) = attempt.success.value
+      val (rdf, schema) = attempt.right.get
       val S = ex + "S"
       val PS = ex + "PS"
       val p = ex + "p"
@@ -88,7 +91,7 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
       val str = s"""|@prefix : $ex
                 |:x :p 1 .
                 |""".stripMargin
-      val rdf = RDFAsJenaModel.fromChars(str, "TURTLE").get
+      val rdf = RDFAsJenaModel.fromChars(str, "TURTLE").right.get
       val x = ex + "x"
       val p = ex + "p"
       val validator = Validator(Schema.empty)

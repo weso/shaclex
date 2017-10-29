@@ -85,16 +85,13 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
     for {
-      rdf <- RDFAsJenaModel.parseChars(cs, format, base)
-      schema <- tryGetShacl(rdf)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
+      schema <- RDF2Shacl.getShacl(rdf)
     } yield ShaclexSchema(schema)
   }
 
-  def tryGetShacl(rdf: RDFReader) =
-    RDF2Shacl.getShacl(rdf)
-
   override def fromRDF(rdf: RDFReader): Either[String, Schema] = for {
-    schemaShacl <- tryGetShacl(rdf)
+    schemaShacl <- RDF2Shacl.getShacl(rdf)
   } yield ShaclexSchema(schemaShacl)
 
   override def serialize(format: String): Either[String, String] = {
@@ -116,7 +113,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 object ShaclexSchema {
   def empty: ShaclexSchema = ShaclexSchema(schema = ShaclSchema.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShaclexSchema] = format match {
+/*  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShaclexSchema] = format match {
     case "TREE" => Failure(new Exception(s"Not implemented reading from format $format yet"))
     case _ => for {
       rdf <- RDFAsJenaModel.fromChars(cs, format, base)
@@ -126,5 +123,5 @@ object ShaclexSchema {
       }
     } yield ShaclexSchema(schema)
   }
-
+*/
 }

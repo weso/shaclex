@@ -262,7 +262,7 @@ object RDF2Manifest extends RDF2Manifest {
   def read(fileName: String, format: String, base: Option[String]): Either[String, Manifest] = {
     for {
       cs <- getContents(fileName)
-      rdf <- RDFAsJenaModel.parseChars(cs, format, base)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
       mfs <- rdf2Manifest(rdf, false)
       manifest <- if (mfs.size == 1) Right(mfs.head)
       else Left(s"More than one manifests found: ${mfs}")

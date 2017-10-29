@@ -89,7 +89,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     expected: String): Unit = {
     it(s"Should validate ${shexStr} with ${rdfStr} and ${shapeMapStr} and result $expected") {
       val validate = for {
-        rdf <- RDFAsJenaModel.parseChars(rdfStr, "Turtle")
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "Turtle")
         shex <- Schema.fromString(shexStr, "ShExC", None)
         shapeMap <- ShapeMap.fromString(shapeMapStr, None, rdf.getPrefixMap, shex.prefixMap)
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)

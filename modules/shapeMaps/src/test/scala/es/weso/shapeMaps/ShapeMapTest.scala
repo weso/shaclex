@@ -147,8 +147,8 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       val shapesPrefixMap = PrefixMap.empty.addPrefix("", IRI("http://example.org/"))
       it(s"should fix $shapeMapStr and obtain $expectedStr") {
         RDFAsJenaModel.fromChars(rdfStr, "TURTLE") match {
-          case Failure(e) => fail(s"Error parsing $rdfStr")
-          case Success(rdf) => {
+          case Left(e) => fail(s"Error parsing $rdfStr")
+          case Right(rdf) => {
             val result = for {
               shapeMap <- Parser.parse(shapeMapStr, None, rdf.getPrefixMap, shapesPrefixMap)
               expected <- Parser.parse(expectedStr, None, rdf.getPrefixMap, shapesPrefixMap)
@@ -182,8 +182,8 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       val shapesPrefixMap = PrefixMap.empty.addPrefix("", IRI("http://example.org/"))
       it(s"Should show and parse $shapeMapStr") {
         RDFAsJenaModel.fromChars(rdfStr, "TURTLE") match {
-          case Failure(e) => fail(s"Error parsing $rdfStr")
-          case Success(rdf) => {
+          case Left(e) => fail(s"Error parsing $rdfStr")
+          case Right(rdf) => {
             Parser.parse(shapeMapStr, None, rdf.getPrefixMap, shapesPrefixMap) match {
               case Left(msg) => fail(s"Error parsing ${shapeMapStr}: ${msg}")
               case Right(shapeMap) => Parser.parse(shapeMap.toString, None, rdf.getPrefixMap, shapesPrefixMap) match {

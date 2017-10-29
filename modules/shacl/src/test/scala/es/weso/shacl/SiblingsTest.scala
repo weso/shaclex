@@ -60,7 +60,7 @@ class SiblingsTest extends FunSpec
 
     it("should be able to find parent of a shape") {
       val eitherParents: Either[String, List[ShapeRef]] = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
       } yield schema.parents(ShapeRef(psFemale))
 
@@ -77,7 +77,7 @@ class SiblingsTest extends FunSpec
       it("should be able to find siblings of a shape") {
 
         val eitherShapes: Either[String, List[ShapeRef]] = for {
-          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
           schema <- RDF2Shacl.getShacl(rdf)
         } yield (schema.siblingQualifiedShapes(ShapeRef(psFemale)))
 

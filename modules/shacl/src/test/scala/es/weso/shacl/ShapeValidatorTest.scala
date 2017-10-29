@@ -26,7 +26,7 @@ class ShapeValidatorTest extends FunSpec with Matchers with TryValues with Eithe
                  |:x :p "a" .
                  |""".stripMargin
       val attempt = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(s)
         validator = Validator(schema)

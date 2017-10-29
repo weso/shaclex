@@ -44,22 +44,21 @@ class RDFAsJenaModelTest
       rdf.addTriples(Set(RDFTriple(
         IRI("http://example.org#a"),
         IRI("http://example.org#b"),
-        IRI(shaclFolderURI + "c"))))
+        IRI("c"))))
 
       val str =
         """|@prefix : <http://example.org#> .
                    |:a :b <c> .
                    |""".stripMargin
-      RDFAsJenaModel.fromChars(str, "TURTLE", Some(shaclFolderURI)) match {
-        case Success(m2) => shouldBeIsomorphic(rdf.model, m2.model)
-        case Failure(e) => fail(s"Error $e\n$str")
+      RDFAsJenaModel.fromChars(str, "TURTLE", None) match {
+        case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
+        case Left(e) => fail(s"Error $e\n$str")
       }
 
     }
+
     it("should be able to parse RDF with relative URIs") {
       val emptyModel = ModelFactory.createDefaultModel
-      println(s"Base resolver: ${IRIResolver.chooseBaseURI()}")
-      val resolver = IRIResolver.createNoResolve()
       val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
       rdf.addTriples(Set(RDFTriple(
         IRI("a"),
@@ -70,28 +69,10 @@ class RDFAsJenaModelTest
         """|<a> <b> 1 .
                    |""".stripMargin
       val m = ModelFactory.createDefaultModel
-      val str_reader = new StringReader(str.toString)
-      val stream : InputStream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8.name()))
-      val sysRiot = SysRIOT.setStrictMode(true)
-      println(s"SysRIOT strict: ${SysRIOT.AbsURINoNormalization}, ${SysRIOT.strictMode}")
-//      m.read(stream,"","TURTLE")
-      val parser = RDFParser.create().fromString(str).lang(shortnameToLang("Turtle"))
-        // .resolveURIs(false) // RDFParserBuilder
-//      parser.resolveURIs = false;
-      val g: Graph = GraphFactory.createDefaultGraph()
-      val streamRDF = StreamRDFLib.graph(g)
-      streamRDF.start
-      parser.parse(streamRDF)
-      streamRDF.finish
-      println("Graph:")
-      println(g)
-
-      RDFDataMgr.read(m, str_reader, "", shortnameToLang("Turtle"))
-      shouldBeIsomorphic(rdf.model, m)
-/*      RDFAsJenaModel.fromChars(str, "TURTLE", Some("")) match {
-        case Success(m2) => shouldBeIsomorphic(rdf.model, m2.model)
-        case Failure(e) => fail(s"Error $e\n$str")
-      } */
+      RDFAsJenaModel.fromChars(str, "TURTLE", None) match {
+        case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
+        case Left(e) => fail(s"Error $e\n$str")
+      }
     }
   }
 }

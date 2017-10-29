@@ -36,7 +36,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         Some(List(NodeConstraint.nodeKind(IRIKind, List()))))
 
       val result = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
         schemas <- RDF2ShEx.rdf2Schema(rdf)
       } yield schemas
 
@@ -70,7 +70,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             stripMargin
 
         val result = for {
-          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
           schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
         } yield schemas
 
@@ -93,7 +93,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             stripMargin
 
         val result = for {
-          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
           schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
         } yield schemas
 
@@ -128,7 +128,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             |    sx:datatype xsd:string .
          """.stripMargin
       val result = for {
-        rdf <- RDFAsJenaModel.parseChars(rdfStr, "TURTLE", None)
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
@@ -173,7 +173,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             |       sx:nodeKind sx:iri .
          """.stripMargin
       val result = for {
-        rdf <- RDFAsJenaModel.parseChars(rdfStr, "TURTLE", None)
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 

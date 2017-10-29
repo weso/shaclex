@@ -22,7 +22,7 @@ class ResultShapeMapTest extends FunSpec with Matchers with TryValues with Optio
   def compareResultMaps(strMap1: String, strMap2: String, rdfStr: String, expectedEqual: Boolean): Unit = {
     it(s"Should compare $strMap1 with $strMap2 and equal=$expectedEqual") {
       val eitherResult = for {
-        rdf <- RDFAsJenaModel.parseChars(rdfStr, "Turtle")
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "Turtle")
         map1 <- ShapeMap.parseResultMap(strMap1, None, rdf, rdf.getPrefixMap)
         map2 <- ShapeMap.parseResultMap(strMap2, None, rdf, rdf.getPrefixMap)
       } yield (map1, map2)

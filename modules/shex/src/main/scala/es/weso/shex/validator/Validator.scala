@@ -318,7 +318,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     // val tripleExpr = s.tripleExpr
     for {
       neighs <- getNeighs(node)
-      tableRbe <- mkTable(s.expression)
+      tableRbe <- {
+        println(s"neighs: $neighs")
+        mkTable(s.expression)
+      }
       (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
       csRest <- calculateCandidates(neighs, cTable)

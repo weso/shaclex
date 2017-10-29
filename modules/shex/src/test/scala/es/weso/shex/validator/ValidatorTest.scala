@@ -33,7 +33,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
     schema: Schema): Unit = {
     val v = Validator(schema)
     val eitherResult = for {
-      rdf <- RDFAsJenaModel.parseChars(rdfStr, "TURTLE")
+      rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE")
       check = v.checkNodeLabel(node, label)
       result <- ShExChecker.runCheck(check, rdf).toEither
     } yield result
@@ -49,7 +49,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
     schema: Schema): Unit = {
     val v = Validator(schema)
     val eitherResult = for {
-      rdf <- RDFAsJenaModel.parseChars(rdfStr, "TURTLE")
+      rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE")
       check = v.checkNodeLabel(node, label)
       shapeTyping <- ShExChecker.runCheck(check, rdf).toEither
     } yield shapeTyping

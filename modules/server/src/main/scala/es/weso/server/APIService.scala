@@ -240,8 +240,8 @@ class Routes {
       DataFormatParam(optDataFormat) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       RDFAsJenaModel.fromChars(data, dataFormat, None) match {
-        case Failure(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
-        case Success(rdf) => {
+        case Left(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
+        case Right(rdf) => {
           val nodes: List[String] =
             (
               rdf.subjects() ++
@@ -289,7 +289,7 @@ class Routes {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       val resultDataFormat = optResultDataFormat.getOrElse(DataFormats.defaultFormatName)
 
-      RDFAsJenaModel.parseChars(data, dataFormat, None) match {
+      RDFAsJenaModel.fromChars(data, dataFormat, None) match {
         case Left(e) => BadRequest(s"Error reading RDF Data: $e\nString: $data")
         case Right(rdf) => {
           val resultStr = rdf.serialize(resultDataFormat)
@@ -422,7 +422,7 @@ class Routes {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       val resultDataFormat = optTargetDataFormat.getOrElse(DataFormats.defaultFormatName)
       for {
-        rdf <- RDFAsJenaModel.parseChars(data, dataFormat, None)
+        rdf <- RDFAsJenaModel.fromChars(data, dataFormat, None)
       } yield Some(rdf.serialize(resultDataFormat))
     }
   }
@@ -455,7 +455,7 @@ class Routes {
       case Left(e) =>
         (Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr"), None)
       case Right(schema) => {
-        RDFAsJenaModel.parseChars(data, dataFormat, base) match {
+        RDFAsJenaModel.fromChars(data, dataFormat, base) match {
           case Left(e) =>
             (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
           case Right(rdf) => {

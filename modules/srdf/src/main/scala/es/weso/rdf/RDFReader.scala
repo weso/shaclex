@@ -16,9 +16,15 @@ trait RDFReader {
   type Rdf <: RDFReader
 
   /**
-   * parse a string and obtain an RDF graph
-   */
-  def parse(cs: CharSequence, format: String = "TURTLE", base: Option[String] = None): Try[Rdf]
+    * Parse a char sequence to obtain an RDFReader
+    * @param cs char sequence to parse
+    * @param format format (TURTLE by default)
+    * @param base base IRI (None by default)
+    * @return Right RDF or Left error message
+    */
+  def parse(cs: CharSequence,
+            format: String = "TURTLE",
+            base: Option[String] = None): Either[String,Rdf]
 
   /**
    * convert a RDF graph to a String

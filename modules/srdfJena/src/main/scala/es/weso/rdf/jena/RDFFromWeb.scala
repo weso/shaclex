@@ -5,8 +5,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
 
-import scala.collection.JavaConversions._
-import scala.collection.immutable.StringOps._
+import scala.collection.JavaConverters._
 import scala.util.{Either, Try}
 import es.weso.rdf.triples._
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
@@ -33,7 +32,7 @@ case class RDFFromWeb() extends RDFReader {
     PrefixMap(Map())
   }
 
-  override def parse(cs: CharSequence, format: String, base: Option[String]): Try[Rdf] = {
+  override def parse(cs: CharSequence, format: String, base: Option[String]): Either[String,Rdf] = {
     throw new Exception("Cannot parse RDFFromWeb ")
   }
 
@@ -112,7 +111,7 @@ case class RDFFromWeb() extends RDFReader {
 
 
   def model2triples(model: Model): Set[RDFTriple] = {
-    model.listStatements().map(st => statement2triple(st)).toSet
+    model.listStatements().asScala.map(st => statement2triple(st)).toSet
   }
 
   def statement2triple(st: Statement): RDFTriple = {
