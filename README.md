@@ -91,7 +91,8 @@ sbt "run --server"
 
 ## More information
 
-This project is a continuation of [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only. In this project the underlying validation computation is based on Monad transformers.
+This project is a continuation of [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
+
 
 ## Author
 

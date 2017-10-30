@@ -89,18 +89,18 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitStart(
     ctx: StartContext): Builder[Option[(ShapeExpr)]] = {
-    logger.info(s"Visiting start...$ctx")
+    // logger.info(s"Visiting start...$ctx")
     if (isDefined(ctx)) {
-      logger.info(s"is defined...")
+      // logger.info(s"is defined...")
       for {
         shapeExpr <- visitShapeExpression(ctx.shapeExpression())
         _ <- {
-          logger.info(s"Shape expression for start: $shapeExpr")
+          // logger.info(s"Shape expression for start: $shapeExpr")
           updateStart(Some(shapeExpr))
         }
         // semActs <- visitSemanticActions(ctx.semanticActions())
       } yield {
-        logger.info(s"Shape expression for start: $shapeExpr")
+        // logger.info(s"Shape expression for start: $shapeExpr")
         Some(shapeExpr)
       }
     } else
@@ -444,7 +444,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   def resolve(prefixedName: String): Builder[IRI] = {
     val (prefix, local) = splitPrefix(prefixedName)
-    logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
+    // logger.info(s"Resolve. prefix: $prefix local: $local Prefixed name: $prefixedName")
     getPrefixMap.flatMap(prefixMap =>
       prefixMap.getIRI(prefix) match {
         case None =>
@@ -548,20 +548,30 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
 
   override def visitStringFacet(
-    ctx: StringFacetContext): Builder[XsFacet] = {
-    if (isDefined(ctx.stringLength())) {
-      for {
-        n <- getInteger(ctx.INTEGER().getText())
-        stringLength <- visitStringLength(ctx.stringLength)(n)
-      } yield stringLength
-    } else {
-      // TODO. Update pattern to handle flags
-      for {
-        str <- visitString(ctx.string())
-      } yield Pattern(str, None)
+    ctx: StringFacetContext): Builder[XsFacet] = ctx match {
+    case _ if (isDefined(ctx.stringLength())) => for {
+      n <- getInteger(ctx.INTEGER().getText())
+      stringLength <- visitStringLength(ctx.stringLength)(n)
+    } yield stringLength
+    case _ if (isDefined(ctx.REGEXP())) => {
+      ok(Pattern(
+        removeSlashes(ctx.REGEXP().getText()),
+        if (isDefined(ctx.REGEXP_FLAGS())) Some(ctx.REGEXP_FLAGS().getText())
+        else None))
     }
+    case _ if (isDefined(ctx.KW_PATTERN())) => for {
+      str <- visitString(ctx.string())
+    } yield Pattern(str, None)
+    case _ => err(s"visitStringFacet: Unsupported ${ctx.getClass.getName}")
   }
 
+  private def removeSlashes(str: String): String = {
+    val slashedRegex = "/(.*)/".r
+    str match {
+      case slashedRegex(s) => s
+      case _ => str
+    }
+  }
   override def visitStringLength(
     ctx: StringLengthContext): Int => Builder[StringFacet] = n => {
     if (isDefined(ctx.KW_LENGTH())) ok(Length(n))

@@ -24,7 +24,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
                  |:T a sh:Shape .
                  |""".stripMargin
       val attempt: Either[String, Schema] = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
       } yield (schema)
       val s = ex + "S"
@@ -32,7 +32,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       info(s"Attempt: $attempt")
       attempt match {
         case Left(e) => fail(s"Failed: $e")
-        case Right(v) => v should constainShapes(Set(s, t))
+        case Right(v) => v should containShapes(Set(s, t))
       }
     }
 
@@ -49,7 +49,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       val t = ex + "T"
       val n1 = ex + "n1"
       val attempt = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(s)
       } yield (shape)
@@ -76,7 +76,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       val s2 = ex + "s2"
       val t1 = ex + "t1"
       val attempt = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
       } yield (schema)
       attempt match {
@@ -103,7 +103,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       val p = ex + "p"
       val prop = ex + "prop"
       val attempt = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(S)
       } yield (shape)
@@ -136,7 +136,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       val p = ex + "p"
       val prop = ex + "prop"
       val attempt: Either[String, (Shape, Schema)] = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(S)
       } yield ((shape, schema))
@@ -173,7 +173,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       val p = IRI(ex) + "p"
       val prop = IRI(ex) + "prop"
       val attempt = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(S)
       } yield (shape, schema)
@@ -209,7 +209,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       val p = IRI(ex) + "p"
       val prop = IRI(ex) + "prop"
       val attempt = for {
-        rdf <- RDFAsJenaModel.parseChars(str, "TURTLE")
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(S)
       } yield ((shape, schema))

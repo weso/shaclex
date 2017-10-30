@@ -15,9 +15,9 @@ import es.weso.shacl._
 
 class Shacl2RDF extends RDFSaver with LazyLogging {
 
-  def serialize(shacl: Schema, format: String): Try[String] = {
+  def serialize(shacl: Schema, format: String): Either[String, String] = {
     val rdf: RDFAsJenaModel = toRDF(shacl, RDFAsJenaModel.empty)
-    Success(rdf.serialize(format))
+    Right(rdf.serialize(format))
   }
 
   def toRDF(shacl: Schema, initial: RDFAsJenaModel): RDFAsJenaModel = {

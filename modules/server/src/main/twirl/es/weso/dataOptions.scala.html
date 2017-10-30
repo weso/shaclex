@@ -1,13 +1,9 @@
 @(availableDataFormats: List[String],
   defaultDataFormat: String)
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Available Options</title>
-    <link rel="stylesheet" href="static/css/app.css">
-
-</head>
+@head("SHACLex: data options")
 <body>
+@navBar()
 <h1>Available options</h1>
 <dl>
     <dt>Available data formats</dt>
@@ -16,6 +12,6 @@
     <dd>@defaultDataFormat</dd>
 </dl>
 </div>
-
+@scripts()
 </body>
 </html>

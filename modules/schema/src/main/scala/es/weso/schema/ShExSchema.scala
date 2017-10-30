@@ -47,6 +47,18 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     cnvResult(r, rdf)
   }
 
+  def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader): Result = r match {
+    case Left(msg) => Result(
+      false,
+      message = "Error validating",
+      shapeMaps = Seq(),
+      errors = Seq(ErrorInfo(msg)), None, rdf.getPrefixMap(), schema.prefixMap)
+    case Right(resultShapeMap) =>
+      Result(true, "Validated",
+        shapeMaps = Seq(resultShapeMap),
+        errors = Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
+  }
+
   def validateNodeShape(node: IRI, shape: String, rdf: RDFReader): Result = {
     val validator = Validator(schema)
     val r = validator.validateNodeShape(rdf, node, shape)
@@ -66,20 +78,28 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   def validateShapeMap(
     shapeMap: FixedShapeMap,
     rdf: RDFReader): Result = {
-    val validator = Validator(schema)
-    val r = validator.validateShapeMap(rdf, shapeMap)
-    cnvResult(r, rdf)
+    Validator.validate(schema, shapeMap, rdf) match {
+      case Left(error) =>
+        Result(false, "Error validating", Seq(), Seq(ErrorInfo(error)), None, rdf.getPrefixMap(), schema.prefixMap)
+      case Right(resultShapeMap) => {
+        // println(s"Validated, result=$resultShapeMap")
+        Result(true, "Validated", Seq(resultShapeMap), Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
+      }
+    }
   }
 
-  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shex.validator.NodeShape, String)]], rdf: RDFReader): Result =
+  /*  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shex.validator.NodeShape, String)]], rdf: RDFReader): Result =
     Result(
       isValid = r.isOK,
       message = if (r.isOK) "Valid" else "Not valid",
-      solutions = r.results.map(cnvShapeTyping(_, rdf)),
+      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
       errors = r.errors.map(cnvViolationError(_)),
-      None)
+      None,
+      rdf.getPrefixMap(),
+      schema.prefixMap)
 
-  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): Solution = {
+  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): ResultShapeMap = ???  */
+  /*{
     Solution(
       st.t.getMap.mapValues(cnvResult),
       rdf.getPrefixMap(),
@@ -93,12 +113,16 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       oks.map(cnvShapeResult(_)),
       bads.map(cnvShapeResult(_)),
       schema.prefixMap)
-  }
+  } */
 
-  def cnvShapeResult(
+  /*  def cnvShapeResult(
     p: (ShapeType, TypingResult[ViolationError, String])): (SchemaLabel, Explanation) = {
     val shapeLabel = p._1.label match {
-      case Some(lbl) => SchemaLabel(lbl.show, schema.prefixMap)
+      case Some(lbl) => {
+        val str = lbl.toRDFNode.getLexicalForm
+        println(s"Converting shapeLabel: $str")
+        SchemaLabel(str, schema.prefixMap)
+      }
       case None => SchemaLabel("_", schema.prefixMap)
     }
     val explanation = Explanation(cnvTypingResult(p._2))
@@ -110,33 +134,31 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       es => "Errors: " +
         es.toList.mkString(","), rs => "Evidences:" +
         rs.map(" " + _).mkString(","))
-  }
+  } */
 
   def cnvViolationError(v: ViolationError): ErrorInfo = {
     ErrorInfo(v.show)
   }
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShExSchema] = {
+  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, ShExSchema] = {
     ShExSchema.fromString(cs, format, base)
   }
 
-  override def fromRDF(rdf: RDFReader): Try[Schema] =
-    RDF2ShEx.tryRDF2Schema(rdf).map(ShExSchema(_))
+  override def fromRDF(rdf: RDFReader): Either[String, Schema] =
+    RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
 
-  override def serialize(format: String): Try[String] = {
+  override def serialize(format: String): Either[String, String] = {
     if (formatsUpperCase.contains(format.toUpperCase()))
-      Success(Schema_.serialize(schema, format))
+      Right(Schema_.serialize(schema, format))
     else
-      Failure(
-        new Exception(
-          s"Can't serialize to format $format. Supported formats=$formats"))
+      Left(s"Can't serialize to format $format. Supported formats=$formats")
   }
 
   override def empty: ShExSchema = ShExSchema.empty
 
   override def shapes: List[String] = {
     val pm = schema.prefixMap
-    schema.labels.map(_.qualifiedShow(pm))
+    schema.labels.map(lbl => pm.qualify(lbl.toRDFNode))
   }
 
   override def pm: PrefixMap = schema.prefixMap
@@ -149,7 +171,7 @@ object ShExSchema {
   def fromString(
     cs: CharSequence,
     format: String,
-    base: Option[String]): Try[ShExSchema] = {
+    base: Option[String]): Either[String, ShExSchema] = {
     Schema_.fromString(cs, format, base).map(p => ShExSchema(p))
   }
 

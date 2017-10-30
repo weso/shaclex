@@ -42,6 +42,7 @@ case class IRI(uri: URI) extends RDFNode {
 }
 
 object IRI {
+
   /**
    * Unsafe can raise an exception if the URI is not well formed
    * @param str

@@ -1,8 +1,9 @@
 package es.weso.shex.validator
 
 import cats._
-import es.weso.rbe.interval.{ IntLimit, IntOrUnbounded, Unbounded }
-import es.weso.rbe.{ Schema => _, Star => _, _ }
+import es.weso.rbe.interval.{IntLimit, IntOrUnbounded, Unbounded}
+import es.weso.rbe.{Schema => _, Star => _, _}
+import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 
 object table {
@@ -20,10 +21,16 @@ object table {
     override def toString(): String = s"C$n"
   }
 
-  implicit lazy val orderingConstraintRef = new Ordering[ConstraintRef] {
-    def compare(c1: ConstraintRef, c2: ConstraintRef): Int = {
-      Ordering[Int].compare(c1.n, c2.n)
+  object ConstraintRef {
+    implicit lazy val orderingConstraintRef = new Ordering[ConstraintRef] {
+      def compare(c1: ConstraintRef, c2: ConstraintRef): Int = {
+        Ordering[Int].compare(c1.n, c2.n)
+      }
     }
+
+    implicit lazy val showConstraintRef =
+      Show.fromToString[ConstraintRef]
+
   }
 
   // Constraints table
@@ -33,17 +40,17 @@ object table {
     elems: Int,
     schema: Schema) {
 
-    def addPath(p: Path, n: ConstraintRef): PathsMap =
+    private[validator] def addPath(p: Path, n: ConstraintRef): PathsMap =
       paths.updated(p, paths.get(p).getOrElse(Set()) + n)
 
-    def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
+    private[validator] def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
       constraints.get(cref).map(ce => ce match {
         case Pos(se) => se
         case Neg(se) => ShapeNot(None, se)
       })
     }
 
-    lazy val isAmbiguous: Boolean = {
+    private[validator] lazy val isAmbiguous: Boolean = {
       paths.values.map(_.size).exists(_ > 1)
     }
 
@@ -62,10 +69,30 @@ object table {
       }
     }
 
-    def mkTable(te: TripleExpr): ResultPair =
-      mkTableAux(te, CTable.empty)
+    private[validator] def extendWithExtras(pair: ResultPair, te: TripleExpr, extras: List[IRI]): ResultPair = {
+      val zero: ResultPair = pair
+      def combine(current: ResultPair, extra: IRI): ResultPair = {
+        def appearances(iri: IRI): List[ShapeExpr] = te match {
+          case tc: TripleConstraint => if (tc.predicate == iri) tc.valueExpr.toList
+          else List()
+          case eachOf: EachOf => List() // TODO
+          case oneOf: OneOf => List() // TODO
+          case i: Inclusion => List() // TODO
+        }
+        val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra)))
+        val (table,rbe) = current
+        // table.addPath(Direct(extra), )
+        current // TODO
+      }
+      extras.foldLeft(zero)(combine)
+    }
 
-    def mkTableAux(te: TripleExpr, current: CTable): ResultPair = {
+    private[validator] def mkTable(te: TripleExpr, extras: List[IRI]): ResultPair = {
+      val pair = mkTableAux(te, CTable.empty)
+      extendWithExtras(pair, te, extras)
+    }
+
+    private def mkTableAux(te: TripleExpr, current: CTable): ResultPair = {
       te match {
         case e: EachOf => {
           val zero: ResultPair = (current, Empty)

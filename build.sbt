@@ -29,7 +29,7 @@ lazy val http4sVersion        = "0.18.0-M1"
 lazy val scalatagsVersion     = "0.6.2"
 lazy val kindProjectorVersion = "0.9.3"
 lazy val scallopVersion       = "2.0.6"
-lazy val jenaVersion          = "3.1.1"
+lazy val jenaVersion          = "3.4.0"
 lazy val jgraphtVersion       = "1.0.1"
 lazy val diffsonVersion       = "2.2.2"
 lazy val xercesVersion        = "2.11.0"
@@ -130,8 +130,8 @@ lazy val shapeMaps =
     dependsOn(srdfJena).
 //    enablePlugins(Antlr4Plugin).
 //     settings(antlr4Settings: _*).
+    settings(antlr4Settings: _*).
     settings(
-      antlr4Settings,
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
       antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % antlrVersion,
@@ -233,6 +233,9 @@ lazy val srdf =
         "org.typelevel" %% "cats-core" % catsVersion
       , "org.typelevel" %% "cats-kernel" % catsVersion
       , "org.typelevel" %% "cats-macros" % catsVersion
+      , "io.circe" %% "circe-core" % circeVersion
+      , "io.circe" %% "circe-generic" % circeVersion
+      , "io.circe" %% "circe-parser" % circeVersion
       , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
       )
   )

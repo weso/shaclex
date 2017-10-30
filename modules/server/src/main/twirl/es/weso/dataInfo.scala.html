@@ -2,13 +2,10 @@
   currentDataFormat: String
 )
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>API Shaclex - Info about RDF data</title>
-    <link rel="stylesheet" href="static/css/app.css">
-
-</head>
+@head("SHACLex: Data info")
 <body>
+@navBar()
+<div class="container">
 <h1>Info about RDF Data</h1>
 <form action="/api/data/info" method="get" id="info">
     <label for="data">RDF Data</label>
@@ -18,5 +15,7 @@
 
     <button type="submit">Data Info</button>
 </form>
+</div>
+@scripts()
 </body>
 </html>

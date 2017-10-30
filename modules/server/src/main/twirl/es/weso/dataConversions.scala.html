@@ -1,46 +1,30 @@
 @(data: Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
-  currentTargetDataFormat: String)
+  currentTargetDataFormat: String,
+  result: Either[String, Option[String]]
+)
 <html lang="en">
-<meta charset="utf-8">
-<title>Data conversions</title>
-<script src="js/jquery-3.1.1.min.js"></script>
-<script src="codemirror-5.24.2/lib/codemirror.js"></script>
-<link rel="stylesheet" href="css/app.css">
-<link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
-<link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
-<link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
-<link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
-
-<!-- some modes -->
-<script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
-<script src="codemirror-5.24.2/mode/shex/shex.js"></script>
-<script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
-<script src="codemirror-5.24.2/mode/xml/xml.js"></script>
-<script src="codemirror-5.24.2/addon/edit/closebrackets.js"></script>
-<script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
-
-<style type="text/css">
-.CodeMirror {
- border: 1px solid black;
- height: auto;
-}
-</style>
-</head>
-
+@head("Data Conversions")
 <body>
+@navBar()
 <h1><a href="/">SHACLex</a>: Parse & Convert RDF Data</h1>
-<form action="/api/data/convert" method="get" id="convert">
+@if(result.isLeft) {
+  <p class="error">Error in conversion: @{result.left}</p>
+} else if(result.right.get.isDefined) {
+  <textarea id="targetDataArea">@{result.right.get.get}</textarea>
+} else {
+ <!-- No result -->
+    }
+<form action="/dataConversions" method="get" id="convert">
     <label for="rdfData">RDF Data</label>
-    <textarea id="rdfData" rows="20" cols="70" name="data" placeholder="data">@{data.getOrElse("")}</textarea>
-
+    <textarea id="rdfData" name="data" placeholder="data">@{data.getOrElse("")}</textarea>
     @selectDataFormat("convert",availableDataFormats,currentDataFormat)
     @selectTargetDataFormat("convert",availableDataFormats,currentDataFormat)
     <div class="submit">
         <button type="submit">Convert</button>
     </div>
 </form>
-<script src="js/shaclex.js" ></script>
+@scripts()
 </body>
 </html>

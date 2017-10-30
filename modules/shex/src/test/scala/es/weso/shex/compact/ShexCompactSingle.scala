@@ -33,11 +33,11 @@ class ShexCompactSingle extends FunSpec with JsonTest with Matchers with EitherV
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
         Schema.fromString(str, "SHEXC", None) match {
-          case Success(schema) => {
+          case Right(schema) => {
             val (name, ext) = splitExtension(file.getName)
             // TODO: Check that parsed file equals schema file
           }
-          case Failure(err) => fail(s"Parsing error: $err")
+          case Left(err) => fail(s"Parsing error: $err")
         }
       }
     }

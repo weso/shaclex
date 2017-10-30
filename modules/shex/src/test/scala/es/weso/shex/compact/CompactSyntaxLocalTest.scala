@@ -38,11 +38,11 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
 
   def checkParseDeparse(str: String) = {
     import es.weso.shex.implicits.eqShEx.eq
-    parseSchema(str) match {
+    parseSchema(str, None) match {
       case Left(s) => fail(s"Parsing error: $s\n-------String:\n$str")
       case Right(schema) => {
         val newStr = showSchema(schema)
-        parseSchema(newStr) match {
+        parseSchema(newStr, None) match {
           case Left(e) =>
             fail(s"$str\n-- parsed as schema:\n${newStr}, but previous string doesn't parse\nError: $e")
           case Right(newSchema) =>

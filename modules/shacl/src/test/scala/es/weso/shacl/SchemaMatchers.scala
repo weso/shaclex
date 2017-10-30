@@ -18,7 +18,7 @@ trait SchemaMatchers {
     }
   }
 
-  def constainShapes(shapeIDs: Set[RDFNode]) =
+  def containShapes(shapeIDs: Set[RDFNode]) =
     new ContainShapesMatcher(shapeIDs)
 
 }

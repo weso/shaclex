@@ -1,10 +1,9 @@
 package es.weso.utils
 import java.io._
+import java.nio.file.Paths
 
 import scala.io._
 import util._
-
-import scala.util.{ Failure, Success, Try }
 
 object FileUtils {
 
@@ -55,18 +54,18 @@ object FileUtils {
    * @param file file
    *
    */
-  def getContents(file: File): Try[CharSequence] = {
+  def getContents(file: File): Either[String, CharSequence] = {
     try {
       using(Source.fromFile(file)("UTF-8")) { source =>
-        Success(source.getLines.mkString("\n"))
+        Right(source.getLines.mkString("\n"))
       }
     } catch {
-      case e: FileNotFoundException => {
-        Failure(e)
-      }
-      case e: IOException => {
-        Failure(e)
-      }
+      case e: FileNotFoundException =>
+        Left(s"Error reading file ${file.getAbsolutePath}: ${e.getMessage}")
+      case e: IOException =>
+        Left(s"IO Exception reading file ${file.getAbsolutePath}: ${e.getMessage}")
+      case e: Exception =>
+        Left(s"Exception reading file ${file.getAbsolutePath}: ${e.getMessage}")
     }
   }
 
@@ -76,35 +75,35 @@ object FileUtils {
    * @param fileName name of the file
    *
    */
-  def getContents(fileName: String): Try[CharSequence] = {
+  def getContents(fileName: String): Either[String, CharSequence] = {
     try {
       using(Source.fromFile(fileName)("UTF-8")) { source =>
-        Success(source.getLines.mkString("\n"))
+        Right(source.getLines.mkString("\n"))
       }
     } catch {
-      case e: FileNotFoundException => {
-        Failure(e)
-      }
-      case e: IOException => {
-        Failure(e)
-      }
+      case e: FileNotFoundException =>
+        Left(s"Error reading file ${fileName}: ${e.getMessage}")
+      case e: IOException =>
+        Left(s"IO Exception reading file ${fileName}: ${e.getMessage}")
+      case e: Exception =>
+        Left(s"Exception reading file ${fileName}: ${e.getMessage}")
     }
   }
 
-  def getStream(fileName: String): Try[InputStreamReader] = {
+  def getStream(fileName: String): Either[String, InputStreamReader] = {
     try {
       using(Source.fromFile(fileName)("UTF-8")) { source =>
         {
-          Success(source.reader())
+          Right(source.reader())
         }
       }
     } catch {
-      case e: FileNotFoundException => {
-        Failure(e)
-      }
-      case e: IOException => {
-        Failure(e)
-      }
+      case e: FileNotFoundException =>
+        Left(s"Error reading file ${fileName}: ${e.getMessage}")
+      case e: IOException =>
+        Left(s"IO Exception reading file ${fileName}: ${e.getMessage}")
+      case e: Exception =>
+        Left(s"Exception reading file ${fileName}: ${e.getMessage}")
     }
   }
   /**
@@ -128,5 +127,9 @@ object FileUtils {
   def formatLines(cs: CharSequence): String = {
     cs.toString.lines.zipWithIndex.map(p => (p._2 + 1).toString + " " + p._1).mkString("\n")
   }
+
+  lazy val currentFolderURL: String =
+    // Paths.get("/").normalize.toUri.toURL.toExternalForm
+    ""
 
 }

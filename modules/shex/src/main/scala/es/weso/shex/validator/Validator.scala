@@ -42,6 +42,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   type Bag_ = Bag[ConstraintRef]
   type Rbe_ = Rbe[ConstraintRef]
   type BagChecker_ = BagChecker[ConstraintRef]
+  type Result = Either[String, ResultShapeMap]
 
   lazy val sh_targetNode = sh + "targetNode"
 
@@ -112,12 +113,13 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case Some(shape) => ok(shape)
     }
 
-  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping =
+  def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
     cond(getShapeLabel(shapeName), (shapeLabel: ShapeLabel) => checkNodeLabel(node, shapeLabel), err => for {
       t <- getTyping
     } yield t.addNotEvidence(node, ShapeType(ShapeExpr.fail, Some(IRILabel(IRI(shapeName))), schema), err))
+  }
 
-  def checkNodeStart(node: RDFNode): CheckTyping =
+  def checkNodeStart(node: RDFNode): CheckTyping = {
     schema.start match {
       case None => errStr(s"checking node $node against start declaration of schema. No start declaration found")
       case Some(shape) => {
@@ -127,6 +129,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         checkNodeShapeExpr(attempt, node, shape)
       }
     }
+  }
 
   def getShapeLabel(str: String): Check[ShapeLabel] = {
     logger.info(s"getShapeLabel. Label: ${str}")
@@ -140,7 +143,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         val label = IRILabel(IRI(str))
         if (schema.labels contains label) ok(label)
         else {
-          errStr(s"Schema doesn't contain label '$str'. Available labels: ${schema.labels}")
+          errStr(s"Schema does not contain label '$str'. Available labels: ${schema.labels}")
         }
       }
       case Left(str) => errStr(str)
@@ -203,7 +206,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     ses: List[ShapeExpr]): CheckTyping = {
     val vs = ses.map(se => checkNodeShapeExpr(attempt, node, se))
     for {
-      t1 <- checkSome(vs, ViolationError.msgErr(s"None of the alternatives of OR($ses) is valid for node ${node.show}"))
+      t1 <- checkSome(
+        vs,
+        ViolationError.msgErr(s"None of the alternatives of OR(${ses.map(_.showPrefixMap(schema.prefixMap)).mkString(",")}) is valid for node ${node.show}"))
       t2 <- addEvidence(attempt.nodeShape, s"${node.show} passes OR")
       t3 <- combineTypings(Seq(t1, t2))
     } yield t3
@@ -217,7 +222,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     val check: CheckTyping = checkNodeShapeExpr(attempt, node, s)
     val handleError: ViolationError => Check[ShapeTyping] = e => for {
       t1 <- addNotEvidence(NodeShape(node, ShapeType(s, None, schema)), e,
-        s"${node.show} doesn't satisfy ${s.show}. Negation declared in ${parentShape.show}. Error: $e")
+        s"${node.show} does not satisfy ${s.show}. Negation declared in ${parentShape.show}. Error: $e")
       t2 <- addEvidence(attempt.nodeShape, s"${node.show} satisfies not(${{ s.show }})")
       t <- combineTypings(List(t1, t2))
     } yield t
@@ -233,10 +238,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     t <- checkNodeLabel(node, ref)
     _ <- if (t.hasNoType(node, ref)) {
       t.getTypingResult(node, ref) match {
-        case None => errStr(s"Node $node has no shape $ref. Reason unknown")
+        case None => errStr(s"Node ${node.show} has no shape ${ref.show}. Reason unknown")
         case Some(tr) => tr.getErrors match {
-          case None => errStr(s"Node $node has no shape $ref. Reason typing result $tr with no errors")
-          case Some(es) => errStr(s"Node $node has no shape $ref. Errors: $es")
+          case None => errStr(s"Node ${node.show} has no shape ${ref.show}\nReason typing result ${tr.show} with no errors")
+          case Some(es) => errStr(s"Node ${node.show} has no shape ${ref.show}\nErrors: ${es.map(_.show).mkString("\n")}")
         }
       }
     } else ok(())
@@ -261,25 +266,23 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     logger.info(s"valueSet(${node.show},$values) ")
     val cs: List[CheckTyping] =
       values.map(v => ValueChecker(schema).checkValue(attempt, node)(v))
-    checkSome(cs, ViolationError.msgErr(s"${node.show} doesn't belong to set ${values}"))
+    checkSome(cs, ViolationError.msgErr(s"${node.show} does not belong to [${values.map(_.show).mkString(",")}]"))
   }
 
-  def hasDatatype(node: RDFNode, datatype: IRI): Either[String, RDFNode] = {
-    JenaMapper.wellTypedDatatype(node, datatype)
-  }
-
-  def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = {
-    node match {
-      case l: Literal => hasDatatype(node, datatype) match {
-        case Left(s) => errStr(s"${attempt} ${node.show} doesn't have datatype ${datatype.show}: $s")
-        case Right(_) =>
-          checkCond(true, attempt, msgErr(s"${node.show} doesn't have datatype ${datatype.show}"),
-            s"${node.show} has datatype ${datatype.show}")
+  def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = for {
+    rdf <- getRDF
+    check <- rdf.checkDatatype(node, datatype) match {
+      case Left(s) => {
+        println(s"Result of check datatype: $s")
+        errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}\nDetails: $s")
       }
-      case _ => errStr(
-        s"${attempt} ${node.show} doesn't have datatype ${datatype.show} because it is not a literal")
+      case Right(false) => errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}")
+      case Right(true) => {
+        println(s"Result of check datatype = true")
+        addEvidence(attempt.nodeShape, s"${node.show} has datatype ${datatype.show}")
+      }
     }
-  }
+  } yield check
 
   def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
     if (xsFacets.isEmpty) getTyping
@@ -311,19 +314,30 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
-    logger.info(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
+    println(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
     // val tripleExpr = s.tripleExpr
     for {
       neighs <- getNeighs(node)
-      tableRbe <- mkTable(s.expression)
+      tableRbe <- {
+        println(s"neighs: $neighs")
+        mkTable(s.expression, s.extra.getOrElse(List()))
+      }
       (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
-      csRest <- calculateCandidates(neighs, cTable)
+      csRest <- {
+        println(s"cTable: $cTable")
+        println(s"rbe: $rbe")
+        calculateCandidates(neighs, cTable)
+      }
       (candidates, rest) = csRest
-      _ <- checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
+      _ <- {
+        println(s"Candidates: $candidates")
+        println(s"Rest: $rest")
+        checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
+      }
       // TODO: if open extend candidates with negative constraint references otherwise??
       typing <- {
-        logger.info(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
+        println(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
         checkCandidates(attempt, bagChecker, cTable)(candidates)
       }
       //      t <- optCheck(s.expression, checkTripleExpr(attempt, node), getTyping)
@@ -348,14 +362,14 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       if (ignoredPathsClosed.contains(restPath) || extras.contains(restPath)) {
         ok(())
       } else {
-        errStr(s"Closed shape. But rest ${restPath.show} is not in $ignoredPathsClosed or $extras")
+        errStr(s"Closed shape. But rest ${restPath.show} is not in ${ignoredPathsClosed.map(_.show).mkString(",")} or ${extras.map(_.show).mkString(",")}")
       }
     } else ok(())
   }
 
-  def mkTable(t: Option[TripleExpr]): Check[(CTable, Rbe_)] = t match {
+  def mkTable(maybeTe: Option[TripleExpr], extra: List[IRI]): Check[(CTable, Rbe_)] = maybeTe match {
     case None => ok((CTable.empty, Empty))
-    case Some(te) => ok(CTable.mkTable(te))
+    case Some(te) => ok(CTable.mkTable(te,extra))
   }
 
   /**
@@ -397,10 +411,18 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       // Deterministic
       checkCandidateLine(attempt, bagChecker, table)(as.head)
     } else {
+      import es.weso.rbe.ShowRbe._
       logger.warn(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}")
       val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
       checkSome(checks, ViolationError.msgErr(s"No candidate matched $cs. Attempt: ${attempt.nodeShape}"))
     }
+  }
+
+  def showRbeC(x: Rbe[ConstraintRef]): String = {
+    import table.ConstraintRef._
+    import es.weso.rbe.ShowRbe._
+    val cc: ConstraintRef = ConstraintRef(1)
+    showRbe[ConstraintRef].show(x)
   }
 
   def checkCandidateLine(
@@ -427,8 +449,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
           t <- combineTypings(ts)
         } yield t
       }
-      case Left(err) =>
-        errStr(s"${attempt.show} Candidate line ${cl.toString} doesn't match regular expression\nBag ${bag} doesn't match Rbe ${bagChecker.rbe}\nErr: $err")
+      case Left(err) => {
+        errStr(s"${attempt.show} Candidate line ${cl.toString} does not match regular expression\nBag ${bag} does not match Rbe ${bagChecker.rbe}\nErr: $err")
+      }
     }
   }
 
@@ -442,24 +465,32 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     outgoing ++ incoming
   }
 
-  lazy val emptyTyping: ShapeTyping =
-    Monoid[ShapeTyping].empty
+  lazy val emptyTyping: ShapeTyping = Monoid[ShapeTyping].empty
 
-  def validateNodeDecls(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkTargetNodeDeclarations, rdf)
+  def validateNodeDecls(rdf: RDFReader): Result = {
+    runValidator(checkTargetNodeDeclarations, rdf)
   }
 
-  def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkNodeShapeName(node, shape), rdf)
+  def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): Result = {
+    runValidator(checkNodeShapeName(node, shape), rdf)
   }
 
-  def validateNodeStart(rdf: RDFReader, node: IRI): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkNodeStart(node), rdf)
+  def validateNodeStart(rdf: RDFReader, node: IRI): Result = {
+    runValidator(checkNodeStart(node), rdf)
   }
 
-  def validateShapeMap(rdf: RDFReader, shapeMap: FixedShapeMap): CheckResult[ViolationError, ShapeTyping, Log] = {
-    runCheck(checkShapeMap(shapeMap), rdf)
+  def validateShapeMap(rdf: RDFReader, shapeMap: FixedShapeMap): Result = {
+    runValidator(checkShapeMap(shapeMap), rdf)
   }
+
+  def runValidator(chk: Check[ShapeTyping], rdf: RDFReader): Result = {
+    cnvResult(runCheck(chk, rdf))
+  }
+
+  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log]): Result = for {
+    shapeTyping <- r.toEither.leftMap(_.msg)
+    result <- shapeTyping.toShapeMap(schema.prefixMap)
+  } yield result
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {
     override def show(cl: CandidateLine): String = {
@@ -486,10 +517,7 @@ object Validator {
 
   def validate(schema: Schema, fixedShapeMap: FixedShapeMap, rdf: RDFReader): Either[String, ResultShapeMap] = {
     val validator = Validator(schema)
-    for {
-      shapeTyping <- validator.validateShapeMap(rdf, fixedShapeMap).toEither.leftMap(_.msg)
-      result <- shapeTyping.toShapeMap(schema.prefixMap)
-    } yield result
+    validator.validateShapeMap(rdf, fixedShapeMap)
   }
 
 }

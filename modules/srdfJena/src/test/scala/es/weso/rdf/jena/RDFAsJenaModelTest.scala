@@ -1,7 +1,11 @@
 package es.weso.rdf.jena
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import java.io.{ByteArrayInputStream, InputStream, StringReader}
+import java.nio.charset.StandardCharsets
+
+import com.typesafe.config.{Config, ConfigFactory}
 import java.nio.file.Paths
+
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.Matchers
 import org.scalatest.FunSpec
@@ -11,6 +15,13 @@ import es.weso.rdf.jena._
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
+import org.apache.jena.graph.Graph
+import org.apache.jena.riot._
+import org.apache.jena.riot.RDFLanguages.shortnameToLang
+import org.apache.jena.riot.system.{IRIResolver, RiotLib, StreamRDFLib}
+import org.apache.jena.sparql.core.{DatasetGraph, DatasetGraphFactory}
+import org.apache.jena.sparql.graph.GraphFactory
+
 import util._
 
 class RDFAsJenaModelTest
@@ -33,17 +44,36 @@ class RDFAsJenaModelTest
       rdf.addTriples(Set(RDFTriple(
         IRI("http://example.org#a"),
         IRI("http://example.org#b"),
-        IRI(shaclFolderURI + "c"))))
+        IRI("c"))))
 
-      val str = """|@prefix : <http://example.org#> .
+      val str =
+        """|@prefix : <http://example.org#> .
                    |:a :b <c> .
                    |""".stripMargin
-      RDFAsJenaModel.fromChars(str, "TURTLE", Some(shaclFolderURI)) match {
-        case Success(m2) => shouldBeIsomorphic(rdf.model, m2.model)
-        case Failure(e) => fail(s"Error $e\n$str")
+      RDFAsJenaModel.fromChars(str, "TURTLE", None) match {
+        case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
+        case Left(e) => fail(s"Error $e\n$str")
       }
 
     }
-  }
 
+    it("should be able to parse RDF with relative URIs") {
+      val emptyModel = ModelFactory.createDefaultModel
+      val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
+      rdf.addTriples(Set(RDFTriple(
+        IRI("a"),
+        IRI("b"),
+        IntegerLiteral(1))
+      ))
+      val str =
+        """|<a> <b> 1 .
+                   |""".stripMargin
+      val m = ModelFactory.createDefaultModel
+      RDFAsJenaModel.fromChars(str, "TURTLE", None) match {
+        case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
+        case Left(e) => fail(s"Error $e\n$str")
+      }
+    }
+  }
 }
+

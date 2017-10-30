@@ -1,7 +1,10 @@
 package es.weso.rdf.jena
 
 // TODO: Refactor this code
-import org.apache.jena.rdf.model.{ AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator, Model => JenaModel, RDFNode => JenaRDFNode }
+import org.apache.jena.rdf.model.{AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator,
+  Model => JenaModel,
+  RDFNode => JenaRDFNode
+}
 import es.weso.rdf.nodes._
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
@@ -11,6 +14,7 @@ import es.weso.rdf.PREFIXES._
 import scala.collection.JavaConversions._
 import com.typesafe.scalalogging._
 import es.weso.rdf.path._
+import org.apache.jena.riot.system.IRIResolver
 import org.apache.jena.sparql.path._
 
 import util._
@@ -44,16 +48,20 @@ object JenaMapper {
     RDFTriple(subj, pred, obj)
   }
 
+  private def resolve(iri: IRI): String =
+    iri.str
+    // IRIResolver.resolveString(iri.str)
+
   def rdfNode2Property(n: RDFNode, m: JenaModel): Property = {
     n match {
-      case i: IRI => m.getProperty(i.str)
+      case i: IRI => m.getProperty(resolve(i))
       case _ => throw new Exception("rdfNode2Property: unexpected node " + n)
     }
   }
 
   def rdfNode2Resource(n: RDFNode, m: JenaModel): Option[Resource] = {
     n match {
-      case i: IRI => Some(m.getResource(i.str))
+      case i: IRI => Some(m.getResource(resolve(i)))
       case BNodeId(id) => {
         // Creates the BNode if it doesn't exist
         Some(m.createResource(new AnonId(id)))
@@ -129,7 +137,7 @@ object JenaMapper {
   def createResource(m: JenaModel, node: RDFNode): Resource = {
     node match {
       case BNodeId(id) => m.createResource(new AnonId(id.toString))
-      case i: IRI => m.createResource(i.str)
+      case i: IRI => m.createResource(resolve(i))
       case _ => throw new Exception("Cannot create a resource from " + node)
     }
   }
@@ -145,7 +153,7 @@ object JenaMapper {
       case BNodeId(id) =>
         m.createResource(new AnonId(id.toString))
       case i: IRI =>
-        m.createResource(i.str)
+        m.createResource(resolve(i))
       case StringLiteral(str) =>
         m.createLiteral(str, false)
       case DatatypeLiteral(str, i: IRI) =>
@@ -171,7 +179,7 @@ object JenaMapper {
   }
 
   def createProperty(m: JenaModel, pred: IRI): Property = {
-    m.createProperty(pred.str)
+    m.createProperty(resolve(pred))
   }
 
   def triplesSubject(resource: Resource, model: JenaModel): Set[Statement] = {
@@ -226,7 +234,7 @@ object JenaMapper {
     }
   }
 
-  def wellTypedDatatype(node: RDFNode, expectedDatatype: IRI): Either[String, RDFNode] = {
+  def wellTypedDatatype(node: RDFNode, expectedDatatype: IRI): Either[String, Boolean] = {
     node match {
       case l: es.weso.rdf.nodes.Literal => {
         Try {
@@ -234,13 +242,15 @@ object JenaMapper {
           val value = jenaLiteral.getValue() // if it is ill-typed it raises an exception
           (jenaLiteral.getDatatypeURI)
         } match {
-          case Success(iri) =>
-            if (iri == expectedDatatype.str) Right(node)
-            else Left(s"Datatype obtained $iri != $expectedDatatype")
+          case Success(iri) => {
+            println(s"JenaMapper.welltypedDatatype, $node. Comparing $expectedDatatype with $iri")
+            Right(iri == expectedDatatype.str)
+          }
           case Failure(e) => Left(e.getMessage())
         }
       }
-      case _ => Left(s"Node $node is not a typed literal")
+      case _ => Right(false)
     }
   }
+
 }

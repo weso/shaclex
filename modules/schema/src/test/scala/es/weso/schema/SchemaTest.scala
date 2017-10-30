@@ -25,19 +25,19 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
       val triggerMode = "TARGETDECLS"
       val schemaEngine = "SHEX"
       val node: RDFNode = IRI("http://example.org/x")
-      val shape: SchemaLabel = SchemaLabel("http://example.org/S")
-      val tryResult: Try[Result] = for {
+      val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
+      val tryResult: Either[String, Result] = for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
         rdf <- RDFAsJenaModel.fromChars(data, dataFormat)
       } yield schema.validate(rdf, triggerMode, "", None, None, schema.pm)
       tryResult match {
-        case Success(result) => {
+        case Right(result) => {
           info(s"Result: ${result.serialize(Result.TEXT)}")
           info(s"Result solution: ${result.solution}")
           result.isValid should be(true)
           result.hasShapes(node) should contain only (shape)
         }
-        case Failure(e) => fail(s"Error trying to validate: $e")
+        case Left(e) => fail(s"Error trying to validate: $e")
       }
     }
   }

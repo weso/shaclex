@@ -1,13 +1,17 @@
 package es.weso.utils
 
-import es.weso.rdf.nodes.IRI
 import org.apache.jena.rdf.model.LiteralRequiredException
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.rdf.model.ResourceRequiredException
 import org.apache.jena.rdf.model.Statement
+import org.apache.jena.reasoner.ReasonerFactory
+import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory
 import org.apache.jena.sparql.syntax.ElementPathBlock
+import org.apache.jena.rdf.model.InfModel
+import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.riot.system.IRIResolver
 // import org.apache.jena.arq.querybuilder.SelectBuilder
 import org.apache.jena.graph.{ Triple => JenaTriple }
 import java.io.InputStreamReader
@@ -415,4 +419,50 @@ object JenaUtils {
     }
   }
 
+  def inference(rdf: Model, inference: String): Either[String, Model] = {
+    inference match {
+      case "RDFS" => {
+        val inf = ModelFactory.createRDFSModel(rdf)
+        Right(inf)
+      }
+      case _ => Left(s"Unsupported inference $inference")
+    }
+  }
+
+  private val baseURI = IRIResolver.chooseBaseURI.toURI
+
+  def relativizeStr(str: String): String = {
+    val s = baseURI.relativize(new URI(str)).toString
+    s
+  }
+
+  def relativizeNode(m: Model, n: RDFNode): RDFNode = {
+    n match {
+      case _ if n.isResource => relativizeResource(m, n.asResource())
+      case _ => n
+    }
+  }
+
+  def relativizeResource(m: Model, r: Resource): Resource = {
+    r match {
+      case _ if r.isURIResource => m.createResource(relativizeStr(r.getURI))
+      case _ => r
+    }
+  }
+
+  def relativizeProperty(m: Model, r: Property): Property = {
+    m.createProperty(relativizeStr(r.getURI()))
+  }
+
+  def relativizeModel(m: Model):Model = {
+    val r: Model = ModelFactory.createDefaultModel()
+    r.setNsPrefixes(m.getNsPrefixMap)
+    for (s <- m.listStatements().asScala) {
+      val subj = relativizeResource(m, s.getSubject)
+      val prop = relativizeProperty(r, s.getPredicate)
+      val obj = relativizeNode(m, s.getObject)
+      r.add(subj,prop,obj)
+    }
+    r
+  }
 }

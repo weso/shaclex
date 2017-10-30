@@ -37,11 +37,11 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
-        schemas <- RDF2ShEx.tryRDF2Schema(rdf)
+        schemas <- RDF2ShEx.rdf2Schema(rdf)
       } yield schemas
 
       result match {
-        case Success(schema) => {
+        case Right(schema) => {
           val model1 = ShEx2RDF.shEx2Model(schema, Some(IRI("http://example.org/x")))
           val model2 = ShEx2RDF.shEx2Model(expected, Some(IRI("http://example.org/x")))
           if (model1.isIsomorphicWith(model2)) {
@@ -51,7 +51,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             fail("Schemas are not isomorphic")
           }
         }
-        case Failure(e) => {
+        case Left(e) => {
           info(s"Failed $e")
           fail(e)
         }
@@ -70,7 +70,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             stripMargin
 
         val result = for {
-          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
           schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
         } yield schemas
 
@@ -93,7 +93,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
             stripMargin
 
         val result = for {
-          rdf <- RDFAsJenaModel.parseChars(str, "TURTLE", None)
+          rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
           schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
         } yield schemas
 
@@ -129,7 +129,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
          """.stripMargin
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
-        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+        schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
       val nc = NodeConstraint.datatype(xsd_string, List()).addId(v)
@@ -137,8 +137,8 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
       val shape = Shape.expr(tc).addId(user)
 
       result match {
-        case Success(schema) => schema.shapes should be(Some(List(shape)))
-        case Failure(e) => {
+        case Right(schema) => schema.shapes should be(Some(List(shape)))
+        case Left(e) => {
           info(s"Failed $e")
           fail(e)
         }
@@ -174,7 +174,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
          """.stripMargin
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE", None)
-        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+        schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
       val nc = NodeConstraint.datatype(xsd_string, List()).addId(v)
@@ -184,8 +184,8 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
       val shape = ShapeAnd(Some(user), List(se1, se2))
 
       result match {
-        case Success(schema) => schema.shapes should be(Some(List(shape)))
-        case Failure(e) => {
+        case Right(schema) => schema.shapes should be(Some(List(shape)))
+        case Left(e) => {
           info(s"Failed $e")
           fail(e)
         }

@@ -1,5 +1,5 @@
 @import es.weso.schema.Result
-@import es.weso.schema.ShapeMapEncoder._
+@import es.weso.json.JsonTwirl
 @import io.circe._
 
 @(result: Option[Result],
@@ -14,48 +14,25 @@
   availableTriggerModes: List[String],
   currentTriggerMode: String,
   shapeMap: Option[String],
-  schemaSeparated: String
- )
+  schemaEmbedded: Boolean,
+  availableInferenceEngines: List[String],
+  currentInferenceEngine: String
+)
 
 @import java.net.URLEncoder
 
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>Shaclex</title>
-    <script src="js/jquery-3.1.1.min.js"></script>
-    <script src="codemirror-5.24.2/lib/codemirror.js"></script>
-    <link rel="stylesheet" href="css/app.css">
-    <link rel="stylesheet" href="codemirror-5.24.2/lib/codemirror.css">
-    <link rel="stylesheet" href="codemirror-5.24.2/theme/eclipse.css">
-    <link rel="stylesheet" href="codemirror-5.24.2/theme/elegant.css">
-    <link rel="stylesheet" href="codemirror-5.24.2/theme/monokai.css">
-
-    <!-- some modes -->
-    <script src="codemirror-5.24.2/mode/turtle/turtle.js"></script>
-    <script src="codemirror-5.24.2/mode/shex/shex.js"></script>
-    <script src="codemirror-5.24.2/mode/javascript/javascript.js"></script>
-    <script src="codemirror-5.24.2/mode/xml/xml.js"></script>
-    <script src="codemirror-5.24.2/addon/edit/closebrackets.js"></script>
-    <script src="codemirror-5.24.2/addon/edit/matchbrackets.js"></script>
-    <script src="codemirror-5.24.2/addon/display/placeholder.js"></script>
-
-    <style type="text/css">
-      .CodeMirror {
-        border: 1px solid black;
-        height: auto;
-      }
-    </style>
-</head>
-
+@head("SHACLex: Validate")
 <body>
-<h1><a href="/">Shaclex</a></h1>
-<div id="resultDiv" data-result='@{Html(result.map(_.toJson).getOrElse(Json.Null).spaces2)}'></div>
+@navBar()
+<div class="container">
+<div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.map(_.toJson).getOrElse(Json.Null)))}'></div>
 <form action="/validate" method="GET" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
-        <label>Schema separated:
-            <input type="checkbox" id="schemaSeparated" @{if(schemaSeparated == "on") { "checked" }}
+        <label>Schema embedded:
+            <input type="checkbox" id="schemaEmbedded" @{if(schemaEmbedded == true) { "checked" }}
+                   onChange="changeSchemaEmbedded(this);"
             /></label>
     </fieldset>
 
@@ -63,6 +40,8 @@
         <legend>RDF Data</legend>
         <textarea id="rdfData" placeHolder="RDF data">@{data.getOrElse("")}</textarea>
         @selectDataFormat("validate",availableDataFormats,currentDataFormat)
+
+        @selectInferenceEngine("validate", availableInferenceEngines,currentInferenceEngine)
     </fieldset>
 
     <div id="schemaDiv">
@@ -72,21 +51,27 @@
         @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
     </fieldset>
     </div>
-        @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
-        <div id="shapeMapDiv">
-            <legend>Shape map</legend>
-            <textarea id="shapeMap" placeHolder="Shape map">@{shapeMap.getOrElse("")}</textarea>
-        </div>
+
+    @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
+    <div id="shapeMapDiv">
+      <legend>Shape map</legend>
+      <textarea id="shapeMap" placeHolder="Shape map">@{shapeMap.getOrElse("")}</textarea>
+    </div>
+
 <!--     @*   <div id="rowsCounter" data-value="@{shapeMap.length}" /> </div>
         <button type="button" onclick="removeNodeShapeEntry()">-</button>
         <button type="button" onclick="addNodeShapeEntry()">+</button>  *@ -->
     </fieldset>
 
-    <div class="submit">
+<!--    <div class="submit">
      <input type="button" value="validate" id="validateButton"/>
+    </div> -->
+    <div class="submit">
+        <input type="button" value="validate" id="validateButton"/>
     </div>
 </form>
 <div class="otherOptions">
+<a id="permalink">Permalink</a>
 <hr/>
 <h2>Other options</h2>
 <label>Editor theme:
@@ -97,9 +82,10 @@
     </select>
 </label>
 </div>
-<hr/>
 
-<script src="js/shaclex.js" ></script>
+</div>
+
+@scripts()
 </body>
 </html>
 

@@ -10,11 +10,15 @@ import util._
 
 class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
 
+  /*
   describe("Simple Shape") {
     val shexStr =
       """
         |prefix : <http://example.org/>
+        |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+        |
         |:S { :p . }
+        |:CanVote xsd:integer MinInclusive 18
       """.stripMargin
     val rdfStr =
       """|prefix : <http://example.org/>
@@ -25,6 +29,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S", ":a@:S,:b@!:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:c@:S", ":a@:S,:b@!:S,:c@:S")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:a@:T", ":a@:S,:a@!:T")
+    shouldValidateWithShapeMap(rdfStr, shexStr, "23@:CanVote", "23@:CanVote")
   }
 
   describe("Recursive shape") {
@@ -64,6 +69,38 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":b@:T", ":a@:S,:b@:T")
   }
 
+  describe("Regular expressions") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:A { :p /\\d{2}/ }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p "23" .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
+  }
+*/
+  describe("Shape with EXTRA") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+        |
+        |:S EXTRA :p { :p [ 1 ] }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p 1, 2 .
+         |:b :p 1 .
+         |:bad :p 2 .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
+  }
+
   def shouldValidateWithShapeMap(
     rdfStr: String,
     shexStr: String,
@@ -71,12 +108,12 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     expected: String): Unit = {
     it(s"Should validate ${shexStr} with ${rdfStr} and ${shapeMapStr} and result $expected") {
       val validate = for {
-        rdf <- RDFAsJenaModel.parseChars(rdfStr, "Turtle")
-        shex <- Schema.parse(shexStr, "ShExC", None)
-        shapeMap <- ShapeMap.parse(shapeMapStr, rdf.getPrefixMap, shex.prefixMap)
+        rdf <- RDFAsJenaModel.fromChars(rdfStr, "Turtle")
+        shex <- Schema.fromString(shexStr, "ShExC", None)
+        shapeMap <- ShapeMap.fromString(shapeMapStr, None, rdf.getPrefixMap, shex.prefixMap)
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)
         result <- Validator.validate(shex, fixedShapeMap, rdf)
-        expectedShapeMap <- ShapeMap.parseResultMap(expected, rdf, shex.prefixMap)
+        expectedShapeMap <- ShapeMap.parseResultMap(expected, None, rdf, shex.prefixMap)
         compare <- result.compareWith(expectedShapeMap)
       } yield compare
       validate match {

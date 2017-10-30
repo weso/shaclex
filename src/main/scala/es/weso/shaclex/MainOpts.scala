@@ -5,6 +5,7 @@ import org.rogach.scallop.exceptions._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger
+import es.weso.shapeMaps.ShapeMap
 
 class MainOpts(
   arguments: Array[String],
@@ -20,8 +21,10 @@ class MainOpts(
   lazy val triggerModes = ValidationTrigger.triggerValues.map(_._1.toUpperCase).distinct
   lazy val resultFormats = Result.availableResultFormats
   lazy val defaultResultFormat = Result.defaultResultFormat
+  lazy val defaultShapeMapFormat = ShapeMap.defaultFormat
+  lazy val shapeMapFormats = ShapeMap.formats
 
-  banner("""| shaclex: SHACL processor
+  banner("""| shaclex: SHACL/ShEx processor
             | Options:
             |""".stripMargin)
 
@@ -51,6 +54,19 @@ class MainOpts(
     default = Some(defaultDataFormat),
     descr = s"Data format. Default ($defaultDataFormat). Possible values = ${showLs(dataFormats)}",
     validate = isMemberOf(dataFormats),
+    noshort = true)
+
+  val shapeMap = opt[String](
+    "shapeMap",
+    default = None,
+    descr = s"Shape map",
+    noshort = true)
+
+  val shapeMapFormat = opt[String](
+    "shapeMapFormat",
+    default = Some(defaultShapeMapFormat),
+    descr = s"Shape Map format. Default ($defaultShapeMapFormat). Possible values = ${showLs(shapeMapFormats)}",
+    validate = isMemberOf(shapeMapFormats),
     noshort = true)
 
   val engine = opt[String](
@@ -97,6 +113,14 @@ class MainOpts(
     descrNo = "don't show data",
     noshort = true)
 
+  val showShapeMap = toggle(
+    "showShapeMap",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show input shape map",
+    descrNo = "don't input show map",
+    noshort = true)
+
   val outputFile = opt[String](
     "outputFile",
     default = None,
@@ -105,8 +129,14 @@ class MainOpts(
 
   val outSchemaFormat = opt[String](
     "outSchemaFormat",
-    default = None,
+    default = Some(defaultSchemaFormat),
     descr = "schema format to show",
+    noshort = true)
+
+  val outShapeMapFormat = opt[String](
+    "outShapeMapFormat",
+    default = Some(defaultShapeMapFormat),
+    descr = "format of shape map to show",
     noshort = true)
 
   val showLog = toggle(
@@ -156,6 +186,12 @@ class MainOpts(
     default = None,
     required = false,
     descr = "Label (IRI) of Constraint in Schema")
+
+  val inference = opt[String](
+    "inference",
+    default = None,
+    required = false,
+    descr = "Apply some inference before. Available values: RDFS")
 
   val server = toggle(
     "server",

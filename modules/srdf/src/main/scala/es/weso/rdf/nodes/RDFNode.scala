@@ -71,7 +71,27 @@ object RDFNode {
   }
 
   implicit val showRDFNode: Show[RDFNode] = new Show[RDFNode] {
-    final def show(n: RDFNode): String = ???
+    final def show(n: RDFNode): String = n.toString
+  }
+
+  def fromString(s: String): Either[String, RDFNode] = {
+    val iriRegex = raw"<(.*)>".r
+    val bNodeRegex = raw"_:(.*)".r
+    val literalRegex = "\"(.*)\"".r
+    val integerRegex = raw"(\d*)".r
+    s match {
+      case iriRegex(iri) => Right(IRI(iri))
+      case bNodeRegex(bnodeId) => Right(BNodeId(bnodeId))
+      case literalRegex(str) => Right(StringLiteral(str))
+      case integerRegex(s) => {
+        try Right(IntegerLiteral(s.toInt))
+        catch {
+          case e: NumberFormatException =>
+            Left(s"Error parsing as integer: $e")
+        }
+      }
+      case _ => Left(s"Error parsing String $s as RDFNode")
+    }
   }
 
 }

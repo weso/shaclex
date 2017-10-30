@@ -30,10 +30,10 @@ class ShaclCore
 
   describe(s"Validate shacl Core from manifest file located at $fileName") {
     RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI)) match {
-      case Failure(e) => println(s"Error reading manifest file:$e")
-      case Success(m) => {
-        processManifest(m)
+      case Left(e) => {
+        println(s"Error reading manifest file:$e")
       }
+      case Right(m) => processManifest(m)
     }
   }
 
@@ -45,21 +45,21 @@ class ShaclCore
   def processEntry(e: ManifestEntry): Unit = {
     it(s"Should check entry ${e.name}") {
       getSchemaRdf(e.action) match {
-        case Failure(f) => fail(s"Error processing Entry: $e \n $f")
-        case Success((schema, rdf)) => validate(schema, rdf, e.result)
+        case Left(f) => fail(s"Error processing Entry: $e \n $f")
+        case Right((schema, rdf)) => validate(schema, rdf, e.result)
       }
     }
   }
 
-  def getSchemaRdf(a: ManifestAction): Try[(Schema, RDFReader)] = {
+  def getSchemaRdf(a: ManifestAction): Either[String, (Schema, RDFReader)] = {
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
     a.data match {
-      case None => Success(Schema.empty, RDFAsJenaModel.empty)
+      case None => Right(Schema.empty, RDFAsJenaModel.empty)
       case Some(iri) => {
         println(s"iri: ${iri.str}")
         for {
           rdf <- RDFAsJenaModel.fromURI(iri.str, dataFormat)
-          schema <- RDF2Shacl.tryGetShacl(rdf)
+          schema <- RDF2Shacl.getShacl(rdf)
         } yield (schema, rdf)
       }
     }

@@ -7,12 +7,13 @@ case class DataFormats(name: String)
 object DataFormats {
   lazy val TURTLE = DataFormats("TURTLE")
   lazy val RDFXML = DataFormats("RDF/XML")
+  lazy val JSONLD = DataFormats("JSON-LD")
   lazy val NTRIPLES = DataFormats("N-TRIPLES")
   lazy val RDFJSON = DataFormats("RDF/JSON")
   lazy val TRIG = DataFormats("TRIG")
 
   lazy val availableFormats: Seq[DataFormats] =
-    List(TURTLE, RDFXML, NTRIPLES, RDFJSON, TRIG)
+    List(TURTLE, RDFXML, JSONLD, NTRIPLES, RDFJSON, TRIG)
 
   lazy val formatNames: Seq[String] =
     availableFormats.map(_.name)

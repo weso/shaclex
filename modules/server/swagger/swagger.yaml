@@ -18,7 +18,6 @@ paths:
       description: 
         Validate RDF data with a Schema
       parameters:
-        # An example parameter that is in query and is required
         -
           name: data
           in: query

@@ -8,6 +8,7 @@ import es.weso.rdf.{ PrefixMap, RDFReader }
 import io.circe.JsonObject._
 import io.circe._
 import io.circe.syntax._
+import io.circe.parser._
 import ShapeMap._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path._
@@ -25,24 +26,37 @@ abstract class ShapeMap {
 
   override def toString = Show[ShapeMap].show(this)
 
+  def serialize(format: String): String = {
+    format match {
+      case "JSON" => this.toJson.spaces2
+      case "COMPACT" => this.toString
+    }
+  }
+
 }
 
 object ShapeMap {
 
   def empty: ShapeMap = FixedShapeMap.empty
 
-  def parse(
+  def fromString(
     str: String,
+    base: Option[String],
     nodesPrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
-    Parser.parse(str, nodesPrefixMap, shapesPrefixMap)
+    Parser.parse(str, base, nodesPrefixMap, shapesPrefixMap)
+  }
+
+  def fromJson(jsonStr: String): Either[String, ShapeMap] = {
+    decode[ShapeMap](jsonStr).leftMap(_.getMessage)
   }
 
   def parseResultMap(
     str: String,
+    base: Option[String],
     rdf: RDFReader,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ResultShapeMap] = for {
-    queryMap <- Parser.parse(str, rdf.getPrefixMap, shapesPrefixMap)
+    queryMap <- Parser.parse(str, base, rdf.getPrefixMap, shapesPrefixMap)
     fixMap <- fixShapeMap(queryMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
   } yield ResultShapeMap(fixMap.shapeMap, rdf.getPrefixMap, shapesPrefixMap)
 
@@ -59,11 +73,11 @@ object ShapeMap {
 
     def addNode(a: Association)(node: RDFNode, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = for {
       fixed <- current
-      newShapeMap <- fixed.addAssociation(Association(RDFNodeSelector(node), a.shapeLabel))
+      newShapeMap <- fixed.addAssociation(Association(RDFNodeSelector(node), a.shape))
     } yield newShapeMap
 
     def combine(a: Association, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = {
-      a.nodeSelector match {
+      a.node match {
         case RDFNodeSelector(node) => for {
           sm <- current
           newSm <- sm.addAssociation(a)
@@ -78,7 +92,7 @@ object ShapeMap {
             nodes.foldRight(current)(addNode(a))
           }
           case Focus =>
-            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.nodeSelector}")
+            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.node}")
         }
         case TriplePattern(s, p, Focus) => s match {
           case WildCard => {
@@ -90,18 +104,16 @@ object ShapeMap {
             nodes.foldRight(current)(addNode(a))
           }
           case Focus =>
-            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.nodeSelector}")
+            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.node}")
         }
-        case _ => Left(s"FixShapeMap: Inconsistent triple pattern in node selector ${a.nodeSelector}")
+        case _ => Left(s"FixShapeMap: Inconsistent triple pattern in node selector ${a.node}")
       }
     }
     shapeMap.associations.foldRight(empty)(combine)
   }
 
   implicit val encodeShapeMap: Encoder[ShapeMap] = new Encoder[ShapeMap] {
-    final def apply(a: ShapeMap): Json = {
-      Json.fromJsonObject(JsonObject.empty)
-    }
+    final def apply(a: ShapeMap): Json = a.associations.asJson
   }
 
   implicit val showShapeMap: Show[ShapeMap] = new Show[ShapeMap] {
@@ -157,7 +169,7 @@ object ShapeMap {
 
       implicit val showAssociation: Show[Association] = new Show[Association] {
         final def show(a: Association): String = {
-          s"${a.nodeSelector.show} @ ${a.shapeLabel.show}"
+          s"${a.node.show} @ ${a.shape.show}"
         }
       }
 
@@ -165,4 +177,14 @@ object ShapeMap {
 
     }
   }
+
+  implicit val decodeShapeMap: Decoder[ShapeMap] = Decoder.instance { c =>
+    for {
+      associations <- c.as[List[Association]]
+    } yield QueryShapeMap(associations, PrefixMap.empty, PrefixMap.empty)
+  }
+
+  def formats: List[String] = List("COMPACT", "JSON")
+
+  def defaultFormat = formats.head
 }

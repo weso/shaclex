@@ -1,4 +1,5 @@
 package es.weso.shex
+import cats._
 import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
@@ -7,7 +8,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.shexR.{ RDF2ShEx, ShEx2RDF }
 import es.weso.utils.FileUtils
 import es.weso.utils.MapUtils._
-import cats.syntax.either._
+import cats.implicits._
 
 import util._
 
@@ -30,7 +31,7 @@ case class Schema(
     prefixMap.qualify(node)
 
   def qualify(label: ShapeLabel): String =
-    label.qualifiedShow(prefixMap)
+    prefixMap.qualify(label.toRDFNode)
 
   // TODO: Convert to Either[String,ShapeExpr]
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
@@ -53,10 +54,16 @@ case class Schema(
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
   def addId(lbl: ShapeLabel): ShapeExpr
+
+  def showPrefixMap(pm: PrefixMap) = {
+    import es.weso.shex.compact.CompactShow._
+    showShapeExpr(this, pm)
+  }
 }
 
 object ShapeExpr {
   def any: ShapeExpr = NodeConstraint.empty
+
   def fail: ShapeExpr = NodeConstraint.valueSet(List(), List())
 }
 
@@ -139,6 +146,7 @@ case class Shape(
   def extraPaths =
     extra.getOrElse(List()).map(Direct(_))
 
+
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
 }
@@ -198,6 +206,7 @@ case class Pattern(p: String, flags: Option[String]) extends StringFacet {
 }
 
 sealed trait NumericFacet extends XsFacet
+
 case class MinInclusive(n: NumericLiteral) extends NumericFacet {
   val fieldName = "mininclusive"
 }
@@ -266,8 +275,6 @@ case class Wildcard() extends StemValue
 case class SemAct(name: IRI, code: Option[String])
 
 abstract sealed trait TripleExpr
-
-// object TripleExpr { }
 
 case class EachOf(
   id: Option[ShapeLabel],
@@ -364,10 +371,10 @@ case object NonLiteralKind extends NodeKind
 case object LiteralKind extends NodeKind
 
 abstract sealed trait ShapeLabel {
-  def qualifiedShow(pm: PrefixMap): String = this match {
+  /*  def qualifiedShow(pm: PrefixMap): String = this match {
     case IRILabel(iri) => pm.qualifyIRI(iri)
     case BNodeLabel(bn) => bn.toString
-  }
+  } */
   def toRDFNode: RDFNode = this match {
     case IRILabel(iri) => iri
     case BNodeLabel(bn) => bn
@@ -383,44 +390,27 @@ object Schema {
   def empty: Schema =
     Schema(None, None, None, None, None)
 
-  def parse(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
-    val result = try {
-      fromString(cs, format, base)
-    } catch {
-      case e: Exception => Failure(throw new Exception("Exception reading string:\n" + FileUtils.formatLines(cs.toString) + "\nError: " + e.getMessage))
-    }
-    Either.fromTry(result).leftMap(_.getMessage)
-  }
-
   def fromString(
     cs: CharSequence,
     format: String,
-    base: Option[String] = None): Try[Schema] = {
+    base: Option[String] = None): Either[String, Schema] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
         import compact.Parser.parseSchema
-        parseSchema(cs.toString) match {
-          case Left(e) => Failure(new Exception(e))
-          case Right(schema) => Success(schema)
-        }
+        parseSchema(cs.toString, base)
       }
       case "SHEXJ" => {
         import io.circe.parser._
         import es.weso.shex.implicits.decoderShEx._
-        decode[Schema](cs.toString).
-          fold(
-            e => Failure(new Exception(e.toString)),
-            s => Success(s))
+        decode[Schema](cs.toString).leftMap(_.getMessage)
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
-        rdf <- RDFAsJenaModel.fromChars(cs, formatUpperCase, None)
-        schema <- RDF2ShEx.tryRDF2Schema(rdf)
+        rdf <- RDFAsJenaModel.fromChars(cs, formatUpperCase, base)
+        schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
-      case _ =>
-        Failure(
-          new Exception(s"Not implemented ShEx parser for format $format"))
+      case _ => Left(s"Not implemented ShEx parser for format $format")
     }
   }
 

@@ -17,9 +17,9 @@ class RDF2ManifestTest extends FunSpec with Matchers with TryValues with OptionV
 
     it("Read example manifest") {
       RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI)) match {
-        case Failure(e) =>
+        case Left(e) =>
           fail(s"Error reading $fileName\n$e")
-        case Success(mf) =>
+        case Right(mf) =>
           info(s"Manifest successfully read. ${mf.treeString}")
       }
     }
