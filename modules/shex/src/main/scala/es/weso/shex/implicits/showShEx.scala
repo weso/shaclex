@@ -4,13 +4,15 @@ import cats.implicits._
 import es.weso.rdf.nodes._
 import es.weso.shex._
 import es.weso.rdf._
+import compact.CompactShow
 
 object showShEx {
 
   implicit lazy val showSchema: Show[Schema] = new Show[Schema] {
-    final def show(s: Schema): String = {
+    final def show(s: Schema): String =
+      CompactShow.showSchema(s) /*{
       s"Schema(${optShow(s.prefixes)}, ${optShow(s.base)}, ${optShow(s.startActs)}, ${optShow(s.start)}, ${optShow(s.shapes)})"
-    }
+    } */
   }
 
   implicit lazy val showPrefixMap: Show[PrefixMap] = new Show[PrefixMap] {

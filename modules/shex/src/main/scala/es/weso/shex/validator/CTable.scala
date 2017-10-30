@@ -1,8 +1,9 @@
 package es.weso.shex.validator
 
 import cats._
-import es.weso.rbe.interval.{ IntLimit, IntOrUnbounded, Unbounded }
-import es.weso.rbe.{ Schema => _, Star => _, _ }
+import es.weso.rbe.interval.{IntLimit, IntOrUnbounded, Unbounded}
+import es.weso.rbe.{Schema => _, Star => _, _}
+import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 
 object table {
@@ -68,8 +69,28 @@ object table {
       }
     }
 
-    private[validator] def mkTable(te: TripleExpr): ResultPair =
-      mkTableAux(te, CTable.empty)
+    private[validator] def extendWithExtras(pair: ResultPair, te: TripleExpr, extras: List[IRI]): ResultPair = {
+      val zero: ResultPair = pair
+      def combine(current: ResultPair, extra: IRI): ResultPair = {
+        def appearances(iri: IRI): List[ShapeExpr] = te match {
+          case tc: TripleConstraint => if (tc.predicate == iri) tc.valueExpr.toList
+          else List()
+          case eachOf: EachOf => List() // TODO
+          case oneOf: OneOf => List() // TODO
+          case i: Inclusion => List() // TODO
+        }
+        val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra)))
+        val (table,rbe) = current
+        // table.addPath(Direct(extra), )
+        current // TODO
+      }
+      extras.foldLeft(zero)(combine)
+    }
+
+    private[validator] def mkTable(te: TripleExpr, extras: List[IRI]): ResultPair = {
+      val pair = mkTableAux(te, CTable.empty)
+      extendWithExtras(pair, te, extras)
+    }
 
     private def mkTableAux(te: TripleExpr, current: CTable): ResultPair = {
       te match {

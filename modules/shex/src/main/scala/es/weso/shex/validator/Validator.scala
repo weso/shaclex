@@ -314,22 +314,30 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
-    logger.info(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
+    println(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
     // val tripleExpr = s.tripleExpr
     for {
       neighs <- getNeighs(node)
       tableRbe <- {
         println(s"neighs: $neighs")
-        mkTable(s.expression)
+        mkTable(s.expression, s.extra.getOrElse(List()))
       }
       (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
-      csRest <- calculateCandidates(neighs, cTable)
+      csRest <- {
+        println(s"cTable: $cTable")
+        println(s"rbe: $rbe")
+        calculateCandidates(neighs, cTable)
+      }
       (candidates, rest) = csRest
-      _ <- checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
+      _ <- {
+        println(s"Candidates: $candidates")
+        println(s"Rest: $rest")
+        checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
+      }
       // TODO: if open extend candidates with negative constraint references otherwise??
       typing <- {
-        logger.info(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
+        println(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
         checkCandidates(attempt, bagChecker, cTable)(candidates)
       }
       //      t <- optCheck(s.expression, checkTripleExpr(attempt, node), getTyping)
@@ -359,9 +367,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     } else ok(())
   }
 
-  def mkTable(t: Option[TripleExpr]): Check[(CTable, Rbe_)] = t match {
+  def mkTable(maybeTe: Option[TripleExpr], extra: List[IRI]): Check[(CTable, Rbe_)] = maybeTe match {
     case None => ok((CTable.empty, Empty))
-    case Some(te) => ok(CTable.mkTable(te))
+    case Some(te) => ok(CTable.mkTable(te,extra))
   }
 
   /**

@@ -146,6 +146,7 @@ case class Shape(
   def extraPaths =
     extra.getOrElse(List()).map(Direct(_))
 
+
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
 }
@@ -274,8 +275,6 @@ case class Wildcard() extends StemValue
 case class SemAct(name: IRI, code: Option[String])
 
 abstract sealed trait TripleExpr
-
-// object TripleExpr { }
 
 case class EachOf(
   id: Option[ShapeLabel],
