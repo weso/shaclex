@@ -6,6 +6,7 @@ import es.weso.rbe.{Schema => _, Star => _, _}
 import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 
+/* Candidates table */
 object table {
 
   type Rbe_ = Rbe[ConstraintRef]
@@ -81,7 +82,11 @@ object table {
         }
         val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra)))
         val (table,rbe) = current
-        // table.addPath(Direct(extra), )
+        val newElems = table.elems + 1
+        val cref = ConstraintRef(newElems)
+        val newTable = table.copy(elems = newElems,
+          constraints = table.constraints + (cref -> s),
+          paths = table.addPath(Direct(extra), cref))
         current // TODO
       }
       extras.foldLeft(zero)(combine)
