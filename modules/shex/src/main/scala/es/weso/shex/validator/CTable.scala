@@ -2,7 +2,7 @@ package es.weso.shex.validator
 
 import cats._
 import es.weso.rbe.interval.{IntLimit, IntOrUnbounded, Unbounded}
-import es.weso.rbe.{Schema => _, Star => _, _}
+import es.weso.rbe.{Schema => _, Star => _, Direct => _, _}
 import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 
@@ -55,6 +55,15 @@ object table {
       paths.values.map(_.size).exists(_ > 1)
     }
 
+    private[validator] def addConstraint(path: Path, expr: CheckExpr): (CTable, ConstraintRef) = {
+      val cref = ConstraintRef(this.elems)
+      val newTable = this.copy(
+        elems = this.elems + 1,
+        constraints = this.constraints + (cref -> expr),
+        paths = addPath(path,cref)
+      )
+      (newTable,cref)
+    }
   }
 
   object CTable {
@@ -82,12 +91,9 @@ object table {
         }
         val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra)))
         val (table,rbe) = current
-        val newElems = table.elems + 1
-        val cref = ConstraintRef(newElems)
-        val newTable = table.copy(elems = newElems,
-          constraints = table.constraints + (cref -> s),
-          paths = table.addPath(Direct(extra), cref))
-        current // TODO
+        val (newTable,cref) = table.addConstraint(Direct(extra),Pos(s))
+        val newRbe = And(rbe,Symbol(cref,0,Unbounded))
+        (newTable,newRbe)
       }
       extras.foldLeft(zero)(combine)
     }
@@ -132,8 +138,6 @@ object table {
           throw new Exception("CTable: Not implemented table generation for inclusion")
 
         case tc: TripleConstraint => {
-          val newElems = current.elems + 1
-          val cref = ConstraintRef(newElems)
           val valueExpr: CheckExpr = if (tc.negated) {
             tc.valueExpr match {
               case Some(se) => Neg(se)
@@ -143,17 +147,11 @@ object table {
             case Some(se) => Pos(se)
             case None => Pos(ShapeExpr.any)
           }
-          val newTable = current.copy(
-            elems = newElems,
-            constraints =
-              current.constraints +
-                (cref -> valueExpr),
-            paths = current.addPath(tc.path, cref))
+          val (newTable, cref) = current.addConstraint(tc.path, valueExpr)
           val posSymbol = Symbol(cref, tc.min, max2IntOrUnbounded(tc.max))
           val symbol = if (tc.negated) {
             Repeat(posSymbol, 0, IntLimit(1))
           } else posSymbol
-          println(s"Making table for tc $tc. Negated: ${tc.negated}. Symbol: $symbol")
           (newTable, symbol)
         }
       }
@@ -169,7 +167,21 @@ object table {
 
   implicit lazy val showCTable = new Show[CTable] {
     override def show(table: CTable) = {
-      s"""CTable { constraints: ${table.constraints.toString}\n
+      def showConstraints(cs: ConstraintsMap): String = {
+        def combine(s: List[String], current: (ConstraintRef, CheckExpr)): List[String] = {
+          val (cref,expr) = current
+          s"${cref.toString}->${expr.toString}" :: s
+        }
+        cs.foldLeft(List[String]())(combine).mkString(",")
+      }
+      def showPaths(pm: PathsMap): String = {
+        def combine(s: List[String], current: (Path,Set[ConstraintRef])): List[String] = {
+          val (path,cs) = current
+          s"${path.toString}->[${cs.map(_.toString).mkString(",")}]" :: s
+        }
+        pm.foldLeft(List[String]())(combine).mkString(",")
+      }
+      s"""CTable { constraints: ${showConstraints(table.constraints)}\n
          | paths: ${table.paths.toString}""".stripMargin
     }
   }

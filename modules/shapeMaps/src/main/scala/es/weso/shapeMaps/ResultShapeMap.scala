@@ -60,7 +60,7 @@ case class ResultShapeMap(
     val nodes2 = other.resultMap.keySet
     val delta = (nodes1 diff nodes2) union (nodes2 diff nodes1)
     if (!delta.isEmpty) {
-      Left(s"Nodes in map1 != nodes in map2. Delta: $delta\nNodes1 = ${nodes1}\nNodes2=${nodes2}")
+      Left(s"Nodes in map1 != nodes in map2. Delta: $delta\nNodes1 = ${nodes1}\nNodes2=${nodes2}\nMap1 = $resultMap\nMap2=$other")
     } else {
       resultMap.map {
         case (node, shapes1) => other.resultMap.get(node) match {

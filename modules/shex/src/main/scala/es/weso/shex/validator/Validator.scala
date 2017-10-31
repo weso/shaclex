@@ -272,15 +272,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = for {
     rdf <- getRDF
     check <- rdf.checkDatatype(node, datatype) match {
-      case Left(s) => {
-        println(s"Result of check datatype: $s")
-        errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}\nDetails: $s")
-      }
+      case Left(s) => errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}\nDetails: $s")
       case Right(false) => errStr(s"${attempt.show}\n${node.show} does not have datatype ${datatype.show}")
-      case Right(true) => {
-        println(s"Result of check datatype = true")
-        addEvidence(attempt.nodeShape, s"${node.show} has datatype ${datatype.show}")
-      }
+      case Right(true) => addEvidence(attempt.nodeShape, s"${node.show} has datatype ${datatype.show}")
     }
   } yield check
 
@@ -314,33 +308,16 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
-    println(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
-    // val tripleExpr = s.tripleExpr
+    logger.info(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
     for {
       neighs <- getNeighs(node)
-      tableRbe <- {
-        println(s"neighs: $neighs")
-        mkTable(s.expression, s.extra.getOrElse(List()))
-      }
+      tableRbe <- mkTable(s.expression, s.extra.getOrElse(List()))
       (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
-      csRest <- {
-        println(s"cTable: $cTable")
-        println(s"rbe: $rbe")
-        calculateCandidates(neighs, cTable)
-      }
+      csRest <- calculateCandidates(neighs, cTable)
       (candidates, rest) = csRest
-      _ <- {
-        println(s"Candidates: $candidates")
-        println(s"Rest: $rest")
-        checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
-      }
-      // TODO: if open extend candidates with negative constraint references otherwise??
-      typing <- {
-        println(s"Rests checked ok: ${rest}. Candidates: ${candidates}")
-        checkCandidates(attempt, bagChecker, cTable)(candidates)
-      }
-      //      t <- optCheck(s.expression, checkTripleExpr(attempt, node), getTyping)
+      _ <- checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
+      typing <- checkCandidates(attempt, bagChecker, cTable)(candidates)
     } yield typing
   }
 
@@ -359,6 +336,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     ignoredPathsClosed: List[Path]): Check[Unit] = {
     val restPath = rest._1
     if (isClosed) {
+      // TODO: Review if the extra.contains(restpath) check is necessary
+      // Extra has been implemented as a negation
       if (ignoredPathsClosed.contains(restPath) || extras.contains(restPath)) {
         ok(())
       } else {

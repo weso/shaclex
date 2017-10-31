@@ -99,6 +99,29 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
          |""".stripMargin
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S", ":a@:S")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S", ":a@:S,:b@:S")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:bad@:S", ":a@:S,:b@:S,:bad@!:S")
+  }
+
+  describe("Shape with EXTRA and CLOSED") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+        |
+        |:S CLOSED EXTRA :p {
+        | :p [ 1 2 3];
+        | :p [ 3 4 5]
+        |}
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p 1, 3 .
+         |:b :p 2, 5, 7 .
+         |:bad1 :p 2 .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:bad1@:S", ":a@:S,:b@:S,:bad1@!:S")
   }
 
   def shouldValidateWithShapeMap(

@@ -1,4 +1,6 @@
 package es.weso.shex
+import cats.Show
+import cats.syntax.show
 import es.weso.rdf.nodes.IRI
 
 sealed trait Path
@@ -6,6 +8,14 @@ case class Direct(p: IRI) extends Path
 case class Inverse(p: IRI) extends Path
 
 object Path {
+
+  implicit def showPath: Show[Path] = new Show[Path] {
+    override def show(x: Path): String = x match {
+      case Direct(iri) => iri.toString
+      case Inverse(iri) => s"^${iri.toString}"
+   }
+  }
+
   implicit def orderingPath: Ordering[Path] = new Ordering[Path] {
     override def compare(x1: Path, x2: Path): Int = {
       x1 match {
