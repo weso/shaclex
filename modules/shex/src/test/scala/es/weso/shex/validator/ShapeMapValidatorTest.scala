@@ -120,7 +120,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
          |""".stripMargin
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:bad1@:S", ":a@:S,:b@:S,:bad1@!:S")
-  } 
+  }
   describe("Shape with inverse arcs") {
     val shexStr =
       """

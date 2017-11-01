@@ -243,7 +243,7 @@ object JenaMapper {
           (jenaLiteral.getDatatypeURI)
         } match {
           case Success(iri) => {
-            println(s"JenaMapper.welltypedDatatype, $node. Comparing $expectedDatatype with $iri")
+            // println(s"JenaMapper.welltypedDatatype, $node. Comparing $expectedDatatype with $iri")
             Right(iri == expectedDatatype.str)
           }
           case Failure(e) => Left(e.getMessage())
