@@ -444,15 +444,15 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   lazy val emptyTyping: ShapeTyping = Monoid[ShapeTyping].empty
 
-  private[validator] def validateNodeDecls(rdf: RDFReader): Result = {
+  def validateNodeDecls(rdf: RDFReader): Result = {
     runValidator(checkTargetNodeDeclarations, rdf)
   }
 
-  private[validator] def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): Result = {
+  def validateNodeShape(rdf: RDFReader, node: IRI, shape: String): Result = {
     runValidator(checkNodeShapeName(node, shape), rdf)
   }
 
-  private[validator] def validateNodeStart(rdf: RDFReader, node: IRI): Result = {
+  def validateNodeStart(rdf: RDFReader, node: IRI): Result = {
     runValidator(checkNodeStart(node), rdf)
   }
 
@@ -464,7 +464,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     cnvResult(runCheck(chk, rdf))
   }
 
-  private[validator] def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log]): Result = for {
+  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log]): Result = for {
     shapeTyping <- r.toEither.leftMap(_.msg)
     result <- shapeTyping.toShapeMap(schema.prefixMap)
   } yield result
