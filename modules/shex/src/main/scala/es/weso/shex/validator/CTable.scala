@@ -79,17 +79,21 @@ object table {
       }
     }
 
+    private[validator] def appearances(iri: IRI, te: TripleExpr): List[ShapeExpr] = te match {
+      case tc: TripleConstraint =>
+        if (tc.predicate == iri) tc.valueExpr.toList
+        else List()
+      case eachOf: EachOf =>
+        eachOf.expressions.map(appearances(iri,_)).flatten
+      case oneOf: OneOf =>
+        oneOf.expressions.map(appearances(iri,_)).flatten
+      case i: Inclusion => List() // TODO
+    }
+
     private[validator] def extendWithExtras(pair: ResultPair, te: TripleExpr, extras: List[IRI]): ResultPair = {
       val zero: ResultPair = pair
       def combine(current: ResultPair, extra: IRI): ResultPair = {
-        def appearances(iri: IRI): List[ShapeExpr] = te match {
-          case tc: TripleConstraint => if (tc.predicate == iri) tc.valueExpr.toList
-          else List()
-          case eachOf: EachOf => List() // TODO
-          case oneOf: OneOf => List() // TODO
-          case i: Inclusion => List() // TODO
-        }
-        val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra)))
+        val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra, te)))
         val (table,rbe) = current
         val (newTable,cref) = table.addConstraint(Direct(extra),Pos(s))
         val newRbe = And(rbe,Symbol(cref,0,Unbounded))
