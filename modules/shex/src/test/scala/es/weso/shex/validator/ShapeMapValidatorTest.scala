@@ -10,7 +10,6 @@ import util._
 
 class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
 
-  /*
   describe("Simple Shape") {
     val shexStr =
       """
@@ -82,7 +81,6 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
   }
-*/
   describe("Shape with EXTRA") {
     val shexStr =
       """
@@ -122,6 +120,22 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
          |""".stripMargin
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:S,:b@:S,:bad1@:S", ":a@:S,:b@:S,:bad1@!:S")
+  } 
+  describe("Shape with inverse arcs") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+        |
+        |:S { ^:p @:T* }
+        |:T { :q . }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:t1 :p :s1; :q "a" .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":s1@:S", ":s1@:S,:t1@:T")
   }
 
   def shouldValidateWithShapeMap(

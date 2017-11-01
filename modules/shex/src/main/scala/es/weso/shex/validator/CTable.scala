@@ -181,8 +181,7 @@ object table {
         }
         pm.foldLeft(List[String]())(combine).mkString(",")
       }
-      s"""CTable { constraints: ${showConstraints(table.constraints)}\n
-         | paths: ${table.paths.toString}""".stripMargin
+      s"""Constraints: ${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}""".stripMargin
     }
   }
 }
