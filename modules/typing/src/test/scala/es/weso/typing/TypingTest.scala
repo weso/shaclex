@@ -69,4 +69,24 @@ class TypingTest extends FunSpec with Matchers {
       t2.combineTyping(t1) should be(t2)
     }
   }
+
+  describe("Add not evidences") {
+    it(s"Should add not evidence when there is no failed value") {
+      val t1: Typing[K, V, Er, Ev] =
+        Typing.empty.addType(K("x"), V("a"), List(Ev("e1")))
+      val t2 = t1.addNotEvidence(K("x"), V("b"), Er("E1"))
+      t2.getOkValues(K("x")) should contain only (V("a"))
+      t2.getFailedValues(K("x")) should contain only (V("b"))
+    }
+    it(s"Should add not evidence when there is failed value") {
+      val t1: Typing[K, V, Er, Ev] =
+        Typing.empty.addType(K("x"), V("a"), List(Ev("e1")))
+      val t2 = t1.addNotEvidence(K("x"), V("b"), Er("E1"))
+      val t3 = t1.addNotEvidence(K("x"), V("b"), Er("E2"))
+      t2.getOkValues(K("x")) should contain only (V("a"))
+      t2.getFailedValues(K("x")) should contain only (V("b"))
+    }
+
+
+  }
 }

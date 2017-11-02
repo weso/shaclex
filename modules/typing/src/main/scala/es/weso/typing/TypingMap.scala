@@ -81,17 +81,6 @@ case class TypingMap[Key, Value, Err, Evidence](
   // TODO
   override def combineTyping(
     t: Typing[Key, Value, Err, Evidence]): Typing[Key, Value, Err, Evidence] = {
-
-    /*    implicit lazy val monoidMTR: Monoid[Map[Value,TypingResult[Err,Evidence]]] =
-      new Monoid[Map[Value,TypingResult[Err,Evidence]]] {
-      def empty: Map[Value,TypingResult[Err,Evidence]] = Map()
-      def combine(
-        m1: Map[Value,TypingResult[Err,Evidence]],
-        m2: Map[Value,TypingResult[Err,Evidence]]):
-          Map[Value,TypingResult[Err,Evidence]] =
-        m1 |+| m2
-    }
- */
     t match {
       case tm: TypingMap[Key, Value, Err, Evidence] => {
         val r: Map[Key, Map[Value, TypingResult[Err, Evidence]]] =

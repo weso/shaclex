@@ -18,12 +18,13 @@ class ShapeValidatorTest extends FunSpec with Matchers with TryValues with Eithe
       val s = ex + "S"
       val str = """|@prefix : <http://example.org/>
                  |@prefix sh: <http://www.w3.org/ns/shacl#>
+                 |@prefix xsd: <http://www.w3.org/2001/XMLSchema#>
                  |
                  |:S a sh:Shape;
                  |   sh:targetNode :x;
-                 |   sh:property [sh:path :p;
-                 |   sh:minCount 1] .
-                 |:x :p "a" .
+                 |   sh:property [sh:path :p; sh:datatype xsd:string; sh:minCount 1] ;
+                 |   sh:property [sh:path :q; sh:datatype xsd:integer; sh:minCount 1] .
+                 |:x :p 23; :q "xx" .
                  |""".stripMargin
       val attempt = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")

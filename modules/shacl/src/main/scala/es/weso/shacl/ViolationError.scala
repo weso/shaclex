@@ -38,6 +38,9 @@ object ViolationError {
   def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) =
     basic("FailedNodeShape", node, attempt, msg)
 
+  def shapesFailed(node: RDFNode, shape: Shape, ps: Set[Shape], attempt: Attempt, msg: String) =
+    basic("ShapesFailed", node, attempt, msg)
+
   def regexError(node: RDFNode, attempt: Attempt, msg: String) =
     basic("RegEx error", node, attempt, msg)
 
