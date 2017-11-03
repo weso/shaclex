@@ -105,7 +105,10 @@ case class Validator(schema: Schema) extends LazyLogging {
       _ <- addLogMsg(s"Checking targetNode declarations for shape ${shape.showId}. Nodes: ${nodes}")
       ts <- checkAll(nodesShapes)
       t <- combineTypings(ts)
-    } yield t
+    } yield {
+      println(s"<><><> After target nodes: ${showResult(t)}")
+      t
+    }
   }
 
   def checkTargetClasses(classes: Seq[RDFNode]): ShapeChecker = shape => {
@@ -159,6 +162,7 @@ case class Validator(schema: Schema) extends LazyLogging {
         t <- runLocal(checkNodeShape(shape)(attempt)(node), _.addType(node, shape))
       } yield {
         logger.info(s"Result of node $node - NodeShape ${shape.showId}: ${showResult(t)}")
+        println(s"<<<<<<<< Result of node $node - NodeShape ${shape.showId}: ${showResult(t)}")
         t
       }
     }
@@ -192,12 +196,11 @@ case class Validator(schema: Schema) extends LazyLogging {
       } yield c
       else ok(t)
       t2 <- {
-        println(s"############## Check if failed...")
         checkFailed(attempt, node, shape, t1)
       }
     } yield {
       logger.info(s"Result of checkNodeShape($node,${shape.showId} = ${showResult(t1)}")
-      println(s"Result of checkNodeShape($node,${shape.showId} = ${showResult(t1)}")
+      println(s"#@#@#@#@#@#@#@# Result of checkNodeShape($node,${shape.showId}) = ${showResult(t2)}")
       t2
     }
   }
@@ -208,10 +211,9 @@ case class Validator(schema: Schema) extends LazyLogging {
       propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
     } yield {
       val failedPropertyShapes = t.getFailedValues(node).intersect(propertyShapes.toSet)
-      println(s"PropertyShapes: $propertyShapes. Failed: ${t.getFailedValues(node)}, Diff: $failedPropertyShapes")
       if (!failedPropertyShapes.isEmpty) {
-        println(s"Failed properties for $node: $failedPropertyShapes")
-        t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
+        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
+        newt
       }
       else
         t
@@ -876,13 +878,8 @@ case class Validator(schema: Schema) extends LazyLogging {
     runCheck(checkSchemaAll, rdf)
   }
 
-  def showResult(t: ShapeTyping): String = {
+  def showResult(t: ShapeTyping): String =
     t.show
-/*    def showRes(res: Either[Shape, Shape]) = res.fold("-" + _.showId, "+" + _.showId)
-    t.simplified.map {
-      case (node, res) => s"${node.toString} ${showRes(res)} "
-    }.mkString(",") */
-  }
 }
 
 object Validator {

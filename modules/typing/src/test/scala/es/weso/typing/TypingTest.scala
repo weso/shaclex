@@ -1,6 +1,6 @@
 package es.weso.typing
 
-import org.scalatest.{ FunSpec, Matchers }
+import org.scalatest.{FunSpec, Matchers}
 
 /**
  * Created by Labra on 21/11/2016.
@@ -75,16 +75,24 @@ class TypingTest extends FunSpec with Matchers {
       val t1: Typing[K, V, Er, Ev] =
         Typing.empty.addType(K("x"), V("a"), List(Ev("e1")))
       val t2 = t1.addNotEvidence(K("x"), V("b"), Er("E1"))
-      t2.getOkValues(K("x")) should contain only (V("a"))
-      t2.getFailedValues(K("x")) should contain only (V("b"))
+      t2.getOkValues(K("x")) should contain theSameElementsAs List(V("a"))
+      t2.getFailedValues(K("x")) should contain theSameElementsAs List(V("b"))
     }
     it(s"Should add not evidence when there is failed value") {
       val t1: Typing[K, V, Er, Ev] =
         Typing.empty.addType(K("x"), V("a"), List(Ev("e1")))
       val t2 = t1.addNotEvidence(K("x"), V("b"), Er("E1"))
       val t3 = t1.addNotEvidence(K("x"), V("b"), Er("E2"))
-      t2.getOkValues(K("x")) should contain only (V("a"))
-      t2.getFailedValues(K("x")) should contain only (V("b"))
+      t2.getOkValues(K("x")) should contain theSameElementsAs List(V("a"))
+      t2.getFailedValues(K("x")) should contain theSameElementsAs List(V("b"))
+    }
+
+    it(s"Should add not evidence when there is a positive value") {
+      val t1: Typing[K, V, Er, Ev] =
+        Typing.empty.addType(K("x"), V("a"), List(Ev("e1")))
+      val t2 = t1.addNotEvidence(K("x"), V("a"), Er("E1"))
+      t2.getOkValues(K("x")) should contain theSameElementsAs List()
+      t2.getFailedValues(K("x")) should contain theSameElementsAs List((V("a")))
     }
 
 

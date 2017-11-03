@@ -32,9 +32,11 @@ class ShapeValidatorTest extends FunSpec with Matchers with TryValues with Eithe
         shape <- schema.shape(s)
         validator = Validator(schema)
         result <- Validator.validate(schema, rdf)
-      } yield (result)
+      } yield (Validator(schema).showResult(result))
       attempt match {
-        case Right(result) => info(s"Result: $result")
+        case Right(result) => {
+          info(s"${result}")
+        }
         case Left(e) => fail(s"Failed: $e")
       }
     }
