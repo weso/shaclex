@@ -14,7 +14,7 @@ case class IntOrUnboundedException(msg: String)
  * Represents a limit of an [[Interval interval]].
  * It can be either an Int or an Unbounded value
  */
-trait IntOrUnbounded {
+sealed abstract trait IntOrUnbounded {
 
   /**
    * `true` if this value is Unbounded

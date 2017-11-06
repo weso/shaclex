@@ -11,10 +11,10 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import org.http4s._, org.http4s.dsl.io._, org.http4s.implicits._
 import org.http4s.client.blaze.PooledHttp1Client
-import org.http4s.dsl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher, _}
+
 import org.http4s.websocket.WebsocketBits._
-import org.http4s.{EntityEncoder, HttpService, LanguageTag, Status}
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 
@@ -47,12 +47,10 @@ class Routes {
 
   private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
-  private val httpClient = PooledHttp1Client[IO]()
-
   // Get the static content
-  private val static = cachedResource(Config("/static", "/static")) // , executor = scheduledEC))
-  private val views = cachedResource(Config("/staticviews", "/")) // , executor = scheduledEC))
-  private val swagger = cachedResource(Config("/swagger", "/swagger")) // , executor = scheduledEC))
+  private val static = cachedResource(Config("/static", "/static"))
+  private val views = cachedResource(Config("/staticviews", "/"))
+  private val swagger = cachedResource(Config("/swagger", "/swagger"))
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
@@ -83,6 +81,12 @@ class Routes {
   val availableTriggerModes = Schemas.availableTriggerModes
   val defaultTriggerMode = Schemas.defaultTriggerMode
   val defaultSchemaEmbedded = false
+
+  val serviceTest : HttpService[IO] = HttpService[IO] {
+    case req @ GET -> Root / "test" => {
+      Ok("test")
+    }
+  }
 
 
   val service: HttpService[IO] = HttpService[IO] {
@@ -309,9 +313,7 @@ class Routes {
           val jsonNodes: Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
           val pm: Json = prefixMap2Json(rdf.getPrefixMap)
           val result = DataInfoResult(data, dataFormat, jsonNodes, pm).asJson
-          Ok(result).
-            withContentType(Some(`Content-Type`(`application/json`))).
-            withStatus(Status.Ok)
+          Ok(result).withContentType(Some(`Content-Type`(`application/json`))).withStatus(Status.Ok)
         }
       }
     }
@@ -334,9 +336,7 @@ class Routes {
           val pm: Json = prefixMap2Json(schema.pm)
           //          implicit val encoder: EntityEncoder[SchemaInfoResult] = ???
           val result = SchemaInfoResult(schemaStr, schemaFormat, schemaEngine, jsonShapes, pm).asJson
-          Ok(result).
-            withContentType(Some(`Content-Type`(`application/json`))).
-            withStatus(Status.Ok)
+          Ok(result) // .withContentType(Some(`Content-Type`(`application/json`))).withStatus(Status.Ok)
         }
       }
     }
@@ -360,7 +360,7 @@ class Routes {
               logger.info(s"Accept header: $ah")
               val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
               if (hasHTML) {
-                Ok(result.toHTML).withContentType(Some(`Content-Type`(`text/html`)))
+                Ok(result.toHTML) // .withContentType(Some(`Content-Type`(`text/html`)))
               } else default
             }
             case None => default
@@ -430,7 +430,7 @@ class Routes {
         optSchema, optSchemaFormat, optSchemaEngine,
         optTriggerMode, optNode, optShape, optShapeMap, optInference)
       val default = Ok(result._1.toJson)
-        .withContentType(Some(`Content-Type`(`application/json`)))
+        // .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {
                       case Some(ah) => {
                         logger.info(s"Accept header: $ah")
@@ -537,6 +537,7 @@ class Routes {
       }
     }
   }
+
 
  private def resolveUri(baseUri: Uri, urlStr: String): Either[String,Option[String]] = {
    // TODO: handle timeouts

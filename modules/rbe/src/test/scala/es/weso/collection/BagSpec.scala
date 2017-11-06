@@ -1,9 +1,9 @@
 package es.weso.collection
 
-import org.scalatest._
+//import org.scalatest._
 //import org.scalatest.matchers._
-import org.scalatest.prop._
-import org.scalacheck.Gen
+//import org.scalatest.prop._
+//import org.scalacheck.Gen
 
 // TODO: The following code should work
 // However, it seems there is an incompatibility between Scalatest and scalacheck libraries

@@ -7,6 +7,7 @@ import org.http4s.{ Query, Request, Response, Uri }
 import org.scalatest._
 import org.http4s.dsl._
 import cats.syntax.either._
+import org.http4s.dsl.io._
 
 class ValidateShEx extends FunSpec with Matchers with EitherValues {
 
@@ -15,7 +16,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
   val server = new ShaclexServer(ip, port)
 
   def serve(req: Request[IO]): Response[IO] =
-    server.service.run(req).unsafeRunSync().orNotFound
+    server.service.orNotFound(req).unsafeRunSync
 
   describe("ValidateShEx") {
     it("Should return 200 when asking for root") {
