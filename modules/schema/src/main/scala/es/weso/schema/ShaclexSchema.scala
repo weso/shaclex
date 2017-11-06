@@ -1,5 +1,7 @@
 package es.weso.schema
-import cats.Show
+import cats._
+import cats.data._
+import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -63,10 +65,12 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
     import showShacl._
-    import TypingResult._
+    import TypingResult.showTypingResult
+    val showVE = implicitly[Show[ViolationError]]
+    val x = implicitly[Show[TypingResult[ViolationError, String]]]
     Info(
       status = if (t.isOK) Conformant else NonConformant,
-      reason = Some(Show[TypingResult[ViolationError, String]].show(t))
+      reason = Some(x.show(t))
     // TODO: Convert typing result to JSON and add it to appInfo
     )
   }

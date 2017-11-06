@@ -26,8 +26,9 @@ class ShaclexServer(host: String, port: Int) {
   val routes = CORS(new Routes().service)
 
   val service: HttpService[IO] = routes.local { req =>
+    logger.info(s"Request: $req")
     val path = req.uri.path
-    logger.info(s"${req.remoteAddr.getOrElse("null")} -> ${req.method}: $path")
+    logger.info(s"Request with path: ${req.remoteAddr.getOrElse("null")} -> ${req.method}: $path")
     req
   }
 
