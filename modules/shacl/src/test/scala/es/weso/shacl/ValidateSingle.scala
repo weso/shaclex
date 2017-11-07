@@ -14,7 +14,7 @@ import scala.util._
 class ValidateSingle extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
-  val name = "qualified"
+  val name = "uniqueLang"
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclFolder")

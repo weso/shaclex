@@ -24,7 +24,6 @@ import cats._
 import cats.data._
 import cats.implicits._
 import cats.effect._, org.http4s._
-// import org.http4s.dsl.
 import org.http4s.server.websocket.WS
 import org.http4s.headers._
 import org.http4s.circe._
@@ -48,9 +47,9 @@ class Routes {
   private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   // Get the static content
-  private val static = cachedResource(Config("/static", "/static"))
-  private val views = cachedResource(Config("/staticviews", "/"))
-  private val swagger = cachedResource(Config("/swagger", "/swagger"))
+  private val static: HttpService[IO] = cachedResource[IO](Config("/static", "/static"))
+  private val views: HttpService[IO] = cachedResource(Config("/staticviews", "/"))
+  private val swagger: HttpService[IO] = cachedResource(Config("/swagger", "/swagger"))
 
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
@@ -313,7 +312,7 @@ class Routes {
           val jsonNodes: Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
           val pm: Json = prefixMap2Json(rdf.getPrefixMap)
           val result = DataInfoResult(data, dataFormat, jsonNodes, pm).asJson
-          Ok(result).withContentType(Some(`Content-Type`(`application/json`))).withStatus(Status.Ok)
+          Ok(result).map(_.withContentType(Some(`Content-Type`(`application/json`))))
         }
       }
     }
@@ -336,7 +335,7 @@ class Routes {
           val pm: Json = prefixMap2Json(schema.pm)
           //          implicit val encoder: EntityEncoder[SchemaInfoResult] = ???
           val result = SchemaInfoResult(schemaStr, schemaFormat, schemaEngine, jsonShapes, pm).asJson
-          Ok(result) // .withContentType(Some(`Content-Type`(`application/json`))).withStatus(Status.Ok)
+          Ok(result).map(_.withContentType(Some(`Content-Type`(`application/json`))))
         }
       }
     }
@@ -354,13 +353,13 @@ class Routes {
           val resultStr = rdf.serialize(resultDataFormat)
           val result = DataConversionResult(data, dataFormat, resultDataFormat, resultStr)
           val default = Ok(result.asJson)
-            .withContentType(Some(`Content-Type`(`application/json`)))
+            .map(_.withContentType(Some(`Content-Type`(`application/json`))))
           req.headers.get(`Accept`) match {
             case Some(ah) => {
               logger.info(s"Accept header: $ah")
               val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
               if (hasHTML) {
-                Ok(result.toHTML) // .withContentType(Some(`Content-Type`(`text/html`)))
+                Ok(result.toHTML).map(_.withContentType(Some(`Content-Type`(`text/html`))))
               } else default
             }
             case None => default
@@ -393,13 +392,13 @@ class Routes {
                 val result = SchemaConversionResult(schemaStr, schemaFormat, schemaEngine,
                   resultSchemaFormat, resultSchemaEngine, resultStr)
                 val default = Ok(result.asJson)
-                  .withContentType(Some(`Content-Type`(`application/json`)))
+                  .map(_.withContentType(Some(`Content-Type`(`application/json`))))
                 req.headers.get(`Accept`) match {
                   case Some(ah) => {
                     logger.info(s"Accept header: $ah")
                     val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
                     if (hasHTML) {
-                      Ok(result.toHTML).withContentType(Some(`Content-Type`(`text/html`)))
+                      Ok(result.toHTML).map(_.withContentType(Some(`Content-Type`(`text/html`))))
                     } else default
                   }
                   case None => default
@@ -446,25 +445,27 @@ class Routes {
     }
 
     // Contents on /static are mapped to /static
-    case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r).map(_.orNotFound)
+    case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r).getOrElseF(NotFound())
 
     // Contents on /swagger are directly mapped to /swagger
-    case r @ GET -> _ if r.pathInfo.startsWith("/swagger/") => swagger(r).map(_.orNotFound)
+    case r @ GET -> _ if r.pathInfo.startsWith("/swagger/") => swagger(r).getOrElseF(NotFound())
 
     // case r @ GET -> _ if r.pathInfo.startsWith("/swagger.json") => views(r)
 
     // When accessing to a folder (ends by /) append index.scala.html
     case r @ GET -> _ if r.pathInfo.endsWith("/") =>
-      service(r.withPathInfo(r.pathInfo + "index.scala.html")).map(_.orNotFound)
+      service(r.withPathInfo(r.pathInfo + "index.scala.html")).getOrElseF(NotFound())
 
     case r @ GET -> _ =>
       val rr = if (r.pathInfo.contains('.')) r else r.withPathInfo(r.pathInfo + ".html")
-      views(rr).map(_.orNotFound)
+      views(rr).getOrElseF(NotFound())
 
   }
 
-  private def cachedResource(config: Config[IO]): HttpService[IO] = {
-    val cachedConfig: Config[IO] = config.copy(cacheStrategy = staticcontent.MemoryCache())
+  private def cachedResource[F[_]: Effect](config: Config[F]): HttpService[F] = {
+    // Remove cache for development
+    // val cachedConfig: Config[IO] = config.copy(cacheStrategy = staticcontent.MemoryCache())
+    val cachedConfig: Config[F] = config.copy(cacheStrategy = staticcontent.NoopCacheStrategy[F])
     staticcontent.resourceService(cachedConfig)
   }
 
