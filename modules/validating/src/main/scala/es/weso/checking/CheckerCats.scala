@@ -101,11 +101,21 @@ abstract class CheckerCats extends Checker {
     ls.foldLeft(zero)(comb)
   }
 
+  /** Attempts to execute a check
+    * If it fails, applies `thenPart` to the result, otherwise applies `elsePart` to the error
+    *
+    * @param check Computation to check
+    * @param thenPart
+    * @param elsePart
+    * @tparam A type returned by the computation
+    * @tparam B type returned the the condition
+    * @return
+    */
   def cond[A, B](
-    c: Check[A],
+    check: Check[A],
     thenPart: A => Check[B],
     elsePart: Err => Check[B]): Check[B] =
-    attempt(c).flatMap(_.fold(elsePart(_), thenPart(_)))
+    attempt(check).flatMap(_.fold(elsePart(_), thenPart(_)))
 
   def checkList[A, B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
     checkAll(ls.map(check))

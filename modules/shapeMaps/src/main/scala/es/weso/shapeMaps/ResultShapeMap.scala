@@ -62,12 +62,13 @@ case class ResultShapeMap(
     if (!delta.isEmpty) {
       Left(s"Nodes in map1 != nodes in map2. Delta: $delta\nNodes1 = ${nodes1}\nNodes2=${nodes2}\nMap1 = $resultMap\nMap2=$other")
     } else {
-      resultMap.map {
+      val es = resultMap.map {
         case (node, shapes1) => other.resultMap.get(node) match {
           case None => Left(s"Node $node appears in map1 with shapes $shapes1 but not in map2")
           case Some(shapes2) => compareShapes(node, shapes1, shapes2)
         }
-      }.toList.sequence.map(_ => true)
+      }.toList
+      seqEither(es).map(_ => true)
     }
   }
 
@@ -86,11 +87,27 @@ case class ResultShapeMap(
             else Left(s"Status of node $node for label $label is ${info1.status} in map1 and ${info2.status} in map2")
         }
       }.toList
-      val r: Either[String, List[Boolean]] = es.sequence
+      val r: Either[String, List[Boolean]] = seqEither(es) // es.sequence
       r.map(_ => true)
     }
   }
 
+  // The following code requires partial unification plugin
+  // https://github.com/fiadliel/sbt-partial-unification
+  def seqEither[A,B](es: List[Either[A,B]]): Either[A,List[B]] = es.sequence
+  /*{
+    def combine(rest: Either[A,List[B]],
+                current: Either[A,B]): Either[A,List[B]] =
+      current.fold(
+        a => Left(a),
+        b => rest.fold(
+          a => Left(a),
+          bs => Right(b :: bs)
+        )
+      )
+    val zero: Either[A,List[B]] = Right(List())
+    es.foldLeft(zero)(combine)
+  } */
 }
 
 object ResultShapeMap {

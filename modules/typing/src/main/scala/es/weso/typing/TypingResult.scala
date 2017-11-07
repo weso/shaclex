@@ -14,7 +14,7 @@ case class TypingResult[Err, Evidence](
     val r = t.fold(
       errors => Validated.invalid(e :: errors),
       ls => Validated.invalid(NonEmptyList.of(e)))
-    TypingResult(t)
+    TypingResult(r)
   }
 
   def addEvidences(es: List[Evidence]): TypingResult[Err, Evidence] = {

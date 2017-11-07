@@ -17,9 +17,9 @@ object showShacl {
     }
   }
 
-  implicit def showEvidence = new Show[String] {
+/*  implicit def showEvidence = new Show[String] {
     def show(e: String): String = e
-  }
+  } */
 
   implicit def showRDFNode = new Show[RDFNode] {
     def show(n: RDFNode): String = n.toString

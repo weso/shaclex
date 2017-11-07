@@ -1,0 +1,24 @@
+@(examples: String)
+<html lang="en">
+@head("Load examples")
+<body>
+@navBar()
+<div class="container">
+ <h1>Load examples</h1>
+ <table id="examples" class="table table-striped" data-examples="@examples">
+   <thead>
+    <tr><th>Name</th>
+     <th>Schema</th>
+     <th>Data</th>
+     <th>ShapeMap</th>
+     <th>Result description</th>
+     <th>Try it</th>
+   </tr>
+   </thead>
+ </table>
+
+</div>
+</body>
+@scripts()
+<script src="js/loadExamples.js"></script>
+</html>

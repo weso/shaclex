@@ -1,0 +1,104 @@
+PREFIX bf: <http://bibframe.org/vocab/>
+PREFIX madsrdf: <http://www.loc.gov/mads/rdf/v1#>
+PREFIX locid: <http://id.loc.gov/vocabulary/identifiers/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+<samples9298996> a bf:Text, bf:Work ;
+  rdfs:label "Oliver Twist." ;
+  bf:class <http://id.loc.gov/authorities/classification/PZ3> ;
+  bf:creator [ a bf:Person ;
+    rdfs:label "Dickens, Charles, 1812-1870." ;
+    madsrdf:elementList (
+      [ a madsrdf:NameElement ; madsrdf:elementValue "Dickens, Charles," ]
+      [ a madsrdf:DateNameElement ; madsrdf:elementValue "1812-1870." ] ) ] ;
+  bf:derivedFrom <http://id.loc.gov/resources/bibs/9298996> ;
+  bf:hasRelationship [ a bf:Work ;
+    bf:title "Oliver Twist." ;
+    bf:contributor [ a bf:name ;
+      rdfs:label "Oliver Twist." ;
+      madsrdf:elementList (
+        [ a madsrdf:NameElement ; madsrdf:elementValue "Oliver Twist." ] ) ] ] ;
+  bf:language <http://id.loc.gov/vocabulary/languages/eng> ;
+  bf:subject
+    [ a bf:Topic,
+      madsrdf:ComplexSubject ;
+      madsrdf:authoritativeLabel "Criminals--Fiction"@en ;
+      madsrdf:componentList (
+        [ a madsrdf:Authority,
+          madsrdf:Topic ;
+          madsrdf:authoritativeLabel "Criminals"@en ;
+          madsrdf:elementList (
+            [ a madsrdf:TopicElement ; madsrdf:elementValue "Criminals"@en ] ) ]
+        [ a madsrdf:Authority,
+          madsrdf:Topic ;
+          madsrdf:authoritativeLabel "Fiction"@en ;
+          madsrdf:elementList (
+            [ a madsrdf:TopicElement ; madsrdf:elementValue "Fiction."@en ] ) ]
+    ) ],
+    [ a bf:Place,
+      madsrdf:ComplexSubject ;
+      madsrdf:authoritativeLabel "London (England)--Fiction"@en ;
+      madsrdf:componentList (
+        [ a madsrdf:Authority,
+          madsrdf:Geographic ;
+          madsrdf:authoritativeLabel "London (England)"@en ;
+          madsrdf:elementList (
+            [ a madsrdf:GeographicElement ; madsrdf:elementValue "London (England)"@en ] ) ]
+        [ a madsrdf:Authority,
+          madsrdf:Topic ;
+          madsrdf:authoritativeLabel "Fiction"@en ;
+          madsrdf:elementList (
+            [ a madsrdf:TopicElement ; madsrdf:elementValue "Fiction."@en ] ) ]
+    ) ],
+    [ a bf:Genre,
+      madsrdf:GenreForm ;
+      madsrdf:authoritativeLabel "Bildungsromans"@en ;
+      madsrdf:elementList (
+        [ a madsrdf:GenreFormElement ; madsrdf:elementValue "Bildungsromans."@en ] ) ],
+    [ a bf:Topic,
+      madsrdf:ComplexSubject ;
+      madsrdf:authoritativeLabel "Orphans--Fiction"@en ;
+      madsrdf:componentList (
+        [ a madsrdf:Authority,
+          madsrdf:Topic ;
+          madsrdf:authoritativeLabel "Orphans"@en ;
+          madsrdf:elementList (
+            [ a madsrdf:TopicElement ; madsrdf:elementValue "Orphans"@en ] ) ]
+        [ a madsrdf:Authority,
+          madsrdf:Topic ;
+          madsrdf:authoritativeLabel "Fiction"@en ;
+          madsrdf:elementList (
+            [ a madsrdf:TopicElement ; madsrdf:elementValue "Fiction."@en ] ) ]
+    ) ] ;
+  bf:title "The adventures of Oliver Twist" ;
+  bf:uniformTitle "Oliver Twist." ;
+  locid:lccn "50005760" ;
+  madsrdf:authoritativeLabel "Dickens, Charles, 1812-1870. Oliver Twist" ;
+  madsrdf:elementList (
+    [ a madsrdf:MainTitleElement ; madsrdf:elementValue "Oliver Twist." ] ) ;
+  madsrdf:isMemberOfMADSScheme <http://id.loc.gov/resources/works> 
+.
+
+<http://id.loc.gov/authorities/classification/PZ3> a bf:LCC .
+
+[] a bf:Instance ;
+  bf:callNumber "PZ3.D55O165PR4567" ;
+  bf:contributor [
+    a bf:Person ;
+    rdfs:label "Greenawalt, Lambert, 1890- [from old catalog]" ;
+    madsrdf:elementList (
+      [ a madsrdf:NameElement ; madsrdf:elementValue "Greenawalt, Lambert," ]
+      [ a madsrdf:DateNameElement ; madsrdf:elementValue "1890- [ from old catalog]" ]
+  ) ] ;
+  bf:derivedFrom <http://id.loc.gov/resources/bibs/9298996> ;
+  bf:extent "p. cm." ;
+  bf:instanceOf <samples9298996> ;
+  bf:placePub [
+    a bf:Place ] ;
+  bf:provider [
+    a bf:Organization ] ;
+  bf:pubDate "c1949" ;
+  bf:title "The adventures of Oliver Twist" ;
+  locid:lccn "50005760" .
+
+

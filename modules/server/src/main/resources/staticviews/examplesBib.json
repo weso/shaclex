@@ -1,0 +1,56 @@
+[ {"name": "bibframe book",
+  "schemaURL": "examples/shex/book.shex",
+  "passes": [ {
+    "name": "simple",
+    "dataURL": "examples/shex/book.ttl",
+    "queryMap": "<samples9298996>@<Work>"
+  }],
+  "fails": [ {
+    "name": "no bf:label",
+    "dataURL": "examples/shex/book-no-bf-label.ttl",
+    "queryMap": "<samples9298996>@<Work>"
+  },
+    {
+      "name": "value set violation",
+      "dataURL": "examples/shex/book-value-set-violation.ttl",
+      "queryMap": "<samples9298996>@<Work>"
+    }
+  ]
+ },
+ {
+    "name": "reduced bibframe book",
+    "schemaURL": "examples/shex/book-small.shex",
+    "passes": [
+      {
+        "name": "simple",
+        "dataURL": "examples/shex/book-small.ttl",
+        "queryMap": "<samples9298996>@<Work>"
+      }
+    ],
+    "fails": [
+      {
+        "name": "no bf:label",
+        "dataURL": "examples/shex/book-small-no-bf-label.ttl",
+        "queryMap": "<samples9298996>@<Work>"
+      },
+      {
+        "name": "value set violation",
+        "dataURL": "examples/shex/book-small-value-set-violation.ttl",
+        "queryMap": "<samples9298996>@<Work>"
+      }
+    ]
+  },
+  {
+    "name": "bibframe book opt bf:label",
+    "schemaURL": "examples/shex/book-opt-bf-label.shex",
+    "passes": [
+      {
+        "name": "no bf:label",
+        "dataURL": "examples/shex/book-no-bf-label.ttl",
+        "queryMap": "<samples9298996>@<Work>"
+      }
+    ],
+    "fails": [
+    ]
+ }
+]

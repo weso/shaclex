@@ -12,10 +12,10 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 :NoS a sh:NodeShape;
      sh:not :S .
 
-:S   sh:targetNode :x .
+# :S   sh:targetNode :x .
 :NoS sh:targetNode :y .	 
-:x a :S ;
-   :p "hi"@en, "hola"@es .
+#:x a :S ;
+#   :p "hi"@en, "hola"@es .
    
 :y a :S ;
    :p "hi"@en, "hola"@en .

@@ -1,0 +1,18 @@
+[ {
+    "name": "Simple",
+    "schemaURL": "examples/shex/simple.shex",
+    "passes": [
+      {
+        "name": "simple pass",
+        "dataURL": "examples/shex/simple.ttl",
+        "queryMap": ":alice@:User"
+      }
+    ],
+    "fails": [{
+      "name": "simple fails",
+      "dataURL": "examples/shex/simpleBad.ttl",
+      "queryMap": ":alice@:User"
+    }
+    ]
+  }
+]
