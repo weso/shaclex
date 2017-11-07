@@ -71,7 +71,6 @@ object Typing {
     import TypingResult.showTypingResult
 
     override def show(e: Typing[Key, Value, Err, Evidence]): String = {
-      println(s"Showing $e")
       e match {
         case tm: TypingMap[Key, Value, Err, Evidence] =>
           tm.m.map {

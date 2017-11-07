@@ -106,7 +106,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       ts <- checkAll(nodesShapes)
       t <- combineTypings(ts)
     } yield {
-      println(s"<><><> After target nodes: ${showResult(t)}")
       t
     }
   }
@@ -162,7 +161,6 @@ case class Validator(schema: Schema) extends LazyLogging {
         t <- runLocal(checkNodeShape(shape)(attempt)(node), _.addType(node, shape))
       } yield {
         logger.info(s"Result of node $node - NodeShape ${shape.showId}: ${showResult(t)}")
-        println(s"<<<<<<<< Result of node $node - NodeShape ${shape.showId}: ${showResult(t)}")
         t
       }
     }
@@ -200,13 +198,11 @@ case class Validator(schema: Schema) extends LazyLogging {
       }
     } yield {
       logger.info(s"Result of checkNodeShape($node,${shape.showId} = ${showResult(t1)}")
-      println(s"#@#@#@#@#@#@#@# Result of checkNodeShape($node,${shape.showId}) = ${showResult(t2)}")
       t2
     }
   }
 
   private def checkFailed(attempt: Attempt, node: RDFNode, shape: Shape, t: ShapeTyping): Check[ShapeTyping] = {
-    println(s".....checking...")
     for {
       propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
     } yield {
@@ -238,7 +234,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       t <- validatePathCheckers(newAttempt, path, propertyCheckers)
     } yield {
       logger.info(s"Result of chechPropertyShape($node,${ps.showId}=${showResult(t)}")
-      println(s"Result of chechPropertyShape($node,${ps.showId}=${showResult(t)}")
       t
     }
   }
@@ -525,11 +520,19 @@ case class Validator(schema: Schema) extends LazyLogging {
     for {
       shapes <- getShapeRefs(sRefs.toList, attempt, node)
       es = shapes.map(nodeShape(node, _))
-      t1 <- checkOneOf(es, xoneErrorNone(node, attempt, sRefs.toList),
-        xoneErrorMoreThanOne(node, attempt, sRefs.toList))
-      t2 <- addEvidence(attempt, s"$node passes xone(${shapes.map(_.showId).mkString(",")})")
-      t <- combineTypings(Seq(t1, t2))
-    } yield t
+/*      t1 <- checkOneOf(es, xoneErrorNone(node, attempt, sRefs.toList),
+        xoneErrorMoreThanOne(node, attempt, sRefs.toList)) */
+      ts <- checkAll(es)
+      t <- combineTypings(ts)
+      t1 <- condition(checkXoneType(node, shapes, t),
+        attempt,
+        xoneError(node, attempt, sRefs),
+        s"$node satisfies exactly one of $sRefs")
+    } yield t1
+  }
+
+  def checkXoneType(node: RDFNode, shapes: List[Shape], t: ShapeTyping): Boolean = {
+    shapes.map(t.hasType(node,_)).count(_ == true) == 1
   }
 
   private def qualifiedValueShape(
@@ -624,8 +627,9 @@ case class Validator(schema: Schema) extends LazyLogging {
       err(notError(node, attempt, sref))
     for {
       shape <- getShapeRef(sref, attempt, node)
-      t <- cond(check(shape), handleNotError, handleError(shape))
-    } yield t
+      t <- nodeShape(node,shape)
+      t1 <- condition(!t.hasType(node,shape), attempt, notShapeError(node,sref,attempt), s"$node does not have shape $sref")
+    } yield t1
   }
 
   private def checkNumeric(node: RDFNode, attempt: Attempt): Check[Int] =
@@ -666,12 +670,14 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"$node is a IRI or Literal")
   }
 
-  private def hasValuePropertyChecker(v: Value, os: List[RDFNode], attempt: Attempt, node: RDFNode, path: SHACLPath): CheckTyping =
-    os.size match {
-      case 0 => err(hasValueErrorNoValue(node, attempt, v, path))
+  private def hasValuePropertyChecker(v: Value, os: List[RDFNode], attempt: Attempt, node: RDFNode, path: SHACLPath): CheckTyping = for {
+    t <- getTyping
+    newT <- os.size match {
+      case 0 => addNotEvidence(attempt, hasValueErrorNoValue(node, attempt, v, path), s"HasValue($v) failed. $node has not value")
       case 1 => hasValue(v)(attempt)(os.head)
-      case n => err(hasValueErrorMoreThanOne(node, attempt, v, path, n))
+      case n => addNotEvidence(attempt, hasValueErrorMoreThanOne(node, attempt, v, path, n), s"HasValue($v) failed. $node has more $n values") //
     }
+  } yield newT
 
   private def hasValue(value: Value): NodeChecker = attempt => currentNode => {
     condition(isValue(currentNode, value), attempt,
@@ -738,7 +744,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
 
   /**
-   * if condition is true adds an evidence, otherwise, raises an error
+   * if condition is true adds an evidence, otherwise, adds a not typing with the Violation error as evidence
    * @param condition condition to check
    * @param attempt current validation attempt that is being tried
    * @param error error to raise in case `condition` is false
@@ -803,12 +809,8 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def hasDatatype(rdf: RDFReader, node: RDFNode, d: IRI): Boolean = {
-    println(s"Checking datatype of $node to be $d")
     rdf.checkDatatype(node, d) match {
-      case Left(msg) => {
-        println(s"msg")
-        false
-      }
+      case Left(msg) => false
       case Right(true) => true
       case Right(false) => false
     }

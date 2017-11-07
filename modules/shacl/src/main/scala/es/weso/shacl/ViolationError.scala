@@ -134,11 +134,14 @@ object ViolationError {
   def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
+/*  def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
     basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but none satisfied")
 
   def xoneErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef])(ls: List[ShapeTyping]) =
-    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but more than one satisfied: $ls")
+    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but more than one satisfied: $ls") */
+
+  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: Seq[ShapeRef]) =
+    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy exactly one of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =
     basic("qualifiedShapeError", focusNode, attempt, s"qualified shape error. Expected $focusNode to satisfy qualifiedValueShape. Value = ${value}, min: ${min.map(_.toString).getOrElse("-")}, max: ${max.map(_.toString).getOrElse("-")}")
@@ -154,6 +157,9 @@ object ViolationError {
 
   def inError(focusNode: RDFNode, attempt: Attempt, values: Seq[Value]) =
     basic("inError", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
+
+  def notShapeError(focusNode: RDFNode, shapeRef: ShapeRef, attempt: Attempt) =
+    basic("notShape", focusNode, attempt, s"Not failed because $focusNode has shape $shapeRef and it should not have")
 
   def closedError(
     focusNode: RDFNode,

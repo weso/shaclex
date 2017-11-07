@@ -3,7 +3,8 @@ import org.scalatest._
 import cats._, data._
 import cats.implicits._
 
-/* TODO...update
+
+
 class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 
   import CheckerCatsStr._
@@ -92,14 +93,13 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
         lazy val x2: Check[Int] = logStr("x2") >> ok(2)
         lazy val e: Check[Int] = logStr("E") >> err("Err")
         lazy val c1 = cond(x1, (_: Int) => e, _ => x2)
-        println("Run(c1):" + runCheck(c1)(c0)(e0)(i0))
         runValue_(c1) should ===(Left("Err"))
         runLog_(c1) should ===(List("x1", "E"))
       }
-      it("Should be able to update info") {
+/*      it("Should be able to update info") {
         def add(x: Int): CheckInfo => CheckInfo = x :: _
         def c : Check[Int] = logStr("X") >> updateInfo(add(1)) >> ok(2)
         runCheck(c)(c0)(e0) should ===(List("X"),(Right(2),List(1)))
-      }
+      } */
  }
-} */ 
+}
