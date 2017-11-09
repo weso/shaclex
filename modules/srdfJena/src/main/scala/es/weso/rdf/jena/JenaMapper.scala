@@ -1,7 +1,7 @@
 package es.weso.rdf.jena
 
 // TODO: Refactor this code
-import org.apache.jena.rdf.model.{AnonId, Literal, ModelFactory, Property, Resource, Statement, StmtIterator,
+import org.apache.jena.rdf.model.{AnonId, ModelFactory, Property, Resource, Statement,
   Model => JenaModel,
   RDFNode => JenaRDFNode
 }
@@ -9,12 +9,10 @@ import es.weso.rdf.nodes._
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import es.weso.rdf.triples.RDFTriple
-import es.weso.rdf.PREFIXES._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import com.typesafe.scalalogging._
 import es.weso.rdf.path._
-import org.apache.jena.riot.system.IRIResolver
 import org.apache.jena.sparql.path._
 
 import util._
@@ -183,19 +181,19 @@ object JenaMapper {
   }
 
   def triplesSubject(resource: Resource, model: JenaModel): Set[Statement] = {
-    model.listStatements(resource, null, null).toSet.toSet
+    model.listStatements(resource, null, null).toSet.asScala.toSet
   }
 
   def triplesPredicate(pred: Property, model: JenaModel): Set[Statement] = {
-    model.listStatements(null, pred, null).toSet.toSet
+    model.listStatements(null, pred, null).toSet.asScala.toSet
   }
 
   def triplesObject(obj: Resource, model: JenaModel): Set[Statement] = {
-    model.listStatements(null, null, obj).toSet.toSet
+    model.listStatements(null, null, obj).toSet.asScala.toSet
   }
 
   def triplesPredicateObject(property: Property, obj: Resource, model: JenaModel): Set[Statement] = {
-    model.listStatements(null, property, obj).toSet.toSet
+    model.listStatements(null, property, obj).toSet.asScala.toSet
   }
 
   // TODO: Return Either[String,Path]
@@ -239,7 +237,7 @@ object JenaMapper {
       case l: es.weso.rdf.nodes.Literal => {
         Try {
           val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm, l.dataType.str)
-          val value = jenaLiteral.getValue() // if it is ill-typed it raises an exception
+          jenaLiteral.getValue() // if it is ill-typed it raises an exception
           (jenaLiteral.getDatatypeURI)
         } match {
           case Success(iri) => {

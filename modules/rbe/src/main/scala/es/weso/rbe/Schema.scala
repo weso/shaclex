@@ -1,8 +1,4 @@
 package es.weso.rbe
-import es.weso.typing._
-import util._
-
-//import es.weso.rbe.SESchemaException
 
 /**
  * Defines a Schema which is a map from Labels to Shapes

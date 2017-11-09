@@ -1,9 +1,7 @@
 package es.weso.shex.implicits
 import io.circe._
 import io.circe.syntax._
-import cats.data._
 import es.weso.rdf.nodes._
-import cats._
 import cats.implicits._
 import es.weso.shex._
 import showShEx._
@@ -176,7 +174,11 @@ object encoderShEx {
       case Length(v) => (x.fieldName, Json.fromInt(v))
       case MinLength(v) => (x.fieldName, Json.fromInt(v))
       case MaxLength(v) => (x.fieldName, Json.fromInt(v))
-      case Pattern(p, flags) => (x.fieldName, Json.fromString(p)) // TODO: Flags...
+      case Pattern(p, flags) => if (!flags.isDefined) {
+        (x.fieldName, Json.fromString(p))
+      } else {
+       throw new Exception(s"Unimplemented encoder of pattern with flags yet: $p, flags: $flags")
+      }
       case MinInclusive(n) => (x.fieldName, encodeNumeric(n))
       case MaxInclusive(n) => (x.fieldName, encodeNumeric(n))
       case MinExclusive(n) => (x.fieldName, encodeNumeric(n))

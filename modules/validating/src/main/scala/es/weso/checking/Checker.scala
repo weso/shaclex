@@ -1,6 +1,4 @@
 package es.weso.checking
-import cats._, data._
-import implicits._
 
 trait Checker {
   type Config

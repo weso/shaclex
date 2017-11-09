@@ -1,20 +1,10 @@
 package es.weso.utils
 
-import org.apache.jena.rdf.model.LiteralRequiredException
 import org.apache.jena.rdf.model.Model
-import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
-import org.apache.jena.rdf.model.ResourceRequiredException
-import org.apache.jena.rdf.model.Statement
-import org.apache.jena.reasoner.ReasonerFactory
-import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory
 import org.apache.jena.sparql.syntax.ElementPathBlock
-import org.apache.jena.rdf.model.InfModel
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.system.IRIResolver
-// import org.apache.jena.arq.querybuilder.SelectBuilder
-import org.apache.jena.graph.{ Triple => JenaTriple }
-import java.io.InputStreamReader
 import java.io.ByteArrayInputStream
 
 import org.apache.jena.query.Query
@@ -33,16 +23,12 @@ import org.apache.jena.atlas.AtlasException
 import org.apache.jena.riot.RiotException
 import org.apache.jena.query.ResultSet
 import org.apache.jena.rdf.model.Literal
-import org.apache.jena.rdf.model.ResourceFactory
 
-import util.{ Try, Failure => TryFailure, Success => TrySuccess }
 import scala.collection.JavaConverters._
 import org.apache.jena.query.ParameterizedSparqlString
 import org.apache.jena.sparql.core.{ TriplePath, Var }
 import org.apache.jena.sparql.path.Path
-import org.apache.jena.sparql.syntax.ElementGroup
 import org.apache.jena.util.{ FileUtils => FileJenaUtils }
-import org.apache.jena.vocabulary.DC
 
 sealed abstract class ParserReport[+A, +B]
 
@@ -85,7 +71,7 @@ object JenaUtils {
     inner(resource)
   }
 
-  def statementAsString(statement: Statement, model: Model, preffix: Boolean): String = {
+  /*def statementAsString(statement: Statement, model: Model, preffix: Boolean): String = {
     val resource = try {
       val uri = statement.getResource.toString
       val preffixUri = statement.getResource.getNameSpace
@@ -95,7 +81,7 @@ object JenaUtils {
         preffixNS + ":" + suffix
       else uri
     } catch {
-      case e: ResourceRequiredException => null
+      case _: ResourceRequiredException => null
     }
     if (resource == null) {
       try {
@@ -103,10 +89,10 @@ object JenaUtils {
           statement.getLiteral().getValue().toString
         else statement.getLiteral().toString
       } catch {
-        case e: LiteralRequiredException => resource
+        case _: LiteralRequiredException => null
       }
     } else resource
-  }
+  } */
 
   def dereferenceURI(uri: String): InputStream = {
     val url = new URL(uri)
@@ -119,22 +105,20 @@ object JenaUtils {
   def parseFromURI(
     uri: String,
     base: String = "",
-    syntax: String = Turtle): Try[Model] = {
+    syntax: String = Turtle): Either[String,Model] = {
     uri2Model(uri, base, syntax) match {
-      case Parsed(model) => TrySuccess(model)
-      case NotParsed(err) =>
-        TryFailure(throw new Exception(err))
+      case Parsed(model) => Right(model)
+      case NotParsed(err) => Left(err)
     }
   }
 
   def parseFromString(
     content: String,
     base: String = "",
-    syntax: String = Turtle): Try[Model] = {
+    syntax: String = Turtle): Either[String,Model] = {
     str2Model(content, base, syntax) match {
-      case Parsed(model) => TrySuccess(model)
-      case NotParsed(err) =>
-        TryFailure(throw new Exception("Cannot parse from string: " + content + ". Error: " + err + ". Syntax: " + syntax))
+      case Parsed(model) => Right(model)
+      case NotParsed(err) =>Left("Cannot parse from string: " + content + "\nError: " + err + "\nSyntax: " + syntax)
     }
   }
 
@@ -335,15 +319,15 @@ object JenaUtils {
   /*
    * Parse a string to obtain a query
    */
-  def parseQuery(
+  /*def parseQuery(
     str: String): Option[Query] = {
     try {
       val query = QueryFactory.create(str)
       Some(query)
     } catch {
-      case e: Exception => None
+      case _: Exception => None
     }
-  }
+  } */
 
   def querySelectModel(query: Query, model: Model): ResultSet = {
     val qexec = QueryExecutionFactory.create(query, model)
@@ -361,7 +345,7 @@ object JenaUtils {
   }
 
   def queryConstructModel(query: Query, model: Model): Model = {
-    val resultModel = ModelFactory.createDefaultModel
+    // val resultModel = ModelFactory.createDefaultModel
     val qexec = QueryExecutionFactory.create(query, model)
     qexec.execConstruct
   }

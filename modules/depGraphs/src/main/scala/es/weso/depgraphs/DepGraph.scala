@@ -1,7 +1,5 @@
 package es.weso.depgraphs
 
-import scala.collection.SortedMap
-
 trait DepGraph[Node] {
 
   def nodes: Set[Node]

@@ -1,9 +1,7 @@
 package es.weso.shex.validator
 
-import cats._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.checking.Checker
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.nodes._
 import es.weso.shex.ViolationError._
@@ -101,21 +99,21 @@ case class FacetChecker(schema: Schema)
     val n: Int = Integer.parseInt(str)
     Right(NumericInt(n))
   } catch {
-    case e: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
+    case _: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
   }
 
   private def str2NumericDecimal(str: String): Either[String, NumericDecimal] = try {
     val n: BigDecimal = BigDecimal(str)
     Right(NumericDecimal(n))
   } catch {
-    case e: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
+    case _: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
   }
 
   private def str2NumericDouble(str: String): Either[String, NumericDouble] = try {
     val n: Double = str.toDouble
     Right(NumericDouble(n))
   } catch {
-    case e: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
+    case _: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
   }
 
   private def numericValue(node: RDFNode): Either[String, NumericLiteral] = node match {

@@ -1,9 +1,8 @@
 package es.weso.shex.validator
 import es.weso.rdf.nodes._
-import cats._, data._
+import cats._
 import implicits._
 import es.weso.shex._
-import es.weso.shex.implicits._
 
 class ShowValidator(schema: Schema) {
 

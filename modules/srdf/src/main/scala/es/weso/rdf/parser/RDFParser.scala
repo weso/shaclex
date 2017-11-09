@@ -5,11 +5,9 @@ import es.weso.rdf._
 
 import scala.util._
 import es.weso.rdf._
-import es.weso.rdf.PREFIXES.{ rdf, _ }
+import es.weso.rdf.PREFIXES._
 import es.weso.rdf.triples.RDFTriple
 import cats._
-import cats.data._
-import cats.data.EitherT._
 import cats.implicits._
 
 /**
@@ -141,7 +139,7 @@ trait RDFParser {
   def rdfList: RDFParser[List[RDFNode]] = { (n, rdf) =>
     n match {
       case `rdf_nil` => parseOk(List())
-      case x => {
+      case _ => {
         for {
           elem <- objectFromPredicate(rdf_first)(n, rdf)
           next <- objectFromPredicate(rdf_rest)(n, rdf)
@@ -217,7 +215,7 @@ trait RDFParser {
   def optional[A](parser: RDFParser[A]): RDFParser[Option[A]] = { (n, rdf) =>
     parser(n, rdf) match {
       case Right(v) => Right(Some(v))
-      case Left(e) => Right(None)
+      case Left(_) => Right(None)
     }
   }
 
@@ -321,7 +319,7 @@ trait RDFParser {
                 case Left(_) => current
               }
             }
-            case Left(e) => {
+            case Left(_) => {
               parser(n, rdf)
             }
           }
@@ -392,8 +390,8 @@ trait RDFParser {
   def boolean: RDFParser[Boolean] = (n, rdf) => n match {
     case BooleanLiteral.trueLiteral => parseOk(true)
     case BooleanLiteral.falseLiteral => parseOk(false)
-    case DatatypeLiteral("true", xsd_boolean) => parseOk(true)
-    case DatatypeLiteral("false", xsd_boolean) => parseOk(false)
+    case DatatypeLiteral("true", `xsd_boolean`) => parseOk(true)
+    case DatatypeLiteral("false", `xsd_boolean`) => parseOk(false)
     case _ => parseFail(s"Expected boolean literal. Found $n")
   }
 
@@ -443,7 +441,7 @@ trait RDFParser {
         case 1 => parser(os.head, rdf).map(Some(_))
         case _ => parseFail(s"opt fails because $n has more than one value for pred $pred. Values: $os")
       }
-      case Left(e) => Right(None)
+      case Left(_) => Right(None)
     }
   }
 

@@ -11,7 +11,7 @@ case class RDFTriple(subj: RDFNode, pred: IRI, obj: RDFNode) {
 
   def extractBNode(node: RDFNode): Set[BNodeId] = {
     node match {
-      case b @ BNodeId(id) => Set(b)
+      case b @ BNodeId(_) => Set(b)
       case _ => Set()
     }
   }
@@ -71,7 +71,7 @@ object RDFTriple {
    * TODO: Consider removing this method
    */
   def showTriples(triples: Set[RDFTriple]): String = {
-    var str = new StringBuilder
+    val str = new StringBuilder
     for { t <- triples } {
       str ++= (t + "\n")
     }

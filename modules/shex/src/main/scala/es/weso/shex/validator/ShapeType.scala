@@ -1,7 +1,5 @@
 package es.weso.shex.validator
 import cats._
-import data._
-import cats.implicits._
 import es.weso.shex.{ Schema, ShapeExpr, ShapeLabel }
 import es.weso.shex.implicits.showShEx._
 

@@ -1,14 +1,14 @@
 package es.weso.shacl
+
 import es.weso.rdf.nodes._
-import es.weso.rdf.PrefixMap
 
 import util._
 import SHACLPrefixes._
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.path.SHACLPath
 import es.weso.shacl.converter.Shacl2RDF
 import sext._
 
-import scala.util.{ Success, Try }
 
 object Shacl {
   case object Unbounded

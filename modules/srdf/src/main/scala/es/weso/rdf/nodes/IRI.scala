@@ -1,9 +1,9 @@
 package es.weso.rdf.nodes
 
+import cats.implicits._
 import java.net.{ URI, URISyntaxException }
 import scala.util.Try
 import scala.util.matching.Regex
-import scala.util.Either._
 
 case class IRI(uri: URI) extends RDFNode {
 
@@ -52,15 +52,11 @@ object IRI {
     IRI(new URI(str))
   }
 
-  def mkIRI(str: String): Try[IRI] =
-    Try(IRI(new URI(str)))
+  def fromString(str: String): Either[String,IRI] =
+    Try(IRI(new URI(str))).toEither.leftMap(e => e.getMessage)
 
   def unapply(str: String): Option[IRI] =
-    mkIRI(str).toOption
-
-  def fromString(str: String): Option[IRI] = {
-    unapply(str)
-  }
+    fromString(str).fold(_ => None, Some(_))
 
   lazy val iriRegex: Regex = "^(.*)$".r
 

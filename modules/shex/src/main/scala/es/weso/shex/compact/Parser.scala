@@ -1,24 +1,17 @@
 package es.weso.shex.compact
 
-import java.io.{ ByteArrayInputStream, FileInputStream, InputStream, InputStreamReader, Reader => JavaReader }
-import java.util
+import java.io.{ ByteArrayInputStream, InputStreamReader, Reader => JavaReader }
 
-import cats._
 import cats.data._
-import cats.implicits._
 import com.typesafe.scalalogging._
-import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.shex._
-import es.weso.shex.parser.ShExDocParser.{ StringContext => ShExStringContext, _ }
 import es.weso.shex.parser._
 import org.antlr.v4.runtime._
 import java.nio.charset.StandardCharsets
 
 import es.weso.utils.FileUtils
-
-import scala.util.{ Failure, Success }
 
 object Parser extends LazyLogging {
 

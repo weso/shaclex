@@ -1,10 +1,9 @@
 package es.weso.rdf.jena
 
-import cats._
 import cats.data.{ State, _ }
 import cats.implicits._
 import es.weso.rdf.PrefixMap
-import es.weso.rdf.PREFIXES.{ rdf_first, rdf_nil, rdf_rest, rdf_type }
+import es.weso.rdf.PREFIXES.{ rdf_first, rdf_nil, rdf_rest}
 import es.weso.rdf.nodes._
 import es.weso.rdf.triples.RDFTriple
 

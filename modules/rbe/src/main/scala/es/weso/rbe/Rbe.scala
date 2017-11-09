@@ -4,7 +4,6 @@ import es.weso.collection._
 import interval._
 import IntOrUnbounded._
 import cats._
-import cats.implicits._
 
 /**
  * This trait defines Single Occurrence Regular Bag Expressions (Rbe)
@@ -32,7 +31,7 @@ sealed trait Rbe[+A] {
       case Or(e1, e2) => e1.containsRepeats || e2.containsRepeats
       case Star(e) => e.containsRepeats
       case Plus(e) => e.containsRepeats
-      case Repeat(e, m, n) => true
+      case Repeat(_, _, _) => true
     }
   }
 
@@ -89,10 +88,10 @@ sealed trait Rbe[+A] {
       case Symbol(_, _, _) => false
       case And(e1, e2) => e1.nullable && e2.nullable
       case Or(e1, e2) => e1.nullable || e2.nullable
-      case Star(e) => true
-      case Plus(e) => false
+      case Star(_) => true
+      case Plus(_) => false
       // case Repeat(e,0,IntLimit(0)) => true
-      case Repeat(e, 0, _) => true //
+      case Repeat(_, 0, _) => true //
       case Repeat(e, _, _) => e.nullable
     }
     println(s"$this nullable?: $r")
@@ -147,9 +146,9 @@ sealed trait Rbe[+A] {
     r
   }
 
-  private def mkRepeat[U >: A](r: => Rbe[U], m: Int, n: IntOrUnbounded): Rbe[U] = {
+/*  private def mkRepeat[U >: A](r: => Rbe[U], m: Int, n: IntOrUnbounded): Rbe[U] = {
     Repeat(r, m, n)
-  }
+  } */
 
   private def derivSymbol[U >: A](x: U, s: Symbol[U], open: Boolean, controlled: Seq[U]): Rbe[U] = {
     if (x == s.a) {

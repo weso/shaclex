@@ -5,8 +5,6 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
 
-import scala.util.Try
-
 /**
  * RDFReader can get read RDF data from several sources
  * At this moment, it can parse RDF from <code>CharSequence</code>

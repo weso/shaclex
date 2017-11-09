@@ -72,7 +72,7 @@ object IntervalChecker {
 
       // Adding Repetitions on expressions breaks the single-occurrence bag expression
       // This case is handled by detecting repetitions and invoking the derivatives algorithm
-      case Repeat(v, n, m) =>
+      case Repeat(_, _,_ ) =>
         throw new Exception("Intervals algorithm does not work with repetitions. RBE expr: " + this)
 
     }

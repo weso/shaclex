@@ -1,6 +1,5 @@
 package es.weso.rbe
 import cats._
-import data._
 import es.weso.rbe.interval.{ IntLimit, IntOrUnbounded, Unbounded }
 import implicits._
 

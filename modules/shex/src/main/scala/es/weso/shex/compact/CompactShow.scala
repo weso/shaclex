@@ -198,7 +198,7 @@ object CompactShow {
       case d: DatatypeString => datatypeStringDoc(pm)(d)
       case LangString(s, l) => stringDoc(s) :: str("@") :: str(l)
       case Stem(iri) => iriDoc(pm)(iri) :: str("~")
-      case StemRange(stem, exclusions) => str("TODO: StemRange")
+      case StemRange(_, _) => str("TODO: StemRange")
     }
 
   private def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Document =
@@ -282,7 +282,7 @@ object CompactShow {
       optDoc(t.annotations, annotationsDoc(pm))
 
   private def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Document =
-    str("todo: Annotations")
+    str(s"todo: Annotations $as $pm")
 
   private def cardinalityDoc(min: Option[Int], max: Option[Max]): Document =
     str(s" {${min.getOrElse(1)},${max.getOrElse(IntMax(1)).show}}")

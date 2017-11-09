@@ -2,11 +2,6 @@ package es.weso.rdf.jena
 
 import org.apache.jena.query._
 import es.weso.rdf.nodes._
-import scala.collection.JavaConversions._
-import scala.collection.immutable.StringOps._
-import es.weso.rdf.triples._
-import org.slf4j._
-import es.weso.rdf._
 
 object SPARQLQueries {
 

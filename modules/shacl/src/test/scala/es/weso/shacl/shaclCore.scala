@@ -54,7 +54,7 @@ class ShaclCore
   def getSchemaRdf(a: ManifestAction): Either[String, (Schema, RDFReader)] = {
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
     a.data match {
-      case None => Right(Schema.empty, RDFAsJenaModel.empty)
+      case None => Right((Schema.empty, RDFAsJenaModel.empty))
       case Some(iri) => {
         println(s"iri: ${iri.str}")
         for {

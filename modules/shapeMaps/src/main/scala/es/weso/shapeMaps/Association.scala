@@ -1,7 +1,5 @@
 package es.weso.shapeMaps
 
-import cats.Show
-import cats.syntax.show._
 import io.circe._
 import io.circe.syntax._
 import NodeSelector._

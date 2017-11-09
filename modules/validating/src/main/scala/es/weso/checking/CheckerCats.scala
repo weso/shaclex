@@ -3,9 +3,7 @@ import cats._, data._
 import cats.implicits._
 
 abstract class CheckerCats extends Checker {
-  //  import CanLog.ops._
   implicit val envMonoid: Monoid[Env]
-  //  implicit val logCanLog: CanLog[Log]
   implicit val logMonoid: Monoid[Log]
 
   type ReaderConfig[A] = Kleisli[Id, Config, A]
@@ -24,10 +22,6 @@ abstract class CheckerCats extends Checker {
   def addLog(log: Log): Check[Unit] = {
     writerEC2check(WriterT.tell[ReaderEC, Log](log))
   }
-
-  /*  def logStr(msg: String): Check[Unit] = {
-    addLog(CanLog[Log].log(msg))
-  } */
 
   def local[A](f: Env => Env)(c: Check[A]): Check[A] = {
     EitherT(runLocalW(f)(c.value))
@@ -95,7 +89,7 @@ abstract class CheckerCats extends Checker {
       rs <- rest
       c <- attempt(check(current))
     } yield c match {
-      case Left(err) => rs
+      case Left(_) => rs
       case Right(b) => (current, b) +: rs
     }
     ls.foldLeft(zero)(comb)
@@ -197,7 +191,7 @@ abstract class CheckerCats extends Checker {
 
   def writerEC2check[A](c: WriterEC[A]): Check[A] =
     // c.liftT[λ[(F[_], A) => EitherT[F, Err, A]]]
-    EitherT.liftT(c)
+    EitherT.liftF(c)
 
 }
 
@@ -228,9 +222,9 @@ object CheckerCatsStr extends CheckerCats {
   def run0[A](c: Check[A]): (Log, Either[Err, A]) =
     run(c)(c0)(e0)
 
-  def c1: Check[Int] = logStr("one") >> ok(1)
-  def c2: Check[Int] = logStr("two") >> ok(2)
-  def e: Check[Int] = logStr("err") >> err("Err")
+  def c1: Check[Int] = logStr("one") *> ok(1)
+  def c2: Check[Int] = logStr("two") *> ok(2)
+  def e: Check[Int] = logStr("err") *> err("Err")
 
   def logStr(msg: String): Check[Unit] = {
     addLog(List(msg))

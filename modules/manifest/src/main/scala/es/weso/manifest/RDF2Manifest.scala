@@ -5,13 +5,9 @@ import es.weso.rdf._
 import scala.util._
 import es.weso.rdf._
 import ManifestPrefixes._
-import es.weso.rdf.triples.RDFTriple
-import es.weso.rdf.PrefixMap
 import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.jena.RDFAsJenaModel
-import java.io.File
 import es.weso.utils.FileUtils._
-import es.weso.utils.TryUtils._
 
 case class RDF2ManifestException(msg: String)
   extends Exception(msg)
@@ -178,9 +174,12 @@ trait RDF2Manifest
     types.getOrElse(Set()).isEmpty
   }
 
-  // TODO
   def includes(derefIncludes: Boolean): RDFParser[List[(IRI, Option[Manifest])]] = { (n, rdf) =>
-    parseOk(List())
+    if (derefIncludes) {
+      // TODO. Dereference includes in manifest
+      parseOk(List())
+    }
+    else parseOk(List())
   }
 
   def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n, rdf) => for {

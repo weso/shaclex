@@ -1,6 +1,5 @@
 package es.weso.shapeMaps
 
-import cats.Show
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 import io.circe._
@@ -39,6 +38,13 @@ case class FixedShapeMap(
       case _ => Left(s"Only RDFNode's can be added as associations to fixedShapeMaps. Value = ${a.node}")
     }
   }
+
+  def addNodesPrefixMap(pm: PrefixMap): FixedShapeMap =
+    this.copy(nodesPrefixMap = pm)
+
+  def addShapesPrefixMap(pm: PrefixMap): FixedShapeMap =
+    this.copy(shapesPrefixMap = pm)
+
 }
 
 object FixedShapeMap {

@@ -1,7 +1,6 @@
 package es.weso.shaclex
 
 import org.rogach.scallop._
-import org.rogach.scallop.exceptions._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger

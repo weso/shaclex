@@ -1,8 +1,7 @@
 package es.weso.shacl
 
 import es.weso.rdf.nodes._
-import cats._, data._
-import cats.implicits._
+import cats._
 
 case class NodeShapePair(node: RDFNode, shape: ShapeRef) {
 

@@ -1,8 +1,7 @@
 package es.weso.rbe
-import util._
 import es.weso.typing._
 import es.weso.checking._
-import cats._, data._
+import cats._
 import implicits._
 
 case class MatcherLog[Edge, Node, Label, Evidence](

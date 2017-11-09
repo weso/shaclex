@@ -1,8 +1,6 @@
 package es.weso.rbe.interval
 
-import math.{ max => intMax, min => intMin }
 import cats._
-import cats.implicits._
 import org.scalactic._
 import scala.math.{ max => intMax }
 import scala.math.{ min => intMin }
@@ -69,8 +67,8 @@ sealed abstract trait IntOrUnbounded {
   def >(other: IntOrUnbounded): Boolean = {
     (this, other) match {
       case (Unbounded, Unbounded) => false
-      case (Unbounded, IntLimit(m)) => true
-      case (IntLimit(n), Unbounded) => false
+      case (Unbounded, IntLimit(_)) => true
+      case (IntLimit(_), Unbounded) => false
       case (IntLimit(n), IntLimit(m)) => n > m
     }
   }
@@ -150,18 +148,18 @@ object IntOrUnbounded {
     (x, y) match {
       case (0, IntLimit(0)) => Unbounded // This is to include 0-up cardinalities. Verify if this right
       case (0, _) => _0
-      case (n, Unbounded) => _1
-      case (n, IntLimit(0)) => Unbounded
-      case (n, IntLimit(m)) => divIntDown(x, m)
+      case (_, Unbounded) => _1
+      case (_, IntLimit(0)) => Unbounded
+      case (_, IntLimit(m)) => divIntDown(x, m)
     }
   }
 
   def divIntLimitUp(x: Int, y: IntOrUnbounded): IntOrUnbounded = {
     (x, y) match {
       case (0, _) => _0
-      case (n, Unbounded) => _1
-      case (n, IntLimit(0)) => Unbounded
-      case (n, IntLimit(m)) => divIntUp(x, m)
+      case (_, Unbounded) => _1
+      case (_, IntLimit(0)) => Unbounded
+      case (_, IntLimit(m)) => divIntUp(x, m)
     }
   }
 

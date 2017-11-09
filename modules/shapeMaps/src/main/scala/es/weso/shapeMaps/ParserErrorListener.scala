@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.dfa.DFA
 
 class ParserErrorListener extends ANTLRErrorListener {
 
-  private var errors = new scala.collection.mutable.Queue[String]
+  private val errors = new scala.collection.mutable.Queue[String]
 
   def getErrors(): List[String] = errors.toList
 

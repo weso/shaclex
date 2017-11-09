@@ -1,6 +1,5 @@
 package es.weso.rbe
 import es.weso.utils._
-import es.weso.checking._
 import es.weso.rbe.nodeShape._
 
 /**
@@ -28,13 +27,12 @@ object StringGraph {
    * @param x the value to check
    * @param p the predicate
    * @param name name of the condition to check
-   * @param ferr a function that converts a String into an Error
    * @return if the value satisfies the predicate, a Checker with an ok value, otherwise the error that results of applying ferr to the name of the condition
    */
   def cond[A](
     x: A,
     p: A => Boolean,
-    name: String)(implicit ferr: String => RbeError): CheckVal[A, RbeError, String] = {
+    name: String): CheckVal[A, RbeError, String] = {
     if (p(x)) NodeShape.ok[A, RbeError, String](x, "OK")
     else NodeShape.errString[A, String](s"Failed condition $name on $x")
   }

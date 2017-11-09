@@ -1,5 +1,5 @@
 package es.weso.typing
-import cats._, data._
+import cats._
 import cats.implicits._
 
 abstract class Typing[Key, Value, Err, Evidence] {

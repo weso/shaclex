@@ -1,15 +1,9 @@
 package es.weso.shex.implicits
 import io.circe._
-import io.circe.syntax._
-// import cats._
-// import cats.data._
-// import cats.implicits._
 import cats.syntax.either._
-import cats.instances.either._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.IRI._
 import util.matching._
-import java.net.URISyntaxException
 import es.weso.shex._
 import es.weso.rdf._
 import es.weso.json.DecoderUtils._

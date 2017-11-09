@@ -11,9 +11,10 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import org.http4s._, org.http4s.dsl.io._, org.http4s.implicits._
+import org.http4s.{HttpService, _}
+import org.http4s.dsl.io._
+import org.http4s.implicits._
 import org.http4s.client.blaze.PooledHttp1Client
-
 import org.http4s.websocket.WebsocketBits._
 import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
@@ -38,38 +39,19 @@ import es.weso._
 import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
 import es.weso.shaclex.buildinfo.BuildInfo._
+import QueryParams._
+import Http4sUtils._
+import ValidateHelper._
 
-class Routes {
+object APIService {
 
   private val logger = getLogger
   val api = "api"
 
   private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
-  // Get the static content
-  private val static: HttpService[IO] = cachedResource[IO](Config("/static", "/static"))
-  private val views: HttpService[IO] = cachedResource(Config("/staticviews", "/"))
-  private val swagger: HttpService[IO] = cachedResource(Config("/swagger", "/swagger"))
+  private val swagger: HttpService[IO] = staticResource(Config("/swagger", "/swagger"))
 
-  object DataParam extends QueryParamDecoderMatcher[String]("data")
-  object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
-  object OptDataURLParam extends OptionalQueryParamDecoderMatcher[String]("dataURL")
-  object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
-  object TargetDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetDataFormat")
-  object SchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
-  object SchemaURLParam extends OptionalQueryParamDecoderMatcher[String]("schemaURL")
-  object SchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("schemaFormat")
-  object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")
-  object TargetSchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetSchemaFormat")
-  object TargetSchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("targetSchemaEngine")
-  object TriggerModeParam extends OptionalQueryParamDecoderMatcher[String]("triggerMode")
-  object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
-  object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
-  object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
-  object ShapeMapParam extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
-  object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
-  object InferenceParam extends OptionalQueryParamDecoderMatcher[String]("inference")
-  object ExamplesParam extends QueryParamDecoderMatcher[String]("examples")
 
   val availableDataFormats = DataFormats.formatNames.toList
   val defaultDataFormat = DataFormats.defaultFormatName
@@ -81,172 +63,7 @@ class Routes {
   val defaultTriggerMode = Schemas.defaultTriggerMode
   val defaultSchemaEmbedded = false
 
-  val serviceTest : HttpService[IO] = HttpService[IO] {
-    case req @ GET -> Root / "test" => {
-      Ok("test")
-    }
-  }
-
-
-  val service: HttpService[IO] = HttpService[IO] {
-
-    // Web site
-    case req @ GET -> Root => {
-      Ok(html.index())
-    }
-
-    case req @ GET -> Root / "dataConversions" :?
-      OptDataParam(optData) +&
-      DataFormatParam(optDataFormat) +&
-      TargetDataFormatParam(optTargetDataFormat) => {
-      Ok(html.dataConversions(
-        optData,
-        availableDataFormats,
-        optDataFormat.getOrElse(defaultDataFormat),
-        optTargetDataFormat.getOrElse(defaultDataFormat),
-        dataConvert(optData, optDataFormat, optTargetDataFormat)))
-    }
-
-    case req @ GET -> Root / "dataInfo" => {
-      Ok(html.dataInfo(
-        availableDataFormats,
-        defaultDataFormat))
-    }
-
-    case req @ GET -> Root / "schemaConversions" :?
-      SchemaParam(optSchema) +&
-      SchemaFormatParam(optSchemaFormat) +&
-      SchemaEngineParam(optSchemaEngine) +&
-      TargetSchemaFormatParam(optTargetSchemaFormat) +&
-      TargetSchemaEngineParam(optTargetSchemaEngine) => {
-      Ok(html.schemaConversions(
-        None,
-        optSchema,
-        availableSchemaFormats,
-        optSchemaFormat.getOrElse(defaultSchemaFormat),
-        availableSchemaEngines,
-        optSchemaEngine.getOrElse(defaultSchemaEngine),
-        optTargetSchemaFormat.getOrElse(defaultSchemaFormat),
-        optTargetSchemaEngine.getOrElse(defaultSchemaEngine)))
-    }
-
-    case req @ GET -> Root / "schemaInfo" => {
-      Ok(html.schemaInfo(
-        availableSchemaFormats,
-        defaultSchemaFormat,
-        availableSchemaEngines,
-        defaultSchemaEngine))
-    }
-
-    case req @ GET -> Root / "dataOptions" => {
-      Ok(html.dataOptions(
-        availableDataFormats,
-        defaultDataFormat))
-    }
-
-    case req @ GET -> Root / "schemaOptions" => {
-      Ok(html.schemaOptions(
-        availableSchemaFormats,
-        defaultSchemaFormat,
-        availableSchemaEngines,
-        defaultSchemaEngine,
-        availableTriggerModes,
-        defaultTriggerMode))
-    }
-
-    case req @ GET -> Root / "about" => {
-      Ok(html.about())
-    }
-
-    case req @ GET -> Root / "load" :?
-      ExamplesParam(examples) => {
-      println(s"Examples: $examples")
-      Ok(html.load(examples))
-    }
-
-    case req @ GET -> Root / "validate" :?
-      OptDataParam(optData) +&
-      OptDataURLParam(optDataURL) +&
-      DataFormatParam(optDataFormat) +&
-      SchemaParam(optSchema) +&
-      SchemaURLParam(optSchemaURL) +&
-      SchemaFormatParam(optSchemaFormat) +&
-      SchemaEngineParam(optSchemaEngine) +&
-      TriggerModeParam(optTriggerMode) +&
-      NodeParam(optNode) +&
-      ShapeParam(optShape) +&
-      ShapeMapParam(optShapeMap) +&
-      SchemaEmbedded(optSchemaEmbedded) +&
-      InferenceParam(optInference) => {
-
-      val baseUri = req.uri
-
-      println(s"BaseURI: $baseUri")
-
-      val eitherData: Either[String, Option[String]] = optData match {
-        case None => optDataURL match {
-          case None => Right(None)
-          case Some(dataURL) => resolveUri(baseUri,dataURL)
-        }
-        case Some(dataStr) => Right(Some(dataStr))
-      }
-
-      val eitherSchema: Either[String, Option[String]] = optSchema match {
-        case None => optSchemaURL match {
-          case None => Right(None)
-          case Some(schemaURL) => resolveUri(baseUri,schemaURL)
-        }
-        case Some(schemaStr) => Right(Some(schemaStr))
-      }
-      val schemaEmbedded = optSchemaEmbedded.getOrElse(defaultSchemaEmbedded)
-      val availableInferenceEngines =
-        RDFAsJenaModel.empty.availableInferenceEngines
-      val inference =
-        optInference.getOrElse("NONE")
-
-      val eitherResult = for {
-        data <- eitherData
-        schema <- eitherSchema
-      } yield {
-        data.map(validate(_, optDataFormat,
-          optSchema, optSchemaFormat, optSchemaEngine,
-          optTriggerMode,
-          optNode, optShape, optShapeMap,
-          optInference))
-      }
-      eitherResult match {
-        case Left(msg) => BadRequest(msg)
-        case Right(result) => {
-          val triggerMode: ValidationTrigger = result.
-            map(_._2.getOrElse(ValidationTrigger.default)).
-            getOrElse(ValidationTrigger.default)
-
-          val shapeMap = triggerMode match {
-            case TargetDeclarations => None
-            case ShapeMapTrigger(sm) => Some(sm.toString)
-          }
-          Ok(html.validate(
-            result.map(_._1),
-            optData,
-            availableDataFormats,
-            optDataFormat.getOrElse(defaultDataFormat),
-            optSchema,
-            availableSchemaFormats,
-            optSchemaFormat.getOrElse(Schemas.shEx.defaultFormat),
-            availableSchemaEngines,
-            optSchemaEngine.getOrElse(Schemas.shEx.name),
-            availableTriggerModes,
-            triggerMode.name,
-            shapeMap,
-            schemaEmbedded,
-            availableInferenceEngines,
-            inference
-          ))
-        }
-      }
-    }
-
-    // API methods
+  val apiService: HttpService[IO] = HttpService[IO] {
 
     case GET -> Root / `api` / "schema" / "engines" => {
       val engines = Schemas.availableSchemaNames
@@ -444,116 +261,10 @@ class Routes {
       default
     }
 
-    // Contents on /static are mapped to /static
-    case r @ GET -> _ if r.pathInfo.startsWith("/static") => static(r).getOrElseF(NotFound())
-
     // Contents on /swagger are directly mapped to /swagger
     case r @ GET -> _ if r.pathInfo.startsWith("/swagger/") => swagger(r).getOrElseF(NotFound())
 
-    // case r @ GET -> _ if r.pathInfo.startsWith("/swagger.json") => views(r)
-
-    // When accessing to a folder (ends by /) append index.scala.html
-    case r @ GET -> _ if r.pathInfo.endsWith("/") =>
-      service(r.withPathInfo(r.pathInfo + "index.scala.html")).getOrElseF(NotFound())
-
-    case r @ GET -> _ =>
-      val rr = if (r.pathInfo.contains('.')) r else r.withPathInfo(r.pathInfo + ".html")
-      views(rr).getOrElseF(NotFound())
-
   }
 
-  private def cachedResource[F[_]: Effect](config: Config[F]): HttpService[F] = {
-    // Remove cache for development
-    // val cachedConfig: Config[IO] = config.copy(cacheStrategy = staticcontent.MemoryCache())
-    val cachedConfig: Config[F] = config.copy(cacheStrategy = staticcontent.NoopCacheStrategy[F])
-    staticcontent.resourceService(cachedConfig)
-  }
-
-  def prefixMap2Json(pm: PrefixMap): Json = {
-    Json.fromFields(pm.pm.map { case (prefix, iri) => (prefix.str, Json.fromString(iri.getLexicalForm)) })
-  }
-
-  def dataConvert(
-    optData: Option[String],
-    optDataFormat: Option[String],
-    optTargetDataFormat: Option[String]): Either[String, Option[String]] = optData match {
-    case None => Right(None)
-    case Some(data) => {
-      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-      val resultDataFormat = optTargetDataFormat.getOrElse(DataFormats.defaultFormatName)
-      for {
-        rdf <- RDFAsJenaModel.fromChars(data, dataFormat, None)
-      } yield Some(rdf.serialize(resultDataFormat))
-    }
-  }
-
-  def validate(
-    data: String,
-    optDataFormat: Option[String],
-    optSchema: Option[String],
-    optSchemaFormat: Option[String],
-    optSchemaEngine: Option[String],
-    optTriggerMode: Option[String],
-    optNode: Option[String],
-    optShape: Option[String],
-    optShapeMap: Option[String],
-    optInference: Option[String]): (Result, Option[ValidationTrigger]) = {
-
-    val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-    val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
-    val schemaFormat = optSchema match {
-      case None => dataFormat
-      case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
-    }
-    val schemaStr = optSchema match {
-      case None => data
-      case Some(schema) => schema
-    }
-
-    val base = Some(FileUtils.currentFolderURL)
-
-    Schemas.fromString(schemaStr, schemaFormat, schemaEngine, base) match {
-      case Left(e) =>
-        (Result.errStr(s"Error reading schema: $e\nschemaFormat: $schemaFormat, schemaEngine: $schemaEngine\nschema:\n$schemaStr"), None)
-      case Right(schema) => {
-        RDFAsJenaModel.fromChars(data, dataFormat, base) match {
-          case Left(e) =>
-            (Result.errStr(s"Error reading rdf data: $e\ndataFormat: $dataFormat\nRDF Data:\n$data"), None)
-          case Right(rdf) => {
-            rdf.applyInference(optInference.getOrElse("None")) match {
-              case Left(msg) => (Result.errStr(s"Error applying inference to RDF: $msg"), None)
-              case Right(newRdf) => {
-                val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
-                val shapeMap = optShapeMap.getOrElse("")
-                ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
-                  case Left(msg) => (
-                    Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"),
-                    None)
-                  case Right(trigger) => (schema.validate(newRdf, trigger), Some(trigger))
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-
- private def resolveUri(baseUri: Uri, urlStr: String): Either[String,Option[String]] = {
-   // TODO: handle timeouts
-   Uri.fromString(urlStr).fold(
-     fail => {
-       println(s"Error parsing $urlStr")
-       Left(fail.message)
-     },
-     uri => Try {
-     val httpClient = PooledHttp1Client[IO]()
-     val resolvedUri = baseUri.resolve(uri)
-     println(s"Resolved: $resolvedUri")
-     httpClient.expect[String](resolvedUri).unsafeRunSync()
-   }.toEither.leftMap(_.getMessage).map(Some(_))
-   )
- }
 
 }

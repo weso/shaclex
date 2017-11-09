@@ -1,7 +1,5 @@
 package es.weso.shacl
-import cats._, data._
-import cats.implicits._
-import NodeShapePair._
+import cats._
 
 case class Evidences(ls: List[Evidence])
 

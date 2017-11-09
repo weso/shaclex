@@ -2,10 +2,8 @@ package es.weso.shapeMaps
 
 import es.weso.rdf.nodes._
 import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.rdf.{ PrefixMap, RDFReader }
-import io.circe.JsonObject._
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
@@ -69,16 +67,23 @@ object ShapeMap {
     nodesPrefixMap: PrefixMap,
     shapesPrefixMap: PrefixMap): Either[String, FixedShapeMap] = {
 
-    val empty: Either[String, FixedShapeMap] = Right(FixedShapeMap.empty)
+    val empty: Either[String, FixedShapeMap] = Right(
+      FixedShapeMap.empty.
+        addNodesPrefixMap(nodesPrefixMap).
+        addShapesPrefixMap(shapesPrefixMap)
+    )
 
-    def addNode(a: Association)(node: RDFNode, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = for {
+    def addNode(a: Association)(
+      node: RDFNode,
+      current: Either[String, FixedShapeMap]
+    ): Either[String, FixedShapeMap] = for {
       fixed <- current
       newShapeMap <- fixed.addAssociation(Association(RDFNodeSelector(node), a.shape))
     } yield newShapeMap
 
     def combine(a: Association, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = {
       a.node match {
-        case RDFNodeSelector(node) => for {
+        case RDFNodeSelector(_) => for {
           sm <- current
           newSm <- sm.addAssociation(a)
         } yield newSm
@@ -130,12 +135,12 @@ object ShapeMap {
         }
       }
 
-      implicit val showPredicate: Show[IRI] = new Show[IRI] {
+      /*implicit val showPredicate: Show[IRI] = new Show[IRI] {
         final def show(iri: IRI): String = iri match {
           case `rdf_type` => "a"
           case _ => a.nodesPrefixMap.qualify(iri)
         }
-      }
+      } */
 
       implicit val showPath: Show[SHACLPath] = new Show[SHACLPath] {
         final def show(path: SHACLPath): String = path match {

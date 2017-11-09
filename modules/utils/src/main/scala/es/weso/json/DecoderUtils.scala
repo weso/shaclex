@@ -1,9 +1,7 @@
 package es.weso.json
 
 import io.circe._
-import io.circe.syntax._
 import cats.syntax.either._
-import cats.instances.either._
 
 object DecoderUtils {
 

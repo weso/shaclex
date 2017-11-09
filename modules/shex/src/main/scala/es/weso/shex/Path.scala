@@ -1,6 +1,5 @@
 package es.weso.shex
-import cats.Show
-import cats.syntax.show
+import cats._
 import es.weso.rdf.nodes.IRI
 
 sealed trait Path
@@ -22,7 +21,7 @@ object Path {
         case Direct(p1) =>
           x2 match {
             case Direct(p2) => Ordering[String].compare(p1.str, p2.str)
-            case Inverse(p2) => 1
+            case Inverse(_) => 1
           }
         case Inverse(p1) => {
           x2 match {

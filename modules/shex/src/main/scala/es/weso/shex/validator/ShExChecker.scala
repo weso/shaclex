@@ -1,12 +1,10 @@
 package es.weso.shex.validator
 
 import cats._
-import data._
 import implicits._
 import es.weso.checking.CheckerCats
 import es.weso.rdf.RDFReader
-import es.weso.rdf.nodes.{ BNodeId, IRI, Literal, RDFNode }
-import es.weso.shex.{ implicits => _, _ }
+import es.weso.shex.ViolationError
 
 object ShExChecker extends CheckerCats {
 

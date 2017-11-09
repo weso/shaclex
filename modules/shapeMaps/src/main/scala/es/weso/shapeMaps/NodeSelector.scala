@@ -1,9 +1,7 @@
 package es.weso.shapeMaps
 
-import cats.Show
-import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes.{ IRI, RDFNode }
-import es.weso.rdf.path.{ PredicatePath, SHACLPath }
+import es.weso.rdf.nodes.RDFNode
+import es.weso.rdf.path.SHACLPath
 import io.circe._
 import io.circe.syntax._
 import es.weso.json.DecoderUtils._

@@ -1,7 +1,5 @@
 package es.weso.shapeMaps
 
-import cats.Show
-import cats.syntax.show._
 import es.weso.rdf.PrefixMap
 import io.circe._
 import io.circe.syntax._

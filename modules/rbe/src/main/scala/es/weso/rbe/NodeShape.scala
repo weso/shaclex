@@ -1,9 +1,8 @@
 package es.weso.rbe
-import es.weso.checking._
-import cats._, data._
+
+import cats._
 import implicits._
 import es.weso.utils.Read
-//import CheckVal._
 
 object nodeShape {
 

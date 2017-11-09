@@ -2,7 +2,6 @@ package es.weso.rdf.path
 
 import es.weso.rdf.nodes.{ IRI, RDFNode }
 import io.circe.{ Json, _ }
-import io.circe.syntax._
 
 sealed trait SHACLPath {
   def predicate: Option[IRI]

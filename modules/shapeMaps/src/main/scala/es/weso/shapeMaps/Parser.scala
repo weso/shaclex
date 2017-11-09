@@ -3,15 +3,10 @@ package es.weso.shapeMaps
 import java.io.{ ByteArrayInputStream, InputStreamReader, Reader => JavaReader }
 import java.nio.charset.StandardCharsets
 
-import cats.data._
 import com.typesafe.scalalogging._
 import es.weso.rdf._
-import es.weso.rdf.nodes._
 import es.weso.shapeMaps.parser.{ ShapeMapLexer, ShapeMapParser }
-import es.weso.shapeMaps.parser.ShapeMapParser.{ StringContext => ShapeMapStringContext, _ }
 import org.antlr.v4.runtime._
-
-import scala.util.{ Failure, Success }
 
 object Parser extends LazyLogging {
 

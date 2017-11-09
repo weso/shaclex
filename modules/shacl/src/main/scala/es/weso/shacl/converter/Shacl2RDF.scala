@@ -1,11 +1,8 @@
 package es.weso.shacl.converter
 import scala.util._
-import cats._
 import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf._
-import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.rdf.PREFIXES.{ sh => _, _ }

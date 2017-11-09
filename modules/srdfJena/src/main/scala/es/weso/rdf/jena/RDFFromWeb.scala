@@ -6,20 +6,16 @@ import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConverters._
-import scala.util.{Either, Try}
-import es.weso.rdf.triples._
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import scala.util.Either
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
 case class RDFFromWeb() extends RDFReader {

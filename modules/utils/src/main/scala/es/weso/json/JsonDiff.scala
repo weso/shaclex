@@ -118,8 +118,8 @@ object JsonCompare {
 
   private def diffFields(
     o1: JsonObject, o2: JsonObject): Option[(Set[String], Set[String])] = {
-    val fields1minus2 = o1.fieldSet -- o2.fieldSet
-    val fields2minus1 = o2.fieldSet -- o1.fieldSet
+    val fields1minus2 = o1.keys.toSet -- o2.keys.toSet
+    val fields2minus1 = o2.keys.toSet -- o1.keys.toSet
     if (fields1minus2.isEmpty && fields2minus1.isEmpty)
       None
     else

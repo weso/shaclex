@@ -1,8 +1,6 @@
 package es.weso.shex
 
 import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
-import cats._
-import cats.data._
 import cats.implicits._
 
 import scala.util.{ Either, Right }
@@ -69,7 +67,7 @@ object Dependencies {
       case s: ShapeNot =>
         dependencies(schema, s.shapeExpr, source, Neg)
 
-      case nc: NodeConstraint => Right(List())
+      case _: NodeConstraint => Right(List())
 
       case s: Shape => {
         // TODO: Add negative dependencies to EXTRAs
@@ -77,7 +75,7 @@ object Dependencies {
       }
 
       case s: ShapeRef => Right(List((source, posNeg, s.reference)))
-      case s: ShapeExternal => Right(List())
+      case _: ShapeExternal => Right(List())
     }
   }
 
@@ -93,7 +91,6 @@ object Dependencies {
         t.expressions.map((tripleExpr: TripleExpr) => dependenciesTripleExpr(schema, source, tripleExpr, posNeg)).sequence.map(_.flatten)
       }
       case i: Inclusion => {
-        val label = i.include
         Right(List((source, posNeg, i.include)))
       }
       case tc: TripleConstraint =>

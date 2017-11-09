@@ -16,14 +16,9 @@ import es.weso.rdf.PREFIXES._
 import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
 import ShExChecker._
-import es.weso.rdf.jena.JenaMapper
 import es.weso.shapeMaps.{ IRILabel => IRIMapLabel, BNodeLabel => BNodeMapLabel, _ }
 
 import es.weso.shex.compact.CompactShow
-import es.weso.typing.TypingResult
-import io.circe.Json
-
-import scala.util.{ Failure, Success }
 
 /**
  * ShEx validator
@@ -61,7 +56,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def checkShapeMap(shapeMap: FixedShapeMap): CheckTyping = for {
     rdf <- getRDF
-    t <- checkNodesShapes(shapeMap, rdf)
+    t <- checkNodesShapes(shapeMap)
   } yield t
 
   private[validator] def getTargetNodeDeclarations(rdf: RDFReader): Check[List[(RDFNode, ShapeLabel)]] = {
@@ -70,10 +65,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       toList.map(checkPair2nd))
   }
 
-  private[validator] def checkNodesShapes(fixedShapeMap: FixedShapeMap, rdf: RDFReader): CheckTyping = for {
+  private[validator] def checkNodesShapes(fixedShapeMap: FixedShapeMap): CheckTyping = for {
     ts <- checkAll(fixedShapeMap.shapeMap.map {
       case (node, shapesMap) => {
-        checkNodeShapesMap(node, shapesMap, rdf)
+        checkNodeShapesMap(node, shapesMap)
       }
     }.toList)
     t <- combineTypings(ts)
@@ -88,7 +83,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     case NonConformant => errStr(s"checkNodeShapeMapLabel: Not implemented negative info yet. Node: $node, label: $label")
   }
 
-  private[validator] def checkNodeShapesMap(node: RDFNode, shapesMap: Map[ShapeMapLabel, Info], rdf: RDFReader): CheckTyping = for {
+  private[validator] def checkNodeShapesMap(node: RDFNode, shapesMap: Map[ShapeMapLabel, Info]): CheckTyping = for {
     ts <- checkAll(shapesMap.map {
       case (label, info) => {
         checkNodeShapeMapLabel(node, label, info)
@@ -133,18 +128,11 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def getShapeLabel(str: String): Check[ShapeLabel] = {
     logger.info(s"getShapeLabel. Label: ${str}")
-    val maybeIRI: Either[String, IRI] =
-      IRI.mkIRI(str) match {
-        case Success(iri) => Right(iri)
-        case Failure(e) => Left(s"Can't get shape label from $str. Bad formed IRI")
-      }
-    maybeIRI match {
+    IRI.fromString(str) match {
       case Right(iri) => {
-        val label = IRILabel(IRI(str))
+        val label = IRILabel(iri)
         if (schema.labels contains label) ok(label)
-        else {
-          errStr(s"Schema does not contain label '$str'. Available labels: ${schema.labels}")
-        }
+        else errStr(s"Schema does not contain label '$str'. Available labels: ${schema.labels}")
       }
       case Left(str) => errStr(str)
     }
@@ -188,7 +176,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case nc: NodeConstraint => checkNodeConstraint(attempt, node, nc)
       case s: Shape => checkShape(attempt, node, s)
       case ShapeRef(ref) => checkRef(attempt, node, ref)
-      case s: ShapeExternal => errStr(s"Not implemented ShapeExternal ${attempt.show}")
+      case _: ShapeExternal => errStr(s"Not implemented ShapeExternal ${attempt.show}")
     }
   }
 
@@ -238,7 +226,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     t <- checkNodeLabel(node, ref)
     _ <- if (t.hasNoType(node, ref)) {
       t.getTypingResult(node, ref) match {
-        case None => errStr(s"Node ${node.show} has no shape ${ref.show}. Reason unknown")
+        case None => errStr(s"Node ${node.show} has no shape ${ref.show}. Attempt: $attempt")
         case Some(tr) => tr.getErrors match {
           case None => errStr(s"Node ${node.show} has no shape ${ref.show}\nReason typing result ${tr.show} with no errors")
           case Some(es) => errStr(s"Node ${node.show} has no shape ${ref.show}\nErrors: ${es.map(_.show).mkString("\n")}")
@@ -380,7 +368,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     table: CTable): List[(Arc, Set[ConstraintRef])] = {
     // println(s"neighs2Candidates: neighs=$neighs")
     neighs.map {
-      case arc @ (path, node) => (arc, table.paths.get(path).getOrElse(Set()))
+      case arc @ (path, _) => (arc, table.paths.get(path).getOrElse(Set()))
     }
   }
 
@@ -394,7 +382,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       // Deterministic
       checkCandidateLine(attempt, bagChecker, table)(as.head)
     } else {
-      import es.weso.rbe.ShowRbe._
+      // import es.weso.rbe.ShowRbe._
       logger.warn(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}")
       val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
       checkSome(checks, ViolationError.msgErr(s"No candidate matched $cs. Attempt: ${attempt.nodeShape}"))
@@ -411,7 +399,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         val nodeShapes: List[(RDFNode, ShapeExpr)] =
           filterOptions(cl.map {
             case (arc, cref) => {
-              val (path, node) = arc
+              val (_, node) = arc
               (node, table.getShapeExpr(cref))
             }
           })
@@ -461,12 +449,13 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   def runValidator(chk: Check[ShapeTyping], rdf: RDFReader): Result = {
-    cnvResult(runCheck(chk, rdf))
+    cnvResult(runCheck(chk, rdf),rdf)
   }
 
-  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log]): Result = for {
+  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log],
+                rdf: RDFReader): Result = for {
     shapeTyping <- r.toEither.leftMap(_.msg)
-    result <- shapeTyping.toShapeMap(schema.prefixMap)
+    result <- shapeTyping.toShapeMap(rdf.getPrefixMap, schema.prefixMap)
   } yield result
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {

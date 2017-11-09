@@ -1,6 +1,5 @@
 package es.weso.shacl
-import cats._, data._
-import implicits._
+import cats._
 import es.weso.rdf.nodes._
 
 object showShacl {

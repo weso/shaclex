@@ -1,30 +1,23 @@
 package es.weso.rdf.jena
 
-import org.apache.jena.query._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
-import org.apache.jena.riot.system.IRIResolver
 
 import scala.collection.JavaConverters._
 import scala.util.Try
-import es.weso.rdf.triples._
 import es.weso.rdf._
-import org.apache.jena.rdf.model.{ Model, ModelFactory, Property, Resource, Statement, StmtIterator, RDFNode => JenaRDFNode, RDFReader => JenaRDFReader }
+import org.apache.jena.rdf.model.{ Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
-import org.apache.jena.riot.{ Lang => JenaLang }
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
-import java.io._
 
 import scala.util._
 import java.io._
 
-import es.weso.rdf.jena.SPARQLQueries._
 import org.apache.jena.riot.RDFLanguages._
 import org.apache.jena.riot.RDFLanguages
 import es.weso.rdf.jena.JenaMapper._
-import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
 import es.weso.utils._
 import org.apache.jena.sparql.path.Path
@@ -186,7 +179,7 @@ case class RDFAsJenaModel(model: Model)
   }
 
   // TODO: Check that the last character is indeed :
-  private def removeLastColon(str: String): String = str.init
+  // private def removeLastColon(str: String): String = str.init
 
   override def addTriples(triples: Set[RDFTriple]): RDFAsJenaModel = {
     val newModel = JenaMapper.RDFTriples2Model(triples, model)
@@ -223,12 +216,12 @@ case class RDFAsJenaModel(model: Model)
   override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
     JenaMapper.wellTypedDatatype(node, datatype)
 
-  private def resolveString(str: String): Either[String,IRI] = {
+  /*private def resolveString(str: String): Either[String,IRI] = {
     Try(IRIResolver.resolveString(str)).fold(
       e => Left(e.getMessage),
       iri => Right(IRI(iri))
     )
-  }
+  }*/
 
   def applyInference(inference: String): Either[String, Rdf] = {
     println(s"############## Inference $inference")
@@ -269,7 +262,7 @@ object RDFAsJenaModel {
     Try {
       val m = ModelFactory.createDefaultModel()
       val is: InputStream = new FileInputStream(file)
-      RDFDataMgr.read(m, is, null, shortnameToLang(format))
+      RDFDataMgr.read(m, is, baseURI, shortnameToLang(format))
       RDFAsJenaModel(JenaUtils.relativizeModel(m))
     }.fold(e => Left(s"Exception parsing RDF from file ${file.getName}: ${e.getMessage}"),
            Right(_))

@@ -1,7 +1,6 @@
 package es.weso.depgraphs
 
 import org.scalatest._
-import es.weso.depgraphs._
 
 class DepGraphTest
   extends FunSpec

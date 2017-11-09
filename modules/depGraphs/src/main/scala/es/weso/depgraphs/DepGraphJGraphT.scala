@@ -6,14 +6,7 @@ import org.jgrapht.graph.DirectedSubgraph
 
 import org.jgrapht.alg.KosarajuStrongConnectivityInspector
 import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm
-import org.jgrapht.alg.ConnectivityInspector
 import collection.JavaConverters._
-import cats.Applicative
-// import cats.data.EitherT
-//import cats.syntax.either._
-//import cats.instances.list._
-//import cats.instances.string._
-//import cats.instances.either._
 import cats.implicits._
 
 case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
@@ -23,7 +16,11 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
   val graph: DirectedGraph[Node, Edge] =
     new DefaultDirectedGraph[Node, Edge](classOf[Edge])
 
-  def removeAllEdges() {
+  /**
+    * Removes all edges
+    * @return <tt>true</tt> if the graph changed
+    */
+  def removeAllEdges(): Boolean = {
     val edges: java.util.Set[Edge] = graph.edgeSet
     graph.removeAllEdges(edges)
   }
@@ -42,8 +39,14 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     graph.vertexSet.asScala.toSet
   }
 
-  def checkVertex(node: Node): Unit = {
-    if (!graph.containsVertex(node)) graph.addVertex(node)
+  /**
+    * Checks if a node is in a graph and adds it if it isn't
+    * @param node
+    * @return <tt>true</tt> if it added the node
+    */
+  def checkVertex(node: Node): Boolean = {
+    // if (!graph.containsVertex(node))
+    graph.addVertex(node)
   }
 
   private def addEdge(node1: Node, node2: Node, edge: Edge): DepGraph[Node] = {

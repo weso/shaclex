@@ -1,5 +1,5 @@
 package es.weso.utils
-import cats._, data._
+import cats._
 import implicits._
 
 object MapUtils {

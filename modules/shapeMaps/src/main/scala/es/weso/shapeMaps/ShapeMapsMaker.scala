@@ -1,17 +1,11 @@
 package es.weso.shapeMaps
-import java.util
-
-import cats._
-import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.{Prefix, PrefixMap}
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import Parser._
 import es.weso.rdf.path._
-import org.antlr.v4.runtime._
-import org.antlr.v4.runtime.tree.ParseTree
 import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext, _}
 import es.weso.shapeMaps.parser._
 import es.weso.utils.FileUtils
@@ -113,9 +107,9 @@ class ShapeMapsMaker(
   } yield {
     if (isDefined(ctx.pathMod())) {
       ctx.pathMod() match {
-        case s: StarContext => ZeroOrMorePath(pathPrimary)
-        case s: OptionalContext => ZeroOrOnePath(pathPrimary)
-        case s: PlusContext => OneOrMorePath(pathPrimary)
+        case _: StarContext => ZeroOrMorePath(pathPrimary)
+        case _: OptionalContext => ZeroOrOnePath(pathPrimary)
+        case _: PlusContext => OneOrMorePath(pathPrimary)
       }
     } else pathPrimary
   }
@@ -291,7 +285,7 @@ class ShapeMapsMaker(
     try {
       ok(str.toInt)
     } catch {
-      case e: NumberFormatException =>
+      case _: NumberFormatException =>
         err(s"Cannot get integer from $str")
     }
   }
@@ -300,7 +294,7 @@ class ShapeMapsMaker(
     try {
       ok(BigDecimal(str))
     } catch {
-      case e: NumberFormatException =>
+      case _: NumberFormatException =>
         err(s"Cannot get decimal from $str")
     }
   }
@@ -309,7 +303,7 @@ class ShapeMapsMaker(
     try {
       ok(str.toDouble)
     } catch {
-      case e: NumberFormatException =>
+      case _: NumberFormatException =>
         err(s"Cannot get double from $str")
     }
   }

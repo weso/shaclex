@@ -3,12 +3,7 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
-import es.weso.rdf.nodes.IRI
 import es.weso.server._
-import es.weso.shacl.converter.RDF2Shacl
-import es.weso.utils.JenaUtils
-//import org.slf4j.LoggerFactory
-// import es.weso.shacl._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
@@ -16,11 +11,8 @@ import es.weso.utils.FileUtils
 import scala.util._
 import java.nio.file._
 import es.weso.rdf.RDFReader
-import java.io.File
 
 object Main extends App with LazyLogging {
-
-  override def main(args: Array[String]): Unit = {
     try {
       run(args)
     } catch {
@@ -28,7 +20,6 @@ object Main extends App with LazyLogging {
         println(s"Error: ${e.getMessage}")
       }
     }
-  }
 
   def run(args: Array[String]): Unit = {
     val opts = new MainOpts(args, errorDriver)
@@ -53,9 +44,9 @@ object Main extends App with LazyLogging {
       schema <- getSchema(opts, baseFolder, rdf)
       triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
       shapeMapStr <- getShapeMapStr(opts)
-      trigger <- ValidationTrigger.findTrigger(triggerName,shapeMapStr,base,
-        opts.node.toOption,opts.shapeLabel.toOption,
-        rdf.getPrefixMap(),schema.pm)
+      trigger <- ValidationTrigger.findTrigger(triggerName, shapeMapStr, base,
+        opts.node.toOption, opts.shapeLabel.toOption,
+        rdf.getPrefixMap(), schema.pm)
     } yield (rdf, schema, trigger)
 
     validateOptions match {
@@ -77,7 +68,7 @@ object Main extends App with LazyLogging {
           }
         }
 
-        if(opts.showShapeMap()) {
+        if (opts.showShapeMap()) {
           println(s"Trigger shapemap: ${trigger.shapeMap}")
           println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat())}")
           println(s"Trigger json: ${trigger.toJson.spaces2}")
@@ -139,7 +130,7 @@ object Main extends App with LazyLogging {
 
   def getShapeMapStr(opts: MainOpts): Either[String, String] = {
     if (opts.shapeMap.isDefined) {
-      val shapeMapFormat = opts.shapeMapFormat.toOption.getOrElse("COMPACT")
+      // val shapeMapFormat = opts.shapeMapFormat.toOption.getOrElse("COMPACT")
       for {
         // TODO: Allow different shapeMap formats
         content <- FileUtils.getContents(opts.shapeMap())
@@ -176,13 +167,14 @@ object Main extends App with LazyLogging {
     println(s"Schema base = $base")
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
-      val schema = Schemas.fromFile(path.toFile(),opts.schemaFormat(),opts.engine(),base)
+      val schema = Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), base)
       schema
     } else {
       logger.info("Schema not specified. Extracting schema from data")
       Schemas.fromRDF(rdf, opts.engine())
     }
-  }
+    //  }
 
+  }
 }
 

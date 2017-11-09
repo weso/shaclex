@@ -1,6 +1,5 @@
 package es.weso.converter
 import cats._, data._
-import cats.implicits._
 
 trait Converter {
 

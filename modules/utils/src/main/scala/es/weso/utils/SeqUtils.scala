@@ -1,6 +1,5 @@
 package es.weso.utils
 import cats._
-import data._
 import implicits._
 
 import scala.annotation.tailrec

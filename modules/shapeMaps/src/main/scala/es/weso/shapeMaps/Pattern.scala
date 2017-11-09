@@ -1,6 +1,5 @@
 package es.weso.shapeMaps
 
-import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 import io.circe.{ Decoder, DecodingFailure, Encoder, Json }
 

@@ -2,16 +2,18 @@ package es.weso.shapeMaps
 
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
-import cats._
-import data._
 import cats.implicits._
-import io.circe._
-import io.circe.syntax._
 
 case class ResultShapeMap(
   resultMap: Map[RDFNode, Map[ShapeMapLabel, Info]],
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap) extends ShapeMap {
+
+  def addShapesPrefixMap(pm: PrefixMap): ResultShapeMap =
+    this.copy(shapesPrefixMap = pm)
+
+  def addNodesPrefixMap(pm: PrefixMap): ResultShapeMap =
+    this.copy(nodesPrefixMap = pm)
 
   def addNodeAssociations(node: RDFNode, mapLabels: Map[ShapeMapLabel, Info]): ResultShapeMap = {
     resultMap.get(node) match {
