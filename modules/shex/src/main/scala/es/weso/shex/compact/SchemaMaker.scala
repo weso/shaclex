@@ -141,7 +141,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitShapeExprDecl(ctx: ShapeExprDeclContext): Builder[(ShapeLabel, ShapeExpr)] =
     for {
-      label <- visitShapeLabel(ctx.shapeExprLabel())
+      label <- visitShapeExprLabel(ctx.shapeExprLabel())
       shapeExpr <- obtainShapeExpr(ctx)
       _ <- addShape(label, shapeExpr)
     } yield (label, shapeExpr)
@@ -718,7 +718,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitInlineShapeDefinition(ctx: InlineShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
-      tripleExpr <- visitTripleExpression(ctx.tripleExpression())
+      tripleExpr <- visitOpt(visitTripleExpression,ctx.tripleExpression)
       shape <- makeShape(qualifiers, tripleExpr, List())
     } yield shape
   }
@@ -729,11 +729,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
-      tripleExpr <- visitOneOfTripleExpr(ctx.oneOfTripleExpr())
+      optTripleExpr <- visitOpt(visitTripleExpression,ctx.tripleExpression())
       semActs <- visitSemanticActions(ctx.semanticActions())
       anns <- visitList(visitAnnotation, ctx.annotation())
       // newTripleExpr <- addAnnotations(tripleExpr,anns)
-      shape <- makeShape(qualifiers, tripleExpr, semActs)
+      shape <- makeShape(qualifiers, optTripleExpr, semActs)
     } yield shape
   }
 
@@ -789,7 +789,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitIncludeSet(ctx: IncludeSetContext): Builder[Qualifier] = for {
-    sl <- visitList(visitShapeExprLabel, ctx.shapeExprLabel())
+    sl <- visitList(visitTripleExprLabel, ctx.tripleExprLabel())
   } yield Include(sl)
 
   override def visitExtraPropertySet(ctx: ExtraPropertySetContext): Builder[Qualifier] = for {
@@ -797,18 +797,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   } yield Extra(ls)
 
   override def visitOneOfTripleExpr(
-    ctx: OneOfTripleExprContext): Builder[Option[TripleExpr]] = {
-    if (isDefined(ctx)) {
-      ctx match {
+    ctx: OneOfTripleExprContext): Builder[TripleExpr] = ctx match {
         case _ if (isDefined(ctx.groupTripleExpr())) => for {
           tripleExpr <- visitGroupTripleExpr(ctx.groupTripleExpr())
-        } yield Some(tripleExpr)
+        } yield tripleExpr
         case _ if (isDefined(ctx.multiElementOneOf())) => for {
           tripleExpr <- visitMultiElementOneOf(ctx.multiElementOneOf())
-        } yield Some(tripleExpr)
+        } yield tripleExpr
         case _ => err(s"visitOneOfShape: unknown $ctx")
-      }
-    } else ok(None)
   }
 
   override def visitGroupTripleExpr(

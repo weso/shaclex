@@ -2,7 +2,8 @@ PREFIX : <http://example.org/>
 
 <Holder> {
   $<base> (
-    a [:Authority]
+    a [:Authority] ;
+    a [:Other ];
   )
 }
 
