@@ -1,13 +1,9 @@
 package es.weso.shex.shexR
 
-import es.weso.rdf.RDFBuilder
 import es.weso.shex._
 import PREFIXES._
-import cats._
-import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.PREFIXES.{ rdf, rdfs, xsd }
 import es.weso.rdf.jena._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
@@ -111,8 +107,8 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case StringValue(s) => ok(StringLiteral(s))
     case DatatypeString(s, iri) => ok(DatatypeLiteral(s, iri))
     case LangString(s, lang) => ok(LangLiteral(s, Lang(lang)))
-    case s: Stem => stem(s)
-    case StemRange(stem, exclusions) => for {
+    case s: IRIStem => stem(s)
+    case IRIStemRange(stem, exclusions) => for {
       node <- createBNode()
       _ <- addTriple(node, rdf_type, sx_StemRange)
       _ <- addContent(stem, node, sx_stem, stemValue)
@@ -120,7 +116,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
   }
 
-  def stem(x: Stem): RDFSaver[RDFNode] = for {
+  def stem(x: IRIStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_Stem)
     _ <- addTriple(node, sx_stem, DatatypeLiteral(x.stem.str, xsd_anyUri))
@@ -128,13 +124,13 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
   def objectStemValue(x: ValueSetValue): RDFSaver[RDFNode] = x match {
     case o: ObjectValue => objectValue(o)
-    case s: Stem => stem(s)
-    case s: StemRange => throw new Exception(s"RDFSaver objectStemValue: should not be a StemRange: $s")
+    case s: IRIStem => stem(s)
+    case s: IRIStemRange => throw new Exception(s"RDFSaver objectStemValue: should not be a StemRange: $s")
   }
 
-  def stemValue(x: StemValue): RDFSaver[RDFNode] = x match {
-    case IRIStem(iri) => ok(DatatypeLiteral(iri.str, xsd_anyUri))
-    case Wildcard() => for {
+  def stemValue(x: IRIStemRangeValue): RDFSaver[RDFNode] = x match {
+    case IRIStemValueIRI(iri) => ok(DatatypeLiteral(iri.str, xsd_anyUri))
+    case IRIStemWildcard() => for {
       node <- createBNode()
       _ <- addTriple(node, rdf_type, sx_Wildcard)
     } yield node

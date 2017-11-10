@@ -1,13 +1,10 @@
 package es.weso.shex
-import cats._
-import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
+import es.weso.depgraphs.DepGraph
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.shexR.{ RDF2ShEx, ShEx2RDF }
-import es.weso.utils.FileUtils
-import es.weso.utils.MapUtils._
 import cats.implicits._
 
 import util._
@@ -263,14 +260,29 @@ object ObjectValue {
     }
 }
 
-case class Stem(stem: IRI) extends ValueSetValue
-case class StemRange(
-  stem: StemValue,
-  exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
+case class IRIStem(stem: IRI) extends ValueSetValue
+case class IRIStemRange(stem: IRIStemRangeValue,
+                        exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
 
-sealed trait StemValue
-case class IRIStem(iri: IRI) extends StemValue
-case class Wildcard() extends StemValue
+sealed trait IRIStemRangeValue
+case class IRIStemValueIRI(iri: IRI) extends IRIStemRangeValue
+case class IRIStemWildcard() extends IRIStemRangeValue
+
+case class LanguageStem(stem: String) extends ValueSetValue
+case class LanguageStemRange(stem: LanguageStemRangeValue,
+                        exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
+
+sealed trait LanguageStemRangeValue
+case class LanguageStemRangeLang(stem: String) extends LanguageStemRangeValue
+case object LanguageStemRangeWildcard extends LanguageStemRangeValue
+
+case class LiteralStem(stem: ObjectLiteral) extends ValueSetValue
+case class LiteralStemRange(stem: LiteralStemRangeValue,
+                             exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
+
+sealed trait LiteralStemRangeValue
+case class LiteralStemRangeValueObject(obj: ObjectLiteral) extends LiteralStemRangeValue
+case object LiteralStemRangeWildcard extends LiteralStemRangeValue
 
 case class SemAct(name: IRI, code: Option[String])
 
@@ -422,8 +434,6 @@ object Schema {
         showSchema(schema)
       }
       case "SHEXJ" => {
-        import io.circe._
-        import io.circe.parser._
         import io.circe.syntax._
         import es.weso.shex.implicits.encoderShEx._
         schema.asJson.spaces4

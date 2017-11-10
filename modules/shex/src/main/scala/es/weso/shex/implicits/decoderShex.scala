@@ -109,16 +109,10 @@ object decoderShEx {
   }
 
   def getXsFacets(c: HCursor): Decoder.Result[List[XsFacet]] = {
-    val fields: Vector[String] = c.fields.map(_.toVector).getOrElse(Vector[String]())
+    val keys: Vector[String] = c.keys.map(_.toVector).getOrElse(Vector[String]())
     val rs: List[Either[DecodingFailure, Option[XsFacet]]] =
-      fields.toList.map(extractXsFacet(_, c))
+      keys.toList.map(extractXsFacet(_, c))
     sequenceEither(rs)
-    //    val r: Xor[DecodingFailure, List[Option[XsFacet]]] = rs.sequence
-    /*rs match {
-      case Xor.Left(e)   => Xor.Left(e)
-      case Xor.Right(ls) => Xor.Right(ls.filter(_.isDefined).sequence.getOrElse(List()))
-    }*/
-
   }
 
   // Todo: Use "sequence" when I find why it gives a type error...
@@ -259,8 +253,8 @@ object decoderShEx {
   }
 
   implicit lazy val decodeValueSetValue: Decoder[ValueSetValue] =
-    Decoder[Stem].map(identity).or(
-      Decoder[StemRange].map(identity).or(
+    Decoder[IRIStem].map(identity).or(
+      Decoder[IRIStemRange].map(identity).or(
         Decoder[ObjectValue].map(identity)))
 
   implicit lazy val decodeObjectValue: Decoder[ObjectValue] =
@@ -296,29 +290,29 @@ object decoderShEx {
   implicit lazy val decodeIRIValue: Decoder[IRIValue] =
     Decoder[String].emap(s => parseIRI(s)).map(i => IRIValue(i))
 
-  implicit lazy val decodeStem: Decoder[Stem] = Decoder.instance { c =>
+  implicit lazy val decodeIRIStem: Decoder[IRIStem] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Stem")
       stem <- fieldDecode[IRI](c, "stem")
-    } yield Stem(stem)
+    } yield IRIStem(stem)
   }
 
-  implicit lazy val decodeStemRange: Decoder[StemRange] = Decoder.instance { c =>
+  implicit lazy val decodeIRIStemRange: Decoder[IRIStemRange] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "StemRange")
-      stem <- fieldDecode[StemValue](c, "stem")
+      stem <- fieldDecode[IRIStemRangeValue](c, "stem")
       exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
-    } yield StemRange(stem, exclusions)
+    } yield IRIStemRange(stem, exclusions)
   }
 
-  implicit lazy val decodeStemValue: Decoder[StemValue] =
-    Decoder[IRI].map(iri => IRIStem(iri)).or(
-      Decoder[Wildcard].map(w => w))
+  implicit lazy val decodeIRIStemRangeValue: Decoder[IRIStemRangeValue] =
+    Decoder[IRI].map(iri => IRIStemValueIRI(iri)).or(
+      Decoder[IRIStemWildcard].map(w => w))
 
-  implicit lazy val decodeWildcard: Decoder[Wildcard] = Decoder.instance { c =>
+  implicit lazy val decodeIRIStemWildcard: Decoder[IRIStemWildcard] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Wildcard")
-    } yield Wildcard()
+    } yield IRIStemWildcard()
   }
 
   implicit lazy val decodeTripleConstraint: Decoder[TripleConstraint] = Decoder.instance { c =>

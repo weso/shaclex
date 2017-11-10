@@ -207,8 +207,8 @@ object encoderShEx {
   implicit lazy val encodeValueSetValue: Encoder[ValueSetValue] = new Encoder[ValueSetValue] {
     final def apply(a: ValueSetValue): Json = a match {
       case ov: ObjectValue => ov.asJson
-      case Stem(s) => mkObjectTyped("Stem", List(field("stem", s)))
-      case StemRange(s, exclusions) =>
+      case IRIStem(s) => mkObjectTyped("Stem", List(field("stem", s)))
+      case IRIStemRange(s, exclusions) =>
         mkObjectTyped("StemRange", List(field("stem", s), optField("exclusions", exclusions)))
     }
   }
@@ -235,10 +235,10 @@ object encoderShEx {
     }
   }
 
-  implicit lazy val encodeStemValue: Encoder[StemValue] = new Encoder[StemValue] {
-    final def apply(a: StemValue): Json = a match {
-      case IRIStem(i) => i.asJson
-      case Wildcard() => mkObjectTyped("Wildcard", List())
+  implicit lazy val encodeStemValue: Encoder[IRIStemRangeValue] = new Encoder[IRIStemRangeValue] {
+    final def apply(a: IRIStemRangeValue): Json = a match {
+      case IRIStemValueIRI(i) => i.asJson
+      case IRIStemWildcard() => mkObjectTyped("Wildcard", List())
     }
   }
 

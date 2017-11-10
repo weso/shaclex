@@ -43,8 +43,14 @@ case class ValueChecker(schema: Schema)
             s"${node.show} == ${value}")
         case _ => errStr(s"${node.show} != ${value}")
       }
-      case Stem(stem) => errStr(s"Not implemented stem: $stem")
-      case StemRange(stem, exclusions) => errStr(s"Not implemented stem range: $stem $exclusions")
+      case LanguageStem(stem) => node match {
+        case LangLiteral(x,Lang(lang)) => checkCond(stem.startsWith(lang), attempt,
+          msgErr(s"${node.show} lang($lang) matches ${stem}"),
+          s"${node.show} lang($lang) does not match ${stem}")
+        case _ => errStr(s"${node.show} is not a language tagged literal")
+      }
+      case IRIStem(stem) => errStr(s"Not implemented stem: $stem")
+      case IRIStemRange(stem, exclusions) => errStr(s"Not implemented stem range: $stem $exclusions")
 
       case _ => {
         logger.error(s"Not implemented checkValue: $value")

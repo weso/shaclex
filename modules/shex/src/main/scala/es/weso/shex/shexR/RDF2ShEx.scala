@@ -5,11 +5,8 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.shex._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.shexR.PREFIXES._
-import cats._
-import cats.implicits._
 import es.weso.rdf.nodes._
 
-import scala.util.{ Failure, Success, Try }
 
 /* Parses RDF into SHEx.
  * The parser follows ShExR definition: https://github.com/shexSpec/shexTest/blob/master/doc/ShExR.shex
@@ -201,28 +198,28 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     stem,
     stemRange)
 
-  def stem: RDFParser[Stem] = (n, rdf) => for {
+  def stem: RDFParser[IRIStem] = (n, rdf) => for {
     _ <- checkType(sx_Stem)(n, rdf)
     str <- arc(sx_stem, anyUri)(n, rdf)
-  } yield Stem(IRI(str))
+  } yield IRIStem(IRI(str))
 
-  def stemRange: RDFParser[StemRange] = (n, rdf) => for {
+  def stemRange: RDFParser[IRIStemRange] = (n, rdf) => for {
     _ <- checkType(sx_StemRange)(n, rdf)
     sv <- arc(sx_stem, stemValue)(n, rdf)
     exclusions <- star(sx_exclusion, objectValueStem)(n, rdf)
-  } yield StemRange(sv, ls2Option(exclusions))
+  } yield IRIStemRange(sv, ls2Option(exclusions))
 
-  def stemValue: RDFParser[StemValue] = firstOf(
+  def stemValue: RDFParser[IRIStemRangeValue] = firstOf(
     anyUriStem,
     wildCard)
 
-  def anyUriStem: RDFParser[StemValue] = (n, rdf) => for {
+  def anyUriStem: RDFParser[IRIStemRangeValue] = (n, rdf) => for {
     str <- anyUri(n, rdf)
-  } yield IRIStem(IRI(str))
+  } yield IRIStemValueIRI(IRI(str))
 
-  def wildCard: RDFParser[StemValue] = (n, rdf) => for {
+  def wildCard: RDFParser[IRIStemRangeValue] = (n, rdf) => for {
     _ <- checkType(sx_Wildcard)(n, rdf)
-  } yield Wildcard()
+  } yield IRIStemWildcard()
 
   def objectValueStem: RDFParser[ValueSetValue] =
     firstOf(objectValue, stem)

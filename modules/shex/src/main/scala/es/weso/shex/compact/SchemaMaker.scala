@@ -9,7 +9,6 @@ import es.weso.shex._
 import es.weso.shex.parser.ShExDocBaseVisitor
 import es.weso.shex.compact.Parser._
 import es.weso.shex.parser.ShExDocParser.{ StringContext => ShExStringContext, _ }
-// import es.weso.shex.parser._
 import scala.collection.JavaConverters._
 
 /**
@@ -327,26 +326,32 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitLanguageRange(
                                    ctx: LanguageRangeContext): Builder[ValueSetValue] = {
-    err(s"Unimplemented language range yet")
+    for {
+      es <- visitList(visitLanguageExclusion, ctx.languageExclusion)
+    } yield {
+      // TODO Add language exclusion
+      val lang = ctx.LANGTAG().getText()
+      if (!isDefined(ctx.STEM_MARK())) {
+        LanguageStem(lang)
+      } else
+        LanguageStemRange(LanguageStemRangeLang(lang), Some(es))
+    }
   }
 
-  override def visitIriRange(
-    ctx: IriRangeContext): Builder[ValueSetValue] = {
-    ctx match {
-      case _ if isDefined(ctx.iri()) => // Rule: iri ('~' exclusion*)?
-        if (ctx.getChildCount == 1) // Only iri
-          for {
-            iri <- visitIri(ctx.iri())
-          } yield IRIValue(iri)
-        else for { // iri '~' exclusion*
-          iri <- visitIri(ctx.iri())
-          exclusions <- if (isDefined(ctx.iriExclusion()))
-            visitList(visitIriExclusion, ctx.iriExclusion()).map(Some(_))
-          else ok(None)
-        } yield StemRange(IRIStem(iri), exclusions)
-      case _ => for {
-        exclusions <- visitList(visitIriExclusion, ctx.iriExclusion())
-      } yield StemRange(Wildcard(), Some(exclusions))
+  override def visitLanguageExclusion(ctx: LanguageExclusionContext): Builder[ValueSetValue] = {
+    err(s"Undefined Language exclusion")
+  }
+
+
+  override def visitIriRange(ctx: IriRangeContext): Builder[ValueSetValue] = for {
+    iri <- visitIri(ctx.iri())
+    exclusions <- visitList(visitIriExclusion, ctx.iriExclusion())
+  } yield {
+    if (!isDefined(ctx.STEM_MARK())) IRIValue(iri)
+    else if (exclusions.isEmpty)
+      IRIStemRange(IRIStemValueIRI(iri), None)
+    else {
+      IRIStemRange(IRIStemValueIRI(iri), Some(exclusions))
     }
   }
 
@@ -355,7 +360,6 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   } yield {
     // TODO: Detect if the rule has a ~ at the end:
     //   exclusion       : '-' iri '~'? ;
-    println(s"Exclusion count: ${ctx.getChildCount}")
     IRIValue(iri)
   }
 

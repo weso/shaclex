@@ -58,15 +58,15 @@ object showShEx {
       case StringValue(s) => "\"" + s + "\""
       case DatatypeString(s, d) => "\"" + s + "\"^^" + d.show
       case LangString(s, l) => "\"" + s + "\"@" + l
-      case Stem(s) => s"stem($s)"
-      case StemRange(s, exclusions) => s"stemRange(${s.show},${optShow(exclusions)})"
+      case IRIStem(s) => s"stem($s)"
+      case IRIStemRange(s, exclusions) => s"stemRange(${s.show},${optShow(exclusions)})"
     }
   }
 
-  implicit lazy val showStemValue: Show[StemValue] = new Show[StemValue] {
-    final def show(a: StemValue): String = a match {
-      case IRIStem(i) => i.show
-      case Wildcard() => "*"
+  implicit lazy val showStemValue: Show[IRIStemRangeValue] = new Show[IRIStemRangeValue] {
+    final def show(a: IRIStemRangeValue): String = a match {
+      case IRIStemValueIRI(i) => i.show
+      case IRIStemWildcard() => "*"
     }
   }
 
