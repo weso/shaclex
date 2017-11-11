@@ -209,8 +209,6 @@ function noNewLine(instance,change) {
 }
 */
 
-
-
 function resetResult(result) {
     console.log("Reset result: " + JSON.stringify(result));
     $("#resultDiv").empty();
@@ -339,7 +337,7 @@ function prepareShapeMap() {
     var result = $("#resultDiv").data("result");
     showResult(result);
 
-   $("#permalink").prop("href",window.location);
+//   $("#permalink").prop("href",window.location);
 
    /*$("#schemaEmbedded").change(function() {
        changeSchemaEmbedded(this.checked);
@@ -395,75 +393,33 @@ function prepareShapeMap() {
         codeMirrorShapeMap.setSize(null,"5em");
     }
 
-    /*
-    var inputRows = getInputRows();
-    console.log("Creating " + inputRows + " codeMirrors");
+ $("#permalink").click(function(e) {
+  e.preventDefault();
+  console.log("click on permalink...");
+  var data = codeMirrorData.getValue();
+  var schema = codeMirrorSchema.getValue();
+  var dataFormat = $("#dataFormat").find(":selected").text();
+  var schemaFormat = $("#schemaFormat").find(":selected").text();
+  var schemaEngine = $("#schemaEngine").find(":selected").text();
+  var triggerMode = $("#triggerMode").find(":selected").text();
+  var inference = $("#inferenceBefore").find(":selected").text();
+  var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
+  var schemaEmbedded = $("#schemaEmbedded").is(":checked");
+  if (schemaEmbedded) {  schema = ""; }
+    console.log("Trigger mode in AJAX query:" + triggerMode);
+    var location = "/validate?" +
+      "data=" + encodeURIComponent(data) +
+      "&dataFormat=" + encodeURIComponent(dataFormat) +
+      "&schema=" + encodeURIComponent(schema) +
+      "&schemaFormat=" + encodeURIComponent(schemaFormat) +
+      "&schemaEngine=" + encodeURIComponent(schemaEngine) +
+      "&triggerMode=" + encodeURIComponent(triggerMode) +
+      "&schemaEmbedded=" + encodeURIComponent(schemaEmbedded) +
+      "&inference=" + encodeURIComponent(inference) +
+      "&shapeMap=" + encodeURIComponent(shapeMap);
+    var href = urlShaclex + location
+    console.log("NewHRef: " + href)
+    window.location.assign(href) ;
+  });
 
-    for(i = 0; i < inputRows; i++) {
-     console.log("Creating codeMirror " + i);
-     newCodeMirrorNode(i);
-     newCodeMirrorShape(i);
-    }
-
-    console.log("Adding empty node shape entry..."); // Adds an empty entry
-    addNodeShapeEntry();
-    */
-
-    $("#validateButton").click(function(e){
-        e.preventDefault();
-        console.log("click on validating...");
-        var data = codeMirrorData.getValue();
-        var schema = codeMirrorSchema.getValue();
-        var dataFormat = $("#dataFormat").find(":selected").text();
-        var schemaFormat = $("#schemaFormat").find(":selected").text();
-        var schemaEngine = $("#schemaEngine").find(":selected").text();
-        var triggerMode = $("#triggerMode").find(":selected").text();
-        var inference = $("#inferenceBefore").find(":selected").text();
-        var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
-        var schemaEmbedded = $("#schemaEmbedded").is(":checked");
-        if (schemaEmbedded) {  schema = ""; }
-        console.log("Trigger mode in AJAX query:" + triggerMode);
-        var location = "/validate?" +
-            "data=" + encodeURIComponent(data) +
-            "&dataFormat=" + encodeURIComponent(dataFormat) +
-            "&schema=" + encodeURIComponent(schema) +
-            "&schemaFormat=" + encodeURIComponent(schemaFormat) +
-            "&schemaEngine=" + encodeURIComponent(schemaEngine) +
-            "&triggerMode=" + encodeURIComponent(triggerMode) +
-            "&schemaEmbedded=" + encodeURIComponent(schemaEmbedded) +
-            "&inference=" + encodeURIComponent(inference) +
-            "&shapeMap=" + encodeURIComponent(shapeMap);
-        var href = urlShaclex + location
-        console.log("NewHRef: " + href)
-        $("#permalink").prop("href",href);
-        window.location.assign(href) ;
-
-/*        $.ajax({ url: urlShaclex + "/api/validate",
-            data: {
-                data: data,
-                schema: schema,
-                dataFormat: dataFormat,
-                schemaFormat: schemaFormat,
-                shapeMap: shapeMap,
-                schemaEngine: schemaEngine,
-                triggerMode: triggerMode,
-                schemaSeparated: schemaSeparated
-            },
-            type: "GET",
-            dataType : "json"
-        })
-            .done(function(result) {
-                console.log("Done!: " + JSON.stringify(result));
-                resetResult(result);
-                console.log("After reseting result: " + JSON.stringify(result));
-                showResult(result);
-                history.pushState({},"validate",location);
-            })
-            .fail(function( xhr, status, errorThrown ) {
-                $("#resultDiv").html("<h2>" + errorThrown + "</h2><pre>" + xhr.responseText + "</pre><p>" + status + "</p>" );
-                console.log( "Error: " + errorThrown );
-                console.log( "Status: " + status );
-                console.dir( xhr );
-            }) */
-    });
 });

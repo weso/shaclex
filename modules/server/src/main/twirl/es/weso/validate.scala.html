@@ -27,18 +27,18 @@
 @navBar()
 <div class="container">
 <div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.map(_.toJson).getOrElse(Json.Null)))}'></div>
-<form action="/validate" method="GET" id="validate">
+<form action="/validate" method="POST" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
         <label>Schema embedded:
-            <input type="checkbox" id="schemaEmbedded" @{if(schemaEmbedded == true) { "checked" }}
+            <input type="checkbox" id="schemaEmbedded" name="schemaEmbedded" @{if(schemaEmbedded == true) { "checked" }}
                    onChange="changeSchemaEmbedded(this);"
             /></label>
     </fieldset>
 
     <fieldset class="dataPanel">
         <legend>RDF Data</legend>
-        <textarea id="rdfData" placeHolder="RDF data">@{data.getOrElse("")}</textarea>
+        <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
         @selectDataFormat("validate",availableDataFormats,currentDataFormat)
 
         @selectInferenceEngine("validate", availableInferenceEngines,currentInferenceEngine)
@@ -47,7 +47,7 @@
     <div id="schemaDiv">
     <fieldset class="schemaPanel">
         <legend>Schema</legend>
-        <textarea id="schema" placeHolder="Schema">@{schema.getOrElse("")}</textarea>
+        <textarea id="schema" placeHolder="Schema" name="schema">@{schema.getOrElse("")}</textarea>
         @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
     </fieldset>
     </div>
@@ -55,7 +55,7 @@
     @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
     <div id="shapeMapDiv">
       <legend>Shape map</legend>
-      <textarea id="shapeMap" placeHolder="Shape map">@{shapeMap.getOrElse("")}</textarea>
+      <textarea id="shapeMap" placeHolder="Shape map" name="shapeMap">@{shapeMap.getOrElse("")}</textarea>
     </div>
 
 <!--     @*   <div id="rowsCounter" data-value="@{shapeMap.length}" /> </div>
@@ -67,11 +67,12 @@
      <input type="button" value="validate" id="validateButton"/>
     </div> -->
     <div class="submit">
-        <input type="button" value="validate" id="validateButton"/>
+        <input type="submit" value="validatePost" id="validateButton"/>
     </div>
+
 </form>
 <div class="otherOptions">
-<a id="permalink">Permalink</a>
+<input type="button" value="permalink" id="permalink"/>
 <hr/>
 <h2>Other options</h2>
 <label>Editor theme:

@@ -45,15 +45,15 @@ case class ValueChecker(schema: Schema)
       }
       case LanguageStem(stem) => node match {
         case LangLiteral(x,Lang(lang)) => checkCond(stem.startsWith(lang), attempt,
-          msgErr(s"${node.show} lang($lang) matches ${stem}"),
-          s"${node.show} lang($lang) does not match ${stem}")
+          msgErr(s"${node.show} lang($lang) does not match ${stem}"),
+          s"${node.show} lang($lang) matches ${stem}")
         case _ => errStr(s"${node.show} is not a language tagged literal")
       }
       case IRIStem(stem) => node match {
         case i: IRI =>
           checkCond(i.getLexicalForm.startsWith(stem.getLexicalForm), attempt,
-            msgErr(s"${node.show} matches with stem ${stem.show}"),
-            s"${node.show} does not match with stem ${stem.show}")
+            msgErr(s"${node.show} does not match stem ${stem.show}"),
+            s"${node.show} matches with stem ${stem.show}")
         case _ => errStr(s"${node.show} must be an IRI to match with IRI stem ${stem.show}")
       }
       case IRIStemRange(stem, exclusions) => errStr(s"Not implemented stem range: $stem $exclusions")
