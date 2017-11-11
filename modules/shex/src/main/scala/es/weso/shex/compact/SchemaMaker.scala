@@ -330,13 +330,17 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       es <- visitList(visitLanguageExclusion, ctx.languageExclusion)
     } yield {
       // TODO Add language exclusion
-      val lang = ctx.LANGTAG().getText()
+      val lang = getLanguage(ctx.LANGTAG().getText())
       if (!isDefined(ctx.STEM_MARK())) {
         LanguageStem(lang)
       } else
         LanguageStemRange(LanguageStemRangeLang(lang), Some(es))
     }
   }
+
+  /* Remove @ from language tag */
+  def getLanguage(str: String): String =
+    str.tail
 
   override def visitLanguageExclusion(ctx: LanguageExclusionContext): Builder[ValueSetValue] = {
     err(s"Undefined Language exclusion")
@@ -349,7 +353,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   } yield {
     if (!isDefined(ctx.STEM_MARK())) IRIValue(iri)
     else if (exclusions.isEmpty)
-      IRIStemRange(IRIStemValueIRI(iri), None)
+      IRIStem(iri)
     else {
       IRIStemRange(IRIStemValueIRI(iri), Some(exclusions))
     }

@@ -2,7 +2,6 @@ package es.weso.shex.validator
 
 import org.scalatest._
 import es.weso.shex._
-import es.weso.rdf.nodes._
 import es.weso.rdf.jena._
 import es.weso.shapeMaps.ShapeMap
 
@@ -136,6 +135,42 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
          |""".stripMargin
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":s1@:S", ":s1@:S,:t1@:T")
+  }
+  describe("Language stem") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:A { :p [@es] }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p "Hola"@es .
+         |:x :p "Hi"@en .
+         |:y :p "Hi" .
+         |:z :p 23 .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:x@:A,:y@:A,:z@:A", ":a@:A,:x@!:A,:y@!:A,:z@!:A")
+  }
+  describe("IRI stem") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:A { :p  [ <http://example.org/> ~ ] }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p <http://example.org/hi> .
+         |:b :p :x .
+         |:x :p <http://other.org/hi> .
+         |:y :p "Hi" .
+         |:z :p 23 .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:b@:A", ":a@:A,:b@:A")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:b@:A,:x@:A,:y@:A,:z@:A", ":a@:A,:b@:A,:x@!:A,:y@!:A,:z@!:A")
   }
 
   def shouldValidateWithShapeMap(

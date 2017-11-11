@@ -7,6 +7,7 @@ import es.weso.shex._
 import es.weso.utils.SeqUtils.intersperse
 import es.weso.document._
 import es.weso.document.Document._
+import es.weso.shex.compact.CompactShow.str
 
 /**
  * Convert Abstract syntax to ShEx Compact syntax
@@ -198,6 +199,8 @@ object CompactShow {
       case LangString(s, l) => stringDoc(s) :: str("@") :: str(l)
       case IRIStem(iri) => iriDoc(pm)(iri) :: str("~")
       case IRIStemRange(_, _) => str("TODO: StemRange")
+      case LanguageStem(s) => str(s"@$s")
+      case _ => str(s"Unimplemented show of $v")
     }
 
   private def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Doc =

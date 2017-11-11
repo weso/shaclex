@@ -86,7 +86,11 @@ case class ResultShapeMap(
           case None => Left(s"Node $node has label $label in map1 but doesn't have that label in map2. Shapes1 = $shapes1, Shapes2 = $shapes2")
           case Some(info2) =>
             if (info1.status == info2.status) Right(true)
-            else Left(s"Status of node $node for label $label is ${info1.status} in map1 and ${info2.status} in map2")
+            else Left(
+              s"""|Node $node is ${info1.status} for label $label in map1 and ${info2.status} in map2
+                 |Reason1: ${info1.reason}
+                 |Reason2: ${info2.reason}
+               """.stripMargin)
         }
       }.toList
       val r: Either[String, List[Boolean]] = seqEither(es) // es.sequence

@@ -60,6 +60,8 @@ object showShEx {
       case LangString(s, l) => "\"" + s + "\"@" + l
       case IRIStem(s) => s"stem($s)"
       case IRIStemRange(s, exclusions) => s"stemRange(${s.show},${optShow(exclusions)})"
+      case LanguageStem(stem) => s"@$stem"
+      case _ => s"Unimplemented show of $a"
     }
   }
 
