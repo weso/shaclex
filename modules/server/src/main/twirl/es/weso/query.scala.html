@@ -1,0 +1,71 @@
+@import es.weso.schema.Result
+@import es.weso.json.JsonTwirl
+@import io.circe._
+
+@(result: Either[String,Json],
+  data:Option[String],
+  availableDataFormats: List[String],
+  currentDataFormat: String,
+  query:Option[String],
+  availableInferenceEngines: List[String],
+  currentInferenceEngine: String
+)
+
+@import java.net.URLEncoder
+
+<html>
+@head("SHACLex: Query")
+<body>
+@navBar()
+<div class="container">
+@if(result.isRight){
+  <div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.getOrElse(Json.Null)))}'></div>
+} else {
+    <div id="resultDiv" data-result='null' class="alert alert-danger" role="alert"><code>@{result.left.get}</code></div>
+}
+<form action="/query" method="POST" id="query">
+
+    <fieldset class="dataPanel">
+        <legend>RDF Data</legend>
+        <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
+        @selectDataFormat("query",availableDataFormats,currentDataFormat)
+
+        @selectInferenceEngine("query", availableInferenceEngines,currentInferenceEngine)
+    </fieldset>
+
+    <div id="queryDiv">
+    <fieldset class="queryPanel">
+        <legend>Query</legend>
+        <textarea id="queryData" placeHolder="SPARQL query" name="query">@{query.getOrElse("")}</textarea>
+    </fieldset>
+    </div>
+
+    </fieldset>
+
+    <div class="submit">
+        <input type="submit" value="Query" id="queryButton"/>
+    </div>
+
+</form>
+<div class="otherOptions">
+ <input type="button" value="permalink" id="permalink"/>
+<hr/>
+<h2>Other options</h2>
+<label>Editor theme:
+    <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">
+        <option value="eclipse">Eclipse</option>
+        <option value="elegant">Elegant</option>
+        <option value="monokai">Monokai</option>
+    </select>
+</label>
+</div>
+
+</div>
+
+@scripts("query")
+</body>
+</html>
+
+
+
+

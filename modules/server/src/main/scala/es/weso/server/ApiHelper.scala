@@ -1,18 +1,21 @@
 package es.weso.server
 
+import java.io.ByteArrayOutputStream
+
 import cats.implicits._
 import cats.effect.IO
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.{DataFormats, Result, Schemas, ValidationTrigger}
 import es.weso.utils.FileUtils
-import io.circe.Json
+import io.circe._, io.circe.parser._
+import org.apache.jena.query.{Query, QueryExecutionFactory, ResultSetFormatter}
 import org.http4s.Uri
 import org.http4s.client.blaze.PooledHttp1Client
 
 import scala.util.Try
 
-object ValidateHelper {
+object ApiHelper {
 
   def prefixMap2Json(pm: PrefixMap): Json = {
     Json.fromFields(pm.pm.map { case (prefix, iri) => (prefix.str, Json.fromString(iri.getLexicalForm)) })
@@ -98,5 +101,50 @@ object ValidateHelper {
       }
     }
   }
+
+  def query(data: String,
+            optDataFormat: Option[String],
+            optQuery: Option[String],
+            optInference: Option[String]
+            ): Either[String,Json] = {
+  optQuery match {
+    case None => Right(Json.Null)
+    case Some(queryStr) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      val base = Some(FileUtils.currentFolderURL)
+
+      for {
+        basicRdf <- RDFAsJenaModel.fromChars(data, dataFormat, base)
+        rdf <- basicRdf.applyInference (optInference.getOrElse ("None"))
+        json <- Try {
+          val qExec = QueryExecutionFactory.create(queryStr,rdf.model)
+          qExec.getQuery.getQueryType match {
+            case Query.QueryTypeSelect => {
+              val result = qExec.execSelect()
+              val outputStream = new ByteArrayOutputStream()
+              ResultSetFormatter.outputAsJSON(outputStream,result)
+              val jsonStr = new String(outputStream.toByteArray())
+              parse(jsonStr).
+                leftMap(f => f.getMessage).
+                map(_.mapObject(_.add("nodesPrefixMap", prefixMap2Json(rdf.getPrefixMap))))
+            }
+            case Query.QueryTypeConstruct => {
+              Left(s"Unimplemented CONSTRUCT queries yet")
+            }
+            case Query.QueryTypeAsk => {
+              Left(s"Unimplemented ASK queries yet")
+            }
+            case Query.QueryTypeDescribe => {
+              Left(s"Unimplemented DESCRIBE queries yet")
+            }
+            case _ => {
+              Left(s"Unknown type of query. Not implemented")
+            }
+          }
+        }.toEither.fold(f => Left(f.getMessage), es => es)
+      } yield json
+     }
+    }
+   }
 
 }

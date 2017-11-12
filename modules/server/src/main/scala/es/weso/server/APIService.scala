@@ -41,7 +41,7 @@ import org.log4s.getLogger
 import es.weso.shaclex.buildinfo.BuildInfo._
 import QueryParams._
 import Http4sUtils._
-import ValidateHelper._
+import ApiHelper._
 
 object APIService {
 

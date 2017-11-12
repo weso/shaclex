@@ -1,42 +1,23 @@
 package es.weso.server
 
-import java.util.concurrent.Executors
-
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema._
-import es.weso.utils.FileUtils
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.syntax._
 import org.http4s.HttpService
-import org.http4s.client.blaze.PooledHttp1Client
 import org.http4s.dsl.io._
-import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 
-import scala.util.Try
-// import org.http4s.client.impl.DefaultExecutor
 import cats.effect._
-import cats.implicits._
-import org.http4s.MediaType._
 import org.http4s._
-import org.http4s.circe._
-import org.http4s.headers._
 import org.http4s.twirl._
-// import scalaz.stream.{Exchange, Process, time}
-// import scalaz.stream.async.topic
 import es.weso._
-import es.weso.rdf.PrefixMap
 import es.weso.server.QueryParams._
 import org.log4s.getLogger
-import ValidateHelper._
+import ApiHelper._
 import Http4sUtils._
 
 object WebService {
 
   private val logger = getLogger
-
-  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   // Get the static content
   private val static: HttpService[IO] = staticResource[IO](Config("/static", "/static"))
@@ -51,6 +32,7 @@ object WebService {
   val defaultSchemaEngine = Schemas.defaultSchemaName
   val availableTriggerModes = Schemas.availableTriggerModes
   val defaultTriggerMode = Schemas.defaultTriggerMode
+  val availableInferenceEngines = RDFAsJenaModel.empty.availableInferenceEngines
   val defaultSchemaEmbedded = false
 
   val webService: HttpService[IO] = HttpService[IO] {
@@ -137,7 +119,6 @@ object WebService {
         val optDataFormat = values.get("dataFormat").map(_.head)
         val optSchemaFormat = values.get("schemaFormat").map(_.head)
         val optSchemaEngine = values.get("schemaEngine").map(_.head)
-        val optShapeMaps = values.get("schemaEngine").map(_.head)
         val optTriggerMode = values.get("triggerMode").map(_.head)
         val optShapeMap = values.get("shapeMap").map(_.head)
         val optInference = values.get("inference").map(_.head)
@@ -152,10 +133,7 @@ object WebService {
           }
           case None => defaultSchemaEmbedded
         }
-        val availableInferenceEngines =
-          RDFAsJenaModel.empty.availableInferenceEngines
-        val inference =
-          optInference.getOrElse("NONE")
+
         val (result,maybeTriggerMode) = validate(data, optDataFormat,
           optSchema, optSchemaFormat, optSchemaEngine,
           optTriggerMode,
@@ -181,7 +159,7 @@ object WebService {
           shapeMap,
           schemaEmbedded,
           availableInferenceEngines,
-          inference
+          optInference.getOrElse("NONE")
         ))
        }
       }
@@ -222,11 +200,6 @@ object WebService {
         }
         case Some(schemaStr) => Right(Some(schemaStr))
       }
-      val schemaEmbedded = optSchemaEmbedded.getOrElse(defaultSchemaEmbedded)
-      val availableInferenceEngines =
-        RDFAsJenaModel.empty.availableInferenceEngines
-      val inference =
-        optInference.getOrElse("NONE")
 
       val eitherResult = for {
         data <- eitherData
@@ -262,12 +235,53 @@ object WebService {
             availableTriggerModes,
             triggerMode.name,
             shapeMap,
-            schemaEmbedded,
+            optSchemaEmbedded.getOrElse(defaultSchemaEmbedded),
             availableInferenceEngines,
-            inference
+            optInference.getOrElse("NONE")
           ))
         }
       }
+    }
+
+    case req@GET -> Root / "query" :?
+      OptDataParam(optData) +&
+      DataFormatParam(optDataFormat) +&
+      OptQueryParam(optQuery) +&
+      InferenceParam(optInference) => {
+      val result = query(optData.getOrElse(""), optDataFormat,optQuery, optInference)
+      Ok(html.query(
+        result,
+        optData,
+        availableDataFormats,
+        optDataFormat.getOrElse(defaultDataFormat),
+        optQuery,
+        availableInferenceEngines,
+        optInference.getOrElse("NONE")
+      ))
+    }
+
+    case req@POST -> Root / "query" => {
+      req.decode[UrlForm] { m => {
+        val values = m.values
+        logger.info(s"POST data in query: ${m.values.mkString("\n")}")
+        val optData = values.get("data").map(_.head)
+        val optQuery = values.get("query").map(_.head)
+        val optDataFormat = values.get("dataFormat").map(_.head)
+        val optInference = values.get("inference").map(_.head)
+
+        val result = query(optData.getOrElse(""), optDataFormat,optQuery, optInference)
+
+        Ok(html.query(
+          result,
+          optData,
+          availableDataFormats,
+          optDataFormat.getOrElse(defaultDataFormat),
+          optQuery,
+          availableInferenceEngines,
+          optInference.getOrElse("NONE")
+        ))
+      }
+     }
     }
 
     // Contents on /static are mapped to /static
