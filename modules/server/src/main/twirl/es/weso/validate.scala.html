@@ -1,6 +1,6 @@
-@import es.weso.schema.Result
 @import es.weso.json.JsonTwirl
 @import io.circe._
+@import es.weso.schema.Result
 
 @(result: Option[Result],
   data:Option[String],
@@ -16,10 +16,9 @@
   shapeMap: Option[String],
   schemaEmbedded: Boolean,
   availableInferenceEngines: List[String],
-  currentInferenceEngine: String
+  currentInferenceEngine: String,
+  activeDataTab: String
 )
-
-@import java.net.URLEncoder
 
 <html>
 @head("SHACLex: Validate")
@@ -36,13 +35,7 @@
             /></label>
     </fieldset>
 
-    <fieldset class="dataPanel">
-        <legend>RDF Data</legend>
-        <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
-        @selectDataFormat("validate",availableDataFormats,currentDataFormat)
-
-        @selectInferenceEngine("validate", availableInferenceEngines,currentInferenceEngine)
-    </fieldset>
+    @dataPanel(data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,activeDataTab)
 
     <div id="schemaDiv">
     <fieldset class="schemaPanel">

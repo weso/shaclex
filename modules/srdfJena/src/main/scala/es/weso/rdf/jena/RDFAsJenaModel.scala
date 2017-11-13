@@ -45,10 +45,11 @@ case class RDFAsJenaModel(model: Model)
     )
   }
 
-  override def serialize(format: String): String = {
+  override def serialize(format: String): Either[String,String] = {
+    // TODO: Check if format exists...
     val out: StringWriter = new StringWriter()
     model.write(out, format)
-    out.toString
+    Right(out.toString)
   }
 
   def extend_rdfs: Rdf = {
@@ -222,17 +223,20 @@ case class RDFAsJenaModel(model: Model)
       iri => Right(IRI(iri))
     )
   }*/
+  val NONE = "NONE"
+  val RDFS = "RDFS"
+  val OWL = "OWL"
 
-  def applyInference(inference: String): Either[String, Rdf] = {
-    println(s"############## Inference $inference")
+  override def applyInference(inference: String): Either[String, Rdf] = {
     inference.toUpperCase match {
-      case "NONE" => Right(this)
-      case "RDFS" => JenaUtils.inference(model, "RDFS").map(RDFAsJenaModel(_))
+      case `NONE` => Right(this)
+      case `RDFS` => JenaUtils.inference(model, RDFS).map(RDFAsJenaModel(_))
+      case `OWL` => JenaUtils.inference(model, OWL).map(RDFAsJenaModel(_))
       case other => Left(s"Unsupported inference $other")
     }
   }
 
-  def availableInferenceEngines: List[String] = List("None", "RDFS")
+  def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
 
 }
 

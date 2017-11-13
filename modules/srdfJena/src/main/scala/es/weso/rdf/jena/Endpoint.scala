@@ -3,25 +3,21 @@ package es.weso.rdf.jena
 import org.apache.jena.query._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
-import es.weso.rdf.triples._
 import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConverters._
-import scala.util.Either
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import scala.util.{Either, Left, Right}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
 import org.slf4j._
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
-import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
-case class Endpoint(endpoint: String) extends RDFReader {
-  // TODO: check that endpoint is a well formed URI
+// TODO: Refactor to change String type by Url
+case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
   type Rdf = Endpoint
 
   override def getPrefixMap: PrefixMap = {
@@ -35,8 +31,8 @@ case class Endpoint(endpoint: String) extends RDFReader {
     throw new Exception("Cannot parse into an endpoint. endpoint = " + endpoint)
   }
 
-  override def serialize(format: String): String = {
-    throw new Exception("Cannot serialize an endpoint. endpoint = " + endpoint)
+  override def serialize(format: String): Either[String,String] = {
+    Left(s"Endpoint with url $endpoint. Cannot be serialized to $format")
   }
 
   override def iris(): Set[IRI] = {
@@ -151,4 +147,20 @@ case class Endpoint(endpoint: String) extends RDFReader {
       throw new Exception("Unknown type of resource")
   }
 
+  override def applyInference(inference: String): Either[String, Rdf] = {
+    inference.toUpperCase match {
+      case "NONE" => Right(this)
+      case other => Left(s"Unsupported inference $other for endpoint $endpoint")
+    }
+  }
+
+  def availableInferenceEngines: List[String] = List("NONE")
+
+}
+
+object Endpoint {
+  def fromString(url: String): Either[String,Endpoint] = {
+     // TODO: Check that str is a Url
+    Right(Endpoint(url))
+  }
 }

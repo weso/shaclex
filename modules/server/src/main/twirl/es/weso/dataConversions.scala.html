@@ -1,25 +1,26 @@
 @(data: Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
+  availableInferenceEngines: List[String],
+  currentInference: String,
   currentTargetDataFormat: String,
+  activeDataTab: String,
   result: Either[String, Option[String]]
 )
 <html lang="en">
 @head("Data Conversions")
 <body>
 @navBar()
-<h1><a href="/">SHACLex</a>: Parse & Convert RDF Data</h1>
 @if(result.isLeft) {
   <p class="error">Error in conversion: @{result.left}</p>
 } else if(result.right.get.isDefined) {
   <textarea id="targetDataArea">@{result.right.get.get}</textarea>
 } else {
- <!-- No result -->
-    }
-<form action="/dataConversions" method="get" id="convert">
-    <label for="rdfData">RDF Data</label>
-    <textarea id="rdfData" name="data" placeholder="data">@{data.getOrElse("")}</textarea>
-    @selectDataFormat("convert",availableDataFormats,currentDataFormat)
+  <!-- No result -->
+}
+
+<form action="/dataConversions" method="POST" id="convert">
+    @dataPanel(data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
     @selectTargetDataFormat("convert",availableDataFormats,currentDataFormat)
     <div class="submit">
         <button type="submit">Convert</button>

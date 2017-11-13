@@ -426,17 +426,17 @@ object Schema {
     }
   }
 
-  def serialize(schema: Schema, format: String): String = {
+  def serialize(schema: Schema, format: String): Either[String,String] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
         import compact.CompactShow._
-        showSchema(schema)
+        Right(showSchema(schema))
       }
       case "SHEXJ" => {
         import io.circe.syntax._
         import es.weso.shex.implicits.encoderShEx._
-        schema.asJson.spaces4
+        Right(schema.asJson.spaces2)
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => {
         val model = ShEx2RDF.shEx2Model(schema, None)
@@ -444,7 +444,7 @@ object Schema {
         rdf.serialize(formatUpperCase)
       }
       case _ =>
-        s"Not implemented conversion to $format. Schema: $schema"
+        Left(s"Not implemented conversion to $format. Schema: $schema")
     }
   }
 }

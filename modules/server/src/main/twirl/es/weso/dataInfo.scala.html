@@ -1,5 +1,9 @@
-@(availableDataFormats: List[String],
-  currentDataFormat: String
+@(data: Option[String],
+  availableDataFormats: List[String],
+  currentDataFormat: String,
+  availableInferenceEngines: List[String],
+  currentInference: String,
+  activeDataTab: String
 )
 <html lang="en">
 @head("SHACLex: Data info")
@@ -7,12 +11,8 @@
 @navBar()
 <div class="container">
 <h1>Info about RDF Data</h1>
-<form action="/api/data/info" method="get" id="info">
-    <label for="data">RDF Data</label>
-    <textarea id="data" rows="20" cols="70" name="data" placeholder="data"></textarea>
-
-    @selectDataFormat("info",availableDataFormats,currentDataFormat)
-
+<form action="/dataInfo" method="POST" id="info">
+    @dataPanel(data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
     <button type="submit">Data Info</button>
 </form>
 </div>

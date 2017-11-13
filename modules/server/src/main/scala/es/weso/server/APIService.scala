@@ -1,44 +1,22 @@
 package es.weso.server
 
-import java.net.URL
 import java.util.concurrent.Executors
 
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.IRI
 import es.weso.schema._
-import es.weso.utils.FileUtils
 import io.circe._
 import io.circe.generic.auto._
-import io.circe.parser._
 import io.circe.syntax._
 import org.http4s.{HttpService, _}
 import org.http4s.dsl.io._
-import org.http4s.implicits._
 import org.http4s.client.blaze.PooledHttp1Client
-import org.http4s.websocket.WebsocketBits._
-import org.http4s.server.staticcontent
 import org.http4s.server.staticcontent.ResourceService.Config
 
-import scala.util.Try
-// import org.http4s.client.impl.DefaultExecutor
-import cats._
-import cats.data._
-import cats.implicits._
 import cats.effect._, org.http4s._
-import org.http4s.server.websocket.WS
 import org.http4s.headers._
 import org.http4s.circe._
 import org.http4s.MediaType._
-import org.http4s.twirl._
-
-import scala.concurrent.duration._
-import scala.util.{ Failure, Success }
-// import scalaz.stream.{Exchange, Process, time}
-// import scalaz.stream.async.topic
-import es.weso._
-import es.weso.rdf.PrefixMap
 import org.log4s.getLogger
-import es.weso.shaclex.buildinfo.BuildInfo._
 import QueryParams._
 import Http4sUtils._
 import ApiHelper._
@@ -47,8 +25,6 @@ object APIService {
 
   private val logger = getLogger
   val api = "api"
-
-  private implicit val scheduledEC = Executors.newScheduledThreadPool(4)
 
   private val swagger: HttpService[IO] = staticResource(Config("/swagger", "/swagger"))
 
@@ -114,6 +90,36 @@ object APIService {
       }
     }
 
+    case req @ GET -> Root / `api` / "dataUrl" / "info" :?
+      OptDataURLParam(optDataUrl) +&
+      DataFormatParam(optDataFormat) => {
+      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+      val httpClient = PooledHttp1Client[IO]()
+      optDataUrl match {
+        case None => BadRequest(s"Must provide a dataUrl")
+        case Some(dataUrl) => {
+          httpClient.expect[String](dataUrl).flatMap(data => {
+            RDFAsJenaModel.fromChars(data, dataFormat, None) match {
+              case Left(e) => BadRequest(s"Error reading rdf: $e\nRdf string: $data")
+              case Right(rdf) => {
+                val nodes: List[String] =
+                  (
+                    rdf.subjects() ++
+                      rdf.iriObjects() ++
+                      rdf.predicates()).map(_.toString).toList
+                val jsonNodes: Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
+                val pm: Json = prefixMap2Json(rdf.getPrefixMap)
+                val result = DataInfoResult(data, dataFormat, jsonNodes, pm).asJson
+                Ok(result).map(_.withContentType(Some(`Content-Type`(`application/json`))))
+              }
+          }
+          })
+        }
+      }
+/*
+      } */
+    }
+
     case req @ GET -> Root / `api` / "data" / "info" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) => {
@@ -167,19 +173,23 @@ object APIService {
       RDFAsJenaModel.fromChars(data, dataFormat, None) match {
         case Left(e) => BadRequest(s"Error reading RDF Data: $e\nString: $data")
         case Right(rdf) => {
-          val resultStr = rdf.serialize(resultDataFormat)
-          val result = DataConversionResult(data, dataFormat, resultDataFormat, resultStr)
-          val default = Ok(result.asJson)
-            .map(_.withContentType(Some(`Content-Type`(`application/json`))))
-          req.headers.get(`Accept`) match {
-            case Some(ah) => {
-              logger.info(s"Accept header: $ah")
-              val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
-              if (hasHTML) {
-                Ok(result.toHTML).map(_.withContentType(Some(`Content-Type`(`text/html`))))
-              } else default
+          rdf.serialize(resultDataFormat) match {
+            case Left(err) =>  BadRequest(s"Error serializing RDF Data: $err\nString: $data")
+            case Right(str) => {
+              val result = DataConversionResult(data, dataFormat, resultDataFormat, str)
+              val default = Ok(result.asJson)
+                .map(_.withContentType(Some(`Content-Type`(`application/json`))))
+              req.headers.get(`Accept`) match {
+                case Some(ah) => {
+                  logger.info(s"Accept header: $ah")
+                  val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
+                  if (hasHTML) {
+                    Ok(result.toHTML).map(_.withContentType(Some(`Content-Type`(`text/html`))))
+                  } else default
+                }
+                case None => default
+              }
             }
-            case None => default
           }
         }
       }

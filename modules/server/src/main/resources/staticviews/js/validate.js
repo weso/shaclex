@@ -76,7 +76,6 @@ function changeTriggerMode(value) {
 
 $(document).ready(function(){
 
-
 function getHost() {
     var port = window.location.port;
     return window.location.protocol + "//" +
@@ -168,33 +167,33 @@ function getDataFormat(element) {
     window.alert("Data format of " + element + " format: " + format);
 }
 
-  var urlShaclex = getHost();
-  console.log("urlShaclex: " + urlShaclex);
+var urlShaclex = getHost();
+console.log("urlShaclex: " + urlShaclex);
 
-  var result = $("#resultDiv").data("result");
-  showResult(result);
+var result = $("#resultDiv").data("result");
+showResult(result);
 
-    var schemaEmbeddedValue = $("#schemaEmbedded").is(":checked");
-    console.log("Main...schemaEmbedded = " + schemaEmbeddedValue);
-    hideShowSchema(schemaEmbeddedValue);
+var schemaEmbeddedValue = $("#schemaEmbedded").is(":checked");
+console.log("Main...schemaEmbedded = " + schemaEmbeddedValue);
+hideShowSchema(schemaEmbeddedValue);
 
 
-    var triggerModeValue = $("#triggerMode").val();
-    console.log("Trigger mode = " + triggerModeValue);
-    changeTriggerMode(triggerModeValue);
+var triggerModeValue = $("#triggerMode").val();
+console.log("Trigger mode = " + triggerModeValue);
+changeTriggerMode(triggerModeValue);
 
-    var rdfData = document.getElementById("rdfData");
-    if (rdfData) {
-        codeMirrorData = CodeMirror.fromTextArea(rdfData, {
-            lineNumbers: true,
-            mode: "turtle",
-            viewportMargin: Infinity,
-            matchBrackets: true,
-        });
-    }
+var rdfData = document.getElementById("rdfData");
+if (rdfData) {
+   codeMirrorData = CodeMirror.fromTextArea(rdfData, {
+   lineNumbers: true,
+   mode: "turtle",
+   viewportMargin: Infinity,
+   matchBrackets: true,
+  });
+}
 
-    var targetDataArea = document.getElementById("targetDataArea");
-    if (targetDataArea) {
+var targetDataArea = document.getElementById("targetDataArea");
+  if (targetDataArea) {
       codeMirrorTargetData = CodeMirror.fromTextArea(targetDataArea, {
       lineNumbers: true,
       mode: "turtle",
@@ -224,7 +223,14 @@ function getDataFormat(element) {
         codeMirrorShapeMap.setSize(null,"5em");
     }
 
- $("#permalink").click(function(e) {
+
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+  var name = $(e.target).attr("href");
+  console.log("New tab: " + name); // newly activated tab
+  $('#rdfDataActiveTab').val(name);
+})
+
+$("#permalink").click(function(e) {
   e.preventDefault();
   console.log("click on permalink...");
   var data = codeMirrorData.getValue();

@@ -1,6 +1,4 @@
 var codeMirrorData ;
-var codeMirrorSchema ;
-var codeMirrorShapeMap ;
 var codeMirrorTargetData ;
 
 function changeMode(element,syntax) {
@@ -32,48 +30,6 @@ function changeTheme(theme) {
     codeMirrorShapeMap.setOption("theme",theme);
 }
 
-function hideShowSchema(show) {
-   if (show) {
-        $("#schemaDiv").hide();
-    } else {
-        $("#schemaDiv").show();
-    }
-}
-
-function changeSchemaEmbedded(cb) {
-    console.log("changeSchemaEmbedded: " + cb);
-    console.log(cb);
-    hideShowSchema(cb.checked);
-}
-
-function changeTriggerMode(value) {
-    if (value) {
-        console.log("Changing triggermode: " + value);
-        switch (value.toUpperCase()) {
-            case "TARGETDECLS":
-//    $("#nodeShapeContainer").hide();
-                $("#shapeMapDiv").hide();
-//    console.log("Hiding all: " + value);
-                break;
-            /*  case "NODESHAPE":
-                $("#nodeShapeContainer").show();
-                console.log("Showing all: " + value);
-                break;
-              case "NODESTART":
-                $("#nodeShapeContainer").show();
-                console.log("Showing node only: " + value);
-                break; */
-            case "SHAPEMAP":
-//    $("#nodeShapeContainer").show();
-                $("#shapeMapDiv").show();
-                console.log("Showing shape map: " + value);
-                break;
-
-        }
-    }
-}
-
-
 $(document).ready(function(){
 
 
@@ -90,70 +46,10 @@ function showResult(result) {
     if(result) {
         console.log("Result.nodesPrefixMap: " + JSON.stringify(result.nodesPrefixMap));
         var nodesPrefixMap = result.nodesPrefixMap ;
-        var shapesPrefixMap = result.shapesPrefixMap ;
         console.log("nodesPrefixMap: " + JSON.stringify(nodesPrefixMap));
-        console.log("shapesPrefixMap: " + JSON.stringify(shapesPrefixMap));
-        if (result.isValid || result.valid) {
-            $("#resultDiv").removeClass("notValid").addClass("valid");
-            showShapeMap(result.shapeMap,nodesPrefixMap,shapesPrefixMap);
-        } else {
-            $("#resultDiv").removeClass("valid").addClass("notValid");
-            $("#resultDiv").append($("<p>").text(result.message));
-        }
         var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
         var details = $("<details/>").append(pre);
         $("#resultDiv").append(details);
-    }
-}
-
-function showShape(status,shape,shapesPrefixMap) {
-    var shapeClass;
-    var textHasShape = '';
-    if (status == 'conformant') {
-      shapeClass = "hasShape success table-success"
-      textHasShape = '+';
-    }
-    else {
-     shapeClass = "hasNoShape danger table-danger";
-     textHasShape = '-';
-    }
-    return "<td class=\"" + shapeClass + "\">" +
-        "<code>" +
-         textHasShape + showQualify(shape, shapesPrefixMap) +
-        "</code></td>" ;
-}
-
-function showShapeMap(shapeMap,nodesPrefixMap, shapesPrefixMap) {
-    var tableHead = "<thead><tr>" +
-        "<th data-sortable=\"true\">Node</th>" +
-        "<th data-sortable=\"true\">Shape</th>" +
-        "<th>Evidences</th> " +
-        "</tr></thead>";
-
-    var tableBody = '';
-    $.each(shapeMap, function(i) {
-       var row = shapeMap[i];
-       console.log("Association: " + JSON.stringify(shapeMap[i]) );
-       tableBody += "<tr><td class='node'><code>" + showQualify(row.node, nodesPrefixMap) + "</code></td>" +
-            showShape(row.status, row.shape, shapesPrefixMap) +
-            "<td class='explanation'>" + escapeHtml(row.reason) + "</td></tr>" ;
-     });
-    $("#resultDiv").append("<table data-toggle=\"table\" data-sort-order=\"desc\" data-sort-name=\"node\">" +
-        tableHead +
-        tableBody +
-        "</table>");
-}
-
-function showErrors(errors) {
-    if (errors.length > 0) {
-        var table = "";
-        table += ""
-        console.log("Errors" + JSON.stringify(errors));
-        $.each(errors, function(i,e) {
-            console.log("Error" + JSON.stringify(e));
-            table += "<tr><td><pre>" + escapeHtml(e.error) + "</pre></td></tr>";
-        });
-        $("#resultDiv").append("<h2>Errors</h2><table>" + table + "</table>");
     }
 }
 
@@ -169,61 +65,33 @@ function getDataFormat(element) {
     var result = $("#resultDiv").data("result");
     showResult(result);
 
-//   $("#permalink").prop("href",window.location);
-
-   /*$("#schemaEmbedded").change(function() {
-       changeSchemaEmbedded(this.checked);
-   }); */
-
-    var schemaEmbeddedValue = $("#schemaEmbedded").is(":checked");
-    console.log("Main...schemaEmbedded = " + schemaEmbeddedValue);
-    hideShowSchema(schemaEmbeddedValue);
-
-
-    var triggerModeValue = $("#triggerMode").val();
-    console.log("Trigger mode = " + triggerModeValue);
-    changeTriggerMode(triggerModeValue);
-
-    var rdfData = document.getElementById("rdfData");
-    if (rdfData) {
+  var rdfData = document.getElementById("rdfData");
+  if (rdfData) {
         codeMirrorData = CodeMirror.fromTextArea(rdfData, {
             lineNumbers: true,
             mode: "turtle",
             viewportMargin: Infinity,
             matchBrackets: true,
         });
-    }
+  }
 
-    var targetDataArea = document.getElementById("targetDataArea");
-    if (targetDataArea) {
-      codeMirrorTargetData = CodeMirror.fromTextArea(targetDataArea, {
-      lineNumbers: true,
-      mode: "turtle",
-      viewportMargin: Infinity,
-       matchBrackets: true,
-      });
-    }
+  var targetDataArea = document.getElementById("targetDataArea");
+  if (targetDataArea) {
+    codeMirrorTargetData = CodeMirror.fromTextArea(targetDataArea, {
+    lineNumbers: true,
+    mode: "turtle",
+    viewportMargin: Infinity,
+    matchBrackets: true,
+    readOnly: true
+   });
+ }
 
-    var schema = document.getElementById("schema")
-    if (schema) {
-        codeMirrorSchema = CodeMirror.fromTextArea(schema, {
-            lineNumbers: true,
-            mode: "shex",
-            viewportMargin: Infinity,
-            matchBrackets: true
-        });
-    }
+ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+   var name = $(e.target).attr("href");
+   console.log("New tab: " + name); // newly activated tab
+   $('#rdfDataActiveTab').val(name);
+ })
 
-    var shapeMap = document.getElementById("shapeMap")
-    if (shapeMap) {
-        codeMirrorShapeMap = CodeMirror.fromTextArea(shapeMap, {
-            lineNumbers: true,
-            mode: "shex",
-            viewportMargin: Infinity,
-            matchBrackets: true
-        });
-        codeMirrorShapeMap.setSize(null,"5em");
-    }
 
  $("#permalink").click(function(e) {
   e.preventDefault();
@@ -231,24 +99,13 @@ function getDataFormat(element) {
   var data = codeMirrorData.getValue();
   var schema = codeMirrorSchema.getValue();
   var dataFormat = $("#dataFormat").find(":selected").text();
-  var schemaFormat = $("#schemaFormat").find(":selected").text();
-  var schemaEngine = $("#schemaEngine").find(":selected").text();
-  var triggerMode = $("#triggerMode").find(":selected").text();
   var inference = $("#inferenceBefore").find(":selected").text();
-  var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
-  var schemaEmbedded = $("#schemaEmbedded").is(":checked");
-  if (schemaEmbedded) {  schema = ""; }
-    console.log("Trigger mode in AJAX query:" + triggerMode);
-    var location = "/validate?" +
+  var targetDataFormat = $("#targetDataFormat").find(":selected").text();
+  var location = "/data?" +
       "data=" + encodeURIComponent(data) +
       "&dataFormat=" + encodeURIComponent(dataFormat) +
-      "&schema=" + encodeURIComponent(schema) +
-      "&schemaFormat=" + encodeURIComponent(schemaFormat) +
-      "&schemaEngine=" + encodeURIComponent(schemaEngine) +
-      "&triggerMode=" + encodeURIComponent(triggerMode) +
-      "&schemaEmbedded=" + encodeURIComponent(schemaEmbedded) +
-      "&inference=" + encodeURIComponent(inference) +
-      "&shapeMap=" + encodeURIComponent(shapeMap);
+      "&targetDataFormat=" + encodeURIComponent(targetDataFormat) +
+      "&inference=" + encodeURIComponent(inference) ;
     var href = urlShaclex + location
     console.log("NewHRef: " + href)
     window.location.assign(href) ;

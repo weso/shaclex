@@ -37,16 +37,17 @@ object ApiHelper {
     )
   }
 
-  def dataConvert( optData: Option[String],
-                   optDataFormat: Option[String],
-                   optTargetDataFormat: Option[String]): Either[String, Option[String]] = optData match {
+  def dataConvert(optData: Option[String],
+                  optDataFormat: Option[String],
+                  optTargetDataFormat: Option[String]): Either[String, Option[String]] = optData match {
     case None => Right(None)
     case Some(data) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       val resultDataFormat = optTargetDataFormat.getOrElse(DataFormats.defaultFormatName)
       for {
         rdf <- RDFAsJenaModel.fromChars(data, dataFormat, None)
-      } yield Some(rdf.serialize(resultDataFormat))
+        str <- rdf.serialize(resultDataFormat)
+      } yield Some(str)
     }
   }
 

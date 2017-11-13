@@ -149,7 +149,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def serialize(format: String): Either[String, String] = {
     if (formatsUpperCase.contains(format.toUpperCase()))
-      Right(Schema_.serialize(schema, format))
+      Schema_.serialize(schema, format)
     else
       Left(s"Can't serialize to format $format. Supported formats=$formats")
   }

@@ -1,0 +1,49 @@
+@(data:Option[String],
+  availableDataFormats: List[String],
+  currentDataFormat: String,
+  availableInferenceEngines: List[String],
+  currentInferenceEngine: String,
+  activeDataTab: String
+)
+<fieldset class="dataPanel">
+    <legend>RDF Data</legend>
+    <ul id="rdfDataTabs" class="nav nav-tabs">
+        <li class="nav-item">
+            <a class='@{if (activeDataTab=="#dataTextArea") "nav-link active" else "nav-link"}'
+               id="dataTextArea-tab" data-toggle="tab" href="#dataTextArea" aria-controls="dataTextArea" aria-selected="true">By input</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeDataTab=="#dataUrl") "nav-link active" else "nav-link"}'
+               id="dataUrl-tab" data-toggle="tab" href="#dataUrl" aria-controls="dataUrl" aria-selected="false">By URL</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeDataTab=="#dataFile") "nav-link active" else "nav-link"}'
+               id="dataFile-tab" data-toggle="tab" href="#dataFile" aria-controls="dataFile" aria-selected="false">By File</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeDataTab=="#dataEndpoint") "nav-link active" else "nav-link"}'
+               id="dataEndpoint-tab" data-toggle="tab" href="#dataEndpoint" aria-controls="dataEndpoint" aria-selected="false">By Endpoint</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="rdfDataContent">
+        <div class='@{if (activeDataTab=="#dataTextArea") "tab-pane fade show active" else "tab-pane fade"}'
+             id="dataTextArea" role="tabpanel" aria-labelledby="dataTextArea-tab">
+            <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
+            @selectDataFormat("validate",availableDataFormats,currentDataFormat)
+        </div>
+        <div class='@{if (activeDataTab=="#dataUrl") "tab-pane fade show active" else "tab-pane fade"}'
+             id="dataUrl" role="tabpanel" aria-labelledby="dataUrl-tab">
+            <input type="url" name="dataURL" >
+        </div>
+        <div class='@{if (activeDataTab=="#dataFile") "tab-pane fade show active" else "tab-pane fade"}'
+             id="dataFile" role="tabpanel" aria-labelledby="dataFile-tab">
+            <input type="file" name="dataFile" >
+        </div>
+        <div class='@{if (activeDataTab=="#dataEndpoint") "tab-pane fade show active" else "tab-pane fade"}'
+             id="dataEndpoint" role="tabpanel" aria-labelledby="dataEndpoint-tab">
+            <input type="url" name="endpoint" placeholder="endpoint">
+        </div>
+        <input id="rdfDataActiveTab" type="hidden" name="rdfDataActiveTab" value="@{activeDataTab}">
+    </div>
+    @selectInferenceEngine("validate", availableInferenceEngines,currentInferenceEngine)
+</fieldset>

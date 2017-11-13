@@ -27,7 +27,7 @@ trait RDFReader {
   /**
    * convert a RDF graph to a String
    */
-  def serialize(format: String = "TURTLE"): String
+  def serialize(format: String = "TURTLE"): Either[String,String]
 
   /**
    * Set of RDFTriples in a graph

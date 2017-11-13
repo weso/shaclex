@@ -32,8 +32,8 @@ case class RDFFromWeb() extends RDFReader {
     throw new Exception("Cannot parse RDFFromWeb ")
   }
 
-  override def serialize(format: String): String = {
-    throw new Exception("Cannot serialize RDFFromWeb")
+  override def serialize(format: String): Either[String,String] = {
+    Left(s"Cannot serialize RDFFromWeb")
   }
 
   override def rdfTriples(): Set[RDFTriple] = {

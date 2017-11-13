@@ -9,13 +9,11 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import org.apache.jena.rdf.model.Model
 
-import scala.util.{ Success, Try }
-
 trait ShEx2RDF extends RDFSaver with LazyLogging {
 
-  def serialize(shex: Schema, node: Option[IRI], format: String): Try[String] = {
+  def serialize(shex: Schema, node: Option[IRI], format: String): Either[String,String] = {
     val rdf: RDFAsJenaModel = toRDF(shex, node, RDFAsJenaModel.empty)
-    Success(rdf.serialize(format))
+    rdf.serialize(format)
   }
 
   def toRDF(s: Schema, node: Option[IRI], initial: RDFAsJenaModel): RDFAsJenaModel = {

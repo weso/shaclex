@@ -26,9 +26,10 @@ import org.apache.jena.rdf.model.Literal
 
 import scala.collection.JavaConverters._
 import org.apache.jena.query.ParameterizedSparqlString
-import org.apache.jena.sparql.core.{ TriplePath, Var }
+import org.apache.jena.reasoner.ReasonerRegistry
+import org.apache.jena.sparql.core.{TriplePath, Var}
 import org.apache.jena.sparql.path.Path
-import org.apache.jena.util.{ FileUtils => FileJenaUtils }
+import org.apache.jena.util.{FileUtils => FileJenaUtils}
 
 sealed abstract class ParserReport[+A, +B]
 
@@ -407,6 +408,11 @@ object JenaUtils {
     inference match {
       case "RDFS" => {
         val inf = ModelFactory.createRDFSModel(rdf)
+        Right(inf)
+      }
+      case "OWL" => {
+        val reasoner = ReasonerRegistry.getOWLReasoner();
+        val inf = ModelFactory.createInfModel(reasoner,rdf)
         Right(inf)
       }
       case _ => Left(s"Unsupported inference $inference")
