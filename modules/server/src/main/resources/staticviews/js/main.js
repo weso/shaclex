@@ -74,6 +74,127 @@ function changeTriggerMode(value) {
 }
 
 
+/**
+ * When user clicks a menu item with a submenu, hide siblings and toggle this.
+ */
+function showSubmenu (e) {
+    // $(this).parent().siblings().removeClass('open'); // never got .open working
+    // $(this).parent().toggleClass('open');
+    $(this).parent().siblings().each((i, elt) => {
+        $(elt).find('.dropdown-submenu').hide(500);
+    });
+    $(this).next('.dropdown-submenu').toggle();
+    e.stopPropagation();
+    e.preventDefault();
+}
+
+/**
+ * Parse the slightly idiosyncratic examples structure.
+ */
+function paintExamples (exz, base) {
+    let div = $("#examples .dropdown-menu");
+    console.log(nest(exz));
+    let newExamples = nest(exz).map(schema => {
+        return $("<div/>", { class: "dropdown-item" }).append(
+            $("<span/>", { tabindex: -1 }).text(schema.label + " ‣").on("click", showSubmenu),
+            $("<div/>", { class: "dropdown-submenu" }).append(
+                schema.nested.map(data => {
+                    return $("<span/>", { class: "dropdown-item " + data.status, href: "" })
+                        .text(data.label)
+                        .on("click", evt => {
+
+                            // Look for embedded text, fallback to URL.
+                            [{parm: "schema"  , obj: schema, elt: codeMirrorSchema  },
+                             {parm: "data"    , obj: data  , elt: codeMirrorData    },
+                             {parm: "queryMap", obj: data  , elt: codeMirrorShapeMap}].forEach(pair => {
+                                 if (pair.obj[pair.parm] === undefined) {
+                                     // e.g. schema isn't defined so GET schemaURL
+                                     let url = new URL(pair.obj[pair.parm + "URL"], base);
+                                     httpGet(url, text => {
+                                         pair.elt.setValue(text); // base?
+                                     });
+                                 } else {
+                                     pair.elt.setValue(pair.obj[pair.parm]); // base?
+                                 }
+                             });
+                        });
+                })
+            ).hide()
+        );
+    });
+    if (newExamples.length)
+        div.empty().append(newExamples);
+}
+
+/**
+ * group examples using the same schema.
+ */
+function nest (exz) {
+    let nesting = exz.reduce(function (acc, elt) {
+        var key = elt.schemaLabel + (elt.schema || elt.schemaURL);
+        if (!(key in acc)) {
+            // first entry with this schema
+            acc[key] = {
+                label: elt.schemaLabel,
+                schema: elt.schema,
+                schemaURL: elt.schemaURL
+            };
+        } else {
+            // nth entry with this schema
+        }
+        var dataEntry = {
+            label: elt.dataLabel,
+            data: elt.data,
+            dataURL: elt.dataURL,
+            queryMap: elt.queryMap,
+            status: elt.status
+        };
+        if (!("nested" in acc[key])) {
+            // first entyr with this data
+            acc[key].nested = [dataEntry];
+        } else {
+            // n'th entry with this data
+            acc[key].nested.push(dataEntry);
+        }
+        return acc;
+    }, {});
+    return Object.keys(nesting).map(e => nesting[e]);
+}
+
+
+function httpGet (url, cb) {
+    return new Promise(function (resolve, reject) {
+        $.ajax({
+            accepts: {
+                mycustomtype: 'text/shex,text/turtle,*/*'
+            },
+            url: url,
+            dataType: "text"
+        }).fail(function (jqXHR, textStatus) {
+            var error = jqXHR.statusText === "OK" ? textStatus : jqXHR.statusText;
+            reject({
+                type: "HTTP",
+                url: url,
+                error: error,
+                message: "GET <" + url + "> failed: " + error
+            });
+        }).done(function (text) {
+            try {
+                cb(text);
+            } catch (e) {
+                console.error("failed to parse ", text);
+                console.dir({
+                    type: "evaluation",
+                    url: url,
+                    error: e,
+                    message: "unable to evaluate <" + url + ">: " + e
+                });
+            }
+        });
+    });
+}
+
+
 $(document).ready(function(){
 
 
@@ -466,4 +587,27 @@ function prepareShapeMap() {
                 console.dir( xhr );
             }) */
     });
+
+    // Include this if you want to include hard-coded nested examples:
+    $("#examples .dropdown-item").find('.dropdown-submenu').hide();
+    $("#examples .dropdown-item").on('click', function (event) {
+        $(this).parent().find('.dropdown-submenu').hide();
+    });
+    $('#examples .dropdown-submenu').prev('span').on("click", showSubmenu);
+
+    // Parse search parameters, e.g.
+    // http://localhost/checkouts/ericprud/shaclex/modules/server/src/main/resources/staticviews/index.html?examples=/2017/10/bibframe-shex/shex-simple-examples.json&a=b&a=c
+    let searchParms = location.search.split(/[?&;]/).slice(1); // trim leading '?'
+    let searchParmMap = searchParms.reduce((acc, p) => {
+        let [key, val] = p.split(/=/);
+        acc[decodeURIComponent(key)] = decodeURIComponent(val);
+        return acc;
+    }, {})
+
+    // Handle search parameters.
+    if ("examples" in searchParmMap)
+        httpGet(searchParmMap.examples, text => {
+            paintExamples(JSON.parse(text), new URL(searchParmMap.examples, new URL(location)));
+        });
+
 });
