@@ -54,7 +54,7 @@ object ShExDiff {
   def mkSchema(
     pm: Option[PrefixMap],
     db: Option[IRI],
-    ds: Option[List[SemAct]]): Schema = Schema(pm, db, ds, None, None)
+    ds: Option[List[SemAct]]): Schema = Schema(pm, db, ds, None, None,None)
 
   def prefixesDiff: Diff[Option[PrefixMap]] =
     optDiff(prefixMapDiff)

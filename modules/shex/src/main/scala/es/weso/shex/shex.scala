@@ -9,12 +9,12 @@ import cats.implicits._
 
 import util._
 
-case class Schema(
-  prefixes: Option[PrefixMap],
-  base: Option[IRI],
-  startActs: Option[List[SemAct]],
-  start: Option[ShapeExpr],
-  shapes: Option[List[ShapeExpr]]) {
+case class Schema(prefixes: Option[PrefixMap],
+                  base: Option[IRI],
+                  startActs: Option[List[SemAct]],
+                  start: Option[ShapeExpr],
+                  shapes: Option[List[ShapeExpr]],
+                  tripleExprMap: Option[Map[ShapeLabel,TripleExpr]]) {
 
   def resolveShapeLabel(l: ShapeLabel): Either[String, IRI] = l match {
     case IRILabel(iri) => Right(iri)
@@ -383,10 +383,6 @@ case object NonLiteralKind extends NodeKind
 case object LiteralKind extends NodeKind
 
 abstract sealed trait ShapeLabel {
-  /*  def qualifiedShow(pm: PrefixMap): String = this match {
-    case IRILabel(iri) => pm.qualifyIRI(iri)
-    case BNodeLabel(bn) => bn.toString
-  } */
   def toRDFNode: RDFNode = this match {
     case IRILabel(iri) => iri
     case BNodeLabel(bn) => bn
@@ -400,7 +396,7 @@ object Schema {
   lazy val rdfDataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase)
 
   def empty: Schema =
-    Schema(None, None, None, None, None)
+    Schema(None, None, None, None, None, None)
 
   def fromString(
     cs: CharSequence,

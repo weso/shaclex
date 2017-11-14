@@ -340,7 +340,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def mkTable(maybeTe: Option[TripleExpr], extra: List[IRI]): Check[(CTable, Rbe_)] = maybeTe match {
     case None => ok((CTable.empty, Empty))
-    case Some(te) => ok(CTable.mkTable(te,extra))
+    case Some(te) => CTable.mkTable(te,extra, schema.tripleExprMap.getOrElse(Map())).fold(
+      str => errStr(str),
+      pair => ok(pair)
+    )
   }
 
   /**

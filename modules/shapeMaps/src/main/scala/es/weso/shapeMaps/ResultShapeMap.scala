@@ -1,5 +1,6 @@
 package es.weso.shapeMaps
 
+import cats.Show
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 import cats.implicits._
@@ -58,15 +59,19 @@ case class ResultShapeMap(
   }
 
   def compareWith(other: ResultShapeMap): Either[String, Boolean] = {
-    val nodes1 = resultMap.keySet
-    val nodes2 = other.resultMap.keySet
+    val nodes1 = resultMap.keySet.filter(_.isIRI)
+    val nodes2 = other.resultMap.keySet.filter(_.isIRI)
     val delta = (nodes1 diff nodes2) union (nodes2 diff nodes1)
     if (!delta.isEmpty) {
-      Left(s"Nodes in map1 != nodes in map2. Delta: $delta\nNodes1 = ${nodes1}\nNodes2=${nodes2}\nMap1 = $resultMap\nMap2=$other")
+      Left(s"""|Nodes in map1 != nodes in map2. Delta: ${delta.map(nodesPrefixMap.qualify(_)).mkString(",")}
+               |Nodes1=${nodes1.map(nodesPrefixMap.qualify(_)).mkString(",")}
+               |Nodes2=${nodes2.map(nodesPrefixMap.qualify(_)).mkString(",")}
+               |Map1=$this
+               |Map2=$other""".stripMargin)
     } else {
-      val es = resultMap.map {
+      val es = resultMap.filter(!_._1.isBNode).map {
         case (node, shapes1) => other.resultMap.get(node) match {
-          case None => Left(s"Node $node appears in map1 with shapes $shapes1 but not in map2")
+          case None => Left(s"Node ${nodesPrefixMap.qualify(node)} appears in map1 with shapes ${shapes1} but not in map2")
           case Some(shapes2) => compareShapes(node, shapes1, shapes2)
         }
       }.toList
@@ -78,10 +83,10 @@ case class ResultShapeMap(
     node: RDFNode,
     shapes1: Map[ShapeMapLabel, Info],
     shapes2: Map[ShapeMapLabel, Info]): Either[String, Boolean] = {
-    if (shapes1.keySet.size != shapes2.keySet.size)
+    if (shapes1.keySet.filter(! _.isBNodeLabel).size != shapes2.keySet.filter(! _.isBNodeLabel).size)
       Left(s"Node $node has different values. Map1: $shapes1, Map2: $shapes2")
     else {
-      val es: List[Either[String, Boolean]] = shapes1.map {
+      val es: List[Either[String, Boolean]] = shapes1.filter(!_._1.isBNodeLabel).map {
         case (label, info1) => shapes2.get(label) match {
           case None => Left(s"Node $node has label $label in map1 but doesn't have that label in map2. Shapes1 = $shapes1, Shapes2 = $shapes2")
           case Some(info2) =>

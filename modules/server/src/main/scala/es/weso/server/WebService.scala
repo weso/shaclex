@@ -73,7 +73,7 @@ object WebService {
 
       def cb(result: Either[String,RDFReasoner],
 	         dp: DataParam,
-			 req: Request[IO]): IO[Response[IO]] = {
+           form: UrlForm): IO[Response[IO]] = {
        Ok(html.dataConversions(
           dp.data,
           availableDataFormats,
@@ -84,8 +84,7 @@ object WebService {
           dp.activeDataTab,
           cnv(result,dp)))
       }
-
-      getData(req, cb)
+     req.decode[UrlForm] { form => getData(form, cb) }
       /*maybeData =>
       ))) */
     }
@@ -107,7 +106,7 @@ object WebService {
     }
 
     case req@POST -> Root / "dataInfo" => {
-      def cb(e: Either[String,RDFReasoner],dp: DataParam, req: Request[IO]): IO[Response[IO]] =
+      def cb(e: Either[String,RDFReasoner],dp: DataParam, form: UrlForm): IO[Response[IO]] =
         e.fold(str => BadRequest(str),
                rdf => Ok(html.dataInfo(
             dp.data,
@@ -116,7 +115,7 @@ object WebService {
             availableInferenceEngines,
             dp.inference.getOrElse(defaultInference),
             dp.activeDataTab)))
-      getData(req, cb)
+      req.decode[UrlForm] { getData(_, cb) }
     }
 
     case req@GET -> Root / "schemaConversions" :?
@@ -171,18 +170,19 @@ object WebService {
     }
 
     case req@POST -> Root / "validate" => {
+
 	  def cb(e: Either[String, RDFReasoner],
 	         dp: DataParam,
-			 req: Request[IO]): IO[Response[IO]] = {
+           form: UrlForm): IO[Response[IO]] = {
 		e match {
 		  case Left(msg) => BadRequest(s"Error obtaining data: $msg")
-		  case Right(rdf) => req.decode[UrlForm] { m => {
-		    val values = m.values
-			logger.info(s"################## POST validate:\n${m.values.mkString("\n")}") 
-            val data = values.get("data").map(_.head).getOrElse("")
-			val optSchema = values.get("schema").map(_.head)
-            val optDataFormat = values.get("dataFormat").map(_.head)
-            val optSchemaFormat = values.get("schemaFormat").map(_.head)
+		  case Right(rdf) => {
+  	    val values = form.values
+  			logger.info(s"################## POST validate:\n${values.mkString("\n")}")
+        val data = values.get("data").map(_.head).getOrElse("")
+			  val optSchema = values.get("schema").map(_.head)
+        val optDataFormat = values.get("dataFormat").map(_.head)
+        val optSchemaFormat = values.get("schemaFormat").map(_.head)
             val optSchemaEngine = values.get("schemaEngine").map(_.head)
             val optTriggerMode = values.get("triggerMode").map(_.head)
             val optShapeMap = values.get("shapeMap").map(_.head)
@@ -227,10 +227,9 @@ object WebService {
               dp.activeDataTab
             ))
 		   }
-		  }
-        }		
+        }
 	  }
-	  getData(req,cb)
+    req.decode[UrlForm] { getData(_,cb) }
 	  
 /*      req.decode[UrlForm] { m => {
         val values = m.values
@@ -454,13 +453,14 @@ object WebService {
 
 
   private def extendWithInference(rdf: RDFReasoner,
-                          optInference: Option[String],
-                          dataParam: DataParam,
-						  req: Request[IO],
-                          cb: (Either[String, RDFReasoner], DataParam, Request[IO]) => IO[Response[IO]]): IO[Response[IO]] = {
+                                  optInference: Option[String],
+                                  dataParam: DataParam,
+                                  form: UrlForm,
+                                  cb: (Either[String, RDFReasoner], DataParam, UrlForm) => IO[Response[IO]]
+                                 ): IO[Response[IO]] = {
     rdf.applyInference(optInference.getOrElse("None")).fold(
-      msg => cb(err(s"Error applying inference to RDF: $msg"), dataParam, req),
-      (newRdf: RDFReasoner) => cb(Right(newRdf), dataParam, req)
+      msg => cb(err(s"Error applying inference to RDF: $msg"), dataParam, form),
+      (newRdf: RDFReasoner) => cb(Right(newRdf), dataParam, form)
     )
   }
 
@@ -472,22 +472,22 @@ object WebService {
                        targetDataFormat: Option[String],
                        activeDataTab: String)
 
-  private def getData(req: Request[IO],
-                      cb: (Either[String, RDFReasoner], DataParam, Request[IO]) => IO[Response[IO]]): IO[Response[IO]] = {
-    req.decode[UrlForm] { m => {
-      val values = m.values
-      val dp = mkDataParam(values)
-      println(s"########################### POST data in query: ${m.values.mkString("\n")}")
-	  val activeDataTab = values.get("rdfDataActiveTab").map(_.head).getOrElse(defaultActiveDataTab)
+  private def getData(form: UrlForm,
+                      cb: (Either[String, RDFReasoner], DataParam, UrlForm) => IO[Response[IO]]
+                     ): IO[Response[IO]] = {
+     val values = form.values
+     val dp = mkDataParam(values)
+     println(s"###################### POST (getData): ${values.mkString("\n")}")
+	   val activeDataTab = values.get("rdfDataActiveTab").map(_.head).getOrElse(defaultActiveDataTab)
       activeDataTab match {
         case d @"#dataUrl" => {
           values.get("dataURL").map(_.head) match {
-            case None => cb(err(s"Non value for dataURL"),dp, req)
+            case None => cb(err(s"Non value for dataURL"),dp, form)
             case Some(dataUrl) => {
               RDFAsJenaModel.fromURI(dataUrl,dp.dataFormat.getOrElse(defaultDataFormat)) match {
-                case Left(str) => cb(err(str),dp, req)
+                case Left(str) => cb(err(str),dp, form)
                 case Right(rdf) => {
-                  extendWithInference(rdf,dp.inference,dp,req,cb)
+                  extendWithInference(rdf,dp.inference,dp,form,cb)
                 }
               }
             }
@@ -495,18 +495,18 @@ object WebService {
         }
         case "#dataFile" => {
           values.get("dataFile").map(_.head) match {
-            case None => cb(err(s"No value for dataFile"),dp,req)
-            case Some(dataFile) => cb(err(s"Not implemented value from dataFile $dataFile"),dp,req)
+            case None => cb(err(s"No value for dataFile"),dp,form)
+            case Some(dataFile) => cb(err(s"Not implemented value from dataFile $dataFile"),dp,form)
           }
         }
         case d @ "#dataEndpoint" => {
           values.get("endpoint").map(_.head) match {
-            case None => cb(err(s"No value for endpoint"),dp,req)
+            case None => cb(err(s"No value for endpoint"),dp,form)
             case Some(endpointUrl) => {
               Endpoint.fromString(endpointUrl) match {
-                case Left(str) => cb(err(s"Error creating endpoint: $endpointUrl"),dp,req)
+                case Left(str) => cb(err(s"Error creating endpoint: $endpointUrl"),dp,form)
                 case Right(endpoint) => {
-                  extendWithInference(endpoint,dp.inference,dp,req,cb)
+                  extendWithInference(endpoint,dp.inference,dp,form,cb)
                 }
               }
             }
@@ -514,22 +514,20 @@ object WebService {
         }
         case d @ "#dataTextArea" => {
           values.get("data").map(_.head) match {
-            case None => cb(Right(RDFAsJenaModel.empty),dp,req)
+            case None => cb(Right(RDFAsJenaModel.empty),dp,form)
             case Some(data) => {
               RDFAsJenaModel.fromChars(data, dp.dataFormat.getOrElse(defaultDataFormat), None) match {
-                case Left(msg) => cb(err(msg),dp, req)
+                case Left(msg) => cb(err(msg),dp, form)
                 case Right(rdf) => {
-                  extendWithInference(rdf,dp.inference,dp, req, cb)
+                  extendWithInference(rdf,dp.inference,dp, form, cb)
                 }
               }
             }
           }
         }
-        case other => cb(err(s"Unknown value for activeDataTab: $other"),dp,req)
+        case other => cb(err(s"Unknown value for activeDataTab: $other"),dp,form)
       }
     }
-    }
-  }
 
   private def mkDataParam(values: Map[String,Seq[String]]): DataParam = {
     val data = values.get("data").map(_.head)

@@ -174,7 +174,7 @@ object ShapeMap {
 
       implicit val showAssociation: Show[Association] = new Show[Association] {
         final def show(a: Association): String = {
-          s"${a.node.show} @ ${a.shape.show}"
+          s"${a.node.show}@${if (a.info.status==NonConformant) "!" else ""}${a.shape.show}"
         }
       }
 

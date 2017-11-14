@@ -186,15 +186,35 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
       """.stripMargin
     val rdfStr =
       """|prefix : <http://example.org/>
-	     |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-         |:a :p :ls .
-		 |:ls rdf:first :b1 ; rdf:rest rdf:nil .
+     |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     |:a :p (:b1 :b2) .
 		 |:b1 :q 1 .
-         |""".stripMargin
+     |:b2 :q 2 .
+     |:ls rdf:first :b1; rdf:rest rdf:nil.
+     |:x :p (:b1 :c1) .
+     |:c1 :r 1 .
+     |""".stripMargin
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":b1@:B", ":b1@:B")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":ls@:List", ":ls@:List,:b1@:B")
-    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A,:ls@:List,:b1@:B")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:ls@:List", ":a@:A,:ls@:List,:b1@:B,:b2@:B")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:x@:A,:ls@:List", ":a@:A,:ls@:List,:b1@:B,:b2@:B,:x@!:A")
+  }
+  describe("Labeled triple constraints") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:A { $<lbl> (:p .; :q .) }
+        |:B { :r . ; &<lbl> }
+        |""".stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+         |:a :p 1 ; :q 1 .
+     		 |:b :p 1 ; :q 1; :r 1 .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:b@:B", ":a@:A,:b@:B")
   }
 
   def shouldValidateWithShapeMap(

@@ -1,15 +1,12 @@
 package es.weso.shex.shexR
 
-import es.weso.rdf.{ PrefixMap, RDFReader }
 import es.weso.shex._
 import org.scalatest._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.{ BNodeId, IRI }
+import es.weso.rdf.nodes._
 import es.weso.shex.shexR.PREFIXES._
-import org.apache.jena.rdf.model.Model
 import es.weso.rdf.PREFIXES._
 
-import scala.util.{ Failure, Success }
 
 class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValues {
   val rdf2Shex = new RDF2ShEx {}
@@ -33,7 +30,8 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         None,
         None,
         None,
-        Some(List(NodeConstraint.nodeKind(IRIKind, List()))))
+        Some(List(NodeConstraint.nodeKind(IRIKind, List()))),
+        None)
 
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)

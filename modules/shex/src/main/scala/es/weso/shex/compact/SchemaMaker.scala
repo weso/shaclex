@@ -37,13 +37,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       base <- getBase
       start <- getStart
       shapeMap <- getShapesMap
+      tripleExprMap <- getTripleExprMap
     } yield {
       Schema.empty.copy(
         prefixes = if (!prefixMap.isEmpty) Some(prefixMap) else None,
         base = base,
         startActs = startActions,
         start = start,
-        shapes = if (!shapeMap.isEmpty) Some(shapesMap2List(shapeMap)) else None)
+        shapes = if (!shapeMap.isEmpty) Some(shapesMap2List(shapeMap)) else None,
+        tripleExprMap = if (!tripleExprMap.isEmpty) Some(tripleExprMap) else None
+      )
     }
   }
 
@@ -831,12 +834,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case _ if (isDefined(ctx.include())) =>
         visitInclude(ctx.include())
       case _ => for {
-        pl <- visitOpt(visitTripleExprLabel, ctx.tripleExprLabel())
+        maybeLbl <- visitOpt(visitTripleExprLabel, ctx.tripleExprLabel())
         te <- if (isDefined(ctx.bracketedTripleExpr()))
-          visitBracketedTripleExpr(ctx.bracketedTripleExpr())
-        else if (isDefined(ctx.tripleConstraint()))
-          visitTripleConstraint(ctx.tripleConstraint())
-        else err(s"visitUnaryTripleExpr: unknown $ctx")
+               visitBracketedTripleExpr(ctx.bracketedTripleExpr())
+              else if (isDefined(ctx.tripleConstraint()))
+               visitTripleConstraint(ctx.tripleConstraint())
+              else err(s"visitUnaryTripleExpr: unknown $ctx")
+        _ <- maybeLbl match {
+          case None => ok(())
+          case Some(lbl) => addTripleExprLabel(lbl,te)
+        }
       } yield te
     }
 

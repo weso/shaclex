@@ -2,9 +2,10 @@ package es.weso.shex.validator
 
 import cats._
 import es.weso.rbe.interval.{IntLimit, IntOrUnbounded, Unbounded}
-import es.weso.rbe.{Schema => _, Star => _, Direct => _, _}
+import es.weso.rbe.{Direct => _, Schema => _, Star => _, _}
 import es.weso.rdf.nodes.IRI
 import es.weso.shex._
+import es.weso.shex.compact.Parser.TripleExprMap
 
 /* Candidates table */
 object table {
@@ -102,45 +103,56 @@ object table {
       extras.foldLeft(zero)(combine)
     }
 
-    private[validator] def mkTable(te: TripleExpr, extras: List[IRI]): ResultPair = {
-      val pair = mkTableAux(te, CTable.empty)
-      extendWithExtras(pair, te, extras)
-    }
+    private[validator] def mkTable(te: TripleExpr,
+                                   extras: List[IRI],
+                                   tripleExprMap: TripleExprMap): Either[String, ResultPair] = for {
+      pair <- mkTableAux(te, CTable.empty, tripleExprMap)
+    } yield extendWithExtras(pair, te, extras)
 
-    private def mkTableAux(te: TripleExpr, current: CTable): ResultPair = {
+    private def mkTableAux(te: TripleExpr, current: CTable, teMap: TripleExprMap): Either[String,ResultPair] = {
       te match {
         case e: EachOf => {
-          val zero: ResultPair = (current, Empty)
-          def comb(pair: ResultPair, currentTe: TripleExpr): ResultPair = {
-            val (currentTable, currentRbe) = pair
-            val (newTable, newRbe) = mkTableAux(currentTe, currentTable)
-            (newTable, And(currentRbe, newRbe))
-          }
-          val (newTable, rbe) = e.expressions.foldLeft(zero)(comb)
-          val simplifiedRbe: Rbe_ = simplify(rbe) // e.expressions.map(_ ).reduce(And)
-          val groupRbe =
-            if (Cardinality.isDefault(e.min, e.max)) simplifiedRbe
+          val zero: Either[String,ResultPair] = Right((current, Empty))
+          def comb(rest: Either[String,ResultPair], currentTe: TripleExpr): Either[String,ResultPair] = for {
+            pair1 <- rest
+            (currentTable, currentRbe) = pair1
+            pair2 <- mkTableAux(currentTe, currentTable, teMap)
+            (newTable, newRbe) = pair2
+          } yield (newTable, And(currentRbe, newRbe))
+          for {
+            pair <- e.expressions.foldLeft(zero)(comb)
+          } yield {
+            val (newTable, rbe) = pair
+            val simplifiedRbe: Rbe_ = simplify(rbe) // e.expressions.map(_ ).reduce(And)
+            val groupRbe = if (Cardinality.isDefault(e.min, e.max)) simplifiedRbe
             else Repeat(simplifiedRbe, e.min, max2IntOrUnbounded(e.max))
-          (newTable, groupRbe)
+            (newTable, groupRbe)
+          }
         }
         case e: OneOf => {
-          val zero: ResultPair = (current, Empty)
-          def comb(pair: ResultPair, currentTe: TripleExpr): ResultPair = {
-            val (currentTable, currentRbe) = pair
-            val (newTable, newRbe) = mkTableAux(currentTe, currentTable)
-            (newTable, Or(currentRbe, newRbe))
+          val zero: Either[String,ResultPair] = Right((current, Empty))
+          def comb(next: Either[String,ResultPair], currentTe: TripleExpr): Either[String,ResultPair] = for {
+            pair1 <- next
+            (currentTable, currentRbe) = pair1
+            pair2 <- mkTableAux(currentTe, currentTable, teMap)
+            (newTable, newRbe) = pair2
+          } yield (newTable, Or(currentRbe, newRbe))
+          for {
+            p <- e.expressions.foldLeft(zero)(comb)
+          } yield {
+            val (newTable, rbe) = p
+            val simplifiedRbe: Rbe_ = simplify(rbe)
+            val groupRbe =
+              if (Cardinality.isDefault(e.min, e.max))
+                simplifiedRbe
+              else Repeat(simplifiedRbe, e.min, max2IntOrUnbounded(e.max))
+            (newTable, groupRbe)
           }
-          val (newTable, rbe) = e.expressions.foldLeft(zero)(comb)
-          val simplifiedRbe: Rbe_ = simplify(rbe)
-          val groupRbe =
-            if (Cardinality.isDefault(e.min, e.max))
-              simplifiedRbe
-            else Repeat(simplifiedRbe, e.min, max2IntOrUnbounded(e.max))
-          (newTable, groupRbe)
         }
-        case i: Inclusion =>
-          throw new Exception("CTable: Not implemented table generation for inclusion")
-
+        case Inclusion(label) => teMap.get(label) match {
+          case None => Left(s"Not found value for label $label")
+          case Some(te) => mkTableAux(te,current,teMap)
+        }
         case tc: TripleConstraint => {
           val valueExpr: CheckExpr = if (tc.negated) {
             tc.valueExpr match {
@@ -156,7 +168,7 @@ object table {
           val symbol = if (tc.negated) {
             Repeat(posSymbol, 0, IntLimit(1))
           } else posSymbol
-          (newTable, symbol)
+          Right((newTable, symbol))
         }
       }
     }
@@ -178,13 +190,13 @@ object table {
         }
         cs.foldLeft(List[String]())(combine).mkString(",")
       }
-      def showPaths(pm: PathsMap): String = {
+/*      def showPaths(pm: PathsMap): String = {
         def combine(s: List[String], current: (Path,Set[ConstraintRef])): List[String] = {
           val (path,cs) = current
           s"${path.toString}->[${cs.map(_.toString).mkString(",")}]" :: s
         }
         pm.foldLeft(List[String]())(combine).mkString(",")
-      }
+      } */
       s"""Constraints: ${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}""".stripMargin
     }
   }

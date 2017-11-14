@@ -21,6 +21,7 @@ object Parser extends LazyLogging {
   // type PrefixMap = Map[Prefix,IRI]
   type Start = Option[ShapeExpr]
   type ShapesMap = Map[ShapeLabel, ShapeExpr]
+  type TripleExprMap = Map[ShapeLabel, TripleExpr]
 
   def ok[A](x: A): Builder[A] =
     EitherT.pure(x)
@@ -37,8 +38,11 @@ object Parser extends LazyLogging {
   def getShapesMap: Builder[ShapesMap] =
     getState.map(_.shapesMap)
 
+  def getTripleExprMap: Builder[TripleExprMap] =
+    getState.map(_.tripleExprMap)
+
   def getState: Builder[BuilderState] =
-    EitherT.liftT[S, String, BuilderState](StateT.inspect(identity))
+    EitherT.liftF[S, String, BuilderState](StateT.inspect(identity))
 
   def getBase: Builder[Option[IRI]] =
     getState.map(_.base)
@@ -50,7 +54,7 @@ object Parser extends LazyLogging {
     updateState(_.copy(base = Some(base)))
 
   def updateState(fn: BuilderState => BuilderState): Builder[Unit] = {
-    EitherT.liftT[S, String, Unit](StateT.modify(fn))
+    EitherT.liftF[S, String, Unit](StateT.modify(fn))
   }
 
   def updateStart(s: Start): Builder[Unit] = {
@@ -58,6 +62,7 @@ object Parser extends LazyLogging {
     updateState(_.copy(start = s))
   }
 
+  // TODO: Check what to do if the label is already assigned
   def addShape(label: ShapeLabel, expr: ShapeExpr): Builder[Unit] = {
     updateState(s => s.copy(shapesMap = s.shapesMap + (label -> expr)))
   }
@@ -69,6 +74,16 @@ object Parser extends LazyLogging {
       newS
     })
   }
+
+  def addTripleExprLabel(label: ShapeLabel, te: TripleExpr): Builder[Unit] = for {
+    s <- getState
+    _ <- s.tripleExprMap.get(label) match {
+      case None => ok(())
+      case Some(otherTe) => err(s"Label $label has been assigned to ${otherTe} and can't be assigned to $te")
+    }
+    _ <- updateState(s => s.copy(tripleExprMap = s.tripleExprMap + (label -> te)))
+  } yield ()
+
   def parseSchema(str: String, base: Option[String]): Either[String, Schema] = {
     val UTF8_BOM = "\uFEFF"
     val s =
@@ -118,12 +133,14 @@ object Parser extends LazyLogging {
       PrefixMap.empty,
       base.map(IRI(_)),
       None,
+      Map(),
       Map())
 
-  case class BuilderState(
-    prefixMap: PrefixMap,
-    base: Option[IRI],
-    start: Option[ShapeExpr],
-    shapesMap: ShapesMap)
+  case class BuilderState(prefixMap: PrefixMap,
+                          base: Option[IRI],
+                          start: Option[ShapeExpr],
+                          shapesMap: ShapesMap,
+                          tripleExprMap: TripleExprMap
+                         )
 
 }

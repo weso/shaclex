@@ -7,6 +7,10 @@ abstract class ShapeMapLabel {
     case Start => true
     case _ => false
   }
+  def isBNodeLabel: Boolean = this match {
+    case _: BNodeLabel => true
+    case _ => false
+  }
 }
 
 case class IRILabel(iri: IRI) extends ShapeMapLabel
