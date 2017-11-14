@@ -326,7 +326,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     isClosed: Boolean,
     ignoredPathsClosed: List[Path]): Check[Unit] = {
     val restPath = rest._1
-    if (isClosed) {
+	// Ignore extra predicates if they are inverse
+    if (isClosed && restPath.isDirect) {
       // TODO: Review if the extra.contains(restpath) check is necessary
       // Extra has been implemented as a negation
       if (ignoredPathsClosed.contains(restPath) || extras.contains(restPath)) {

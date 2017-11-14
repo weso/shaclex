@@ -65,12 +65,15 @@ object WebService {
 
     case req @ POST -> Root / "dataConversions" => {
 
-      def cnv(e: Either[String,RDFReasoner],dp: DataParam): Either[String,Option[String]] = for {
+      def cnv(e: Either[String,RDFReasoner],
+	          dp: DataParam): Either[String,Option[String]] = for {
         rdf <- e
         str <- rdf.serialize(dp.targetDataFormat.getOrElse(defaultDataFormat))
       } yield Some(str)
 
-      def cb(result: Either[String,RDFReasoner],dp: DataParam): IO[Response[IO]] = {
+      def cb(result: Either[String,RDFReasoner],
+	         dp: DataParam,
+			 req: Request[IO]): IO[Response[IO]] = {
        Ok(html.dataConversions(
           dp.data,
           availableDataFormats,
@@ -104,7 +107,7 @@ object WebService {
     }
 
     case req@POST -> Root / "dataInfo" => {
-      def cb(e: Either[String,RDFReasoner],dp: DataParam): IO[Response[IO]] =
+      def cb(e: Either[String,RDFReasoner],dp: DataParam, req: Request[IO]): IO[Response[IO]] =
         e.fold(str => BadRequest(str),
                rdf => Ok(html.dataInfo(
             dp.data,
@@ -168,7 +171,68 @@ object WebService {
     }
 
     case req@POST -> Root / "validate" => {
-      req.decode[UrlForm] { m => {
+	  def cb(e: Either[String, RDFReasoner],
+	         dp: DataParam,
+			 req: Request[IO]): IO[Response[IO]] = {
+		e match {
+		  case Left(msg) => BadRequest(s"Error obtaining data: $msg")
+		  case Right(rdf) => req.decode[UrlForm] { m => {
+		    val values = m.values
+			logger.info(s"################## POST validate:\n${m.values.mkString("\n")}") 
+            val data = values.get("data").map(_.head).getOrElse("")
+			val optSchema = values.get("schema").map(_.head)
+            val optDataFormat = values.get("dataFormat").map(_.head)
+            val optSchemaFormat = values.get("schemaFormat").map(_.head)
+            val optSchemaEngine = values.get("schemaEngine").map(_.head)
+            val optTriggerMode = values.get("triggerMode").map(_.head)
+            val optShapeMap = values.get("shapeMap").map(_.head)
+            val optInference = values.get("inference").map(_.head)
+            val optSchemaEmbedded = values.get("schemaEmbedded").map(_.head)
+
+            val schemaEmbedded = optSchemaEmbedded match {
+              case Some("true") => true
+              case Some("false") => false
+              case Some(msg) => {
+                logger.info(s"Unsupported value for schema embedded: $msg")
+                defaultSchemaEmbedded
+              }
+              case None => defaultSchemaEmbedded
+            }
+			val (result, maybeTriggerMode) = validate(data, optDataFormat,
+              optSchema, optSchemaFormat, optSchemaEngine,
+              optTriggerMode,
+              None, None, optShapeMap,
+              optInference)
+            val triggerMode = maybeTriggerMode.getOrElse(ValidationTrigger.default)
+            val shapeMap = triggerMode match {
+              case TargetDeclarations => None
+              case ShapeMapTrigger(sm) => Some(sm.toString)
+            }
+            Ok(html.validate(
+              Some(result),
+              dp.data,
+              availableDataFormats,
+              dp.dataFormat.getOrElse(defaultDataFormat),
+              optSchema,
+              availableSchemaFormats,
+              optSchemaFormat.getOrElse(Schemas.shEx.defaultFormat),
+              availableSchemaEngines,
+              optSchemaEngine.getOrElse(Schemas.shEx.name),
+              availableTriggerModes,
+              triggerMode.name,
+              shapeMap,
+              schemaEmbedded,
+              availableInferenceEngines,
+              dp.inference.getOrElse(defaultInference),
+              dp.activeDataTab
+            ))
+		   }
+		  }
+        }		
+	  }
+	  getData(req,cb)
+	  
+/*      req.decode[UrlForm] { m => {
         val values = m.values
         logger.info(s"################## POST data:\n${m.values.mkString("\n")}")
         values.get("rdfDataActiveTab").map(_.head) match {
@@ -247,7 +311,7 @@ object WebService {
           case other => BadRequest(s"Unknown value for rdfDataTabActive: $other")
         }
       }
-      }
+      } */
     }
 
     case req@GET -> Root / "validate" :?
@@ -392,10 +456,11 @@ object WebService {
   private def extendWithInference(rdf: RDFReasoner,
                           optInference: Option[String],
                           dataParam: DataParam,
-                          cb: (Either[String, RDFReasoner], DataParam) => IO[Response[IO]]): IO[Response[IO]] = {
+						  req: Request[IO],
+                          cb: (Either[String, RDFReasoner], DataParam, Request[IO]) => IO[Response[IO]]): IO[Response[IO]] = {
     rdf.applyInference(optInference.getOrElse("None")).fold(
-      msg => cb(err(s"Error applying inference to RDF: $msg"),dataParam),
-      (newRdf: RDFReasoner) => cb(Right(newRdf), dataParam)
+      msg => cb(err(s"Error applying inference to RDF: $msg"), dataParam, req),
+      (newRdf: RDFReasoner) => cb(Right(newRdf), dataParam, req)
     )
   }
 
@@ -408,58 +473,59 @@ object WebService {
                        activeDataTab: String)
 
   private def getData(req: Request[IO],
-              cb: (Either[String, RDFReasoner], DataParam) => IO[Response[IO]]): IO[Response[IO]] = {
+                      cb: (Either[String, RDFReasoner], DataParam, Request[IO]) => IO[Response[IO]]): IO[Response[IO]] = {
     req.decode[UrlForm] { m => {
       val values = m.values
       val dp = mkDataParam(values)
       println(s"########################### POST data in query: ${m.values.mkString("\n")}")
-      values.get("rdfDataActiveTab").map(_.head) match {
-        case d @ Some("#dataUrl") => {
+	  val activeDataTab = values.get("rdfDataActiveTab").map(_.head).getOrElse(defaultActiveDataTab)
+      activeDataTab match {
+        case d @"#dataUrl" => {
           values.get("dataURL").map(_.head) match {
-            case None => cb(err(s"Non value for dataURL"),dp)
+            case None => cb(err(s"Non value for dataURL"),dp, req)
             case Some(dataUrl) => {
               RDFAsJenaModel.fromURI(dataUrl,dp.dataFormat.getOrElse(defaultDataFormat)) match {
-                case Left(str) => cb(err(str),dp)
+                case Left(str) => cb(err(str),dp, req)
                 case Right(rdf) => {
-                  extendWithInference(rdf,dp.inference,dp,cb)
+                  extendWithInference(rdf,dp.inference,dp,req,cb)
                 }
               }
             }
           }
         }
-        case Some("#dataFile") => {
+        case "#dataFile" => {
           values.get("dataFile").map(_.head) match {
-            case None => cb(err(s"No value for dataFile"),dp)
-            case Some(dataFile) => cb(err(s"Not implemented value from dataFile $dataFile"),dp)
+            case None => cb(err(s"No value for dataFile"),dp,req)
+            case Some(dataFile) => cb(err(s"Not implemented value from dataFile $dataFile"),dp,req)
           }
         }
-        case d @ Some("#dataEndpoint") => {
+        case d @ "#dataEndpoint" => {
           values.get("endpoint").map(_.head) match {
-            case None => cb(err(s"No value for endpoint"),dp)
+            case None => cb(err(s"No value for endpoint"),dp,req)
             case Some(endpointUrl) => {
               Endpoint.fromString(endpointUrl) match {
-                case Left(str) => cb(err(s"Error creating endpoint: $endpointUrl"),dp)
+                case Left(str) => cb(err(s"Error creating endpoint: $endpointUrl"),dp,req)
                 case Right(endpoint) => {
-                  extendWithInference(endpoint,dp.inference,dp, cb)
+                  extendWithInference(endpoint,dp.inference,dp,req,cb)
                 }
               }
             }
           }
         }
-        case d @ Some("#dataTextArea") => {
+        case d @ "#dataTextArea" => {
           values.get("data").map(_.head) match {
-            case None => cb(Right(RDFAsJenaModel.empty),dp)
+            case None => cb(Right(RDFAsJenaModel.empty),dp,req)
             case Some(data) => {
               RDFAsJenaModel.fromChars(data, dp.dataFormat.getOrElse(defaultDataFormat), None) match {
-                case Left(msg) => cb(err(msg),dp)
+                case Left(msg) => cb(err(msg),dp, req)
                 case Right(rdf) => {
-                  extendWithInference(rdf,dp.inference,dp, cb)
+                  extendWithInference(rdf,dp.inference,dp, req, cb)
                 }
               }
             }
           }
         }
-        case other => cb(err(s"Unknown value for activeDataTab: $other"),dp)
+        case other => cb(err(s"Unknown value for activeDataTab: $other"),dp,req)
       }
     }
     }

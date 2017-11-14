@@ -172,6 +172,30 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:b@:A", ":a@:A,:b@:A")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:b@:A,:x@:A,:y@:A,:z@:A", ":a@:A,:b@:A,:x@!:A,:y@!:A,:z@!:A")
   }
+  describe("Closed list") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+		|PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        |:A { :p  @:List }
+		|:List CLOSED { 
+		|  rdf:first @:B ;
+		|  rdf:rest [rdf:nil] OR @:List
+		|}
+		|:B { :q . }
+      """.stripMargin
+    val rdfStr =
+      """|prefix : <http://example.org/>
+	     |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+         |:a :p :ls .
+		 |:ls rdf:first :b1 ; rdf:rest rdf:nil .
+		 |:b1 :q 1 .
+         |""".stripMargin
+
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":b1@:B", ":b1@:B")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":ls@:List", ":ls@:List,:b1@:B")
+    shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A,:ls@:List,:b1@:B")
+  }
 
   def shouldValidateWithShapeMap(
     rdfStr: String,
