@@ -132,7 +132,7 @@ function showShapeMap(shapeMap,nodesPrefixMap, shapesPrefixMap) {
     var tableHead = "<thead><tr>" +
         "<th data-sortable=\"true\">Node</th>" +
         "<th data-sortable=\"true\">Shape</th>" +
-        "<th>Evidences</th> " +
+        "<th>Evidence</th> " +
         "</tr></thead>";
 
     var tableBody = '';
