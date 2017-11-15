@@ -8,53 +8,41 @@ function escapeHtml(unsafe) {
 }
 
 function flatten(examples) {
+    console.log("Examples: ");
+    console.log(examples);
     var result = [] ;
     var DefaultSchemaFormat = "ShExC" ;
     var DefaultSchemaEngine = "ShEx" ;
     var DefaultDataFormat = "Turtle" ;
     var DefaultTriggerMode = "ShapeMap" ;
 
+    if (typeof examples == "string") {
+      console.log("Examples = string ");
+      var r = JSON.parse(examples);
+      console.log(r);
+      return result;
+    } else {
     examples.forEach(function (entry,idx) {
       var schemaFormat = getOrElse(entry.schemaFormat, DefaultSchemaFormat);
       var schemaEngine = getOrElse(entry.schemaEngine, DefaultSchemaEngine);
-      if (entry.passes) {
-         entry.passes.forEach(function(passes,idx) {
-         var dataFormat = getOrElse(entry.dataFormat, DefaultDataFormat);
-         var triggerMode = getOrElse(entry.triggerMode, DefaultTriggerMode);
-         result.push({
-             "name": entry.name,
+      var dataFormat = getOrElse(entry.dataFormat, DefaultDataFormat);
+      var triggerMode = getOrElse(entry.triggerMode, DefaultTriggerMode);
+
+      result.push({
+             "name": entry.schemaLabel,
              "schemaURL": entry.schemaURL,
-             "dataURL": passes.dataURL,
-             "shapeMap": passes.queryMap,
-             "passes": true,
-             "descr": passes.name,
+             "dataURL": entry.dataURL,
+             "shapeMap": entry.queryMap,
+             "passes": (entry.status == "conformant" ? true: false),
+             "descr": entry.dataLabel,
              "dataFormat": dataFormat,
              "schemaFormat": schemaFormat,
              "schemaEngine": schemaEngine,
              "triggerMode": triggerMode
            })
         });
-      }
-      if (entry.fails) {
-       entry.fails.forEach(function(fails,idx) {
-         var dataFormat = getOrElse(entry.dataFormat, DefaultDataFormat);
-         var triggerMode = getOrElse(entry.triggerMode, DefaultTriggerMode);
-         result.push({
-             "name": entry.name,
-             "schemaURL": entry.schemaURL,
-             "dataURL": fails.dataURL,
-             "shapeMap": fails.queryMap,
-             "passes": false,
-             "descr": fails.name,
-             "dataFormat": dataFormat,
-             "schemaFormat": schemaFormat,
-             "schemaEngine": schemaEngine,
-             "triggerMode": triggerMode
-             })
-        });
-      }
-    });
     return result;
+    }
 }
 
 
@@ -73,7 +61,7 @@ $(document).ready(function() {
  var examplesUrl = $("#examples").data("examples");
  console.log(examplesUrl);
  var urlService = getHost() + "/validate";
- $.ajax(examplesUrl).done(function(examples) {
+ $.ajax({ url: examplesUrl, dataType: 'json'}).done(function(examples) {
    var flattened = flatten(examples);
    flattened.forEach(function(entry,idx) {
      var name = $("<td>").text(entry.name) ;
@@ -86,9 +74,12 @@ $(document).ready(function() {
      var triggerMode = $("<td>").text(entry.triggerMode) ;
      var schemaEngine = $("<td>").text(entry.schemaEngine) ;
 
-     $.ajax(entry.dataURL).done(function(dataContents) {
+     $.ajax({url: entry.dataURL,
+             dataType: 'text'}).done(function(dataContents) {
       //            dataURL.html(data);
-      $.ajax(entry.schemaURL).done(function (schemaContents) {
+      $.ajax({url: entry.schemaURL,
+              dataType: 'text'}
+             ).done(function (schemaContents) {
       //               schemaURL.html(schema);
       /*  var serviceData =  { data: dataContents,
                              schema: schemaContents,

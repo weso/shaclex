@@ -382,7 +382,21 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  private def numericLiteral2ValueObject(nl: NumericLiteral): Builder[ValueSetValue] = {
+  private def getNumericLiteralOrNumericDatatype(ctx: NumericFacetContext): Builder[NumericLiteral] = ctx match {
+    case _ if isDefined(ctx.numericLiteral()) => visitNumericLiteral(ctx.numericLiteral())
+    case _ if isDefined(ctx.string()) => for {
+      str <- visitString(ctx.string())
+      dt <- visitDatatype(ctx.datatype())
+      nl <- dt match {
+        case `xsd_integer` => ok(NumericInt(Integer.parseInt(str)))
+        case `xsd_double` => ok(NumericDecimal(str.toDouble))
+        case `xsd_decimal` => ok(NumericDecimal(BigDecimal(str)))
+        case _ => err(s"Unsupported numericFacet of string $str with datatype $dt")
+      }
+    } yield nl
+  }
+
+    private def numericLiteral2ValueObject(nl: NumericLiteral): Builder[ValueSetValue] = {
     nl match {
       case NumericInt(n) => ok(ObjectValue.intValue(n))
       case NumericDouble(d) => ok(ObjectValue.doubleValue(d))
@@ -618,7 +632,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx match {
       case _ if isDefined(ctx.numericRange()) => for {
         nr <- visitNumericRange(ctx.numericRange())
-        v <- visitNumericLiteral(ctx.numericLiteral())
+        v <- getNumericLiteralOrNumericDatatype(ctx)
         nf <- makeNumericFacet(nr, v)
       } yield nf
       case _ if isDefined(ctx.numericLength()) => for {

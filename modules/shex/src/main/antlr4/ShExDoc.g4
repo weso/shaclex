@@ -102,7 +102,7 @@ stringFacet     : stringLength INTEGER
 stringLength	: KW_LENGTH
 				| KW_MINLENGTH
 				| KW_MAXLENGTH;
-numericFacet	: numericRange numericLiteral
+numericFacet	: numericRange ( numericLiteral | string '^^' datatype )
 				| numericLength INTEGER
 				;
 numericRange	: KW_MININCLUSIVE
