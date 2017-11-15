@@ -128,7 +128,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def getShapeLabel(str: String): Check[ShapeLabel] = {
     logger.info(s"getShapeLabel. Label: ${str}")
-    IRI.fromString(str) match {
+    IRI.fromString(str, schema.base) match {
       case Right(iri) => {
         val label = IRILabel(iri)
         if (schema.labels contains label) ok(label)

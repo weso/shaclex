@@ -52,8 +52,12 @@ object IRI {
     IRI(new URI(str))
   }
 
-  def fromString(str: String): Either[String,IRI] =
-    Try(IRI(new URI(str))).toEither.leftMap(e => e.getMessage)
+  def fromString(str: String, base: Option[IRI] = None): Either[String,IRI] = {
+    Try{
+      val uri = new URI(str)
+      IRI(base.fold(uri)(_.uri.resolve(uri)))
+    }.toEither.leftMap(_.getMessage)
+  }
 
   def unapply(str: String): Option[IRI] =
     fromString(str).fold(_ => None, Some(_))
