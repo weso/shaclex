@@ -314,6 +314,7 @@ object WebService {
     }
 
     case req@GET -> Root / "validate" :?
+      OptExamplesParam(optExamples) +&
       OptDataParam(optData) +&
         OptDataURLParam(optDataURL) +&
         DataFormatParam(optDataFormat) +&
@@ -329,69 +330,72 @@ object WebService {
         InferenceParam(optInference) +&
         OptActiveDataTabParam(optActiveDataTab) => {
 
-      val baseUri = req.uri
+      if (optExamples.isDefined) {
+        Ok(html.load(optExamples.get))
+      } else {
+        val baseUri = req.uri
 
-      println(s"BaseURI: $baseUri")
+        println(s"BaseURI: $baseUri")
 
-      val eitherData: Either[String, Option[String]] = optData match {
-        case None => optDataURL match {
-          case None => Right(None)
-          case Some(dataURL) => resolveUri(baseUri, dataURL)
-        }
-        case Some(dataStr) => Right(Some(dataStr))
-      }
-
-      val eitherSchema: Either[String, Option[String]] = optSchema match {
-        case None => optSchemaURL match {
-          case None => Right(None)
-          case Some(schemaURL) => resolveUri(baseUri, schemaURL)
-        }
-        case Some(schemaStr) => Right(Some(schemaStr))
-      }
-
-      val eitherResult = for {
-        data <- eitherData
-        schema <- eitherSchema
-      } yield {
-        data.map(validate(_, optDataFormat,
-          optSchema, optSchemaFormat, optSchemaEngine,
-          optTriggerMode,
-          optNode, optShape, optShapeMap,
-          optInference))
-      }
-      eitherResult match {
-        case Left(msg) => BadRequest(msg)
-        case Right(result) => {
-          val triggerMode: ValidationTrigger = result.
-            map(_._2.getOrElse(ValidationTrigger.default)).
-            getOrElse(ValidationTrigger.default)
-
-          val shapeMap = triggerMode match {
-            case TargetDeclarations => None
-            case ShapeMapTrigger(sm) => Some(sm.toString)
+        val eitherData: Either[String, Option[String]] = optData match {
+          case None => optDataURL match {
+            case None => Right(None)
+            case Some(dataURL) => resolveUri(baseUri, dataURL)
           }
-          Ok(html.validate(
-            result.map(_._1),
-            optData,
-            availableDataFormats,
-            optDataFormat.getOrElse(defaultDataFormat),
-            optSchema,
-            availableSchemaFormats,
-            optSchemaFormat.getOrElse(Schemas.shEx.defaultFormat),
-            availableSchemaEngines,
-            optSchemaEngine.getOrElse(Schemas.shEx.name),
-            availableTriggerModes,
-            triggerMode.name,
-            shapeMap,
-            optSchemaEmbedded.getOrElse(defaultSchemaEmbedded),
-            availableInferenceEngines,
-            optInference.getOrElse("NONE"),
-            optActiveDataTab.getOrElse(defaultActiveDataTab)
-          ))
+          case Some(dataStr) => Right(Some(dataStr))
+        }
+
+        val eitherSchema: Either[String, Option[String]] = optSchema match {
+          case None => optSchemaURL match {
+            case None => Right(None)
+            case Some(schemaURL) => resolveUri(baseUri, schemaURL)
+          }
+          case Some(schemaStr) => Right(Some(schemaStr))
+        }
+
+        val eitherResult = for {
+          data <- eitherData
+          schema <- eitherSchema
+        } yield {
+          data.map(validate(_, optDataFormat,
+            optSchema, optSchemaFormat, optSchemaEngine,
+            optTriggerMode,
+            optNode, optShape, optShapeMap,
+            optInference))
+        }
+        eitherResult match {
+          case Left(msg) => BadRequest(msg)
+          case Right(result) => {
+            val triggerMode: ValidationTrigger = result.
+              map(_._2.getOrElse(ValidationTrigger.default)).
+              getOrElse(ValidationTrigger.default)
+
+            val shapeMap = triggerMode match {
+              case TargetDeclarations => None
+              case ShapeMapTrigger(sm) => Some(sm.toString)
+            }
+            Ok(html.validate(
+              result.map(_._1),
+              optData,
+              availableDataFormats,
+              optDataFormat.getOrElse(defaultDataFormat),
+              optSchema,
+              availableSchemaFormats,
+              optSchemaFormat.getOrElse(Schemas.shEx.defaultFormat),
+              availableSchemaEngines,
+              optSchemaEngine.getOrElse(Schemas.shEx.name),
+              availableTriggerModes,
+              triggerMode.name,
+              shapeMap,
+              optSchemaEmbedded.getOrElse(defaultSchemaEmbedded),
+              availableInferenceEngines,
+              optInference.getOrElse("NONE"),
+              optActiveDataTab.getOrElse(defaultActiveDataTab)
+            ))
+          }
         }
       }
     }
-
     case req@GET -> Root / "query" :?
       OptDataParam(optData) +&
         DataFormatParam(optDataFormat) +&

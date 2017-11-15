@@ -22,6 +22,7 @@ object QueryParams {
   object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
   object InferenceParam extends OptionalQueryParamDecoderMatcher[String]("inference")
   object ExamplesParam extends QueryParamDecoderMatcher[String]("examples")
+  object OptExamplesParam extends OptionalQueryParamDecoderMatcher[String]("examples")
   object OptQueryParam extends OptionalQueryParamDecoderMatcher[String]("query")
   object OptActiveDataTabParam extends OptionalQueryParamDecoderMatcher[String]("activeDataTab")
 
