@@ -14,8 +14,13 @@ function showQualify(node, prefix) {
    var rawNode = matchIri[1];
    for (var key in prefix) {
      if (rawNode.startsWith(prefix[key])) {
-       var longNode = "<" + rawNode + ">";
-       return "<abbr title=\"" + longNode + "\">" + key + ":" + rawNode.slice(prefix[key].length) + "</abbr>";
+       var localName = rawNode.slice(prefix[key].length);
+        console.log("qualifying " + localName)
+/*       if (localName.indexOf("/") > -1) {
+        return "&lt;" + rawNode + "&gt;" ;
+       } else */
+        var longNode = "<" + rawNode + ">";
+        return "<abbr title=\"" + longNode + "\">" + key + ":" + localName + "</abbr>";
      }
    }
    return "&lt;" + rawNode + "&gt;" ;
