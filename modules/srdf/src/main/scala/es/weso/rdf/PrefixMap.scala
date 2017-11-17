@@ -74,7 +74,14 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
 
     pm.find(startsWithPredicate) match {
       case None => "<" ++ str ++ ">"
-      case Some(p) => p._1.str + ":" + str.stripPrefix(p._2.str)
+      case Some(p) => {
+        val localName = str.stripPrefix(p._2.str)
+        if (localName contains ("/")) {
+          "<" ++ str ++ ">"
+        } else {
+          p._1.str + ":" + localName
+        }
+      }
     }
   }
 

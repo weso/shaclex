@@ -259,8 +259,10 @@ case class Repeat[A](v: Rbe[A], n: Int, m: IntOrUnbounded) extends Rbe[A]
 
 
 object Rbe {
+
   def show[A:Show](r: Rbe[A]): String = {
     import ShowRbe._
     Show[Rbe[A]].show(r)
   }
+
 }

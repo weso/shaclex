@@ -9,6 +9,7 @@ import es.weso.rdf.nodes._
 import es.weso.collection.Bag
 import es.weso.rbe.interval.IntervalChecker
 import es.weso.rbe.{ BagChecker, Empty, Rbe }
+import es.weso.rbe.BagChecker._
 import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
 import ViolationError._
@@ -382,16 +383,31 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     table: CTable)(cs: Candidates): CheckTyping = {
     val as: List[CandidateLine] = SeqUtils.transpose(cs)
     logger.info(s"Candidate lines: $as")
-    if (as.length == 1) {
-      // Deterministic
-      checkCandidateLine(attempt, bagChecker, table)(as.head)
-    } else {
-      // import es.weso.rbe.ShowRbe._
-      logger.warn(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}")
-      val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
-      checkSome(checks, ViolationError.msgErr(s"No candidate matched $cs. Attempt: ${attempt.nodeShape}"))
+    as.length match {
+      case 1 => { // Deterministic
+        checkCandidateLine(attempt, bagChecker, table)(as.head)
+      }
+      case 0 => {
+        errStr(s"${attempt.show} Empty list of candidates")
+      }
+      case n => {
+        logger.info(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}")
+        val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
+        checkSome(checks,
+          ViolationError.msgErr(
+            s"""|None of the candidates matched. Attempt: ${attempt.show}
+                |Bag: ${bagChecker.show}
+                |Candidate lines: ${showListCandidateLine(as)}
+                |""".stripMargin)
+        )
+      }
     }
   }
+
+  private[validator] def showListCandidateLine(ls: List[CandidateLine]): String = {
+    ls.map(_.show).mkString("\n")
+  }
+
 
   private[validator] def checkCandidateLine(
     attempt: Attempt,
