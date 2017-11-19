@@ -17,7 +17,8 @@
   schemaEmbedded: Boolean,
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
-  activeDataTab: String
+  activeDataTab: String,
+  activeSchemaTab: String
 )
 
 <html>
@@ -26,7 +27,7 @@
 @navBar()
 <div class="container">
 <div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.map(_.toJson).getOrElse(Json.Null)))}'></div>
-<form action="/validate" method="POST" id="validate">
+<form action="/validate" method="POST" enctype="multipart/form-data" id="validate">
     <fieldset>
         @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
         <label>Schema embedded:
@@ -35,14 +36,10 @@
             /></label>
     </fieldset>
 
-    @dataPanel(data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,activeDataTab)
+    @dataPanel("validate", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,activeDataTab)
 
     <div id="schemaDiv">
-    <fieldset class="schemaPanel">
-        <legend>Schema</legend>
-        <textarea id="schema" placeHolder="Schema" name="schema">@{schema.getOrElse("")}</textarea>
-        @selectSchemaFormat("validate",availableSchemaFormats,currentSchemaFormat)
-    </fieldset>
+      @schemaPanel("validate", schema, availableSchemaFormats, currentSchemaFormat, activeSchemaTab)
     </div>
 
     @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)

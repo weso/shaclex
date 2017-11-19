@@ -88,6 +88,7 @@ $(document).ready(function() {
                     var buttonClass = entry.status == "conformant" ? "btn-success" : "btn-danger" ;
                     var tryIt = $("<td>").append($("<form>").
                     attr("method","POST").
+                    attr("enctype","multipart/form-data").
                     attr("action",urlService).
                     append($("<input>").attr("type","hidden").attr("name","data").attr("value",dataContents)).
                     append($("<input>").attr("type","hidden").attr("name","schema").attr("value",schemaContents)).
@@ -105,7 +106,13 @@ $(document).ready(function() {
                     ));
                     var tr = $("<tr>").append(schemaURL,schemaFormat,dataURL,dataFormat, shapeMap,schemaEngine, inference, tryIt);
                     $("#examples").append(tr);
+                }).fail(function (jqXHR, textStatus) {
+                    var tr = $("<tr>").append($("<td>").attr("colspan", 8).text("Failed to load schemaURL: " + entry.schemaURL + " Error:" + jqXHR.status + "-" + jqXHR.responseText));
+                    $("#examples").append(tr);
                 });
+            }).fail(function (jqXHR, textStatus) {
+                var tr = $("<tr>").append($("<td>").attr("colspan", 8).text("Failed to load dataURL: " + entry.dataURL + " Error:" + jqXHR.status + "-" + jqXHR.responseText));
+                $("#examples").append(tr);
             });
         });
     });

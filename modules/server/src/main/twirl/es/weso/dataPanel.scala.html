@@ -1,4 +1,5 @@
-@(data:Option[String],
+@(formName: String,
+  data:Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
   availableInferenceEngines: List[String],
@@ -29,7 +30,7 @@
         <div class='@{if (activeDataTab=="#dataTextArea") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataTextArea" role="tabpanel" aria-labelledby="dataTextArea-tab">
             <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
-            @selectDataFormat("validate",availableDataFormats,currentDataFormat)
+            @selectDataFormat(formName,availableDataFormats,currentDataFormat)
         </div>
         <div class='@{if (activeDataTab=="#dataUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataUrl" role="tabpanel" aria-labelledby="dataUrl-tab">

@@ -11,8 +11,8 @@
 @navBar()
 <div class="container">
 <h1>Info about RDF Data</h1>
-<form action="/dataInfo" method="POST" id="info">
-    @dataPanel(data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
+<form action="/dataInfo" method="POST" enctype="multipart/form-data" id="info">
+    @dataPanel("info",data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
     <button type="submit">Data Info</button>
 </form>
 </div>

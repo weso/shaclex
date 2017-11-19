@@ -19,8 +19,8 @@
   <!-- No result -->
 }
 
-<form action="/dataConversions" method="POST" id="convert">
-    @dataPanel(data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
+<form action="/dataConversions" method="POST" enctype="multipart/form-data" id="convert">
+    @dataPanel("convert", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
     @selectTargetDataFormat("convert",availableDataFormats,currentDataFormat)
     <div class="submit">
         <button type="submit">Convert</button>
