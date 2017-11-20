@@ -86,7 +86,7 @@ function getDataFormat(element) {
    });
  }
 
- $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+ $('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
    var name = $(e.target).attr("href");
    console.log("New tab: " + name); // newly activated tab
    $('#rdfDataActiveTab').val(name);

@@ -224,11 +224,17 @@ var targetDataArea = document.getElementById("targetDataArea");
     }
 
 
-$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-  var name = $(e.target).attr("href");
-  console.log("New tab: " + name); // newly activated tab
-  $('#rdfDataActiveTab').val(name);
-})
+ $('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+   var name = $(e.target).attr("href");
+   console.log("New data tab: " + name);
+   $('#rdfDataActiveTab').val(name);
+ })
+
+ $('.schemaPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+   var name = $(e.target).attr("href");
+   console.log("New schema tab: " + name);
+   $('#activeSchemaTab').val(name);
+ })
 
 $("#permalink").click(function(e) {
   e.preventDefault();

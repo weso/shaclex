@@ -141,7 +141,7 @@ object APIService {
     }
 
     case req @ GET -> Root / `api` / "schema" / "info" :?
-      SchemaParam(optSchema) +&
+      OptSchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
       SchemaEngineParam(optSchemaEngine) => {
       val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
@@ -196,7 +196,7 @@ object APIService {
     }
 
     case req @ GET -> Root / `api` / "schema" / "convert" :?
-      SchemaParam(optSchema) +&
+      OptSchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
       SchemaEngineParam(optSchemaEngine) +&
       TargetSchemaFormatParam(optResultSchemaFormat) +&
@@ -244,7 +244,7 @@ object APIService {
     case req @ (GET | POST) -> Root / `api` / "validate" :?
       DataParam(data) +&
       DataFormatParam(optDataFormat) +&
-      SchemaParam(optSchema) +&
+      OptSchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
       SchemaEngineParam(optSchemaEngine) +&
       TriggerModeParam(optTriggerMode) +&

@@ -20,6 +20,7 @@ import es.weso.server.WebService.{DataParam, PartsMap, parts2Map}
 import fs2.text.utf8Decode
 import org.http4s.multipart.{Multipart, Part}
 import cats.implicits._
+import es.weso.utils.FileUtils
 
 object WebService {
 
@@ -49,7 +50,7 @@ object WebService {
       Ok(html.index())
     }
 
-    case req @ GET -> Root / "dataConversions" :?
+    case req@GET -> Root / "dataConversions" :?
       OptDataParam(optData) +&
         DataFormatParam(optDataFormat) +&
         InferenceParam(optInference) +&
@@ -64,23 +65,22 @@ object WebService {
         optInference.getOrElse(defaultInference),
         optTargetDataFormat.getOrElse(defaultDataFormat),
         optActiveDataTab.getOrElse(defaultActiveDataTab),
-        dataConvert(optData,optDataFormat,optTargetDataFormat)))
+        dataConvert(optData, optDataFormat, optTargetDataFormat)))
 
     }
 
-    case req @ POST -> Root / "dataConversions" => {
+    case req@POST -> Root / "dataConversions" => {
 
-      def cnv(e: Either[String,RDFReasoner],
-	            dp: DataParam): Either[String,Option[String]] = for {
+      def cnv(e: Either[String, RDFReasoner],
+              dp: DataParam): Either[String, Option[String]] = for {
         rdf <- e
         str <- rdf.serialize(dp.targetDataFormat.getOrElse(defaultDataFormat))
       } yield Some(str)
 
-      def cb(result: Either[String,RDFReasoner],
-	           dp: DataParam,
+      def cb(result: Either[String, RDFReasoner],
+             dp: DataParam,
              partsMap: PartsMap): IO[Response[IO]] = {
-       println(s"############### DataParm data: ${dp.data}")
-       Ok(html.dataConversions(
+        Ok(html.dataConversions(
           dp.data,
           availableDataFormats,
           dp.dataFormat.getOrElse(defaultDataFormat),
@@ -88,32 +88,33 @@ object WebService {
           dp.inference.getOrElse(defaultInference),
           dp.targetDataFormat.getOrElse(defaultDataFormat),
           dp.activeDataTab.getOrElse(defaultActiveDataTab),
-          cnv(result,dp)))
+          cnv(result, dp)))
       }
-     req.decode[Multipart[IO]] { m =>
-       val partsMap = parts2Map(m.parts)
-       getData(partsMap, cb)
-     }
+
+      req.decode[Multipart[IO]] { m =>
+        val partsMap = parts2Map(m.parts)
+        getData(partsMap, cb)
+      }
     }
 
     case req@GET -> Root / "dataInfo" :?
       OptDataParam(optData) +&
-      DataFormatParam(optDataFormat) +&
-      InferenceParam(optInference) +&
-      OptActiveDataTabParam(optActiveDataTab) => {
+        DataFormatParam(optDataFormat) +&
+        InferenceParam(optInference) +&
+        OptActiveDataTabParam(optActiveDataTab) => {
       RDFAsJenaModel.fromChars(optData.getOrElse(""), optDataFormat.getOrElse(defaultDataFormat)).fold(
         str => BadRequest(str),
         rdf => Ok(html.dataInfo(
-            optData,
-            availableDataFormats,
-            defaultDataFormat,
-            availableInferenceEngines,
-            optInference.getOrElse(defaultInference),
-            optActiveDataTab.getOrElse(defaultActiveDataTab))))
+          optData,
+          availableDataFormats,
+          defaultDataFormat,
+          availableInferenceEngines,
+          optInference.getOrElse(defaultInference),
+          optActiveDataTab.getOrElse(defaultActiveDataTab))))
     }
 
     case req@POST -> Root / "dataInfo" => {
-      def cb(e: Either[String,RDFReasoner],dp: DataParam, partsMap: PartsMap): IO[Response[IO]] = {
+      def cb(e: Either[String, RDFReasoner], dp: DataParam, partsMap: PartsMap): IO[Response[IO]] = {
         e.fold(str => BadRequest(str),
           rdf => Ok(html.dataInfo(
             dp.data,
@@ -123,13 +124,15 @@ object WebService {
             dp.inference.getOrElse(defaultInference),
             dp.activeDataTab.getOrElse(defaultActiveDataTab))))
       }
+
       req.decode[Multipart[IO]] { m =>
         val partsMap = parts2Map(m.parts)
-        getData(partsMap, cb) }
+        getData(partsMap, cb)
+      }
     }
 
     case req@GET -> Root / "schemaConversions" :?
-      SchemaParam(optSchema) +&
+      OptSchemaParam(optSchema) +&
         SchemaFormatParam(optSchemaFormat) +&
         SchemaEngineParam(optSchemaEngine) +&
         TargetSchemaFormatParam(optTargetSchemaFormat) +&
@@ -181,68 +184,71 @@ object WebService {
 
     case req@POST -> Root / "validate" => {
 
-	   def cb(e: Either[String, RDFReasoner],
-	         dp: DataParam,
-           partsMap: PartsMap): IO[Response[IO]] = {
-		 e match {
-		  case Left(msg) => BadRequest(s"Error obtaining data: $msg")
-		  case Right(rdf) => for {
-        optSchema <- optPartValue("schema", partsMap)
-        optSchemaFormat <- optPartValue("schemaFormat", partsMap)
-        optSchemaEngine <- optPartValue("schemaEngine", partsMap)
-        optTriggerMode <- optPartValue("triggerMode", partsMap)
-        optShapeMap <- optPartValue("shapeMap", partsMap)
-        optSchemaEmbedded <- optPartValue("schemaEmbedded",partsMap)
-        schemaEmbedded = optSchemaEmbedded match {
-              case Some("true") => true
-              case Some("false") => false
-              case Some(msg) => defaultSchemaEmbedded
-              case None => defaultSchemaEmbedded
+      def cbData(e: Either[String, RDFReasoner],
+             dp: DataParam,
+             partsMap: PartsMap): IO[Response[IO]] = {
+        println(s"cbData: $dp")
+        e match {
+          case Left(msg) => BadRequest(s"Error obtaining data: $msg")
+          case Right(rdf) => for {
+            maybePair <- mkSchema(partsMap, Some(rdf))
+            response <- maybePair match {
+              case Left(msg) => BadRequest(s"Error obtaining data: $msg")
+              case Right((schema, sp)) => for {
+                optTriggerMode <- optPartValue("triggerMode", partsMap)
+                optShapeMap <- optPartValue("shapeMap", partsMap)
+                schemaEmbedded = sp.schemaEmbedded match {
+                  case Some(true) => true
+                  case Some(false) => false
+                  case None => defaultSchemaEmbedded
+                }
+                (result, maybeTriggerMode) = validate(dp.data.getOrElse(""), dp.dataFormat,
+                  sp.schema, sp.schemaFormat, sp.schemaEngine,
+                  optTriggerMode,
+                  None, None, optShapeMap, dp.inference)
+                triggerMode = maybeTriggerMode.getOrElse(ValidationTrigger.default)
+                shapeMap = triggerMode match {
+                  case TargetDeclarations => None
+                  case ShapeMapTrigger(sm) => Some(sm.toString)
+                }
+                r <- Ok(html.validate(
+                  Some(result),
+                  dp.data,
+                  availableDataFormats,
+                  dp.dataFormat.getOrElse(defaultDataFormat),
+                  sp.schema,
+                  availableSchemaFormats,
+                  sp.schemaFormat.getOrElse(defaultSchemaFormat),
+                  availableSchemaEngines,
+                  sp.schemaEngine.getOrElse(defaultSchemaEngine),
+                  availableTriggerModes,
+                  triggerMode.name,
+                  shapeMap,
+                  schemaEmbedded,
+                  availableInferenceEngines,
+                  dp.inference.getOrElse(defaultInference),
+                  dp.activeDataTab.getOrElse(defaultActiveDataTab),
+                  sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)
+                ))
+              } yield r
             }
-        (result, maybeTriggerMode) = validate(dp.data.getOrElse(""), dp.dataFormat,
-              optSchema, optSchemaFormat, optSchemaEngine,
-              optTriggerMode,
-              None, None, optShapeMap,dp.inference)
-         triggerMode = maybeTriggerMode.getOrElse(ValidationTrigger.default)
-         shapeMap = triggerMode match {
-              case TargetDeclarations => None
-              case ShapeMapTrigger(sm) => Some(sm.toString)
-            }
-         response <- Ok(html.validate(
-              Some(result),
-              dp.data,
-              availableDataFormats,
-              dp.dataFormat.getOrElse(defaultDataFormat),
-              optSchema,
-              availableSchemaFormats,
-              optSchemaFormat.getOrElse(Schemas.shEx.defaultFormat),
-              availableSchemaEngines,
-              optSchemaEngine.getOrElse(Schemas.shEx.name),
-              availableTriggerModes,
-              triggerMode.name,
-              shapeMap,
-              schemaEmbedded,
-              availableInferenceEngines,
-              dp.inference.getOrElse(defaultInference),
-              dp.activeDataTab.getOrElse(defaultActiveDataTab),
-              defaultActiveSchemaTab
-            ))
-		   } yield response
-     }
-	  }
-    req.decode[Multipart[IO]] { m =>
-      val partsMap = parts2Map(m.parts)
-      getData(partsMap, cb)
-    }
+          } yield response
+        }
+      }
+
+      req.decode[Multipart[IO]] { m =>
+        val partsMap = parts2Map(m.parts)
+        getData(partsMap, cbData)
+      }
 
     }
 
     case req@GET -> Root / "validate" :?
       OptExamplesParam(optExamples) +&
-      OptDataParam(optData) +&
+        OptDataParam(optData) +&
         OptDataURLParam(optDataURL) +&
         DataFormatParam(optDataFormat) +&
-        SchemaParam(optSchema) +&
+        OptSchemaParam(optSchema) +&
         SchemaURLParam(optSchemaURL) +&
         SchemaFormatParam(optSchemaFormat) +&
         SchemaEngineParam(optSchemaEngine) +&
@@ -397,28 +403,88 @@ object WebService {
                          schemaURL: Option[String],
                          schemaFile: Option[String],
                          schemaFormat: Option[String],
+                         schemaEngine: Option[String],
+                         schemaEmbedded: Option[Boolean],
                          targetSchemaFormat: Option[String],
                          activeSchemaTab: Option[String]
                         )
+
+  private def mkSchema(partsMap: PartsMap, data: Option[RDFReasoner]
+                      ): IO[Either[String,(Schema, SchemaParam)]] = for {
+    sp <- mkSchemaParam(partsMap)
+  } yield {
+    val (maybeStr, maybeSchema) = getSchema(sp, data)
+    maybeSchema match {
+      case Left(str) => Left(str)
+      case Right(schema) => Right((schema, sp.copy(schema = maybeStr)))
+    }
+  }
 
   private def mkSchemaParam(partsMap: PartsMap): IO[SchemaParam] = for {
     schema <- optPartValue("schema", partsMap)
     schemaURL <- optPartValue("schemaURL", partsMap)
     schemaFile <- optPartValue("schemaFile", partsMap)
     schemaFormat <- optPartValue("schemaFormat", partsMap)
+    schemaEngine <- optPartValue("schemaEngine", partsMap)
     targetSchemaFormat <- optPartValue("targetSchemaFormat", partsMap)
     activeSchemaTab <- optPartValue("activeSchemaTab", partsMap)
-  } yield SchemaParam(schema,schemaURL,schemaFile,schemaFormat,targetSchemaFormat,activeSchemaTab)
+    schemaEmbedded <- optPartValueBoolean("schemaEmbedded", partsMap)
+  } yield SchemaParam(schema, schemaURL, schemaFile, schemaFormat, schemaEngine, schemaEmbedded, targetSchemaFormat, activeSchemaTab)
 
-  private def getSchema(partsMap: PartsMap,
-                        cb: (Either[String, Schema], SchemaParam, PartsMap) => IO[Response[IO]]
-                     ): IO[Response[IO]] = for {
-    sp <- mkSchemaParam(partsMap)
-    response <- sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab) match {
-      case d @"#dataUrl" => cb(err(s"Not implemented"), sp, partsMap)
-      case _ => cb(err(s"Not implemented"), sp, partsMap)
-    }
-  } yield response
+  private def getSchema(sp: SchemaParam, data: Option[RDFReasoner]): (Option[String],Either[String,Schema]) = {
+    val base = Some(FileUtils.currentFolderURL)
+    sp.schemaEmbedded match {
+       case Some(true) => data match {
+          case None => (None, Left(s"Schema embedded but no data found"))
+          case Some(rdf) => Schemas.fromRDF(rdf, sp.schemaEngine.getOrElse(defaultSchemaEngine)) match {
+            case Left(str) => (None,Left(s"Error obtaining schema from RDF $rdf"))
+            case Right(schema) => schema.serialize(sp.schemaFormat.getOrElse(defaultSchemaFormat)) match {
+              case Left(str) => (None, Right(schema))
+              case Right(str) => (Some(str), Right(schema))
+            }
+         }
+       }
+       case _ => {
+          println(s"######## Schema not embedded...Active schema tab: ${sp.activeSchemaTab}")
+          sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab) match {
+            case "#schemaUrl" => {
+              println(s"######## SchemaUrl: ${sp.schemaURL}")
+              sp.schemaURL match {
+                case None => (None, Left(s"Non value for dataURL"))
+                case Some(schemaUrl) => {
+                  val schemaFormat = sp.schemaFormat.getOrElse(defaultSchemaFormat)
+                  (None,Left(s"Not implemented obtaining $schemaUrl with $schemaFormat"))
+                }
+              }
+            }
+            case "#schemaFile" => {
+              sp.schemaFile match {
+                case None => (None, Left(s"No value for schemaFile"))
+                case Some(schemaStr) =>
+                  val schemaFormat = sp.schemaFormat.getOrElse(defaultSchemaFormat)
+                  val schemaEngine = sp.schemaEngine.getOrElse(defaultSchemaEngine)
+                  Schemas.fromString(schemaStr, schemaFormat, schemaEngine, base) match {
+                    case Left(msg) => (Some(schemaStr), Left(s"Error parsing file: $msg"))
+                    case Right(schema) => (Some(schemaStr), Right(schema))
+                  }
+              }
+            }
+            case "#schemaTextArea" => {
+              sp.schema match {
+                case None => (None, Left(s"No value for schema in textArea"))
+                case Some(schemaStr) => Schemas.fromString(schemaStr,sp.schemaFormat.getOrElse(defaultSchemaFormat),
+                    sp.schemaEngine.getOrElse(defaultSchemaEngine),base) match {
+                    case Left(msg) => (Some(schemaStr),Left(msg))
+                    case Right(schema) => (Some(schemaStr),Right(schema))
+                  }
+              }
+            }
+            case other => (None,Left(s"Not implemented getSchema: $other"))
+          }
+        }
+      }
+  }
+
 
   case class DataParam(data: Option[String],
                        dataURL: Option[String],
@@ -513,6 +579,15 @@ object WebService {
 
   def optPartValue(key: String, partsMap: PartsMap): IO[Option[String]] = partsMap.get(key) match {
     case Some(part) => part.body.through(utf8Decode).runFoldMonoid.map(Some(_))
+    case None => IO(None)
+  }
+
+  def optPartValueBoolean(key: String, partsMap: PartsMap): IO[Option[Boolean]] = partsMap.get(key) match {
+    case Some(part) => part.body.through(utf8Decode).runFoldMonoid.map(_ match {
+      case "true" => Some(true)
+      case "false" => Some(false)
+      case _ => None
+    })
     case None => IO(None)
   }
 

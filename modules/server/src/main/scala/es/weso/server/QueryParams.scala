@@ -8,7 +8,7 @@ object QueryParams {
   object OptDataURLParam extends OptionalQueryParamDecoderMatcher[String]("dataURL")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
   object TargetDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetDataFormat")
-  object SchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
+  object OptSchemaParam extends OptionalQueryParamDecoderMatcher[String]("schema")
   object SchemaURLParam extends OptionalQueryParamDecoderMatcher[String]("schemaURL")
   object SchemaFormatParam extends OptionalQueryParamDecoderMatcher[String]("schemaFormat")
   object SchemaEngineParam extends OptionalQueryParamDecoderMatcher[String]("schemaEngine")

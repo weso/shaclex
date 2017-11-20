@@ -249,6 +249,12 @@ function prepareShapeMap() {
         codeMirrorShapeMap.setSize(null,"5em");
     }
 
+ $('.schemaPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+   var name = $(e.target).attr("href");
+   console.log("New schema tab: " + name);
+   $('#activeSchemaTab').val(name);
+ })
+
  $("#permalink").click(function(e) {
   e.preventDefault();
   console.log("click on permalink...");
