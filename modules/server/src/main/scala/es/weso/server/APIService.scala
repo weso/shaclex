@@ -247,7 +247,7 @@ object APIService {
       OptSchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
       SchemaEngineParam(optSchemaEngine) +&
-      TriggerModeParam(optTriggerMode) +&
+      OptTriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParam(optShapeMap) +&
