@@ -1,4 +1,3 @@
-@import es.weso.schema.Result
 @import es.weso.json.JsonTwirl
 @import io.circe._
 
@@ -8,7 +7,9 @@
   currentDataFormat: String,
   query:Option[String],
   availableInferenceEngines: List[String],
-  currentInferenceEngine: String
+  currentInferenceEngine: String,
+  activeDataTab: String,
+  activeQueryTab: String
 )
 
 @import java.net.URLEncoder
@@ -23,21 +24,11 @@
 } else {
     <div id="resultDiv" data-result='null' class="alert alert-danger" role="alert"><code>@{result.left.get}</code></div>
 }
-<form action="/query" method="POST" id="query">
-
-    <fieldset class="dataPanel">
-        <legend>RDF Data</legend>
-        <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
-        @selectDataFormat("query",availableDataFormats,currentDataFormat)
-
-        @selectInferenceEngine("query", availableInferenceEngines,currentInferenceEngine)
-    </fieldset>
-
+<form action="/query" method="POST" enctype="multipart/form-data" id="query">
+    @dataPanel("query", data, availableDataFormats, currentDataFormat,
+                         availableInferenceEngines,currentInferenceEngine,activeDataTab)
     <div id="queryDiv">
-    <fieldset class="queryPanel">
-        <legend>Query</legend>
-        <textarea id="queryData" placeHolder="SPARQL query" name="query">@{query.getOrElse("")}</textarea>
-    </fieldset>
+     @queryPanel("query", query, activeQueryTab)
     </div>
 
     </fieldset>

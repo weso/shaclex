@@ -99,7 +99,7 @@ function getDataFormat(element) {
   var data = codeMirrorData.getValue();
   var schema = codeMirrorSchema.getValue();
   var dataFormat = $("#dataFormat").find(":selected").text();
-  var inference = $("#inferenceBefore").find(":selected").text();
+  var inference = $("#inference").find(":selected").text();
   var targetDataFormat = $("#targetDataFormat").find(":selected").text();
   var location = "/data?" +
       "data=" + encodeURIComponent(data) +

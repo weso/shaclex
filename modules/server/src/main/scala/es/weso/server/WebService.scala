@@ -11,16 +11,20 @@ import org.http4s.twirl._
 import es.weso._
 import es.weso.server.QueryParams._
 import org.log4s.getLogger
-import ApiHelper._
+import ApiHelper.{query, _}
 import Http4sUtils._
 import cats.data.EitherT
 import es.weso.rdf._
 import cats.effect.IO._
-import es.weso.server.WebService.{DataParam, PartsMap, parts2Map}
+import es.weso.server.WebService.{DataParam, PartsMap, mkData, parts2Map}
 import fs2.text.utf8Decode
 import org.http4s.multipart.{Multipart, Part}
 import cats.implicits._
 import es.weso.utils.FileUtils
+
+import scala.io.Source
+import scala.io.Source._
+import scala.util.Try
 
 object WebService {
 
@@ -43,6 +47,7 @@ object WebService {
   val defaultInference = "None"
   val defaultActiveDataTab = "#dataTextArea"
   val defaultActiveSchemaTab = "#schemaTextArea"
+  val defaultActiveQueryTab = "#queryTextArea"
 
   val webService: HttpService[IO] = HttpService[IO] {
 
@@ -296,7 +301,10 @@ object WebService {
       OptDataParam(optData) +&
         DataFormatParam(optDataFormat) +&
         OptQueryParam(optQuery) +&
-        InferenceParam(optInference) => {
+        InferenceParam(optInference) +&
+        OptActiveDataTabParam(optActiveDataTab) +&
+        OptActiveQueryTabParam(optActiveQueryTab)
+        => {
       val result = query(optData.getOrElse(""), optDataFormat, optQuery, optInference)
       Ok(html.query(
         result,
@@ -305,31 +313,42 @@ object WebService {
         optDataFormat.getOrElse(defaultDataFormat),
         optQuery,
         availableInferenceEngines,
-        optInference.getOrElse("NONE")
+        optInference.getOrElse("NONE"),
+        optActiveDataTab.getOrElse(defaultActiveDataTab),
+        optActiveQueryTab.getOrElse(defaultActiveQueryTab)
       ))
     }
 
     case req@POST -> Root / "query" => {
-      req.decode[UrlForm] { m => {
-        val values = m.values
-        logger.info(s"POST data in query: ${m.values.mkString("\n")}")
-        val optData = values.get("data").map(_.head)
-        val optQuery = values.get("query").map(_.head)
-        val optDataFormat = values.get("dataFormat").map(_.head)
-        val optInference = values.get("inference").map(_.head)
-
-        val result = query(optData.getOrElse(""), optDataFormat, optQuery, optInference)
-
-        Ok(html.query(
-          result,
-          optData,
-          availableDataFormats,
-          optDataFormat.getOrElse(defaultDataFormat),
-          optQuery,
-          availableInferenceEngines,
-          optInference.getOrElse("NONE")
-        ))
-      }
+      req.decode[Multipart[IO]] { m => {
+        val partsMap = parts2Map(m.parts)
+        for {
+          maybeData <- mkData(partsMap)
+          response <- maybeData match {
+            case Left(msg) => BadRequest(s"Error obtaining data: $msg")
+            case Right((rdf, dp)) => for {
+              maybePair <- mkQuery(partsMap)
+              response <- maybePair match {
+                case Left(msg) => BadRequest(s"Error obtaining query: $msg")
+                case Right((queryStr, qp)) => {
+                  val result = query(dp.data.getOrElse(""), dp.dataFormat, qp.query, dp.inference)
+                  Ok(html.query(
+                    result,
+                    dp.data,
+                    availableDataFormats,
+                    dp.dataFormat.getOrElse(defaultDataFormat),
+                    qp.query,
+                    availableInferenceEngines,
+                    dp.inference.getOrElse(defaultInference),
+                    dp.activeDataTab.getOrElse(defaultActiveDataTab),
+                    qp.activeQueryTab.getOrElse(defaultActiveQueryTab)
+                  ))
+                }
+              }
+            } yield response
+          }
+        } yield response
+       }
       }
     }
 
@@ -355,6 +374,7 @@ object WebService {
   private def extendWithInference(rdf: RDFReasoner,
                                   optInference: Option[String]
                                  ): Either[String,RDFReasoner] = {
+    println(s"############# Applying inference $optInference")
     rdf.applyInference(optInference.getOrElse("None")).fold(
       msg => Left(s"Error applying inference to RDF: $msg"),
       (newRdf: RDFReasoner) => Right(newRdf)
@@ -413,9 +433,19 @@ object WebService {
               println(s"######## SchemaUrl: ${sp.schemaURL}")
               sp.schemaURL match {
                 case None => (None, Left(s"Non value for dataURL"))
-                case Some(schemaUrl) => {
-                  val schemaFormat = sp.schemaFormat.getOrElse(defaultSchemaFormat)
-                  (None,Left(s"Not implemented obtaining $schemaUrl with $schemaFormat"))
+                case Some(schemaUrl) => Try {
+                  val uri = new java.net.URI(schemaUrl)
+                  Source.fromURI(uri).mkString
+                }.toEither match {
+                  case Left(err) => (None,Left(s"Error obtaining schema from url $schemaUrl: ${err.getMessage} "))
+                  case Right(schemaStr) => Schemas.fromString(schemaStr,
+                       sp.schemaFormat.getOrElse(defaultSchemaFormat),
+                       sp.schemaEngine.getOrElse(defaultSchemaEngine),
+                       base) match {
+                    case Left(msg) => (Some(schemaStr), Left(s"Error parsing file: $msg"))
+                    case Right(schema) => (Some(schemaStr), Right(schema))
+                  }
+
                 }
               }
             }
@@ -477,12 +507,10 @@ object WebService {
               val dataFormat = dp.dataFormat.getOrElse(defaultDataFormat)
               RDFAsJenaModel.fromURI(dataUrl,dataFormat) match {
                 case Left(str) => (None,Left(s"Error obtaining $dataUrl with $dataFormat: $str"))
-                case Right(rdf) => {
-                  (rdf.serialize(dataFormat).toOption, extendWithInference(rdf,dp.inference))
+                case Right(rdf) => applyInference(rdf, dp.inference, dataFormat)
                 }
               }
             }
-          }
         }
         case "#dataFile" => {
           dp.dataFile match {
@@ -492,7 +520,10 @@ object WebService {
               RDFAsJenaModel.fromChars(dataStr, dataFormat, None) match {
                 case Left(msg) => (Some(dataStr), Left(msg))
                 case Right(rdf) => {
-                  (Some(dataStr), extendWithInference(rdf, dp.inference))
+                  extendWithInference(rdf,dp.inference) match {
+                    case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
+                    case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
+                  }
                 }
               }
           }
@@ -514,16 +545,27 @@ object WebService {
           dp.data match {
             case None => (None, Right(RDFAsJenaModel.empty))
             case Some(data) => {
-              RDFAsJenaModel.fromChars(data, dp.dataFormat.getOrElse(defaultDataFormat), None) match {
+              val dataFormat = dp.dataFormat.getOrElse(defaultDataFormat)
+              RDFAsJenaModel.fromChars(data, dataFormat, None) match {
                 case Left(msg) => (Some(data), Left(msg))
                 case Right(rdf) => {
-                  (Some(data), extendWithInference(rdf,dp.inference))
+                  extendWithInference(rdf,dp.inference) match {
+                    case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
+                    case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
+                  }
                 }
               }
             }
           }
         }
         case other => (None, Left(s"Unknown value for activeDataTab: $other"))
+  }
+
+  private def applyInference(rdf: RDFReasoner, inference: Option[String], dataFormat: String): (Option[String],Either[String,RDFReasoner]) = {
+    extendWithInference(rdf, inference) match {
+      case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
+      case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
+    }
   }
 
   private def mkDataParam(partsMap: PartsMap): IO[DataParam] = for {
@@ -564,6 +606,65 @@ object WebService {
 
   case class TriggerModeParam(triggerMode: Option[String],
                               shapeMap: Option[String])
+
+  case class QueryParam(query: Option[String],
+                        queryURL: Option[String],
+                        queryFile: Option[String],
+                        activeQueryTab: Option[String]
+                       )
+
+  type Query = String
+  private def mkQuery(partsMap: PartsMap
+                     ): IO[Either[String,(Query, QueryParam)]] = for {
+    qp <- mkQueryParam(partsMap)
+  } yield {
+    val (maybeStr, maybeQuery) = getQuery(qp)
+    maybeQuery match {
+      case Left(str) => Left(str)
+      case Right(query) => Right((query, qp.copy(query = maybeStr)))
+    }
+  }
+
+  private def getQuery(qp: QueryParam): (Option[String], Either[String, Query]) = {
+    qp.activeQueryTab.getOrElse(defaultActiveQueryTab) match {
+      case "#queryUrl" => {
+        qp.queryURL match {
+          case None => (None, Left(s"No value for queryURL"))
+          case Some(queryUrl) => Try {
+            val uri = new java.net.URI(queryUrl)
+            Source.fromURI(uri).mkString
+          }.toEither match {
+            case Left(err) => (None,Left(s"Error obtaining data from url $queryUrl: ${err.getMessage} "))
+            case Right(str) => (Some(str),Right(str))
+          }
+        }
+      }
+      case "#queryFile" => {
+        qp.queryFile match {
+          case None => (None, Left(s"No value for queryFile"))
+          case Some(queryStr) =>
+            (Some(queryStr), Right(queryStr))
+        }
+      }
+      case "#queryTextArea" => {
+        qp.query match {
+          case None => (None, Right(""))
+          case Some(query) => {
+            (Some(query), Right(query))
+          }
+        }
+      }
+      case other => (None, Left(s"Unknown value for activeQueryTab: $other"))
+    }
+  }
+
+  private def mkQueryParam(partsMap: PartsMap): IO[QueryParam] = for {
+    query <- optPartValue("query", partsMap)
+    queryURL <- optPartValue("queryURL", partsMap)
+    queryFile <- optPartValue("queryFile", partsMap)
+    activeQueryTab <- optPartValue("activeQueryTab", partsMap)
+  } yield QueryParam(query, queryURL, queryFile, activeQueryTab)
+
 
   private def validateResponse(result: Result,
                                dp: DataParam,

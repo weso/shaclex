@@ -1,0 +1,36 @@
+@(formName: String,
+  query: Option[String],
+  activeQueryTab: String
+)
+<fieldset class="queryPanel">
+    <legend>Query</legend>
+    <ul id="queryTabs" class="nav nav-tabs">
+        <li class="nav-item">
+            <a class='@{if (activeQueryTab=="#queryTextArea") "nav-link active" else "nav-link"}'
+               id="queryTextArea-tab" data-toggle="tab" href="#queryTextArea" aria-controls="queryTextArea" aria-selected="true">By input</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeQueryTab=="#queryUrl") "nav-link active" else "nav-link"}'
+               id="queryUrl-tab" data-toggle="tab" href="#queryUrl" aria-controls="queryUrl" aria-selected="false">By URL</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeQueryTab=="#queryFile") "nav-link active" else "nav-link"}'
+               id="queryFile-tab" data-toggle="tab" href="#queryFile" aria-controls="queryFile" aria-selected="false">By File</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="queryContent">
+        <div class='@{if (activeQueryTab=="#queryTextArea") "tab-pane fade show active" else "tab-pane fade"}'
+             id="queryTextArea" role="tabpanel" aria-labelledby="queryTextArea-tab">
+            <textarea id="queryData" placeHolder="SPARQL Query" name="query">@{query.getOrElse("")}</textarea>
+        </div>
+        <div class='@{if (activeQueryTab=="#queryUrl") "tab-pane fade show active" else "tab-pane fade"}'
+             id="queryUrl" role="tabpanel" aria-labelledby="queryUrl-tab">
+            <input type="url" name="queryURL" >
+        </div>
+        <div class='@{if (activeQueryTab=="#queryFile") "tab-pane fade show active" else "tab-pane fade"}'
+             id="queryFile" role="tabpanel" aria-labelledby="queryFile-tab">
+            <input type="file" name="queryFile" >
+        </div>
+        <input id="activeQueryTab" type="hidden" name="activeQueryTab" value="@{activeQueryTab}">
+    </div>
+</fieldset>

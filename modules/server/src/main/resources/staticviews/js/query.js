@@ -118,13 +118,25 @@ function showResult(result,nodesPrefixMap) {
         });
     }
 
+ $('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+   var name = $(e.target).attr("href");
+   console.log("New data tab: " + name);
+   $('#rdfDataActiveTab').val(name);
+ });
+
+ $('.queryPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+   var name = $(e.target).attr("href");
+   console.log("New Query tab: " + name);
+   $('#activeQueryTab').val(name);
+ });
+
  $("#permalink").click(function(e) {
   e.preventDefault();
   console.log("click on permalink...");
   var data = codeMirrorData.getValue();
   var query = codeMirrorQuery.getValue();
   var dataFormat = $("#dataFormat").find(":selected").text();
-  var inference = $("#inferenceBefore").find(":selected").text();
+  var inference = $("#inference").find(":selected").text();
   var location = "/query?" +
       "data=" + encodeURIComponent(data) +
       "&dataFormat=" + encodeURIComponent(dataFormat) +

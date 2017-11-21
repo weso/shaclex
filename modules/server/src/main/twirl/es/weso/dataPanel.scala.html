@@ -35,10 +35,12 @@
         <div class='@{if (activeDataTab=="#dataUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataUrl" role="tabpanel" aria-labelledby="dataUrl-tab">
             <input type="url" name="dataURL" >
+            @selectDataFormat(formName,availableDataFormats,currentDataFormat)
         </div>
         <div class='@{if (activeDataTab=="#dataFile") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataFile" role="tabpanel" aria-labelledby="dataFile-tab">
             <input type="file" name="dataFile" >
+            @selectDataFormat(formName,availableDataFormats,currentDataFormat)
         </div>
         <div class='@{if (activeDataTab=="#dataEndpoint") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataEndpoint" role="tabpanel" aria-labelledby="dataEndpoint-tab">
@@ -46,5 +48,5 @@
         </div>
         <input id="rdfDataActiveTab" type="hidden" name="rdfDataActiveTab" value="@{activeDataTab}">
     </div>
-    @selectInferenceEngine("validate", availableInferenceEngines,currentInferenceEngine)
+    @selectInferenceEngine(formName, availableInferenceEngines,currentInferenceEngine)
 </fieldset>

@@ -264,7 +264,7 @@ function prepareShapeMap() {
   var schemaFormat = $("#schemaFormat").find(":selected").text();
   var schemaEngine = $("#schemaEngine").find(":selected").text();
   var triggerMode = $("#triggerMode").find(":selected").text();
-  var inference = $("#inferenceBefore").find(":selected").text();
+  var inference = $("#inference").find(":selected").text();
   var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
   var schemaEmbedded = $("#schemaEmbedded").is(":checked");
   if (schemaEmbedded) {  schema = ""; }

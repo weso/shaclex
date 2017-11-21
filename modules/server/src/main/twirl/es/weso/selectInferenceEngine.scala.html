@@ -4,8 +4,8 @@
 )
 <fieldset class="inferenceBefore">
 <legend>Inference before</legend>
-<label for="inferenceBefore">Mode</label>
-<select id="inferenceBefore" form="@formId" name="inference" >
+<label for="inference">Mode</label>
+<select id="inference" form="@formId" name="inference" >
  @for(t <- inferenceEngines) {
   <option value="@t"
      @{if(t == current) { "selected" }}>@t</option>
