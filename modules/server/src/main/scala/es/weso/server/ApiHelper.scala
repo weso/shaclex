@@ -4,11 +4,12 @@ import java.io.ByteArrayOutputStream
 
 import cats.implicits._
 import cats.effect.IO
-import es.weso.rdf.PrefixMap
+import es.weso.rdf.{PrefixMap, RDFReasoner}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.{DataFormats, Result, Schemas, ValidationTrigger}
 import es.weso.utils.FileUtils
-import io.circe._, io.circe.parser._
+import io.circe._
+import io.circe.parser._
 import org.apache.jena.query.{Query, QueryExecutionFactory, ResultSetFormatter}
 import org.http4s.Uri
 import org.http4s.client.blaze.PooledHttp1Client
@@ -21,7 +22,7 @@ object ApiHelper {
     Json.fromFields(pm.pm.map { case (prefix, iri) => (prefix.str, Json.fromString(iri.getLexicalForm)) })
   }
 
-  def resolveUri(baseUri: Uri, urlStr: String): Either[String,Option[String]] = {
+  def resolveUri(baseUri: Uri, urlStr: String): Either[String, Option[String]] = {
     // TODO: handle timeouts
     Uri.fromString(urlStr).fold(
       fail => {
@@ -108,45 +109,20 @@ object ApiHelper {
             optDataFormat: Option[String],
             optQuery: Option[String],
             optInference: Option[String]
-            ): Either[String,Json] = {
-  optQuery match {
-    case None => Right(Json.Null)
-    case Some(queryStr) => {
-      val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
-      val base = Some(FileUtils.currentFolderURL)
-
-      for {
-        basicRdf <- RDFAsJenaModel.fromChars(data, dataFormat, base)
-        rdf <- basicRdf.applyInference (optInference.getOrElse ("None"))
-        json <- Try {
-          val qExec = QueryExecutionFactory.create(queryStr,rdf.model)
-          qExec.getQuery.getQueryType match {
-            case Query.QueryTypeSelect => {
-              val result = qExec.execSelect()
-              val outputStream = new ByteArrayOutputStream()
-              ResultSetFormatter.outputAsJSON(outputStream,result)
-              val jsonStr = new String(outputStream.toByteArray())
-              parse(jsonStr).
-                leftMap(f => f.getMessage).
-                map(_.mapObject(_.add("nodesPrefixMap", prefixMap2Json(rdf.getPrefixMap))))
-            }
-            case Query.QueryTypeConstruct => {
-              Left(s"Unimplemented CONSTRUCT queries yet")
-            }
-            case Query.QueryTypeAsk => {
-              Left(s"Unimplemented ASK queries yet")
-            }
-            case Query.QueryTypeDescribe => {
-              Left(s"Unimplemented DESCRIBE queries yet")
-            }
-            case _ => {
-              Left(s"Unknown type of query. Not implemented")
-            }
-          }
-        }.toEither.fold(f => Left(f.getMessage), es => es)
-      } yield json
-     }
+           ): Either[String, Json] = {
+    optQuery match {
+      case None => Right(Json.Null)
+      case Some(queryStr) => {
+        val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
+        val base = Some(FileUtils.currentFolderURL)
+        for {
+          basicRdf <- RDFAsJenaModel.fromChars(data, dataFormat, base)
+          rdf <- basicRdf.applyInference(optInference.getOrElse("None"))
+          json <- rdf.query(queryStr)
+        } yield json
+      }
     }
-   }
+
+  }
 
 }

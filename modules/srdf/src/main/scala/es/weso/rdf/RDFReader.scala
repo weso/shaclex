@@ -4,6 +4,7 @@ import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
+import io.circe.Json
 
 /**
  * RDFReader can get read RDF data from several sources
@@ -20,9 +21,9 @@ trait RDFReader {
     * @param base base IRI (None by default)
     * @return Right RDF or Left error message
     */
-  def parse(cs: CharSequence,
-            format: String = "TURTLE",
-            base: Option[String] = None): Either[String,Rdf]
+  def fromString(cs: CharSequence,
+                 format: String = "TURTLE",
+                 base: Option[String] = None): Either[String,Rdf]
 
   /**
    * convert a RDF graph to a String
@@ -150,6 +151,13 @@ trait RDFReader {
     * @return In case of a bad formed literal, a Left with a message, otherwise the check
     */
   def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean]
+
+  /**
+    * Run a SPARQL query which returns a JSON representation of the result
+    * @param str string representing the SPARQL query
+    * @return JSON representation of the result
+    */
+  def query(str: String): Either[String,Json]
 
 }
 

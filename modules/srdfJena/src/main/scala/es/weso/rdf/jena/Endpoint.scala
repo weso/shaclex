@@ -1,12 +1,14 @@
 package es.weso.rdf.jena
 
+import java.io.ByteArrayOutputStream
+
 import org.apache.jena.query._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConverters._
-import scala.util.{Either, Left, Right}
+import scala.util.{Either, Left, Right, Try}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
@@ -14,7 +16,10 @@ import org.slf4j._
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
+import io.circe.Json
+import io.circe.parser.parse
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
+import cats.implicits._
 
 // TODO: Refactor to change String type by Url
 case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
@@ -27,7 +32,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
 
   val log = LoggerFactory.getLogger("Endpoint")
 
-  override def parse(cs: CharSequence, format: String, base: Option[String]): Either[String, Endpoint] = {
+  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Endpoint] = {
     throw new Exception("Cannot parse into an endpoint. endpoint = " + endpoint)
   }
 
@@ -155,6 +160,34 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
   }
 
   def availableInferenceEngines: List[String] = List("NONE")
+
+  override def query(queryStr: String): Either[String, Json] = Try {
+    val query = QueryFactory.create(queryStr)
+    val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
+    qExec.getQuery.getQueryType match {
+      case Query.QueryTypeSelect => {
+        val result = qExec.execSelect()
+        val outputStream = new ByteArrayOutputStream()
+        ResultSetFormatter.outputAsJSON(outputStream, result)
+        val jsonStr = new String(outputStream.toByteArray())
+        parse(jsonStr).leftMap(f => f.getMessage)
+      }
+      case Query.QueryTypeConstruct => {
+        val result = qExec.execConstruct()
+        Left(s"Unimplemented CONSTRUCT queries yet")
+      }
+      case Query.QueryTypeAsk => {
+        val result = qExec.execAsk()
+        Right(Json.fromBoolean(result))
+      }
+      case Query.QueryTypeDescribe => {
+        Left(s"Unimplemented DESCRIBE queries yet")
+      }
+      case _ => {
+        Left(s"Unknown type of query. Not implemented")
+      }
+    }
+  }.toEither.fold(f => Left(f.getMessage), es => es)
 
 }
 

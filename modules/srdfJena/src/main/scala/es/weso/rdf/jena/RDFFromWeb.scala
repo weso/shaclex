@@ -16,6 +16,7 @@ import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.path.SHACLPath
+import io.circe.Json
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 
 case class RDFFromWeb() extends RDFReader {
@@ -28,8 +29,8 @@ case class RDFFromWeb() extends RDFReader {
     PrefixMap(Map())
   }
 
-  override def parse(cs: CharSequence, format: String, base: Option[String]): Either[String,Rdf] = {
-    throw new Exception("Cannot parse RDFFromWeb ")
+  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String,Rdf] = {
+    Left("Cannot parse RDFFromWeb ")
   }
 
   override def serialize(format: String): Either[String,String] = {
@@ -142,4 +143,5 @@ case class RDFFromWeb() extends RDFReader {
       throw new Exception("Unknown type of resource")
   }
 
+  override def query(queryStr: String): Either[String, Json] = Left(s"Unimplemented query on RDFFromWeb")
 }

@@ -7,7 +7,7 @@ import es.weso.rdf.triples.RDFTriple
 import scala.collection.JavaConverters._
 import scala.util.Try
 import es.weso.rdf._
-import org.apache.jena.rdf.model.{ Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
+import org.apache.jena.rdf.model.{Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.rdf.model.ModelFactory
@@ -20,7 +20,11 @@ import org.apache.jena.riot.RDFLanguages
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.path.SHACLPath
 import es.weso.utils._
+import io.circe.Json
+import io.circe.parser.parse
+import org.apache.jena.query.{Query, QueryExecutionFactory, ResultSetFormatter}
 import org.apache.jena.sparql.path.Path
+import cats.implicits._
 
 case class RDFAsJenaModel(model: Model)
   extends RDFReader
@@ -31,9 +35,9 @@ case class RDFAsJenaModel(model: Model)
 
   val log = LoggerFactory.getLogger("RDFAsJenaModel")
 
-  override def parse(cs: CharSequence,
-                     format: String = "TURTLE",
-                     base: Option[String] = None): Either[String, RDFAsJenaModel] = {
+  override def fromString(cs: CharSequence,
+                          format: String = "TURTLE",
+                          base: Option[String] = None): Either[String, RDFAsJenaModel] = {
     Try {
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
@@ -41,11 +45,11 @@ case class RDFAsJenaModel(model: Model)
       RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       RDFAsJenaModel(JenaUtils.relativizeModel(m))
     }.fold(e => Left(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs"),
-       Right(_)
+      Right(_)
     )
   }
 
-  override def serialize(format: String): Either[String,String] = {
+  override def serialize(format: String): Either[String, String] = {
     // TODO: Check if format exists...
     val out: StringWriter = new StringWriter()
     model.write(out, format)
@@ -83,9 +87,9 @@ case class RDFAsJenaModel(model: Model)
   }
 
   /**
-   * return the SHACL instances of a node `cls`
-   * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
-   */
+    * return the SHACL instances of a node `cls`
+    * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
+    */
   override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
     val cJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model)
     JenaUtils.getSHACLInstances(cJena, model).map(n => JenaMapper.jenaNode2RDFNode(n))
@@ -131,11 +135,10 @@ case class RDFAsJenaModel(model: Model)
   override def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
     val obj = rdfNode2Resource(node, model)
     val empty: Set[RDFTriple] = Set()
-    obj.fold(empty) { o =>
-      {
-        val statements: Set[Statement] = triplesObject(o, model)
-        toRDFTriples(statements)
-      }
+    obj.fold(empty) { o => {
+      val statements: Set[Statement] = triplesObject(o, model)
+      toRDFTriples(statements)
+    }
     }
   }
 
@@ -214,7 +217,7 @@ case class RDFAsJenaModel(model: Model)
     RDFAsJenaModel.empty
   }
 
-  override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
+  override def checkDatatype(node: RDFNode, datatype: IRI): Either[String, Boolean] =
     JenaMapper.wellTypedDatatype(node, datatype)
 
   /*private def resolveString(str: String): Either[String,IRI] = {
@@ -238,7 +241,35 @@ case class RDFAsJenaModel(model: Model)
 
   def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
 
+  override def query(queryStr: String): Either[String, Json] = Try {
+    val qExec = QueryExecutionFactory.create(queryStr, model)
+    qExec.getQuery.getQueryType match {
+      case Query.QueryTypeSelect => {
+        val result = qExec.execSelect()
+        val outputStream = new ByteArrayOutputStream()
+        ResultSetFormatter.outputAsJSON(outputStream, result)
+        val jsonStr = new String(outputStream.toByteArray())
+        parse(jsonStr).leftMap(f => f.getMessage)
+      }
+      case Query.QueryTypeConstruct => {
+        val result = qExec.execConstruct()
+        Left(s"Unimplemented CONSTRUCT queries yet")
+      }
+      case Query.QueryTypeAsk => {
+        val result = qExec.execAsk()
+        Right(Json.fromBoolean(result))
+      }
+      case Query.QueryTypeDescribe => {
+        Left(s"Unimplemented DESCRIBE queries yet")
+      }
+      case _ => {
+        Left(s"Unknown type of query. Not implemented")
+      }
+    }
+  }.toEither.fold(f => Left(f.getMessage), es => es)
+
 }
+
 
 object RDFAsJenaModel {
 
@@ -273,7 +304,7 @@ object RDFAsJenaModel {
   }
 
   def fromChars(cs: CharSequence, format: String, base: Option[String] = None): Either[String,RDFAsJenaModel] = {
-    RDFAsJenaModel.empty.parse(cs, format, base)
+    RDFAsJenaModel.empty.fromString(cs, format, base)
   }
 
   def extractModel(rdf: RDFAsJenaModel): Model = {

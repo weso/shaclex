@@ -331,7 +331,7 @@ object WebService {
               response <- maybePair match {
                 case Left(msg) => BadRequest(s"Error obtaining query: $msg")
                 case Right((queryStr, qp)) => {
-                  val result = query(dp.data.getOrElse(""), dp.dataFormat, qp.query, dp.inference)
+                  val result = rdf.query(qp.query.getOrElse(""))
                   Ok(html.query(
                     result,
                     dp.data,
