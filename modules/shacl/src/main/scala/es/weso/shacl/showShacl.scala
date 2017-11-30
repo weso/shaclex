@@ -1,6 +1,7 @@
 package es.weso.shacl
 import cats._
 import es.weso.rdf.nodes._
+import es.weso.shacl.validator.ViolationError
 
 object showShacl {
 
@@ -15,10 +16,6 @@ object showShacl {
       s"Violation Error(${ve.id}). Node(${ve.focusNode}) ${ve.message.getOrElse("")}"
     }
   }
-
-/*  implicit def showEvidence = new Show[String] {
-    def show(e: String): String = e
-  } */
 
   implicit def showRDFNode = new Show[RDFNode] {
     def show(n: RDFNode): String = n.toString

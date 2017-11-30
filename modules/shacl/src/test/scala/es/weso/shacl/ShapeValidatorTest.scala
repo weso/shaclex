@@ -6,9 +6,9 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 
 import util._
-import Validator._
 import es.weso.shacl.showShacl._
 import es.weso.shacl.converter.RDF2Shacl
+import es.weso.shacl.validator.Validator
 
 class ShapeValidatorTest extends FunSpec with Matchers with TryValues with EitherValues {
 

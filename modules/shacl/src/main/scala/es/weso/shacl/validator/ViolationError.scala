@@ -1,10 +1,10 @@
-package es.weso.shacl
+package es.weso.shacl.validator
 
-import es.weso.rdf.nodes._
-import SHACLPrefixes._
 import cats.Show
-import es.weso.rdf.path.{ PredicatePath, SHACLPath }
-import es.weso.shacl.Validator.ShapeTyping
+import es.weso.rdf.nodes._
+import es.weso.rdf.path.{PredicatePath, SHACLPath}
+import es.weso.shacl.SHACLPrefixes.sh
+import es.weso.shacl.{PropertyShape, Shape, ShapeRef, Value}
 
 case class ViolationError(
   id: IRI,
@@ -19,7 +19,8 @@ case class ViolationError(
 
 object ViolationError {
 
-  def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) =
+
+ def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) =
     ViolationError(
       id = sh + suffix,
       focusNode = focusNode,

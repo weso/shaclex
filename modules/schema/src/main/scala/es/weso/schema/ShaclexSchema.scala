@@ -5,10 +5,11 @@ import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl.{ Schema => ShaclSchema, Shape => ShaclNodeShape, _ }
-import es.weso.shacl.Validator._
+import es.weso.shacl.{Schema => ShaclSchema, Shape => ShaclNodeShape, _}
+import es.weso.shacl.validator.Validator._
 import es.weso.shacl._
 import es.weso.shacl.converter.RDF2Shacl
+import es.weso.shacl.validator.{CheckResult, Evidence, Validator, ViolationError}
 import es.weso.shapeMaps._
 
 import util._

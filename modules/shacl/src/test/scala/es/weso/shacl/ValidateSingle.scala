@@ -2,9 +2,10 @@ package es.weso.shacl
 
 import java.io.File
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.RDF2Shacl
+import es.weso.shacl.validator.Validator
 import es.weso.utils.FileUtils._
 import org.scalatest._
 

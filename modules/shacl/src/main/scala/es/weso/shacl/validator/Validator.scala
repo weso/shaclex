@@ -1,52 +1,24 @@
-package es.weso.shacl
+package es.weso.shacl.validator
+
+import cats._
+import cats.data._
+import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import ViolationError._
-import cats._
-import data._
-import cats.implicits._
-import showShacl._
-import es.weso.typing._
-import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.jena.JenaMapper
 import es.weso.rdf.path.SHACLPath
+import ViolationError._
+import es.weso.shacl._
+import es.weso.typing._
 import es.weso.utils.RegEx
+import Validator._
+import es.weso.shacl.showShacl._
+import SHACLChecker._
 
 /**
  * This validator is implemented directly in Scala using cats library
  */
 case class Validator(schema: Schema) extends LazyLogging {
-
-  import es.weso.checking._
-  import Validator._
-
-  object MyChecker extends CheckerCats {
-    type Config = RDFReader
-    type Env = ShapeTyping
-    type Err = ViolationError
-    //    type Evidence = (NodeShapePair, String)
-    type Log = List[Evidence]
-    implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
-      def combine(e1: Env, e2: Env): Env = e1.combineTyping(e2)
-      def empty: Env = Typing.empty
-    }
-    /*    implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
-      def log(msg: String): Log =
-        throw new Exception(s"Not implemented logCanLog. Msg: $msg")
-    } */
-    implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
-      def combine(l1: Log, l2: Log): Log = l1 ++ l2
-      def empty: Log = List()
-    }
-    implicit val logShow: Show[Log] = new Show[Log] {
-      def show(l: Log): String = l.map(_.show).mkString("\n")
-    }
-    implicit val typingShow: Show[ShapeTyping] = new Show[ShapeTyping] {
-      def show(t: ShapeTyping): String = Typing.showTyping[RDFNode,Shape,ViolationError,String].show(t)
-    }
-  }
-
-  import MyChecker._
 
   /**
    * Checks that a node satisfies a shape
@@ -268,6 +240,7 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   private def checkComponent(c: Component): NodeChecker = component2Checker(c)
 
+  /*
   private def validateNodeCheckers(attempt: Attempt, cs: Seq[NodeChecker]): Check[ShapeTyping] = {
     val newAttempt = attempt.copy(path = None)
     val xs = cs.map(c => c(newAttempt)(newAttempt.node)).toList
@@ -275,7 +248,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       ts <- checkAll(xs)
       t <- combineTypings(ts)
     } yield t
-  }
+  } */
 
   private def validatePathCheckers(attempt: Attempt, path: SHACLPath, cs: Seq[PropertyChecker]): Check[ShapeTyping] = {
     val newAttempt = attempt.copy(path = Some(path))
@@ -351,7 +324,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       else if (typing.getFailedValues(node).contains(s)) {
         err(failedNodeShape(
           node, s, attempt,
-          s"Failed because $node doesn't match shape $s")) >>
+          s"Failed because $node doesn't match shape $s")) *>
           getTyping
       } else runLocal(nodeShape(node, s), _.addType(node, s))
       _ <- addEvidence(attempt, s"$node has shape ${s.id}")
@@ -390,7 +363,7 @@ case class Validator(schema: Schema) extends LazyLogging {
 
 
   private def unsupportedNodeChecker(msg: String): NodeChecker = attempt => node => {
-    err(unsupported(node, attempt, msg)) >>
+    err(unsupported(node, attempt, msg)) *>
       getTyping
   }
 
@@ -615,16 +588,16 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def not(sref: ShapeRef): NodeChecker = attempt => node => {
-    val parentShape = attempt.nodeShape.shape
-    val check: Shape => Check[ShapeTyping] = shape => nodeShape(node, shape)
-    val handleError: Shape => ViolationError => Check[ShapeTyping] = s => e => for {
+    // val parentShape = attempt.nodeShape.shape
+    // val check: Shape => Check[ShapeTyping] = shape => nodeShape(node, shape)
+    /*val handleError: Shape => ViolationError => Check[ShapeTyping] = s => e => for {
       t1 <- addNotEvidence(attempt, e,
         s"$node doesn't satisfy ${sref}. Negation declared in ${parentShape}. Error: $e")
       t2 <- addEvidence(attempt, s"$node satisfies not(${s.showId})")
       t <- combineTypings(List(t1, t2))
     } yield t
     val handleNotError: ShapeTyping => Check[ShapeTyping] = t =>
-      err(notError(node, attempt, sref))
+      err(notError(node, attempt, sref)) */
     for {
       shape <- getShapeRef(sref, attempt, node)
       t <- nodeShape(node,shape)
@@ -637,7 +610,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       case n: IntegerLiteral => ok(n.int)
       case n: DecimalLiteral => ok(n.decimal.toInt)
       case n: DoubleLiteral => ok(n.double.toInt)
-      case _ => err(notNumeric(node, attempt)) >> ok(0)
+      case _ => err(notNumeric(node, attempt)) *> ok(0)
     }
 
   private def literalChecker: NodeChecker = attempt => node => {
@@ -779,7 +752,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     e: ViolationError,
     msg: String): Check[ShapeTyping] = {
     val node = attempt.node
-    val sref = attempt.shapeRef
+    // val sref = attempt.shapeRef
     for {
       t <- getTyping
       sref <- getShapeRef(attempt.nodeShape.shape, attempt, node)
@@ -854,6 +827,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     ok(Typing.combineTypings(ts))
   }
 
+  /*
   // TODO
   // Define a more general method?
   // This method should validate some of the nodes/shapes not raising a whole error if one fails,
@@ -868,15 +842,15 @@ case class Validator(schema: Schema) extends LazyLogging {
        rs2 <- rest
       } rs1 ++ rs2 */
     xs.foldRight(zero)(next)
-  }
+  } */
 
   // Fails if there is any error
   def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    implicit def showPair = new Show[(ShapeTyping, Evidences)] {
+    /* implicit def showPair = new Show[(ShapeTyping, Evidences)] {
       def show(e: (ShapeTyping, Evidences)): String = {
         s"Typing: ${e._1}\n Evidences: ${e._2}"
       }
-    }
+    } */
     runCheck(checkSchemaAll, rdf)
   }
 

@@ -1,7 +1,8 @@
-package es.weso.shacl
+package es.weso.shacl.validator
 
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.SHACLPath
+import es.weso.shacl.ShapeRef
 /**
  * Represents current validation attempt
  * It contains the node and a shape

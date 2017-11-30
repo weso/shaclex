@@ -1,4 +1,5 @@
-package es.weso.shacl
+package es.weso.shacl.validator
+
 import cats._
 import cats.implicits._
 

@@ -5,7 +5,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 import util._
-import Validator._
+import es.weso.shacl.validator.Validator._
 import showShacl._
 import es.weso.typing._
 
