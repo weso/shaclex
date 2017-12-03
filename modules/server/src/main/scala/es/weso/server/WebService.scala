@@ -577,7 +577,25 @@ object WebService {
     inference <- optPartValue("inference", partsMap)
     targetDataFormat <- optPartValue("targetDataFormat", partsMap)
     activeDataTab <- optPartValue("rdfDataActiveTab", partsMap)
-  } yield DataParam(data,dataURL,dataFile,endpoint,dataFormat,inference,targetDataFormat,activeDataTab)
+  } yield {
+    println(s"<<<***Data: $data")
+    println(s"<<<***Data URL: $dataURL")
+    val endpointRegex = "Endpoint: (.+)".r
+    val finalEndpoint = endpoint.fold(data match {
+      case None => None
+      case Some(str) => str match {
+        case endpointRegex(ep) => Some(ep)
+        case _ => None
+      }
+    })(Some(_))
+    val finalActiveDataTab = finalEndpoint match {
+      case Some(endpoint) => Some("#dataEndpoint")
+      case None => activeDataTab
+    }
+    println(s"<<<***Endpoint: $finalEndpoint")
+
+    DataParam(data,dataURL,dataFile,finalEndpoint,dataFormat,inference,targetDataFormat,finalActiveDataTab)
+  }
 
   type PartsMap = Map[String,Part[IO]]
 
