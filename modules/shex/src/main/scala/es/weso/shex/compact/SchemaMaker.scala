@@ -19,7 +19,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   type Start = Option[ShapeExpr]
   type NotStartAction = Either[Start, (ShapeLabel, ShapeExpr)]
   type Cardinality = (Option[Int], Option[Max])
-  type Directive = Either[(Prefix, IRI), IRI]
+  type Directive = Either[(Prefix, IRI),  // Prefix decl
+                   Either[IRI,            // Base decl
+                          IRI             // Import decl
+                     ]]
 
   val star = (Some(0), Some(Star))
   val plus = (Some(1), Some(Star))
@@ -39,13 +42,17 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       shapeMap <- getShapesMap
       tripleExprMap <- getTripleExprMap
     } yield {
+      val importIRIs = directives.collect {
+        case Right(Right(iri)) => iri
+      }
       Schema.empty.copy(
         prefixes = if (!prefixMap.isEmpty) Some(prefixMap) else None,
         base = base,
         startActs = startActions,
         start = start,
         shapes = if (!shapeMap.isEmpty) Some(shapesMap2List(shapeMap)) else None,
-        tripleExprMap = if (!tripleExprMap.isEmpty) Some(tripleExprMap) else None
+        tripleExprMap = if (!tripleExprMap.isEmpty) Some(tripleExprMap) else None,
+        imports = importIRIs
       )
     }
   }
@@ -1097,17 +1104,23 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitDirective(
-    ctx: DirectiveContext): Builder[Directive] = {
-    if (ctx.baseDecl() != null) {
-      for {
+    ctx: DirectiveContext): Builder[Directive] = ctx match {
+    case _ if (isDefined(ctx.baseDecl())) => for {
         iri <- visitBaseDecl(ctx.baseDecl())
-      } yield Right(iri)
-    } else {
-      for {
+      } yield Right(Left(iri))
+    case _ if (isDefined(ctx.prefixDecl())) => for {
         p <- visitPrefixDecl(ctx.prefixDecl())
       } yield Left(p)
-    }
+    case _ if (isDefined(ctx.importDecl())) => for {
+      iri <- visitImportDecl(ctx.importDecl())
+    } yield Right(Right(iri))
+    case _ => err(s"visitDirective: unknown directive")
   }
+
+
+  override def visitImportDecl(ctx: ImportDeclContext): Builder[IRI] = for {
+    iri <- visitIri(ctx.iri())
+  } yield iri
 
   // TODO: Resolve base taking into account previous base declarations ?
   override def visitBaseDecl(ctx: BaseDeclContext): Builder[IRI] = {

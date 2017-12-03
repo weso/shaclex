@@ -36,9 +36,11 @@ grammar ShExDoc;
 shExDoc 		: directive* ((notStartAction | startActions) statement*)? EOF;  // leading CODE
 directive       : baseDecl
 				| prefixDecl
+				| importDecl
 				;
 baseDecl 		: KW_BASE  IRIREF ;
 prefixDecl		: KW_PREFIX PNAME_NS IRIREF ;
+importDecl      : KW_IMPORT iri ;
 notStartAction  : start | shapeExprDecl ;
 start           : KW_START '=' shapeExpression ;
 startActions	: codeDecl+ ;
@@ -202,6 +204,7 @@ includeSet      : '&' tripleExprLabel+ ;
 KW_BASE 			: B A S E ;
 KW_EXTERNAL			: E X T E R N A L ;
 KW_PREFIX       	: P R E F I X ;
+KW_IMPORT       	: I M P O R T ;
 KW_START        	: S T A R T ;
 KW_VIRTUAL      	: V I R T U A L ;
 KW_CLOSED       	: C L O S E D ;

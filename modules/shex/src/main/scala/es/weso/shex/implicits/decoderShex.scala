@@ -21,7 +21,8 @@ object decoderShEx {
       start <- optFieldDecode[ShapeExpr](c, "start").right
       shapes <- optFieldDecode[List[ShapeExpr]](c, "shapes").right
       // TODO: Check how to represent tripleExprMap
-    } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes, None)
+      // TODO: Add imports
+    } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes, None, List())
   }
 
   implicit lazy val decodePrefix: Decoder[Prefix] =

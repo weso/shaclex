@@ -43,11 +43,12 @@ object CompactShow {
       prefixesDoc(s.prefixes),
       comb(
         baseDoc(s.base),
+        comb(importsDoc(s.prefixMap, s.imports),
         comb(
           startActsDoc(s.prefixMap)(s.startActs),
           comb(
             startDoc(s.prefixMap)(s.start),
-            optShapesDoc(s.shapes, s.prefixMap)))))
+            optShapesDoc(s.shapes, s.prefixMap))))))
   }
 
   private def prefixesDoc(ps: Option[PrefixMap]): Doc =
@@ -60,6 +61,12 @@ object CompactShow {
           prefixDoc,
           unqualifiedIriDoc)
     }
+
+  private def importsDoc(pm: PrefixMap, iris: List[IRI]): Doc =
+    listDocSep(iris, importDoc(pm), newline)
+
+  private def importDoc(pm: PrefixMap)(iri: IRI): Doc =
+    text("import") :: space :: iriDoc(pm)(iri)
 
   private def prefixDoc(p: Prefix): Doc =
     str(p.str + ":")

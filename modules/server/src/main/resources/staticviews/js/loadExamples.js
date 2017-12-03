@@ -113,7 +113,6 @@ function mkTryItButtom(entry, dataContents, schemaContents) {
      append($("<input>").attr("type","hidden").attr("name","data").attr("value",dataContents)).
      append($("<input>").attr("type","hidden").attr("name","schema").attr("value",schemaContents)).
      append($("<input>").attr("type","hidden").attr("name","schemaFormat").attr("value",entry.schemaFormat)).
-     append($("<input>").attr("type","hidden").attr("name","data").attr("value",entry.data)).
      append($("<input>").attr("type","hidden").attr("name","dataFormat").attr("value",entry.dataFormat)).
      append($("<input>").attr("type","hidden").attr("name","triggerMode").attr("value",entry.triggerMode)).
      append($("<input>").attr("type","hidden").attr("name","shapeMap").attr("value",entry.shapeMap)).

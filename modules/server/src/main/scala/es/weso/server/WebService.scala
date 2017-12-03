@@ -580,6 +580,8 @@ object WebService {
   } yield {
     println(s"<<<***Data: $data")
     println(s"<<<***Data URL: $dataURL")
+    println(s"<<<***Endpoint: $endpoint")
+
     val endpointRegex = "Endpoint: (.+)".r
     val finalEndpoint = endpoint.fold(data match {
       case None => None
@@ -589,7 +591,9 @@ object WebService {
       }
     })(Some(_))
     val finalActiveDataTab = finalEndpoint match {
-      case Some(endpoint) => Some("#dataEndpoint")
+      case Some(endpoint) =>
+        if (endpoint.length > 0) Some("#dataEndpoint")
+        else activeDataTab
       case None => activeDataTab
     }
     println(s"<<<***Endpoint: $finalEndpoint")

@@ -14,7 +14,9 @@ case class Schema(prefixes: Option[PrefixMap],
                   startActs: Option[List[SemAct]],
                   start: Option[ShapeExpr],
                   shapes: Option[List[ShapeExpr]],
-                  tripleExprMap: Option[Map[ShapeLabel,TripleExpr]]) {
+                  tripleExprMap: Option[Map[ShapeLabel,TripleExpr]],
+                  imports: List[IRI]
+                 ) {
 
   def resolveShapeLabel(l: ShapeLabel): Either[String, IRI] = l match {
     case IRILabel(iri) => Right(iri)
@@ -396,7 +398,7 @@ object Schema {
   lazy val rdfDataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase)
 
   def empty: Schema =
-    Schema(None, None, None, None, None, None)
+    Schema(None, None, None, None, None, None, List())
 
   def fromString(
     cs: CharSequence,

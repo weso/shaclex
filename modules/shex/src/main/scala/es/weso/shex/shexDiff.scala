@@ -1,8 +1,6 @@
 package es.weso.shex
 import cats._, cats.data._
-import cats.implicits._
 import es.weso.rdf.nodes._
-import es.weso.rdf.PREFIXES._
 import es.weso.rdf._
 
 object ShExDiff {
@@ -54,7 +52,7 @@ object ShExDiff {
   def mkSchema(
     pm: Option[PrefixMap],
     db: Option[IRI],
-    ds: Option[List[SemAct]]): Schema = Schema(pm, db, ds, None, None,None)
+    ds: Option[List[SemAct]]): Schema = Schema(pm, db, ds, None, None,None, List())
 
   def prefixesDiff: Diff[Option[PrefixMap]] =
     optDiff(prefixMapDiff)
