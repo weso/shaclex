@@ -45,8 +45,6 @@ object Parser extends LazyLogging {
     val parser: ShapeMapParser = new ShapeMapParser(tokens)
 
     val errorListener = new ParserErrorListener
-    // lexer.removeErrorListeners()
-    // parser.removeErrorListeners()
     lexer.addErrorListener(errorListener)
     parser.addErrorListener(errorListener)
 

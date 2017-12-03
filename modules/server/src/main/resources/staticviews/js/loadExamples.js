@@ -34,6 +34,7 @@ function flatten(examples) {
                 "name": entry.schemaLabel,
                 "schemaURL": entry.schemaURL,
                 "dataURL": entry.dataURL,
+                "data": entry.data,
                 "shapeMap": entry.queryMap,
                 "status": entry.status ,
                 "descr": entry.dataLabel,
@@ -68,6 +69,9 @@ $(document).ready(function() {
         var flattened = flatten(examples);
         flattened.forEach(function(entry,idx) {
 //            var name = $("<td>").text(entry.name) ;
+            ['schema', 'data'].forEach(k => {
+                 entry[k + 'URL'] = new URL(entry[k + 'URL'], examplesUrl);
+            })
             var schemaURL = $("<td>").append($("<a>").attr("href", entry.schemaURL).text(entry.name));
             var schemaFormat = $("<td>").text(entry.schemaFormat);
             var dataURL = $("<td>").append($("<a>").attr("href", entry.dataURL).text(entry.descr)) ;

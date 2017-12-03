@@ -118,7 +118,7 @@ object ApiHelper {
         for {
           basicRdf <- RDFAsJenaModel.fromChars(data, dataFormat, base)
           rdf <- basicRdf.applyInference(optInference.getOrElse("None"))
-          json <- rdf.query(queryStr)
+          json <- rdf.queryAsJson(queryStr)
         } yield json
       }
     }

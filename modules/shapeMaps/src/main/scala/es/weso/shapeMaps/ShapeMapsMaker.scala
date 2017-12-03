@@ -39,8 +39,18 @@ class ShapeMapsMaker(
       node <- visitObjectTerm(ctx.objectTerm())
     } yield RDFNodeSelector(node)
     case _ if isDefined(ctx.triplePattern()) => visitTriplePattern(ctx.triplePattern())
+    case _ if isDefined(ctx.sparql()) => visitSparql(ctx.sparql())
     case _ => err(s"Internal error visitNodeSelector: unknown ctx $ctx")
   }
+
+  override def visitSparql(ctx: SparqlContext): Builder[SparqlSelector] = {
+    val str = ctx.SPARQL_STRING().getText
+    ok(SparqlSelector(removeBackQuotes(str)))
+  }
+
+  // TODO: It would be safer to check that the first and last characters are indeed backquotes
+  private def removeBackQuotes(str: String): String =
+    str.substring(1,str.length - 1)
 
   override def visitSubjectTerm(ctx: SubjectTermContext): Builder[RDFNode] = ctx match {
     case _ if isDefined(ctx.iri()) => for {

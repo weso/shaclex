@@ -4,7 +4,7 @@ grammar ShapeMap;
 
 shapeMap         : shapeAssociation (',' shapeAssociation)* ;
 shapeAssociation : nodeSelector shapeLabel ;
-nodeSelector     : objectTerm | triplePattern ;
+nodeSelector     : objectTerm | triplePattern | sparql ;
 subjectTerm      : iri | rdfType ;
 objectTerm       : subjectTerm | literal ;
 
@@ -12,6 +12,8 @@ objectTerm       : subjectTerm | literal ;
 triplePattern    : '{' KW_FOCUS path (objectTerm | '_' ) '}' # focusSubject
                  | '{' (subjectTerm | '_') path KW_FOCUS '}' # focusObject
                  ;
+
+sparql           : KW_SPARQL SPARQL_STRING ;
 
 // SPARQL Grammar rule 82
 path             : pathAlternative ;
@@ -83,10 +85,12 @@ blankNode       : BLANK_NODE_LABEL ;
 // Keywords
 KW_START        	: S T A R T ;
 KW_FOCUS            : F O C U S ;
+KW_SPARQL           : S P A R Q L ;
 KW_NOT				: N O T ;
 KW_TRUE         	: 'true' ;
 KW_FALSE        	: 'false' ;
 AT_START            : '@' S T A R T ;
+BACKQUOTE           : '`' ;
 
 // terminals
 PASS				  : [ \t\r\n]+ -> skip;
@@ -111,6 +115,7 @@ STRING_LITERAL1       : '\'' (~[\u0027\u005C\u000A\u000D] | ECHAR | UCHAR)* '\''
 STRING_LITERAL2       : '"' (~[\u0022\u005C\u000A\u000D] | ECHAR | UCHAR)* '"' ;   /* #x22=" #x5C=\ #xA=new line #xD=carriage return */
 STRING_LITERAL_LONG1  : '\'\'\'' (('\'' | '\'\'')? (~[\'\\] | ECHAR | UCHAR))* '\'\'\'' ;
 STRING_LITERAL_LONG2  : '"""' (('"' | '""')? (~[\"\\] | ECHAR | UCHAR))* '"""' ;
+SPARQL_STRING         : BACKQUOTE (~[\u0060] | ECHAR| UCHAR)* BACKQUOTE ; /* #x60 = ` */
 
 fragment UCHAR                 : '\\u' HEX HEX HEX HEX | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX ;
 fragment ECHAR                 : '\\' [tbnrf\\\"\'] ;

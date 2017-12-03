@@ -22,7 +22,7 @@ import es.weso.rdf.path.SHACLPath
 import es.weso.utils._
 import io.circe.Json
 import io.circe.parser.parse
-import org.apache.jena.query.{Query, QueryExecutionFactory, ResultSetFormatter}
+import org.apache.jena.query.{Query, QueryExecutionFactory, QuerySolutionMap, ResultSetFormatter}
 import org.apache.jena.sparql.path.Path
 import cats.implicits._
 
@@ -241,7 +241,24 @@ case class RDFAsJenaModel(model: Model)
 
   def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
 
-  override def query(queryStr: String): Either[String, Json] = Try {
+  override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
+    val qExec = QueryExecutionFactory.create(queryStr, model)
+    qExec.getQuery.getQueryType match {
+      case Query.QueryTypeSelect => {
+        val result = qExec.execSelect()
+        val varNames = result.getResultVars
+        val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
+          val qsm = new QuerySolutionMap()
+          qsm.addAll(qs)
+          qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
+        })
+        Right(ls)
+      }
+      case qtype => Left(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
+    }
+  }
+
+  override def queryAsJson(queryStr: String): Either[String, Json] = Try {
     val qExec = QueryExecutionFactory.create(queryStr, model)
     qExec.getQuery.getQueryType match {
       case Query.QueryTypeSelect => {

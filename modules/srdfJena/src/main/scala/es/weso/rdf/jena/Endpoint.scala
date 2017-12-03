@@ -20,6 +20,7 @@ import io.circe.Json
 import io.circe.parser.parse
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import cats.implicits._
+import es.weso.rdf.jena.JenaMapper.jenaNode2RDFNode
 
 // TODO: Refactor to change String type by Url
 case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
@@ -161,7 +162,25 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
 
   def availableInferenceEngines: List[String] = List("NONE")
 
-  override def query(queryStr: String): Either[String, Json] = Try {
+  override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
+    val query = QueryFactory.create(queryStr)
+    val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
+    qExec.getQuery.getQueryType match {
+      case Query.QueryTypeSelect => {
+        val result = qExec.execSelect()
+        val varNames = result.getResultVars
+        val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
+          val qsm = new QuerySolutionMap()
+          qsm.addAll(qs)
+          qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
+        })
+        Right(ls)
+      }
+      case qtype => Left(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
+    }
+  }
+
+  override def queryAsJson(queryStr: String): Either[String, Json] = Try {
     val query = QueryFactory.create(queryStr)
     val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
     qExec.getQuery.getQueryType match {

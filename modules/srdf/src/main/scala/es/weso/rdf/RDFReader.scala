@@ -6,6 +6,8 @@ import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
 import io.circe.Json
 
+import scala.util.Either
+
 /**
  * RDFReader can get read RDF data from several sources
  * At this moment, it can parse RDF from <code>CharSequence</code>
@@ -157,7 +159,14 @@ trait RDFReader {
     * @param str string representing the SPARQL query
     * @return JSON representation of the result
     */
-  def query(str: String): Either[String,Json]
+  def queryAsJson(str: String): Either[String,Json]
+
+  /**
+    * Run a SPARQL select query which returns a result map
+    * @param queryStr string representing the SPARQL query
+    * @return Either a List of mappings or an error message
+    */
+  def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]]
 
 }
 

@@ -12,6 +12,7 @@ case class TriplePattern(
   subjectPattern: Pattern,
   path: SHACLPath,
   objectPattern: Pattern) extends NodeSelector
+case class SparqlSelector(query: String) extends NodeSelector
 
 object NodeSelector {
 
@@ -25,6 +26,8 @@ object NodeSelector {
             add("path", path.asJson).
             add("object", obj.asJson))
         }
+        case SparqlSelector(query) =>
+          Json.fromJsonObject(JsonObject.empty.add("sparql", Json.fromString(query)))
       }
     }
   }
@@ -44,8 +47,17 @@ object NodeSelector {
 
   }
 
+  implicit lazy val decodeSparql: Decoder[SparqlSelector] = Decoder.instance { c =>
+    for {
+      query <- fieldDecode[String](c, "sparql")
+    } yield SparqlSelector(query)
+  }
+
   implicit lazy val decodeNodeSelector: Decoder[NodeSelector] =
-    Decoder[RDFNodeSelector].map(n => n).or(
-      Decoder[TriplePattern].map(tp => tp))
+    Decoder[RDFNodeSelector].map(identity).or(
+     Decoder[TriplePattern].map(identity).or(
+      Decoder[SparqlSelector].map(identity)
+    )
+   )
 
 }

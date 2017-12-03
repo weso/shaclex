@@ -2,6 +2,7 @@ package es.weso.shapeMaps
 
 import es.weso.rdf.nodes._
 import cats._
+import cats.data._
 import cats.implicits._
 import es.weso.rdf.{ PrefixMap, RDFReader }
 import io.circe._
@@ -111,7 +112,31 @@ object ShapeMap {
           case Focus =>
             Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.node}")
         }
-        case _ => Left(s"FixShapeMap: Inconsistent triple pattern in node selector ${a.node}")
+        case SparqlSelector(query) => {
+          val eitherResult = rdf.querySelect(query)
+          eitherResult match {
+            case Left(str) => Left(str)
+            case Right(result) => {
+              val zero: Either[String,List[RDFNode]] = Right(List())
+              def combine(current: Either[String,List[RDFNode]], next: Map[String,RDFNode]): Either[String,List[RDFNode]] = {
+                current match {
+                  case Left(msg) => Left(msg)
+                  case Right(nodes) => if (next.size == 1) {
+                    val resultNode = next.map(_._2).head
+                    Right(resultNode :: nodes)
+                  } else {
+                    Left(s"Result of query has more than one value: $next")
+                  }
+                }
+              }
+              result.foldLeft(zero)(combine) match {
+                case Left(msg) => Left(msg)
+                case Right(nodes) => nodes.foldRight(current)(addNode(a))
+              }
+            }
+          }
+        }
+        case _ => Left(s"FixShapeMap: Incorrect node selector ${a.node}")
       }
     }
     shapeMap.associations.foldRight(empty)(combine)
@@ -160,6 +185,7 @@ object ShapeMap {
           n match {
             case RDFNodeSelector(node) => a.nodesPrefixMap.qualify(node)
             case TriplePattern(sub, path, obj) => s"{${sub.show} ${path.show} ${obj.show}}"
+            case SparqlSelector(query) => s"""SPARQL `$query`"""
           }
         }
       }

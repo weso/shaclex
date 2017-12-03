@@ -143,5 +143,6 @@ case class RDFFromWeb() extends RDFReader {
       throw new Exception("Unknown type of resource")
   }
 
-  override def query(queryStr: String): Either[String, Json] = Left(s"Unimplemented query on RDFFromWeb")
+  override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = Left(s"Unimplemented query on RDFFromWeb")
+  override def queryAsJson(queryStr: String): Either[String, Json] = Left(s"Unimplemented query on RDFFromWeb")
 }
