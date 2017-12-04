@@ -31,7 +31,8 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         None,
         None,
         Some(List(NodeConstraint.nodeKind(IRIKind, List()))),
-        None)
+        None,
+        List())
 
       val result = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
