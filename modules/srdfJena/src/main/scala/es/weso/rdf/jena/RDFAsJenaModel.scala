@@ -285,6 +285,9 @@ case class RDFAsJenaModel(model: Model)
     }
   }.toEither.fold(f => Left(f.getMessage), es => es)
 
+  def getNumberOfStatements(): Either[String,Int] =
+    Right(model.size.toInt)
+
 }
 
 

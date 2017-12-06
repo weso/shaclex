@@ -6,7 +6,7 @@ import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
 
 import scala.collection.JavaConverters._
-import scala.util.Either
+import scala.util.{Either, Left}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
 import org.apache.jena.rdf.model.Model
@@ -145,4 +145,7 @@ case class RDFFromWeb() extends RDFReader {
 
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = Left(s"Unimplemented query on RDFFromWeb")
   override def queryAsJson(queryStr: String): Either[String, Json] = Left(s"Unimplemented query on RDFFromWeb")
+
+  def getNumberOfStatements(): Either[String,Int] = Left(s"Unimplemented number of statements of endpoint")
+
 }

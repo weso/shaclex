@@ -1,4 +1,8 @@
-@(data: Option[String],
+@import es.weso.json.JsonTwirl
+@import io.circe._
+
+@(result: Option[Json],
+  data: Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
   availableInferenceEngines: List[String],
@@ -11,11 +15,25 @@
 @navBar()
 <div class="container">
 <h1>Info about RDF Data</h1>
+<div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.getOrElse(Json.Null)))}'></div>
+
 <form action="/dataInfo" method="POST" enctype="multipart/form-data" id="info">
     @dataPanel("info",data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
     <button type="submit">Data Info</button>
 </form>
+<div class="otherOptions">
+        <input type="button" value="permalink" id="permalink"/>
+        <hr/>
+        <h2>Other options</h2>
+        <label>Editor theme:
+            <select id="themeSchema" onchange="changeTheme(this.options[this.selectedIndex].value)">
+                <option value="eclipse">Eclipse</option>
+                <option value="elegant">Elegant</option>
+                <option value="monokai">Monokai</option>
+            </select>
+        </label>
 </div>
-@scripts("data")
+</div>
+@scripts("dataInfo")
 </body>
 </html>

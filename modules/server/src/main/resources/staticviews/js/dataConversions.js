@@ -26,8 +26,7 @@ function changeMode(element,syntax) {
 
 function changeTheme(theme) {
     codeMirrorData.setOption("theme",theme);
-    codeMirrorSchema.setOption("theme",theme);
-    codeMirrorShapeMap.setOption("theme",theme);
+    codeMirrorTargetData.setOption("theme",theme);
 }
 
 $(document).ready(function(){
@@ -45,8 +44,6 @@ function showResult(result) {
     console.log("Show result: " + JSON.stringify(result));
     if(result) {
         console.log("Result.nodesPrefixMap: " + JSON.stringify(result.nodesPrefixMap));
-        var nodesPrefixMap = result.nodesPrefixMap ;
-        console.log("nodesPrefixMap: " + JSON.stringify(nodesPrefixMap));
         var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
         var details = $("<details/>").append(pre);
         $("#resultDiv").append(details);
@@ -97,11 +94,10 @@ function getDataFormat(element) {
   e.preventDefault();
   console.log("click on permalink...");
   var data = codeMirrorData.getValue();
-  var schema = codeMirrorSchema.getValue();
   var dataFormat = $("#dataFormat").find(":selected").text();
   var inference = $("#inference").find(":selected").text();
   var targetDataFormat = $("#targetDataFormat").find(":selected").text();
-  var location = "/data?" +
+  var location = "/dataConversions?" +
       "data=" + encodeURIComponent(data) +
       "&dataFormat=" + encodeURIComponent(dataFormat) +
       "&targetDataFormat=" + encodeURIComponent(targetDataFormat) +

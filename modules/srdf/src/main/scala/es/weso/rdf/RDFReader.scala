@@ -168,5 +168,7 @@ trait RDFReader {
     */
   def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]]
 
+  def getNumberOfStatements(): Either[String,Int]
+
 }
 

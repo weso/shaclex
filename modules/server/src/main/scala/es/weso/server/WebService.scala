@@ -21,6 +21,7 @@ import fs2.text.utf8Decode
 import org.http4s.multipart.{Multipart, Part}
 import cats.implicits._
 import es.weso.utils.FileUtils
+import io.circe.Json
 
 import scala.io.Source
 import scala.io.Source._
@@ -100,12 +101,12 @@ object WebService {
 
     case req@GET -> Root / "dataInfo" :?
       OptDataParam(optData) +&
-        DataFormatParam(optDataFormat) +&
-        InferenceParam(optInference) +&
-        OptActiveDataTabParam(optActiveDataTab) => {
+      DataFormatParam(optDataFormat) +&
+      InferenceParam(optInference) +&
+      OptActiveDataTabParam(optActiveDataTab) => {
       RDFAsJenaModel.fromChars(optData.getOrElse(""), optDataFormat.getOrElse(defaultDataFormat)).fold(
         str => BadRequest(str),
-        rdf => Ok(html.dataInfo(
+        rdf => Ok(html.dataInfo(dataInfo(rdf),
           optData,
           availableDataFormats,
           defaultDataFormat,
@@ -122,7 +123,7 @@ object WebService {
           response <- maybeData match {
             case Left(str) => BadRequest (s"Error obtaining data: $str")
             case Right((rdf,dp)) =>
-              Ok(html.dataInfo(
+              Ok(html.dataInfo(dataInfo(rdf),
                 dp.data,
                 availableDataFormats,
                 dp.dataFormat.getOrElse(defaultDataFormat),
@@ -716,5 +717,14 @@ object WebService {
       case Some(false) => false
       case None => defaultSchemaEmbedded
     }
+  }
+
+  private def dataInfo(rdf: RDFReasoner): Option[Json] = {
+    Some(Json.fromFields(
+      List(
+        ("statements", Json.fromString(rdf.getNumberOfStatements().fold(identity,_.toString))),
+        ("subjects", Json.fromValues(rdf.subjects().map(node => Json.fromString(node.toString))))
+      )
+    ))
   }
 }
