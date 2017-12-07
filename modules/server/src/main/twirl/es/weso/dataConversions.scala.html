@@ -3,6 +3,7 @@
   currentDataFormat: String,
   availableInferenceEngines: List[String],
   currentInference: String,
+  endpoint: Option[String],
   currentTargetDataFormat: String,
   activeDataTab: String,
   result: Either[String, Option[String]]
@@ -21,7 +22,7 @@
 }
 
 <form action="/dataConversions" method="POST" enctype="multipart/form-data" id="convert">
-    @dataPanel("convert", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,activeDataTab)
+    @dataPanel("convert", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,endpoint,activeDataTab)
     @selectTargetDataFormat("convert",availableDataFormats,currentDataFormat)
     <div class="submit">
         <button type="submit">Convert</button>

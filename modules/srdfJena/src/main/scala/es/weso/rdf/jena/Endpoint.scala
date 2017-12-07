@@ -208,7 +208,10 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
     }
   }.toEither.fold(f => Left(f.getMessage), es => es)
 
-  def getNumberOfStatements(): Either[String,Int] = Left(s"Unimplemented number of statements of endpoint")
+  def getNumberOfStatements(): Either[String,Int] = {
+    val resultSet = QueryExecutionFactory.sparqlService(endpoint, countStatements).execSelect()
+    Try(resultSet.asScala.map(qs => qs.get("triples").asLiteral().getInt).toList.head).toEither.leftMap(_.getMessage)
+  }
 
 }
 

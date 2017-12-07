@@ -40,6 +40,17 @@ function showResult(result) {
     console.log("Show result: " + JSON.stringify(result));
     if(result) {
         console.log("Result.nodesPrefixMap: " + JSON.stringify(result.nodesPrefixMap));
+        var nodesPrefixMap = result.nodesPrefixMap ;
+        var tableHead = "<thead><tr>" +
+                "<th data-sortable=\"true\">Name</th>" +
+                "<th data-sortable=\"true\">Value</th>" +
+                "</tr></thead>";
+        var tableBody = '';
+        tableBody += "<tr><td>Number of triples</td><td>" + result.statements + "</td></tr>";
+        $("#resultDiv").append("<table data-toggle=\"table\" data-sort-order=\"desc\" data-sort-name=\"node\">" +
+                tableHead +
+                tableBody +
+                "</table>");
         var pre = $("<pre/>").text(JSON.stringify(result,undefined,2));
         var details = $("<details/>").append(pre);
         $("#resultDiv").append(details);

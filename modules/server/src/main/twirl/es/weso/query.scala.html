@@ -8,6 +8,7 @@
   query:Option[String],
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
+  endpoint: Option[String],
   activeDataTab: String,
   activeQueryTab: String
 )
@@ -26,7 +27,7 @@
 }
 <form action="/query" method="POST" enctype="multipart/form-data" id="query">
     @dataPanel("query", data, availableDataFormats, currentDataFormat,
-                         availableInferenceEngines,currentInferenceEngine,activeDataTab)
+                         availableInferenceEngines,currentInferenceEngine, endpoint, activeDataTab)
     <div id="queryDiv">
      @queryPanel("query", query, activeQueryTab)
     </div>

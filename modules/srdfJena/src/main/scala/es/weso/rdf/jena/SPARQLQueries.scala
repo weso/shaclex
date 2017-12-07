@@ -55,6 +55,12 @@ object SPARQLQueries {
        |}
          |""".stripMargin)
 
+  lazy val countStatements = QueryFactory.create(
+    """|select (count(?s) as ?triples) where {
+       | ?s ?p ?o .
+       |}
+       |""".stripMargin)
+
   lazy val findRDFTriples = QueryFactory.create(
     """|construct { ?x ?p ?y } where {
          | ?x ?p ?y .

@@ -5,6 +5,7 @@ import org.http4s.dsl.io.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMat
 object QueryParams {
   object DataParam extends QueryParamDecoderMatcher[String]("data")
   object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
+  object OptEndpointParam extends OptionalQueryParamDecoderMatcher[String]("endpoint")
   object OptDataURLParam extends OptionalQueryParamDecoderMatcher[String]("dataURL")
   object DataFormatParam extends OptionalQueryParamDecoderMatcher[String]("dataFormat")
   object TargetDataFormatParam extends OptionalQueryParamDecoderMatcher[String]("targetDataFormat")

@@ -4,6 +4,7 @@
   currentDataFormat: String,
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
+  endpoint: Option[String],
   activeDataTab: String
 )
 <fieldset class="dataPanel">
@@ -44,7 +45,7 @@
         </div>
         <div class='@{if (activeDataTab=="#dataEndpoint") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataEndpoint" role="tabpanel" aria-labelledby="dataEndpoint-tab">
-            <input type="url" name="endpoint" placeholder="endpoint">
+            <input type="url" name="endpoint" placeholder="endpoint" value='@{endpoint.getOrElse("")}'>
         </div>
         <input id="rdfDataActiveTab" type="hidden" name="rdfDataActiveTab" value="@{activeDataTab}">
     </div>

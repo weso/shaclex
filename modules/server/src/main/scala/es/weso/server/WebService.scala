@@ -10,13 +10,10 @@ import org.http4s._
 import org.http4s.twirl._
 import es.weso._
 import es.weso.server.QueryParams._
-import org.log4s.getLogger
 import ApiHelper.{query, _}
 import Http4sUtils._
-import cats.data.EitherT
 import es.weso.rdf._
 import cats.effect.IO._
-import es.weso.server.WebService.{DataParam, PartsMap, mkData, parts2Map}
 import fs2.text.utf8Decode
 import org.http4s.multipart.{Multipart, Part}
 import cats.implicits._
@@ -24,12 +21,9 @@ import es.weso.utils.FileUtils
 import io.circe.Json
 
 import scala.io.Source
-import scala.io.Source._
 import scala.util.Try
 
 object WebService {
-
-  private val logger = getLogger
 
   // Get the static content
   private val static: HttpService[IO] = staticResource[IO](Config("/static", "/static"))
@@ -60,15 +54,16 @@ object WebService {
       OptDataParam(optData) +&
         DataFormatParam(optDataFormat) +&
         InferenceParam(optInference) +&
+        OptEndpointParam(optEndpoint) +&
         OptActiveDataTabParam(optActiveDataTab) +&
         TargetDataFormatParam(optTargetDataFormat) => {
-      val targetDataFormat = optTargetDataFormat.getOrElse(defaultDataFormat)
       Ok(html.dataConversions(
         optData,
         availableDataFormats,
         optDataFormat.getOrElse(defaultDataFormat),
         availableInferenceEngines,
         optInference.getOrElse(defaultInference),
+        optEndpoint,
         optTargetDataFormat.getOrElse(defaultDataFormat),
         optActiveDataTab.getOrElse(defaultActiveDataTab),
         dataConvert(optData, optDataFormat, optTargetDataFormat)))
@@ -90,6 +85,7 @@ object WebService {
                   dp.dataFormat.getOrElse(defaultDataFormat),
                   availableInferenceEngines,
                   dp.inference.getOrElse(defaultInference),
+                  dp.endpoint,
                   dp.targetDataFormat.getOrElse(defaultDataFormat),
                   dp.activeDataTab.getOrElse(defaultActiveDataTab),
                   result))
@@ -103,6 +99,7 @@ object WebService {
       OptDataParam(optData) +&
       DataFormatParam(optDataFormat) +&
       InferenceParam(optInference) +&
+      OptEndpointParam(optEndpoint) +&
       OptActiveDataTabParam(optActiveDataTab) => {
       RDFAsJenaModel.fromChars(optData.getOrElse(""), optDataFormat.getOrElse(defaultDataFormat)).fold(
         str => BadRequest(str),
@@ -112,6 +109,7 @@ object WebService {
           defaultDataFormat,
           availableInferenceEngines,
           optInference.getOrElse(defaultInference),
+          optEndpoint,
           optActiveDataTab.getOrElse(defaultActiveDataTab))))
     }
 
@@ -129,6 +127,7 @@ object WebService {
                 dp.dataFormat.getOrElse(defaultDataFormat),
                 availableInferenceEngines,
                 dp.inference.getOrElse(defaultInference),
+                dp.endpoint,
                 dp.activeDataTab.getOrElse(defaultActiveDataTab)))
           }
         } yield response
@@ -229,6 +228,7 @@ object WebService {
         ShapeMapParam(optShapeMap) +&
         SchemaEmbedded(optSchemaEmbedded) +&
         InferenceParam(optInference) +&
+        OptEndpointParam(optEndpoint) +&
         OptActiveDataTabParam(optActiveDataTab) => {
 
       if (optExamples.isDefined) {
@@ -291,6 +291,7 @@ object WebService {
               optSchemaEmbedded.getOrElse(defaultSchemaEmbedded),
               availableInferenceEngines,
               optInference.getOrElse("NONE"),
+              optEndpoint,
               optActiveDataTab.getOrElse(defaultActiveDataTab),
               defaultActiveSchemaTab
             ))
@@ -303,6 +304,7 @@ object WebService {
         DataFormatParam(optDataFormat) +&
         OptQueryParam(optQuery) +&
         InferenceParam(optInference) +&
+        OptEndpointParam(optEndpoint) +&
         OptActiveDataTabParam(optActiveDataTab) +&
         OptActiveQueryTabParam(optActiveQueryTab)
         => {
@@ -315,6 +317,7 @@ object WebService {
         optQuery,
         availableInferenceEngines,
         optInference.getOrElse("NONE"),
+        optEndpoint,
         optActiveDataTab.getOrElse(defaultActiveDataTab),
         optActiveQueryTab.getOrElse(defaultActiveQueryTab)
       ))
@@ -341,6 +344,7 @@ object WebService {
                     qp.query,
                     availableInferenceEngines,
                     dp.inference.getOrElse(defaultInference),
+                    dp.endpoint,
                     dp.activeDataTab.getOrElse(defaultActiveDataTab),
                     qp.activeQueryTab.getOrElse(defaultActiveQueryTab)
                   ))
@@ -707,6 +711,7 @@ object WebService {
     getSchemaEmbedded(sp),
     availableInferenceEngines,
     dp.inference.getOrElse(defaultInference),
+    dp.endpoint,
     dp.activeDataTab.getOrElse(defaultActiveDataTab),
     sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)
   ))
@@ -723,7 +728,7 @@ object WebService {
     Some(Json.fromFields(
       List(
         ("statements", Json.fromString(rdf.getNumberOfStatements().fold(identity,_.toString))),
-        ("subjects", Json.fromValues(rdf.subjects().map(node => Json.fromString(node.toString))))
+        ("nodesPrefixMap", ApiHelper.prefixMap2Json(rdf.getPrefixMap()))
       )
     ))
   }

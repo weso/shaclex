@@ -17,6 +17,7 @@
   schemaEmbedded: Boolean,
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
+  endpoint: Option[String],
   activeDataTab: String,
   activeSchemaTab: String
 )
@@ -36,7 +37,7 @@
             /></label>
     </fieldset>
 
-    @dataPanel("validate", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,activeDataTab)
+    @dataPanel("validate", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,endpoint,activeDataTab)
 
     <div id="schemaDiv">
       @schemaPanel("validate", schema, availableSchemaFormats, currentSchemaFormat, activeSchemaTab)
