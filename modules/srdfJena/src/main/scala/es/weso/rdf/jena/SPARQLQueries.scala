@@ -55,8 +55,14 @@ object SPARQLQueries {
        |}
          |""".stripMargin)
 
+  lazy val findClasses = QueryFactory.create(
+    """|select ?c where {
+       | ?s a ?c .
+       |} LIMIT 100
+       |""".stripMargin)
+
   lazy val countStatements = QueryFactory.create(
-    """|select (count(?s) as ?triples) where {
+    """|select (count(*) as ?c) where {
        | ?s ?p ?o .
        |}
        |""".stripMargin)
@@ -78,8 +84,7 @@ object SPARQLQueries {
     """|select ?p where {
          | ?x ?p ?y .
          | filter (isIRI(?p))
-       |}
-         |""".stripMargin)
+       |}""".stripMargin)
 
   lazy val findObjects = QueryFactory.create(
     """|select ?y where {
