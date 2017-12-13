@@ -254,12 +254,16 @@ object WebService {
           case Some(schemaStr) => Right(Some(schemaStr))
         }
 
+        println(s"Either schema: $eitherSchema")
+        println(s"OptSchema: $optSchema")
+        println(s"OptSchema: $optSchemaFormat")
+
         val eitherResult = for {
           data <- eitherData
           schema <- eitherSchema
         } yield {
           data.map(validate(_, optDataFormat,
-            optSchema, optSchemaFormat, optSchemaEngine,
+            schema, optSchemaFormat, optSchemaEngine,
             optTriggerMode,
             optNode, optShape, optShapeMap,
             optInference))
@@ -398,7 +402,12 @@ object WebService {
 
   private def mkSchema(partsMap: PartsMap, data: Option[RDFReasoner]
                       ): IO[Either[String,(Schema, SchemaParam)]] = for {
-    sp <- mkSchemaParam(partsMap)
+    sp <- {
+      println(s"PartsMap: $partsMap")
+      val sp = mkSchemaParam(partsMap)
+      println(s"SchemaParam: $sp")
+      sp
+    }
   } yield {
     val (maybeStr, maybeSchema) = getSchema(sp, data)
     maybeSchema match {
@@ -420,6 +429,7 @@ object WebService {
 
   private def getSchema(sp: SchemaParam, data: Option[RDFReasoner]): (Option[String],Either[String,Schema]) = {
     val base = Some(FileUtils.currentFolderURL)
+    println(s"SchemaEmbedded: ${sp.schemaEmbedded}")
     sp.schemaEmbedded match {
        case Some(true) => data match {
           case None => (None, Left(s"Schema embedded but no data found"))
@@ -595,12 +605,12 @@ object WebService {
         case _ => None
       }
     })(Some(_))
-    val finalActiveDataTab = finalEndpoint match {
+    val finalActiveDataTab = activeDataTab /* finalEndpoint match {
       case Some(endpoint) =>
         if (endpoint.length > 0) Some("#dataEndpoint")
         else activeDataTab
       case None => activeDataTab
-    }
+    } */
     println(s"<<<***Endpoint: $finalEndpoint")
 
     DataParam(data,dataURL,dataFile,finalEndpoint,dataFormat,inference,targetDataFormat,finalActiveDataTab)
