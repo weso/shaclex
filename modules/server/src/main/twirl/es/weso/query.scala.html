@@ -23,7 +23,7 @@
 @if(result.isRight){
   <div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.getOrElse(Json.Null)))}'></div>
 } else {
-    <div id="resultDiv" data-result='null' class="alert alert-danger" role="alert"><code>@{result.left.get}</code></div>
+  <div id="resultDiv" data-result='null' class="alert alert-danger" role="alert"><code>@{result.left.get}</code></div>
 }
 <form action="/query" method="POST" enctype="multipart/form-data" id="query">
     @dataPanel("query", data, availableDataFormats, currentDataFormat,
