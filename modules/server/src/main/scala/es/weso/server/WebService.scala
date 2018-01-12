@@ -497,11 +497,45 @@ object WebService {
                        dataURL: Option[String],
                        dataFile: Option[String],
                        endpoint: Option[String],
-                       dataFormat: Option[String],
+                       dataFormatTextarea: Option[String],
+                       dataFormatUrl: Option[String],
+                       dataFormatFile: Option[String],
                        inference: Option[String],
                        targetDataFormat: Option[String],
                        activeDataTab: Option[String]
-                      )
+                      ) {
+    sealed abstract class DataInputType {
+      val id: String
+    }
+    case object dataUrlType extends DataInputType {
+      override val id = "#dataUrl"
+    }
+    case object dataFileType extends DataInputType {
+      override val id = "#dataFile"
+    }
+    case object dataEndpointType extends DataInputType {
+      override val id = "#dataEndpoint"
+    }
+    case object dataTextAreaType extends DataInputType {
+      override val id = "#dataTextArea"
+    }
+
+    def parseDataTab(tab: String): Either[String,DataInputType] = {
+      val inputTypes = List(dataUrlType,dataFileType,dataEndpointType,dataTextAreaType)
+      inputTypes.find(_.id == tab) match {
+        case Some(x) => Right(x)
+        case None => Left(s"Wrong value of tab: $tab, must be one of [${inputTypes.map(_.id).mkString(",")}]")
+      }
+    }
+
+    val dataFormat: Option[String] = parseDataTab(activeDataTab.getOrElse(defaultActiveDataTab)) match {
+      case Right(`dataUrlType`) => dataFormatUrl
+      case Right(`dataFileType`) => dataFormatFile
+      case Right(`dataTextAreaType`) => dataFormatTextarea
+      case _ => None
+    }
+
+  }
 
   private def mkData(partsMap: PartsMap): IO[Either[String, (RDFReasoner, DataParam)]] = for {
     dp <- mkDataParam(partsMap)
@@ -513,67 +547,71 @@ object WebService {
     }
   }
 
-  private def getData(dp: DataParam): (Option[String], Either[String,RDFReasoner]) =
-     dp.activeDataTab.getOrElse(defaultActiveDataTab) match {
-        case d @"#dataUrl" => {
-          dp.dataURL match {
-            case None => (None, Left(s"Non value for dataURL"))
-            case Some(dataUrl) => {
-              val dataFormat = dp.dataFormat.getOrElse(defaultDataFormat)
-              RDFAsJenaModel.fromURI(dataUrl,dataFormat) match {
-                case Left(str) => (None,Left(s"Error obtaining $dataUrl with $dataFormat: $str"))
-                case Right(rdf) => applyInference(rdf, dp.inference, dataFormat)
+  private def getData(dp: DataParam): (Option[String], Either[String,RDFReasoner]) = {
+    val inputType = dp.parseDataTab(dp.activeDataTab.getOrElse(defaultActiveDataTab))
+    println(s"Input type: $inputType")
+    inputType match {
+      case Right(dp.`dataUrlType`) => {
+        dp.dataURL match {
+          case None => (None, Left(s"Non value for dataURL"))
+          case Some(dataUrl) => {
+            val dataFormat = dp.dataFormatUrl.getOrElse(defaultDataFormat)
+            RDFAsJenaModel.fromURI(dataUrl, dataFormat) match {
+              case Left(str) => (None, Left(s"Error obtaining $dataUrl with $dataFormat: $str"))
+              case Right(rdf) => applyInference(rdf, dp.inference, dataFormat)
+            }
+          }
+        }
+      }
+      case Right(dp.`dataFileType`) => {
+        dp.dataFile match {
+          case None => (None, Left(s"No value for dataFile"))
+          case Some(dataStr) =>
+            val dataFormat = dp.dataFormatFile.getOrElse(defaultDataFormat)
+            RDFAsJenaModel.fromChars(dataStr, dataFormat, None) match {
+              case Left(msg) => (Some(dataStr), Left(msg))
+              case Right(rdf) => {
+                extendWithInference(rdf, dp.inference) match {
+                  case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
+                  case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
                 }
               }
             }
         }
-        case "#dataFile" => {
-          dp.dataFile match {
-            case None => (None, Left(s"No value for dataFile"))
-            case Some(dataStr) =>
-              val dataFormat = dp.dataFormat.getOrElse(defaultDataFormat)
-              RDFAsJenaModel.fromChars(dataStr, dataFormat, None) match {
-                case Left(msg) => (Some(dataStr), Left(msg))
-                case Right(rdf) => {
-                  extendWithInference(rdf,dp.inference) match {
-                    case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
-                    case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
-                  }
-                }
+      }
+      case Right(dp.`dataEndpointType`) => {
+        dp.endpoint match {
+          case None => (None, Left(s"No value for endpoint"))
+          case Some(endpointUrl) => {
+            Endpoint.fromString(endpointUrl) match {
+              case Left(str) => (None, Left(s"Error creating endpoint: $endpointUrl"))
+              case Right(endpoint) => {
+                (None, extendWithInference(endpoint, dp.inference))
               }
+            }
           }
         }
-        case d @ "#dataEndpoint" => {
-          dp.endpoint match {
-            case None => (None, Left(s"No value for endpoint"))
-            case Some(endpointUrl) => {
-              Endpoint.fromString(endpointUrl) match {
-                case Left(str) => (None, Left(s"Error creating endpoint: $endpointUrl"))
-                case Right(endpoint) => {
-                  (None, extendWithInference(endpoint,dp.inference))
+      }
+      case Right(dp.`dataTextAreaType`) => {
+        dp.data match {
+          case None => (None, Right(RDFAsJenaModel.empty))
+          case Some(data) => {
+            val dataFormat = dp.dataFormatTextarea.getOrElse(defaultDataFormat)
+            RDFAsJenaModel.fromChars(data, dataFormat, None) match {
+              case Left(msg) => (Some(data), Left(msg))
+              case Right(rdf) => {
+                extendWithInference(rdf, dp.inference) match {
+                  case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
+                  case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
                 }
               }
             }
           }
         }
-        case d @ "#dataTextArea" => {
-          dp.data match {
-            case None => (None, Right(RDFAsJenaModel.empty))
-            case Some(data) => {
-              val dataFormat = dp.dataFormat.getOrElse(defaultDataFormat)
-              RDFAsJenaModel.fromChars(data, dataFormat, None) match {
-                case Left(msg) => (Some(data), Left(msg))
-                case Right(rdf) => {
-                  extendWithInference(rdf,dp.inference) match {
-                    case Left(msg) => (rdf.serialize(dataFormat).toOption, Left(s"Error applying inference: $msg"))
-                    case Right(newRdf) => (newRdf.serialize(dataFormat).toOption, Right(newRdf))
-                  }
-                }
-              }
-            }
-          }
-        }
-        case other => (None, Left(s"Unknown value for activeDataTab: $other"))
+      }
+      case Right(other) => (None, Left(s"Unknown value for activeDataTab: $other"))
+      case Left(msg) => (None, Left(msg))
+    }
   }
 
   private def applyInference(rdf: RDFReasoner, inference: Option[String], dataFormat: String): (Option[String],Either[String,RDFReasoner]) = {
@@ -588,12 +626,17 @@ object WebService {
     dataURL <- optPartValue("dataURL", partsMap)
     dataFile <- optPartValue("dataFile", partsMap)
     endpoint <- optPartValue("endpoint", partsMap)
-    dataFormat <- optPartValue("dataFormat", partsMap)
+    dataFormatTextArea <- optPartValue("dataFormatTextArea", partsMap)
+    dataFormatUrl <- optPartValue("dataFormatUrl", partsMap)
+    dataFormatFile <- optPartValue("dataFormatFile", partsMap)
     inference <- optPartValue("inference", partsMap)
     targetDataFormat <- optPartValue("targetDataFormat", partsMap)
     activeDataTab <- optPartValue("rdfDataActiveTab", partsMap)
   } yield {
     println(s"<<<***Data: $data")
+    println(s"<<<***Data Format TextArea: $dataFormatTextArea")
+    println(s"<<<***Data Format Url: $dataFormatUrl")
+    println(s"<<<***Data Format File: $dataFormatFile")
     println(s"<<<***Data URL: $dataURL")
     println(s"<<<***Endpoint: $endpoint")
 
@@ -613,12 +656,16 @@ object WebService {
     } */
     println(s"<<<***Endpoint: $finalEndpoint")
 
-    DataParam(data,dataURL,dataFile,finalEndpoint,dataFormat,inference,targetDataFormat,finalActiveDataTab)
+    DataParam(data,dataURL,dataFile,finalEndpoint,
+      dataFormatTextArea,dataFormatUrl,dataFormatFile,
+      inference,targetDataFormat,finalActiveDataTab
+    )
   }
 
   type PartsMap = Map[String,Part[IO]]
 
   private def parts2Map(ps: Vector[Part[IO]]): PartsMap = {
+    println(s"Parts: $ps")
     ps.filter(_.name.isDefined).map(p => (p.name.get,p)).toMap
   }
 

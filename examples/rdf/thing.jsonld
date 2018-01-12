@@ -1,0 +1,54 @@
+{
+  "@context": ["https://w3c.github.io/wot/w3c-wot-td-context.jsonld",
+               "https://w3c.github.io/wot/w3c-wot-common-context.jsonld"],
+  "@type": ["Sensor"],
+  "name": "myTempSensor",
+  "base" : "coap:///www.example.com:5683/temp/",
+  "interaction": [
+    {
+      "@id": "val",
+      "@type": ["Property","Temperature"],
+      "unit": "celsius",
+      "reference": "threshold",
+      "name": "myTemp",
+      "outputData": { "type": "number" },
+      "writable": false,
+      "observable": true,
+      "link": [{
+          "href" : "val",
+          "mediaType": "application/json"
+      }]
+    }, 
+    {
+      "@id": "threshold",
+      "@type": ["Property","Temperature"],
+      "unit": "celsius",
+      "name": "myThreshold",
+      "outputData": { "type": "number" },
+      "writable": true,
+         "link": [{
+          "href" : "thr",
+          "mediaType": "application/json"
+      }]
+    },
+    {
+      "@type": ["Event"],
+      "outputData": { "type": "number" },
+      "name": "myChange",
+      "property": "temp",
+      "link": [{
+          "href" : "val/changed",
+          "mediaType": "application/json"
+      }]
+    }, 
+    {
+      "@type": ["Event"],
+      "outputData":  { "type": "number" },
+      "name": "myWarning",
+      "link": [{
+          "href" : "val/high",
+          "mediaType": "application/json"
+      }]
+    }
+  ]
+}

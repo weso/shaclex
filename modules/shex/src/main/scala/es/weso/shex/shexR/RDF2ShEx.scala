@@ -19,7 +19,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     trySchemas match {
       case Left(e) => Left(s"Error parsing RDF as Schema: $e\nRDF: ${rdf.serialize("TURTLE")}")
       case Right(schemas) => schemas.length match {
-        case 0 => Left(s"Empty schema parsing RDF\nRDF: ${rdf.serialize("TURTLE")}")
+        case 0 => Right(Schema.empty)
         case 1 => Right(schemas.head)
         case _ => {
           logger.warn(s"More than one schema obtained when parsing RDF\n${rdf.serialize("TURTLE")}")

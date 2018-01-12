@@ -38,3 +38,5 @@ pids
 *.pid.lock
 .npm
 *.tgz
+
+*~

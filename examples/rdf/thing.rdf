@@ -1,0 +1,37 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+    xmlns:saref="http://uri.etsi.org/m2m/saref#"
+    xmlns:td="http://iot.linkeddata.es/def/wot#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+  <saref:Sensor>
+    <td:baseURI rdf:resource="coap:///www.example.com:5683/temp/"/>
+    <td:name>myTempSensor</td:name>
+    <td:providesInteractionPattern>
+      <td:Event>
+        <td:hasOutputData rdf:parseType="Resource">
+        </td:hasOutputData>
+        <td:isAccessibleThrough rdf:parseType="Resource">
+          <td:hasMediaType>application/json</td:hasMediaType>
+        </td:isAccessibleThrough>
+        <td:name>myChange</td:name>
+      </td:Event>
+    </td:providesInteractionPattern>
+    <td:providesInteractionPattern>
+      <td:Event>
+        <td:hasOutputData rdf:parseType="Resource">
+        </td:hasOutputData>
+        <td:isAccessibleThrough rdf:parseType="Resource">
+          <td:hasMediaType>application/json</td:hasMediaType>
+        </td:isAccessibleThrough>
+        <td:name>myWarning</td:name>
+      </td:Event>
+    </td:providesInteractionPattern>
+  </saref:Sensor>
+  <rdf:Description>
+    <td:hasMediaType>application/json</td:hasMediaType>
+  </rdf:Description>
+  <rdf:Description>
+    <td:hasMediaType>application/json</td:hasMediaType>
+  </rdf:Description>
+</rdf:RDF>
