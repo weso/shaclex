@@ -5,9 +5,10 @@
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
   endpoint: Option[String],
-  activeDataTab: String
+  activeDataTab: String,
+  twocolumns: Boolean
 )
-<fieldset class="dataPanel">
+<fieldset class='@{if (twocolumns) "dataPanel2" else "dataPanel"}'>
     <legend>RDF Data</legend>
     <ul id="rdfDataTabs" class="nav nav-tabs">
         <li class="nav-item">

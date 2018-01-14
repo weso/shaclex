@@ -2,9 +2,10 @@
   schema:Option[String],
   availableSchemaFormats: List[String],
   currentSchemaFormat: String,
-  activeSchemaTab: String
+  activeSchemaTab: String,
+  twocolumns: Boolean
 )
-<fieldset class="schemaPanel">
+<fieldset class='@{if (twocolumns) "schemaPanel2" else "schemaPanel"}' >
     <legend>Schema</legend>
     <ul id="schemaTabs" class="nav nav-tabs">
         <li class="nav-item">
@@ -24,15 +25,17 @@
         <div class='@{if (activeSchemaTab=="#schemaTextArea") "tab-pane fade show active" else "tab-pane fade"}'
              id="schemaTextArea" role="tabpanel" aria-labelledby="schemaTextArea-tab">
             <textarea id="schema" placeHolder="Schema" name="schema">@{schema.getOrElse("")}</textarea>
-            @selectSchemaFormat(formName,availableSchemaFormats,currentSchemaFormat)
+            @selectSchemaFormat(formName,"TextArea",availableSchemaFormats,currentSchemaFormat)
         </div>
         <div class='@{if (activeSchemaTab=="#schemaUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="schemaUrl" role="tabpanel" aria-labelledby="schemaUrl-tab">
             <input type="url" name="schemaURL" >
+            @selectSchemaFormat(formName,"Url",availableSchemaFormats,currentSchemaFormat)
         </div>
         <div class='@{if (activeSchemaTab=="#schemaFile") "tab-pane fade show active" else "tab-pane fade"}'
              id="schemaFile" role="tabpanel" aria-labelledby="schemaFile-tab">
             <input type="file" name="schemaFile" >
+            @selectSchemaFormat(formName,"File",availableSchemaFormats,currentSchemaFormat)
         </div>
         <input id="activeSchemaTab" type="hidden" name="activeSchemaTab" value="@{activeSchemaTab}">
     </div>

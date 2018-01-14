@@ -1,9 +1,10 @@
 @( formId: String,
-  formats: List[String],
-  current: String
+   formType: String,
+   formats: List[String],
+   current: String
 )
 <label for="schemaFormat">Schema Format</label>
-<select id="schemaFormat" form="@formId" name="schemaFormat" onchange="changeMode(codeMirrorSchema, this.options[this.selectedIndex].value)">
+<select id="schemaFormat@formType" form="@formId" name="schemaFormat@formType" onchange="changeMode(codeMirrorSchema, this.options[this.selectedIndex].value)">
  @for(s <- formats) {
   <option value="@s"
      @{if(s == current) { "selected" }}>@s</option>

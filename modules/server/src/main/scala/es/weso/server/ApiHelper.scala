@@ -1,19 +1,14 @@
 package es.weso.server
 
-import java.io.ByteArrayOutputStream
-
 import cats.implicits._
 import cats.effect.IO
-import es.weso.rdf.{PrefixMap, RDFReasoner}
+import es.weso.rdf.{PrefixMap}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.{DataFormats, Result, Schemas, ValidationTrigger}
 import es.weso.utils.FileUtils
 import io.circe._
-import io.circe.parser._
-import org.apache.jena.query.{Query, QueryExecutionFactory, ResultSetFormatter}
 import org.http4s.Uri
 import org.http4s.client.blaze.PooledHttp1Client
-
 import scala.util.Try
 
 object ApiHelper {
@@ -49,6 +44,23 @@ object ApiHelper {
         rdf <- RDFAsJenaModel.fromChars(data, dataFormat, None)
         str <- rdf.serialize(resultDataFormat)
       } yield Some(str)
+    }
+  }
+
+  def schemaConvert(optSchema: Option[String],
+                  optSchemaFormat: Option[String],
+                  optSchemaEngine: Option[String],
+                  optTargetSchemaFormat: Option[String],
+                  optTargetSchemaEngine: Option[String],
+                  base: Option[String]): Either[String, Option[String]] = optSchema match {
+    case None => Right(None)
+    case Some(schemaStr) => {
+      val schemaFormat = optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
+      val schemaEngine = optSchemaEngine.getOrElse(Schemas.defaultSchemaName)
+      for {
+        schema <- Schemas.fromString(schemaStr, schemaFormat, schemaEngine, base)
+        result <- schema.convert(optTargetSchemaFormat,optSchemaEngine)
+      } yield Some(result)
     }
   }
 

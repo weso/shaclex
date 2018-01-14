@@ -1,13 +1,14 @@
 @import io.circe._
 
-@(result: Option[Json],
-  schema: Option[String],
+@(schema: Option[String],
   availableSchemaFormats: List[String],
   currentSchemaFormat: String,
   availableSchemaEngines: List[String],
   currentSchemaEngine: String,
   currentTargetSchemaFormat: String,
-  currentTargetSchemaEngine: String
+  currentTargetSchemaEngine: String,
+  activeSchemaTab: String,
+  result: Either[String, Option[String]]
 )
 
 
@@ -17,13 +18,20 @@
 <body>
 @navBar()
 <div class="container">
-<h1><a href="/">Shaclex</a>: Parse and convert Schema</h1>
-<div id="resultDiv">@{if(result.isDefined){result.get.spaces2}}</div>
 
-<form action="/api/schema/convert" method="get" id="convert">
+  @if(result.isLeft) {
+     <p class="error">Error in conversion: @{result.left}</p>
+  } else if(result.right.get.isDefined) {
+   <textarea id="targetDataArea">@{result.right.get.get}</textarea>
+  } else {
+    <h1>Parse and convert Schema</h1>
+  }
+
+
+<form action="/schemaConversions" method="POST" enctype="multipart/form-data" id="convert">
   <fieldset>
       <legend>Source</legend>
-      @selectSchemaFormat("convert",availableSchemaFormats,currentSchemaFormat)
+      @schemaPanel("convert",schema,availableSchemaFormats,currentSchemaFormat,activeSchemaTab,false)
       @selectSchemaEngine("convert", availableSchemaEngines,currentSchemaEngine)
   </fieldset>
     <fieldset>
@@ -31,11 +39,6 @@
         @selectTargetSchemaFormat("convert",availableSchemaFormats,currentTargetSchemaFormat)
         @selectTargetSchemaEngine("convert",availableSchemaEngines,currentTargetSchemaEngine)
     </fieldset>
-  <fieldset>
-    <label for="schema">Schema</label>
-    <textarea id="schema" name="schema"
-              placeholder="schema">@{schema.getOrElse("")}</textarea>
-  </fieldset>
     <div class="submit">
       <button type="submit">Convert</button>
     </div>

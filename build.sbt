@@ -37,6 +37,7 @@ lazy val shaclex =
   project.in(file(".")).
   enablePlugins(ScalaUnidocPlugin).
   enablePlugins(ScalaUnidocPlugin).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings:_*).
   settings(publishSettings:_*).
 //  enablePlugins(BuildInfoPlugin).
@@ -96,6 +97,7 @@ lazy val commonSettings = Seq(
 
 lazy val schema =
   project.in(file("modules/schema")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   dependsOn(shex, shacl, shapeMaps)
@@ -103,6 +105,7 @@ lazy val schema =
 
 lazy val depGraphs =
   project.in(file("modules/depGraphs")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(
@@ -117,6 +120,7 @@ lazy val depGraphs =
 
 lazy val shacl =
   project.in(file("modules/shacl")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   dependsOn(srdfJena,
@@ -141,6 +145,7 @@ lazy val shacl =
 lazy val shex =
   project.in(file("modules/shex")).
 //  configs(compatTest).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   dependsOn(srdfJena,
@@ -172,6 +177,7 @@ lazy val shex =
   
 lazy val shapeMaps =
   project.in(file("modules/shapeMaps")).
+    disablePlugins(RevolverPlugin).
     settings(commonSettings: _*).
     settings(publishSettings: _*).
     dependsOn(srdfJena).
@@ -219,12 +225,14 @@ lazy val server =
 
 lazy val converter =
   project.in(file("modules/converter")).
-  settings(publishSettings: _*).
+    disablePlugins(RevolverPlugin).
+    settings(publishSettings: _*).
   settings(commonSettings: _*).
   dependsOn(shex,shacl)
 
 lazy val manifest =
   project.in(file("modules/manifest")).
+    disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   dependsOn(srdfJena, utils).
@@ -237,6 +245,7 @@ lazy val manifest =
   
 lazy val rbe =
   project.in(file("modules/rbe")).
+  disablePlugins(RevolverPlugin).
   dependsOn(validating, typing).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
@@ -254,6 +263,7 @@ lazy val rbe =
   
 lazy val srdf =
   project.in(file("modules/srdf")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(
@@ -270,6 +280,7 @@ lazy val srdf =
 
 lazy val srdfJena =
   project.in(file("modules/srdfJena")).
+  disablePlugins(RevolverPlugin).
   dependsOn(srdf, utils).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
@@ -287,6 +298,7 @@ lazy val srdfJena =
   
 lazy val typing =
   project.in(file("modules/typing")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
 //  settings(publishSettings: _*).
   settings(
@@ -299,6 +311,7 @@ lazy val typing =
   
 lazy val utils =
   project.in(file("modules/utils")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(
@@ -317,6 +330,7 @@ lazy val utils =
 
 lazy val validating =
   project.in(file("modules/validating")).
+  disablePlugins(RevolverPlugin).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   dependsOn(srdfJena,

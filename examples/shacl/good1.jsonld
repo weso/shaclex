@@ -1,0 +1,71 @@
+{
+  "@graph" : [ {
+    "@id" : "_:b0",
+    "@type" : "sh:PropertyShape",
+    "sh:closed" : false,
+    "datatype" : "xsd:string",
+    "path" : "http://example.org/q"
+  }, {
+    "@id" : "_:b1",
+    "@type" : "sh:PropertyShape",
+    "sh:closed" : false,
+    "datatype" : "xsd:string",
+    "path" : "http://example.org/p"
+  }, {
+    "@id" : "http://example.org/S",
+    "@type" : "sh:NodeShape",
+    "and" : {
+      "@list" : [ "http://example.org/c1", "http://example.org/c2" ]
+    },
+    "sh:closed" : false,
+    "targetNode" : "http://example.org/x"
+  }, {
+    "@id" : "http://example.org/c1",
+    "@type" : "sh:NodeShape",
+    "sh:closed" : false,
+    "property" : "_:b1"
+  }, {
+    "@id" : "http://example.org/c2",
+    "@type" : "sh:NodeShape",
+    "sh:closed" : false,
+    "property" : "_:b0"
+  } ],
+  "@context" : {
+    "datatype" : {
+      "@id" : "http://www.w3.org/ns/shacl#datatype",
+      "@type" : "@id"
+    },
+    "path" : {
+      "@id" : "http://www.w3.org/ns/shacl#path",
+      "@type" : "@id"
+    },
+    "closed" : {
+      "@id" : "http://www.w3.org/ns/shacl#closed",
+      "@type" : "http://www.w3.org/2001/XMLSchema#boolean"
+    },
+    "property" : {
+      "@id" : "http://www.w3.org/ns/shacl#property",
+      "@type" : "@id"
+    },
+    "rest" : {
+      "@id" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+      "@type" : "@id"
+    },
+    "first" : {
+      "@id" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+      "@type" : "@id"
+    },
+    "and" : {
+      "@id" : "http://www.w3.org/ns/shacl#and",
+      "@type" : "@id"
+    },
+    "targetNode" : {
+      "@id" : "http://www.w3.org/ns/shacl#targetNode",
+      "@type" : "@id"
+    },
+    "sh" : "http://www.w3.org/ns/shacl#",
+    "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "xsd" : "http://www.w3.org/2001/XMLSchema#",
+    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#"
+  }
+}

@@ -134,29 +134,102 @@ object WebService {
       }
     }
 
+    case req@POST -> Root / "schemaConversions" =>
+      req.decode[Multipart[IO]] { m => {
+        val partsMap = parts2Map(m.parts)
+        for {
+          maybePair <- mkSchema(partsMap, None)
+          optTargetSchemaFormat <- optPartValue("targetSchemaFormat", partsMap)
+          optTargetSchemaEngine <- optPartValue("targetSchemaEngine", partsMap)
+          response <- maybePair match {
+            case Left(msg) => BadRequest(s"Error obtaining schema: $msg")
+            case Right((schema, sp)) => {
+              Ok(html.schemaConversions(
+                sp.schema,
+                availableSchemaFormats,
+                sp.schemaFormat.getOrElse(defaultSchemaFormat),
+                availableSchemaEngines,
+                sp.schemaEngine.getOrElse(defaultSchemaEngine),
+                optTargetSchemaFormat.getOrElse(defaultSchemaFormat),
+                optTargetSchemaEngine.getOrElse(defaultSchemaEngine),
+                sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab),
+                schemaConvert(sp.schema,sp.schemaFormat,sp.schemaEngine,
+                  optTargetSchemaFormat,optTargetSchemaEngine,
+                  getBase))
+              )
+            }
+
+          }
+        } yield response
+      }
+      }
+
     case req@GET -> Root / "schemaConversions" :?
       OptSchemaParam(optSchema) +&
+        SchemaURLParam(optSchemaURL) +&
         SchemaFormatParam(optSchemaFormat) +&
         SchemaEngineParam(optSchemaEngine) +&
         TargetSchemaFormatParam(optTargetSchemaFormat) +&
-        TargetSchemaEngineParam(optTargetSchemaEngine) => {
+        TargetSchemaEngineParam(optTargetSchemaEngine) +&
+        OptActiveSchemaTabParam(optActiveSchemaTab) => {
+      val baseUri = req.uri
+      val eitherSchema: Either[String, Option[String]] = optSchema match {
+        case None => optSchemaURL match {
+          case None => Right(None)
+          case Some(schemaURL) => resolveUri(baseUri, schemaURL)
+        }
+        case Some(schemaStr) => Right(Some(schemaStr))
+      }
+
+
       Ok(html.schemaConversions(
-        None,
         optSchema,
         availableSchemaFormats,
         optSchemaFormat.getOrElse(defaultSchemaFormat),
         availableSchemaEngines,
         optSchemaEngine.getOrElse(defaultSchemaEngine),
         optTargetSchemaFormat.getOrElse(defaultSchemaFormat),
-        optTargetSchemaEngine.getOrElse(defaultSchemaEngine)))
+        optTargetSchemaEngine.getOrElse(defaultSchemaEngine),
+        optActiveSchemaTab.getOrElse(defaultActiveSchemaTab),
+        schemaConvert(optSchema,optSchemaFormat,optSchemaEngine,
+          optTargetSchemaFormat,optTargetSchemaEngine,
+          getBase))
+      )
     }
 
-    case req@GET -> Root / "schemaInfo" => {
-      Ok(html.schemaInfo(
+    case req@POST -> Root / "schemaInfo" =>
+      req.decode[Multipart[IO]] { m => {
+        val partsMap = parts2Map(m.parts)
+        for {
+          maybePair <- mkSchema(partsMap, None)
+          response <- maybePair match {
+           case Left(msg) => BadRequest(s"Error obtaining schema: $msg")
+           case Right((schema, sp)) => {
+             val info: Json = Json.fromString(s"Schema parsed OK")
+             Ok(html.schemaInfo(
+               Some(info),
+               sp.schema,
+               availableSchemaFormats,
+               sp.schemaFormat.getOrElse(defaultSchemaFormat),
+               availableSchemaEngines,
+               sp.schemaEngine.getOrElse(defaultSchemaEngine),
+               sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)))
+           }
+        }
+      } yield response
+    }
+    }
+
+    case req@GET -> Root / "schemaInfo" :?
+      OptSchemaParam(optSchema) => {
+      val info = Json.fromString(s"Schema $optSchema")
+      Ok(html.schemaInfo(Some(info),
+        optSchema,
         availableSchemaFormats,
         defaultSchemaFormat,
         availableSchemaEngines,
-        defaultSchemaEngine))
+        defaultSchemaEngine,
+        defaultActiveSchemaTab))
     }
 
     case req@GET -> Root / "dataOptions" => {
@@ -229,7 +302,8 @@ object WebService {
         SchemaEmbedded(optSchemaEmbedded) +&
         InferenceParam(optInference) +&
         OptEndpointParam(optEndpoint) +&
-        OptActiveDataTabParam(optActiveDataTab) => {
+        OptActiveDataTabParam(optActiveDataTab) +&
+        OptActiveSchemaTabParam(optActiveSchemaTab) => {
 
       if (optExamples.isDefined) {
         Ok(html.load(optExamples.get))
@@ -297,7 +371,7 @@ object WebService {
               optInference.getOrElse("NONE"),
               optEndpoint,
               optActiveDataTab.getOrElse(defaultActiveDataTab),
-              defaultActiveSchemaTab
+              optActiveSchemaTab.getOrElse(defaultActiveSchemaTab)
             ))
           }
         }
@@ -393,12 +467,43 @@ object WebService {
   case class SchemaParam(schema: Option[String],
                          schemaURL: Option[String],
                          schemaFile: Option[String],
-                         schemaFormat: Option[String],
+                         schemaFormatTextArea: Option[String],
+                         schemaFormatUrl: Option[String],
+                         schemaFormatFile: Option[String],
                          schemaEngine: Option[String],
                          schemaEmbedded: Option[Boolean],
                          targetSchemaFormat: Option[String],
                          activeSchemaTab: Option[String]
-                        )
+                        ) {
+    sealed abstract class SchemaInputType {
+      val id: String
+    }
+    case object SchemaUrlType extends SchemaInputType {
+      override val id = "#schemaUrl"
+    }
+    case object SchemaFileType extends SchemaInputType {
+      override val id = "#schemaFile"
+    }
+    case object SchemaTextAreaType extends SchemaInputType {
+      override val id = "#schemaTextArea"
+    }
+
+    def parseSchemaTab(tab: String): Either[String,SchemaInputType] = {
+      val inputTypes = List(SchemaUrlType,SchemaFileType,SchemaTextAreaType)
+      inputTypes.find(_.id == tab) match {
+        case Some(x) => Right(x)
+        case None => Left(s"Wrong value of tab: $tab, must be one of [${inputTypes.map(_.id).mkString(",")}]")
+      }
+    }
+
+    val schemaFormat: Option[String] =
+      parseSchemaTab(activeSchemaTab.getOrElse(defaultActiveSchemaTab)) match {
+       case Right(`SchemaUrlType`) => schemaFormatUrl
+       case Right(`SchemaFileType`) => schemaFormatFile
+       case Right(`SchemaTextAreaType`) => schemaFormatTextArea
+       case _ => None
+      }
+  }
 
   private def mkSchema(partsMap: PartsMap, data: Option[RDFReasoner]
                       ): IO[Either[String,(Schema, SchemaParam)]] = for {
@@ -420,15 +525,19 @@ object WebService {
     schema <- optPartValue("schema", partsMap)
     schemaURL <- optPartValue("schemaURL", partsMap)
     schemaFile <- optPartValue("schemaFile", partsMap)
-    schemaFormat <- optPartValue("schemaFormat", partsMap)
+    schemaFormatTextArea <- optPartValue("schemaFormatTextArea", partsMap)
+    schemaFormatUrl <- optPartValue("schemaFormatUrl", partsMap)
+    schemaFormatFile <- optPartValue("schemaFormatFile", partsMap)
     schemaEngine <- optPartValue("schemaEngine", partsMap)
     targetSchemaFormat <- optPartValue("targetSchemaFormat", partsMap)
     activeSchemaTab <- optPartValue("activeSchemaTab", partsMap)
     schemaEmbedded <- optPartValueBoolean("schemaEmbedded", partsMap)
-  } yield SchemaParam(schema, schemaURL, schemaFile, schemaFormat, schemaEngine, schemaEmbedded, targetSchemaFormat, activeSchemaTab)
+  } yield SchemaParam(schema, schemaURL, schemaFile,
+    schemaFormatTextArea, schemaFormatUrl, schemaFormatFile,
+    schemaEngine, schemaEmbedded, targetSchemaFormat, activeSchemaTab)
 
+  private def getBase: Option[String] = Some(FileUtils.currentFolderURL)
   private def getSchema(sp: SchemaParam, data: Option[RDFReasoner]): (Option[String],Either[String,Schema]) = {
-    val base = Some(FileUtils.currentFolderURL)
     println(s"SchemaEmbedded: ${sp.schemaEmbedded}")
     sp.schemaEmbedded match {
        case Some(true) => data match {
@@ -443,8 +552,8 @@ object WebService {
        }
        case _ => {
           println(s"######## Schema not embedded...Active schema tab: ${sp.activeSchemaTab}")
-          sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab) match {
-            case "#schemaUrl" => {
+          sp.parseSchemaTab(sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)) match {
+            case Right(sp.`SchemaUrlType`) => {
               println(s"######## SchemaUrl: ${sp.schemaURL}")
               sp.schemaURL match {
                 case None => (None, Left(s"Non value for dataURL"))
@@ -456,37 +565,40 @@ object WebService {
                   case Right(schemaStr) => Schemas.fromString(schemaStr,
                        sp.schemaFormat.getOrElse(defaultSchemaFormat),
                        sp.schemaEngine.getOrElse(defaultSchemaEngine),
-                       base) match {
+                       getBase) match {
                     case Left(msg) => (Some(schemaStr), Left(s"Error parsing file: $msg"))
                     case Right(schema) => (Some(schemaStr), Right(schema))
                   }
-
                 }
               }
             }
-            case "#schemaFile" => {
+            case Right(sp.`SchemaFileType`) => {
               sp.schemaFile match {
                 case None => (None, Left(s"No value for schemaFile"))
                 case Some(schemaStr) =>
                   val schemaFormat = sp.schemaFormat.getOrElse(defaultSchemaFormat)
                   val schemaEngine = sp.schemaEngine.getOrElse(defaultSchemaEngine)
-                  Schemas.fromString(schemaStr, schemaFormat, schemaEngine, base) match {
+                  Schemas.fromString(schemaStr, schemaFormat, schemaEngine, getBase) match {
                     case Left(msg) => (Some(schemaStr), Left(s"Error parsing file: $msg"))
                     case Right(schema) => (Some(schemaStr), Right(schema))
                   }
               }
             }
-            case "#schemaTextArea" => {
+            case Right(sp.`SchemaTextAreaType`) => {
               sp.schema match {
                 case None => (None, Left(s"No value for schema in textArea"))
-                case Some(schemaStr) => Schemas.fromString(schemaStr,sp.schemaFormat.getOrElse(defaultSchemaFormat),
-                    sp.schemaEngine.getOrElse(defaultSchemaEngine),base) match {
+                case Some(schemaStr) =>
+                  Schemas.fromString(schemaStr,
+                    sp.schemaFormat.getOrElse(defaultSchemaFormat),
+                    sp.schemaEngine.getOrElse(defaultSchemaEngine),
+                    getBase) match {
                     case Left(msg) => (Some(schemaStr),Left(msg))
                     case Right(schema) => (Some(schemaStr),Right(schema))
                   }
               }
             }
-            case other => (None,Left(s"Not implemented getSchema: $other"))
+            case Right(other) => (None, Left(s"Unknown value for activeSchemaTab: $other"))
+            case Left(msg) => (None, Left(msg))
           }
         }
       }
@@ -665,11 +777,12 @@ object WebService {
   type PartsMap = Map[String,Part[IO]]
 
   private def parts2Map(ps: Vector[Part[IO]]): PartsMap = {
-    println(s"Parts: $ps")
     ps.filter(_.name.isDefined).map(p => (p.name.get,p)).toMap
   }
 
-  private def optPartValue(key: String, partsMap: PartsMap): IO[Option[String]] = partsMap.get(key) match {
+  private def optPartValue(key: String,
+                           partsMap: PartsMap): IO[Option[String]] =
+  partsMap.get(key) match {
     case Some(part) => part.body.through(utf8Decode).runFoldMonoid.map(Some(_))
     case None => IO(None)
   }
