@@ -1,12 +1,36 @@
-// scalafmt: {style=defaultWithAlign,maxColumn=150}
+/*
+scalafmt: {
+  style = defaultWithAlign
+  maxColumn = 150
+  align.tokens = [
+    { code = "=>", owner = "Case" }
+    { code = "⇒", owner = "Case" }
+    { code = "extends", owner = "Defn.(Class|Trait|Object)" }
+    { code = "//", owner = ".*" }
+    { code = "{", owner = "Template" }
+    { code = "}", owner = "Template" }
+    { code = ":=", owner = "Term.ApplyInfix" }
+    { code = "++=", owner = "Term.ApplyInfix" }
+    { code = "+=", owner = "Term.ApplyInfix" }
+    { code = "%", owner = "Term.ApplyInfix" }
+    { code = "%%", owner = "Term.ApplyInfix" }
+    { code = "%%%", owner = "Term.ApplyInfix" }
+    { code = "->", owner = "Term.ApplyInfix" }
+    { code = "→", owner = "Term.ApplyInfix" }
+    { code = "<-", owner = "Enumerator.Generator" }
+    { code = "←", owner = "Enumerator.Generator" }
+    { code = "=", owner = "(Enumerator.Val|Defn.(Va(l|r)|Def|Type))" }
+  ]
+}
+ */
 name := "shaclex"
 
 lazy val scalaCompilerVersion = "2.12.4"
 lazy val projectVersion       = "0.0.1"
 
 cancelable in Global := true
-fork := true
-reStartArgs := Seq("--server")
+fork                 := true
+reStartArgs          := Seq("--server")
 
 parallelExecution in Test := false
 
@@ -154,9 +178,9 @@ lazy val shacl =
     .settings(publishSettings: _*)
     .dependsOn(srdfJena, manifest, utils, typing, validating)
     .settings(
-      logBuffered in Test := false,
+      logBuffered in Test       := false,
       parallelExecution in Test := false,
-      fork in Test := true,
+      fork in Test              := true,
       libraryDependencies ++=
         Seq(
           typesafeConfig % Test,
@@ -182,8 +206,8 @@ lazy val shex =
 //  settings(inConfig(compatTest)(Defaults.testSettings): _*).
     settings(
     antlr4GenListener in Antlr4 := true,
-    antlr4GenVisitor in Antlr4 := true,
-    antlr4Dependency in Antlr4 := antlr4,
+    antlr4GenVisitor in Antlr4  := true,
+    antlr4Dependency in Antlr4  := antlr4,
     antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
     libraryDependencies ++= Seq(
       typesafeConfig % Test,
@@ -206,8 +230,8 @@ lazy val shapeMaps =
 //    settings(antlr4Settings: _*).
     settings(
     antlr4GenListener in Antlr4 := true,
-    antlr4GenVisitor in Antlr4 := true,
-    antlr4Dependency in Antlr4 := antlr4,
+    antlr4GenVisitor in Antlr4  := true,
+    antlr4Dependency in Antlr4  := antlr4,
     antlr4PackageName in Antlr4 := Some("es.weso.shapeMaps.parser"),
     libraryDependencies ++=
       Seq(
@@ -386,7 +410,7 @@ lazy val docSettings = Seq(
     "-sourcepath",
     baseDirectory.in(LocalRootProject).value.getAbsolutePath
   ),
-  git.remoteRepo := "git@github.com:labra/shaclex.git",
+  git.remoteRepo            := "git@github.com:labra/shaclex.git",
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.svg" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
 
@@ -405,13 +429,13 @@ enablePlugins(WindowsPlugin)
 enablePlugins(JavaAppPackaging)
 
 // general package information
-maintainer := "Jose Emilio Labra Gayo <labra@uniovi.es>"
-packageSummary in Linux := name.value
+maintainer                := "Jose Emilio Labra Gayo <labra@uniovi.es>"
+packageSummary in Linux   := name.value
 packageSummary in Windows := name.value
-packageDescription := name.value
+packageDescription        := name.value
 
 // wix build information
-wixProductId := "39b564d5-d381-4282-ada9-87244c76e14b"
+wixProductId        := "39b564d5-d381-4282-ada9-87244c76e14b"
 wixProductUpgradeId := "6a710435-9af4-4adb-a597-98d3dd0bade1"
 // The same numbers as in the docs?
 // wixProductId := "ce07be71-510d-414a-92d4-dff47631848a"
@@ -459,21 +483,19 @@ resolvers += Resolver.bintrayRepo("weso", "weso-releases")
 git.remoteRepo := "git@github.com:labra/shaclex.git"
 
 lazy val publishSettings = Seq(
-  homepage := Some(url("https://github.com/labra/shaclex")),
-  licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
-  scmInfo := Some(ScmInfo(url("https://github.com/labra/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
+  homepage        := Some(url("https://github.com/labra/shaclex")),
+  licenses        := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
+  scmInfo         := Some(ScmInfo(url("https://github.com/labra/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
   autoAPIMappings := true,
-  apiURL := Some(url("http://labra.github.io/shaclex/latest/api/")),
-  pomExtra := (
-    <developers>
-      <developer>
-        <id>labra</id>
-        <name>Jose Emilio Labra Gayo</name>
-        <url>https://github.com/labra/</url>
-      </developer>
-    </developers>
-  ),
-  scalacOptions in (doc) ++= Seq(
+  apiURL          := Some(url("http://labra.github.io/shaclex/latest/api/")),
+  pomExtra        := <developers>
+                       <developer>
+                         <id>labra</id>
+                         <name>Jose Emilio Labra Gayo</name>
+                         <url>https://github.com/labra/</url>
+                       </developer>
+                     </developers>,
+  scalacOptions in doc ++= Seq(
     "-diagrams-debug",
     "-doc-source-url",
     scmInfo.value.get.browseUrl + "/tree/master€{FILE_PATH}.scala",
