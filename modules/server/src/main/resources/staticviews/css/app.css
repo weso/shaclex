@@ -4,6 +4,10 @@ body {
  padding-top: 70px;
 }
 
+body > .container {
+    padding-top: 40px;
+}
+
 h1 {
   color: blue;
   border-bottom: 1px solid gray;
@@ -58,14 +62,19 @@ div.submit {
  background-color: #3498DB;
  border: none;
 }
-
 .dataPanel {
- width: 45%;
- float: left;
+}
+.dataPanel2 {
+    width: 45%;
+    float: left;
+}
+
+/* Schema panel in two columns */
+.schemaPanel2 {
+  width: 49%;
+  float: right;
 }
 .schemaPanel {
- width: 45%;
- float: right;
 }
 .triggerModePanel {
  clear: both;

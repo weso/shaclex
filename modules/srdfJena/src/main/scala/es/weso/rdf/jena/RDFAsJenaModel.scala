@@ -36,7 +36,7 @@ case class RDFAsJenaModel(model: Model)
   val log = LoggerFactory.getLogger("RDFAsJenaModel")
 
   override def fromString(cs: CharSequence,
-                          format: String = "TURTLE",
+                          format: String,
                           base: Option[String] = None): Either[String, RDFAsJenaModel] = {
     Try {
       val m = ModelFactory.createDefaultModel

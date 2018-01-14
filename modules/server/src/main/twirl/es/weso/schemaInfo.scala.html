@@ -1,7 +1,12 @@
-@(availableSchemaFormats: List[String],
- currentSchemaFormat: String,
- availableSchemaEngines: List[String],
- currentSchemaEngine: String
+@import io.circe._
+
+@(result: Option[Json],
+  schema: Option[String],
+  availableSchemaFormats: List[String],
+  currentSchemaFormat: String,
+  availableSchemaEngines: List[String],
+  currentSchemaEngine: String,
+  activeSchemaTab: String
 )
 <html lang="en">
 @head("SHACLex: Schema info")
@@ -9,12 +14,11 @@
 @navBar()
 <div class="container">
 <h1>Schema Info</h1>
-<form action="/api/schema/info" method="get" id="info">
-    <label for="schema">Schema</label>
-    <textarea id="schema" rows="20" cols="70" name="schema" placeholder="schema"></textarea>
-    @selectSchemaFormat("info",availableSchemaFormats,currentSchemaFormat)
-    @selectSchemaEngine("info", availableSchemaEngines,currentSchemaEngine)
+<div id="resultDiv">@{if(result.isDefined){result.get.spaces2}}</div>
 
+<form action="schemaInfo" method="POST" enctype="multipart/form-data" id="info">
+    @schemaPanel("info",schema,availableSchemaFormats,currentSchemaFormat,activeSchemaTab,false)
+    @selectSchemaEngine("info", availableSchemaEngines,currentSchemaEngine)
     <button type="submit">Schema Info</button>
 </form>
 </div>

@@ -28,7 +28,7 @@ scalafmt: {
 lazy val antlrVersion          = "4.6"
 lazy val circeVersion          = "0.9.0-M2"
 lazy val effVersion            = "4.5.0"
-lazy val catsVersion           = "1.0.0-RC1"
+lazy val catsVersion           = "1.0.0"
 lazy val scalaTestVersion      = "3.0.4"
 lazy val scalacticVersion      = "3.0.4"
 lazy val logbackVersion        = "1.2.3"
@@ -86,6 +86,7 @@ lazy val kindProjector       = "org.spire-math"       %% "kind-projector" % kind
 lazy val shaclex = project
   .in(file("."))
   .enablePlugins(ScalaUnidocPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging)
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings)
   .aggregate(schema, shacl, shex, manifest, srdfJena, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
   .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
@@ -104,11 +105,13 @@ lazy val shaclex = project
 
 lazy val schema = project
   .in(file("modules/schema"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(shex, shacl, shapeMaps)
 
 lazy val depGraphs = project
   .in(file("modules/depGraphs"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
@@ -121,6 +124,7 @@ lazy val depGraphs = project
 
 lazy val shacl = project
   .in(file("modules/shacl"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(srdfJena, manifest, utils, typing, validating)
   .settings(
@@ -139,6 +143,7 @@ lazy val shacl = project
 lazy val shex = project
   .in(file("modules/shex"))
   .enablePlugins(Antlr4Plugin)
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings, antlrSettings("es.weso.shex.parser"))
   .dependsOn(srdfJena, srdf, typing, utils % "test -> test; compile -> compile", validating, shapeMaps, rbe, manifest, depGraphs)
   .settings(
@@ -155,6 +160,7 @@ lazy val shex = project
 lazy val shapeMaps = project
   .in(file("modules/shapeMaps"))
   .enablePlugins(Antlr4Plugin)
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings, antlrSettings("es.weso.shapeMaps.parser"))
   .dependsOn(srdfJena)
   .settings(
@@ -188,11 +194,13 @@ lazy val server = project
 
 lazy val converter = project
   .in(file("modules/converter"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(shex, shacl)
 
 lazy val manifest = project
   .in(file("modules/manifest"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(srdfJena, utils)
   .settings(
@@ -204,6 +212,7 @@ lazy val manifest = project
 
 lazy val rbe = project
   .in(file("modules/rbe"))
+  .disablePlugins(RevolverPlugin)
   .dependsOn(validating, typing)
   .settings(commonSettings, publishSettings)
   .settings(
@@ -219,6 +228,7 @@ lazy val rbe = project
 
 lazy val srdf = project
   .in(file("modules/srdf"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
@@ -234,6 +244,7 @@ lazy val srdf = project
 
 lazy val srdfJena = project
   .in(file("modules/srdfJena"))
+  .disablePlugins(RevolverPlugin)
   .dependsOn(srdf, utils)
   .settings(commonSettings, publishSettings)
   .settings(
@@ -250,6 +261,7 @@ lazy val srdfJena = project
 
 lazy val typing = project
   .in(file("modules/typing"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
@@ -261,6 +273,7 @@ lazy val typing = project
 
 lazy val utils = project
   .in(file("modules/utils"))
+  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
@@ -278,6 +291,7 @@ lazy val utils = project
 
 lazy val validating = project
   .in(file("modules/validating"))
+  .disablePlugins(RevolverPlugin)
   .dependsOn(srdfJena, utils % "test -> test; compile -> compile")
   .settings(commonSettings, publishSettings)
   .settings(

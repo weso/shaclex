@@ -163,7 +163,18 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   override def pm: PrefixMap = schema.prefixMap
 
-}
+  def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String] = {
+    targetEngine match {
+      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+      case Some(engine) if (engine.equalsIgnoreCase(name)) => {
+        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+      }
+      case Some(other) =>
+        Left(s"Conversion between Schema engines not implemented yet")
+    }
+  }
+
+  }
 
 object ShExSchema {
   def empty: ShExSchema = ShExSchema(schema = Schema_.empty)
@@ -174,5 +185,6 @@ object ShExSchema {
     base: Option[String]): Either[String, ShExSchema] = {
     Schema_.fromString(cs, format, base).map(p => ShExSchema(p))
   }
+
 
 }

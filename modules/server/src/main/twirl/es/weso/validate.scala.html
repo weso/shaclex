@@ -37,10 +37,10 @@
             /></label>
     </fieldset>
 
-    @dataPanel("validate", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,endpoint,activeDataTab)
+    @dataPanel("validate", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,endpoint,activeDataTab,true)
 
     <div id="schemaDiv">
-      @schemaPanel("validate", schema, availableSchemaFormats, currentSchemaFormat, activeSchemaTab)
+      @schemaPanel("validate", schema, availableSchemaFormats, currentSchemaFormat, activeSchemaTab,true)
     </div>
 
     @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)

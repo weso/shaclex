@@ -17,13 +17,7 @@ abstract class Schema {
    */
   def formats: Seq[String]
 
-  def validate(rdf: RDFReader, trigger: ValidationTrigger): Result /*= {
-  trigger match {
-   case TargetDeclarations => validateTargetDecls(rdf)
-   case ShapeMapTrigger(sm,nodes) => validateShapeMap(sm,nodes,rdf)
-   case _ => throw new Exception(s"Unsupported validation trigger $trigger")
-  }
- } */
+  def validate(rdf: RDFReader, trigger: ValidationTrigger): Result
 
   def validate(
     rdf: RDFReader,
@@ -42,14 +36,6 @@ abstract class Schema {
         validate(rdf, trigger)
     }
   }
-
-  // def validateTargetDecls(rdf: RDFReader): Result
-
-  // def validateNodeShape(node: IRI, label: String, rdf: RDFReader): Result
-
-  // def validateNodeStart(node: IRI, rdf: RDFReader): Result
-
-  // def validateShapeMap(map: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader): Result
 
   def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema]
 
@@ -76,17 +62,6 @@ abstract class Schema {
    */
   def pm: PrefixMap
 
-  /**
-   * String to add to HTML conversion of validating solution
-   */
-  // def htmlBeforeErrors: String = ""
+  def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String]
 
-  // def htmlAfterErrors: String = ""
-
-  /**
-   * String to add to HTML conversion of validation errors
-   */
-  // def htmlBeforeSolutions: String = ""
-
-  // def htmlAfterSolutions: String = ""
 }

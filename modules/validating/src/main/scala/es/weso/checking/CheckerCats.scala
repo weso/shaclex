@@ -172,7 +172,7 @@ abstract class CheckerCats extends Checker {
     r.mapBoth { case (_, (w, x)) => (w, x) }
   }
 
-  def readerConfig2readerEC[A](c: ReaderConfig[A]): ReaderEC[A] = Kleisli.lift[ReaderConfig, Env, A](c)
+  def readerConfig2readerEC[A](c: ReaderConfig[A]): ReaderEC[A] = Kleisli.liftF[ReaderConfig, Env, A](c)
 
   def readerConfig2check[A](c: ReaderConfig[A]): Check[A] = {
     val readerEC: ReaderEC[A] = readerConfig2readerEC(c)
@@ -183,7 +183,7 @@ abstract class CheckerCats extends Checker {
 
   def readerEC2writer[A](c: ReaderEC[A]): WriterEC[A] =
     // c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]]
-    WriterT.lift[ReaderEC, Log, A](c)
+    WriterT.liftF[ReaderEC, Log, A](c)
 
   def readerEC2check[A](c: ReaderEC[A]): Check[A] =
     // writerEC2check(c.liftT[λ[(F[_], A) => WriterT[F, Log, A]]])
@@ -203,7 +203,13 @@ object CheckerCatsStr extends CheckerCats {
   type Log = List[String]
 
   implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
-    def combine(e1: Env, e2: Env) = e1 |+| e2
+    def combine(e1: Env, e2: Env) = {
+      // I would like to use:
+      // e1 |+| e2
+      // But it gives an implicit error...
+      val e: Env = e1 ++ e2
+      e
+    }
     def empty = Map()
   }
   /*  implicit val logCanLog: CanLog[Log] = new CanLog[Log] {

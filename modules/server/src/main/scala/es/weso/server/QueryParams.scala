@@ -26,6 +26,7 @@ object QueryParams {
   object OptExamplesParam extends OptionalQueryParamDecoderMatcher[String]("examples")
   object OptQueryParam extends OptionalQueryParamDecoderMatcher[String]("query")
   object OptActiveDataTabParam extends OptionalQueryParamDecoderMatcher[String]("activeDataTab")
+  object OptActiveSchemaTabParam extends OptionalQueryParamDecoderMatcher[String]("activeSchemaTab")
   object OptActiveQueryTabParam extends OptionalQueryParamDecoderMatcher[String]("activeQueryTab")
 
 }

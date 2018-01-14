@@ -112,21 +112,23 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     schema.shapes.map(_.id).map(_.toString).toList
   }
 
-  override def pm: PrefixMap = PrefixMap.empty // TODO: Improve this to add pm to Shaclex
+  override def pm: PrefixMap = schema.pm
+
+  def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String] = {
+   targetEngine match {
+     case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+     case Some(engine) if (engine.equalsIgnoreCase(name)) => {
+       serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+     }
+     case Some(other) =>
+      Left(s"Conversion between Schema engines not implemented yet")
+   }
+  }
+
 }
 
 object ShaclexSchema {
   def empty: ShaclexSchema = ShaclexSchema(schema = ShaclSchema.empty)
 
-/*  def fromString(cs: CharSequence, format: String, base: Option[String]): Try[ShaclexSchema] = format match {
-    case "TREE" => Failure(new Exception(s"Not implemented reading from format $format yet"))
-    case _ => for {
-      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
-      schema <- RDF2Shacl.getShacl(rdf) match {
-        case Left(s) => Failure(new Exception(s))
-        case Right(s) => Success(s)
-      }
-    } yield ShaclexSchema(schema)
-  }
-*/
+
 }

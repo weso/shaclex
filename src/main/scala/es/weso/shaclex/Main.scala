@@ -57,7 +57,10 @@ object Main extends App with LazyLogging {
         if (opts.showData()) {
           // If not specified uses the input schema format
           val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
-          println(rdf.serialize(outDataFormat))
+          rdf.serialize(outDataFormat) match {
+            case Left(msg) => println(s"Error serializing to $outDataFormat: $msg")
+            case Right(str) => println(str)
+          }
         }
         if (opts.showSchema()) {
           // If not specified uses the input schema format
