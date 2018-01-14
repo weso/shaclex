@@ -783,16 +783,16 @@ object WebService {
   private def optPartValue(key: String,
                            partsMap: PartsMap): IO[Option[String]] =
   partsMap.get(key) match {
-    case Some(part) => part.body.through(utf8Decode).runFoldMonoid.map(Some(_))
+    case Some(part) => part.body.through(utf8Decode).compile.foldMonoid.map(Some.apply)
     case None => IO(None)
   }
 
   private def optPartValueBoolean(key: String, partsMap: PartsMap): IO[Option[Boolean]] = partsMap.get(key) match {
-    case Some(part) => part.body.through(utf8Decode).runFoldMonoid.map(_ match {
+    case Some(part) => part.body.through(utf8Decode).compile.foldMonoid.map {
       case "true" => Some(true)
       case "false" => Some(false)
       case _ => None
-    })
+    }
     case None => IO(None)
   }
 

@@ -98,7 +98,7 @@ COMMENT				  : '#' ~[\r\n]* -> skip;
 
 CODE                  : '{' (~[%\\] | '\\' [%\\] | UCHAR)* '%' '}' ;
 RDF_TYPE              : 'a' ;
-IRIREF                : '<' (~[\u0000-\u0020=<>\"{}|^`\\] | UCHAR)* '>' ; /* #x00=NULL #01-#x1F=control codes #x20=space */
+IRIREF                : '<' (~[\u0000-\u0020=<>"{}|^`\\] | UCHAR)* '>' ; /* #x00=NULL #01-#x1F=control codes #x20=space */
 PNAME_NS              : PN_PREFIX? ':' ;
 PNAME_LN              : PNAME_NS PN_LOCAL ;
 // ATPNAME_NS			  : '@' PN_PREFIX? ':' ;
@@ -113,12 +113,12 @@ fragment EXPONENT     : [eE] [+-]? [0-9]+ ;
 
 STRING_LITERAL1       : '\'' (~[\u0027\u005C\u000A\u000D] | ECHAR | UCHAR)* '\'' ; /* #x27=' #x5C=\ #xA=new line #xD=carriage return */
 STRING_LITERAL2       : '"' (~[\u0022\u005C\u000A\u000D] | ECHAR | UCHAR)* '"' ;   /* #x22=" #x5C=\ #xA=new line #xD=carriage return */
-STRING_LITERAL_LONG1  : '\'\'\'' (('\'' | '\'\'')? (~[\'\\] | ECHAR | UCHAR))* '\'\'\'' ;
-STRING_LITERAL_LONG2  : '"""' (('"' | '""')? (~[\"\\] | ECHAR | UCHAR))* '"""' ;
+STRING_LITERAL_LONG1  : '\'\'\'' (('\'' | '\'\'')? (~['\\] | ECHAR | UCHAR))* '\'\'\'' ;
+STRING_LITERAL_LONG2  : '"""' (('"' | '""')? (~["\\] | ECHAR | UCHAR))* '"""' ;
 SPARQL_STRING         : BACKQUOTE (~[\u0060] | ECHAR| UCHAR)* BACKQUOTE ; /* #x60 = ` */
 
 fragment UCHAR                 : '\\u' HEX HEX HEX HEX | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX ;
-fragment ECHAR                 : '\\' [tbnrf\\\"\'] ;
+fragment ECHAR                 : '\\' [tbnrf\\"'] ;
 fragment WS                    : [\u0020\u0009\u000D\u000A] ; /* #x20=space #x9=character tabulation #xD=carriage return #xA=new line */
 
 fragment PN_CHARS_BASE 		   : [A-Z] | [a-z] | [\u00C0-\u00D6] | [\u00D8-\u00F6] | [\u00F8-\u02FF] | [\u0370-\u037D]

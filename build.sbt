@@ -25,30 +25,30 @@ scalafmt: {
  */
 
 // Dependency versions
-lazy val antlrVersion          = "4.6"
-lazy val circeVersion          = "0.9.0-M2"
-lazy val effVersion            = "4.5.0"
-lazy val catsVersion           = "1.0.0"
+lazy val antlrVersion          = "4.7.1"
+lazy val circeVersion          = "0.9.0"
+lazy val effVersion            = "4.6.1"
+lazy val catsVersion           = "1.0.1"
 lazy val scalaTestVersion      = "3.0.4"
 lazy val scalacticVersion      = "3.0.4"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.7.2"
-lazy val http4sVersion         = "0.18.0-M5"
-lazy val scalatagsVersion      = "0.6.2"
-lazy val scallopVersion        = "2.0.6"
-lazy val jenaVersion           = "3.4.0"
-lazy val jgraphtVersion        = "1.0.1"
-lazy val diffsonVersion        = "2.2.2"
+lazy val http4sVersion         = "0.18.0-M8"
+lazy val scalatagsVersion      = "0.6.7"
+lazy val scallopVersion        = "3.1.1"
+lazy val jenaVersion           = "3.6.0"
+lazy val jgraphtVersion        = "1.1.0"
+lazy val diffsonVersion        = "2.2.5"
 lazy val xercesVersion         = "2.11.0"
-lazy val sextVersion           = "0.2.4"
+lazy val sextVersion           = "0.2.6"
 lazy val scalaGraphVersion     = "1.11.5"
-lazy val typesafeConfigVersion = "1.3.0"
-lazy val scalacheckVersion     = "1.13.4"
+lazy val typesafeConfigVersion = "1.3.2"
+lazy val scalacheckVersion     = "1.13.5"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "0.11.0"
-lazy val kindProjectorVersion = "0.9.3"
-lazy val scalaMacrosVersion   = "2.1.0"
+lazy val kindProjectorVersion = "0.9.5"
+lazy val scalaMacrosVersion   = "2.1.1"
 
 // Dependency modules
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion

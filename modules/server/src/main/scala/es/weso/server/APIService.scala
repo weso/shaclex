@@ -110,7 +110,7 @@ object APIService {
                 val jsonNodes: Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
                 val pm: Json = prefixMap2Json(rdf.getPrefixMap)
                 val result = DataInfoResult(data, dataFormat, jsonNodes, pm).asJson
-                Ok(result).map(_.withContentType(Some(`Content-Type`(`application/json`))))
+                Ok(result).map(_.withContentType(`Content-Type`(`application/json`)))
               }
           }
           })
@@ -135,7 +135,7 @@ object APIService {
           val jsonNodes: Json = Json.fromValues(nodes.map(str => Json.fromString(str)))
           val pm: Json = prefixMap2Json(rdf.getPrefixMap)
           val result = DataInfoResult(data, dataFormat, jsonNodes, pm).asJson
-          Ok(result).map(_.withContentType(Some(`Content-Type`(`application/json`))))
+          Ok(result).map(_.withContentType(`Content-Type`(`application/json`)))
         }
       }
     }
@@ -158,7 +158,7 @@ object APIService {
           val pm: Json = prefixMap2Json(schema.pm)
           //          implicit val encoder: EntityEncoder[SchemaInfoResult] = ???
           val result = SchemaInfoResult(schemaStr, schemaFormat, schemaEngine, jsonShapes, pm).asJson
-          Ok(result).map(_.withContentType(Some(`Content-Type`(`application/json`))))
+          Ok(result).map(_.withContentType(`Content-Type`(`application/json`)))
         }
       }
     }
@@ -178,13 +178,13 @@ object APIService {
             case Right(str) => {
               val result = DataConversionResult(data, dataFormat, resultDataFormat, str)
               val default = Ok(result.asJson)
-                .map(_.withContentType(Some(`Content-Type`(`application/json`))))
+                .map(_.withContentType(`Content-Type`(`application/json`)))
               req.headers.get(`Accept`) match {
                 case Some(ah) => {
                   logger.info(s"Accept header: $ah")
                   val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
                   if (hasHTML) {
-                    Ok(result.toHTML).map(_.withContentType(Some(`Content-Type`(`text/html`))))
+                    Ok(result.toHTML).map(_.withContentType(`Content-Type`(`text/html`)))
                   } else default
                 }
                 case None => default
@@ -219,13 +219,13 @@ object APIService {
                 val result = SchemaConversionResult(schemaStr, schemaFormat, schemaEngine,
                   resultSchemaFormat, resultSchemaEngine, resultStr)
                 val default = Ok(result.asJson)
-                  .map(_.withContentType(Some(`Content-Type`(`application/json`))))
+                  .map(_.withContentType(`Content-Type`(`application/json`)))
                 req.headers.get(`Accept`) match {
                   case Some(ah) => {
                     logger.info(s"Accept header: $ah")
                     val hasHTML: Boolean = ah.values.exists(mr => mr.mediaRange.satisfiedBy(`text/html`))
                     if (hasHTML) {
-                      Ok(result.toHTML).map(_.withContentType(Some(`Content-Type`(`text/html`))))
+                      Ok(result.toHTML).map(_.withContentType(`Content-Type`(`text/html`)))
                     } else default
                   }
                   case None => default
