@@ -1,7 +1,6 @@
 // scalafmt: {style=defaultWithAlign,maxColumn=150}
 name := "shaclex"
 
-lazy val shaclexVersion       = "0.0.65"
 lazy val scalaCompilerVersion = "2.12.4"
 lazy val projectVersion       = "0.0.1"
 
@@ -91,7 +90,6 @@ lazy val shaclex =
 lazy val commonSettings = Seq(
   organization := "es.weso",
   scalaVersion := scalaCompilerVersion,
-  version := shaclexVersion,
   libraryDependencies ++= Seq(
     scalactic,
     scalaTest % Test
