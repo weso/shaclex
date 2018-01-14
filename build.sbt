@@ -2,6 +2,7 @@ name := "shaclex"
 
 lazy val shaclexVersion = "0.0.65"
 lazy val scalaCompilerVersion = "2.12.4"
+lazy val projectVersion = "0.0.1"
 
 cancelable in Global := true
 fork := true
@@ -9,7 +10,7 @@ reStartArgs := Seq("--server")
 
 parallelExecution in Test := false
 
-// Versions of common packages
+// Dependency versions
 lazy val antlrVersion         = "4.6"
 lazy val circeVersion         = "0.9.0-M2"
 lazy val effVersion           = "4.5.0"
@@ -19,50 +20,80 @@ lazy val scalacticVersion     = "3.0.4"
 lazy val logbackVersion       = "1.2.3"
 lazy val loggingVersion       = "3.7.2"
 lazy val http4sVersion        = "0.18.0-M5"
-//lazy val rhoVersion         = "0.12.0a"
 lazy val scalatagsVersion     = "0.6.2"
-lazy val kindProjectorVersion = "0.9.3"
 lazy val scallopVersion       = "2.0.6"
 lazy val jenaVersion          = "3.4.0"
 lazy val jgraphtVersion       = "1.0.1"
 lazy val diffsonVersion       = "2.2.2"
-lazy val simulacrumVersion    = "0.11.0"
 lazy val xercesVersion        = "2.11.0"
 lazy val sextVersion          = "0.2.4"
 lazy val scalaGraphVersion    = "1.11.5"
+lazy val typesafeConfigVersion = "1.3.0"
+lazy val scalacheckVersion = "1.13.4"
 
-lazy val projectVersion = "0.0.1"
+// Compiler plugin dependency versions
+lazy val simulacrumVersion    = "0.11.0"
+lazy val kindProjectorVersion = "0.9.3"
+lazy val scalaMacrosVersion = "2.1.0"
+
+// Dependency modules
+lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
+lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
+lazy val scallop = "org.rogach" %% "scallop" % scallopVersion
+lazy val scalactic = "org.scalactic" %% "scalactic" % scalacticVersion
+lazy val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
+lazy val catsCore = "org.typelevel" %% "cats-core" % catsVersion
+lazy val catsKernel = "org.typelevel" %% "cats-kernel" % catsVersion
+lazy val catsMacros = "org.typelevel" %% "cats-macros" % catsVersion
+lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
+lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
+lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
+lazy val typesafeConfig = "com.typesafe" % "config" % typesafeConfigVersion
+lazy val sext = "com.github.nikita-volkov" % "sext" % sextVersion
+lazy val jgraphtCore = "org.jgrapht" % "jgrapht-core" % jgraphtVersion
+lazy val antlr4 = "org.antlr" % "antlr4" % antlrVersion
+lazy val http4sDsl = "org.http4s" %% "http4s-dsl" % http4sVersion
+lazy val http4sBlazeServer = "org.http4s" %% "http4s-blaze-server" % http4sVersion
+lazy val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % http4sVersion
+lazy val http4sCirce = "org.http4s" %% "http4s-circe" % http4sVersion
+lazy val http4sTwirl = "org.http4s" %% "http4s-twirl" % http4sVersion
+lazy val scalatags = "com.lihaoyi" %% "scalatags" % scalatagsVersion
+lazy val eff = "org.atnos" %% "eff" % effVersion
+lazy val scalacheck = "org.scalacheck" %% "scalacheck" % scalacheckVersion
+lazy val diffsonCirce = "org.gnieh" %% "diffson-circe" % diffsonVersion
+lazy val xercesImpl = "xerces" % "xercesImpl" % xercesVersion
+lazy val jenaArq = "org.apache.jena" % "jena-arq" % jenaVersion
+
+// Compiler plugin modules
+lazy val simulacrum = "com.github.mpilquist" %% "simulacrum" % simulacrumVersion
+lazy val scalaMacrosParadise = "org.scalamacros" % "paradise" % scalaMacrosVersion cross CrossVersion.full
+lazy val kindProjector = "org.spire-math" %% "kind-projector" % kindProjectorVersion
 
 lazy val shaclex =
   project.in(file(".")).
   enablePlugins(ScalaUnidocPlugin).
   enablePlugins(ScalaUnidocPlugin).
-  settings(commonSettings:_*).
-  settings(publishSettings:_*).
-//  enablePlugins(BuildInfoPlugin).
+  settings(commonSettings, publishSettings).
   aggregate(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,depGraphs).
   dependsOn(schema,shacl,shex,manifest,srdfJena,srdf,utils,converter,rbe,typing,validating,server,shapeMaps,depGraphs).
   settings(
-//    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-//    buildInfoPackage := "es.weso.shaclex.buildinfo",
-    unidocProjectFilter in (ScalaUnidoc, unidoc) :=
-      inAnyProject -- inProjects(noDocProjects: _*),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++=
       Seq(
-        "ch.qos.logback" %  "logback-classic" % logbackVersion
-      , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
-      , "org.rogach" %% "scallop" % scallopVersion
+        logbackClassic
+      , scalaLogging
+      , scallop
       )
   )
 
-  
+
 lazy val commonSettings = Seq(
   organization := "es.weso",
   scalaVersion := scalaCompilerVersion,
   version := shaclexVersion,
   libraryDependencies ++= Seq(
-      "org.scalactic" %% "scalactic" % scalacticVersion
-    , "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+      scalactic
+    , scalaTest % Test
   ),
  scalacOptions ++= Seq(
   "-Yrangepos",
@@ -101,6 +132,7 @@ lazy val schema =
   dependsOn(shex, shacl, shapeMaps)
 
 
+
 lazy val depGraphs =
   project.in(file("modules/depGraphs")).
   settings(commonSettings: _*).
@@ -108,10 +140,10 @@ lazy val depGraphs =
   settings(
     libraryDependencies ++=
       Seq(
-      "org.typelevel" %% "cats-core" % catsVersion,
-      "org.typelevel" %% "cats-kernel" % catsVersion,
-      "org.typelevel" %% "cats-macros" % catsVersion,
-      "org.jgrapht" % "jgrapht-core" % jgraphtVersion
+      catsCore,
+      catsKernel,
+      catsMacros,
+      jgraphtCore
       )
   )
 
@@ -130,13 +162,14 @@ lazy val shacl =
    fork in Test := true,
    libraryDependencies ++=
      Seq(
-       "com.typesafe" % "config" % "1.3.0" % Test
-     , "com.github.nikita-volkov" % "sext" % sextVersion
-     , "org.typelevel" %% "cats-core" % catsVersion
-     , "org.typelevel" %% "cats-kernel" % catsVersion
-     , "org.typelevel" %% "cats-macros" % catsVersion
+       typesafeConfig % Test
+     , sext
+     , catsCore
+     , catsKernel
+     , catsMacros
      )
   )
+
 
 lazy val shex =
   project.in(file("modules/shex")).
@@ -158,15 +191,15 @@ lazy val shex =
   settings(
     antlr4GenListener in Antlr4 := true,
     antlr4GenVisitor in Antlr4 := true,
-    antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % antlrVersion,
+    antlr4Dependency in Antlr4 := antlr4,
     antlr4PackageName in Antlr4 := Some("es.weso.shex.parser"),
     libraryDependencies ++= Seq(
-      "com.typesafe" % "config" % "1.3.0" % Test
-    , "ch.qos.logback" %  "logback-classic" % logbackVersion
-    , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
-    , "io.circe" %% "circe-core" % circeVersion
-    , "io.circe" %% "circe-generic" % circeVersion
-    , "io.circe" %% "circe-parser" % circeVersion
+      typesafeConfig % Test
+    , logbackClassic
+    , scalaLogging
+    , circeCore
+    , circeGeneric
+    , circeParser
     )
   )
   
@@ -180,18 +213,18 @@ lazy val shapeMaps =
     settings(
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
-      antlr4Dependency in Antlr4 := "org.antlr" % "antlr4" % antlrVersion,
+      antlr4Dependency in Antlr4 := antlr4,
       antlr4PackageName in Antlr4 := Some("es.weso.shapeMaps.parser"),
       libraryDependencies ++=
         Seq(
-            "com.github.nikita-volkov" % "sext" % sextVersion
-          , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
-          , "org.typelevel" %% "cats-core" % catsVersion
-          , "org.typelevel" %% "cats-kernel" % catsVersion
-          , "org.typelevel" %% "cats-macros" % catsVersion
-          , "io.circe" %% "circe-core" % circeVersion
-          , "io.circe" %% "circe-generic" % circeVersion
-          , "io.circe" %% "circe-parser" % circeVersion
+            sext
+          , scalaLogging
+          , catsCore
+          , catsKernel
+          , catsMacros
+          , circeCore
+          , circeGeneric
+          , circeParser
         )
     )
 
@@ -207,12 +240,12 @@ lazy val server =
   //  buildInfoPackage := "es.weso.shaclex.buildinfo",
     libraryDependencies ++= Seq(
 //      "org.http4s" %% "rho-swagger" % rhoVersion,
-      "org.http4s" %% "http4s-dsl" % http4sVersion,
-      "org.http4s" %% "http4s-blaze-server" % http4sVersion,
-      "org.http4s" %% "http4s-blaze-client" % http4sVersion,
-      "org.http4s" %% "http4s-circe" % http4sVersion,
-      "org.http4s" %% "http4s-twirl" % http4sVersion,
-      "com.lihaoyi" %% "scalatags" % scalatagsVersion
+      http4sDsl,
+      http4sBlazeServer,
+      http4sBlazeClient,
+      http4sCirce,
+      http4sTwirl,
+      scalatags
     ),
    resolvers += Resolver.sonatypeRepo("snapshots")
   )
@@ -230,11 +263,11 @@ lazy val manifest =
   dependsOn(srdfJena, utils).
   settings(
     libraryDependencies ++= Seq(
-      "com.typesafe" % "config" % "1.3.0" % Test
-    , "com.github.nikita-volkov" % "sext" % "0.2.4"
+      typesafeConfig % Test,
+    sext
     )
   )
-  
+
 lazy val rbe =
   project.in(file("modules/rbe")).
   dependsOn(validating, typing).
@@ -243,12 +276,12 @@ lazy val rbe =
   settings(
    libraryDependencies ++= 
      Seq(
-      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-   , "com.github.mpilquist" %% "simulacrum" % simulacrumVersion
-   , "org.typelevel" %% "cats-core" % catsVersion
-   , "org.typelevel" %% "cats-kernel" % catsVersion
-   , "org.typelevel" %% "cats-macros" % catsVersion
-   ,"org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+      compilerPlugin(scalaMacrosParadise)
+   , simulacrum
+   , catsCore
+   , catsKernel
+   , catsMacros
+   ,scalacheck % Test
    )
   )
   
@@ -258,15 +291,16 @@ lazy val srdf =
   settings(publishSettings: _*).
   settings(
       libraryDependencies ++= Seq(
-        "org.typelevel" %% "cats-core" % catsVersion
-      , "org.typelevel" %% "cats-kernel" % catsVersion
-      , "org.typelevel" %% "cats-macros" % catsVersion
-      , "io.circe" %% "circe-core" % circeVersion
-      , "io.circe" %% "circe-generic" % circeVersion
-      , "io.circe" %% "circe-parser" % circeVersion
-      , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
+        catsCore
+      , catsKernel
+      , catsMacros
+      , circeCore
+      , circeGeneric
+      , circeParser
+      , scalaLogging
       )
   )
+
 
 lazy val srdfJena =
   project.in(file("modules/srdfJena")).
@@ -275,13 +309,13 @@ lazy val srdfJena =
   settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "ch.qos.logback" %  "logback-classic" % logbackVersion
-    , "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
-    , "com.typesafe" % "config" % "1.3.0" % Test
-    , "org.apache.jena" % "jena-arq" % jenaVersion
-    , "org.typelevel" %% "cats-core" % catsVersion
-    , "org.typelevel" %% "cats-kernel" % catsVersion
-    , "org.typelevel" %% "cats-macros" % catsVersion
+      logbackClassic
+    , scalaLogging
+    , typesafeConfig % Test
+    , jenaArq
+    , catsCore
+    , catsKernel
+    , catsMacros
     )
   )
   
@@ -291,29 +325,31 @@ lazy val typing =
 //  settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % catsVersion
-    , "org.typelevel" %% "cats-kernel" % catsVersion
-    , "org.typelevel" %% "cats-macros" % catsVersion
+      catsCore
+    , catsKernel
+    , catsMacros
     )
   )
-  
+
+
 lazy val utils =
   project.in(file("modules/utils")).
   settings(commonSettings: _*).
   settings(publishSettings: _*).
   settings(
     libraryDependencies ++= Seq(
-      "org.atnos" %% "eff" % effVersion
-    , "io.circe" %% "circe-core" % circeVersion
-    , "io.circe" %% "circe-generic" % circeVersion
-    , "io.circe" %% "circe-parser" % circeVersion
-    , "org.typelevel" %% "cats-core" % catsVersion
-      , "org.typelevel" %% "cats-kernel" % catsVersion
-      , "org.typelevel" %% "cats-macros" % catsVersion
-    , "org.gnieh" %% "diffson-circe" % diffsonVersion
-    , "xerces" % "xercesImpl" % xercesVersion
+      eff
+    , circeCore
+    , circeGeneric
+    , circeParser
+    , catsCore
+      , catsKernel
+      , catsMacros
+    , diffsonCirce
+    , xercesImpl
     )
   )
+
 
 lazy val validating =
   project.in(file("modules/validating")).
@@ -323,12 +359,12 @@ lazy val validating =
             utils % "test -> test; compile -> compile").
 //  settings(antlr4Settings: _*).
   settings(
-   addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
+   addCompilerPlugin(kindProjector),
    libraryDependencies ++= Seq(
-     "org.atnos" %% "eff" % effVersion
-   , "org.typelevel" %% "cats-core" % catsVersion
-   , "org.typelevel" %% "cats-kernel" % catsVersion
-   , "org.typelevel" %% "cats-macros" % catsVersion
+     eff
+   , catsCore
+   , catsKernel
+   , catsMacros
 //   , "org.typelevel" %% "cats-mtl-core" % "0.0.2"
 // , "org.typelevel" %% "cats-mtl" % catsVersion
    )
@@ -358,7 +394,7 @@ lazy val noPublishSettings = Seq(
 
 
 // to write types like Reader[String, ?]
-addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion)
+addCompilerPlugin(kindProjector)
 
 // Binary packaging
 enablePlugins(SbtNativePackager)
