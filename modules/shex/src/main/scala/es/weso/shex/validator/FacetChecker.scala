@@ -1,5 +1,4 @@
 package es.weso.shex.validator
-
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.PREFIXES._
@@ -19,7 +18,7 @@ case class FacetChecker(schema: Schema)
     t <- combineTypings(ts)
   } yield t
 
-  def length(node: RDFNode): Int = node.getLexicalForm.length
+
 
   def checkFacet(
     attempt: Attempt,
@@ -27,7 +26,7 @@ case class FacetChecker(schema: Schema)
     logger.info(s"checkFacet: ${node.show} ${facet}")
     facet match {
       case Length(n) => {
-        val l = length(node)
+        val l = NodeInfo.length(node)
         checkCond(
           l == n,
           attempt,
@@ -35,17 +34,17 @@ case class FacetChecker(schema: Schema)
           s"${node.show} satisfies Length($n) with length $l")
       }
       case MinLength(n) => {
-        val l = length(node)
+        val l = NodeInfo.length(node)
         checkCond(
-          length(node) >= n,
+          l >= n,
           attempt,
           msgErr(s"${node.show} does not satisfy facet MinLength($n) with length $l"),
           s"${node.show} satisfies MinLength($n) with length $l")
       }
       case MaxLength(n) => {
-        val l = length(node)
+        val l = NodeInfo.length(node)
         checkCond(
-          length(node) <= n,
+          l <= n,
           attempt,
           msgErr(s"${node.show} does not satisfy facet MaxLength($n) with length $l"),
           s"${node.show} satisfies MaxLength($n) with length $l")
@@ -79,7 +78,18 @@ case class FacetChecker(schema: Schema)
         r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MaxExclusive($m) with $node"),
           s"${node.show} satisfies MaxExclusive($m)")
       } yield r
-
+      case FractionDigits(m) => {
+        val fd = NodeInfo.fractionDigits(node)
+        checkCond(fd <= m, attempt,
+          msgErr(s"${node.show} does not match FractionDigits($m) with $node and fraction digits = $fd"),
+          s"${node.show} satisfies FractionDigits($m) with fraction digits = $fd")
+      }
+      case TotalDigits(m) => {
+        val td = NodeInfo.totalDigits(node)
+        checkCond(td <= m, attempt,
+          msgErr(s"${node.show} does not match TotalDigits($m) with $node and totalDigits = $td"),
+          s"${node.show} satisfies TotalDigits($m) with total digits = $td")
+      }
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")
         errStr(s"Not implemented checkFacet: $facet")
