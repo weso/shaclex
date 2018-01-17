@@ -1,5 +1,5 @@
 package es.weso.shex.validator
-
+import org.apache.xerces.impl.dv.xs.DecimalDV
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.PREFIXES._
@@ -8,6 +8,8 @@ import es.weso.shex.ViolationError._
 import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
 import es.weso.utils.RegEx
+import org.apache.xerces.impl.dv.{SchemaDVFactory, ValidatedInfo, XSSimpleType}
+import org.apache.xerces.impl.validation.ValidationState
 
 case class FacetChecker(schema: Schema)
   extends ShowValidator(schema) with LazyLogging {
@@ -20,6 +22,26 @@ case class FacetChecker(schema: Schema)
   } yield t
 
   def length(node: RDFNode): Int = node.getLexicalForm.length
+
+  def totalDigits(node: RDFNode): Check[Int] = node match {
+    case DecimalLiteral(d) => {
+      val context = new ValidationState
+      val validatedInfo = new ValidatedInfo
+      val decimalDV = new DecimalDV()
+      val typeDeclaration : XSSimpleType = SchemaDVFactory.getInstance.getBuiltInType("decimal")
+      val xsdValue = validatedInfo.actualValue;
+      val resultInfo = new ValidatedInfo
+      typeDeclaration.validate(node.getLexicalForm,context,resultInfo)
+      ok(decimalDV.getTotalDigits(resultInfo))
+    }
+    case DoubleLiteral(d) => {
+      errStr(s"Not implemented yet totalDigits of doubleLiteral")
+    }
+    case _ => errStr(s"Not implemented yet")
+  }
+
+  def fractionDigits(node: RDFNode): Check[Int] =
+    errStr(s"Unimplemented fraction digits of $node")
 
   def checkFacet(
     attempt: Attempt,
@@ -79,7 +101,16 @@ case class FacetChecker(schema: Schema)
         r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MaxExclusive($m) with $node"),
           s"${node.show} satisfies MaxExclusive($m)")
       } yield r
-
+      case FractionDigits(m) => for {
+        fd <- fractionDigits(node)
+        r <- checkCond(fd <= m, attempt, msgErr(s"${node.show} does not match FractionDigits($m) with $node and fraction digits = $fd"),
+          s"${node.show} satisfies FractionDigits($m) with fraction digits = $fd")
+      } yield r
+      case TotalDigits(m) => for {
+        td <- totalDigits(node)
+        r <- checkCond(td <= m, attempt, msgErr(s"${node.show} does not match TotalDigits($m) with $node and totalDigits = $td"),
+          s"${node.show} satisfies TotalDigits($m) with total digits = $td")
+      } yield r
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")
         errStr(s"Not implemented checkFacet: $facet")
