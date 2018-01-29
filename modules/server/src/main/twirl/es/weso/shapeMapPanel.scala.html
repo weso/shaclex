@@ -1,0 +1,41 @@
+@(formName: String,
+  shapeMap:Option[String],
+  availableShapeMapFormats: List[String],
+  currentShapeMapFormat: String,
+  activeShapeMapTab: String
+)
+<fieldset class='shapeMapPanel'>
+    <legend>Shape map</legend>
+    <ul id="shapeMapTabs" class="nav nav-tabs">
+        <li class="nav-item">
+            <a class='@{if (activeShapeMapTab=="#shapeMapTextArea") "nav-link active" else "nav-link"}'
+               id="shapeMapTextArea-tab" data-toggle="tab" href="#shapeMapTextArea" aria-controls="shapeMapTextArea" aria-selected="true">By input</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeShapeMapTab=="#shapeMapUrl") "nav-link active" else "nav-link"}'
+               id="shapeMapUrl-tab" data-toggle="tab" href="#shapeMapUrl" aria-controls="shapeMapUrl" aria-selected="false">By URL</a>
+        </li>
+        <li class="nav-item">
+            <a class='@{if (activeShapeMapTab=="#shapeMapFile") "nav-link active" else "nav-link"}'
+               id="shapeMapFile-tab" data-toggle="tab" href="#shapeMapFile" aria-controls="shapeMapFile" aria-selected="false">By File</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="rdfDataContent">
+        <div class='@{if (activeShapeMapTab=="#shapeMapTextArea") "tab-pane fade show active" else "tab-pane fade"}'
+             id="shapeMapTextArea" role="tabpanel" aria-labelledby="shapeMapTextArea-tab">
+            <textarea id="shapeMap" placeHolder="Shape map" name="shapeMap">@{shapeMap.getOrElse("")}</textarea>
+            @selectFormat("shapeMap",formName,"TextArea",availableShapeMapFormats,currentShapeMapFormat)
+        </div>
+        <div class='@{if (activeShapeMapTab=="#shapeMapUrl") "tab-pane fade show active" else "tab-pane fade"}'
+             id="shapeMapUrl" role="tabpanel" aria-labelledby="shapeMapUrl-tab">
+            <input type="url" name="shapeMapURL" >
+            @selectFormat("shapeMap",formName,"Url",availableShapeMapFormats,currentShapeMapFormat)
+        </div>
+        <div class='@{if (activeShapeMapTab=="#shapeMapFile") "tab-pane fade show active" else "tab-pane fade"}'
+             id="shapeMapFile" role="tabpanel" aria-labelledby="shapeMapFile-tab">
+            <input type="file" name="shapeMapFile" >
+            @selectFormat("shapeMap",formName,"File",availableShapeMapFormats,currentShapeMapFormat)
+        </div>
+        <input id="shapeMapActiveTab" type="hidden" name="shapeMapActiveTab" value="@{activeShapeMapTab}">
+    </div>
+</fieldset>

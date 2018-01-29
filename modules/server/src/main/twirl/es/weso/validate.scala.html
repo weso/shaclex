@@ -14,12 +14,15 @@
   availableTriggerModes: List[String],
   currentTriggerMode: String,
   shapeMap: Option[String],
+  availableShapeMapFormats: List[String],
+  currentShapeMapFormat: String,
   schemaEmbedded: Boolean,
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
   endpoint: Option[String],
   activeDataTab: String,
-  activeSchemaTab: String
+  activeSchemaTab: String,
+  activeShapeMapTab: String
 )
 
 <html>
@@ -45,8 +48,7 @@
 
     @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
     <div id="shapeMapDiv">
-      <legend>Shape map</legend>
-      <textarea id="shapeMap" placeHolder="Shape map" name="shapeMap">@{shapeMap.getOrElse("")}</textarea>
+      @shapeMapPanel("validate", shapeMap, availableShapeMapFormats, currentShapeMapFormat, activeShapeMapTab)
     </div>
 
     </fieldset>

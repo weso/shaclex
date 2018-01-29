@@ -3,7 +3,7 @@ package es.weso.server
 import org.http4s.dsl.io.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher}
 
 object QueryParams {
-  object DataParam extends QueryParamDecoderMatcher[String]("data")
+  object DataParameter extends QueryParamDecoderMatcher[String]("data")
   object OptDataParam extends OptionalQueryParamDecoderMatcher[String]("data")
   object OptEndpointParam extends OptionalQueryParamDecoderMatcher[String]("endpoint")
   object OptDataURLParam extends OptionalQueryParamDecoderMatcher[String]("dataURL")
@@ -19,7 +19,8 @@ object QueryParams {
   object NodeParam extends OptionalQueryParamDecoderMatcher[String]("node")
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
-  object ShapeMapParam extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
+  object ShapeMapParameter extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
+  object ShapeMapFormatParam extends OptionalQueryParamDecoderMatcher[String]("shapeMapFormat")
   object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
   object InferenceParam extends OptionalQueryParamDecoderMatcher[String]("inference")
   object ExamplesParam extends QueryParamDecoderMatcher[String]("examples")
@@ -27,6 +28,7 @@ object QueryParams {
   object OptQueryParam extends OptionalQueryParamDecoderMatcher[String]("query")
   object OptActiveDataTabParam extends OptionalQueryParamDecoderMatcher[String]("activeDataTab")
   object OptActiveSchemaTabParam extends OptionalQueryParamDecoderMatcher[String]("activeSchemaTab")
+  object OptActiveShapeMapTabParam extends OptionalQueryParamDecoderMatcher[String]("activeShapeMapTab")
   object OptActiveQueryTabParam extends OptionalQueryParamDecoderMatcher[String]("activeQueryTab")
 
 }

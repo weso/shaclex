@@ -239,7 +239,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
       val validate = for {
         rdf <- RDFAsJenaModel.fromChars(rdfStr, "Turtle")
         shex <- Schema.fromString(shexStr, "ShExC", None)
-        shapeMap <- ShapeMap.fromString(shapeMapStr, None, rdf.getPrefixMap, shex.prefixMap)
+        shapeMap <- ShapeMap.fromCompact(shapeMapStr, None, rdf.getPrefixMap, shex.prefixMap)
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)
         result <- Validator.validate(shex, fixedShapeMap, rdf)
         expectedShapeMap <- ShapeMap.parseResultMap(expected, None, rdf, shex.prefixMap)

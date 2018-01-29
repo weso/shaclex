@@ -21,7 +21,7 @@ class ShapeMapJsonTest extends FunSpec with Matchers with TryValues with OptionV
   def encodeDecodeJson(str: String, nodesPrefixMap: PrefixMap, shapesPrefixMap: PrefixMap): Unit = {
     it(s"Should encodeDecode as Json $str") {
       val result = for {
-        shapeMap <- ShapeMap.fromString(str, None, nodesPrefixMap, shapesPrefixMap)
+        shapeMap <- ShapeMap.fromCompact(str, None, nodesPrefixMap, shapesPrefixMap)
         json = {
           println(s"ShapeMap: $shapeMap")
           shapeMap.toJson
