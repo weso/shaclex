@@ -3,7 +3,8 @@ package es.weso.server
 import cats.effect.IO
 import io.circe.Json
 import io.circe.parser._
-import org.http4s.{ Query, Request, Response, Uri }
+import org.http4s.{ Request, Response, Uri }
+import org.http4s.{ Query => HQuery }
 import org.scalatest._
 import org.http4s.dsl._
 import cats.syntax.either._
@@ -29,7 +30,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
         GET,
         Uri(
           path = "/api/test",
-          query = Query.fromPairs(("name", "<John>")))))
+          query = HQuery.fromPairs(("name", "<John>")))))
       response.status should be(Ok)
       response.as[String].unsafeRunSync() should be("Hello <John>")
     }
@@ -51,7 +52,7 @@ class ValidateShEx extends FunSpec with Matchers with EitherValues {
         GET,
         Uri(
           path = "/api/validate",
-          query = Query.fromPairs(
+          query = HQuery.fromPairs(
             ("data", dataStr), ("schema", schemaStr),
             ("schemaFormat", "SHEXC"), ("schemaEngine", "ShEx")))))
 
