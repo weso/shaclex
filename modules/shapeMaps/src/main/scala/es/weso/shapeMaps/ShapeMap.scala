@@ -38,9 +38,26 @@ object ShapeMap {
 
   def empty: ShapeMap = FixedShapeMap.empty
 
-  def fromString(
+  def fromURI(uri: String,
+              base: Option[String],
+              nodesPrefixMap: PrefixMap = PrefixMap.empty,
+              shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
+    Left(s"Not implemented ShapeMap from URI ${uri} yet")
+  }
+
+  def fromString(str: String,
+                 format: String,
+                 base: Option[String] = None,
+                 nodesPrefixMap: PrefixMap = PrefixMap.empty,
+                 shapesPrefixMap: PrefixMap = PrefixMap.empty) = format.toUpperCase match {
+    case "JSON" => fromJson(str)
+    case "COMPACT" => fromCompact(str,base,nodesPrefixMap,shapesPrefixMap)
+    case _ => Left(s"Unknown format for shapeMap")
+  }
+
+  def fromCompact(
     str: String,
-    base: Option[String],
+    base: Option[String] = None,
     nodesPrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
     Parser.parse(str, base, nodesPrefixMap, shapesPrefixMap)

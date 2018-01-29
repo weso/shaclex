@@ -223,10 +223,20 @@ var targetDataArea = document.getElementById("targetDataArea");
         codeMirrorShapeMap.setSize(null,"5em");
     }
 
-
+ /** The following lines associate events to the panel tabs, when a user clicks on a panel,
+  *  the corresponding xxxActiveTab is changed
+  *  dataPanel2, schemaPanel, shapeMapPanel are the classes of the panels
+  *  dataPanel2 is because it appears in 2 panels (validation requires 2)
+  */
  $('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+     var name = $(e.target).attr("href");
+     console.log("New data tab panel1: " + name);
+     $('#rdfDataActiveTab').val(name);
+ })
+
+ $('.dataPanel2 a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
    var name = $(e.target).attr("href");
-   console.log("New data tab: " + name);
+   console.log("New data tab panel2: " + name);
    $('#rdfDataActiveTab').val(name);
  })
 
@@ -234,6 +244,18 @@ var targetDataArea = document.getElementById("targetDataArea");
    var name = $(e.target).attr("href");
    console.log("New schema tab: " + name);
    $('#activeSchemaTab').val(name);
+ })
+
+ $('.schemaPanel2 a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var name = $(e.target).attr("href");
+    console.log("New schema tab: " + name);
+    $('#activeSchemaTab').val(name);
+ })
+
+ $('.shapeMapPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var name = $(e.target).attr("href");
+        console.log("New shapeMap tab: " + name);
+        $('#shapeMapActiveTab').val(name);
  })
 
 $("#permalink").click(function(e) {

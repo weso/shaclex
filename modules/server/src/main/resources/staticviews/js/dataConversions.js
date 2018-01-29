@@ -31,7 +31,6 @@ function changeTheme(theme) {
 
 $(document).ready(function(){
 
-
 function resetResult(result) {
     console.log("Reset result: " + JSON.stringify(result));
     $("#resultDiv").empty();
@@ -50,10 +49,10 @@ function showResult(result) {
     }
 }
 
-function getDataFormat(element) {
+/*function getDataFormat(element) {
     var format = element.options[element.selectedIndex].value;
     window.alert("Data format of " + element + " format: " + format);
-}
+} */
 
   var urlShaclex = getHost();
   console.log("urlShaclex: " + urlShaclex);
@@ -64,12 +63,12 @@ function getDataFormat(element) {
 
   var rdfData = document.getElementById("rdfData");
   if (rdfData) {
-        codeMirrorData = CodeMirror.fromTextArea(rdfData, {
-            lineNumbers: true,
-            mode: "turtle",
-            viewportMargin: Infinity,
-            matchBrackets: true,
-        });
+    codeMirrorData = CodeMirror.fromTextArea(rdfData, {
+       lineNumbers: true,
+       mode: "turtle",
+       viewportMargin: Infinity,
+       matchBrackets: true,
+    });
   }
 
   var targetDataArea = document.getElementById("targetDataArea");
@@ -83,7 +82,8 @@ function getDataFormat(element) {
    });
  }
 
- $('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+/* Associate event to changes in data panel tab */
+$('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
    var name = $(e.target).attr("href");
    console.log("New tab: " + name); // newly activated tab
    $('#rdfDataActiveTab').val(name);

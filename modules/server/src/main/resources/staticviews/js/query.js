@@ -118,7 +118,12 @@ function showResult(result,nodesPrefixMap) {
         });
     }
 
- $('.dataPanel a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+ /** The following lines associate events to the panel tabs, when a user clicks on a panel,
+   *  the corresponding xxxActiveTab is changed
+     *  dataPanel2, schemaPanel, shapeMapPanel are the classes of the panels
+     *  dataPanel2 is because it appears in 2 panels (validation requires 2)
+     */
+ $('.dataPanel2 a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
    var name = $(e.target).attr("href");
    console.log("New data tab: " + name);
    $('#rdfDataActiveTab').val(name);

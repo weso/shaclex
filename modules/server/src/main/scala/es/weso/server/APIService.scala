@@ -1,7 +1,5 @@
 package es.weso.server
 
-import java.util.concurrent.Executors
-
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema._
 import io.circe._
@@ -121,7 +119,7 @@ object APIService {
     }
 
     case req @ GET -> Root / `api` / "data" / "info" :?
-      DataParam(data) +&
+      DataParameter(data) +&
       DataFormatParam(optDataFormat) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
       RDFAsJenaModel.fromChars(data, dataFormat, None) match {
@@ -164,7 +162,7 @@ object APIService {
     }
 
     case req @ GET -> Root / `api` / "data" / "convert" :?
-      DataParam(data) +&
+      DataParameter(data) +&
       DataFormatParam(optDataFormat) +&
       TargetDataFormatParam(optResultDataFormat) => {
       val dataFormat = optDataFormat.getOrElse(DataFormats.defaultFormatName)
@@ -242,7 +240,7 @@ object APIService {
     }
 
     case req @ (GET | POST) -> Root / `api` / "validate" :?
-      DataParam(data) +&
+      DataParameter(data) +&
       DataFormatParam(optDataFormat) +&
       OptSchemaParam(optSchema) +&
       SchemaFormatParam(optSchemaFormat) +&
@@ -250,7 +248,7 @@ object APIService {
       OptTriggerModeParam(optTriggerMode) +&
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
-      ShapeMapParam(optShapeMap) +&
+      ShapeMapParameter(optShapeMap) +&
       InferenceParam(optInference) => {
       val result = validate(data, optDataFormat,
         optSchema, optSchemaFormat, optSchemaEngine,

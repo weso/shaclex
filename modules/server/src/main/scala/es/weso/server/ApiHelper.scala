@@ -13,6 +13,12 @@ import scala.util.Try
 
 object ApiHelper {
 
+  /**
+    * Get base URI
+    * @return default URI obtained from current folder
+    */
+  def getBase: Option[String] = Some(FileUtils.currentFolderURL)
+
   def prefixMap2Json(pm: PrefixMap): Json = {
     Json.fromFields(pm.pm.map { case (prefix, iri) => (prefix.str, Json.fromString(iri.getLexicalForm)) })
   }
