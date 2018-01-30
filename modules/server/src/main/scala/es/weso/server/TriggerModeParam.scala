@@ -56,8 +56,8 @@ case class TriggerModeParam(triggerMode: Option[String],
         shapeMapURL match {
           case None => (None, Left(s"No value for shapeMapURL"))
           case Some(shapeMapUrl) => {
-            val dataFormat = shapeMapFormatUrl.getOrElse(defaultShapeMapFormat)
-            ShapeMap.fromURI(shapeMapUrl, shapeMapFormat) match {
+            val shapeMapFormat = shapeMapFormatUrl.getOrElse(defaultShapeMapFormat)
+            ShapeMap.fromURI(shapeMapUrl, shapeMapFormat, None) match {
               case Left(str) => (None, Left(s"Error obtaining $shapeMapUrl with $shapeMapFormat: $str"))
               case Right(shapeMap) => (Some(shapeMap.toString), Right(shapeMap))
             }

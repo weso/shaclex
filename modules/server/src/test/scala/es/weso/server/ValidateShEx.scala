@@ -6,8 +6,6 @@ import io.circe.parser._
 import org.http4s.{ Request, Response, Uri }
 import org.http4s.{ Query => HQuery }
 import org.scalatest._
-import org.http4s.dsl._
-import cats.syntax.either._
 import org.http4s.dsl.io._
 
 class ValidateShEx extends FunSpec with Matchers with EitherValues {

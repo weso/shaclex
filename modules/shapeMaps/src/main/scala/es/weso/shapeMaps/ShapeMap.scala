@@ -1,16 +1,21 @@
 package es.weso.shapeMaps
 
+import java.net.URI
+
 import es.weso.rdf.nodes._
 import cats._
 import cats.data._
 import cats.implicits._
-import es.weso.rdf.{ PrefixMap, RDFReader }
+import es.weso.rdf.{PrefixMap, RDFReader}
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
 import ShapeMap._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path._
+
+import scala.io.Source
+import scala.util.Try
 
 abstract class ShapeMap {
   val associations: List[Association]
@@ -39,27 +44,36 @@ object ShapeMap {
   def empty: ShapeMap = FixedShapeMap.empty
 
   def fromURI(uri: String,
+              format: String,
               base: Option[String],
               nodesPrefixMap: PrefixMap = PrefixMap.empty,
-              shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
-    Left(s"Not implemented ShapeMap from URI ${uri} yet")
+              shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ShapeMap] = {
+   val t = Try {
+      val contents = Source.fromURI(new URI(uri)).mkString
+      val either: Either[String, ShapeMap] = fromString(contents, format, base, nodesPrefixMap, shapesPrefixMap)
+      either
+    }
+   t.fold(e => Left(s"Exception obtaining URI contents. URI = ${uri}. Error: ${e.getLocalizedMessage}"),
+     identity
+   )
   }
-
   def fromString(str: String,
                  format: String,
                  base: Option[String] = None,
                  nodesPrefixMap: PrefixMap = PrefixMap.empty,
-                 shapesPrefixMap: PrefixMap = PrefixMap.empty) = format.toUpperCase match {
-    case "JSON" => fromJson(str)
-    case "COMPACT" => fromCompact(str,base,nodesPrefixMap,shapesPrefixMap)
-    case _ => Left(s"Unknown format for shapeMap")
-  }
+                 shapesPrefixMap: PrefixMap = PrefixMap.empty
+                ): Either[String,ShapeMap] =
+    format.toUpperCase match {
+     case "JSON" => fromJson(str)
+     case "COMPACT" => fromCompact(str,base,nodesPrefixMap,shapesPrefixMap)
+     case _ => Left(s"Unknown format for shapeMap")
+   }
 
   def fromCompact(
     str: String,
     base: Option[String] = None,
     nodesPrefixMap: PrefixMap = PrefixMap.empty,
-    shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, QueryShapeMap] = {
+    shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ShapeMap] = {
     Parser.parse(str, base, nodesPrefixMap, shapesPrefixMap)
   }
 
