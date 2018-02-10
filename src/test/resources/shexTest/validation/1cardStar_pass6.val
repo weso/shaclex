@@ -12,6 +12,6 @@
       {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "e" }},
       {"type":"TestedTriple","subject":"http://a.example/s1","predicate":"http://a.example/p1","object":{ "value": "f" }}
     ],
-    "min": 0, "max": "*"
+    "min": 0, "max": -1
   }
 }

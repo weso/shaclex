@@ -1,5 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "startActs": [
     {
@@ -83,11 +83,11 @@
           "values": [
             "http://a.example/a1",
             {
-              "type": "StemRange",
+              "type": "IriStemRange",
               "stem": "http://all.example/",
               "exclusions": [
                 {
-                  "type": "Stem",
+                  "type": "IriStem",
                   "stem": "http://all.example/a"
                 },
                 "http://all.example/b"
@@ -137,7 +137,7 @@
                       "nodeKind": "iri"
                     },
                     "min": 0,
-                    "max": "*"
+                    "max": -1
                   },
                   {
                     "type": "TripleConstraint",
@@ -149,7 +149,7 @@
                       "length": 5
                     },
                     "min": 1,
-                    "max": "*"
+                    "max": -1
                   },
                   {
                     "type": "TripleConstraint",
@@ -174,7 +174,7 @@
                   ]
                 },
                 "min": 2,
-                "max": "*"
+                "max": -1
               },
               {
                 "type": "TripleConstraint",
@@ -206,7 +206,7 @@
                   ]
                 },
                 "min": 2,
-                "max": "*"
+                "max": -1
               },
               {
                 "type": "EachOf",
@@ -310,7 +310,7 @@
                               "nodeKind": "literal"
                             },
                             "min": 1,
-                            "max": "*",
+                            "max": -1,
                             "semActs": [
                               {
                                 "type": "SemAct",
@@ -351,7 +351,7 @@
                             "inverse": true,
                             "predicate": "http://all.example/bnode",
                             "min": 1,
-                            "max": "*",
+                            "max": -1,
                             "semActs": [
                               {
                                 "type": "SemAct",
@@ -365,7 +365,7 @@
                             "inverse": true,
                             "predicate": "http://all.example/literal",
                             "min": 1,
-                            "max": "*",
+                            "max": -1,
                             "semActs": [
                               {
                                 "type": "SemAct",
@@ -406,13 +406,13 @@
               "type": "NodeConstraint",
               "values": [
                 {
-                  "type": "StemRange",
+                  "type": "IriStemRange",
                   "stem": {
                     "type": "Wildcard"
                   },
                   "exclusions": [
                     {
-                      "type": "Stem",
+                      "type": "IriStem",
                       "stem": "http://all.example/a"
                     },
                     "http://all.example/b"

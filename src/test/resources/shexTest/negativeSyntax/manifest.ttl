@@ -25,6 +25,7 @@
     <#1literalTotaldigitsxsd-integer>
     <#1negatedinversenegateddot>
     <#1negatednegateddot>
+    <#1datatypeRef1>
     <#1unknowndatatypeMaxInclusive>
     <#1val1bnode>
     <#1val1iriMinusiri1>
@@ -49,6 +50,18 @@
     <#PN_LOCAL-dash-start>
     <#PN_LOCAL-unescaped-TILDE>
     <#PN_LOCAL-with-UCHAR.1>
+    <#1literalPattern-bad-delim>
+    <#1literalPattern_with_ECHAR_escape_1>
+    <#1literalPattern_with_ECHAR_escape_b>
+    <#1literalPattern_with_ECHAR_escape_f>
+    <#1literalPattern_with_UCHAR_escape_U0000061>
+    <#1literalPattern_with_UCHAR_escape_u061>
+    <#1val1STRING_LITERAL1_bad_delim>
+    <#1val1STRING_LITERAL1_with_ECHAR_escape_1>
+    <#1val1STRING_LITERAL1_with_ECHAR_escape_a>
+    <#1val1STRING_LITERAL1_with_ECHAR_escape_z>
+    <#1val1STRING_LITERAL1_with_UCHAR_escape_u061>
+    <#1val1STRING_LITERAL1_with_UCHAR_escape_U0000061>
     <#STRING_LITERAL1-ending-QUOTATION_MARK>
     <#STRING_LITERAL2-bad-ECHAR>
     <#STRING_LITERAL2-bad-LANGTAG>
@@ -93,6 +106,10 @@
     <#tripleConsraint-with-datatype-and-valueSet>
     <#tripleConsraint-with-dot-and-datatype>
     <#tripleConsraint-with-two-cardinalities>
+    <#1val1iriStemMinusliteral3>
+    <#1val1languageStemMinusliteral3>
+    <#1val1literalStemMinusiri3>
+    <#1val1literalStemMinuslanguage3>
   ) .
 
 <#1decimalMininclusiveroman-numeral> a sht:NegativeSyntax ;
@@ -195,6 +212,12 @@
   mf:name "1negatednegateddot" ;
   mf:status mf:proposed ;
   sx:shex <1negatednegateddot.shex> ;
+  .
+
+<#1datatypeRef1> a sht:NegativeSyntax ;
+  mf:name "1datatypeRef1" ;
+  mf:status mf:proposed ;
+  sx:shex <1datatypeRef1.shex> ;
   .
 
 <#1unknowndatatypeMaxInclusive> a sht:NegativeSyntax ;
@@ -339,6 +362,78 @@
   mf:name "PN_LOCAL-with-UCHAR.1" ;
   mf:status mf:proposed ;
   sx:shex <PN_LOCAL-with-UCHAR.1.shex> ;
+  .
+
+<#1literalPattern-bad-delim> a sht:NegativeSyntax ;
+  mf:name "1literalPattern-bad-delim" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalPattern-bad-delim.shex> ;
+  .
+
+<#1literalPattern_with_ECHAR_escape_1> a sht:NegativeSyntax ;
+  mf:name "1literalPattern_with_ECHAR_escape_1" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalPattern_with_ECHAR_escape_1.shex> ;
+  .
+
+<#1literalPattern_with_ECHAR_escape_b> a sht:NegativeSyntax ;
+  mf:name "1literalPattern_with_ECHAR_escape_b" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalPattern_with_ECHAR_escape_b.shex> ;
+  .
+
+<#1literalPattern_with_ECHAR_escape_f> a sht:NegativeSyntax ;
+  mf:name "1literalPattern_with_ECHAR_escape_f" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalPattern_with_ECHAR_escape_f.shex> ;
+  .
+
+<#1literalPattern_with_UCHAR_escape_U0000061> a sht:NegativeSyntax ;
+  mf:name "1literalPattern_with_UCHAR_escape_U0000061" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalPattern_with_UCHAR_escape_U0000061.shex> ;
+  .
+
+<#1literalPattern_with_UCHAR_escape_u061> a sht:NegativeSyntax ;
+  mf:name "1literalPattern_with_UCHAR_escape_u061" ;
+  mf:status mf:proposed ;
+  sx:shex <1literalPattern_with_UCHAR_escape_u061.shex> ;
+  .
+
+<#1val1STRING_LITERAL1_bad_delim> a sht:NegativeSyntax ;
+  mf:name "1val1STRING_LITERAL1_bad_delim" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1STRING_LITERAL1_bad_delim.shex> ;
+  .
+
+<#1val1STRING_LITERAL1_with_ECHAR_escape_1> a sht:NegativeSyntax ;
+  mf:name "1val1STRING_LITERAL1_with_ECHAR_escape_1" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1STRING_LITERAL1_with_ECHAR_escape_1.shex> ;
+  .
+
+<#1val1STRING_LITERAL1_with_ECHAR_escape_a> a sht:NegativeSyntax ;
+  mf:name "1val1STRING_LITERAL1_with_ECHAR_escape_a" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1STRING_LITERAL1_with_ECHAR_escape_a.shex> ;
+  .
+
+<#1val1STRING_LITERAL1_with_ECHAR_escape_z> a sht:NegativeSyntax ;
+  mf:name "1val1STRING_LITERAL1_with_ECHAR_escape_z" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1STRING_LITERAL1_with_ECHAR_escape_z.shex> ;
+  .
+
+<#1val1STRING_LITERAL1_with_UCHAR_escape_u061> a sht:NegativeSyntax ;
+  mf:name "1val1STRING_LITERAL1_with_UCHAR_escape_u061" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1STRING_LITERAL1_with_UCHAR_escape_u061.shex> ;
+  .
+
+<#1val1STRING_LITERAL1_with_UCHAR_escape_U0000061> a sht:NegativeSyntax ;
+  mf:name "1val1STRING_LITERAL1_with_UCHAR_escape_U0000061" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1STRING_LITERAL1_with_UCHAR_escape_U0000061.shex> ;
   .
 
 <#STRING_LITERAL1-ending-QUOTATION_MARK> a sht:NegativeSyntax ;
@@ -603,5 +698,29 @@
   mf:name "tripleConsraint-with-two-cardinalities" ;
   mf:status mf:proposed ;
   sx:shex <tripleConsraint-with-two-cardinalities.shex> ;
+  .
+
+<#1val1iriStemMinusliteral3> a sht:NegativeSyntax ;
+  mf:name "1val1iriStemMinusliteral3" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1iriStemMinusliteral3.shex> ;
+  .
+
+<#1val1languageStemMinusliteral3> a sht:NegativeSyntax ;
+  mf:name "1val1languageStemMinusliteral3" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1languageStemMinusliteral3.shex> ;
+  .
+
+<#1val1literalStemMinusiri3> a sht:NegativeSyntax ;
+  mf:name "1val1literalStemMinusiri3" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1literalStemMinusiri3.shex> ;
+  .
+
+<#1val1literalStemMinuslanguage3> a sht:NegativeSyntax ;
+  mf:name "1val1literalStemMinuslanguage3" ;
+  mf:status mf:proposed ;
+  sx:shex <1val1literalStemMinuslanguage3.shex> ;
   .
 

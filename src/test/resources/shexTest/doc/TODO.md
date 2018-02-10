@@ -1,4 +1,18 @@
-What do we do with recursive structures like:
+= 3 non-unique validation comments =
+
+- "<S> { <p1> [<v1>] } on { <s1> <p1> <v1> }"
+-- 1val1IRIREF.shex == 1val1iri.shex
+- "<S1> { <p1> LITERAL PATTERN \"^bc$\" } on { <s1> <p1> \"^bc$\" }"
+-- <#1literalPattern_pass-StartlitEnd-match> == <#1literalStartPatternEnd_CarrotbcDollar>
+- ":S1 {:p1 .|:p2 .,:p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }"
+-- <#1dotOne2dot-oneOf_fail_p1p2p3> ~<#1dotOne2dot-someOf_fail_p1p2p3> ~sht:EachOf-unvisited
+
+```
+c = data["@graph"][0].entries.reduce((acc, t) => { if (t.comment in acc) { acc[t.comment].push(t); } else { acc[t.comment] = [t]; } return acc; }, {})
+d = Object.keys(c).filter(k => c[k].length > 1)
+```
+
+= What do we do with recursive structures like: =
 ```
 <http://all.example/S1> {
   $<http://all.example/S1e> (

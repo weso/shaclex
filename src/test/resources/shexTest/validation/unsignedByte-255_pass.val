@@ -1,0 +1,24 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/unsignedByte-255",
+  "shape": "http://a.example/S-unsignedByte",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/unsignedByte-255",
+        "predicate": "http://a.example/p",
+        "object": {
+          "value": "255",
+          "type": "http://www.w3.org/2001/XMLSchema#unsignedByte"
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "datatype": "http://www.w3.org/2001/XMLSchema#unsignedByte"
+    }
+  }
+}

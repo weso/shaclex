@@ -8,12 +8,12 @@
       "type":"NodeConstraint",
       "values": [
         {
-          "type": "StemRange",
+          "type": "IriStemRange",
           "stem": { "type": "Wildcard" },
           "exclusions": [
-            { "type": "Stem", "stem": "http://a.example/v1" },
-            { "type": "Stem", "stem": "http://a.example/v2" },
-            { "type": "Stem", "stem": "http://a.example/v3" }
+            { "type": "IriStem", "stem": "http://a.example/v1" },
+            { "type": "IriStem", "stem": "http://a.example/v2" },
+            { "type": "IriStem", "stem": "http://a.example/v3" }
           ]
         }
       ]

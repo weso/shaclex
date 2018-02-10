@@ -1,0 +1,72 @@
+{
+  "type": "SolutionList",
+  "solutions": [
+    {
+      "type": "ShapeTest",
+      "node": "http://inst.example/Issue1",
+      "shape": "http://schema.example/IssueShape",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://schema.example/reproducedBy",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://inst.example/Issue1",
+            "predicate": "http://schema.example/reproducedBy",
+            "object": "http://inst.example/Tester2",
+            "referenced": {
+              "type": "ShapeTest",
+              "node": "http://inst.example/Tester2",
+              "shape": "http://schema.example/TesterShape",
+              "solution": {
+                "type": "TripleConstraintSolutions",
+                "predicate": "http://schema.example/role",
+                "solutions": [
+                  {
+                    "type": "TestedTriple",
+                    "subject": "http://inst.example/Tester2",
+                    "predicate": "http://schema.example/role",
+                    "object": "http://schema.example/testingRole"
+                  }
+                ],
+                "valueExpr": {
+                  "type": "NodeConstraint",
+                  "values": [
+                    "http://schema.example/testingRole"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "http://schema.example/TesterShape"
+        }
+      }
+    },
+    {
+      "type": "ShapeTest",
+      "node": "http://inst.example/Tester2",
+      "shape": "http://schema.example/TesterShape",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://schema.example/role",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://inst.example/Tester2",
+            "predicate": "http://schema.example/role",
+            "object": "http://schema.example/testingRole"
+          }
+        ],
+        "valueExpr": {
+          "type": "NodeConstraint",
+          "values": [
+            "http://schema.example/testingRole"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -36,7 +36,7 @@
               }
             ],
             "min": 0,
-            "max": "*"
+            "max": -1
           },
           {
             "type": "TripleConstraintSolutions",

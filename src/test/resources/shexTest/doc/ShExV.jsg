@@ -8,23 +8,26 @@
 #   {TERMINAL->PROPTYPE} - a map from TERMINAL to PROPTYPE.
 #   (PROPTYPE1|PROPTYPE2...) - any of PROPTYPEn.
 
-.TYPE type - ObjectLiteral; # All objects have a type property corresponding to the production name, e.g. "ShapeTest"
+.TYPE type - ObjectLiteral labeledShapeOr labeledShapeAnd labeledShapeNot labeledNodeConstraint labeledShape labeledShapeExternal; # All objects have a type property corresponding to the production name, e.g. "ShapeTest"
 
-shapeExprTest    = ShapeOrResults | ShapeAndResults | ShapeNotResults | ShapeTest | NodeTest ;
+shapeExprTest    = ShapeOrResults | ShapeAndResults | ShapeNotResults | ShapeTest | NodeTest | SolutionList | Failure | FailureList ;
 ShapeOrResults   { solution:shapeExprTest }
 ShapeAndResults  { solutions:[shapeExprTest+] }
 ShapeNotResults  { solution:Failure }
 Failure          { node:(IRI|BNODE) shape:(IRI|BNODE) errors:[error+] }
-error            = MissingProperty ;
-MissingProperty  { property:IRI }
+error            = MissingProperty | TypeMismatch | Failure;
+MissingProperty  { property:IRI valueExpr:NodeConstraint? } # get rid of valueExpr?
+TypeMismatch     { triple:TestedTriple constraint:TripleConstraint errors:[STRING]  }
 NodeTest         { node:(IRI|BNODE|ObjectLiteral) shape:(IRI|BNODE) shapeExpr:shapeExpr }
-ShapeTest        { node:(IRI|BNODE) shape:IRI solution:tripleExprSolutions? startActs:[SemAct+]? }
+ShapeTest        { node:(IRI|BNODE) shape:IRI solution:tripleExprSolutions? startActs:[SemAct+]? annotations:[Annotation+]? }
+SolutionList     { solutions:[shapeExprTest+] }
+FailureList      { errors:[error+] }
 tripleExprSolutions = EachOfSolutions | OneOfSolutions | TripleConstraintSolutions ;
-EachOfSolutions  { solutions:[EachOfSolution+] min:INTEGER? max:(INTEGER|"*")? annotations:[Annotation+]? semActs:[SemAct+]? }
+EachOfSolutions  { solutions:[EachOfSolution+] min:INTEGER? max:INTEGER? annotations:[Annotation+]? semActs:[SemAct+]? }
 EachOfSolution   { expressions:[tripleExprSolutions+] }
-OneOfSolutions   { solutions:[OneOfSolution+] min:INTEGER? max:(INTEGER|"*")? annotations:[Annotation+]? semActs:[SemAct+]? }
+OneOfSolutions   { solutions:[OneOfSolution+] min:INTEGER? max:INTEGER? annotations:[Annotation+]? semActs:[SemAct+]? }
 OneOfSolution    { expressions:[tripleExprSolutions+] }
-TripleConstraintSolutions { predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:(INTEGER|"*")? solutions:[TestedTriple] annotations:[Annotation+]? semActs:[SemAct+]? }
+TripleConstraintSolutions { predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:INTEGER? solutions:[TestedTriple] annotations:[Annotation+]? semActs:[SemAct+]? }
 TestedTriple     { subject:(IRI|BNODE) predicate:IRI object:(IRI|BNODE|ObjectLiteral) referenced:(shapeExprTest|Recursion)? }
 Recursion        { node:(IRI|BNODE) shape:(IRI|BNODE) }
 
@@ -34,37 +37,41 @@ ShapeOr          { shapeExprs:[shapeExpr{2,}] }
 ShapeAnd         { shapeExprs:[shapeExpr{2,}] }
 ShapeNot         { shapeExpr:shapeExpr }
 NodeConstraint   { nodeKind:("iri"|"bnode"|"nonliteral"|"literal")? datatype:IRI? xsFacet* values:[valueSetValue+]? }
-Shape            { virtual:BOOL? closed:BOOL? extra:[IRI+]? expression:tripleExpr? inherit:[shapeLabel+]? semActs:[SemAct+]? }
 ShapeRef         { reference:IRI } # should be a TERM or some such
+Shape            { virtual:BOOL? closed:BOOL? extra:[IRI+]? expression:tripleExpr? inherit:[shapeExprLabel+]? semActs:[SemAct+]? annotations:[Annotation+]? }
 ShapeExternal    {  }
 
 # Triple Expressions
-tripleExpr       = EachOf | OneOf | TripleConstraint | Inclusion ;
-EachOf           { expressions:[tripleExpr{2,}] min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct+]? annotations:[Annotation+]? }
-OneOf            { expressions:[tripleExpr{2,}] min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct+]? annotations:[Annotation+]? }
-TripleConstraint { inverse:BOOL? negated:BOOL? predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:(INTEGER|"*")? semActs:[SemAct+]? annotations:[Annotation+]? }
-Inclusion        { include:shapeLabel }
+tripleExpr       = EachOf | OneOf | TripleConstraint | tripleExprLabel ;
+EachOf           { id:tripleExprLabel? expressions:[tripleExpr{2,}] min:INTEGER? max:INTEGER? semActs:[SemAct+]? annotations:[Annotation+]? }
+OneOf            { id:tripleExprLabel? expressions:[tripleExpr{2,}] min:INTEGER? max:INTEGER? semActs:[SemAct+]? annotations:[Annotation+]? }
+TripleConstraint { id:tripleExprLabel? inverse:BOOL? negated:BOOL? predicate:IRI valueExpr:shapeExpr? min:INTEGER? max:INTEGER? semActs:[SemAct+]? annotations:[Annotation+]? }
 
 # XML Schema facets
 xsFacet          = stringFacet | numericFacet ;
-stringFacet      = (length|minlength|maxlength):INTEGER | pattern:STRING ;
+stringFacet      = (length|minlength|maxlength):INTEGER | pattern:STRING flags:STRING? ;
 numericFacet     = (mininclusive|minexclusive|maxinclusive|maxexclusive):numericLiteral
                  | (totaldigits|fractiondigits):INTEGER ;
 
 # Value Sets
-valueSetValue    = objectValue|Stem|StemRange ;
+valueSetValue    = objectValue | IriStem | IriStemRange | LiteralStem | LiteralStemRange | Language | LanguageStem | LanguageStemRange ;
 objectValue      = IRI|ObjectLiteral ;
-Stem             { stem:IRI } # StemRange with exclusions
-StemRange        { stem:(IRI|Wildcard) exclusions:[objectValue|Stem +]? }
+IriStem          { stem:IRI }
+IriStemRange     { stem:(IRI|Wildcard) exclusions:[IRI|IriStem +] }
+LiteralStem      { stem:STRING }
+LiteralStemRange { stem:(STRING|Wildcard) exclusions:[STRING|LiteralStem +] }
+Language         { languageTag:STRING }
+LanguageStem     { stem:LANGTAG }
+LanguageStemRange{ stem:(LANGTAG|Wildcard) exclusions:[LANGTAG|LanguageStem +] }
 Wildcard         {  }
 
 SemAct           { name:IRI code:STRING? }
 Annotation       { predicate:IRI object:objectValue }
 
-shapeLabel       = IRI|BNODE ;
+shapeExprLabel   = IRI|BNODE ;
+tripleExprLabel  = IRI|BNODE ;
 numericLiteral   = INTEGER|DECIMAL|DOUBLE ;
-RDFLiteral       = SIMPLE_LITERAL|DATATYPE_LITERAL|LANG_LITERAL ;
-ObjectLiteral    { value:STRING language:STRING? type:STRING? }
+ObjectLiteral    { value:STRING language:LANGTAG? type:IRI? }
 
 # Terminals used in productions:
 IRI              : (PN_CHARS | '.' | ':' | '/' | '\\' | '#' | '@' | '%' | '&' | UCHAR)* ; # <http://www.w3.org/TR/turtle/#grammar-production-IRIREF> - "<>"s
@@ -73,6 +80,7 @@ BOOL             : "true" | "false" ; # JSON boolean tokens
 INTEGER          : [+-]? [0-9] + ; # <http://www.w3.org/TR/turtle/#grammar-production-INTEGER>
 DECIMAL          : [+-]? [0-9]* '.' [0-9] + ; # <http://www.w3.org/TR/turtle/#grammar-production-DECIMAL>
 DOUBLE           : [+-]? ([0-9] + '.' [0-9]* EXPONENT | '.' [0-9]+ EXPONENT | [0-9]+ EXPONENT) ; # <http://www.w3.org/TR/turtle/#grammar-production-DOUBLE>
+LANGTAG          : ([a-zA-Z])+('-'([a-zA-Z0-9])+)* ;
 STRING           : .* ;
 
 # Terminals use only in other terminals:
@@ -88,5 +96,4 @@ UCHAR            : '\\u' HEX HEX HEX HEX
                  | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX ;
 HEX              : [0-9] | [A-F] | [a-f] ;
 EXPONENT 	 : [eE] [+-]? [0-9]+ ;
-LANGTAG          : '@' [a-zA-Z] + ('-' [a-zA-Z0-9] +)* ;
 

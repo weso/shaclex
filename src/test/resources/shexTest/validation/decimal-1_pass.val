@@ -1,0 +1,24 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/decimal-1",
+  "shape": "http://a.example/S-decimal",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/decimal-1",
+        "predicate": "http://a.example/p",
+        "object": {
+          "value": "1",
+          "type": "http://www.w3.org/2001/XMLSchema#decimal"
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal"
+    }
+  }
+}

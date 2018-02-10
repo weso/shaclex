@@ -21,7 +21,7 @@ class ShexCompactSingle extends FunSpec with JsonTest with Matchers with EitherV
   val ignoreFiles = List("coverage")
 
   val files: List[String] =
-    List("startSpaceEqualInline")
+    List("1val1vExprRefOR3")
 
   def getCompactFiles(schemasDir: String): List[File] = {
     for (name <- files)

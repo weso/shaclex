@@ -1,6 +1,6 @@
-BASE <http://shex.io/ns/>
+BASE <http://www.w3.org/ns/shex#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX sx: <http://shex.io/ns/shex#>
+PREFIX sx: <http://www.w3.org/ns/shex#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 [] a sx:Schema ;
@@ -18,8 +18,8 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
      <ShapeExternal>,
      <ShapeNot>,
      <ShapeOr>,
-     <Stem>,
-     <StemRange>,
+     <IriStem>,
+     <IriStemRange>,
      <TripleConstraint>,
      <Wildcard>,
      <facet_holder>,
@@ -43,7 +43,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         sx:valueExpr <SemActList1Plus> ]
       [ a sx:TripleConstraint ; sx:predicate sx:start ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr <shapeExpr> ]
-      [ a sx:TripleConstraint ; sx:predicate sx:shapes ; sx:min 0 ; sx:max "*" ;
+      [ a sx:TripleConstraint ; sx:predicate sx:shapes ; sx:min 0 ; sx:max -1 ;
         sx:valueExpr <shapeExpr> ] ) ] .
 
 <shapeExpr> a sx:ShapeOr ;
@@ -86,7 +86,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
           sx:valueExpr [ a sx:NodeConstraint ; sx:nodeKind sx:iri ] ]
 	<stringFacet>
 	<numericFacet>
-	[ a sx:TripleConstraint ; sx:predicate sx:values ; sx:min 1 ; sx:max "*" ;
+	[ a sx:TripleConstraint ; sx:predicate sx:values ; sx:min 1 ; sx:max -1 ;
           sx:valueExpr <valueSetValueList1Plus> ] ) ] ) ] .
 
 <Shape> a sx:Shape ; sx:closed true ;
@@ -96,11 +96,13 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         sx:valueExpr [ a sx:NodeConstraint ; sx:values ( sx:Shape ) ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:closed ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr [ a sx:NodeConstraint ; sx:values ( true false ) ] ]
-      [ a sx:TripleConstraint ; sx:predicate sx:extra ; sx:min 0 ; sx:max "*" ;
+      [ a sx:TripleConstraint ; sx:predicate sx:extra ; sx:min 0 ; sx:max -1 ;
         sx:valueExpr [ a sx:NodeConstraint ; sx:nodeKind sx:iri ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:expression ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr <tripleExpression> ]
       [ a sx:TripleConstraint ; sx:predicate sx:semActs ; sx:min 0 ; sx:max 1 ;
+        sx:valueExpr <SemActList1Plus> ]
+      [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max -1 ;
         sx:valueExpr <SemActList1Plus> ] ) ] .
 
 <ShapeExternal> a sx:Shape ; sx:closed true ;
@@ -163,31 +165,31 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     [ a sx:NodeConstraint ; sx:datatype xsd:double ] ) .
 
 <valueSetValue> a sx:ShapeOr ;
-  sx:shapeExprs ( <objectValue> <Stem> <StemRange> ) .
+  sx:shapeExprs ( <objectValue> <IriStem> <IriStemRange> ) .
 <objectValue> a sx:ShapeOr ;
   sx:shapeExprs (
     [ a sx:NodeConstraint ; sx:nodeKind sx:iri ]
     [ a sx:NodeConstraint ; sx:nodeKind sx:literal ] ) .
-<Stem> a sx:Shape ; sx:closed true ;
+<IriStem> a sx:Shape ; sx:closed true ;
   sx:expression
     [ a sx:EachOf ; sx:expressions (
       [ a sx:TripleConstraint ; sx:predicate rdf:type ;
-        sx:valueExpr [ a sx:NodeConstraint ; sx:values ( sx:Stem ) ] ]
+        sx:valueExpr [ a sx:NodeConstraint ; sx:values ( sx:IriStem ) ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:stem ;
-        sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:anyUri ] ] ) ] .
-<StemRange> a sx:Shape ; sx:closed true ;
+        sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ] ] ) ] .
+<IriStemRange> a sx:Shape ; sx:closed true ;
   sx:expression
     [ a sx:EachOf ; sx:expressions (
       [ a sx:TripleConstraint ; sx:predicate rdf:type ;
-        sx:valueExpr [ a sx:NodeConstraint ; sx:values ( sx:StemRange ) ] ]
+        sx:valueExpr [ a sx:NodeConstraint ; sx:values ( sx:IriStemRange ) ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:stem ;
         sx:valueExpr [ a sx:ShapeOr ; sx:shapeExprs (
-	  [ a sx:NodeConstraint ; sx:datatype xsd:anyUri ]
+	  [ a sx:NodeConstraint ; sx:datatype xsd:string ]
           <Wildcard> ) ] ]
-      [ a sx:TripleConstraint ; sx:predicate sx:exclusion ; sx:min 0 ; sx:max "*" ;
+      [ a sx:TripleConstraint ; sx:predicate sx:exclusion ; sx:min 0 ; sx:max -1 ;
         sx:valueExpr [ a sx:ShapeOr ; sx:shapeExprs (
 	  <objectValue>
-	  <Stem> ) ] ] ) ] .
+	  <IriStem> ) ] ] ) ] .
 <Wildcard> a sx:ShapeAnd ;
   sx:shapeExprs (
     [ a sx:NodeConstraint ; sx:nodeKind sx:bnode ]
@@ -207,15 +209,12 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       [ a sx:TripleConstraint ; sx:predicate sx:min ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:integer ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:max ; sx:min 0 ; sx:max 1 ;
-        sx:valueExpr
-	  [ a sx:ShapeOr ; sx:shapeExprs (
-	    [ a sx:NodeConstraint ; sx:datatype xsd:integer ]
-	    [ a sx:NodeConstraint ; sx:values ( "*" ) ] ) ] ]
+        sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:integer ] ]
      [ a sx:TripleConstraint ; sx:predicate sx:expressions ;
        sx:valueExpr <tripleExpressionList2Plus> ]
      [ a sx:TripleConstraint ; sx:predicate sx:semActs ; sx:min 0 ; sx:max 1 ;
        sx:valueExpr <SemActList1Plus> ]
-     [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max "*" ;
+     [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max -1 ;
        sx:valueExpr <Annotation> ] ) ] .
 
 <EachOf> a sx:Shape ; sx:closed true ;
@@ -228,15 +227,12 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         sx:valueExpr
 	  [ a sx:NodeConstraint ; sx:datatype xsd:integer ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:max ; sx:min 0 ; sx:max 1 ;
-        sx:valueExpr
-	  [ a sx:ShapeOr ; sx:shapeExprs (
-	    [ a sx:NodeConstraint ; sx:datatype xsd:integer ]
-            [ a sx:NodeConstraint ; sx:values ( "*" ) ] ) ] ]
+        sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:integer ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:expressions ;
         sx:valueExpr <tripleExpressionList2Plus> ]
       [ a sx:TripleConstraint ; sx:predicate sx:semActs ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr <SemActList1Plus> ]
-      [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max "*" ;
+      [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max -1 ;
         sx:valueExpr <Annotation> ] ) ] .
 
 <tripleExpressionList2Plus> a sx:Shape ; sx:closed true ;
@@ -270,16 +266,14 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       [ a sx:TripleConstraint ; sx:predicate sx:min ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:integer ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:max ; sx:min 0 ; sx:max 1 ;
-        sx:valueExpr [ a sx:ShapeOr ; sx:shapeExprs (
-         [ a sx:NodeConstraint ; sx:datatype xsd:integer ]
-	 [ a sx:NodeConstraint ; sx:values ( "*" ) ] ) ] ]
+        sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:integer ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:predicate ;
         sx:valueExpr [ a sx:NodeConstraint ; sx:nodeKind sx:iri ] ]
       [ a sx:TripleConstraint ; sx:predicate sx:valueExpr ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr <shapeExpr> ]
       [ a sx:TripleConstraint ; sx:predicate sx:semActs ; sx:min 0 ; sx:max 1 ;
         sx:valueExpr <SemActList1Plus> ]
-      [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max "*" ;
+      [ a sx:TripleConstraint ; sx:predicate sx:annotation ; sx:min 0 ; sx:max -1 ;
         sx:valueExpr <Annotation> ] ) ] .
 
 <SemActList1Plus> a sx:Shape ; sx:closed true ;

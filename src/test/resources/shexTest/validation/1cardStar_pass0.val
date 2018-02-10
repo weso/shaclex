@@ -6,6 +6,6 @@
     "type":"TripleConstraintSolutions", "predicate":"http://a.example/p1",
     "solutions":[
     ],
-    "min": 0, "max": "*"
+    "min": 0, "max": -1
   }
 }

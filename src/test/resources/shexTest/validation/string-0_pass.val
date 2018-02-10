@@ -1,0 +1,23 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/string-0",
+  "shape": "http://a.example/S-string",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/string-0",
+        "predicate": "http://a.example/p",
+        "object": {
+          "value": "0"
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "datatype": "http://www.w3.org/2001/XMLSchema#string"
+    }
+  }
+}

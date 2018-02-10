@@ -1,0 +1,23 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/s1",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p1",
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "values": [
+        { "value": " !\"#$%&'()/:;<=>?@[]^_`{|}~" }
+      ]
+    },
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/s1",
+        "predicate": "http://a.example/p1",
+        "object": { "value": " !\"#$%&'()/:;<=>?@[]^_`{|}~" }
+      }
+    ]
+  }
+}

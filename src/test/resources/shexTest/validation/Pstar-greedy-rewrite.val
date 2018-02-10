@@ -9,7 +9,7 @@
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
 	    "valueExpr": { "type": "ShapeRef", "reference": "http://a.example/base/T" },
-            "min": 0, "max": "*",
+            "min": 0, "max": -1,
             "solutions": [
               { "type": "TestedTriple", "subject": "http://a.example/base/n", "predicate": "http://a.example/a", "object": "http://a.example/base/pt1" },
               { "type": "TestedTriple", "subject": "http://a.example/base/n", "predicate": "http://a.example/a", "object": "http://a.example/base/pt2" },

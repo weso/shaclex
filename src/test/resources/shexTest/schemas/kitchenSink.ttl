@@ -9,7 +9,7 @@ PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 prefix rdfs: <http://www.w3.org/2000/01/rdf-schem#>
-@prefix sx:  <http://shex.io/ns/shex#> .
+@prefix sx:  <http://www.w3.org/ns/shex#> .
 
 [] a sx:Schema ;
   sx:startActs (
@@ -30,11 +30,11 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schem#>
       sx:valueExpr [ a sx:NodeConstraint ; sx:values ( ex:Issue ) ] ]
     [ a sx:TripleConstraint ; sx:predicate ex:state ;
       sx:valueExpr [ a sx:NodeConstraint ; sx:values (
-        [ a sx:StemRange ; sx:stem "http://ex.example/#state"^^xsd:anyUri ;
-          sx:exclusion ex:state_resolved ] ) ] ;
-      sx:annotation
-        [ a sx:Annotation ; sx:object "State" ; sx:predicate rdfs:label ],
-        [ a sx:Annotation ; sx:object "the sit" ; sx:predicate rdfs:description ] ;
+        [ a sx:IriStemRange ; sx:stem "http://ex.example/#state" ;
+          sx:exclusion (ex:state_resolved) ] ) ] ;
+      sx:annotation (
+        [ a sx:Annotation ; sx:object "State" ; sx:predicate rdfs:label ]
+        [ a sx:Annotation ; sx:object "the sit" ; sx:predicate rdfs:description ]) ;
     ]
     [ a sx:TripleConstraint ; sx:predicate ex:reportedBy ;
       sx:valueExpr [ a sx:ShapeAnd ; sx:shapeExprs (
@@ -55,7 +55,7 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schem#>
       [ a sx:SemAct ; sx:name ex:foo ; sx:code " asdfasdf " ]
     ) ]
     [ a sx:TripleConstraint ; sx:predicate ex:related ;
-      sx:max "*" ; sx:min 0 ;
+      sx:max -1 ; sx:min 0 ;
       sx:valueExpr <S1> ]
   ) ] .
 
@@ -66,7 +66,7 @@ ex:UserShape a sx:Shape ;
         sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ] ]
       [ a sx:EachOf ; sx:expressions (
         [ a sx:TripleConstraint ; sx:predicate foaf:givenName ;
-          sx:max "*" ; sx:min 1 ;
+          sx:max -1 ; sx:min 1 ;
           sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ] ]
         [ a sx:TripleConstraint ; sx:predicate foaf:familyName ;
           sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ] ]
@@ -84,12 +84,12 @@ ex:UserShape a sx:Shape ;
 ex:EmployeeShape a sx:Shape ;
   sx:expression [ a sx:EachOf ; sx:expressions (
     [ a sx:TripleConstraint ; sx:predicate foaf:givenName ;
-      sx:max "*" ; sx:min 1 ;
+      sx:max -1 ; sx:min 1 ;
       sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ] ]
     [ a sx:TripleConstraint ; sx:predicate foaf:familyName ;
       sx:valueExpr [ a sx:NodeConstraint ; sx:datatype xsd:string ] ]
     [ a sx:TripleConstraint ; sx:predicate foaf:phone ;
-      sx:max "*" ; sx:min 0 ;
+      sx:max -1 ; sx:min 0 ;
       sx:valueExpr [ a sx:NodeConstraint ; sx:nodeKind sx:iri ] ]
     [ a sx:TripleConstraint ; sx:predicate foaf:mbox ;
       sx:max 1 ; sx:min 0 ;
@@ -126,13 +126,13 @@ _:IDshapeE a sx:OneOf ; sx:expressions (
             sx:inverse true ]
         ) ]
         [ a sx:TripleConstraint ; sx:predicate ex:issues ;
-          sx:min 0 ; sx:max "*" ;
+          sx:min 0 ; sx:max -1 ;
           sx:valueExpr <S1> ]
         [ a sx:TripleConstraint ; sx:predicate ex:seeAlso ;
-          sx:min 0 ; sx:max "*" ;
+          sx:min 0 ; sx:max -1 ;
           sx:valueExpr <S1> ]
         [ a sx:TripleConstraint ; sx:predicate ex:says ;
-          sx:min 0 ; sx:max "*" ;
+          sx:min 0 ; sx:max -1 ;
           sx:valueExpr ex:EmployeeShape ]
       ) ]
     ) .

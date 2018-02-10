@@ -1,5 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "shapes": [
     {
@@ -12,19 +12,19 @@
           "type": "NodeConstraint",
           "values": [
             {
-              "type": "StemRange",
+              "type": "IriStemRange",
               "stem": "http://a.example/v",
               "exclusions": [
                 {
-                  "type": "Stem",
+                  "type": "IriStem",
                   "stem": "http://a.example/v1"
                 },
                 {
-                  "type": "Stem",
+                  "type": "IriStem",
                   "stem": "http://a.example/v2"
                 },
                 {
-                  "type": "Stem",
+                  "type": "IriStem",
                   "stem": "http://a.example/v3"
                 }
               ]

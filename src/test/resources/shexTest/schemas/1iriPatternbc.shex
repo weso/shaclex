@@ -1,3 +1,3 @@
 <http://a.example/S1> {
-   <http://a.example/p1> IRI PATTERN "^bc$"
+   <http://a.example/p1> IRI /^bc$/
 }

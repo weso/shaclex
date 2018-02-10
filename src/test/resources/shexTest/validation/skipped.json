@@ -1,6 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
-  "id": "http://a.example/Schema",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "shapes": [
     {
