@@ -88,6 +88,8 @@ object ApiHelper {
       case None => dataFormat
       case Some(_) => optSchemaFormat.getOrElse(Schemas.defaultSchemaFormat)
     }
+    println(s"################ SchemaFormat:[$schemaFormat], OptSchema:[$optSchema] OptSchemaFormat: [$optSchemaFormat]")
+
     val schemaStr = optSchema match {
       case None => data
       case Some(schema) => schema

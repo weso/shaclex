@@ -2,8 +2,6 @@ package es.weso.server
 
 import cats.effect.IO
 import Defaults._
-import es.weso.rdf.RDFReasoner
-import es.weso.rdf.jena.{Endpoint, RDFAsJenaModel}
 import es.weso.shapeMaps.ShapeMap
 
 case class TriggerModeParam(triggerMode: Option[String],
@@ -29,7 +27,7 @@ case class TriggerModeParam(triggerMode: Option[String],
   }
 
   case object shapeMapTextAreaType extends ShapeMapInputType {
-    override val id = "#dataTextArea"
+    override val id = "#shapeMapTextArea"
   }
 
   def parseShapeMapTab(tab: String): Either[String, ShapeMapInputType] = {
