@@ -16,7 +16,7 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
   val conf: Config = ConfigFactory.load()
   val shexLocalFolder = conf.getString("shexLocalFolder")
 
-  lazy val ignoreFiles: List[String] = List("1val1vExprRefOR3")
+  lazy val ignoreFiles: List[String] = List()
 
   def getShExFiles(schemasDir: String): List[File] = {
     getFilesFromFolderWithExt(schemasDir, "shex", ignoreFiles)
@@ -26,10 +26,18 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
     for (file <- getShExFiles(shexLocalFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
-        checkParseDeparse(str)
+        // checkParseDeparse(str)
+        checkParse(str,None)
       }
     }
   }
+
+    def checkParse(str: String, base: Option[String]) = {
+      parseSchema(str, base) match {
+        case Left(e) => fail(s"Parsing error: $e\n-------String:\n$str")
+        case Right(schema) => info(s"Parsed as schema:\n$schema")
+      }
+    }
 
   def checkParseDeparse(str: String) = {
     println(s"String: $str")

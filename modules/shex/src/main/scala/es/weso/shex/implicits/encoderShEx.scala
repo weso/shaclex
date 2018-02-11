@@ -14,7 +14,7 @@ object encoderShEx {
       mkObjectTyped(
         "Schema",
         List(
-          field("@context", "https://shexspec.github.io/context.jsonld"),
+          field("@context", "http://www.w3.org/ns/shex.jsonld"),
           optFieldMap("prefixes", s.prefixes.map(_.pm)),
           optField("base", s.base),
           optField("startActs", s.startActs),

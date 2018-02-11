@@ -14,7 +14,7 @@ object decoderShEx {
   implicit lazy val decodeSchema: Decoder[Schema] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Schema").right
-      _ <- fixedFieldValue(c, "@context", "https://shexspec.github.io/context.jsonld").right
+      _ <- fixedFieldValue(c, "@context", "http://www.w3.org/ns/shex.jsonld").right
       prefixes <- optFieldDecodeMap[Prefix, IRI](c, "prefixes").right
       base <- optFieldDecode[IRI](c, "base").right
       startActs <- optFieldDecode[List[SemAct]](c, "startActs").right
