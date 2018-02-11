@@ -22,7 +22,7 @@ class shexJsonSingle extends FunSpec with JsonTest with Matchers with EitherValu
   }
 
   describe("Parsing Schema from Json") {
-    val name = "open3Onedotclosecard2"
+    val name = "3circRefS3-IS12"
     val file = getJsonFile(schemasFolder, name)
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString

@@ -16,6 +16,7 @@ object encoderShEx {
         List(
           field("@context", "http://www.w3.org/ns/shex.jsonld"),
           optFieldMap("prefixes", s.prefixes.map(_.pm)),
+          optField("imports", if (s.imports.isEmpty) None else Some(s.imports)),
           optField("base", s.base),
           optField("startActs", s.startActs),
           optField("start", s.start),

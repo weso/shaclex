@@ -16,13 +16,13 @@ object decoderShEx {
       _ <- fixedFieldValue(c, "type", "Schema").right
       _ <- fixedFieldValue(c, "@context", "http://www.w3.org/ns/shex.jsonld").right
       prefixes <- optFieldDecodeMap[Prefix, IRI](c, "prefixes").right
+      imports <- optFieldDecode[List[IRI]](c, "imports").right
       base <- optFieldDecode[IRI](c, "base").right
       startActs <- optFieldDecode[List[SemAct]](c, "startActs").right
       start <- optFieldDecode[ShapeExpr](c, "start").right
       shapes <- optFieldDecode[List[ShapeExpr]](c, "shapes").right
       // TODO: Check how to represent tripleExprMap
-      // TODO: Add imports
-    } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes, None, List())
+    } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes, None, imports.getOrElse(List()))
   }
 
   implicit lazy val decodePrefix: Decoder[Prefix] =
