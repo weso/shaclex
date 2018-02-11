@@ -276,15 +276,15 @@ case class LanguageStemRange(stem: LanguageStemRangeValue,
 
 sealed trait LanguageStemRangeValue
 case class LanguageStemRangeLang(stem: String) extends LanguageStemRangeValue
-case object LanguageStemRangeWildcard extends LanguageStemRangeValue
+case class LanguageStemRangeWildcard() extends LanguageStemRangeValue
 
 case class LiteralStem(stem: ObjectLiteral) extends ValueSetValue
 case class LiteralStemRange(stem: LiteralStemRangeValue,
-                             exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
+                            exclusions: Option[List[ValueSetValue]]) extends ValueSetValue
 
 sealed trait LiteralStemRangeValue
 case class LiteralStemRangeValueObject(obj: ObjectLiteral) extends LiteralStemRangeValue
-case object LiteralStemRangeWildcard extends LiteralStemRangeValue
+case class LiteralStemRangeWildcard() extends LiteralStemRangeValue
 
 case class SemAct(name: IRI, code: Option[String])
 

@@ -257,12 +257,19 @@ object decoderShEx {
   implicit lazy val decodeValueSetValue: Decoder[ValueSetValue] =
     Decoder[IRIStem].map(identity).or(
       Decoder[IRIStemRange].map(identity).or(
-        Decoder[ObjectValue].map(identity)))
+        Decoder[LanguageStem].map(identity).or(
+          Decoder[LanguageStemRange].map(identity).or(
+            Decoder[LiteralStem].map(identity).or(
+              Decoder[LiteralStemRange].map(identity).or(
+                Decoder[ObjectValue].map(identity)
+    ))))))
 
   implicit lazy val decodeObjectValue: Decoder[ObjectValue] =
-    Decoder[IRI].map(IRIValue(_)).or(decodeObjectLiteral)
+    Decoder[IRI].map(IRIValue(_)).or(
+      decodeObjectLiteral.map(identity)
+  )
 
-  lazy val decodeObjectLiteral: Decoder[ObjectValue] = Decoder.instance { c =>
+  implicit lazy val decodeObjectLiteral: Decoder[ObjectLiteral] = Decoder.instance { c =>
     for {
       value <- fieldDecode[String](c, "value").right
       optLang <- optFieldDecode[String](c, "language").right
@@ -294,17 +301,47 @@ object decoderShEx {
 
   implicit lazy val decodeIRIStem: Decoder[IRIStem] = Decoder.instance { c =>
     for {
-      _ <- fixedFieldValue(c, "type", "Stem")
+      _ <- fixedFieldValue(c, "type", "IriStem")
       stem <- fieldDecode[IRI](c, "stem")
     } yield IRIStem(stem)
   }
 
   implicit lazy val decodeIRIStemRange: Decoder[IRIStemRange] = Decoder.instance { c =>
     for {
-      _ <- fixedFieldValue(c, "type", "StemRange")
+      _ <- fixedFieldValue(c, "type", "IriStemRange")
       stem <- fieldDecode[IRIStemRangeValue](c, "stem")
       exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
     } yield IRIStemRange(stem, exclusions)
+  }
+
+  implicit lazy val decodeLanguageStem: Decoder[LanguageStem] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LanguageStem")
+      stem <- fieldDecode[String](c, "stem")
+    } yield LanguageStem(stem)
+  }
+
+  implicit lazy val decodeLanguageStemRange: Decoder[LanguageStemRange] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LanguageStemRange")
+      stem <- fieldDecode[LanguageStemRangeValue](c, "stem")
+      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+    } yield LanguageStemRange(stem, exclusions)
+  }
+
+  implicit lazy val decodeLiteralStem: Decoder[LiteralStem] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LiteralStem")
+      stem <- fieldDecode[ObjectLiteral](c, "stem")
+    } yield LiteralStem(stem)
+  }
+
+  implicit lazy val decodeLiteralStemRange: Decoder[LiteralStemRange] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LiteralStemRange")
+      stem <- fieldDecode[LiteralStemRangeValue](c, "stem")
+      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+    } yield LiteralStemRange(stem, exclusions)
   }
 
   implicit lazy val decodeIRIStemRangeValue: Decoder[IRIStemRangeValue] =
@@ -315,6 +352,28 @@ object decoderShEx {
     for {
       _ <- fixedFieldValue(c, "type", "Wildcard")
     } yield IRIStemWildcard()
+  }
+
+  implicit lazy val decodeLanguageStemRangeValue: Decoder[LanguageStemRangeValue] =
+    Decoder[String].map(stem => LanguageStemRangeLang(stem)).or(
+      Decoder[LanguageStemRangeWildcard].map(identity)
+    )
+
+  implicit lazy val decodeLanguageRangeStemWildcard: Decoder[LanguageStemRangeWildcard] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "Wildcard")
+    } yield LanguageStemRangeWildcard()
+  }
+
+  implicit lazy val decodeLiteralStemRangeValue: Decoder[LiteralStemRangeValue] =
+    Decoder[ObjectLiteral].map(obj => LiteralStemRangeValueObject(obj)).or(
+      Decoder[LiteralStemRangeWildcard].map(identity)
+    )
+
+  implicit lazy val decodeLiteralStemRangeWildcard: Decoder[LiteralStemRangeWildcard] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "Wildcard")
+    } yield LiteralStemRangeWildcard()
   }
 
   implicit lazy val decodeTripleConstraint: Decoder[TripleConstraint] = Decoder.instance { c =>
