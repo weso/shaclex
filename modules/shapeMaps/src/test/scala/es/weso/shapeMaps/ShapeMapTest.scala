@@ -6,8 +6,6 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
 import es.weso.rdf.path.PredicatePath
 
-import scala.util.{ Failure, Success }
-
 class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValues {
 
   describe("ShapeMaps") {
@@ -17,6 +15,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
         List(Association(node = RDFNodeSelector(IRI("http://example.org/x")), shape = Start)),
         PrefixMap.empty,
         PrefixMap.empty)
+      map.associations.length should be(1)
     }
   }
 
@@ -119,6 +118,12 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       nodesPrefixMap,
       shapesPrefixMap)
 
+    shouldParse("""<http://x.com>@<S>""", QueryShapeMap(List(Association(
+      node = RDFNodeSelector(IRI("http://x.com")),
+      shape = IRILabel(IRI("S")))), nodesPrefixMap, shapesPrefixMap),
+      nodesPrefixMap,
+      shapesPrefixMap)
+
     def shouldParse(
       str: String,
       expected: ShapeMap,
@@ -128,7 +133,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
         Parser.parse(str, None, nodesPrefixMap, shapesPrefixMap) match {
           case Left(msg) => fail(s"Failed to parse $str: $msg")
           case Right(shapeMap) => {
-            println("parsed!!")
+            println(s"$str parsed!!")
             println(shapeMap)
             info(s"Parsed $shapeMap")
             shapeMap shouldBe (expected)

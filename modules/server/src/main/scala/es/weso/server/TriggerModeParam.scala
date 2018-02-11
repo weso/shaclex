@@ -29,7 +29,7 @@ case class TriggerModeParam(triggerMode: Option[String],
   }
 
   case object shapeMapTextAreaType extends ShapeMapInputType {
-    override val id = "#dataTextArea"
+    override val id = "#shapeMapTextArea"
   }
 
   def parseShapeMapTab(tab: String): Either[String, ShapeMapInputType] = {
