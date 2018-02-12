@@ -123,7 +123,10 @@ object decoderShEx {
       case "length" => c.get[Int](name).map(n => Some(Length(n)))
       case "minlength" => c.get[Int](name).map(n => Some(MinLength(n)))
       case "maxlength" => c.get[Int](name).map(n => Some(MaxLength(n)))
-      case "pattern" => c.get[String](name).map(p => Some(Pattern(p, None))) // TODO
+      case "pattern" => for {
+        p <- fieldDecode[String](c,name)
+        flags <- optFieldDecode[String](c,"flags")
+      } yield Some(Pattern(p,flags))
       case "mininclusive" => c.get[NumericLiteral](name).map(p => Some(MinInclusive(p)))
       case "minexclusive" => c.get[NumericLiteral](name).map(p => Some(MinExclusive(p)))
       case "maxinclusive" => c.get[NumericLiteral](name).map(p => Some(MaxInclusive(p)))

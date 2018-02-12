@@ -108,7 +108,8 @@ object encoderShEx {
           optField("id", a.id),
           optField("nodeKind", a.nodeKind),
           optField("datatype", a.datatype),
-          optField("values", a.values)) ++ mkFieldsFacets(a.xsFacets))
+          optField("values", a.values)
+        ) ++ mkFieldsFacets(a.xsFacets))
   }
 
   implicit lazy val encodeShape: Encoder[Shape] = new Encoder[Shape] {
@@ -169,25 +170,27 @@ object encoderShEx {
   }
 
   def mkFieldsFacets(xs: List[XsFacet]): List[Option[(String, Json)]] = {
-    xs.map(x => Some(mkFieldFacet(x)))
+    xs.map(x => mkFieldFacet(x)).flatten.map(Some(_))
   }
 
-  def mkFieldFacet(x: XsFacet): (String, Json) =
+  def mkFieldFacet(x: XsFacet): List[(String, Json)] =
     x match {
-      case Length(v) => (x.fieldName, Json.fromInt(v))
-      case MinLength(v) => (x.fieldName, Json.fromInt(v))
-      case MaxLength(v) => (x.fieldName, Json.fromInt(v))
-      case Pattern(p, flags) => if (!flags.isDefined) {
-        (x.fieldName, Json.fromString(p))
-      } else {
-       throw new Exception(s"Unimplemented encoder of pattern with flags yet: $p, flags: $flags")
+      case Length(v) => List((x.fieldName, Json.fromInt(v)))
+      case MinLength(v) => List((x.fieldName, Json.fromInt(v)))
+      case MaxLength(v) => List((x.fieldName, Json.fromInt(v)))
+      case Pattern(p, fs) => fs match {
+        case None => List((x.fieldName, Json.fromString(p)))
+        case Some(flags) => List(
+          (x.fieldName, Json.fromString(p)),
+          ("flags", Json.fromString(flags))
+        )
       }
-      case MinInclusive(n) => (x.fieldName, encodeNumeric(n))
-      case MaxInclusive(n) => (x.fieldName, encodeNumeric(n))
-      case MinExclusive(n) => (x.fieldName, encodeNumeric(n))
-      case MaxExclusive(n) => (x.fieldName, encodeNumeric(n))
-      case TotalDigits(n) => (x.fieldName, Json.fromInt(n))
-      case FractionDigits(n) => (x.fieldName, Json.fromInt(n))
+      case MinInclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case MaxInclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case MinExclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case MaxExclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case TotalDigits(n) => List((x.fieldName, Json.fromInt(n)))
+      case FractionDigits(n) => List((x.fieldName, Json.fromInt(n)))
     }
 
   implicit lazy val encodeNumeric: Encoder[NumericLiteral] = new Encoder[NumericLiteral] {
