@@ -288,6 +288,8 @@ sealed trait LiteralStemRangeValue
 case class LiteralStemRangeValueObject(obj: ObjectLiteral) extends LiteralStemRangeValue
 case class LiteralStemRangeWildcard() extends LiteralStemRangeValue
 
+case class Language(languageTag: String) extends ValueSetValue
+
 case class SemAct(name: IRI, code: Option[String])
 
 abstract sealed trait TripleExpr

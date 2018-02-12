@@ -236,6 +236,7 @@ object decoderShEx {
   }
 
   implicit lazy val decodeValueSetValue: Decoder[ValueSetValue] =
+   Decoder[Language].map(identity).or(
     Decoder[IRIStem].map(identity).or(
       Decoder[IRIStemRange].map(identity).or(
         Decoder[LanguageStem].map(identity).or(
@@ -243,12 +244,18 @@ object decoderShEx {
             Decoder[LiteralStem].map(identity).or(
               Decoder[LiteralStemRange].map(identity).or(
                 Decoder[ObjectValue].map(identity)
-    ))))))
+   )))))))
 
   implicit lazy val decodeObjectValue: Decoder[ObjectValue] =
     Decoder[IRI].map(IRIValue(_)).or(
       decodeObjectLiteral.map(identity)
   )
+  implicit lazy val decodeLanguage: Decoder[Language] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "Language")
+      lang <- fieldDecode[String](c, "languageTag")
+    } yield Language(lang)
+  }
 
   implicit lazy val decodeObjectLiteral: Decoder[ObjectLiteral] = Decoder.instance { c =>
     for {

@@ -221,6 +221,7 @@ object encoderShEx {
       case LiteralStem(LangString(s,lang)) => ???
       case LiteralStemRange(stem,exclusions) =>
         mkObjectTyped("LiteralStemRange", List(field("stem", stem), optField("exclusions", exclusions)))
+      case Language(lang) => mkObjectTyped("Language", List(field("languageTag", lang)))
     }
   }
 
