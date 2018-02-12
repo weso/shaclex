@@ -117,20 +117,6 @@ object decoderShEx {
     sequenceEither(rs)
   }
 
-  // Todo: Use "sequence" when I find why it gives a type error...
-  def sequenceEither[E, A](xs: List[Either[E, Option[A]]]): Either[E, List[A]] = {
-    val zero: Either[E, List[A]] = Either.right(List())
-    def next(r: Either[E, List[A]], x: Either[E, Option[A]]): Either[E, List[A]] =
-      x match {
-        case Left(e) => Left(e)
-        case Right(None) => r
-        case Right(Some(v)) => r match {
-          case Left(e) => Left(e)
-          case Right(vs) => Right(v :: vs)
-        }
-      }
-    xs.foldLeft(zero)(next)
-  }
 
   def extractXsFacet(name: String, c: HCursor): Either[DecodingFailure, Option[XsFacet]] = {
     name match {
@@ -148,12 +134,6 @@ object decoderShEx {
     }
   }
 
-  def mapEither[A, B, C](v: Either[A, B], f: B => C): Either[A, C] = {
-    v match {
-      case Left(e) => Left(e)
-      case Right(x) => Right(f(x))
-    }
-  }
 
   implicit lazy val decodeNumericLiteral: Decoder[NumericLiteral] =
     Decoder[Int].map(n => NumericInt(n)).or(
@@ -181,7 +161,8 @@ object decoderShEx {
       expression <- optFieldDecode[TripleExpr](c, "expression")
       inherit <- optFieldDecode[ShapeLabel](c, "inherit")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
-    } yield Shape(id, virtual, closed, extra, expression, inherit, semActs)
+      annotations <- optFieldDecode[List[Annotation]](c,"annotations")
+    } yield Shape(id, virtual, closed, extra, expression, inherit, semActs, annotations)
   }
 
   implicit lazy val decodeTripleExpr: Decoder[TripleExpr] =
@@ -332,8 +313,8 @@ object decoderShEx {
   implicit lazy val decodeLiteralStem: Decoder[LiteralStem] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "LiteralStem")
-      stem <- fieldDecode[ObjectLiteral](c, "stem")
-    } yield LiteralStem(stem)
+      stem <- fieldDecode[String](c, "stem")
+    } yield LiteralStem(StringValue(stem))
   }
 
   implicit lazy val decodeLiteralStemRange: Decoder[LiteralStemRange] = Decoder.instance { c =>
@@ -366,8 +347,10 @@ object decoderShEx {
   }
 
   implicit lazy val decodeLiteralStemRangeValue: Decoder[LiteralStemRangeValue] =
+    Decoder[String].map(str => LiteralStemRangeValueObject(StringValue(str))).or(
     Decoder[ObjectLiteral].map(obj => LiteralStemRangeValueObject(obj)).or(
       Decoder[LiteralStemRangeWildcard].map(identity)
+    )
     )
 
   implicit lazy val decodeLiteralStemRangeWildcard: Decoder[LiteralStemRangeWildcard] = Decoder.instance { c =>
@@ -433,4 +416,27 @@ lazy val PN_CHARS_BASE =
       """\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD""" +
       """\x{10000}-\x{EFFFF}]"""
 */
+
+  // Todo: Use "sequence" when I find why it gives a type error...
+  def sequenceEither[E, A](xs: List[Either[E, Option[A]]]): Either[E, List[A]] = {
+    val zero: Either[E, List[A]] = Either.right(List())
+    def next(r: Either[E, List[A]], x: Either[E, Option[A]]): Either[E, List[A]] =
+      x match {
+        case Left(e) => Left(e)
+        case Right(None) => r
+        case Right(Some(v)) => r match {
+          case Left(e) => Left(e)
+          case Right(vs) => Right(v :: vs)
+        }
+      }
+    xs.foldLeft(zero)(next)
+  }
+
+  def mapEither[A, B, C](v: Either[A, B], f: B => C): Either[A, C] = {
+    v match {
+      case Left(e) => Left(e)
+      case Right(x) => Right(f(x))
+    }
+  }
+
 }

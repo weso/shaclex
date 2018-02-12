@@ -61,13 +61,14 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
       _ <- maybeAddListContent(values, shapeId, sx_values, valueSetValue)
     } yield shapeId
 
-    case Shape(id, virtual, closed, extra, expr, inherit, semActs) => for {
+    case Shape(id, virtual, closed, extra, expr, inherit, semActs,annotations) => for {
       shapeId <- mkId(id)
       _ <- addTriple(shapeId, rdf_type, sx_Shape)
       _ <- maybeAddContent(closed, shapeId, sx_closed, rdfBoolean)
       _ <- maybeAddStarContent(extra, shapeId, sx_extra, iri)
       _ <- maybeAddContent(expr, shapeId, sx_expression, tripleExpr)
       _ <- maybeAddListContent(semActs, shapeId, sx_semActs, semAct)
+      _ <- maybeAddStarContent(annotations, shapeId, sx_annotation, annotation)
     } yield shapeId
 
     case ShapeExternal(id) => for {

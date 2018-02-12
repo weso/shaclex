@@ -144,4 +144,15 @@ object eqShEx extends LazyLogging {
     }
   }
 
-}
+  implicit lazy val eqObjectLiteral: Eq[ObjectLiteral] = new Eq[ObjectLiteral] {
+    final def eqv(n1: ObjectLiteral, n2: ObjectLiteral): Boolean = {
+      (n1,n2) match {
+        case (StringValue(s1),StringValue(s2)) => s1 === s2
+        case (DatatypeString(s1,i1),DatatypeString(s2,i2)) => s1 === s2 && i1 === i2
+        case (LangString(s1,l1),LangString(s2,l2)) => s1 == s2 && l1 == l2
+        case (_,_) => false
+      }
+    }
+    }
+
+  }

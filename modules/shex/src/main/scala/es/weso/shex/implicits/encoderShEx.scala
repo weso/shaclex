@@ -122,7 +122,9 @@ object encoderShEx {
           optField("extra", a.extra),
           optField("expression", a.expression),
           optField("inherit", a.inherit),
-          optField("semActs", a.semActs)))
+          optField("semActs", a.semActs),
+          optField("annotations",a.annotations)
+        ))
   }
 
   implicit lazy val encodeShapeLabel: Encoder[ShapeLabel] = new Encoder[ShapeLabel] {
@@ -214,7 +216,9 @@ object encoderShEx {
       case LanguageStem(stem) => mkObjectTyped("LanguageStem", List(field("stem", stem)))
       case LanguageStemRange(stem,exclusions) =>
         mkObjectTyped("LanguageStemRange", List(field("stem", stem), optField("exclusions", exclusions)))
-      case LiteralStem(stem) => mkObjectTyped("LiteralStem", List(field("stem", stem)))
+      case LiteralStem(StringValue(stem)) => mkObjectTyped("LiteralStem", List(field("stem", stem)))
+      case LiteralStem(DatatypeString(s,iri)) => ???
+      case LiteralStem(LangString(s,lang)) => ???
       case LiteralStemRange(stem,exclusions) =>
         mkObjectTyped("LiteralStemRange", List(field("stem", stem), optField("exclusions", exclusions)))
     }
@@ -264,7 +268,9 @@ object encoderShEx {
 
   implicit lazy val encodeLiteralStemRangeValue: Encoder[LiteralStemRangeValue] = new Encoder[LiteralStemRangeValue] {
     final def apply(a: LiteralStemRangeValue): Json = a match {
-      case LiteralStemRangeValueObject(obj) => obj.asJson
+      case LiteralStemRangeValueObject(StringValue(s)) => Json.fromString(s)
+      case LiteralStemRangeValueObject(DatatypeString(s,iri)) => Json.fromString("\"" + s + "\"^^" + iri.show)
+      case LiteralStemRangeValueObject(LangString(s,lang)) => Json.fromString("\"" + s + "\"@" + lang)
       case LiteralStemRangeWildcard() => mkObjectTyped("Wildcard", List())
     }
   }

@@ -124,7 +124,6 @@ object NodeConstraint {
       xsFacets = facets)
 }
 
-// TODO: Review if shapes should have annotations
 case class Shape(
   id: Option[ShapeLabel],
   virtual: Option[Boolean],
@@ -132,7 +131,8 @@ case class Shape(
   extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
   expression: Option[TripleExpr],
   inherit: Option[ShapeLabel],
-  semActs: Option[List[SemAct]]) extends ShapeExpr {
+  semActs: Option[List[SemAct]],
+  annotations: Option[List[Annotation]]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
@@ -158,7 +158,9 @@ object Shape {
     extra = None,
     expression = None,
     inherit = None,
-    semActs = None)
+    semActs = None,
+    annotations = None
+  )
 
   def defaultVirtual = false
   def defaultClosed = false

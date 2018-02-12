@@ -11,7 +11,7 @@ class ParserTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
     shouldParse(s"<S> {}", None,
       Schema(None,None,None,None,
-        Some(List(Shape(Some(IRILabel(IRI("S"))),None,Some(false),None,None,None,None))),None,List())
+        Some(List(Shape(Some(IRILabel(IRI("S"))),None,Some(false),None,None,None,None,None))),None,List())
     )
 
     def shouldParse(str:String, base: Option[String], expected: Schema): Unit = {

@@ -8,7 +8,6 @@ import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
 import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.rdf.nodes._
 
@@ -49,6 +48,10 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
   describe("SemAct codec") {
     codecValueTest[SemAct](SemAct(IRI("x"), None))
     codecValueTest[SemAct](SemAct(IRI("x"), Some("blah")))
+  }
+
+  describe("ObjectLiteral codec") {
+    codecValueTest[ObjectLiteral](StringValue("hi"))
   }
 
   describe("ShapeExpr codec") {
