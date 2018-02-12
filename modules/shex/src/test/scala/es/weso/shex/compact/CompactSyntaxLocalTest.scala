@@ -1,8 +1,6 @@
 package es.weso.shex.compact
 import org.scalatest._
 import com.typesafe.config._
-import cats.implicits._
-import es.weso.json._
 import es.weso.utils.FileUtils._
 
 import scala.io._
@@ -12,9 +10,6 @@ import es.weso.shex.compact.Parser._
 import es.weso.shex.compact.CompactShow._
 import es.weso.shex.implicits.eqShEx._
 import cats._
-import data._
-import es.weso.utils.FileUtils
-import implicits._
 
 class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
 
@@ -31,13 +26,21 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
     for (file <- getShExFiles(shexLocalFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
-        checkParseDeparse(str)
+        // checkParseDeparse(str)
+        checkParse(str,None)
       }
     }
   }
 
+    def checkParse(str: String, base: Option[String]) = {
+      parseSchema(str, base) match {
+        case Left(e) => fail(s"Parsing error: $e\n-------String:\n$str")
+        case Right(schema) => info(s"Parsed as schema:\n$schema")
+      }
+    }
+
   def checkParseDeparse(str: String) = {
-    import es.weso.shex.implicits.eqShEx.eq
+    println(s"String: $str")
     parseSchema(str, None) match {
       case Left(s) => fail(s"Parsing error: $s\n-------String:\n$str")
       case Right(schema) => {

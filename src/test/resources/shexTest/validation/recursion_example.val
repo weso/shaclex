@@ -1,0 +1,158 @@
+{
+  "type": "SolutionList",
+  "solutions": [
+    {
+      "type": "ShapeTest",
+      "node": "http://inst.example/Issue1",
+      "shape": "http://schema.example/IssueShape",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://schema.example/related",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://inst.example/Issue1",
+            "predicate": "http://schema.example/related",
+            "object": "http://inst.example/Issue2",
+            "referenced": {
+              "type": "ShapeTest",
+              "node": "http://inst.example/Issue2",
+              "shape": "http://schema.example/IssueShape",
+              "solution": {
+                "type": "TripleConstraintSolutions",
+                "predicate": "http://schema.example/related",
+                "solutions": [
+                  {
+                    "type": "TestedTriple",
+                    "subject": "http://inst.example/Issue2",
+                    "predicate": "http://schema.example/related",
+                    "object": "http://inst.example/Issue3",
+                    "referenced": {
+                      "type": "ShapeTest",
+                      "node": "http://inst.example/Issue3",
+                      "shape": "http://schema.example/IssueShape",
+                      "solution": {
+                        "type": "TripleConstraintSolutions",
+                        "predicate": "http://schema.example/related",
+                        "solutions": [
+                          {
+                            "type": "TestedTriple",
+                            "subject": "http://inst.example/Issue3",
+                            "predicate": "http://schema.example/related",
+                            "object": "http://inst.example/Issue1",
+                            "referenced": {
+                              "type": "Recursion",
+                              "node": "http://inst.example/Issue1",
+                              "shape": "http://schema.example/IssueShape"
+                            }
+                          }
+                        ],
+                        "valueExpr": {
+                          "type": "ShapeRef",
+                          "reference": "http://schema.example/IssueShape"
+                        },
+                        "min": 0,
+                        "max": -1
+                      }
+                    }
+                  }
+                ],
+                "valueExpr": {
+                  "type": "ShapeRef",
+                  "reference": "http://schema.example/IssueShape"
+                },
+                "min": 0,
+                "max": -1
+              }
+            }
+          }
+        ],
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "http://schema.example/IssueShape"
+        },
+        "min": 0,
+        "max": -1
+      }
+    },
+    {
+      "type": "ShapeTest",
+      "node": "http://inst.example/Issue2",
+      "shape": "http://schema.example/IssueShape",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://schema.example/related",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://inst.example/Issue2",
+            "predicate": "http://schema.example/related",
+            "object": "http://inst.example/Issue3",
+            "referenced": {
+              "type": "ShapeTest",
+              "node": "http://inst.example/Issue3",
+              "shape": "http://schema.example/IssueShape",
+              "solution": {
+                "type": "TripleConstraintSolutions",
+                "predicate": "http://schema.example/related",
+                "solutions": [
+                  {
+                    "type": "TestedTriple",
+                    "subject": "http://inst.example/Issue3",
+                    "predicate": "http://schema.example/related",
+                    "object": "http://inst.example/Issue1",
+                    "referenced": {
+                      "type": "Recursion",
+                      "node": "http://inst.example/Issue1",
+                      "shape": "http://schema.example/IssueShape"
+                    }
+                  }
+                ],
+                "valueExpr": {
+                  "type": "ShapeRef",
+                  "reference": "http://schema.example/IssueShape"
+                },
+                "min": 0,
+                "max": -1
+              }
+            }
+          }
+        ],
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "http://schema.example/IssueShape"
+        },
+        "min": 0,
+        "max": -1
+      }
+    },
+    {
+      "type": "ShapeTest",
+      "node": "http://inst.example/Issue3",
+      "shape": "http://schema.example/IssueShape",
+      "solution": {
+        "type": "TripleConstraintSolutions",
+        "predicate": "http://schema.example/related",
+        "solutions": [
+          {
+            "type": "TestedTriple",
+            "subject": "http://inst.example/Issue3",
+            "predicate": "http://schema.example/related",
+            "object": "http://inst.example/Issue1",
+            "referenced": {
+              "type": "Recursion",
+              "node": "http://inst.example/Issue1",
+              "shape": "http://schema.example/IssueShape"
+            }
+          }
+        ],
+        "valueExpr": {
+          "type": "ShapeRef",
+          "reference": "http://schema.example/IssueShape"
+        },
+        "min": 0,
+        "max": -1
+      }
+    }
+  ]
+}

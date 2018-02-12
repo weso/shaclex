@@ -1,0 +1,24 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/short-n32768",
+  "shape": "http://a.example/S-short",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/short-n32768",
+        "predicate": "http://a.example/p",
+        "object": {
+          "value": "-32768",
+          "type": "http://www.w3.org/2001/XMLSchema#short"
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "datatype": "http://www.w3.org/2001/XMLSchema#short"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "prefixes": {
     "": "http://a.example/",
@@ -22,7 +22,7 @@
                   "reference": "http://a.example.org/T"
                 },
                 "min": 1,
-                "max": "*"
+                "max": -1
               },
               {
                 "type": "TripleConstraint",
@@ -31,7 +31,7 @@
                   "type": "ValueClass"
                 },
                 "min": 0,
-                "max": "*"
+                "max": -1
               }
             ],
             "min": 2,

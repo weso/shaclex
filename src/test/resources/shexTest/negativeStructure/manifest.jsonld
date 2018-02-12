@@ -33,13 +33,6 @@
           "shex": "1focusRefANDSelfdot.shex"
         },
         {
-          "@id": "#includeNonSimpleShape",
-          "@type": "sht:NegativeStructure",
-          "name": "includeNonSimpleShape",
-          "status": "mf:proposed",
-          "shex": "includeNonSimpleShape.shex"
-        },
-        {
           "@id": "#includeSimpleShape",
           "@type": "sht:NegativeStructure",
           "name": "includeSimpleShape",
@@ -47,11 +40,25 @@
           "shex": "includeSimpleShape.shex"
         },
         {
+          "@id": "#includeNonSimpleShape",
+          "@type": "sht:NegativeStructure",
+          "name": "includeNonSimpleShape",
+          "status": "mf:proposed",
+          "shex": "includeNonSimpleShape.shex"
+        },
+        {
           "@id": "#includeExpressionNotFound",
           "@type": "sht:NegativeStructure",
           "name": "includeExpressionNotFound",
           "status": "mf:proposed",
           "shex": "includeExpressionNotFound.shex"
+        },
+        {
+          "@id": "#1ShapeProductionCollision",
+          "@type": "sht:NegativeStructure",
+          "name": "1ShapeProductionCollision",
+          "status": "mf:proposed",
+          "shex": "1ShapeProductionCollision.shex"
         }
       ]
     }

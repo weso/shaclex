@@ -1,0 +1,24 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/unsignedShort-65535",
+  "shape": "http://a.example/S-unsignedShort",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/unsignedShort-65535",
+        "predicate": "http://a.example/p",
+        "object": {
+          "value": "65535",
+          "type": "http://www.w3.org/2001/XMLSchema#unsignedShort"
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "datatype": "http://www.w3.org/2001/XMLSchema#unsignedShort"
+    }
+  }
+}

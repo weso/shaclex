@@ -7,7 +7,7 @@ import es.weso.shex._
 import es.weso.utils.SeqUtils.intersperse
 import es.weso.document._
 import es.weso.document.Document._
-import es.weso.shex.compact.CompactShow.str
+
 
 /**
  * Convert Abstract syntax to ShEx Compact syntax

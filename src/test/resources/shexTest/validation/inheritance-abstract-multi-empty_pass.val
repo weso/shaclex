@@ -1,0 +1,138 @@
+{
+  "type": "ShapeTest",
+  "node": "file:///home/eric/checkouts/shexSpec/shexTest/validation/Issue1",
+  "shape": "file:///home/eric/checkouts/shexSpec/shexTest/schemas/IssueShape",
+  "solution": {
+    "type": "EachOfSolutions",
+    "solutions": [
+      {
+        "type": "EachOfSolution",
+        "expressions": [
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://ex.example/#reportedBy",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "file:///home/eric/checkouts/shexSpec/shexTest/validation/Issue1",
+                "predicate": "http://ex.example/#reportedBy",
+                "object": "file:///home/eric/checkouts/shexSpec/shexTest/validation/User2",
+                "referenced": {
+                  "type": "ShapeTest",
+                  "node": "file:///home/eric/checkouts/shexSpec/shexTest/validation/User2",
+                  "shape": "file:///home/eric/checkouts/shexSpec/shexTest/schemas/PersonShape",
+                  "solution": {
+                    "type": "EachOfSolutions",
+                    "solutions": [
+                      {
+                        "type": "EachOfSolution",
+                        "expressions": [
+                          {
+                            "type": "OneOfSolutions",
+                            "solutions": [
+                              {
+                                "type": "OneOfSolution",
+                                "expressions": [
+                                  {
+                                    "type": "EachOfSolutions",
+                                    "solutions": [
+                                      {
+                                        "type": "EachOfSolution",
+                                        "expressions": [
+                                          {
+                                            "type": "TripleConstraintSolutions",
+                                            "predicate": "http://xmlns.com/foaf/givenName",
+                                            "solutions": [
+                                              {
+                                                "type": "TestedTriple",
+                                                "subject": "file:///home/eric/checkouts/shexSpec/shexTest/validation/User2",
+                                                "predicate": "http://xmlns.com/foaf/givenName",
+                                                "object": {
+                                                  "value": "Bob"
+                                                }
+                                              }
+                                            ],
+                                            "valueExpr": {
+                                              "type": "NodeConstraint",
+                                              "datatype": "http://www.w3.org/2001/XMLSchema#string"
+                                            },
+                                            "min": 1,
+                                            "max": -1
+                                          },
+                                          {
+                                            "type": "TripleConstraintSolutions",
+                                            "predicate": "http://xmlns.com/foaf/familyName",
+                                            "solutions": [
+                                              {
+                                                "type": "TestedTriple",
+                                                "subject": "file:///home/eric/checkouts/shexSpec/shexTest/validation/User2",
+                                                "predicate": "http://xmlns.com/foaf/familyName",
+                                                "object": {
+                                                  "value": "Smith"
+                                                }
+                                              }
+                                            ],
+                                            "valueExpr": {
+                                              "type": "NodeConstraint",
+                                              "datatype": "http://www.w3.org/2001/XMLSchema#string"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "type": "TripleConstraintSolutions",
+                            "predicate": "http://xmlns.com/foaf/mbox",
+                            "solutions": [
+                              {
+                                "type": "TestedTriple",
+                                "subject": "file:///home/eric/checkouts/shexSpec/shexTest/validation/User2",
+                                "predicate": "http://xmlns.com/foaf/mbox",
+                                "object": "mail:bob@example.org"
+                              }
+                            ],
+                            "valueExpr": {
+                              "type": "NodeConstraint",
+                              "nodeKind": "iri"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "valueExpr": {
+              "type": "ShapeRef",
+              "reference": "file:///home/eric/checkouts/shexSpec/shexTest/schemas/PersonShape"
+            }
+          },
+          {
+            "type": "TripleConstraintSolutions",
+            "predicate": "http://ex.example/#reproducedBy",
+            "solutions": [
+              {
+                "type": "TestedTriple",
+                "subject": "file:///home/eric/checkouts/shexSpec/shexTest/validation/Issue1",
+                "predicate": "http://ex.example/#reproducedBy",
+                "object": "file:///home/eric/checkouts/shexSpec/shexTest/validation/Thompson.J"
+              }
+            ],
+            "valueExpr": {
+              "type": "ShapeRef",
+              "reference": "file:///home/eric/checkouts/shexSpec/shexTest/schemas/EmployeeShape"
+            },
+            "min": 0,
+            "max": 1
+          }
+        ]
+      }
+    ]
+  }
+}

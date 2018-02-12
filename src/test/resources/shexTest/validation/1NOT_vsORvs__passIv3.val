@@ -1,0 +1,37 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/s1",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p1",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/s1",
+        "predicate": "http://a.example/p1",
+        "object": "http://a.example/v3"
+      }
+    ],
+    "valueExpr": {
+      "type": "ShapeNot",
+      "shapeExpr": {
+        "type": "ShapeOr",
+        "shapeExprs": [
+          {
+            "type": "NodeConstraint",
+            "values": [
+              "http://a.example/v1"
+            ]
+          },
+          {
+            "type": "NodeConstraint",
+            "values": [
+              "http://a.example/v2"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

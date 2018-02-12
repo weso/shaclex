@@ -14,15 +14,15 @@ object decoderShEx {
   implicit lazy val decodeSchema: Decoder[Schema] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Schema").right
-      _ <- fixedFieldValue(c, "@context", "https://shexspec.github.io/context.jsonld").right
+      _ <- fixedFieldValue(c, "@context", "http://www.w3.org/ns/shex.jsonld").right
       prefixes <- optFieldDecodeMap[Prefix, IRI](c, "prefixes").right
+      imports <- optFieldDecode[List[IRI]](c, "imports").right
       base <- optFieldDecode[IRI](c, "base").right
       startActs <- optFieldDecode[List[SemAct]](c, "startActs").right
       start <- optFieldDecode[ShapeExpr](c, "start").right
       shapes <- optFieldDecode[List[ShapeExpr]](c, "shapes").right
       // TODO: Check how to represent tripleExprMap
-      // TODO: Add imports
-    } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes, None, List())
+    } yield Schema(prefixes.map(PrefixMap(_)), base, startActs, start, shapes, None, imports.getOrElse(List()))
   }
 
   implicit lazy val decodePrefix: Decoder[Prefix] =
@@ -117,27 +117,16 @@ object decoderShEx {
     sequenceEither(rs)
   }
 
-  // Todo: Use "sequence" when I find why it gives a type error...
-  def sequenceEither[E, A](xs: List[Either[E, Option[A]]]): Either[E, List[A]] = {
-    val zero: Either[E, List[A]] = Either.right(List())
-    def next(r: Either[E, List[A]], x: Either[E, Option[A]]): Either[E, List[A]] =
-      x match {
-        case Left(e) => Left(e)
-        case Right(None) => r
-        case Right(Some(v)) => r match {
-          case Left(e) => Left(e)
-          case Right(vs) => Right(v :: vs)
-        }
-      }
-    xs.foldLeft(zero)(next)
-  }
 
   def extractXsFacet(name: String, c: HCursor): Either[DecodingFailure, Option[XsFacet]] = {
     name match {
       case "length" => c.get[Int](name).map(n => Some(Length(n)))
       case "minlength" => c.get[Int](name).map(n => Some(MinLength(n)))
       case "maxlength" => c.get[Int](name).map(n => Some(MaxLength(n)))
-      case "pattern" => c.get[String](name).map(p => Some(Pattern(p, None))) // TODO
+      case "pattern" => for {
+        p <- fieldDecode[String](c,name)
+        flags <- optFieldDecode[String](c,"flags")
+      } yield Some(Pattern(p,flags))
       case "mininclusive" => c.get[NumericLiteral](name).map(p => Some(MinInclusive(p)))
       case "minexclusive" => c.get[NumericLiteral](name).map(p => Some(MinExclusive(p)))
       case "maxinclusive" => c.get[NumericLiteral](name).map(p => Some(MaxInclusive(p)))
@@ -148,12 +137,6 @@ object decoderShEx {
     }
   }
 
-  def mapEither[A, B, C](v: Either[A, B], f: B => C): Either[A, C] = {
-    v match {
-      case Left(e) => Left(e)
-      case Right(x) => Right(f(x))
-    }
-  }
 
   implicit lazy val decodeNumericLiteral: Decoder[NumericLiteral] =
     Decoder[Int].map(n => NumericInt(n)).or(
@@ -181,7 +164,8 @@ object decoderShEx {
       expression <- optFieldDecode[TripleExpr](c, "expression")
       inherit <- optFieldDecode[ShapeLabel](c, "inherit")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
-    } yield Shape(id, virtual, closed, extra, expression, inherit, semActs)
+      annotations <- optFieldDecode[List[Annotation]](c,"annotations")
+    } yield Shape(id, virtual, closed, extra, expression, inherit, semActs, annotations)
   }
 
   implicit lazy val decodeTripleExpr: Decoder[TripleExpr] =
@@ -255,14 +239,28 @@ object decoderShEx {
   }
 
   implicit lazy val decodeValueSetValue: Decoder[ValueSetValue] =
+   Decoder[Language].map(identity).or(
     Decoder[IRIStem].map(identity).or(
       Decoder[IRIStemRange].map(identity).or(
-        Decoder[ObjectValue].map(identity)))
+        Decoder[LanguageStem].map(identity).or(
+          Decoder[LanguageStemRange].map(identity).or(
+            Decoder[LiteralStem].map(identity).or(
+              Decoder[LiteralStemRange].map(identity).or(
+                Decoder[ObjectValue].map(identity)
+   )))))))
 
   implicit lazy val decodeObjectValue: Decoder[ObjectValue] =
-    Decoder[IRI].map(IRIValue(_)).or(decodeObjectLiteral)
+    Decoder[IRI].map(IRIValue(_)).or(
+      decodeObjectLiteral.map(identity)
+  )
+  implicit lazy val decodeLanguage: Decoder[Language] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "Language")
+      lang <- fieldDecode[String](c, "languageTag")
+    } yield Language(lang)
+  }
 
-  lazy val decodeObjectLiteral: Decoder[ObjectValue] = Decoder.instance { c =>
+  implicit lazy val decodeObjectLiteral: Decoder[ObjectLiteral] = Decoder.instance { c =>
     for {
       value <- fieldDecode[String](c, "value").right
       optLang <- optFieldDecode[String](c, "language").right
@@ -294,17 +292,47 @@ object decoderShEx {
 
   implicit lazy val decodeIRIStem: Decoder[IRIStem] = Decoder.instance { c =>
     for {
-      _ <- fixedFieldValue(c, "type", "Stem")
+      _ <- fixedFieldValue(c, "type", "IriStem")
       stem <- fieldDecode[IRI](c, "stem")
     } yield IRIStem(stem)
   }
 
   implicit lazy val decodeIRIStemRange: Decoder[IRIStemRange] = Decoder.instance { c =>
     for {
-      _ <- fixedFieldValue(c, "type", "StemRange")
+      _ <- fixedFieldValue(c, "type", "IriStemRange")
       stem <- fieldDecode[IRIStemRangeValue](c, "stem")
       exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
     } yield IRIStemRange(stem, exclusions)
+  }
+
+  implicit lazy val decodeLanguageStem: Decoder[LanguageStem] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LanguageStem")
+      stem <- fieldDecode[String](c, "stem")
+    } yield LanguageStem(stem)
+  }
+
+  implicit lazy val decodeLanguageStemRange: Decoder[LanguageStemRange] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LanguageStemRange")
+      stem <- fieldDecode[LanguageStemRangeValue](c, "stem")
+      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+    } yield LanguageStemRange(stem, exclusions)
+  }
+
+  implicit lazy val decodeLiteralStem: Decoder[LiteralStem] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LiteralStem")
+      stem <- fieldDecode[String](c, "stem")
+    } yield LiteralStem(StringValue(stem))
+  }
+
+  implicit lazy val decodeLiteralStemRange: Decoder[LiteralStemRange] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "LiteralStemRange")
+      stem <- fieldDecode[LiteralStemRangeValue](c, "stem")
+      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+    } yield LiteralStemRange(stem, exclusions)
   }
 
   implicit lazy val decodeIRIStemRangeValue: Decoder[IRIStemRangeValue] =
@@ -315,6 +343,30 @@ object decoderShEx {
     for {
       _ <- fixedFieldValue(c, "type", "Wildcard")
     } yield IRIStemWildcard()
+  }
+
+  implicit lazy val decodeLanguageStemRangeValue: Decoder[LanguageStemRangeValue] =
+    Decoder[String].map(stem => LanguageStemRangeLang(stem)).or(
+      Decoder[LanguageStemRangeWildcard].map(identity)
+    )
+
+  implicit lazy val decodeLanguageRangeStemWildcard: Decoder[LanguageStemRangeWildcard] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "Wildcard")
+    } yield LanguageStemRangeWildcard()
+  }
+
+  implicit lazy val decodeLiteralStemRangeValue: Decoder[LiteralStemRangeValue] =
+    Decoder[String].map(str => LiteralStemRangeValueObject(StringValue(str))).or(
+    Decoder[ObjectLiteral].map(obj => LiteralStemRangeValueObject(obj)).or(
+      Decoder[LiteralStemRangeWildcard].map(identity)
+    )
+    )
+
+  implicit lazy val decodeLiteralStemRangeWildcard: Decoder[LiteralStemRangeWildcard] = Decoder.instance { c =>
+    for {
+      _ <- fixedFieldValue(c, "type", "Wildcard")
+    } yield LiteralStemRangeWildcard()
   }
 
   implicit lazy val decodeTripleConstraint: Decoder[TripleConstraint] = Decoder.instance { c =>
@@ -374,4 +426,27 @@ lazy val PN_CHARS_BASE =
       """\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD""" +
       """\x{10000}-\x{EFFFF}]"""
 */
+
+  // Todo: Use "sequence" when I find why it gives a type error...
+  def sequenceEither[E, A](xs: List[Either[E, Option[A]]]): Either[E, List[A]] = {
+    val zero: Either[E, List[A]] = Either.right(List())
+    def next(r: Either[E, List[A]], x: Either[E, Option[A]]): Either[E, List[A]] =
+      x match {
+        case Left(e) => Left(e)
+        case Right(None) => r
+        case Right(Some(v)) => r match {
+          case Left(e) => Left(e)
+          case Right(vs) => Right(v :: vs)
+        }
+      }
+    xs.foldLeft(zero)(next)
+  }
+
+  def mapEither[A, B, C](v: Either[A, B], f: B => C): Either[A, C] = {
+    v match {
+      case Left(e) => Left(e)
+      case Right(x) => Right(f(x))
+    }
+  }
+
 }

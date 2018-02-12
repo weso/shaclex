@@ -1,5 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "prefixes": {
     "ex": "http://ex.example/#",
@@ -103,7 +103,7 @@
               "type": "ValueClass",
               "reference": "http://ex.example/S1"
             },
-            "min": 0, "max": "*"
+            "min": 0, "max": "INF"
           }
         ]
       }
@@ -134,7 +134,7 @@
                       "type": "ValueClass",
                       "datatype": "http://www.w3.org/2001/XMLSchema#string"
                     },
-                    "min": 1, "max": "*"
+                    "min": 1, "max": "INF"
                   },
                   {
                     "type": "TripleConstraint",
@@ -181,7 +181,7 @@
               "type": "ValueClass",
               "datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "min": 1, "max": "*"
+            "min": 1, "max": "INF"
           },
           {
             "type": "TripleConstraint",
@@ -198,7 +198,7 @@
               "type": "ValueClass",
               "nodeKind": "iri"
             },
-            "min": 0, "max": "*"
+            "min": 0, "max": "INF"
           },
           {
             "type": "TripleConstraint",
@@ -304,7 +304,7 @@
                   "type": "ValueClass",
                   "reference": "http://ex.example/#S1"
                 },
-                "min": 0, "max": "*"
+                "min": 0, "max": "INF"
               },
               {
                 "type": "TripleConstraint",
@@ -313,7 +313,7 @@
                   "type": "ValueClass",
                   "reference": "http://ex.example/#S1"
                 },
-                "min": 0, "max": "*"
+                "min": 0, "max": "INF"
               },
               {
                 "type": "TripleConstraint",
@@ -322,7 +322,7 @@
                   "type": "ValueClass",
                   "reference": "http://ex.example/#EmployeeShape"
                 },
-                "min": 0, "max": "*"
+                "min": 0, "max": "INF"
               }
             ]
           }

@@ -1,9 +1,14 @@
 {
-  "type": "NodeTest",
-  "node": "_:abcd",
-  "shape": "http://a.example/S1",
-  "shapeExpr": {
-    "type": "NodeConstraint",
-    "nodeKind": "bnode"
-  }
+  "type": "ShapeAndResults",
+  "solutions": [
+    { "type": "NodeTest",
+      "node": "_:abcd",
+      "shape": "http://a.example/S1",
+      "shapeExpr": {
+        "type": "NodeConstraint",
+        "nodeKind": "bnode" } },
+    { "type": "ShapeTest",
+      "node": "_:abcd",
+      "shape": "http://a.example/S1" }
+  ]
 }

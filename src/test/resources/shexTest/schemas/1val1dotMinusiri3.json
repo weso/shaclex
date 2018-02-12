@@ -1,5 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "shapes": [
     {
@@ -12,7 +12,7 @@
           "type": "NodeConstraint",
           "values": [
             {
-              "type": "StemRange",
+              "type": "IriStemRange",
               "stem": {
                 "type": "Wildcard"
               },

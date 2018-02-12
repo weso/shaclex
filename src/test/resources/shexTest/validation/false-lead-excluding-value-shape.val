@@ -58,7 +58,7 @@
                 }
               }
             ],
-            "min": 0, "max": "*"
+            "min": 0, "max": -1
           },
           {
             "type": "OneOfSolutions",

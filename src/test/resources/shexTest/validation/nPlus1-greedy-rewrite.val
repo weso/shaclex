@@ -40,7 +40,7 @@
           },
           {
             "type": "TripleConstraintSolutions", "predicate": "http://a.example/a",
-            "min": 0, "max": "*",
+            "min": 0, "max": -1,
             "valueExpr": {
               "type": "NodeConstraint",
               "values": [ { "value": "4", "type": "http://www.w3.org/2001/XMLSchema#integer" } ]

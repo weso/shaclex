@@ -85,15 +85,16 @@ object Parser extends LazyLogging {
   } yield ()
 
   def parseSchema(str: String, base: Option[String]): Either[String, Schema] = {
+    println(s"ParseSchema: $str")
     val UTF8_BOM = "\uFEFF"
     val s =
       if (str.startsWith(UTF8_BOM)) {
-        // logger.info("BOM detected and removed")
+        println("BOM detected and removed")
         str.substring(1)
       } else str
     val reader: JavaReader =
       new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    // logger.info(s"str:\n$s")
+    println(s"s:$s")
     parseSchemaReader(reader, base)
   }
 

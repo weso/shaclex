@@ -159,11 +159,11 @@ function genText () {
         return [
           //      ["rdf"  , "type"    , function (v) { return v.substr(P.sht.length); }],
           [s, "mf"   , "name"    , function (v) { return util.getLiteralValue(v[0]); }],
-          //[s, "sht", "trait"  , function (v) {
-          //  return v.map(function (x) {
-          //    return x.substr(P.sht.length);;
-          //  });
-          //}],
+          [s, "sht", "trait"  , function (v) {
+           return v.map(function (x) {
+             return x.substr(P.sht.length);;
+           });
+          }],
           //[s, "rdfs" , "comment" , function (v) { return util.getLiteralValue(v[0]); }],
           [s, "mf", "status"  , function (v) { return "mf:"+v[0].substr(P.mf.length); }],
           [s, "sx", "shex", function (v) { return exists(v[0].substr(dirPath.length)); }],
@@ -191,6 +191,7 @@ function genText () {
         [a, "sht", "schema"  , function (v) { return exists("../" + v[0].substr(basePath.length)); } ], // could be more judicious in creating a relative path from an absolute path.
         [a, "sht", "shape"   , function (v) { return v[0].indexOf(dirPath) === 0 ? v[0].substr(dirPath.length) : v[0]; }],
         [a, "sht", "data"    , function (v) { return exists(v[0].substr(dirPath.length)); }],
+        [a, "sht", "map"    , function (v) { return exists(v[0].substr(dirPath.length)); }],
         [a, "sht", "focus"   , function (v) {
           // Focus can be a literal
           if (util.isLiteral(v[0])) {

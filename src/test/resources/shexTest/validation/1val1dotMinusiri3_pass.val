@@ -8,7 +8,7 @@
       "type":"NodeConstraint",
       "values": [
         {
-          "type": "StemRange",
+          "type": "IriStemRange",
           "stem": { "type": "Wildcard" },
           "exclusions": [
             "http://a.example/v1",

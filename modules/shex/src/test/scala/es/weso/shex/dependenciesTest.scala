@@ -1,19 +1,8 @@
 package es.weso.shex
 
-import cats._
-import cats.implicits._
 import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
 import es.weso.rdf.nodes._
-import es.weso.shex.implicits.decoderShEx._
-import es.weso.shex.implicits.encoderShEx._
-import es.weso.shex.implicits.eqShEx._
-import es.weso.shex.implicits.showShEx._
-import io.circe._
-import io.circe.parser._
-import io.circe.syntax._
 import org.scalatest._
-
-import scala.util.{ Failure, Success }
 
 class dependenciesTest extends FunSpec with Matchers with EitherValues {
 

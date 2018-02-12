@@ -14,8 +14,9 @@ object encoderShEx {
       mkObjectTyped(
         "Schema",
         List(
-          field("@context", "https://shexspec.github.io/context.jsonld"),
+          field("@context", "http://www.w3.org/ns/shex.jsonld"),
           optFieldMap("prefixes", s.prefixes.map(_.pm)),
+          optField("imports", if (s.imports.isEmpty) None else Some(s.imports)),
           optField("base", s.base),
           optField("startActs", s.startActs),
           optField("start", s.start),
@@ -107,7 +108,8 @@ object encoderShEx {
           optField("id", a.id),
           optField("nodeKind", a.nodeKind),
           optField("datatype", a.datatype),
-          optField("values", a.values)) ++ mkFieldsFacets(a.xsFacets))
+          optField("values", a.values)
+        ) ++ mkFieldsFacets(a.xsFacets))
   }
 
   implicit lazy val encodeShape: Encoder[Shape] = new Encoder[Shape] {
@@ -121,7 +123,9 @@ object encoderShEx {
           optField("extra", a.extra),
           optField("expression", a.expression),
           optField("inherit", a.inherit),
-          optField("semActs", a.semActs)))
+          optField("semActs", a.semActs),
+          optField("annotations",a.annotations)
+        ))
   }
 
   implicit lazy val encodeShapeLabel: Encoder[ShapeLabel] = new Encoder[ShapeLabel] {
@@ -166,25 +170,27 @@ object encoderShEx {
   }
 
   def mkFieldsFacets(xs: List[XsFacet]): List[Option[(String, Json)]] = {
-    xs.map(x => Some(mkFieldFacet(x)))
+    xs.map(x => mkFieldFacet(x)).flatten.map(Some(_))
   }
 
-  def mkFieldFacet(x: XsFacet): (String, Json) =
+  def mkFieldFacet(x: XsFacet): List[(String, Json)] =
     x match {
-      case Length(v) => (x.fieldName, Json.fromInt(v))
-      case MinLength(v) => (x.fieldName, Json.fromInt(v))
-      case MaxLength(v) => (x.fieldName, Json.fromInt(v))
-      case Pattern(p, flags) => if (!flags.isDefined) {
-        (x.fieldName, Json.fromString(p))
-      } else {
-       throw new Exception(s"Unimplemented encoder of pattern with flags yet: $p, flags: $flags")
+      case Length(v) => List((x.fieldName, Json.fromInt(v)))
+      case MinLength(v) => List((x.fieldName, Json.fromInt(v)))
+      case MaxLength(v) => List((x.fieldName, Json.fromInt(v)))
+      case Pattern(p, fs) => fs match {
+        case None => List((x.fieldName, Json.fromString(p)))
+        case Some(flags) => List(
+          (x.fieldName, Json.fromString(p)),
+          ("flags", Json.fromString(flags))
+        )
       }
-      case MinInclusive(n) => (x.fieldName, encodeNumeric(n))
-      case MaxInclusive(n) => (x.fieldName, encodeNumeric(n))
-      case MinExclusive(n) => (x.fieldName, encodeNumeric(n))
-      case MaxExclusive(n) => (x.fieldName, encodeNumeric(n))
-      case TotalDigits(n) => (x.fieldName, Json.fromInt(n))
-      case FractionDigits(n) => (x.fieldName, Json.fromInt(n))
+      case MinInclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case MaxInclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case MinExclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case MaxExclusive(n) => List((x.fieldName, encodeNumeric(n)))
+      case TotalDigits(n) => List((x.fieldName, Json.fromInt(n)))
+      case FractionDigits(n) => List((x.fieldName, Json.fromInt(n)))
     }
 
   implicit lazy val encodeNumeric: Encoder[NumericLiteral] = new Encoder[NumericLiteral] {
@@ -207,15 +213,23 @@ object encoderShEx {
   implicit lazy val encodeValueSetValue: Encoder[ValueSetValue] = new Encoder[ValueSetValue] {
     final def apply(a: ValueSetValue): Json = a match {
       case ov: ObjectValue => ov.asJson
-      case IRIStem(s) => mkObjectTyped("Stem", List(field("stem", s)))
+      case IRIStem(s) => mkObjectTyped("IriStem", List(field("stem", s)))
       case IRIStemRange(s, exclusions) =>
-        mkObjectTyped("StemRange", List(field("stem", s), optField("exclusions", exclusions)))
+        mkObjectTyped("IriStemRange", List(field("stem", s), optField("exclusions", exclusions)))
+      case LanguageStem(stem) => mkObjectTyped("LanguageStem", List(field("stem", stem)))
+      case LanguageStemRange(stem,exclusions) =>
+        mkObjectTyped("LanguageStemRange", List(field("stem", stem), optField("exclusions", exclusions)))
+      case LiteralStem(StringValue(stem)) => mkObjectTyped("LiteralStem", List(field("stem", stem)))
+      case LiteralStem(DatatypeString(s,iri)) => ???
+      case LiteralStem(LangString(s,lang)) => ???
+      case LiteralStemRange(stem,exclusions) =>
+        mkObjectTyped("LiteralStemRange", List(field("stem", stem), optField("exclusions", exclusions)))
+      case Language(lang) => mkObjectTyped("Language", List(field("languageTag", lang)))
     }
   }
 
-  implicit lazy val encodeObjectValue: Encoder[ObjectValue] = new Encoder[ObjectValue] {
-    final def apply(a: ObjectValue): Json = a match {
-      case IRIValue(i) => i.asJson
+  implicit lazy val encodeObjectLiteral: Encoder[ObjectLiteral] = new Encoder[ObjectLiteral] {
+    final def apply(a: ObjectLiteral): Json = a match {
       case StringValue(s) => {
         val fields: List[(String, Json)] = List(("value", Json.fromString(s)))
         Json.fromFields(fields)
@@ -235,10 +249,33 @@ object encoderShEx {
     }
   }
 
-  implicit lazy val encodeStemValue: Encoder[IRIStemRangeValue] = new Encoder[IRIStemRangeValue] {
+  implicit lazy val encodeObjectValue: Encoder[ObjectValue] = new Encoder[ObjectValue] {
+    final def apply(a: ObjectValue): Json = a match {
+      case IRIValue(i) => i.asJson
+      case ol: ObjectLiteral => ol.asJson
+    }
+  }
+
+  implicit lazy val encodeIriStemRangeValue: Encoder[IRIStemRangeValue] = new Encoder[IRIStemRangeValue] {
     final def apply(a: IRIStemRangeValue): Json = a match {
       case IRIStemValueIRI(i) => i.asJson
       case IRIStemWildcard() => mkObjectTyped("Wildcard", List())
+    }
+  }
+
+  implicit lazy val encodeLanguageStemRangeValue: Encoder[LanguageStemRangeValue] = new Encoder[LanguageStemRangeValue] {
+    final def apply(a: LanguageStemRangeValue): Json = a match {
+      case LanguageStemRangeLang(lang) => lang.asJson
+      case LanguageStemRangeWildcard() => mkObjectTyped("Wildcard", List())
+    }
+  }
+
+  implicit lazy val encodeLiteralStemRangeValue: Encoder[LiteralStemRangeValue] = new Encoder[LiteralStemRangeValue] {
+    final def apply(a: LiteralStemRangeValue): Json = a match {
+      case LiteralStemRangeValueObject(StringValue(s)) => Json.fromString(s)
+      case LiteralStemRangeValueObject(DatatypeString(s,iri)) => Json.fromString("\"" + s + "\"^^" + iri.show)
+      case LiteralStemRangeValueObject(LangString(s,lang)) => Json.fromString("\"" + s + "\"@" + lang)
+      case LiteralStemRangeWildcard() => mkObjectTyped("Wildcard", List())
     }
   }
 

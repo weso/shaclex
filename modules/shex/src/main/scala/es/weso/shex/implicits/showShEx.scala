@@ -160,7 +160,14 @@ object showShEx {
       case IRILabel(iri) => iri.show
       case BNodeLabel(bnode) => "_:" + bnode.id
     }
+  }
 
+  implicit lazy val showObjectLiteral: Show[ObjectLiteral] = new Show[ObjectLiteral] {
+    final def show(a: ObjectLiteral): String = a match {
+      case StringValue(s) => "\"" + s + "\""
+      case DatatypeString(s,iri) => "\"" + s + "\"^^" + iri.show
+      case LangString(s,lang) => "\"" + s + "\"@" + lang
+    }
   }
 
   def optShow[A: Show](m: Option[A]): String =

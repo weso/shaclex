@@ -1,7 +1,7 @@
 package es.weso.json
 import io.circe._
 import org.scalatest._
-import cats._, data._
+import cats._
 import cats.implicits._
 import io.circe.syntax._
 import io.circe.parser._

@@ -314,7 +314,7 @@ object WebService {
 
         println(s"Either schema: $eitherSchema")
         println(s"OptSchema: $optSchema")
-        println(s"OptSchema: $optSchemaFormat")
+        println(s"OptSchemaFormat: $optSchemaFormat")
 
         val eitherResult = for {
           data <- eitherData

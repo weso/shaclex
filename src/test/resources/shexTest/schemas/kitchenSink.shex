@@ -31,7 +31,7 @@ UserShape: {                             # A <UserShape> has:
      |                                    #  or
        foaf:givenName xsd:string+;        #   one or more givenNames
        foaf:familyName xsd:string);       #   and one familyName.
-    foaf:mbox IRI PATTERN "^mailto:";     # one FOAF mbox.
+    foaf:mbox IRI /^mailto:/;     # one FOAF mbox.
     ex:id BNODE @_:IDshape
 }
 

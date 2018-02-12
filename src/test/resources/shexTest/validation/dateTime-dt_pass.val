@@ -1,0 +1,24 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/dateTime-dt",
+  "shape": "http://a.example/S-dateTime",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p",
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/dateTime-dt",
+        "predicate": "http://a.example/p",
+        "object": {
+          "value": "2012-01-02T12:34:56.78Z",
+          "type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        }
+      }
+    ],
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "datatype": "http://www.w3.org/2001/XMLSchema#dateTime"
+    }
+  }
+}

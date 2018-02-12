@@ -9,7 +9,7 @@
       "type": "NodeConstraint",
       "values": [
         {
-          "type": "StemRange",
+          "type": "IriStem",
           "stem": "http://a.example/v"
         }
       ]

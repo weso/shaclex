@@ -58,7 +58,7 @@ prefix1:S3 EXTRA a:a prefix:prefix base:base # &a:S1
    a:a .;
    prefix:prefix prefix:dt LENGTH 2?;
    (  base:base IRI*;
-      PREFIX:PREFIX IRI ~ "^http://" LENGTH 5 +;
+      PREFIX:PREFIX IRI /^http:\/\// LENGTH 5 +;
       BaSe:BaSe @prefix1:S5{2};
     | virtual:virtual NONLITERAL @ prefix1:S5{2,};
     | closed:closed  BNODE @S5: OR MINLENGTH 2 MAXLENGTH 4 @<http://all.example/S5> {2,*};

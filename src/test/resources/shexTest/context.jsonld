@@ -2,7 +2,7 @@
   "@context": {
     "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "shex": "http://shex.io/ns/shex#",
+    "shex": "http://www.w3.org/ns/shex#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
     "sht": "http://www.w3.org/ns/shacl/test-suite#",

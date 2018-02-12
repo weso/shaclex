@@ -1,5 +1,5 @@
 {
-  "@context": "https://shexspec.github.io/context.jsonld",
+  "@context": "http://www.w3.org/ns/shex.jsonld",
   "type": "Schema",
   "shapes": [
     {
@@ -13,7 +13,7 @@
             "predicate": "http://a.example/a",
             "valueExpr": "http://a.example.org/T1",
             "min": 0,
-            "max": "*"
+            "max": -1
           },
           {
             "type": "OneOf",

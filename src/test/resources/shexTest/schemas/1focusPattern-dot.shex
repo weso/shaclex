@@ -1,3 +1,3 @@
-<http://a.example/S1> PATTERN "^http://a.example/s1$" {
+<http://a.example/S1> /^http:\/\/a.example\/s1$/ {
    <http://a.example/p1> .
 }

@@ -20,7 +20,7 @@
       }
     ],
     "min": 1,
-    "max": "*",
+    "max": -1,
     "annotations": [
       {
         "type": "Annotation",

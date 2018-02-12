@@ -2,16 +2,11 @@ package es.weso.shex.compact
 import org.scalatest.{ EitherValues, FunSpec, Matchers, _ }
 import com.typesafe.config.{ Config, ConfigFactory, _ }
 import java.io.File
-
 import scala.io._
-import es.weso.shex.implicits.showShEx._
-import es.weso.shex.compact.Parser._
-import cats.implicits._
 import es.weso.json.{ JsonTest, _ }
 import es.weso.utils.FileUtils._
 import es.weso.shex._
 
-import scala.util.{ Failure, Success }
 
 class ShexCompactSingle extends FunSpec with JsonTest with Matchers with EitherValues {
 
@@ -21,7 +16,7 @@ class ShexCompactSingle extends FunSpec with JsonTest with Matchers with EitherV
   val ignoreFiles = List("coverage")
 
   val files: List[String] =
-    List("startSpaceEqualInline")
+    List("1val1vExprRefOR3")
 
   def getCompactFiles(schemasDir: String): List[File] = {
     for (name <- files)

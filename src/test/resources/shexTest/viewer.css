@@ -1,0 +1,43 @@
+#droparea { border: .25em dashed #777; }
+#droparea h2 { display: inline; }
+#droparea span { margin-left: 4em; }
+#droparea textarea { width: 100%; }
+#droparea.droppable { border-color: #0c0; }
+.passes { background-color: #bfb; }
+.fails { background-color: #fbb; }
+.error { color: #f00; }
+
+th {
+	background-image:url(http://www.bacubacu.com/colresizable/img/th.png);
+	height:3ex;
+	color:#FFF;
+	text-align:left
+}
+
+td {
+	text-indent:5px;
+	border-bottom:1px solid #bbb;
+	border-left:1px solid #bbb;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width:1px;
+}
+
+#tests { width: 100%; border:1px solid #2e638e }
+.grip2{
+	width:20px;
+	height:15px;
+	margin-top:-3px;
+	background-image:url('http://www.bacubacu.com/colresizable/img/grip2.png');
+	margin-left:-5px;
+	position:relative;
+	z-index:88;
+	cursor:e-resize;
+  background-repeat: no-repeat;
+}
+
+th { text-align: left; }
+tr:nth-child(even) {background: #efe}
+tr:nth-child(odd) {background: #fff}
+th:nth-child(1), td:nth-child(1) { text-indent: 0; width: 1em; }

@@ -1,0 +1,36 @@
+{
+  "type": "ShapeNotResults",
+  "solution": {
+    "type": "Failure",
+    "node": "http://a.example/s1",
+    "shape": "http://a.example/S1",
+    "errors": [
+      {
+        "type": "TypeMismatch",
+        "triple": {
+          "type": "TestedTriple",
+          "subject": "http://a.example/s1",
+          "predicate": "http://a.example/p1",
+          "object": "http://a.example/v2"
+        },
+        "constraint": {
+          "type": "TripleConstraint",
+          "predicate": "http://a.example/p1",
+          "valueExpr": {
+            "type": "ShapeNot",
+            "shapeExpr": {
+              "type": "NodeConstraint",
+              "values": [
+                "http://a.example/v1",
+                "http://a.example/v2"
+              ]
+            }
+          }
+        },
+        "errors": [
+          "Error validating http://a.example/v2 as {\"type\":\"ShapeNot\",\"shapeExpr\":{\"type\":\"NodeConstraint\",\"values\":[\"http://a.example/v1\",\"http://a.example/v2\"]}}: expected NOT to pass"
+        ]
+      }
+    ]
+  }
+}

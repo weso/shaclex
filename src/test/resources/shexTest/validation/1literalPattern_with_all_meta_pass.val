@@ -1,0 +1,22 @@
+{
+  "type": "ShapeTest",
+  "node": "http://a.example/s1",
+  "shape": "http://a.example/S1",
+  "solution": {
+    "type": "TripleConstraintSolutions",
+    "predicate": "http://a.example/p1",
+    "valueExpr": {
+      "type": "NodeConstraint",
+      "nodeKind": "literal",
+      "pattern": "^\\t(v:[0-9]+( *, *)?){2,3}/\\.\\r\\n$|\\\\N/A"
+    },
+    "solutions": [
+      {
+        "type": "TestedTriple",
+        "subject": "http://a.example/s1",
+        "predicate": "http://a.example/p1",
+        "object": { "value": "\tv:0,  v:12v:3/.\r\n" }
+      }
+    ]
+  }
+}
