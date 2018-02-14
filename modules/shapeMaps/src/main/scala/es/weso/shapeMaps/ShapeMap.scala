@@ -31,7 +31,7 @@ abstract class ShapeMap {
   override def toString = Show[ShapeMap].show(this)
 
   def serialize(format: String): String = {
-    format match {
+    format.toUpperCase match {
       case "JSON" => this.toJson.spaces2
       case "COMPACT" => this.toString
     }

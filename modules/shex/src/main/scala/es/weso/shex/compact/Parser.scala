@@ -104,7 +104,7 @@ object Parser extends LazyLogging {
   } yield schema
 
   def parseSchemaReader(reader: JavaReader, base: Option[String]): Either[String, Schema] = {
-    val input: ANTLRInputStream = new ANTLRInputStream(reader)
+    val input: CharStream = CharStreams.fromReader(reader)
     val lexer: ShExDocLexer = new ShExDocLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
     val parser: ShExDocParser = new ShExDocParser(tokens)

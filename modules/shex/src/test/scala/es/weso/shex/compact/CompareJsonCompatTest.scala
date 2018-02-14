@@ -1,26 +1,18 @@
 package es.weso.shex.compact
-import org.scalatest.{ EitherValues, FunSpec, Matchers, _ }
-import com.typesafe.config.{ Config, ConfigFactory, _ }
 import java.io.File
 
-import scala.io._
-import es.weso.shex.implicits.showShEx._
-import es.weso.shex.compact.Parser._
-import cats.implicits._
-import es.weso.json.{ JsonTest, _ }
-import es.weso.utils.FileUtils._
+import com.typesafe.config.{Config, ConfigFactory}
+import es.weso.json.JsonTest
 import es.weso.shex._
-import io.circe._
-import cats._, data._
-import cats.implicits._
-import io.circe.syntax._
-import io.circe.parser._
-import JsonDiff._
-import scala.util.{ Failure, Success }
-import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
+import es.weso.utils.FileUtils._
+import io.circe.parser._
+import io.circe.syntax._
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 
-class CompareJson extends FunSpec with JsonTest with Matchers with EitherValues {
+import scala.io._
+
+class CompareJsonCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
@@ -34,11 +26,10 @@ class CompareJson extends FunSpec with JsonTest with Matchers with EitherValues 
   describe("Parsing Schemas from ShEx") {
     var failedNames = List[String]()
     for (file <- getCompactFiles(schemasFolder)) {
-      val name = file.getName
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
         Schema.fromString(str, "SHEXC", None) match {
-          case Success(schema) => {
+          case Right(schema) => {
             val (name, ext) = splitExtension(file.getName)
             val jsonFile = schemasFolder + "/" + name + ".json"
             val jsonStr = Source.fromFile(jsonFile)("UTF-8").mkString
@@ -52,7 +43,7 @@ class CompareJson extends FunSpec with JsonTest with Matchers with EitherValues 
                 }
             }
           }
-          case Failure(err) => fail(s"Parsing error: $err")
+          case Left(err) => fail(s"Parsing error: $err")
         }
       }
     }

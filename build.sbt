@@ -140,11 +140,24 @@ lazy val shacl = project
     )
   )
 
+
+lazy val CompatTest = config("compat") extend (Test) describedAs("Tests that check compatibility (some may fail)")
+def compatFilter(name: String): Boolean = name endsWith "CompatTest"
+def testFilter(name: String): Boolean = /*(name endsWith "Test") && */ !compatFilter(name)
+
 lazy val shex = project
   .in(file("modules/shex"))
   .enablePlugins(Antlr4Plugin)
   .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings, antlrSettings("es.weso.shex.parser"))
+  .configs(CompatTest)
+  .settings(
+    commonSettings,
+    publishSettings,
+    antlrSettings("es.weso.shex.parser"),
+    inConfig(CompatTest)(Defaults.testTasks),
+    testOptions in Test := Seq(Tests.Filter(testFilter)),
+    testOptions in CompatTest := Seq(Tests.Filter(compatFilter)),
+  )
   .dependsOn(srdfJena, srdf, typing, utils % "test -> test; compile -> compile", validating, shapeMaps, rbe, manifest, depGraphs)
   .settings(
     libraryDependencies ++= Seq(

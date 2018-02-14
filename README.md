@@ -89,16 +89,32 @@ sbt "run --server"
   which is based on this [grammar](https://github.com/shexSpec/shex.js/blob/master/doc/bnf)
 * JSON encoding and decoding uses the Json structure [defined here](https://shexspec.github.io/spec/) and is implemented using [Circe](https://github.com/travisbrown/circe)  
 
+## Compatibility tests
+
+We aim to pass the standard test-suites of [ShEx](https://github.com/shexSpec/shexTest) 
+and [SHACL](https://w3c.github.io/data-shapes/data-shapes-test-suite/).
+
+In order to run the test suite and generate the EARL report, you can do the following:
+
+- For ShEx, run `sbt`, select `project shex` and run `compat:test` for compatibility tests. 
+  
+
 ## More information
 
-This project is a continuation of [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
+This project is a based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only. 
+The aim of Shaclex is to support both ShEx and SHACL and to provide conversions between both languages.
+ 
+## Author & contributors
 
+* Author: [Jose Emilio Labra Gayo](http://www.di.uniovi.es/~labra)
 
-## Author
+Contributors: 
 
-* [Jose Emilio Labra Gayo](http://www.di.uniovi.es/~labra)
+* [Eric Prud'hommeaux](https://www.w3.org/People/Eric/)
+* [Bogdan Roman](https://github.com/bogdanromanx)
 
 ## Contribution
 
-Contributions are greatly appreciated. Please fork this repository and open a
+Contributions are greatly appreciated. 
+Please fork this repository and open a
 pull request to add more features or [submit issues](https://github.com/labra/shaclex/issues)

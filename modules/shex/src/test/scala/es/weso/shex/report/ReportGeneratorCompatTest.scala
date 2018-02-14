@@ -2,25 +2,19 @@ package es.weso.shex.report
 
 import org.scalatest.FunSpec
 import com.typesafe.config._
-import org.apache.jena.rdf.model.ModelFactory
-import java.io.{ File, FileInputStream, FileOutputStream }
+import java.io._
 import java.nio.file.Paths
 
-import scala.collection.JavaConverters._
 import org.scalatest.Matchers
-import es.weso.manifest._
 import es.weso.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.{ IRI, RDFNode }
 import es.weso.rdf.parser.RDFParser
 import es.weso.shex.validator.Validator
-import es.weso.shex.{ IRILabel, Schema }
-
+import es.weso.shex._
 import scala.io.Source
-import scala.util.{ Failure, Success, Try }
 
-class ReportGenerator extends FunSpec with Matchers with RDFParser {
+class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
 
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
@@ -29,8 +23,8 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
 
   describe("Generate W3c EARL report") {
     RDFAsJenaModel.fromFile(manifestFile, "TURTLE", baseIRI) match {
-      case Failure(e) => info(s"Error reading manifest file: $e")
-      case Success(rdf) => {
+      case Left(e) => info(s"Error reading manifest file: $e")
+      case Right(rdf) => {
         val report = prepareReport(rdf)
         val earlModel = report.generateEARL
         earlModel.write(new FileOutputStream(outFile), "TURTLE")
@@ -74,14 +68,14 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
         shape <- iriFromPredicate(sht_shape)(action, rdf)
       } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
       val testReport = tryReport match {
-        case Success(report) => if (report.isOK) {
+        case Right(report) => if (report.isRight) {
           numPassed += 1
           SingleTestReport(
             passed = true,
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}")
+            moreInfo = s"${report.right.get.serialize("Compact")}")
         } else {
           numFailed += 1
           SingleTestReport(
@@ -89,9 +83,9 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}")
+            moreInfo = s"${report.left.get}")
         }
-        case Failure(e) => {
+        case Left(e) => {
           numErrors += 1
           SingleTestReport(
             passed = false,
@@ -123,14 +117,14 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
         shape <- iriFromPredicate(sht_shape)(action, rdf)
       } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
       val testReport = tryReport match {
-        case Success(report) => if (!report.isOK) {
+        case Right(report) => if (!report.isRight) {
           numPassed += 1
           SingleTestReport(
             passed = true,
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}")
+            moreInfo = s"Failed as expected with error: ${report.left.get}")
         } else {
           numFailed += 1
           SingleTestReport(
@@ -138,9 +132,9 @@ class ReportGenerator extends FunSpec with Matchers with RDFParser {
             name = name,
             uriTest = nodeStr,
             testType = sht_ValidationTest.str,
-            moreInfo = s"${report.show}")
+            moreInfo = s"Passed but it was expected to fail. Result: ${report.right.get.serialize("Compact")}")
         }
-        case Failure(e) => {
+        case Left(e) => {
           numErrors += 1
           SingleTestReport(
             passed = false,

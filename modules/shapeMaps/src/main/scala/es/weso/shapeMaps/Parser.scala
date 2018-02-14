@@ -39,7 +39,7 @@ object Parser extends LazyLogging {
     base: Option[String],
     nodesPrefixMap: PrefixMap,
     shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
-    val input: ANTLRInputStream = new ANTLRInputStream(reader)
+    val input: CharStream = CharStreams.fromReader(reader)
     val lexer: ShapeMapLexer = new ShapeMapLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
     val parser: ShapeMapParser = new ShapeMapParser(tokens)
