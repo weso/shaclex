@@ -6,7 +6,6 @@ import scala.io._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
-import cats.implicits._
 import es.weso.json._
 import es.weso.utils.FileUtils._
 

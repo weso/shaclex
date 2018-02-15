@@ -75,14 +75,14 @@ object Parser extends LazyLogging {
     })
   }
 
-  def addTripleExprLabel(label: ShapeLabel, te: TripleExpr): Builder[Unit] = for {
+  def addTripleExprLabel(label: ShapeLabel, te: TripleExpr): Builder[TripleExpr] = for {
     s <- getState
     _ <- s.tripleExprMap.get(label) match {
       case None => ok(())
       case Some(otherTe) => err(s"Label $label has been assigned to ${otherTe} and can't be assigned to $te")
     }
     _ <- updateState(s => s.copy(tripleExprMap = s.tripleExprMap + (label -> te)))
-  } yield ()
+  } yield (te.addId(label))
 
   def parseSchema(str: String, base: Option[String]): Either[String, Schema] = {
     println(s"ParseSchema: $str")

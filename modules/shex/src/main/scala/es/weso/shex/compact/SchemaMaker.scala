@@ -334,23 +334,20 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     } yield l
   }
 
-  override def visitLanguageRange(
-                                   ctx: LanguageRangeContext): Builder[ValueSetValue] = {
+  override def visitLanguageRange(ctx: LanguageRangeContext): Builder[ValueSetValue] = {
     for {
       es <- visitList(visitLanguageExclusion, ctx.languageExclusion)
     } yield {
       // TODO Add language exclusion
       val lang = getLanguage(ctx.LANGTAG().getText())
       if (!isDefined(ctx.STEM_MARK())) {
-        LanguageStem(lang)
+        Language(lang)
       } else
-        LanguageStemRange(LanguageStemRangeLang(lang), Some(es))
+      if (es.isEmpty) LanguageStem(lang)
+      else LanguageStemRange(LanguageStemRangeLang(lang), Some(es))
     }
   }
 
-  /* Remove @ from language tag */
-  def getLanguage(str: String): String =
-    str.tail
 
   override def visitLanguageExclusion(ctx: LanguageExclusionContext): Builder[ValueSetValue] = {
     err(s"Undefined Language exclusion")
@@ -396,8 +393,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       dt <- visitDatatype(ctx.datatype())
       nl <- dt match {
         case `xsd_integer` => ok(NumericInt(Integer.parseInt(str)))
-        case `xsd_double` => ok(NumericDecimal(str.toDouble))
-        case `xsd_decimal` => ok(NumericDecimal(BigDecimal(str)))
+        case `xsd_double` => ok(NumericDecimal(str.toDouble,str))
+        case `xsd_decimal` => ok(NumericDecimal(BigDecimal(str),str))
         case _ => err(s"Unsupported numericFacet of string $str with datatype $dt")
       }
     } yield nl
@@ -406,8 +403,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     private def numericLiteral2ValueObject(nl: NumericLiteral): Builder[ValueSetValue] = {
     nl match {
       case NumericInt(n) => ok(ObjectValue.intValue(n))
-      case NumericDouble(d) => ok(ObjectValue.doubleValue(d))
-      case NumericDecimal(d) => ok(ObjectValue.decimalValue(d))
+      case NumericDouble(d,repr) => ok(ObjectValue.doubleValue(d,repr))
+      case NumericDecimal(d,repr) => ok(ObjectValue.decimalValue(d,repr))
     }
   }
 
@@ -415,7 +412,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx: RdfLiteralContext): Builder[ValueSetValue] = {
     val str = visitString(ctx.string())
     if (isDefined(ctx.LANGTAG())) {
-      val lang = ctx.LANGTAG().getText()
+      val lang = getLanguage(ctx.LANGTAG().getText())
       str.map(s => LangString(s, lang))
     } else if (isDefined(ctx.datatype)) {
       for {
@@ -537,11 +534,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx match {
       case _ if (isDefined(ctx.INTEGER())) =>
         ok(NumericInt(Integer.parseInt(ctx.INTEGER().getText)))
-      case _ if (isDefined(ctx.DECIMAL())) =>
-        ok(NumericDecimal(BigDecimal(ctx.DECIMAL().getText)))
+      case _ if (isDefined(ctx.DECIMAL())) => {
+        val repr = ctx.DECIMAL().getText
+        ok(NumericDecimal(BigDecimal(repr), repr))
+      }
       case _ if (isDefined(ctx.DOUBLE())) => {
-        val str = ctx.DOUBLE().getText
-        ok(NumericDecimal(str.toDouble))
+        val repr = ctx.DOUBLE().getText
+        println(s">>>> Creating double $repr")
+        ok(NumericDouble(repr.toDouble,repr))
       }
       case _ => err("Unknown ctx in numericLiteral")
     }
@@ -609,10 +609,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     case _ => err(s"visitStringFacet: Unsupported ${ctx.getClass.getName}")
   }
 
+  private def unscapeSlashes(str:String): String = {
+    str.replaceAllLiterally(s"\\/","/")
+  }
+
   private def removeSlashes(str: String): String = {
     val slashedRegex = "/(.*)/".r
     str match {
-      case slashedRegex(s) => s
+      case slashedRegex(s) => unscapeSlashes(s)
       case _ => str
     }
   }
@@ -674,13 +678,13 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       } yield NumericInt(n)
       case `xsd_decimal` => for {
         d <- getDecimal(lexicalForm)
-      } yield NumericDecimal(d)
+      } yield NumericDecimal(d, lexicalForm)
       case `xsd_double` => for {
         d <- getDouble(lexicalForm)
-      } yield NumericDouble(d)
+      } yield NumericDouble(d, lexicalForm)
       case `xsd_float` => for { // TODO: Check if floats and doubles are equivalent
         d <- getDouble(lexicalForm)
-      } yield NumericDouble(d)
+      } yield NumericDouble(d,lexicalForm)
       case _ => err(s"Numeric Literal '$lexicalForm' applied to unknown datatype $datatype ")
     }
   }
@@ -861,11 +865,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
               else if (isDefined(ctx.tripleConstraint()))
                visitTripleConstraint(ctx.tripleConstraint())
               else err(s"visitUnaryTripleExpr: unknown $ctx")
-        _ <- maybeLbl match {
-          case None => ok(())
+        te1 <- maybeLbl match {
+          case None => ok(te)
           case Some(lbl) => addTripleExprLabel(lbl,te)
         }
-      } yield te
+      } yield te1
     }
 
   // TODO: Where should I put ProductionLabels ?
@@ -1130,21 +1134,6 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     } yield baseIri
   }
 
-  /*   def getBase(ds: List[Directive]): Option[IRI] = {
-       def comb(rest: Option[IRI],x: Directive): Option[IRI] = {
-         x.fold(_ => rest, iri => combineBase(rest,iri))
-       }
-       def zero: Option[IRI] = None
-       ds.foldLeft(zero)(comb)
-     } */
-
-  /*   def combineBase(rest: Option[IRI], iri: IRI): Option[IRI] = {
-       rest match {
-         case None => Some(iri)
-         case Some(i) => Some(iri) // Combine if iri is a relative IRI?
-       }
-     } */
-
   override def visitPrefixDecl(ctx: PrefixDeclContext): Builder[(Prefix, IRI)] = {
     val prefix = Prefix(ctx.PNAME_NS().getText.init)
     // TODO Resolve prefix declarations taking into account base?
@@ -1189,5 +1178,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     v: A): Builder[Option[B]] =
     if (isDefined(v)) visitFn(v).map(Some(_))
     else ok(None)
+
+  /* Remove @ from language tag */
+  private def getLanguage(str: String): String =
+    str.tail
 
 }

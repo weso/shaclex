@@ -5,8 +5,6 @@ import es.weso.rdf.nodes._
 import es.weso.shex._
 import org.scalatest._
 
-import scala.util._
-
 class ValidatorTest extends FunSpec with Matchers with EitherValues {
 
   describe("ShEx validator") {

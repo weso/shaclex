@@ -9,15 +9,20 @@ import es.weso.rdf._
 
 object encoderShEx {
 
-  implicit lazy val encodeSchema: Encoder[Schema] = new Encoder[Schema] {
+  implicit lazy val encodeSchema = new Encoder[Schema] {
     final def apply(s: Schema): Json =
       mkObjectTyped(
         "Schema",
         List(
           field("@context", "http://www.w3.org/ns/shex.jsonld"),
-          optFieldMap("prefixes", s.prefixes.map(_.pm)),
+
+          // Previous Json serialization generated prefixes and base
+          // I keep these lines in case we want to restore this feature in the future
+          // they could be useful to roundtrip format conversions keeping namespace prefixes
+          // optFieldMap("prefixes", s.prefixes.map(_.pm)),
+          // optField("base", s.base),
+
           optField("imports", if (s.imports.isEmpty) None else Some(s.imports)),
-          optField("base", s.base),
           optField("startActs", s.startActs),
           optField("start", s.start),
           optField("shapes", s.shapes)))
@@ -51,7 +56,7 @@ object encoderShEx {
 
   implicit lazy val encoderMax: Encoder[Max] = new Encoder[Max] {
     final def apply(a: Max): Json = a match {
-      case Star => Json.fromString("*")
+      case Star => Json.fromInt(-1)
       case IntMax(n) => Json.fromInt(n)
     }
   }
@@ -194,10 +199,19 @@ object encoderShEx {
     }
 
   implicit lazy val encodeNumeric: Encoder[NumericLiteral] = new Encoder[NumericLiteral] {
-    final def apply(a: NumericLiteral): Json = a match {
-      case NumericInt(n) => Json.fromInt(n)
-      case NumericDouble(d) => Json.fromDoubleOrString(d)
-      case NumericDecimal(d) => Json.fromBigDecimal(d)
+    final def apply(a: NumericLiteral): Json = {
+      println(s"####### encoding numeric $a")
+      a match {
+        case NumericInt(n) => Json.fromInt(n)
+        case NumericDouble(d) => {
+          println(s"Encoding numeric literal $d")
+          d match {
+            case 0.0 => Json.fromString("0e0")
+            case _ => Json.fromDoubleOrString(d)
+          }
+        }
+        case NumericDecimal(d) => Json.fromBigDecimal(d)
+      }
     }
   }
 
@@ -235,12 +249,14 @@ object encoderShEx {
         Json.fromFields(fields)
       }
       case DatatypeString(s, d) => {
+        println(s"###################DatatypeString($s,$d)")
         val fields: List[(String, Json)] = List(
           ("value", Json.fromString(s)),
           ("type", d.asJson))
         Json.fromFields(fields)
       }
       case LangString(s, l) => {
+        println(s"###################LangString($s,$l)")
         val fields: List[(String, Json)] = List(
           ("value", Json.fromString(s)),
           ("language", Json.fromString(l)))

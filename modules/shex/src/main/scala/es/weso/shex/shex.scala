@@ -61,7 +61,7 @@ abstract sealed trait ShapeExpr {
 }
 
 object ShapeExpr {
-  def any: ShapeExpr = NodeConstraint.empty
+  def any: ShapeExpr = Shape.empty
 
   def fail: ShapeExpr = NodeConstraint.valueSet(List(), List())
 }
@@ -229,8 +229,8 @@ case class FractionDigits(n: Int) extends NumericFacet {
 
 sealed trait NumericLiteral
 case class NumericInt(n: Int) extends NumericLiteral
-case class NumericDouble(n: Double) extends NumericLiteral
-case class NumericDecimal(n: BigDecimal) extends NumericLiteral
+case class NumericDouble(n: Double, repr: String) extends NumericLiteral
+case class NumericDecimal(n: BigDecimal, repr: String) extends NumericLiteral
 
 sealed trait ValueSetValue
 
@@ -248,16 +248,16 @@ object ObjectValue {
   def falseValue: ObjectValue = DatatypeString("false", xsd_boolean)
   def intValue(n: Int): ObjectValue =
     DatatypeString(n.toString, xsd_integer)
-  def doubleValue(d: Double): ObjectValue =
-    DatatypeString(d.toString, xsd_double)
-  def decimalValue(d: BigDecimal): ObjectValue =
-    DatatypeString(d.toString, xsd_decimal)
+  def doubleValue(d: Double, repr: String): ObjectValue =
+    DatatypeString(repr, xsd_double)
+  def decimalValue(d: BigDecimal, repr: String): ObjectValue =
+    DatatypeString(repr, xsd_decimal)
   def literalValue(l: Literal): ObjectValue =
     l match {
       case DatatypeLiteral(lex, dt) => DatatypeString(lex, dt)
       case IntegerLiteral(n) => intValue(n)
-      case DecimalLiteral(d) => decimalValue(d)
-      case DoubleLiteral(d) => doubleValue(d)
+      case DecimalLiteral(d) => decimalValue(d, d.toString)
+      case DoubleLiteral(d) => doubleValue(d, d.toString)
       case StringLiteral(s) => DatatypeString(s, xsd_string)
       case BooleanLiteral(b) => if (b) trueValue else falseValue
       case LangLiteral(lex, lang) => LangString(lex, lang.lang)
@@ -292,7 +292,9 @@ case class Language(languageTag: String) extends ValueSetValue
 
 case class SemAct(name: IRI, code: Option[String])
 
-abstract sealed trait TripleExpr
+abstract sealed trait TripleExpr {
+  def addId(label: ShapeLabel): TripleExpr
+}
 
 case class EachOf(
   id: Option[ShapeLabel],
@@ -303,7 +305,7 @@ case class EachOf(
   annotations: Option[List[Annotation]]) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
-
+  override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 }
 
 case class OneOf(
@@ -315,11 +317,11 @@ case class OneOf(
   annotations: Option[List[Annotation]]) extends TripleExpr {
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
+  override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 }
 
-case class Inclusion(include: ShapeLabel)
-  extends TripleExpr {
-
+case class Inclusion(include: ShapeLabel) extends TripleExpr {
+  override def addId(lbl: ShapeLabel) = this // Inclusions have no label
 }
 
 case class TripleConstraint(
@@ -340,9 +342,7 @@ case class TripleConstraint(
   lazy val path: Path =
     if (direct) Direct(predicate)
     else Inverse(predicate)
-
-  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
-
+  override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 }
 
 object TripleConstraint {
