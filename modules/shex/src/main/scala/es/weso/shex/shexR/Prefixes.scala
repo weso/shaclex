@@ -69,8 +69,4 @@ object PREFIXES {
   lazy val sx_totaldigits = sx + "totaldigits"
   lazy val sx_valueExpr = sx + "valueExpr"
   lazy val sx_values = sx + "values"
-
-  private val shexMap: Map[String, IRI] =
-    Map("sx" -> sx)
-
 }

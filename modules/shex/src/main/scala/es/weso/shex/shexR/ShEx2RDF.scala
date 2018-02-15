@@ -97,8 +97,8 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
   def numericLiteral(n: NumericLiteral): RDFSaver[RDFNode] = n match {
     case NumericInt(n) => ok(IntegerLiteral(n))
-    case NumericDouble(n) => ok(DoubleLiteral(n))
-    case NumericDecimal(n) => ok(DecimalLiteral(n))
+    case NumericDouble(n,_) => ok(DoubleLiteral(n))
+    case NumericDecimal(n,_) => ok(DecimalLiteral(n))
   }
 
   def valueSetValue(x: ValueSetValue): RDFSaver[RDFNode] = x match {

@@ -114,22 +114,22 @@ case class FacetChecker(schema: Schema)
 
   private def str2NumericDecimal(str: String): Either[String, NumericDecimal] = try {
     val n: BigDecimal = BigDecimal(str)
-    Right(NumericDecimal(n))
+    Right(NumericDecimal(n,str))
   } catch {
     case _: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
   }
 
   private def str2NumericDouble(str: String): Either[String, NumericDouble] = try {
     val n: Double = str.toDouble
-    Right(NumericDouble(n))
+    Right(NumericDouble(n,str))
   } catch {
     case _: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
   }
 
   private def numericValue(node: RDFNode): Either[String, NumericLiteral] = node match {
     case IntegerLiteral(i) => Right(NumericInt(i))
-    case DoubleLiteral(d) => Right(NumericDouble(d))
-    case DecimalLiteral(d) => Right(NumericDecimal(d))
+    case DoubleLiteral(d) => Right(NumericDouble(d,d.toString))
+    case DecimalLiteral(d) => Right(NumericDecimal(d,d.toString))
     case DatatypeLiteral(str, `xsd_byte`) => str2NumericInt(str)
     case DatatypeLiteral(str, `xsd_decimal`) => str2NumericDecimal(str)
     case DatatypeLiteral(str, `xsd_double`) => str2NumericDouble(str)
@@ -151,20 +151,20 @@ case class FacetChecker(schema: Schema)
   def minInclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(ni <= nodeInt)
-      case Right(NumericDouble(d)) => ok(ni <= d)
-      case Right(NumericDecimal(d)) => ok(ni <= d)
+      case Right(NumericDouble(d,_)) => ok(ni <= d)
+      case Right(NumericDecimal(d,_)) => ok(ni <= d)
       case _ => errStr(s"Cannot compare minInclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => numericValue(node) match {
+    case NumericDouble(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd <= nodeInt)
-      case Right(NumericDouble(d)) => ok(nd <= d)
-      case Right(NumericDecimal(d)) => ok(nd <= d)
+      case Right(NumericDouble(d,_)) => ok(nd <= d)
+      case Right(NumericDecimal(d,_)) => ok(nd <= d)
       case _ => errStr(s"Cannot compare minInclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => numericValue(node) match {
+    case NumericDecimal(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd <= nodeInt)
-      case Right(NumericDouble(d)) => ok(nd <= d)
-      case Right(NumericDecimal(d)) => ok(nd <= d)
+      case Right(NumericDouble(d,_)) => ok(nd <= d)
+      case Right(NumericDecimal(d,_)) => ok(nd <= d)
       case _ => errStr(s"Cannot compare minInclusive($nd) with node $node")
     }
   }
@@ -172,20 +172,20 @@ case class FacetChecker(schema: Schema)
   def minExclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(ni < nodeInt)
-      case Right(NumericDouble(d)) => ok(ni < d)
-      case Right(NumericDecimal(d)) => ok(ni < d)
+      case Right(NumericDouble(d,_)) => ok(ni < d)
+      case Right(NumericDecimal(d,_)) => ok(ni < d)
       case _ => errStr(s"Cannot compare minExclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => numericValue(node) match {
+    case NumericDouble(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd < nodeInt)
-      case Right(NumericDouble(d)) => ok(nd < d)
-      case Right(NumericDecimal(d)) => ok(nd < d)
+      case Right(NumericDouble(d,_)) => ok(nd < d)
+      case Right(NumericDecimal(d,_)) => ok(nd < d)
       case _ => errStr(s"Cannot compare minExclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => numericValue(node) match {
+    case NumericDecimal(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd < nodeInt)
-      case Right(NumericDouble(d)) => ok(nd < d)
-      case Right(NumericDecimal(d)) => ok(nd < d)
+      case Right(NumericDouble(d,_)) => ok(nd < d)
+      case Right(NumericDecimal(d,_)) => ok(nd < d)
       case _ => errStr(s"Cannot compare minExclusive($nd) with node $node")
     }
   }
@@ -193,20 +193,20 @@ case class FacetChecker(schema: Schema)
   def maxInclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(ni >= nodeInt)
-      case Right(NumericDouble(d)) => ok(ni >= d)
-      case Right(NumericDecimal(d)) => ok(ni >= d)
+      case Right(NumericDouble(d,_)) => ok(ni >= d)
+      case Right(NumericDecimal(d,_)) => ok(ni >= d)
       case _ => errStr(s"Cannot compare maxInclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => numericValue(node) match {
+    case NumericDouble(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd >= nodeInt)
-      case Right(NumericDouble(d)) => ok(nd >= d)
-      case Right(NumericDecimal(d)) => ok(nd >= d)
+      case Right(NumericDouble(d,_)) => ok(nd >= d)
+      case Right(NumericDecimal(d,_)) => ok(nd >= d)
       case _ => errStr(s"Cannot compare maxInclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => numericValue(node) match {
+    case NumericDecimal(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd >= nodeInt)
-      case Right(NumericDouble(d)) => ok(nd >= d)
-      case Right(NumericDecimal(d)) => ok(nd >= d)
+      case Right(NumericDouble(d,_)) => ok(nd >= d)
+      case Right(NumericDecimal(d,_)) => ok(nd >= d)
       case _ => errStr(s"Cannot compare maxInclusive($nd) with node $node")
     }
   }
@@ -214,22 +214,21 @@ case class FacetChecker(schema: Schema)
   def maxExclusive: Comparator = (nl, node) => nl match {
     case NumericInt(ni) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(ni > nodeInt)
-      case Right(NumericDouble(d)) => ok(ni > d)
-      case Right(NumericDecimal(d)) => ok(ni > d)
+      case Right(NumericDouble(d,_)) => ok(ni > d)
+      case Right(NumericDecimal(d,_)) => ok(ni > d)
       case _ => errStr(s"Cannot compare maxExclusive($ni) with node $node")
     }
-    case NumericDouble(nd) => numericValue(node) match {
+    case NumericDouble(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd > nodeInt)
-      case Right(NumericDouble(d)) => ok(nd > d)
-      case Right(NumericDecimal(d)) => ok(nd > d)
+      case Right(NumericDouble(d,_)) => ok(nd > d)
+      case Right(NumericDecimal(d,_)) => ok(nd > d)
       case _ => errStr(s"Cannot compare maxExclusive($nd) with node $node")
     }
-    case NumericDecimal(nd) => numericValue(node) match {
+    case NumericDecimal(nd,_) => numericValue(node) match {
       case Right(NumericInt(nodeInt)) => ok(nd > nodeInt)
-      case Right(NumericDouble(d)) => ok(nd > d)
-      case Right(NumericDecimal(d)) => ok(nd > d)
+      case Right(NumericDouble(d,_)) => ok(nd > d)
+      case Right(NumericDecimal(d,_)) => ok(nd > d)
       case _ => errStr(s"Cannot compare maxExclusive($nd) with node $node")
     }
   }
-
 }

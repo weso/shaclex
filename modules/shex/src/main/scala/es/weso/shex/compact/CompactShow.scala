@@ -175,8 +175,8 @@ object CompactShow {
 
   private def numericDoc(n: NumericLiteral): Doc = n match {
     case NumericInt(n) => integerDoc(n.toString)
-    case NumericDouble(d) => doubleDoc(d.toString)
-    case NumericDecimal(d) => decimalDoc(d.toString)
+    case NumericDouble(_,str) => doubleDoc(str)
+    case NumericDecimal(_,str) => decimalDoc(str)
   }
 
   private def valueSetDoc(pm: PrefixMap)(vs: List[ValueSetValue]): Doc =
