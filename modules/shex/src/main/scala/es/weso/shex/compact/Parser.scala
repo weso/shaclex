@@ -1,6 +1,6 @@
 package es.weso.shex.compact
 
-import java.io.{ ByteArrayInputStream, InputStreamReader, Reader => JavaReader }
+import java.io.{ByteArrayInputStream, InputStreamReader, Reader => JavaReader}
 
 import cats.data._
 import com.typesafe.scalalogging._
@@ -13,6 +13,8 @@ import java.nio.charset.StandardCharsets
 
 import es.weso.utils.FileUtils
 
+import scala.collection.immutable.ListMap
+
 object Parser extends LazyLogging {
 
   type S[A] = State[BuilderState, A]
@@ -20,7 +22,7 @@ object Parser extends LazyLogging {
 
   // type PrefixMap = Map[Prefix,IRI]
   type Start = Option[ShapeExpr]
-  type ShapesMap = Map[ShapeLabel, ShapeExpr]
+  type ShapesMap = ListMap[ShapeLabel, ShapeExpr]
   type TripleExprMap = Map[ShapeLabel, TripleExpr]
 
   def ok[A](x: A): Builder[A] =
@@ -134,7 +136,7 @@ object Parser extends LazyLogging {
       PrefixMap.empty,
       base.map(IRI(_)),
       None,
-      Map(),
+      ListMap(),
       Map())
 
   case class BuilderState(prefixMap: PrefixMap,

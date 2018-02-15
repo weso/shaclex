@@ -314,15 +314,29 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     visitList(visitValueSetValue, ctx.valueSetValue())
   }
 
-  override def visitValueSetValue(
-    ctx: ValueSetValueContext): Builder[ValueSetValue] = {
+  private def nonEmpty[A](ls: java.util.List[A]): Boolean = ls.size > 0
+
+  override def visitValueSetValue(ctx: ValueSetValueContext): Builder[ValueSetValue] = {
     ctx match {
       case _ if isDefined(ctx.iriRange()) => visitIriRange(ctx.iriRange())
       case _ if isDefined(ctx.literalRange()) => visitLiteralRange(ctx.literalRange())
       case _ if isDefined(ctx.languageRange()) => visitLanguageRange(ctx.languageRange())
-      case _ => {
-        err(s"Unimplemented valueSetValue . iriExclusion")
+      case _ if nonEmpty(ctx.iriExclusion()) => {
+        println(s"IRI Exclusion defined...")
+        for {
+          exclusions <- visitList(visitIriExclusion, ctx.iriExclusion())
+        } yield IRIStemRange(IRIStemWildcard(),Some(exclusions))
       }
+      case _ if nonEmpty(ctx.literalExclusion()) => {
+        println(s"Literal Exclusion defined...")
+        for {
+          exclusions <- visitList(visitLiteralExclusion, ctx.literalExclusion())
+        } yield LiteralStemRange(LiteralStemRangeWildcard(),Some(exclusions))
+      }
+      case _ if nonEmpty(ctx.languageExclusion()) => for {
+        exclusions <- visitList(visitLanguageExclusion, ctx.languageExclusion())
+      } yield LanguageStemRange(LanguageStemRangeWildcard(),Some(exclusions))
+      case _ => err(s"visitValueSetValue: Unknown value")
     }
   }
 
@@ -348,11 +362,32 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
+  override def visitIriExclusion(ctx: IriExclusionContext): Builder[ValueSetValue] = for {
+    iri <- visitIri(ctx.iri())
+  } yield if (isDefined(ctx.STEM_MARK()))
+     IRIStem(iri)
+    else
+     IRIValue(iri)
 
   override def visitLanguageExclusion(ctx: LanguageExclusionContext): Builder[ValueSetValue] = {
-    err(s"Undefined Language exclusion")
+    val lang = getLanguage(ctx.LANGTAG().getText())
+    ok(if (isDefined(ctx.STEM_MARK())) LanguageStem(lang)
+       else Language(lang)
+    )
   }
 
+  private def convertValue(v: ValueSetValue): ObjectLiteral = v match {
+    case ol: ObjectLiteral => ol
+    case _ => throw new Exception(s"convertValue: $v must be an ObjectLiteral")
+  }
+
+  override def visitLiteralExclusion(ctx: LiteralExclusionContext): Builder[ValueSetValue] = for {
+    literal <- visitLiteral(ctx.literal())
+  } yield
+     if(isDefined(ctx.STEM_MARK())) {
+       LiteralStem(convertValue(literal))
+     }
+     else literal
 
   override def visitIriRange(ctx: IriRangeContext): Builder[ValueSetValue] = for {
     iri <- visitIri(ctx.iri())
@@ -364,14 +399,6 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     else {
       IRIStemRange(IRIStemValueIRI(iri), Some(exclusions))
     }
-  }
-
-  override def visitIriExclusion(ctx: IriExclusionContext): Builder[ValueSetValue] = for {
-    iri <- visitIri(ctx.iri())
-  } yield {
-    // TODO: Detect if the rule has a ~ at the end:
-    //   exclusion       : '-' iri '~'? ;
-    IRIValue(iri)
   }
 
   override def visitLiteral(ctx: LiteralContext): Builder[ValueSetValue] = {
