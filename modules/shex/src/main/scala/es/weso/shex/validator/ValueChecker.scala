@@ -49,6 +49,12 @@ case class ValueChecker(schema: Schema)
           s"${node.show} lang($lang) matches ${stem}")
         case _ => errStr(s"${node.show} is not a language tagged literal")
       }
+      case Language(langTag) => node match {
+        case LangLiteral(x,Lang(lang)) => checkCond(langTag == lang, attempt,
+          msgErr(s"${node.show} lang($lang) does not match ${langTag}"),
+          s"${node.show} lang($lang) matches ${langTag}")
+        case _ => errStr(s"${node.show} is not a language tagged literal")
+      }
       case IRIStem(stem) => node match {
         case i: IRI =>
           checkCond(i.getLexicalForm.startsWith(stem.getLexicalForm), attempt,

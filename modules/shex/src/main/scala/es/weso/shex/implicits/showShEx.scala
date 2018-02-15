@@ -59,8 +59,12 @@ object showShEx {
       case DatatypeString(s, d) => "\"" + s + "\"^^" + d.show
       case LangString(s, l) => "\"" + s + "\"@" + l
       case IRIStem(s) => s"stem($s)"
-      case IRIStemRange(s, exclusions) => s"stemRange(${s.show},${optShow(exclusions)})"
-      case LanguageStem(stem) => s"@$stem"
+      case IRIStemRange(s, exclusions) => s"${s.show}~ ${optShow(exclusions)})"
+      case LanguageStem(stem) => s"@$stem~ "
+      case LanguageStemRange(lang,exclusions) => s"@${lang}~ ${optShow(exclusions)}"
+      case LiteralStem(stem) => s"@$stem~ "
+      case LiteralStemRange(stem,exclusions) => s"@${stem}~ ${optShow(exclusions)}"
+      case Language(lang) => s"@$lang"
       case _ => s"Unimplemented show of $a"
     }
   }
@@ -112,8 +116,8 @@ object showShEx {
   implicit lazy val showNumericLiteral: Show[NumericLiteral] = new Show[NumericLiteral] {
     final def show(a: NumericLiteral): String = a match {
       case NumericInt(n) => n.show
-      case NumericDouble(n) => n.show
-      case NumericDecimal(n) => n.show
+      case NumericDouble(n,repr) => repr
+      case NumericDecimal(n,repr) => repr
     }
   }
 

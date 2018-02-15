@@ -139,19 +139,21 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
   }
 
-  private[validator] def checkNodeLabelSafe(node: RDFNode, label: ShapeLabel, shape: ShapeExpr): CheckTyping = for {
-    typing <- getTyping
-    shapeType = ShapeType(shape, Some(label), schema)
-    attempt = Attempt(NodeShape(node, shapeType), None)
-    t <- {
-      runLocalSafe(
-        checkNodeShapeExpr(attempt, node, shape),
-        _.addType(node, shapeType),
-        (err, t) => {
-          t.addNotEvidence(node, shapeType, err)
-        })
-    }
-  } yield t
+  private[validator] def checkNodeLabelSafe(node: RDFNode, label: ShapeLabel, shape: ShapeExpr): CheckTyping = {
+    for {
+      typing <- getTyping
+      shapeType = ShapeType(shape, Some(label), schema)
+      attempt = Attempt(NodeShape(node, shapeType), None)
+      t <- {
+        runLocalSafe(
+          checkNodeShapeExpr(attempt, node, shape),
+          _.addType(node, shapeType),
+          (err, t) => {
+            t.addNotEvidence(node, shapeType, err)
+          })
+      }
+    } yield t
+  }
 
   private[validator] def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
     def addNot(typing: ShapeTyping)(err: ViolationError): CheckTyping = {
@@ -298,7 +300,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
     logger.info(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
-    // println(s"checkShape: ${attempt.show} node: ${node.show} shape: ${s.show}")
+    if (s.isEmpty) {
+      addEvidence(attempt.nodeShape,s"Node $node matched empty shape")
+    }
+    else
     for {
       neighs <- getNeighs(node)
       tableRbe <- mkTable(s.expression, s.extra.getOrElse(List()))

@@ -137,8 +137,8 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
 
   def numericLiteral: RDFParser[NumericLiteral] = (n, rdf) => n match {
     case IntegerLiteral(n) => parseOk(NumericInt(n))
-    case DoubleLiteral(d) => parseOk(NumericDouble(d))
-    case DecimalLiteral(d) => parseOk(NumericDecimal(d))
+    case DoubleLiteral(d) => parseOk(NumericDouble(d, d.toString))
+    case DecimalLiteral(d) => parseOk(NumericDecimal(d, d.toString))
     case _ => parseFail(s"Expected numeric literal but found $n")
   }
 

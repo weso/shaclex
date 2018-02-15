@@ -40,7 +40,7 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
   describe("Max codec") {
     codecValueTest[Max](IntMax(5))
     codecValueTest[Max](Star)
-    codecStrTest[Max](""""*"""", "\"*\"")
+    codecStrTest[Max](""""-1"""", "-1")
     codecStrTest[Max](""""5"""", "5")
     codecStrTest[Max]("""5""", "5")
   }
@@ -61,7 +61,9 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
     codecValueTest[ShapeExpr](NodeConstraint(Some(IRILabel(IRI("http://example.org/a"))), Some(BNodeKind), None, List(), None))
     codecValueTest[ShapeExpr](NodeConstraint(Some(IRILabel(IRI("http://example.org/a"))), None, Some(IRI("http://datatype.org/int")), List(), None))
     codecValueTest[ShapeExpr](NodeConstraint(Some(IRILabel(IRI("http://example.org/a"))), None, Some(IRI("http://datatype.org/int")), List(Length(0)), None))
-    codecValueTest[ShapeExpr](NodeConstraint(Some(IRILabel(IRI("http://example.org/a"))), None, Some(IRI("http://datatype.org/int")), List(Length(0), MinInclusive(NumericDouble(2.3))), None))
+    codecValueTest[ShapeExpr](NodeConstraint(Some(IRILabel(IRI("http://example.org/a"))), None,
+      Some(IRI("http://datatype.org/int")), List(Length(0), MinInclusive(NumericDouble(2.3,"2.3"))), None)
+    )
     codecValueTest[ShapeExpr](
       NodeConstraint(
         Some(IRILabel(IRI("http://example.org/a"))),

@@ -203,14 +203,8 @@ object encoderShEx {
       println(s"####### encoding numeric $a")
       a match {
         case NumericInt(n) => Json.fromInt(n)
-        case NumericDouble(d) => {
-          println(s"Encoding numeric literal $d")
-          d match {
-            case 0.0 => Json.fromString("0e0")
-            case _ => Json.fromDoubleOrString(d)
-          }
-        }
-        case NumericDecimal(d) => Json.fromBigDecimal(d)
+        case NumericDouble(d,_) => Json.fromDoubleOrString(d)
+        case NumericDecimal(d,_) => Json.fromBigDecimal(d)
       }
     }
   }

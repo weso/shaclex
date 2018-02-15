@@ -52,8 +52,11 @@ object decoderShEx {
   }
 
   implicit lazy val decodeMax: Decoder[Max] =
-    Decoder[Int].map(n => IntMax(n)).or(
-      Decoder[String].map(s => Star))
+    Decoder[Int].map(n => n match {
+      case n if n >= 0 => IntMax(n)
+      case -1 => Star
+      case _ => ??? // raise an error
+    })
 
   implicit lazy val decodeShapeExpr: Decoder[ShapeExpr] =
     decoderShapeRef.or(
@@ -140,8 +143,8 @@ object decoderShEx {
 
   implicit lazy val decodeNumericLiteral: Decoder[NumericLiteral] =
     Decoder[Int].map(n => NumericInt(n)).or(
-      Decoder[Double].map(n => NumericDouble(n)).or(
-        Decoder[BigDecimal].map(n => NumericDecimal(n))))
+      Decoder[Double].map(n => NumericDouble(n, n.toString)).or(
+        Decoder[BigDecimal].map(n => NumericDecimal(n,n.toString))))
 
   implicit lazy val decodeNodeKind: Decoder[NodeKind] = Decoder.instance { c =>
     c.field("nodeKind").as[String].flatMap {

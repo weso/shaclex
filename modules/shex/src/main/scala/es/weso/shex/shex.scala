@@ -145,6 +145,7 @@ case class Shape(
   def extraPaths =
     extra.getOrElse(List()).map(Direct(_))
 
+  def isEmpty: Boolean = this == Shape.empty
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
