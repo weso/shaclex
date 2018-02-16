@@ -17,8 +17,31 @@ object StrUtils {
 
     // I will need to implement the following escape sequences: https://www.w3.org/TR/turtle/#sec-escapes
     // The following code doesn't handle uppercase \U
+  /*    var index = 0
+    val length = str.length 
+    val builder = new StringBuilder(length)
+    while (index < str.length) {
+      val current = str(index)
+      val nextChar = current match {
+        case '\\' => {
+          index += 1
+          val first = str(index)
+          first match {
+            case 't' => '\t'
+            case 'n' => '\n'
+            case '\\' => '\\'
+            case _ => first
+          }
+        }
+        case _ => current
+      }  
+      index += 1
+      builder.append(nextChar)
+    } 
+    builder.toString
+    */
     StringEscapeUtils.unescapeJava(str)
-
+    
   }
 
 }
