@@ -17,7 +17,7 @@ import scala.io._
 
 class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name = "datatypes"
+  val name = "1literalPattern_with_REGEXP_escapes"
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 

@@ -44,6 +44,7 @@ lazy val sextVersion           = "0.2.6"
 lazy val scalaGraphVersion     = "1.11.5"
 lazy val typesafeConfigVersion = "1.3.2"
 lazy val scalacheckVersion     = "1.13.5"
+lazy val commonsTextVersion    = "1.2"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "0.11.0"
@@ -77,6 +78,7 @@ lazy val scalatags         = "com.lihaoyi"                %% "scalatags"        
 lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
 lazy val scalacheck        = "org.scalacheck"             %% "scalacheck"          % scalacheckVersion
 lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
+lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
 
 // Compiler plugin modules
 lazy val scalaMacrosParadise = "org.scalamacros"      % "paradise"        % scalaMacrosVersion cross CrossVersion.full
@@ -298,7 +300,8 @@ lazy val utils = project
       catsKernel,
       catsMacros,
       diffsonCirce,
-      xercesImpl
+      xercesImpl,
+      commonsText
     )
   )
 

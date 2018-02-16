@@ -8,7 +8,8 @@ import es.weso.rdf.PREFIXES._
 import es.weso.shex._
 import es.weso.shex.parser.ShExDocBaseVisitor
 import es.weso.shex.compact.Parser._
-import es.weso.shex.parser.ShExDocParser.{ StringContext => ShExStringContext, _ }
+import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
+import es.weso.utils.StrJenaUtils._
 import scala.collection.JavaConverters._
 
 /**
@@ -118,8 +119,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       ls
     }
 
-  override def visitCodeDecl(
-    ctx: CodeDeclContext): Builder[SemAct] =
+  override def visitCodeDecl(ctx: CodeDeclContext): Builder[SemAct] =
     for {
       iri <- visitIri(ctx.iri())
       code <- optBuilder(ctx.CODE()).map(opt => opt.map(_.getText()))
@@ -129,7 +129,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   def cleanCode(str: String): Builder[String] = {
     val codeRegex = "^\\{(.*)%\\}$".r
     str match {
-      case codeRegex(c) => ok(c)
+      case codeRegex(c) => ok(unescape(c))
       case _ => err(s"cleanCode: $str doesn't match regex $codeRegex")
     }
   }
@@ -342,10 +342,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitLiteralRange(
                               ctx: LiteralRangeContext): Builder[ValueSetValue] = {
-    // TODO: STEM_MARK literalExclusion...
     for {
       l <- visitLiteral(ctx.literal())
-    } yield l
+      exclusions <- visitList(visitLiteralExclusion, ctx.literalExclusion)
+    } yield if (isDefined(ctx.STEM_MARK())) {
+      if (exclusions.isEmpty) {
+        LiteralStem(convertValue(l))
+      } else LiteralStemRange(LiteralStemRangeValueObject(convertValue(l)), Some(exclusions))
+    } else l
   }
 
   override def visitLanguageRange(ctx: LanguageRangeContext): Builder[ValueSetValue] = {
@@ -546,8 +550,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       } yield shapeOrRef */
 
   def extractIRIfromIRIREF(d: String, base: Option[IRI]): IRI = {
+    val str = unescape(d)
     val iriRef = "^<(.*)>$".r
-    d match {
+    str match {
       case iriRef(i) => {
         // TODO: Check base declaration
         base match {
@@ -626,7 +631,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     } yield stringLength
     case _ if (isDefined(ctx.REGEXP())) => {
       ok(Pattern(
-        removeSlashes(ctx.REGEXP().getText()),
+        unescape(removeSlashes(ctx.REGEXP().getText())),
         if (isDefined(ctx.REGEXP_FLAGS())) Some(ctx.REGEXP_FLAGS().getText())
         else None))
     }
