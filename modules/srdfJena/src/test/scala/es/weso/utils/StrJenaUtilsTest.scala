@@ -10,7 +10,8 @@ class StrJenaUtilsTest extends FunSpec with Matchers {
     shouldUnescape("\\u0031pepe\\u0031", "1pepe1")
     shouldUnescape("\\u0032\\u00ac\\u0031", "2¬1")
     shouldUnescape("\\\\","\\")
-    // shouldUnescape("\\U0001D4B8","\uD835\uDCB8")
+//    shouldUnescape("pe\\-pe", "pe-pe")
+//    shouldUnescape("\\U0001D4B8","\uD835\uDCB8")
   }
 
   def shouldUnescape(str: String, expected: String): Unit = {

@@ -9,7 +9,7 @@ import es.weso.shex._
 import es.weso.shex.parser.ShExDocBaseVisitor
 import es.weso.shex.compact.Parser._
 import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
-import es.weso.utils.StrJenaUtils._
+import es.weso.utils.StrUtils._
 import scala.collection.JavaConverters._
 
 /**

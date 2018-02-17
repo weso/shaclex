@@ -3,6 +3,6 @@ import org.apache.jena.atlas.lib._
 
 object StrJenaUtils {
   def unescape(str: String): String = {
-    EscapeStr.unescapeStr(str)
+    EscapeStr.unescape(str, '\\', false)
   }
 }

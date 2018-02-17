@@ -9,6 +9,7 @@ class StrUtilsTest extends FunSpec with Matchers {
     shouldUnescape("pepe\\u0031", "pepe1")
     shouldUnescape("\\u0031pepe\\u0031", "1pepe1")
     shouldUnescape("\\u0032\\u00ac\\u0031", "2¬1")
+    shouldUnescape("pe\\-pe", "pe-pe")
     shouldUnescape("\\\\","\\")
     // shouldUnescape("\\U0001D4B8","\uD835\uDCB8")
   }
