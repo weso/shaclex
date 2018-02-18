@@ -185,9 +185,9 @@ object encoderShEx {
       case MinLength(v) => List((x.fieldName, Json.fromInt(v)))
       case MaxLength(v) => List((x.fieldName, Json.fromInt(v)))
       case Pattern(p, fs) => fs match {
-        case None => List((x.fieldName, Json.fromString(escape(p))))
+        case None => List((x.fieldName, Json.fromString(escapePattern(p))))
         case Some(flags) => List(
-          (x.fieldName, Json.fromString(escape(p))),
+          (x.fieldName, Json.fromString(escapePattern(p))),
           ("flags", Json.fromString(flags))
         )
       }

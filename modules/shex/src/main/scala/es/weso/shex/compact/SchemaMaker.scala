@@ -129,7 +129,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   def cleanCode(str: String): Builder[String] = {
     val codeRegex = "^\\{(.*)%\\}$".r
     str match {
-      case codeRegex(c) => ok(unescape(c))
+      case codeRegex(c) => ok(unescapeCode(c))
       case _ => err(s"cleanCode: $str doesn't match regex $codeRegex")
     }
   }
@@ -228,7 +228,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ShapeNot(None, shapeAtom)
   else shapeAtom
 
-  def visitShapeAtom(ctx: ShapeAtomContext): Builder[ShapeExpr] = {
+  private def visitShapeAtom(ctx: ShapeAtomContext): Builder[ShapeExpr] = {
     ctx match {
       case s: ShapeAtomNodeConstraintContext =>
         for {
@@ -455,16 +455,19 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
+  private def okStringLiteral(str:String): Builder[String] =
+    ok(unescapeStringLiteral(str))
+
   override def visitString(
     ctx: ShExStringContext): Builder[String] = {
     if (isDefined(ctx.STRING_LITERAL_LONG1())) {
-      ok(stripStringLiteralLong1(ctx.STRING_LITERAL_LONG1().getText()))
+      okStringLiteral(stripStringLiteralLong1(ctx.STRING_LITERAL_LONG1().getText()))
     } else if (isDefined(ctx.STRING_LITERAL_LONG2())) {
-      ok(stripStringLiteralLong2(ctx.STRING_LITERAL_LONG2().getText()))
+      okStringLiteral(stripStringLiteralLong2(ctx.STRING_LITERAL_LONG2().getText()))
     } else if (isDefined(ctx.STRING_LITERAL1())) {
-      ok(stripStringLiteral1(ctx.STRING_LITERAL1().getText()))
+      okStringLiteral(stripStringLiteral1(ctx.STRING_LITERAL1().getText()))
     } else if (isDefined(ctx.STRING_LITERAL2())) {
-      ok(stripStringLiteral2(ctx.STRING_LITERAL2().getText()))
+      okStringLiteral(stripStringLiteral2(ctx.STRING_LITERAL2().getText()))
     } else
       err(s"visitString: Unknown ctx ${ctx.getClass.getName}")
   }
@@ -550,7 +553,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       } yield shapeOrRef */
 
   def extractIRIfromIRIREF(d: String, base: Option[IRI]): IRI = {
-    val str = unescape(d)
+    val str = unescapeIRI(d)
     val iriRef = "^<(.*)>$".r
     str match {
       case iriRef(i) => {
@@ -631,7 +634,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     } yield stringLength
     case _ if (isDefined(ctx.REGEXP())) => {
       ok(Pattern(
-        unescape(removeSlashes(ctx.REGEXP().getText())),
+        unescapePattern(removeSlashes(ctx.REGEXP().getText())),
         if (isDefined(ctx.REGEXP_FLAGS())) Some(ctx.REGEXP_FLAGS().getText())
         else None))
     }
@@ -969,24 +972,25 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     visitRepeatRange(ctx.repeatRange())
   }
 
-  override def visitRepeatRange(
-    ctx: RepeatRangeContext): Builder[Cardinality] = {
-    for {
-      min <- visitMin_range(ctx.min_range())
-      max <- visitMax_range(ctx.max_range())
-    } yield {
-      val effectiveMax =
-        if (min.isDefined && !max.isDefined) min.map(IntMax(_))
-        else max
-      (min, effectiveMax)
-    }
-  }
+  private def visitRepeatRange(ctx: RepeatRangeContext): Builder[Cardinality] =
+   ctx match {
+     case s: ExactRangeContext => {
+       getInteger(s.INTEGER().getText()).map(n =>
+         (Some(n),Some(IntMax(n)))
+       )
+     }
+     case s: MinMaxRangeContext => for {
+       min <- visitMin_range(s.min_range())
+       max <- visitMax_range(s.max_range())
+     } yield max match {
+           case None => (Some(min),Some(Star))
+           case Some(m) => (Some(min),Some(m))
+         }
+   }
 
   override def visitMin_range(
-    ctx: Min_rangeContext): Builder[Option[Int]] = {
-    if (isDefined(ctx)) {
-      getInteger(ctx.INTEGER().getText()).map(Some(_))
-    } else ok(None)
+    ctx: Min_rangeContext): Builder[Int] = {
+    getInteger(ctx.INTEGER().getText())
   }
 
   override def visitMax_range(

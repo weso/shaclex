@@ -163,7 +163,9 @@ cardinality     :  '*'         # starCardinality
 // repeatRange     : '{' INTEGER '}'							  # exactRange
 // 				| '{' INTEGER ',' (INTEGER | UNBOUNDED)? '}'  # minMaxRange
 // 				;
-repeatRange     : '{' min_range (',' max_range?)? '}' ;
+repeatRange     : '{' INTEGER '}'		            # exactRange
+				| '{' min_range ',' max_range? '}'  # minMaxRange
+				;
 min_range       : INTEGER ;
 max_range       : INTEGER
 				| '*'
