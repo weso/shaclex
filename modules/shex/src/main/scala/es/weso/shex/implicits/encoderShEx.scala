@@ -6,6 +6,7 @@ import cats.implicits._
 import es.weso.shex._
 import showShEx._
 import es.weso.rdf._
+import es.weso.utils.StrUtils._
 
 object encoderShEx {
 
@@ -184,9 +185,9 @@ object encoderShEx {
       case MinLength(v) => List((x.fieldName, Json.fromInt(v)))
       case MaxLength(v) => List((x.fieldName, Json.fromInt(v)))
       case Pattern(p, fs) => fs match {
-        case None => List((x.fieldName, Json.fromString(p)))
+        case None => List((x.fieldName, Json.fromString(escape(p))))
         case Some(flags) => List(
-          (x.fieldName, Json.fromString(p)),
+          (x.fieldName, Json.fromString(escape(p))),
           ("flags", Json.fromString(flags))
         )
       }
@@ -253,7 +254,7 @@ object encoderShEx {
         println(s"###################LangString($s,$l)")
         val fields: List[(String, Json)] = List(
           ("value", Json.fromString(s)),
-          ("language", Json.fromString(l)))
+          ("language", Json.fromString(l.toLowerCase())))
         Json.fromFields(fields)
       }
     }

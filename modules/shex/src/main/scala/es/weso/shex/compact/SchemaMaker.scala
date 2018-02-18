@@ -787,7 +787,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     for {
       qualifiers <- visitList(visitQualifier, ctx.qualifier())
       tripleExpr <- visitOpt(visitTripleExpression,ctx.tripleExpression)
-      shape <- makeShape(qualifiers, tripleExpr, List())
+      shape <- makeShape(qualifiers, tripleExpr, List(), List())
     } yield shape
   }
   override def visitTripleExpression(ctx: TripleExpressionContext): Builder[TripleExpr] = {
@@ -801,7 +801,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       semActs <- visitSemanticActions(ctx.semanticActions())
       anns <- visitList(visitAnnotation, ctx.annotation())
       // newTripleExpr <- addAnnotations(tripleExpr,anns)
-      shape <- makeShape(qualifiers, optTripleExpr, semActs)
+      shape <- makeShape(qualifiers, optTripleExpr, semActs,anns)
     } yield shape
   }
 
@@ -823,7 +823,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   def makeShape(
     qualifiers: List[Qualifier],
     tripleExpr: Option[TripleExpr],
-    semActs: List[SemAct]): Builder[ShapeExpr] = {
+    semActs: List[SemAct],
+    anns: List[Annotation]): Builder[ShapeExpr] = {
     val containsClosed =
       if (qualifiers.contains(Closed))
         Some(true)
@@ -838,7 +839,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       closed = containsClosed,
       extra = extras,
       expression = tripleExpr,
-      semActs = if (semActs.isEmpty) None else Some(semActs))
+      semActs = if (semActs.isEmpty) None else Some(semActs),
+      annotations = if (anns.isEmpty) None else Some(anns)
+    )
     inheritList.length match {
       case 0 => ok(shape)
       case 1 => ok(shape.copy(inherit = Some(inheritList.head)))
