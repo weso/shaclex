@@ -8,7 +8,7 @@ import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
 import es.weso.json._
 
-class shexJsonSingle extends FunSpec with JsonTest with Matchers with EitherValues {
+class ShExJsonSingleTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
@@ -22,7 +22,7 @@ class shexJsonSingle extends FunSpec with JsonTest with Matchers with EitherValu
   }
 
   describe("Parsing Schema from Json") {
-    val name = "1literalPatterni"
+    val name = "1literalPattern_with_REGEXP_escapes_bare"
     val file = getJsonFile(schemasFolder, name)
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString

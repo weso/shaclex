@@ -145,7 +145,8 @@ object StrUtils {
     */
 
   def escapeStringLiteral(str: String): String = cnvLoop(str, List(cnvCtrl))
-  def escapePattern(str: String): String = cnvLoop(str,List(cnvCtrl, cnvBackslashPattern))
+
+  def escapePattern(str: String): String = cnvLoop(str,List())
 
   type Converter = (String, Int) => Option[CharConversion]
   type CharConversion = (Array[Char],Int)
@@ -168,7 +169,7 @@ object StrUtils {
     builder.mkString
   }
 
-  def escape(str: String): String = {
+/*  def escape(str: String): String = {
     var i = 0
     val length = str.length
     val builder = new StringBuilder(length)
@@ -178,7 +179,7 @@ object StrUtils {
       builder.appendAll(nextChars)
     }
     builder.mkString
-  }
+  } */
 
   private def escapeChar(c: Char, i: Int) = Some((Array('\\',c), i))
 
@@ -199,9 +200,9 @@ object StrUtils {
     case '\\' => {
       val newIndex = i + 1
       str(newIndex) match {
-        case '^' => Some((Array('\\', '^'), newIndex))
-        case '$' => Some((Array('\\', '$'), newIndex))
-        case _ => Some((Array('\\', '\\'), i))
+        case '^' => Some((Array('^'), newIndex))
+        case '$' => Some((Array('$'), newIndex))
+        case _ => Some((Array('\\'), i))
       }
     }
     case _ => None

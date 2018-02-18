@@ -24,10 +24,11 @@ class StrUtilsTest extends FunSpec with Matchers {
   }
 
   describe("StrUtils escapePattern") {
-    shouldConvert("escapePattern", escapePattern, "\tpepe", "\\tpepe")
+    shouldConvert("escapePattern", escapePattern, "\tpepe", "\tpepe")
     shouldConvert("escapePattern", escapePattern, "pepe1", "pepe1")
     shouldConvert("escapePattern", escapePattern, "1pepe1", "1pepe1")
     shouldConvert("escapePattern", escapePattern, "2\u00ac1", "2\u00ac1")
+    shouldConvert("escapePattern", escapePattern, "2\\^1", "2^1")
     // shouldUnescape("\\U0001D4B8","\uD835\uDCB8")
   }
 
