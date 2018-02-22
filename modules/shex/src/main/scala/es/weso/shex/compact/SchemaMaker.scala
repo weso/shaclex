@@ -177,8 +177,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         ctx.inlineShapeAnd().asScala.map(visitInlineShapeAnd(_)).toList
       r.sequence
     }
-  } yield if (shapes.length == 1) shapes.head
-  else ShapeOr(None, shapes)
+  } yield mkShapeOr(shapes, Flatten)
 
   override def visitInlineShapeAnd(
     ctx: InlineShapeAndContext): Builder[ShapeExpr] = {
@@ -188,8 +187,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           ctx.inlineShapeNot().asScala.map(visitInlineShapeNot(_)).toList
         r.sequence
       }
-    } yield if (shapes.length == 1) shapes.head
-    else ShapeAnd(None, shapes)
+    } yield {
+      mkShapeAnd(shapes, Flatten)
+    }
   }
 
   override def visitInlineShapeNot(
@@ -206,8 +206,34 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         ctx.shapeAnd().asScala.map(visitShapeAnd(_)).toList
       r.sequence
     }
-  } yield if (shapes.length == 1) shapes.head
-  else ShapeOr(None, shapes)
+  } yield mkShapeOr(shapes, NO_Flatten)
+
+  private def mkShapeAnd(shapes: List[ShapeExpr], flatten: Boolean): ShapeExpr = {
+   val zero = List[ShapeExpr]()
+   def next(c: ShapeExpr, rs: List[ShapeExpr]): List[ShapeExpr] = c match {
+     case ShapeAnd(None,ss) => ss ++ rs
+     case _ => c :: rs
+   }
+   lazy val flattenShapes = shapes.foldRight(zero)(next)
+   mkShapeOp(if (flatten) flattenShapes else shapes, ShapeAnd)
+  }
+
+  private def mkShapeOr(shapes: List[ShapeExpr], flatten: Boolean): ShapeExpr = {
+    val zero = List[ShapeExpr]()
+    def next(c: ShapeExpr, rs: List[ShapeExpr]): List[ShapeExpr] = c match {
+      case ShapeOr(None,ss) => ss ++ rs
+      case _ => c :: rs
+    }
+    lazy val flattenShapes = shapes.foldRight(zero)(next)
+    mkShapeOp(if (flatten) flattenShapes else shapes,ShapeOr)
+  }
+
+
+  private def mkShapeOp(shapes: List[ShapeExpr],
+                        op: (Option[ShapeLabel], List[ShapeExpr]) => ShapeExpr): ShapeExpr = {
+    if (shapes.length == 1) shapes.head
+    else op(None, shapes)
+  }
 
   override def visitShapeAnd(
     ctx: ShapeAndContext): Builder[ShapeExpr] = {
@@ -217,9 +243,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           ctx.shapeNot().asScala.map(visitShapeNot(_)).toList
         r.sequence
       }
-    } yield if (shapes.length == 1) shapes.head
-    else ShapeAnd(None, shapes)
+    } yield {
+      mkShapeAnd(shapes, NO_Flatten)
+    }
   }
+
+  private val NO_Flatten = false
+  private val Flatten = true
+
 
   override def visitShapeNot(
     ctx: ShapeNotContext): Builder[ShapeExpr] = for {
@@ -289,7 +320,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           sr <- visitOpt(visitInlineShapeOrRef, s.inlineShapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(None, List(nk, s))
+          case Some(s) => {
+            ShapeAnd(None, List(nk, s))
+          }
         }
 
       case s: InlineShapeAtomShapeOrRefContext =>
@@ -316,19 +349,23 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   private def nonEmpty[A](ls: java.util.List[A]): Boolean = ls.size > 0
 
+/*  private def valuetoLiteralStemRangeValue(v: ValueSetValue): Builder[LiteralStemRangeValueObject] = v match {
+    case ol: ObjectLiteral => ok(LiteralStemRangeValueObject(ol))
+    case LiteralStem(ol) => ok(LiteralStemRangeValueObject(ol))
+    case _ => err(s"Cannot convert value object $v to LiteralStemRangeValue")
+  } */
+
   override def visitValueSetValue(ctx: ValueSetValueContext): Builder[ValueSetValue] = {
     ctx match {
       case _ if isDefined(ctx.iriRange()) => visitIriRange(ctx.iriRange())
       case _ if isDefined(ctx.literalRange()) => visitLiteralRange(ctx.literalRange())
       case _ if isDefined(ctx.languageRange()) => visitLanguageRange(ctx.languageRange())
       case _ if nonEmpty(ctx.iriExclusion()) => {
-        println(s"IRI Exclusion defined...")
         for {
           exclusions <- visitList(visitIriExclusion, ctx.iriExclusion())
         } yield IRIStemRange(IRIStemWildcard(),Some(exclusions))
       }
       case _ if nonEmpty(ctx.literalExclusion()) => {
-        println(s"Literal Exclusion defined...")
         for {
           exclusions <- visitList(visitLiteralExclusion, ctx.literalExclusion())
         } yield LiteralStemRange(LiteralStemRangeWildcard(),Some(exclusions))
@@ -340,16 +377,19 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def visitLiteralRange(
-                              ctx: LiteralRangeContext): Builder[ValueSetValue] = {
+  override def visitLiteralRange(ctx: LiteralRangeContext): Builder[ValueSetValue] = {
     for {
-      l <- visitLiteral(ctx.literal())
+      literal <- visitLiteral(ctx.literal())
       exclusions <- visitList(visitLiteralExclusion, ctx.literalExclusion)
-    } yield if (isDefined(ctx.STEM_MARK())) {
+      str <- if (isDefined(ctx.STEM_MARK())) value2String(literal)
+             else ok("Unused string") // Unused string...if no STEM_MARK, returns the literal
+    } yield if (!isDefined(ctx.STEM_MARK())) literal
+    else { // it is a stem
       if (exclusions.isEmpty) {
-        LiteralStem(convertValue(l))
-      } else LiteralStemRange(LiteralStemRangeValueObject(convertValue(l)), Some(exclusions))
-    } else l
+        LiteralStem(str)
+      } else
+        LiteralStemRange(LiteralStemRangeString(str), Some(exclusions))
+    }
   }
 
   override def visitLanguageRange(ctx: LanguageRangeContext): Builder[ValueSetValue] = {
@@ -366,32 +406,34 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def visitIriExclusion(ctx: IriExclusionContext): Builder[ValueSetValue] = for {
+  override def visitIriExclusion(ctx: IriExclusionContext): Builder[IRIExclusion] = for {
     iri <- visitIri(ctx.iri())
   } yield if (isDefined(ctx.STEM_MARK()))
-     IRIStem(iri)
+     IRIStemExclusion(IRIStem(iri))
     else
-     IRIValue(iri)
+     IRIRefExclusion(iri)
 
-  override def visitLanguageExclusion(ctx: LanguageExclusionContext): Builder[ValueSetValue] = {
+  override def visitLanguageExclusion(ctx: LanguageExclusionContext): Builder[LanguageExclusion] = {
     val lang = getLanguage(ctx.LANGTAG().getText())
-    ok(if (isDefined(ctx.STEM_MARK())) LanguageStem(lang)
-       else Language(lang)
+    ok(if (isDefined(ctx.STEM_MARK()))
+         LanguageStemExclusion(LanguageStem(lang))
+       else LanguageTagExclusion(lang)
     )
   }
 
-  private def convertValue(v: ValueSetValue): ObjectLiteral = v match {
-    case ol: ObjectLiteral => ol
-    case _ => throw new Exception(s"convertValue: $v must be an ObjectLiteral")
+  private def value2String(v: ValueSetValue): Builder[String] = v match {
+    case StringValue(str) => ok(str)
+    case _ => err(s"Cannot convert value $v to string")
   }
 
-  override def visitLiteralExclusion(ctx: LiteralExclusionContext): Builder[ValueSetValue] = for {
+  override def visitLiteralExclusion(ctx: LiteralExclusionContext): Builder[LiteralExclusion] = for {
     literal <- visitLiteral(ctx.literal())
+    str <- value2String(literal)
   } yield
      if(isDefined(ctx.STEM_MARK())) {
-       LiteralStem(convertValue(literal))
+       LiteralStemExclusion(LiteralStem(str))
      }
-     else literal
+     else LiteralStringExclusion(str)
 
   override def visitIriRange(ctx: IriRangeContext): Builder[ValueSetValue] = for {
     iri <- visitIri(ctx.iri())
@@ -575,7 +617,6 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       }
       case _ if (isDefined(ctx.DOUBLE())) => {
         val repr = ctx.DOUBLE().getText
-        println(s">>>> Creating double $repr")
         ok(NumericDouble(repr.toDouble,repr))
       }
       case _ => err("Unknown ctx in numericLiteral")
@@ -1219,7 +1260,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     else ok(None)
 
   /* Remove @ from language tag */
-  private def getLanguage(str: String): String =
-    str.tail
+  private def getLanguage(str: String): Lang =
+    Lang(str.tail)
 
 }

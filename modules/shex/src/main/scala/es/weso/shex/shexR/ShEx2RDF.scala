@@ -105,31 +105,90 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case IRIValue(iri) => ok(iri)
     case StringValue(s) => ok(StringLiteral(s))
     case DatatypeString(s, iri) => ok(DatatypeLiteral(s, iri))
-    case LangString(s, lang) => ok(LangLiteral(s, Lang(lang)))
-    case s: IRIStem => stem(s)
-    case IRIStemRange(stem, exclusions) => for {
-      node <- createBNode()
-      _ <- addTriple(node, rdf_type, sx_StemRange)
-      _ <- addContent(stem, node, sx_stem, stemValue)
-      _ <- maybeAddStarContent(exclusions, node, sx_exclusion, objectStemValue)
-    } yield node
+    case LangString(s, lang) => ok(LangLiteral(s, lang))
+    case Language(Lang(str)) => ok(StringLiteral(str))  // TODO: This one looks suspicious (it seems to have the same representation as a string)
+    case s: IRIStem => iriStem(s)
+    case i : IRIStemRange => iriStemRange(i)
+    case s: LanguageStem => languageStem(s)
+    case l: LanguageStemRange => languageStemRange(l)
+    case l: LiteralStem => literalStem(l)
+    case l: LiteralStemRange => literalStemRange(l)
   }
 
-  def stem(x: IRIStem): RDFSaver[RDFNode] = for {
+
+  def iriExclusion(iri: IRIExclusion): RDFSaver[RDFNode] = iri match {
+    case IRIRefExclusion(iri) => ok(iri)
+    case IRIStemExclusion(stem) => iriStem(stem)
+  }
+
+  def literalExclusion(le: LiteralExclusion): RDFSaver[RDFNode] = le match {
+    case LiteralStringExclusion(str) => ok(StringLiteral(str))
+    case LiteralStemExclusion(stem) => literalStem(stem)
+  }
+
+  def languageExclusion(le: LanguageExclusion): RDFSaver[RDFNode] = le match {
+    case LanguageTagExclusion(Lang(str)) => ok(StringLiteral(str))
+    case LanguageStemExclusion(stem) => languageStem(stem)
+  }
+
+  def iriStem(x: IRIStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_Stem)
+    _ <- addTriple(node, rdf_type, sx_IriStem)
     _ <- addTriple(node, sx_stem, DatatypeLiteral(x.stem.str, xsd_anyUri))
   } yield node
 
-  def objectStemValue(x: ValueSetValue): RDFSaver[RDFNode] = x match {
-    case o: ObjectValue => objectValue(o)
-    case s: IRIStem => stem(s)
-    case s: IRIStemRange => throw new Exception(s"RDFSaver objectStemValue: should not be a StemRange: $s")
-  }
+  def languageStem(x: LanguageStem): RDFSaver[RDFNode] = for {
+    node <- createBNode()
+    _ <- addTriple(node, rdf_type, sx_LanguageStem)
+    _ <- addTriple(node, sx_stem, StringLiteral(x.stem.lang))
+  } yield node
 
-  def stemValue(x: IRIStemRangeValue): RDFSaver[RDFNode] = x match {
+  def literalStem(x: LiteralStem): RDFSaver[RDFNode] = for {
+    node <- createBNode()
+    _ <- addTriple(node, rdf_type, sx_LiteralStem)
+    _ <- addTriple(node, sx_stem, StringLiteral(x.stem))
+  } yield node
+
+  def iriStemRange(range: IRIStemRange): RDFSaver[RDFNode] = for {
+    node <- createBNode()
+    _ <- addTriple(node, rdf_type, sx_IriStemRange)
+    _ <- addContent(range.stem, node, sx_stem, iriStemRangeValue)
+    _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, iriExclusion)
+  } yield node
+
+  def iriStemRangeValue(x: IRIStemRangeValue): RDFSaver[RDFNode] = x match {
     case IRIStemValueIRI(iri) => ok(DatatypeLiteral(iri.str, xsd_anyUri))
     case IRIStemWildcard() => for {
+      node <- createBNode()
+      _ <- addTriple(node, rdf_type, sx_Wildcard)
+    } yield node
+  }
+
+  def literalStemRange(range: LiteralStemRange): RDFSaver[RDFNode] = for {
+    node <- createBNode()
+    _ <- addTriple(node, rdf_type, sx_LiteralStemRange)
+    _ <- addContent(range.stem, node, sx_stem, literalStemRangeValue)
+    _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, literalExclusion)
+  } yield node
+
+  def literalStemRangeValue(x: LiteralStemRangeValue): RDFSaver[RDFNode] = x match {
+    case LiteralStemRangeString(str) => ok(StringLiteral(str))
+    case LiteralStemRangeWildcard() => for {
+      node <- createBNode()
+      _ <- addTriple(node, rdf_type, sx_Wildcard)
+    } yield node
+  }
+
+  def languageStemRange(range: LanguageStemRange): RDFSaver[RDFNode] = for {
+    node <- createBNode()
+    _ <- addTriple(node, rdf_type, sx_LanguageStemRange)
+    _ <- addContent(range.stem, node, sx_stem, languageStemRangeValue)
+    _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, languageExclusion)
+  } yield node
+
+  def languageStemRangeValue(x: LanguageStemRangeValue): RDFSaver[RDFNode] = x match {
+    case LanguageStemRangeLang(Lang(lang)) => ok(StringLiteral(lang))
+    case LanguageStemRangeWildcard() => for {
       node <- createBNode()
       _ <- addTriple(node, rdf_type, sx_Wildcard)
     } yield node
@@ -192,7 +251,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case IRIValue(iri) => ok(iri)
     case StringValue(s) => ok(StringLiteral(s))
     case DatatypeString(s, iri) => ok(DatatypeLiteral(s, iri))
-    case LangString(s, lang) => ok(LangLiteral(s, Lang(lang)))
+    case LangString(s, lang) => ok(LangLiteral(s, lang))
   }
 
   def label(lbl: ShapeLabel): RDFSaver[RDFNode] = lbl match {

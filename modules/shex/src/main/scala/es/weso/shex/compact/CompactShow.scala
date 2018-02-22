@@ -203,7 +203,7 @@ object CompactShow {
       case IRIValue(iri) => iriDoc(pm)(iri)
       case StringValue(str) => stringDoc(str)
       case d: DatatypeString => datatypeStringDoc(pm)(d)
-      case LangString(s, l) => stringDoc(s) :: str("@") :: str(l)
+      case LangString(s, l) => stringDoc(s) :: str("@") :: str(l.lang)
       case IRIStem(iri) => iriDoc(pm)(iri) :: str("~")
       case IRIStemRange(_, _) => str("TODO: StemRange")
       case LanguageStem(s) => str(s"@$s")

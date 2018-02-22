@@ -12,12 +12,13 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
 import cats.implicits._
-
+import gnieh.diffson.circe._
 import scala.io._
+import sext._
 
 class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name = "1literalPattern_with_all_controls"
+  val name = "1refbnode_with_spanning_PN_CHARS_BASE1"
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 
@@ -37,7 +38,13 @@ class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers wi
               if (json.equals(json2)) {
                 info("Jsons are equal")
               } else {
-                fail(s"Json's are different. Parsed:\n${schema.asJson.spaces4}\n-----Expected:\n${json.spaces4}. Diff: ${JsonCompare.diff(json,json2)}\nSchema\n${schema.show}\nPlain schema\n${schema}")
+                fail(s"""|Json's are different. Parsed:\n${schema.asJson.spaces4}
+                        |Expected:${json.spaces4}
+                        |Diff: ${JsonCompare.diff(json,json2)}
+                        |Diffson: ${JsonDiff.diff(json,json2,false)}
+                        |Schema\n${schema.show}
+                        |Plain schema\n${schema}
+                        |Schema ext: \n${schema.treeString}""".stripMargin)
               }
             }
           }

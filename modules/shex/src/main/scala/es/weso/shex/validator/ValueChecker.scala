@@ -36,24 +36,28 @@ case class ValueChecker(schema: Schema)
             s"${node.show} == ${l}")
         case _ => errStr(s"${node.show} != ${value}")
       }
-      case LangString(s, lang) => node match {
-        case LangLiteral(str, l) =>
-          checkCond(s == str && lang == l, attempt,
-            msgErr(s"${node.show} != ${value}"),
-            s"${node.show} == ${value}")
-        case _ => errStr(s"${node.show} != ${value}")
+      case LangString(s, lang) => {
+        node match {
+          case LangLiteral(str, l) =>
+            checkCond(s == str && lang == l, attempt,
+              msgErr(s"${node.show} != ${value}"),
+              s"${node.show} == ${value}")
+          case _ => errStr(s"${node.show} != ${value}")
+        }
       }
       case LanguageStem(stem) => node match {
-        case LangLiteral(x,Lang(lang)) => checkCond(stem.startsWith(lang), attempt,
+        case LangLiteral(x,lang) => checkCond(stem.lang.startsWith(lang.lang), attempt,
           msgErr(s"${node.show} lang($lang) does not match ${stem}"),
           s"${node.show} lang($lang) matches ${stem}")
         case _ => errStr(s"${node.show} is not a language tagged literal")
       }
-      case Language(langTag) => node match {
-        case LangLiteral(x,Lang(lang)) => checkCond(langTag == lang, attempt,
-          msgErr(s"${node.show} lang($lang) does not match ${langTag}"),
-          s"${node.show} lang($lang) matches ${langTag}")
-        case _ => errStr(s"${node.show} is not a language tagged literal")
+      case Language(langTag) => {
+        node match {
+          case LangLiteral(x,Lang(lang)) => checkCond(langTag.lang === lang, attempt,
+            msgErr(s"${node.show} lang($lang) does not match ${langTag}"),
+            s"${node.show} lang($lang) matches ${langTag}")
+          case _ => errStr(s"${node.show} is not a language tagged literal")
+        }
       }
       case IRIStem(stem) => node match {
         case i: IRI =>

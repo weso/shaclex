@@ -259,7 +259,7 @@ object decoderShEx {
   implicit lazy val decodeLanguage: Decoder[Language] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "Language")
-      lang <- fieldDecode[String](c, "languageTag")
+      lang <- fieldDecode[Lang](c, "languageTag")
     } yield Language(lang)
   }
 
@@ -270,10 +270,10 @@ object decoderShEx {
       optType <- optFieldDecode[IRI](c, "type").right
     } yield (optLang, optType) match {
       case (None, None) => StringValue(value)
-      case (Some(lang), None) => LangString(value, lang)
+      case (Some(lang), None) => LangString(value, Lang(lang))
       case (None, Some(iri)) => DatatypeString(value, iri)
       case (Some(lang), Some(iri)) => if (iri == rdf_langString) {
-        LangString(value, lang)
+        LangString(value, Lang(lang))
       } else {
         throw new Exception(s"Unsupported language tagged literal $value^^$lang with datatype $iri != $rdf_langString")
       }
@@ -282,7 +282,7 @@ object decoderShEx {
 
   def parseObjectValue(s: String): Either[String, ObjectValue] = {
     s match {
-      case langRegex(s, l) => Right(LangString(s, l))
+      case langRegex(s, l) => Right(LangString(s, Lang(l)))
       case datatypeRegex(s, d) => parseIRI(d).map(i => DatatypeString(s, i))
       case stringRegex(str) => Right(StringValue(str))
       case iriRegex(str) => parseIRI(str).map(i => IRIValue(i))
@@ -304,14 +304,14 @@ object decoderShEx {
     for {
       _ <- fixedFieldValue(c, "type", "IriStemRange")
       stem <- fieldDecode[IRIStemRangeValue](c, "stem")
-      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+      exclusions <- optFieldDecode[List[IRIExclusion]](c, "exclusions")
     } yield IRIStemRange(stem, exclusions)
   }
 
   implicit lazy val decodeLanguageStem: Decoder[LanguageStem] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "LanguageStem")
-      stem <- fieldDecode[String](c, "stem")
+      stem <- fieldDecode[Lang](c, "stem")
     } yield LanguageStem(stem)
   }
 
@@ -319,7 +319,7 @@ object decoderShEx {
     for {
       _ <- fixedFieldValue(c, "type", "LanguageStemRange")
       stem <- fieldDecode[LanguageStemRangeValue](c, "stem")
-      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+      exclusions <- optFieldDecode[List[LanguageExclusion]](c, "exclusions")
     } yield LanguageStemRange(stem, exclusions)
   }
 
@@ -327,14 +327,14 @@ object decoderShEx {
     for {
       _ <- fixedFieldValue(c, "type", "LiteralStem")
       stem <- fieldDecode[String](c, "stem")
-    } yield LiteralStem(StringValue(stem))
+    } yield LiteralStem(stem)
   }
 
   implicit lazy val decodeLiteralStemRange: Decoder[LiteralStemRange] = Decoder.instance { c =>
     for {
       _ <- fixedFieldValue(c, "type", "LiteralStemRange")
       stem <- fieldDecode[LiteralStemRangeValue](c, "stem")
-      exclusions <- optFieldDecode[List[ValueSetValue]](c, "exclusions")
+      exclusions <- optFieldDecode[List[LiteralExclusion]](c, "exclusions")
     } yield LiteralStemRange(stem, exclusions)
   }
 
@@ -348,8 +348,26 @@ object decoderShEx {
     } yield IRIStemWildcard()
   }
 
+  implicit lazy val decodeLiteralExclusion: Decoder[LiteralExclusion] =
+    Decoder[String].map(LiteralStringExclusion(_)).or(
+      Decoder[LiteralStem].map(LiteralStemExclusion(_))
+    )
+
+  implicit lazy val decodeLanguageExclusion: Decoder[LanguageExclusion] =
+    Decoder[Lang].map(LanguageTagExclusion(_)).or(
+      Decoder[LanguageStem].map(LanguageStemExclusion(_))
+    )
+
+  implicit lazy val decodeLang: Decoder[Lang] =
+    Decoder[String].map(Lang(_))
+
+  implicit lazy val decodeIRIExclusion: Decoder[IRIExclusion] =
+    Decoder[IRI].map(IRIRefExclusion(_)).or(
+      Decoder[IRIStem].map(IRIStemExclusion(_))
+    )
+
   implicit lazy val decodeLanguageStemRangeValue: Decoder[LanguageStemRangeValue] =
-    Decoder[String].map(stem => LanguageStemRangeLang(stem)).or(
+    Decoder[Lang].map(lang => LanguageStemRangeLang(lang)).or(
       Decoder[LanguageStemRangeWildcard].map(identity)
     )
 
@@ -360,10 +378,8 @@ object decoderShEx {
   }
 
   implicit lazy val decodeLiteralStemRangeValue: Decoder[LiteralStemRangeValue] =
-    Decoder[String].map(str => LiteralStemRangeValueObject(StringValue(str))).or(
-    Decoder[ObjectLiteral].map(obj => LiteralStemRangeValueObject(obj)).or(
-      Decoder[LiteralStemRangeWildcard].map(identity)
-    )
+    Decoder[String].map(LiteralStemRangeString(_)).or(
+          Decoder[LiteralStemRangeWildcard].map(identity)
     )
 
   implicit lazy val decodeLiteralStemRangeWildcard: Decoder[LiteralStemRangeWildcard] = Decoder.instance { c =>
@@ -404,7 +420,7 @@ object decoderShEx {
 
   def parseLang(str: String): Either[String, LangString] =
     str match {
-      case langRegex(s, l) => Either.right(LangString(s, l))
+      case langRegex(s, l) => Either.right(LangString(s, Lang(l)))
       case _ => Either.left(s"$str doesn't match IRI regex $iriRegex")
     }
 

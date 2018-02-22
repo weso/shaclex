@@ -32,56 +32,24 @@ object StrUtils {
 
   def unescapePattern(str: String): String = cnvLoop(str,
     List(
-      unescapeStringEscapeSequence,
+      // unescapeStringEscapeSequence,
       unescapeNumericSequence,
-      unescapeReservedPatternChar,
-      unescapeReservedChar)
+      unescapeBackSlash
+      // unescapeReservedPatternChar,
+      // unescapeReservedChar
+    )
   )
-
-  /*  def unescape(str: String): String = {
-    println(s"Unescaping $str")
-    var index = 0
-    val length = str.length
-    val builder = new StringBuilder(length)
-    while (index < str.length) {
-      val (newChars: Array[Char],newIndex) = str(index) match {
-        case c@'\\' => {
-          val i = index + 1
-          if (i >= str.length) (c,i) // should it be an error as last char = \ ?
-          else {
-            println(s"Found escape at ${str(i)}")
-            unescapeStringEscapeSequence(str, i).getOrElse(
-              unescapeNumericSequence(str, i).getOrElse(
-                unescapeReservedPatternChar(str, i).getOrElse(
-                  unescapeReservedChar(str, i).getOrElse(
-                  (Array(c), i)
-                ))))
-          }
-        }
-        case c => (Array(c),index)
-      }
-      index = newIndex + 1
-      builder.appendAll(newChars)
-    }
-
-    val s = builder.mkString
-    println(s"Result of unescape: $str = $s")
-    s
-
-    // Other alternatives that we found:
-    // Use Apache commons: import org.apache.commons.text.StringEscapeUtils
-    // StringEscapeUtils.unescapeJava(str)
-    // But it doesn't handle some parts
-
-    // Some code I found in google: http://techidiocy.com/replace-unicode-characters-from-java-string/
-    // https://udojava.com/2013/09/28/unescape-a-string-that-contains-standard-java-escape-sequences/
-    // Jena also implements the same rules, but it seemed to fail with \- escapes
-    // Jena's code: https://github.com/apache/jena/blob/master/jena-base/src/main/java/org/apache/jena/atlas/lib/StrUtils.java
-  }
-*/
 
   private def cnvChar(c: Char, i: Int): Option[CharConversion] =
     Some((Array(c), i))
+
+  private def unescapeBackSlash: Converter = (str,i) =>
+    if (str(i) == '\\') {
+      str(i + 1) match {
+        case '\\' => Some((Array('\\','\\'), i + 1))
+        case _ => None
+      }
+    } else None
 
   private def unescapeStringEscapeSequence: Converter = (str,i) =>
    if (str(i) == '\\') {

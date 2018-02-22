@@ -69,6 +69,43 @@ object showShEx {
     }
   }
 
+  implicit lazy val showIRIExclusion: Show[IRIExclusion] = new Show[IRIExclusion] {
+    final def show(a: IRIExclusion): String = a match {
+      case IRIRefExclusion(i) => i.show
+      case IRIStemExclusion(stem) => stem.show
+    }
+  }
+
+  implicit lazy val showIRIStem: Show[IRIStem] = new Show[IRIStem] {
+    final def show(a: IRIStem): String = a.stem.show + "~"
+  }
+
+  implicit lazy val showLiteralExclusion: Show[LiteralExclusion] = new Show[LiteralExclusion] {
+    final def show(a: LiteralExclusion): String = a match {
+      case LiteralStringExclusion(str) => str.show
+      case LiteralStemExclusion(stem) => stem.show
+    }
+  }
+
+  implicit lazy val showLiteralStem: Show[LiteralStem] = new Show[LiteralStem] {
+    final def show(a: LiteralStem): String = a.stem.show + "~"
+  }
+
+  implicit lazy val showLanguageExclusion: Show[LanguageExclusion] = new Show[LanguageExclusion] {
+    final def show(a: LanguageExclusion): String = a match {
+      case LanguageTagExclusion(lang) => lang.show
+      case LanguageStemExclusion(stem) => stem.show
+    }
+  }
+
+  implicit lazy val showLanguageStem: Show[LanguageStem] = new Show[LanguageStem] {
+    final def show(a: LanguageStem): String = a.stem.show + "~"
+  }
+
+  implicit lazy val showLang: Show[Lang] = new Show[Lang] {
+    final def show(a: Lang): String = a.lang.show
+  }
+
   implicit lazy val showStemValue: Show[IRIStemRangeValue] = new Show[IRIStemRangeValue] {
     final def show(a: IRIStemRangeValue): String = a match {
       case IRIStemValueIRI(i) => i.show

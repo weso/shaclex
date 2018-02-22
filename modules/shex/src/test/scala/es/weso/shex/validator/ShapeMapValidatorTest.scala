@@ -136,6 +136,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":s1@:S", ":s1@:S,:t1@:T")
   }
+
   describe("Language stem") {
     val shexStr =
       """
@@ -153,6 +154,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:x@:A,:y@:A,:z@:A", ":a@:A,:x@!:A,:y@!:A,:z@!:A")
   }
+
   describe("IRI stem") {
     val shexStr =
       """
