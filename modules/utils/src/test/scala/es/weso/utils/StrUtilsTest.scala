@@ -25,7 +25,7 @@ class StrUtilsTest extends FunSpec with Matchers {
 
   describe("StrUtils unescapePattern") {
     shouldConvert("unescapePattern", unescapePattern, "\\u0061", "a")
-    shouldConvert("unescapePattern", unescapePattern, "\\\\u0061", "\\u0061")
+    shouldConvert("unescapePattern", unescapePattern, "\\\\u0061", "\\\\u0061")
   }
 
   describe("StrUtils escapePattern") {
