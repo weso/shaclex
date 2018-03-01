@@ -87,8 +87,12 @@ lazy val kindProjector       = "org.spire-math"       %% "kind-projector" % kind
 
 lazy val shaclex = project
   .in(file("."))
-  .enablePlugins(ScalaUnidocPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging)
+  .enablePlugins(ScalaUnidocPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging,BuildInfoPlugin)
   .disablePlugins(RevolverPlugin)
+  .settings(
+//    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "es.weso.shaclex.buildinfo" 
+  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
   .aggregate(schema, shacl, shex, manifest, srdfJena, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
   .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
@@ -277,7 +281,7 @@ lazy val srdfJena = project
 lazy val typing = project
   .in(file("modules/typing"))
   .disablePlugins(RevolverPlugin)
-  .settings(commonSettings)
+  .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
       catsCore,

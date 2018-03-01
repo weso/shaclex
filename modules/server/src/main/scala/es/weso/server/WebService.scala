@@ -234,9 +234,17 @@ object WebService {
     }
 
     case req@GET -> Root / "load" :?
-      ExamplesParam(examples) => {
-      println(s"Examples: $examples")
-      Ok(html.load(examples))
+      ExamplesParam(examples) +& ManifestURLParam(manifestURL) => {
+      (examples,manifestURL) match {
+        case (None,None) => BadRequest(s"Missing parameter 'examples' or 'manifestURL'")
+        case (Some(ex),None) => Ok(html.load(ex))
+        case (None,Some(ex)) => Ok(html.load(ex))
+        case (Some(ex1),Some(ex2)) =>
+          if (ex1 == ex2) Ok(html.load(ex1))
+          else BadRequest(s"Parameter 'examples' and 'manifestURL' are different, select one of them")
+      }
+      // val xs = List(examples,manifestURL).collectFirst(x => x.)
+
     }
 
     case req@POST -> Root / "validate" =>
