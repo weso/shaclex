@@ -11,7 +11,7 @@
 # sed -i "s|%oldversion%|%version%|g" index.html
 # chmod +w index.html
 rm -rf latest/api/*
-cp -R ~/src/shapes/shaclex/target/scala-2.11/api/* latest/api
+cp -R ~/src/shapes/shaclex/target/scala-2.12/api/* latest/api
 git add -A
 git commit -m "Updated API"
 git push
