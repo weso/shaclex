@@ -6,7 +6,7 @@ case class Manifest(
   label: Option[String],
   comment: Option[String],
   entries: List[Entry],
-  includes: List[(IRI, Option[Manifest])])
+  includes: List[(RDFNode, Manifest)])
 
 object Manifest {
   def empty: Manifest = Manifest(None, None, List(), List())
@@ -15,7 +15,7 @@ object Manifest {
 case class Entry(
   node: RDFNode,
   entryType: EntryType,
-  name: String,
+  name: Option[String],
   action: ManifestAction,
   result: Result,
   status: Status,
@@ -29,9 +29,6 @@ final case object Validate extends EntryType {
 }
 final case object MatchNodeShape extends EntryType {
   override def iri = sht_MatchNodeShape
-}
-final case object ValidationTest extends EntryType {
-  override def iri = sht_ValidationTest
 }
 final case object ValidationFailure extends EntryType {
   override def iri = sht_ValidationFailure
@@ -91,14 +88,7 @@ sealed trait Result {
   val isValid: Boolean
 }
 
-final case class ValidResult(
-  validatedPairs: List[ValidPair]) extends Result {
-  override val isValid = true
-}
-
-final case class NotValidResult(
-  report: ValidationReport,
-  validatedPairs: Set[ValidPair]) extends Result {
+final case class ReportResult(report: ValidationReport) extends Result {
   override val isValid = false
 }
 
@@ -136,3 +126,4 @@ final case class ViolationError(
   value: Option[RDFNode])
 
 final case class Status(value: IRI)
+

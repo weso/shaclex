@@ -38,20 +38,14 @@ case class Schema(
     }
 
   def siblingQualifiedShapes(s: ShapeRef): List[ShapeRef] = {
-    println(s"siblingShapes $s")
     val parentShapes: List[Shape] =
       parents(s).
         map(shapesMap.get(_)).
         collect { case Some(shape) => shape }
-    println(s"parent shapes $parentShapes")
     val qualifiedPropertyShapes =
       parentShapes.
         flatMap(_.propertyShapes).
         filter(_ != s)
-    println(s"step1 ${parentShapes.flatMap(_.propertyShapes)}")
-    println(s"step2 ${parentShapes.flatMap(_.propertyShapes).filter(_ != s)}")
-    //    println(s"step2 ${parentShapes.map(_.propertyShapes).filter(_!=s)}")
-    println(s"qualified parent shapes $qualifiedPropertyShapes")
     collectQualifiedValueShapes(qualifiedPropertyShapes)
   }
 

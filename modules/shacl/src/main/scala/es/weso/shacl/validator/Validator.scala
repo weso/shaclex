@@ -532,20 +532,8 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def filterConformSiblings(values: Seq[RDFNode], p: PropertyShape, attempt: Attempt): Check[Seq[RDFNode]] = {
-    logger.info(s"FilterConformSiblings. values = $values, p = $p, attempt = $attempt")
     val shapes = schema.siblingQualifiedShapes(ShapeRef(p.id))
-    logger.info(s"Sibling shapes: $shapes")
-    for {
-      rs <- filterConformShapes(values, shapes, attempt)
-    } yield {
-      logger.info(s"Result of filtering on filterConformSiblings($values,...) = $rs")
-      if (rs.toList.length == values.toList.length) {
-        logger.info("Size is equal...")
-      } else {
-        logger.info("******************** Size is different!!!")
-      }
-      rs
-    }
+    filterConformShapes(values, shapes, attempt)
   }
 
   private def filterConformShapes(values: Seq[RDFNode], shapes: Seq[ShapeRef], attempt: Attempt): Check[Seq[RDFNode]] = {

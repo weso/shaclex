@@ -1,38 +1,39 @@
 package es.weso.manifest
 
 import es.weso.rdf.nodes._
-import es.weso.rdf._
 import scala.util._
 import es.weso.rdf._
 import ManifestPrefixes._
 import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.utils.FileUtils._
+import cats._
+import cats.implicits._
 
-case class RDF2ManifestException(msg: String)
-  extends Exception(msg)
+case class RDF2Manifest(base: Option[IRI],
+                        derefIncludes: Boolean) extends RDFParser {
 
-trait RDF2Manifest
-  extends RDFParser {
-
-  def rdf2Manifest(
-    rdf: RDFReader,
-    derefIncludes: Boolean): Either[String, List[Manifest]] = {
+  def rdf2Manifest(rdf: RDFReader,
+                   visited: List[RDFNode] = List()
+                  ): Either[String, List[Manifest]] = {
     val candidates = subjectsWithType(mf_Manifest, rdf).toList
-    parseNodes(candidates, manifest(derefIncludes))(rdf)
+    parseNodes(candidates, manifest(List()))(rdf)
   }
 
-  def manifest(derefIncludes: Boolean): RDFParser[Manifest] = { (n, rdf) =>
+  def manifest(visited: List[IRI]): RDFParser[Manifest] = { (n, rdf) =>
     for {
       maybeLabel <- stringFromPredicateOptional(rdfs_label)(n, rdf)
       maybeComment <- stringFromPredicateOptional(rdfs_comment)(n, rdf)
       entries <- entries(n, rdf)
-      includes <- includes(derefIncludes)(n, rdf)
-    } yield Manifest(
-      label = maybeLabel,
-      comment = maybeComment,
-      entries = entries.toList,
-      includes = includes)
+      includes <- includes(visited)(n, rdf)
+    } yield {
+      println(s"Manifest read. Entries: $entries\nIncludes: $includes")
+      Manifest(
+        label = maybeLabel,
+        comment = maybeComment,
+        entries = entries.toList,
+        includes = includes)
+    }
   }
 
   def entries: RDFParser[Seq[Entry]] =
@@ -41,7 +42,6 @@ trait RDF2Manifest
   def getEntryType(node: RDFNode): Either[String, EntryType] = {
     node match {
       case `sht_Validate` => Right(Validate)
-      case `sht_ValidationTest` => Right(ValidationTest)
       case `sht_ValidationFailure` => Right(ValidationFailure)
       case `sht_MatchNodeShape` => Right(MatchNodeShape)
       case `sht_WellFormedSchema` => Right(WellFormedSchema)
@@ -55,7 +55,7 @@ trait RDF2Manifest
     for {
       entryTypeUri <- rdfType(n, rdf)
       entryType <- getEntryType(entryTypeUri)
-      name <- stringFromPredicate(mf_name)(n, rdf)
+      maybeName <- stringFromPredicateOptional(mf_name)(n, rdf)
       actionNode <- objectFromPredicate(mf_action)(n, rdf)
       action <- action(actionNode, rdf)
       resultNode <- objectFromPredicate(mf_result)(n, rdf)
@@ -65,7 +65,7 @@ trait RDF2Manifest
     } yield Entry(
       node = n,
       entryType = entryType,
-      name = name,
+      name = maybeName,
       action = action,
       result = result,
       status = Status(statusIri),
@@ -110,15 +110,6 @@ trait RDF2Manifest
       shape = shape)
   }
 
-  /* def maybeResult: (Option[RDFNode],RDFReader) => Try[Result] = { (m,rdf) =>{
-   println(s"Parsing maybe result...$m")
-   m match {
-     case None => Success(EmptyResult)
-     case Some(resultNode) => result(resultNode,rdf)
-   }
-  }
- } */
-
   def result: RDFParser[Result] = { (n, rdf) =>
     {
       n match {
@@ -135,12 +126,9 @@ trait RDF2Manifest
   def compoundResult: RDFParser[Result] = (n, rdf) => {
     iriFromPredicate(rdf_type)(n, rdf) match {
       case Right(iri) => iri match {
-        case `sht_NotValid` => for {
-          detailsNode <- objectFromPredicate(sht_details)(n, rdf)
-          validationReport <- parsePropertyValue(sht_validationReport, validationReport)(detailsNode, rdf)
-          validatedPairs <- parsePropertyValue(sht_validatedPairs, validatedPairs)(detailsNode, rdf)
-        } yield NotValidResult(validationReport, validatedPairs)
-        case `sht_Valid` => Right(ValidResult(List()))
+        case `sh_ValidationReport` => for {
+          report <- validationReport(n, rdf)
+        } yield ReportResult(report)
         case _ => parseFail(s"Unsupporte type of compound result: $iri")
       }
       case Left(e) => parseFail(s"compoundResult. Wrong rdf:type of node: $n: $e")
@@ -174,12 +162,43 @@ trait RDF2Manifest
     types.getOrElse(Set()).isEmpty
   }
 
-  def includes(derefIncludes: Boolean): RDFParser[List[(IRI, Option[Manifest])]] = { (n, rdf) =>
+  def includes(visited: List[RDFNode]): RDFParser[List[(RDFNode, Manifest)]] = { (n, rdf) => {
+    println(s"Parsing includes...$derefIncludes")
     if (derefIncludes) {
-      // TODO. Dereference includes in manifest
-      parseOk(List())
+      for {
+        includes <- {
+          println(s"Looking for include at node: $n")
+          objectsFromPredicate(mf_include)(n, rdf)
+        }
+        result <- {
+          println(s"Includes: $includes")
+          val ds: List[Either[String, (IRI, Manifest)]] =
+            includes.toList.map(iri => derefInclude(iri, base, iri +: visited))
+          ds.sequence
+        }
+      } yield
+        result
     }
     else parseOk(List())
+  }
+  }
+
+  /* TODO: The following code doesn't take into account possible loops */
+  def derefInclude(node: RDFNode,
+                   base: Option[IRI],
+                   visited: List[RDFNode]): Either[String,(IRI,Manifest)] = node match {
+    case iri: IRI => {
+      val iriResolved = base.fold(iri)(base => base.resolve(iri))
+      println(s"Resolving base: $base with iri: $iri = $iriResolved")
+      for {
+        rdf <- RDFAsJenaModel.fromURI(iriResolved.getLexicalForm,"TURTLE",None)
+        mfs <- RDF2Manifest(Some(iriResolved), true).rdf2Manifest(rdf, iri +: visited)
+          manifest <-
+        if (mfs.size == 1) Right(mfs.head)
+        else Left(s"More than one manifests found: ${mfs} at iri $iri")
+      } yield (iri, manifest)
+    }
+    case _ => Left(s"Trying to deref an include from node $node which is not an IRI")
   }
 
   def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n, rdf) => for {
@@ -195,23 +214,9 @@ trait RDF2Manifest
   def parsePropertyList[A](
     pred: IRI,
     parser: RDFParser[A]): RDFParser[List[A]] = (n, rdf) => for {
-    ls <- rdfListForPredicate(pred)(n, rdf)
+    ls <- rdfListForPredicateAllowingNone(pred)(n, rdf)
     vs <- parseNodes(ls, parser)(rdf)
   } yield vs
-
-  /*
- def parseList[A](xs: List[RDFNode],
-                  parser: RDFParser[A],
-                  rdf: RDFReader): Try[List[A]] = {
-   Try(xs.map(n => parser(n,rdf)).map(_.get))
- }
-
- def parseSet[A](xs: Set[RDFNode],
-                 parser: RDFParser[A],
-                 rdf: RDFReader): Try[Set[A]] = {
-   Try(xs.map(n => parser(n,rdf)).map(_.get))
- }
-*/
 
   def mapOptional[A, B](optA: Option[A], fn: A => Either[String, B]): Either[String, Option[B]] = {
     optA match {
@@ -242,27 +247,23 @@ trait RDF2Manifest
     }
   }
 
-  override def objectFromPredicateOptional(p: IRI): RDFParser[Option[RDFNode]] = { (n, rdf) =>
-    {
-      optional(objectFromPredicate(p))(n, rdf)
-    }
-  }
-
-  def iriFromPredicateOptional(p: IRI): RDFParser[Option[IRI]] = { (n, rdf) =>
-    {
-      optional(iriFromPredicate(p))(n, rdf)
-    }
-  }
-
 }
 
-object RDF2Manifest extends RDF2Manifest {
+object RDF2Manifest {
 
-  def read(fileName: String, format: String, base: Option[String]): Either[String, Manifest] = {
+  def read(fileName: String,
+           format: String,
+           base: Option[String],
+           derefIncludes: Boolean
+          ): Either[String, Manifest] = {
     for {
       cs <- getContents(fileName)
-      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
-      mfs <- rdf2Manifest(rdf, false)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, None)
+      iriBase <- base match {
+        case None => Right(None)
+        case Some(str) => IRI.fromString(str).map(Some(_))
+      }
+      mfs <- RDF2Manifest(iriBase,derefIncludes).rdf2Manifest(rdf)
       manifest <- if (mfs.size == 1) Right(mfs.head)
       else Left(s"More than one manifests found: ${mfs}")
     } yield manifest

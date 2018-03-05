@@ -8,14 +8,12 @@ case class RegEx(pattern: String, maybeFlags: Option[String]) {
     str.replaceAllLiterally("\\\\", "\\")
   }
   def matches(str: String): Either[String, Boolean] = {
-    println(s"Trying to match /$cleanPattern/${maybeFlags.getOrElse("")} with $str")
     try {
       val regex = new RegularExpression(cleanPattern, maybeFlags.getOrElse(""))
-      val result = regex.matches(str)
-      println(s"Result of match /$cleanPattern/${maybeFlags.getOrElse("")} with $str = $result")
-      Right(result)
+      Right(regex.matches(str))
     } catch {
-      case e: Exception => Left(s"Error: $e, matching $str with /$cleanPattern/${maybeFlags.getOrElse("")}")
+      case e: Exception =>
+        Left(s"Error: $e, matching $str with /$cleanPattern/${maybeFlags.getOrElse("")}")
     }
   }
 }

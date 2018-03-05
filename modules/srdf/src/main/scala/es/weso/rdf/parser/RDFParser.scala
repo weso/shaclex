@@ -162,6 +162,22 @@ trait RDFParser {
   }
 
   /**
+    * Obtains the RDF list associated with a predicate for the current node
+    * If there is no value, returns the empty list
+    *
+    * @param p predicate
+    */
+  def rdfListForPredicateAllowingNone(p: IRI): RDFParser[List[RDFNode]] = { (n, rdf) =>
+    for {
+      maybeValue <- objectFromPredicateOptional(p)(n,rdf)
+      ls <- maybeValue match {
+        case None => parseOk(List())
+        case Some(value) => rdfList(value,rdf)
+      }
+    } yield ls
+  }
+
+  /**
    * Obtains an integer literal associated with a predicate in the current node
    *
    * @param p predicate
@@ -433,6 +449,11 @@ trait RDFParser {
       case Left(f) => Left(f)
     }
   }
+
+  def iriFromPredicateOptional(p: IRI): RDFParser[Option[IRI]] = { (n, rdf) =>
+    optional(iriFromPredicate(p))(n, rdf)
+  }
+
 
   def opt[A](pred: IRI, parser: RDFParser[A]): RDFParser[Option[A]] = (n, rdf) => {
     objectsFromPredicate(pred)(n, rdf) match {

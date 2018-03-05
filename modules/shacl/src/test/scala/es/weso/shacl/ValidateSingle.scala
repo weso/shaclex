@@ -1,14 +1,11 @@
 package es.weso.shacl
 
-import java.io.File
-
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 import es.weso.utils.FileUtils._
 import org.scalatest._
-
 import scala.io.Source
 import scala.util._
 
@@ -18,7 +15,7 @@ class ValidateSingle extends FunSpec with Matchers with TryValues with OptionVal
   val name = "uniqueLang"
 
   val conf: Config = ConfigFactory.load()
-  val shaclFolder = conf.getString("shaclFolder")
+  val shaclFolder = conf.getString("shaclTests")
 
   lazy val ignoreFiles: List[String] = List()
 

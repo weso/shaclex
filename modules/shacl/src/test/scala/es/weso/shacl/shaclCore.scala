@@ -24,12 +24,12 @@ class ShaclCore
   with SchemaMatchers {
 
   val conf: Config = ConfigFactory.load()
-  val shaclFolder = conf.getString("shaclCore")
+  val shaclFolder = conf.getString("shaclTests")
   val fileName = shaclFolder + "/manifest.ttl"
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
 
   describe(s"Validate shacl Core from manifest file located at $fileName") {
-    RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI)) match {
+    RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
       case Left(e) => {
         println(s"Error reading manifest file:$e")
       }
@@ -69,7 +69,7 @@ class ShaclCore
     val validator = Validator(schema)
     val result = validator.validateAll(rdf)
     expectedResult match {
-      case NotValidResult(report, pairs) => {
+      case ReportResult(report) => {
         if (result.isOK)
           fail(s"Valid when expected to be not valid\n${result.show}\nExpected result: $report")
         else {

@@ -6,7 +6,7 @@ object ManifestPrefixes {
 
   lazy val mf = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
   lazy val qt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-query#")
-  lazy val sht = IRI("http://www.w3.org/ns/shacl/test-suite#")
+  lazy val sht = IRI("http://www.w3.org/ns/shacl-test#")
   lazy val dc = IRI("http://purl.org/dc/elements/1.1/")
   lazy val dawgt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
   lazy val rdfs = IRI("http://www.w3.org/2000/01/rdf-schema#")
@@ -30,6 +30,7 @@ object ManifestPrefixes {
   lazy val sh_sourceShape = sh + "sourceConstraintComponent"
   lazy val sh_value = sh + "value"
   lazy val sh_result = sh + "result"
+  lazy val sh_ValidationReport = sh + "ValidationReport"
 
   lazy val rdfs_label = rdfs.add("label")
   lazy val rdfs_comment = rdfs.add("comment")
@@ -49,7 +50,6 @@ object ManifestPrefixes {
   lazy val sht_shape = sht.add("shape")
   lazy val sht_details = sht + "details"
   lazy val sht_pair = sht + "pair"
-  lazy val sht_validationReport = sht + "validationReport"
   lazy val sht_validatedPairs = sht + "validatedPairs"
   lazy val sht_Valid = sht + "Valid"
   lazy val sht_NotValid = sht + "NotValid"
