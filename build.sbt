@@ -37,6 +37,7 @@ lazy val http4sVersion         = "0.18.0-M8"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.1.1"
 lazy val jenaVersion           = "3.6.0"
+lazy val rdf4jVersion          = "2.2.4"
 lazy val jgraphtVersion        = "1.1.0"
 lazy val diffsonVersion        = "2.2.5"
 lazy val xercesVersion         = "2.11.0"
@@ -59,6 +60,9 @@ lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"      
 lazy val antlr4            = "org.antlr"                  % "antlr4"               % antlrVersion
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val rdf4j             = "org.eclipse.rdf4j"          % "rdf4j"                % rdf4jVersion
+lazy val rdf4jModel        = "org.eclipse.rdf4j"          % "rdf4j-model"          % rdf4jVersion
+lazy val rdf4j_rioTurtle   = "org.eclipse.rdf4j"          % "rdf4j-rio-turtle"     % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -94,8 +98,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
-  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
+  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
+  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -132,7 +136,12 @@ lazy val shacl = project
   .in(file("modules/shacl"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(srdfJena, manifest, utils, typing, validating)
+  .dependsOn(srdf,
+    manifest,
+    utils,
+    typing,
+    validating,
+    srdfJena % Test)
   .settings(
     logBuffered in Test       := false,
     parallelExecution in Test := false,
@@ -164,7 +173,17 @@ lazy val shex = project
     testOptions in Test := Seq(Tests.Filter(testFilter)),
     testOptions in CompatTest := Seq(Tests.Filter(compatFilter)),
   )
-  .dependsOn(srdfJena, srdf, typing, utils % "test -> test; compile -> compile", validating, shapeMaps, rbe, manifest, depGraphs)
+  .dependsOn(
+    srdf,
+    typing,
+    utils % "test -> test; compile -> compile",
+    validating,
+    shapeMaps,
+    rbe,
+    manifest,
+    depGraphs,
+    srdfJena % Test
+  )
   .settings(
     libraryDependencies ++= Seq(
       typesafeConfig % Test,
@@ -181,10 +200,13 @@ lazy val shapeMaps = project
   .enablePlugins(Antlr4Plugin)
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings, antlrSettings("es.weso.shapeMaps.parser"))
-  .dependsOn(srdfJena)
+  .dependsOn(
+    srdf,
+    utils,
+    srdfJena % Test)
   .settings(
     libraryDependencies ++= Seq(
-      sext,
+      sext % Test,
       scalaLogging,
       catsCore,
       catsKernel,
@@ -221,7 +243,7 @@ lazy val manifest = project
   .in(file("modules/manifest"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(srdfJena, utils)
+  .dependsOn(srdf, utils, srdfJena)
   .settings(
     libraryDependencies ++= Seq(
       typesafeConfig % Test,
@@ -278,6 +300,23 @@ lazy val srdfJena = project
     )
   )
 
+lazy val srdf4j = project
+  .in(file("modules/srdf4j"))
+  .disablePlugins(RevolverPlugin)
+  .dependsOn(srdf, utils)
+  .settings(commonSettings, publishSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      logbackClassic,
+      scalaLogging,
+      typesafeConfig % Test,
+      rdf4j, rdf4jModel, rdf4j_rioTurtle,
+      catsCore,
+      catsKernel,
+      catsMacros
+    )
+  )
+
 lazy val typing = project
   .in(file("modules/typing"))
   .disablePlugins(RevolverPlugin)
@@ -312,7 +351,7 @@ lazy val utils = project
 lazy val validating = project
   .in(file("modules/validating"))
   .disablePlugins(RevolverPlugin)
-  .dependsOn(srdfJena, utils % "test -> test; compile -> compile")
+  .dependsOn(srdf, srdfJena % Test, utils % "test -> test; compile -> compile")
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
@@ -366,7 +405,7 @@ lazy val compilationSettings = Seq(
     "-language:_",
     "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
     "-Xfuture",                          // Turn on future language features.
-    "-Xlint",
+    // "-Xlint",   // Turned off temporarily to solve the Position point: No point issue: https://github.com/scala/bug/issues/10448
     "-Yrangepos",
     "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
