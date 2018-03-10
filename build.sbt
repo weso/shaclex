@@ -405,7 +405,7 @@ lazy val compilationSettings = Seq(
     "-language:_",
     "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
     "-Xfuture",                          // Turn on future language features.
-    // "-Xlint",   // Turned off temporarily to solve the Position point: No point issue: https://github.com/scala/bug/issues/10448
+    "-Xlint",
     "-Yrangepos",
     "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
     "-Ywarn-dead-code",                  // Warn when dead code is identified.

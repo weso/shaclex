@@ -18,6 +18,8 @@ import org.apache.commons.io.input.CharSequenceInputStream
 import scala.util._
 import scala.collection.JavaConverters._
 import RDF4jMapper._
+import cats._
+import cats.implicits._
 
 case class RDFAsRDF4jModel(model: Model)
   extends RDFReader
@@ -144,37 +146,28 @@ case class RDFAsRDF4jModel(model: Model)
     */
   }
 
-  /*def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {
-    ls.map(st => statement2triple(st))
-  } */
-
   override def triplesWithPredicate(iri: IRI): Set[RDFTriple] = {
     val pred = iri2Property(iri)
-    val statements: Set[Statement] = triplesPredicate(pred, model)
-    statements2RDFTriples(statements)
+    statements2RDFTriples(triplesPredicate(pred, model))
   }
 
   override def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
     val obj = rdfNode2Resource(node).toOption
     val empty: Set[RDFTriple] = Set()
-    obj.fold(empty) { o => {
-      val statements: Set[Statement] = triplesObject(o, model)
-      statements2RDFTriples(statements)
+    obj.fold(emptySet) { o => {
+      statements2RDFTriples(triplesObject(o, model))
     }
    }
   }
 
+  private lazy val emptySet: Set[RDFTriple] = Set()
+
   override def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = {
-    ???
-/*
-    val pred = rdfNode2Property(p, model)
-    val maybeObj = rdfNode2Resource(o, model)
-    val empty: Set[RDFTriple] = Set()
-    maybeObj.fold(empty) { obj =>
-      val statements: Set[Statement] = triplesPredicateObject(pred, obj, model)
-      toRDFTriples(statements)
+    val prop = iri2Property(p)
+    val maybeObj = rdfNode2Resource(o).toOption
+    maybeObj.fold(emptySet) { obj =>
+      statements2RDFTriples(triplesPredicateObject(prop,obj, model))
     }
-*/
   }
 
   override def getPrefixMap: PrefixMap = {
@@ -212,19 +205,12 @@ case class RDFAsRDF4jModel(model: Model)
   }
 
   override def createBNode: (RDFNode, Rdf) = {
-    ???
-/*
-    val resource = model.createResource
-    (BNodeId(resource.getId.getLabelString), this)
-*/
+    (BNodeId(newBNode.getID), this)
   }
 
   override def addPrefix(alias: String, iri: String): Rdf = {
-/*
-    model.setNsPrefix(alias, iri)
+    model.setNamespace(alias,iri)
     this
-*/
-    ???
   }
 
   /*def qName(str: String): IRI = {
@@ -265,56 +251,16 @@ case class RDFAsRDF4jModel(model: Model)
 
   def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
 
-  override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
-    ???
-/*
-    val qExec = QueryExecutionFactory.create(queryStr, model)
-    qExec.getQuery.getQueryType match {
-      case Query.QueryTypeSelect => {
-        val result = qExec.execSelect()
-        val varNames = result.getResultVars
-        val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
-          val qsm = new QuerySolutionMap()
-          qsm.addAll(qs)
-          qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
-        })
-        Right(ls)
-      }
-      case qtype => Left(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
-    }
-*/
-  }
+  override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] =
+   Left(s"Not implemented querySelect for RDf4j yet")
 
-  override def queryAsJson(queryStr: String): Either[String, Json] = ??? /*Try {
-    val qExec = QueryExecutionFactory.create(queryStr, model)
-    qExec.getQuery.getQueryType match {
-      case Query.QueryTypeSelect => {
-        val result = qExec.execSelect()
-        val outputStream = new ByteArrayOutputStream()
-        ResultSetFormatter.outputAsJSON(outputStream, result)
-        val jsonStr = new String(outputStream.toByteArray())
-        parse(jsonStr).leftMap(f => f.getMessage)
-      }
-      case Query.QueryTypeConstruct => {
-        val result = qExec.execConstruct()
-        Left(s"Unimplemented CONSTRUCT queries yet")
-      }
-      case Query.QueryTypeAsk => {
-        val result = qExec.execAsk()
-        Right(Json.fromBoolean(result))
-      }
-      case Query.QueryTypeDescribe => {
-        Left(s"Unimplemented DESCRIBE queries yet")
-      }
-      case _ => {
-        Left(s"Unknown type of query. Not implemented")
-      }
-    }
-  }.toEither.fold(f => Left(f.getMessage), es => es)*/
+  override def queryAsJson(queryStr: String): Either[String, Json] =
+    Left(s"Not implemented queryAsJson for RDf4j")
+
 
 
   override def getNumberOfStatements(): Either[String,Int] =
-    Right(model.size.toInt)
+    Right(model.size)
 
 }
 
