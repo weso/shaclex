@@ -1,5 +1,5 @@
 package es.weso.shapeMaps
-import es.weso.rdf.nodes.{ BNodeId, IRI }
+import es.weso.rdf.nodes.{ BNode, IRI }
 import io.circe.{ Encoder, Json }
 
 abstract class ShapeMapLabel {
@@ -14,7 +14,7 @@ abstract class ShapeMapLabel {
 }
 
 case class IRILabel(iri: IRI) extends ShapeMapLabel
-case class BNodeLabel(bnode: BNodeId) extends ShapeMapLabel
+case class BNodeLabel(bnode: BNode) extends ShapeMapLabel
 case object Start extends ShapeMapLabel
 
 object ShapeMapLabel {

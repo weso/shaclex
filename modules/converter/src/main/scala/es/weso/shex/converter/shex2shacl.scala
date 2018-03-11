@@ -18,7 +18,7 @@ object ShEx2Shacl extends Converter {
 
   def newBNode: RDFNode = {
     bNodeCounter += 1
-    BNodeId("shape" + (bNodeCounter))
+    BNode("shape" + (bNodeCounter))
   }
 
   var shapesMap: Map[shacl.ShapeRef, shacl.Shape] = Map()

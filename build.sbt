@@ -182,7 +182,8 @@ lazy val shex = project
     rbe,
     manifest,
     depGraphs,
-    srdfJena % Test
+    srdfJena % Test,
+    srdf4j % Test
   )
   .settings(
     libraryDependencies ++= Seq(

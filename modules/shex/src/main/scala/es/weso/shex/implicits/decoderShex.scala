@@ -37,8 +37,8 @@ object decoderShEx {
   /*  implicit lazy val keyDecoderShapeLabel: KeyDecoder[ShapeLabel] =
     KeyDecoder.instance { str => parseShapeLabel(str).toOption } */
 
-  implicit lazy val decodeBNodeId: Decoder[BNodeId] =
-    Decoder[String].map(BNodeId(_))
+  implicit lazy val decodeBNodeId: Decoder[BNode] =
+    Decoder[String].map(BNode(_))
 
   implicit lazy val decodeIRI: Decoder[IRI] =
     Decoder[String].emap(parseIRI(_))
@@ -412,7 +412,7 @@ object decoderShEx {
   def parseShapeLabel(str: String): Either[String, ShapeLabel] = {
     str match {
       // Be careful with the order...
-      case bNodeRegex(bNodeId) => Either.right(BNodeLabel(BNodeId(bNodeId)))
+      case bNodeRegex(bNodeId) => Either.right(BNodeLabel(BNode(bNodeId)))
       case iriRegex(i) => parseIRI(i).map(iri => IRILabel(iri))
       case _ => Either.left(s"$str doesn't match IRI or BNode")
     }

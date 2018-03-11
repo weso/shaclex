@@ -134,7 +134,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
 
   def jena2rdfnode(r: JenaRDFNode): RDFNode = {
     if (r.isAnon) {
-      BNodeId(r.asNode.getBlankNodeId.getLabelString)
+      BNode(r.asNode.getBlankNodeId.getLabelString)
     } else if (r.isURIResource) {
       IRI(r.asResource.getURI())
     } else if (r.isLiteral) {

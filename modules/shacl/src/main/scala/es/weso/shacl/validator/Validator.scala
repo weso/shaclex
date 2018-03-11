@@ -783,7 +783,7 @@ case class Validator(schema: Schema) extends LazyLogging {
   private def equalsNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
     case (l1: Literal, l2: Literal) => l1 == l2
     case (i1: IRI, i2: IRI) => i1 == i2
-    case (b1: BNodeId, b2: BNodeId) => b1 == b2
+    case (b1: BNode, b2: BNode) => b1 == b2
     case (_, _) => false
   }
 
@@ -796,7 +796,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     case (DatatypeLiteral(n1, d1), DatatypeLiteral(n2, d2)) => d1 == d2 && n1 < n2
     case (LangLiteral(n1, l1), LangLiteral(n2, l2)) => n1 < n2
     case (i1: IRI, i2: IRI) => i1.str < i2.str
-    case (b1: BNodeId, b2: BNodeId) => b1.id < b2.id
+    case (b1: BNode, b2: BNode) => b1.id < b2.id
     case (_, _) => false
   }
   private def lessThanOrEqualNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
@@ -807,7 +807,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     case (DatatypeLiteral(n1, d1), DatatypeLiteral(n2, d2)) => d1 == d2 && n1 <= n2
     case (LangLiteral(n1, l1), LangLiteral(n2, l2)) => n1 <= n2
     case (i1: IRI, i2: IRI) => i1.str <= i2.str
-    case (b1: BNodeId, b2: BNodeId) => b1.id <= b2.id
+    case (b1: BNode, b2: BNode) => b1.id <= b2.id
     case (_, _) => false
   }
 

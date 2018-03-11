@@ -96,7 +96,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   private[validator] def mkShapeLabel(n: RDFNode): Check[ShapeLabel] = {
     n match {
       case i: IRI => ok(IRILabel(i))
-      case b: BNodeId => ok(BNodeLabel(b))
+      case b: BNode => ok(BNodeLabel(b))
       case _ => {
         errStr(s"mkShapeLabel: Node ${n.show} can't be a shape")
       }

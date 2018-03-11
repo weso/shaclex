@@ -410,7 +410,7 @@ abstract sealed trait ShapeLabel {
   }
 }
 case class IRILabel(iri: IRI) extends ShapeLabel
-case class BNodeLabel(bnode: BNodeId) extends ShapeLabel
+case class BNodeLabel(bnode: BNode) extends ShapeLabel
 
 object Schema {
 

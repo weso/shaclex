@@ -59,7 +59,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   private def cnvShape(s: Shape): ShapeMapLabel = {
     s.id match {
       case iri: IRI => IRILabel(iri)
-      case bnode: BNodeId => BNodeLabel(bnode)
+      case bnode: BNode => BNodeLabel(bnode)
       case _ => throw new Exception(s"cnvShape: unexpected ${s.id}")
     }
   }

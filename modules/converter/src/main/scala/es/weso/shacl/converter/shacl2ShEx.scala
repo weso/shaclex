@@ -67,6 +67,6 @@ object Shacl2ShEx extends Converter {
     shex.IRILabel(iri)
 
   def mkBNodeLabel(n: Int): shex.ShapeLabel =
-    shex.BNodeLabel(BNodeId(n.toString))
+    shex.BNodeLabel(BNode(n.toString))
 
 }

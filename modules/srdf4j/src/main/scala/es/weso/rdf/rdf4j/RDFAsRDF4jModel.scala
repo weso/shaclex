@@ -7,7 +7,8 @@ import es.weso.rdf.triples.RDFTriple
 import io.circe.Json
 import org.eclipse.rdf4j.model.{
   IRI => IRI_RDF4j,
-  Literal => Literal_RDF4j,
+  BNode => _,
+  Literal => _,
   _
 }
 import es.weso.rdf.nodes._
@@ -205,7 +206,7 @@ case class RDFAsRDF4jModel(model: Model)
   }
 
   override def createBNode: (RDFNode, Rdf) = {
-    (BNodeId(newBNode.getID), this)
+    (BNode(newBNode.getID), this)
   }
 
   override def addPrefix(alias: String, iri: String): Rdf = {
@@ -222,10 +223,7 @@ case class RDFAsRDF4jModel(model: Model)
   }
 
   override def checkDatatype(node: RDFNode, datatype: IRI): Either[String, Boolean] =
-    ???
-/*
-    JenaMapper.wellTypedDatatype(node, datatype)
-*/
+    wellTypedDatatype(node,datatype)
 
   /*private def resolveString(str: String): Either[String,IRI] = {
     Try(IRIResolver.resolveString(str)).fold(

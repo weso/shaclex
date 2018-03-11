@@ -1170,8 +1170,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def visitBlankNode(ctx: BlankNodeContext): Builder[BNodeId] = {
-    ok(BNodeId(removeUnderscore(ctx.BLANK_NODE_LABEL().getText())))
+  override def visitBlankNode(ctx: BlankNodeContext): Builder[BNode] = {
+    ok(BNode(removeUnderscore(ctx.BLANK_NODE_LABEL().getText())))
   }
 
   def removeUnderscore(str: String): String =

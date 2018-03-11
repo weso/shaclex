@@ -9,7 +9,7 @@ abstract class RDFNode {
   }
 
   def isBNode = this match {
-    case _: BNodeId => true
+    case _: BNode => true
     case _ => false
   }
 
@@ -30,24 +30,6 @@ abstract class RDFNode {
   def getLexicalForm: String
 
 }
-
-case class BNodeId(id: String) extends RDFNode {
-
-  // @deprecated
-  def newBNodeId: BNodeId = {
-    val n = id.drop(1).toInt + 1
-    BNodeId("b" + n)
-  }
-
-  override def toString: String = {
-    "_:" + id
-  }
-
-  override def getLexicalForm = id
-
-}
-
-object InitialBNodeId extends BNodeId("b0")
 
 object RDFNode {
   val xsd = "http://www.w3.org/2001/XMLSchema#"
@@ -81,7 +63,7 @@ object RDFNode {
     val integerRegex = raw"(\d*)".r
     s match {
       case iriRegex(iri) => Right(IRI(iri))
-      case bNodeRegex(bnodeId) => Right(BNodeId(bnodeId))
+      case bNodeRegex(bnodeId) => Right(BNode(bnodeId))
       case literalRegex(str) => Right(StringLiteral(str))
       case integerRegex(s) => {
         try Right(IntegerLiteral(s.toInt))

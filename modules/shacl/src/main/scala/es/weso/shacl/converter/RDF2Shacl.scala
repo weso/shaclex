@@ -238,7 +238,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def parsePath: RDFParser[SHACLPath] = (n, rdf) => {
     n match {
       case iri: IRI => Right(PredicatePath(iri))
-      case bnode: BNodeId => someOf(
+      case bnode: BNode => someOf(
         inversePath,
         oneOrMorePath,
         zeroOrMorePath,

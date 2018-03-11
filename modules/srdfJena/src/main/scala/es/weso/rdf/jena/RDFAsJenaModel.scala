@@ -213,7 +213,7 @@ case class RDFAsJenaModel(model: Model)
 
   override def createBNode: (RDFNode, RDFAsJenaModel) = {
     val resource = model.createResource
-    (BNodeId(resource.getId.getLabelString), this)
+    (BNode(resource.getId.getLabelString), this)
   }
 
   override def addPrefix(alias: String, iri: String): Rdf = {
