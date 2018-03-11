@@ -237,14 +237,14 @@ object JenaMapper {
       case l: es.weso.rdf.nodes.Literal => {
         Try {
           val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm, l.dataType.str)
-          jenaLiteral.getValue() // if it is ill-typed it raises an exception
-          (jenaLiteral.getDatatypeURI)
+          jenaLiteral.getValue // if it is ill-typed it raises an exception
+          jenaLiteral.getDatatypeURI
         } match {
           case Success(iri) => {
             // println(s"JenaMapper.welltypedDatatype, $node. Comparing $expectedDatatype with $iri")
             Right(iri == expectedDatatype.str)
           }
-          case Failure(e) => Left(e.getMessage())
+          case Failure(e) => Left(e.getMessage)
         }
       }
       case _ => Right(false)

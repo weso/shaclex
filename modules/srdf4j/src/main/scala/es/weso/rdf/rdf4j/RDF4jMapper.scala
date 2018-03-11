@@ -2,11 +2,14 @@ package es.weso.rdf.rdf4j
 
 import es.weso.rdf.nodes._
 import es.weso.rdf.triples._
+
 import scala.collection.JavaConverters._
-import org.eclipse.rdf4j.model.{IRI => IRI_RDF4j, Literal => Literal_RDF4j, BNode => BNode_RDF4j, _}
+import org.eclipse.rdf4j.model.{BNode => BNode_RDF4j, IRI => IRI_RDF4j, Literal => Literal_RDF4j, _}
 import org.eclipse.rdf4j.model.impl.{SimpleValueFactory, BooleanLiteral => BooleanLiteral_RDF4j, DecimalLiteral => DecimalLiteral_RDF4j, IntegerLiteral => IntegerLiteral_RDF4j}
 import cats.implicits._
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema
+
+import scala.util.{Failure, Success, Try}
 
 object RDF4jMapper {
 
@@ -110,7 +113,18 @@ object RDF4jMapper {
 
   // TODO: Check rules of datatype
   private[rdf4j] def wellTypedDatatype(node: RDFNode, expectedDatatype: IRI): Either[String,Boolean] = node match {
-    case DatatypeLiteral(_,dt) => Right(dt == expectedDatatype)
+    case l: Literal => Try {
+      val datatypeIRI = valueFactory.createIRI(l.dataType.str)
+      val rdf4jLiteral = valueFactory.createLiteral(l.getLexicalForm, datatypeIRI)
+      val x = rdf4jLiteral.getLabel
+      rdf4jLiteral.getDatatype
+    } match {
+      case Success(iri) => {
+        Right(iri.stringValue == expectedDatatype.str)
+      }
+      case Failure(e) => Left(e.getMessage)
+    }
+    // case DatatypeLiteral(_,dt) => Right(dt == expectedDatatype)
     case _ => Right(false)
   }
 
