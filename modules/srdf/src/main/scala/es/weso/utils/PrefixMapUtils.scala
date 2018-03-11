@@ -22,7 +22,7 @@ object PrefixMapUtils {
   def showRDFNode(n: RDFNode)(pm: PrefixMap): String = {
     n match {
       case i: IRI => showIRI(i)(pm)
-      case b: BNodeId => b.toString
+      case b: BNode => b.toString
       case s: StringLiteral => escapeLexicalForm(s.lexicalForm)
       case s: DatatypeLiteral => escapeLexicalForm(s.lexicalForm) + "^^" + s.dataType.toString
       case l: Literal => l.toString

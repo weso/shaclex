@@ -50,7 +50,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
     case None => Left(s"Can't create Result shape map for a shape expression without label. ShapeExpr: ${s.shape}")
     case Some(lbl) => lbl.toRDFNode match {
       case i: IRI => Either.right(IRIMapLabel(i))
-      case b: BNodeId => Either.right(BNodeLabel(b))
+      case b: BNode => Either.right(BNodeLabel(b))
       case _ => Left(s"Can't create Result shape map for a shape expression with label: $lbl")
     }
   }

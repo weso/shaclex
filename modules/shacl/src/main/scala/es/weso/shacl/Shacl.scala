@@ -128,7 +128,7 @@ sealed abstract class Shape {
   def showId: String =
     id match {
       case iri: IRI => iri.str
-      case bnode: BNodeId => bnode.toString
+      case bnode: BNode => bnode.toString
     }
 
   def targetNodes: Seq[RDFNode] =

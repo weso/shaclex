@@ -17,7 +17,7 @@ class ShowValidator(schema: Schema) {
       n match {
         case i: IRI => i.show
         case l: Literal => l.getLexicalForm
-        case b: BNodeId => "_:" + b.getLexicalForm
+        case b: BNode => "_:" + b.getLexicalForm
       }
     }
   }

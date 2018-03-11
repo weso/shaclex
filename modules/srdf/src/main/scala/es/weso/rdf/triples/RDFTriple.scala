@@ -9,9 +9,9 @@ case class RDFTriple(subj: RDFNode, pred: IRI, obj: RDFNode) {
   def hasObject(node: RDFNode): Boolean = obj == node
   def hasPredicate(p: IRI): Boolean = pred == p
 
-  def extractBNode(node: RDFNode): Set[BNodeId] = {
+  def extractBNode(node: RDFNode): Set[BNode] = {
     node match {
-      case b @ BNodeId(_) => Set(b)
+      case b @ BNode(_) => Set(b)
       case _ => Set()
     }
   }
@@ -23,7 +23,7 @@ case class RDFTriple(subj: RDFNode, pred: IRI, obj: RDFNode) {
     }
   }
 
-  def bNodes: Set[BNodeId] = {
+  def bNodes: Set[BNode] = {
     extractBNode(subj) ++
       extractBNode(obj)
   }
@@ -61,8 +61,8 @@ object RDFTriple {
   /**
    * collects BNodes in a set of triples
    */
-  def collectBNodes(triples: Set[RDFTriple]): Set[BNodeId] = {
-    triples.foldLeft(Set[BNodeId]())((set, triple) =>
+  def collectBNodes(triples: Set[RDFTriple]): Set[BNode] = {
+    triples.foldLeft(Set[BNode]())((set, triple) =>
       set ++ triple.bNodes)
   }
 

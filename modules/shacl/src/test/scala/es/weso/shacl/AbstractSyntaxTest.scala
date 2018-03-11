@@ -8,7 +8,7 @@ class AbstractSyntaxTest extends FunSpec with Matchers {
 
   describe("Abstract Syntax") {
     it("should be able to create a shape") {
-      val x = BNodeId("x")
+      val x = BNode("x")
       val c: PropertyShape =
         PropertyShape(
           id = x,

@@ -117,7 +117,7 @@ case class RDF2Manifest(base: Option[IRI],
         case iri: IRI =>
           if (noType(iri, rdf)) Right(IRIResult(iri))
           else compoundResult(iri, rdf)
-        case bNode: BNodeId => compoundResult(bNode, rdf)
+        case bNode: BNode => compoundResult(bNode, rdf)
         case _ => parseFail("Unexpected type of result " + n)
       }
     }

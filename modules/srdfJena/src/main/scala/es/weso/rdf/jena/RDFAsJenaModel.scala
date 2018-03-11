@@ -37,7 +37,7 @@ case class RDFAsJenaModel(model: Model)
 
   override def fromString(cs: CharSequence,
                           format: String,
-                          base: Option[String] = None): Either[String, RDFAsJenaModel] = {
+                          base: Option[String] = None): Either[String, Rdf] = {
     Try {
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
@@ -49,14 +49,26 @@ case class RDFAsJenaModel(model: Model)
     )
   }
 
-  override def serialize(format: String): Either[String, String] = {
-    // TODO: Check if format exists...
-    val out: StringWriter = new StringWriter()
-    model.write(out, format)
-    Right(out.toString)
+  private def getRDFFormat(formatName: String): Either[String,String] = {
+    val supportedFormats = RDFLanguages.getRegisteredLanguages()
+    formatName.toUpperCase match {
+      case format if supportedFormats.contains(format) => Right(format)
+      case unknown => Left(s"Unsupported format $unknown")
+    }
   }
 
-  def extend_rdfs: Rdf = {
+  override def serialize(formatName: String): Either[String, String] = for {
+    format <- getRDFFormat(formatName)
+    str <- Try {
+     val out: StringWriter = new StringWriter()
+     model.write(out, format)
+     out.toString
+    }.fold(e => Left(s"Error serializing RDF to format $formatName: $e"),
+      Right(_)
+    )
+  } yield str
+
+  private def extend_rdfs: Rdf = {
     val infModel = ModelFactory.createRDFSModel(model)
     RDFAsJenaModel(infModel)
   }
@@ -122,7 +134,7 @@ case class RDFAsJenaModel(model: Model)
     nodes.toSet
   }
 
-  def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {
+  private def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {
     ls.map(st => statement2triple(st))
   }
 
@@ -152,18 +164,18 @@ case class RDFAsJenaModel(model: Model)
     }
   }
 
-  def model2triples(model: Model): Set[RDFTriple] = {
+  private def model2triples(model: Model): Set[RDFTriple] = {
     model.listStatements().asScala.map(st => statement2triple(st)).toSet
   }
 
-  def statement2triple(st: Statement): RDFTriple = {
+  private def statement2triple(st: Statement): RDFTriple = {
     RDFTriple(
       JenaMapper.jenaNode2RDFNode(st.getSubject),
       property2iri(st.getPredicate),
       JenaMapper.jenaNode2RDFNode(st.getObject))
   }
 
-  def property2iri(p: Property): IRI = {
+  private def property2iri(p: Property): IRI = {
     IRI(p.getURI)
   }
 
@@ -174,7 +186,7 @@ case class RDFAsJenaModel(model: Model)
       })
   }
 
-  override def addPrefixMap(pm: PrefixMap): RDFAsJenaModel = {
+  override def addPrefixMap(pm: PrefixMap): Rdf = {
     val map: Map[String, String] = pm.pm.map {
       case (Prefix(str), iri) => (str, iri.str)
     }
@@ -185,14 +197,14 @@ case class RDFAsJenaModel(model: Model)
   // TODO: Check that the last character is indeed :
   // private def removeLastColon(str: String): String = str.init
 
-  override def addTriples(triples: Set[RDFTriple]): RDFAsJenaModel = {
+  override def addTriples(triples: Set[RDFTriple]): Rdf = {
     val newModel = JenaMapper.RDFTriples2Model(triples, model)
     model.add(newModel)
     this
   }
 
   // TODO: This is not efficient
-  override def rmTriple(triple: RDFTriple): RDFAsJenaModel = {
+  override def rmTriple(triple: RDFTriple): Rdf = {
     val empty = ModelFactory.createDefaultModel
     val model2delete = JenaMapper.RDFTriples2Model(Set(triple), empty)
     model.difference(model2delete)
@@ -201,19 +213,19 @@ case class RDFAsJenaModel(model: Model)
 
   override def createBNode: (RDFNode, RDFAsJenaModel) = {
     val resource = model.createResource
-    (BNodeId(resource.getId.getLabelString), this)
+    (BNode(resource.getId.getLabelString), this)
   }
 
-  override def addPrefix(alias: String, iri: String): RDFAsJenaModel = {
+  override def addPrefix(alias: String, iri: String): Rdf = {
     model.setNsPrefix(alias, iri)
     this
   }
 
-  def qName(str: String): IRI = {
+  private def qName(str: String): IRI = {
     IRI(model.expandPrefix(str))
   }
 
-  def empty: Rdf = {
+  override def empty: Rdf = {
     RDFAsJenaModel.empty
   }
 
@@ -226,9 +238,9 @@ case class RDFAsJenaModel(model: Model)
       iri => Right(IRI(iri))
     )
   }*/
-  val NONE = "NONE"
-  val RDFS = "RDFS"
-  val OWL = "OWL"
+  private val NONE = "NONE"
+  private val RDFS = "RDFS"
+  private val OWL = "OWL"
 
   override def applyInference(inference: String): Either[String, Rdf] = {
     inference.toUpperCase match {

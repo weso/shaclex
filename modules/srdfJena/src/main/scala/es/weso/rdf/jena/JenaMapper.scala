@@ -60,7 +60,7 @@ object JenaMapper {
   def rdfNode2Resource(n: RDFNode, m: JenaModel): Option[Resource] = {
     n match {
       case i: IRI => Some(m.getResource(resolve(i)))
-      case BNodeId(id) => {
+      case BNode(id) => {
         // Creates the BNode if it doesn't exist
         Some(m.createResource(new AnonId(id)))
       }
@@ -94,7 +94,7 @@ object JenaMapper {
       // println(s"jenaNode2RDFNode: URI = ${r.asResource().getURI()}")
       IRI(r.asResource().getURI)
     } else if (r.isAnon) {
-      BNodeId(r.asResource().getId.getLabelString)
+      BNode(r.asResource().getId.getLabelString)
     } else if (r.isLiteral) {
       val lit = r.asLiteral()
       if (lit.getLanguage() != "") {
@@ -134,7 +134,7 @@ object JenaMapper {
 
   def createResource(m: JenaModel, node: RDFNode): Resource = {
     node match {
-      case BNodeId(id) => m.createResource(new AnonId(id.toString))
+      case BNode(id) => m.createResource(new AnonId(id.toString))
       case i: IRI => m.createResource(resolve(i))
       case _ => throw new Exception("Cannot create a resource from " + node)
     }
@@ -148,7 +148,7 @@ object JenaMapper {
     val xsdboolean = xsd + "boolean"
 
     node match {
-      case BNodeId(id) =>
+      case BNode(id) =>
         m.createResource(new AnonId(id.toString))
       case i: IRI =>
         m.createResource(resolve(i))
@@ -237,14 +237,14 @@ object JenaMapper {
       case l: es.weso.rdf.nodes.Literal => {
         Try {
           val jenaLiteral = emptyModel.createTypedLiteral(l.getLexicalForm, l.dataType.str)
-          jenaLiteral.getValue() // if it is ill-typed it raises an exception
-          (jenaLiteral.getDatatypeURI)
+          jenaLiteral.getValue // if it is ill-typed it raises an exception
+          jenaLiteral.getDatatypeURI
         } match {
           case Success(iri) => {
             // println(s"JenaMapper.welltypedDatatype, $node. Comparing $expectedDatatype with $iri")
             Right(iri == expectedDatatype.str)
           }
-          case Failure(e) => Left(e.getMessage())
+          case Failure(e) => Left(e.getMessage)
         }
       }
       case _ => Right(false)

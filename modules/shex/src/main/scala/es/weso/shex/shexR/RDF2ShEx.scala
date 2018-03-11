@@ -68,7 +68,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
 
   private def mkId(n: RDFNode): Option[ShapeLabel] = n match {
     case iri: IRI => Some(IRILabel(iri))
-    case bnode: BNodeId => Some(BNodeLabel(bnode))
+    case bnode: BNode => Some(BNodeLabel(bnode))
     case _ => None // TODO: Raise an exception?
   }
 
