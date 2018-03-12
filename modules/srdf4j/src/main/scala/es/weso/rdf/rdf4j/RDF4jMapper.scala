@@ -21,6 +21,10 @@ object RDF4jMapper {
       case il: IntegerLiteral_RDF4j => IntegerLiteral(il.intValue())
       case dl: DecimalLiteral_RDF4j => DecimalLiteral(dl.decimalValue())
       case _ if (lit.getDatatype == XMLSchema.STRING) => StringLiteral(lit.stringValue())
+      case _ if (lit.getDatatype == XMLSchema.BOOLEAN) => BooleanLiteral(lit.booleanValue())
+      case _ if (lit.getDatatype == XMLSchema.INTEGER) => IntegerLiteral(lit.integerValue().intValue())
+      case _ if (lit.getDatatype == XMLSchema.DECIMAL) => DecimalLiteral(lit.decimalValue())
+      case _ if (lit.getDatatype == XMLSchema.DOUBLE) => DoubleLiteral(lit.doubleValue())
       case _ if (lit.getLanguage.isPresent) => LangLiteral(lit.stringValue, Lang(lit.getLanguage.get()))
       case _ => DatatypeLiteral(lit.stringValue(), iri2iri(lit.getDatatype))
     }

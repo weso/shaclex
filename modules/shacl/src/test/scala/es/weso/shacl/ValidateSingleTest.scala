@@ -9,7 +9,7 @@ import org.scalatest._
 import scala.io.Source
 import scala.util._
 
-class ValidateSingle extends FunSpec with Matchers with TryValues with OptionValues
+class ValidateSingleTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
   val name = "uniqueLang"

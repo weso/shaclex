@@ -1,5 +1,5 @@
-@prefix : <http://example.org/>
-@prefix sh: <http://www.w3.org/ns/shacl#>
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
 
 :S a sh:NodeShape; 
    sh:targetNode :x, :y, :z ;

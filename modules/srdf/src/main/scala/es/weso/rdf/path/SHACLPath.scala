@@ -1,7 +1,10 @@
 package es.weso.rdf.path
 
-import es.weso.rdf.nodes.{ IRI, RDFNode }
-import io.circe.{ Json, _ }
+import cats._
+import cats.implicits._
+import es.weso.rdf.nodes.{IRI, RDFNode}
+import es.weso.rdf.nodes.IRI.iriShow
+import io.circe.{Json, _}
 
 sealed trait SHACLPath {
   def predicate: Option[IRI]
@@ -37,7 +40,7 @@ object SHACLPath {
     }
   }
 
-  implicit val deodePath: Decoder[SHACLPath] = Decoder.instance { c =>
+  implicit val decodePath: Decoder[SHACLPath] = Decoder.instance { c =>
     c.as[String].flatMap(_ match {
       case s => RDFNode.fromString(s).fold(
         s => Left(DecodingFailure(s, Nil)),
@@ -48,4 +51,17 @@ object SHACLPath {
     })
   }
 
+  implicit val shaclPathShow: Show[SHACLPath] = new Show[SHACLPath] {
+    def show(path: SHACLPath): String = {
+    path match {
+      case PredicatePath(pred) => pred.show
+      case InversePath(p) => "^ " + p.show
+      case SequencePath(ps) => ps.map(_.show).mkString(" / ")
+      case AlternativePath(ps) => ps.map(_.show).mkString(" | ")
+      case ZeroOrMorePath(p) => p.show + "* "
+      case OneOrMorePath(p) => p.show + "+ "
+      case ZeroOrOnePath(p) => p.show + "? "
+    }
+  }
+  }
 }

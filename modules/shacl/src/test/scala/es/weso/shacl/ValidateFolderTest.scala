@@ -1,18 +1,16 @@
 package es.weso.shacl
 
-import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
-
-import org.scalatest._
+import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
-
-import scala.io.Source
-import util._
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 import es.weso.utils.FileUtils._
+import org.scalatest._
+import scala.io.Source
+import scala.util._
 
-class ValidateFolder extends FunSpec with Matchers with TryValues with OptionValues
+class ValidateFolderTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
   val conf: Config = ConfigFactory.load()
@@ -36,7 +34,7 @@ class ValidateFolder extends FunSpec with Matchers with TryValues with OptionVal
     }
   }
 
-  def validate(name: String, str: String): Boolean = {
+  def validate(name: String, str: String): Unit = {
     val attempt = for {
       rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
       schema <- RDF2Shacl.getShacl(rdf)
@@ -45,9 +43,8 @@ class ValidateFolder extends FunSpec with Matchers with TryValues with OptionVal
     attempt match {
       case Left(e) => {
         fail(s"Error validating $name: $e")
-        false
       }
-      case Right(typing) => true
+      case Right(typing) => ()
     }
   }
 

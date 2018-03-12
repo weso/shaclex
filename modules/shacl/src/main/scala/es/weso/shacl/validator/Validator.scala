@@ -14,6 +14,7 @@ import es.weso.utils.RegEx
 import Validator._
 import es.weso.shacl.showShacl._
 import SHACLChecker._
+import es.weso.rdf.PREFIXES._
 
 /**
  * This validator is implemented directly in Scala using cats library
@@ -598,6 +599,10 @@ case class Validator(schema: Schema) extends LazyLogging {
       case n: IntegerLiteral => ok(n.int)
       case n: DecimalLiteral => ok(n.decimal.toInt)
       case n: DoubleLiteral => ok(n.double.toInt)
+      case DatatypeLiteral(str,`xsd_integer`) => {
+        println(s"Integer! str: $str")
+        ok(Integer.parseInt(str))
+      }
       case _ => err(notNumeric(node, attempt)) *> ok(0)
     }
 

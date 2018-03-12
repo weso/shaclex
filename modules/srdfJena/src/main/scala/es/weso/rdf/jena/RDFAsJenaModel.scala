@@ -197,18 +197,18 @@ case class RDFAsJenaModel(model: Model)
   // TODO: Check that the last character is indeed :
   // private def removeLastColon(str: String): String = str.init
 
-  override def addTriples(triples: Set[RDFTriple]): Rdf = {
+  override def addTriples(triples: Set[RDFTriple]): Either[String,Rdf] = {
     val newModel = JenaMapper.RDFTriples2Model(triples, model)
     model.add(newModel)
-    this
+    Right(this)
   }
 
   // TODO: This is not efficient
-  override def rmTriple(triple: RDFTriple): Rdf = {
+  override def rmTriple(triple: RDFTriple): Either[String,Rdf] = {
     val empty = ModelFactory.createDefaultModel
     val model2delete = JenaMapper.RDFTriples2Model(Set(triple), empty)
     model.difference(model2delete)
-    this
+    Right(this)
   }
 
   override def createBNode: (RDFNode, RDFAsJenaModel) = {

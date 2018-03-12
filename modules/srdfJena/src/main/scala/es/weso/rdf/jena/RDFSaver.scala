@@ -27,8 +27,9 @@ trait RDFSaver {
     } yield bNode
   }
 
+  // TODO: Check possibility of errors
   def addTriple(s: RDFNode, p: IRI, o: RDFNode): RDFSaver[Unit] =
-    State.modify(_.addTriple(RDFTriple(s, p, o)))
+    State.modify(_.addTriple(RDFTriple(s, p, o)).right.get)
 
   def addPrefixMap(pm: PrefixMap): RDFSaver[Unit] =
     State.modify(_.addPrefixMap(pm))

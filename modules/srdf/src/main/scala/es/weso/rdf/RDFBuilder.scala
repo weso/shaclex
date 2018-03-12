@@ -14,17 +14,17 @@ trait RDFBuilder {
 
   def createBNode: (RDFNode, Rdf)
 
-  def addTriples(triples: Set[RDFTriple]): Rdf
+  def addTriples(triples: Set[RDFTriple]): Either[String,Rdf]
 
-  def addTriple(triple: RDFTriple): Rdf = {
+  def addTriple(triple: RDFTriple): Either[String,Rdf] = {
     addTriples(Set(triple))
   }
 
-  def addType(node: RDFNode, typeNode: RDFNode): Rdf = {
+  def addType(node: RDFNode, typeNode: RDFNode): Either[String,Rdf] = {
     addTriple(RDFTriple(node, rdf_type, typeNode))
   }
 
-  def rmTriple(triple: RDFTriple): Rdf
+  def rmTriple(triple: RDFTriple): Either[String,Rdf]
 
   def empty: Rdf
 

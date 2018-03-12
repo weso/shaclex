@@ -38,6 +38,8 @@ object PREFIXES {
   lazy val rdf_first = rdf.add("first")
   lazy val rdf_rest = rdf.add("rest")
   lazy val rdf_langString = rdf.add("langString")
+  lazy val rdfs_subClassOf = rdfs.add("subClassOf")
+
 
   val basicMap: Map[String, IRI] =
     Map(

@@ -18,8 +18,7 @@ import java.net._
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 
-class ShaclCore
-  extends FunSpec with Matchers with TryValues with OptionValues
+class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValues
 
   with SchemaMatchers {
 

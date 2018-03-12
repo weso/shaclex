@@ -1,7 +1,10 @@
 package es.weso.rdf.nodes
 
 import cats.implicits._
-import java.net.{ URI, URISyntaxException }
+import java.net.{URI, URISyntaxException}
+
+import cats.Show
+
 import scala.util.Try
 import scala.util.matching.Regex
 
@@ -76,5 +79,7 @@ object IRI {
       case _ =>
         Left(s"$str doesn't match IRI regex $iriRegex")
     }
+
+  implicit val iriShow = Show.show[IRI] { _.toString }
 
 }

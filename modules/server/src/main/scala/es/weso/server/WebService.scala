@@ -408,8 +408,6 @@ object WebService {
               response <- maybePair match {
                 case Left(msg) => BadRequest(s"Error obtaining query: $msg")
                 case Right((queryStr, qp)) => {
-                  println(s"Query: $queryStr")
-                  println(s"RDF: ${rdf.serialize()}")
                   val optQueryStr = qp.query.map(_.str)
                   val result = rdf.queryAsJson(optQueryStr.getOrElse(""))
                   println(s"Result: ${result}")

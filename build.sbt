@@ -60,9 +60,7 @@ lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"      
 lazy val antlr4            = "org.antlr"                  % "antlr4"               % antlrVersion
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
-lazy val rdf4j             = "org.eclipse.rdf4j"          % "rdf4j"                % rdf4jVersion
-lazy val rdf4jModel        = "org.eclipse.rdf4j"          % "rdf4j-model"          % rdf4jVersion
-lazy val rdf4j_rioTurtle   = "org.eclipse.rdf4j"          % "rdf4j-rio-turtle"     % rdf4jVersion
+lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -141,6 +139,7 @@ lazy val shacl = project
     utils,
     typing,
     validating,
+    srdf4j % Test,
     srdfJena % Test)
   .settings(
     logBuffered in Test       := false,
@@ -311,7 +310,7 @@ lazy val srdf4j = project
       logbackClassic,
       scalaLogging,
       typesafeConfig % Test,
-      rdf4j, rdf4jModel, rdf4j_rioTurtle,
+      rdf4j_runtime,
       catsCore,
       catsKernel,
       catsMacros
