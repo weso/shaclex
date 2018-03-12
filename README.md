@@ -12,10 +12,15 @@ This project contains an implementation of
 
 ## Introduction
 
-This project contains an implementation of SHACL and ShEx.
+This project contains an implementation of [SHACL](https://www.w3.org/TR/shacl/) and [ShEx](http://shex.io/).
 
-Both are implemented using the same underlying mechanism which is based
- on a purely functional approach.
+Both are implemented in Scala using the same underlying mechanism using a purely functional approach.
+ 
+The library handles RDF using a [simple RDF interface](https://github.com/labra/shaclex/tree/master/modules/srdf) which has 2 implementations, 
+one using [Apache Jena](https://jena.apache.org/) and another one using [RDF4j](http://rdf4j.org/), this means
+that it is possible to use this library to validate RDF models from any of those RDF libraries, as well as 
+from external SPARQL endpoints.
+  
 
 ## Installation and compilation
 
