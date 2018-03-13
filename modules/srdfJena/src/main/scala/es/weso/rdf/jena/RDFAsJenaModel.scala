@@ -50,10 +50,10 @@ case class RDFAsJenaModel(model: Model)
   }
 
   private def getRDFFormat(formatName: String): Either[String,String] = {
-    val supportedFormats = RDFLanguages.getRegisteredLanguages()
+    val supportedFormats: List[String] = RDFLanguages.getRegisteredLanguages().asScala.toList.map(_.getName.toUpperCase).distinct
     formatName.toUpperCase match {
       case format if supportedFormats.contains(format) => Right(format)
-      case unknown => Left(s"Unsupported format $unknown")
+      case unknown => Left(s"Unsupported format $unknown. Available formats: ${supportedFormats.mkString(",")} ")
     }
   }
 
@@ -68,10 +68,10 @@ case class RDFAsJenaModel(model: Model)
     )
   } yield str
 
-  private def extend_rdfs: Rdf = {
+/*  private def extend_rdfs: Rdf = {
     val infModel = ModelFactory.createRDFSModel(model)
     RDFAsJenaModel(infModel)
-  }
+  } */
 
   // TODO: this implementation only returns subjects
   override def iris(): Set[IRI] = {
@@ -221,9 +221,9 @@ case class RDFAsJenaModel(model: Model)
     this
   }
 
-  private def qName(str: String): IRI = {
+/*  private def qName(str: String): IRI = {
     IRI(model.expandPrefix(str))
-  }
+  } */
 
   override def empty: Rdf = {
     RDFAsJenaModel.empty
@@ -258,7 +258,7 @@ case class RDFAsJenaModel(model: Model)
     qExec.getQuery.getQueryType match {
       case Query.QueryTypeSelect => {
         val result = qExec.execSelect()
-        val varNames = result.getResultVars
+        // val varNames = result.getResultVars
         val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
           val qsm = new QuerySolutionMap()
           qsm.addAll(qs)
@@ -281,7 +281,7 @@ case class RDFAsJenaModel(model: Model)
         parse(jsonStr).leftMap(f => f.getMessage)
       }
       case Query.QueryTypeConstruct => {
-        val result = qExec.execConstruct()
+        // val result = qExec.execConstruct()
         Left(s"Unimplemented CONSTRUCT queries yet")
       }
       case Query.QueryTypeAsk => {

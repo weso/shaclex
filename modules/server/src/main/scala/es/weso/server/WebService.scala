@@ -249,7 +249,9 @@ object WebService {
 
     case req@POST -> Root / "validate" =>
       req.decode[Multipart[IO]] { m => {
+        println(s"POST validate")
         val partsMap = PartsMap(m.parts)
+        println(s"POST validate partsMap. $partsMap")
         for {
           maybeData <- DataParam.mkData(partsMap)
           response <- maybeData match {
@@ -259,8 +261,15 @@ object WebService {
                 response <- maybePair match {
                   case Left(msg) => BadRequest(s"Error obtaining schema: $msg")
                   case Right((schema, sp)) => for {
-                    tp <- TriggerModeParam.mkTriggerModeParam(partsMap)
-                    schemaEmbedded = getSchemaEmbedded(sp)
+                    tp <- {
+                      println(s">>>>>>>>>>>>>>>> Data: ${rdf.serialize()}\ndata string:${dp.data}")
+                      println(s">>>>>>>>>>>>>>>> Schema: $schema")
+                      TriggerModeParam.mkTriggerModeParam(partsMap)
+                    }
+                    schemaEmbedded = {
+                      println(s">>>> Trigger: $tp")
+                      getSchemaEmbedded(sp)
+                    }
                     optShapeMapStr = tp.getShapeMap._1
                     (result, maybeTriggerMode) = validate(dp.data.getOrElse(""), dp.dataFormat,
                       sp.schema, sp.schemaFormat, sp.schemaEngine,
