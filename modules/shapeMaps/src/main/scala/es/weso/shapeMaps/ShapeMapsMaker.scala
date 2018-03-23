@@ -39,22 +39,25 @@ class ShapeMapsMaker(
       node <- visitObjectTerm(ctx.objectTerm())
     } yield RDFNodeSelector(node)
     case _ if isDefined(ctx.triplePattern()) => visitTriplePattern(ctx.triplePattern())
-    case _ if isDefined(ctx.sparql()) => visitSparql(ctx.sparql())
+    case _ if isDefined(ctx.extended()) => visitExtended(ctx.extended())
     case _ => err(s"Internal error visitNodeSelector: unknown ctx $ctx")
   }
 
-  override def visitSparql(ctx: SparqlContext): Builder[SparqlSelector] = {
-    val str = ctx.SPARQL_STRING().getText
-    ok(SparqlSelector(removeBackQuotes(str)))
+  override def visitExtended(ctx: ExtendedContext): Builder[SparqlSelector] = ctx match {
+    case _ if isDefined(ctx.KW_SPARQL()) => for {
+      str <- visitString(ctx.string())
+    } yield SparqlSelector(str)
+    // TODO
+    case _ => err(s"Internal error visitExtended: unSupported Not SPARQL")
   }
 
   // TODO: It would be safer to check that the first and last characters are indeed backquotes
-  private def removeBackQuotes(str: String): String =
-    str.substring(1,str.length - 1)
+  /* private def removeBackQuotes(str: String): String =
+    str.substring(1,str.length - 1) */
 
   override def visitSubjectTerm(ctx: SubjectTermContext): Builder[RDFNode] = ctx match {
-    case _ if isDefined(ctx.iri()) => for {
-      iri <- visitIri(ctx.iri(), nodesPrefixMap)
+    case _ if isDefined(ctx.nodeIri()) => for {
+      iri <- visitNodeIri(ctx.nodeIri(), nodesPrefixMap)
     } yield iri
     case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
   }
@@ -125,7 +128,7 @@ class ShapeMapsMaker(
   }
 
   override def visitPathPrimary(ctx: PathPrimaryContext): Builder[SHACLPath] = ctx match {
-    case _ if isDefined(ctx.iri()) => visitIri(ctx.iri(), nodesPrefixMap).map(PredicatePath(_))
+    case _ if isDefined(ctx.nodeIri()) => visitNodeIri(ctx.nodeIri(), nodesPrefixMap).map(PredicatePath(_))
     case _ if isDefined(ctx.rdfType()) => ok(PredicatePath(rdf_type))
   }
 
@@ -137,8 +140,8 @@ class ShapeMapsMaker(
     }
     ctx match {
       case _ if isDefined(ctx.AT_START()) => ok((Start, info))
-      case _ if isDefined(ctx.iri()) => for {
-        iri <- visitIri(ctx.iri(), shapesPrefixMap)
+      case _ if isDefined(ctx.nodeIri()) => for {
+        iri <- visitNodeIri(ctx.nodeIri(), shapesPrefixMap)
       } yield (IRILabel(iri), info)
       case _ if isDefined(ctx.KW_START()) => ok((Start, info))
       case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
@@ -198,44 +201,43 @@ class ShapeMapsMaker(
   }
 
   def stripStringLiteral1(s: String): String = {
-    val regexStr = "\'(.*)\'".r
+    s.substring(1,s.length - 1)
+    /*    val regexStr = "\'(.*)\'".r
     s match {
       case regexStr(s) => s
       case _ => throw new Exception(s"stripStringLiteral2 $s doesn't match regex")
-    }
+    } */
   }
 
   def stripStringLiteral2(s: String): String = {
-    val regexStr = "\"(.*)\"".r
+    s.substring(1,s.length - 1)
+/*    val regexStr = "\"(.*)\"".r
     s match {
       case regexStr(s) => s
       case _ => throw new Exception(s"stripStringLiteral2 $s doesn't match regex")
-    }
+    } */
   }
 
   def stripStringLiteralLong1(s: String): String = {
-    val regexStr = "\'\'\'(.*)\'\'\'".r
-    s match {
-      case regexStr(s) => s
-      case _ => throw new Exception(s"stripStringLiteralLong1 $s doesn't match regex")
-    }
+    s.substring(3, s.length() - 3)
   }
 
   def stripStringLiteralLong2(s: String): String = {
-    val regexStr = "\"\"\"(.*)\"\"\"".r
+    s.substring(3,s.length - 3)
+/*    val regexStr = "\"\"\"(.*)\"\"\"".r
     s match {
       case regexStr(s) => s
       case _ => throw new Exception(s"stripStringLiteralLong1 $s doesn't match regex")
-    }
+    } */
   }
 
   def visitDatatype(ctx: DatatypeContext, prefixMap: PrefixMap): Builder[IRI] = {
-    visitIri(ctx.iri(), prefixMap)
+    visitNodeIri(ctx.nodeIri(), prefixMap)
   }
 
   def getBase: Builder[Option[IRI]] = ok(Some(baseIRI))
 
-  def visitIri(ctx: IriContext, prefixMap: PrefixMap): Builder[IRI] =
+  def visitNodeIri(ctx: NodeIriContext, prefixMap: PrefixMap): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
     } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
