@@ -4,8 +4,9 @@ grammar ShapeMap;
 
 shapeMap         : shapeAssociation (',' shapeAssociation)* ;
 shapeAssociation : nodeSelector shapeLabel ;
-nodeSelector     : objectTerm | triplePattern | sparql ;
-subjectTerm      : iri | rdfType ;
+nodeSelector     : objectTerm | triplePattern | extended ;
+extended         : (KW_SPARQL | nodeIri) string ;
+subjectTerm      : nodeIri | rdfType ;
 objectTerm       : subjectTerm | literal ;
 
 // TODO: Check why the spec has iri instead of predicate
@@ -34,7 +35,7 @@ pathElt          : pathPrimary pathMod?
                  ;
 
 // Todo: Add pathNegatedPrimarySet
-pathPrimary      : iri | rdfType | '(' path ')'
+pathPrimary      : nodeIri | rdfType | '(' path ')'
                  ;
 
 // Todo: Add integer ranges
@@ -49,12 +50,12 @@ literal         : rdfLiteral
 				;
 
 // BNF: predicate ::= iri | RDF_TYPE
-predicate       : iri
+predicate       : nodeIri
 				| rdfType
 				;
 rdfType			: RDF_TYPE ;
-datatype        : iri ;
-shapeLabel      : '@' negation? (iri | KW_START)
+datatype        : nodeIri ;
+shapeLabel      : '@' negation? (nodeIri | KW_START)
                 | AT_START ;
 
 negation        : KW_NOT | '!' ;
@@ -73,7 +74,7 @@ string          : STRING_LITERAL_LONG1
                 | STRING_LITERAL1
 				| STRING_LITERAL2
 				;
-iri             : IRIREF
+nodeIri         : IRIREF
 				| prefixedName
 				;
 prefixedName    : PNAME_LN
@@ -115,7 +116,7 @@ STRING_LITERAL1       : '\'' (~[\u0027\u005C\u000A\u000D] | ECHAR | UCHAR)* '\''
 STRING_LITERAL2       : '"' (~[\u0022\u005C\u000A\u000D] | ECHAR | UCHAR)* '"' ;   /* #x22=" #x5C=\ #xA=new line #xD=carriage return */
 STRING_LITERAL_LONG1  : '\'\'\'' (('\'' | '\'\'')? (~['\\] | ECHAR | UCHAR))* '\'\'\'' ;
 STRING_LITERAL_LONG2  : '"""' (('"' | '""')? (~["\\] | ECHAR | UCHAR))* '"""' ;
-SPARQL_STRING         : BACKQUOTE (~[\u0060] | ECHAR| UCHAR)* BACKQUOTE ; /* #x60 = ` */
+// SPARQL_STRING         : BACKQUOTE (~[\u0060] | ECHAR| UCHAR)* BACKQUOTE ; /* #x60 = ` */
 
 fragment UCHAR                 : '\\u' HEX HEX HEX HEX | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX ;
 fragment ECHAR                 : '\\' [tbnrf\\"'] ;

@@ -109,7 +109,7 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
       shapesPrefixMap)
 
     shouldParse(
-      """SPARQL `select ?item where { ?x a ?item }`@:S""",
+      """SPARQL "select ?item where { ?x a ?item }"@:S""",
       QueryShapeMap(List(Association(
         node = SparqlSelector("select ?item where { ?x a ?item }"),
         shape = IRILabel(IRI("http://default.shapes.org/S")))),
@@ -162,8 +162,8 @@ class ShapeMapTest extends FunSpec with Matchers with TryValues with OptionValue
     shouldFixAs("{FOCUS a :X }@ :S", rdfStr, ":x@ :S, :t @ :S")
     shouldFixAs("{FOCUS :p :y }@ :S", rdfStr, ":x@ :S, :a@ :S, :b@ :S")
     shouldFixAs("{FOCUS :p _ }@ :S", rdfStr, ":x@ :S, :a@ :S, :b @ :S, :c @ :S")
-    shouldFixAs("""|SPARQL `prefix : <http://example.org/>
-                   |        select ?item where { ?item a :X }`@ :S""".stripMargin,
+    shouldFixAs("""|SPARQL '''prefix : <http://example.org/>
+                   |        select ?item where { ?item a :X }'''@ :S""".stripMargin,
                    rdfStr, ":x@:S,:t@:S"
     )
 
