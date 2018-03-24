@@ -32,7 +32,7 @@ case class DataParam(data: Option[String],
     override val id = "#dataTextArea"
   }
 
-  def parseDataTab(tab: String): Either[String,DataInputType] = {
+  def parseDataTab(tab: String): Either[String, DataInputType] = {
     println(s"parseDataTab: tab = $tab")
     val inputTypes = List(dataUrlType,dataFileType,dataEndpointType,dataTextAreaType)
     inputTypes.find(_.id == tab) match {
@@ -66,7 +66,14 @@ case class DataParam(data: Option[String],
   }
 
   def getData: (Option[String], Either[String,RDFReasoner]) = {
-    val inputType = parseDataTab(activeDataTab.getOrElse(defaultActiveDataTab))
+    println(s"ActiveDataTab: $activeDataTab")
+    val inputType = activeDataTab match {
+      case None => {
+        if (endpoint.isDefined) Right(dataEndpointType)
+        else Right(dataTextAreaType)
+      }
+      case Some(a) => parseDataTab(a)
+    }
     println(s"Input type: $inputType")
     inputType match {
       case Right(`dataUrlType`) => {

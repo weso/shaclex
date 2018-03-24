@@ -243,8 +243,6 @@ object WebService {
           if (ex1 == ex2) Ok(html.load(ex1))
           else BadRequest(s"Parameter 'examples' and 'manifestURL' are different, select one of them")
       }
-      // val xs = List(examples,manifestURL).collectFirst(x => x.)
-
     }
 
     case req@POST -> Root / "validate" =>

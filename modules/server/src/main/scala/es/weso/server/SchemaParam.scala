@@ -124,11 +124,10 @@ object SchemaParam {
                       ): IO[Either[String, (Schema, SchemaParam)]] = for {
     sp <- {
        println(s"PartsMap: $partsMap")
-       val sp = mkSchemaParam(partsMap)
-       println(s"SchemaParam: $sp")
-       sp
+       mkSchemaParam(partsMap)
       }
   } yield {
+    println(s"SchemaParam: $sp")
     val (maybeStr, maybeSchema) = sp.getSchema(data)
     maybeSchema match {
       case Left(str) => Left(str)

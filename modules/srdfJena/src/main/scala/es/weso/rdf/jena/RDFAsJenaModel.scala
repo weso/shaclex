@@ -254,20 +254,23 @@ case class RDFAsJenaModel(model: Model)
   def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
 
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
+    val tryQuery: Try[List[Map[String,RDFNode]]] = Try {
     val qExec = QueryExecutionFactory.create(queryStr, model)
     qExec.getQuery.getQueryType match {
       case Query.QueryTypeSelect => {
         val result = qExec.execSelect()
         // val varNames = result.getResultVars
-        val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
+        val ls: List[Map[String, RDFNode]] = result.asScala.toList.map(qs => {
           val qsm = new QuerySolutionMap()
           qsm.addAll(qs)
           qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
         })
-        Right(ls)
+        ls
       }
-      case qtype => Left(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
+      case qtype => throw new Exception(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
     }
+   }
+   tryQuery.toEither.leftMap(_.getMessage)
   }
 
   override def queryAsJson(queryStr: String): Either[String, Json] = Try {
