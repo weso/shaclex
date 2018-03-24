@@ -61,7 +61,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
       if (t.isOK) t.getEvidences.map(_.mkString("\n"))
       else t.getErrors.map(_.mkString("\n"))
     val appInfo = Json.fromString("Shaclex")
-    Info(status, reason, appInfo)
+    Info(status, reason, Some(appInfo))
   }
 
   private def typing2Labels(m: Map[ShapeType, TypingResult[ViolationError, String]]

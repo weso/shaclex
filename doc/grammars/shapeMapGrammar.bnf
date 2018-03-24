@@ -1,0 +1,94 @@
+# Yacker grammer for ShEx ShapeMap
+# 
+# Copyright 2017, Eric Prud'hommeax, Harold Solbrig, Iovka Boneva, Jose Labra Gayo
+# All rights reserved; please contact copyright holder for any use outside of ShEx.
+# http://www.w3.org/2005/01/yacker/uploads/ShapeMap/bnf
+#
+# yacker: https://www.w3.org/2005/01/yacker/uploads/ShapeMap?lang=perl
+# repo: https://github.com/shexSpec/ShapeMap/
+# branch: master
+# 
+# Changelog:
+#
+# ~ aligned with ShExC (EGP 20170508)
+
+# Notation:
+#   in-line terminals in ""s are case-insensitive
+#   production numbers ending in t or s are from Turtle or SPARQL.
+
+[1]     shapeMap              ::= pair (',' pair)* ','?;
+[2]     pair                  ::= nodeSelector statusAndShape reason? jsonAttributes?
+[7]     statusAndShape        ::= '@' status? shapeSelector
+                                | ATSTART | ATPNAME_NS | ATPNAME_LN # terminals masking '@'iri
+[3]     nodeSelector          ::= objectTerm | triplePattern | ("SPARQL" | nodeIri) string
+[0]     shapeSelector         ::= shapeIri | START
+[4]     subjectTerm           ::= nodeIri | BLANK_NODE_LABEL
+[5]     objectTerm            ::= subjectTerm | literal
+[6]     triplePattern         ::= '{' "FOCUS" nodePredicate (objectTerm | '_') '}'
+                                | '{' (subjectTerm | '_') nodePredicate "FOCUS" '}'
+[8]     status                ::= '!' | '?'
+[9]     reason                ::= '/' string
+[10]    jsonAttributes        ::= '$' (APPINFO_COLON | APPINFO_SPACE_COLON) jsonValue
+[11]    jsonValue             ::= 'false' | 'null' | 'true' | jsonObject | jsonArray | numericLiteral | STRING_LITERAL2;
+[12]    jsonObject            ::= '{' (jsonMember (',' jsonMember)*)? '}';
+[13]    jsonMember            ::= STRING_LITERAL2_COLON jsonValue;
+[14]    jsonArray             ::= '[' (jsonValue (',' jsonValue)*)? ']';
+[13t]   literal               ::= rdfLiteral | numericLiteral | booleanLiteral
+[16t]   numericLiteral        ::= INTEGER | DECIMAL | DOUBLE
+[129s]  rdfLiteral            ::= string (LANGTAG | '^^' nodeIri)?
+[134s]  booleanLiteral        ::= 'true' | 'false'
+[135s]  string                ::= STRING_LITERAL1 | STRING_LITERAL_LONG1
+                                | STRING_LITERAL2 | STRING_LITERAL_LONG2
+[0]     nodePredicate         ::= nodeIri | 'a'
+[136s]  nodeIri               ::= IRIREF | PNAME_LN | APPINFO_COLON | PNAME_NS
+[136s]  shapeIri              ::= IRIREF | PNAME_LN | APPINFO_COLON | PNAME_NS
+
+@terminals
+
+[0]     APPINFO_COLON         ::= 'appinfo:'
+[0]     APPINFO_SPACE_COLON   ::= 'appinfo' [#x20#xA#x9]+ ':'
+[0]     STRING_LITERAL2_COLON ::= '"' ([^#x22#x5C#xA#xD] | ECHAR | UCHAR)* '"' [#x20#xA#x9]* ':'
+#[0]     APPINFO_COLON         ::= 'appinfo' [#x20#xA#x9]* ':'
+#[0]     STRING_LITERAL2_COLON ::= '"' ([^#x22#x5C#xA#xD] | ECHAR | UCHAR)* '"' [#x20#xA#x9]* ':'
+
+[18t]   IRIREF                ::= '<' ([^#x00-#x20<>\"{}|^`\\] | UCHAR)* '>' /* #x00=NULL #01-#x1F=control codes #x20=space */
+[140s]  PNAME_NS              ::= PN_PREFIX? ':'
+[141s]  PNAME_LN              ::= PNAME_NS PN_LOCAL
+[15]    ATPNAME_NS            ::= '@' PNAME_NS
+[16]    ATPNAME_LN            ::= '@' PNAME_LN
+[142s]  BLANK_NODE_LABEL      ::= '_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)?
+[17x]   START                ::= "START" # avoid perl keyword
+[17]    ATSTART               ::= '@' START
+[145s]  LANGTAG               ::= '@' [a-zA-Z]+ ('-' [a-zA-Z0-9]+)*
+[19t]   INTEGER               ::= [+-]? [0-9]+
+[20t]   DECIMAL               ::= [+-]? [0-9]* '.' [0-9]+
+[21t]   DOUBLE                ::= [+-]? ([0-9]+ '.' [0-9]* EXPONENT | '.'? [0-9]+ EXPONENT)
+[155s]  EXPONENT              ::= [eE] [+-]? [0-9]+
+[156s]  STRING_LITERAL1       ::= "'" ([^#x27#x5C#xA#xD] | ECHAR | UCHAR)* "'" /* #x27=' #x5C=\ #xA=new line #xD=carriage return */
+[157s]  STRING_LITERAL2       ::= '"' ([^#x22#x5C#xA#xD] | ECHAR | UCHAR)* '"' /* #x22=" #x5C=\ #xA=new line #xD=carriage return */
+[158s]  STRING_LITERAL_LONG1  ::= "'''" (("'" | "''")? ([^\'\\] | ECHAR | UCHAR))* "'''"
+[159s]  STRING_LITERAL_LONG2  ::= '"""' (('"' | '""')? ([^\"\\] | ECHAR | UCHAR))* '"""'
+[26t]   UCHAR                 ::= '\\u' HEX HEX HEX HEX
+                                | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX
+[160s]  ECHAR                 ::= '\\' [tbnrf\\\"\']
+[164s]  PN_CHARS_BASE         ::= [A-Z] | [a-z]
+                                | [#x00C0-#x00D6] | [#x00D8-#x00F6] | [#x00F8-#x02FF]
+                                | [#x0370-#x037D] | [#x037F-#x1FFF]
+                                | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF]
+                                | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD]
+                                | [#x10000-#xEFFFF]
+[165s]  PN_CHARS_U            ::= PN_CHARS_BASE | '_'
+[167s]  PN_CHARS              ::= PN_CHARS_U | '-' | [0-9]
+                                | [#x00B7] | [#x0300-#x036F] | [#x203F-#x2040]
+[168s]  PN_PREFIX             ::= PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
+[169s]  PN_LOCAL              ::= (PN_CHARS_U | ':' | [0-9] | PLX) ((PN_CHARS | '.' | ':' | PLX)* (PN_CHARS | ':' | PLX))?
+[170s]  PLX                   ::= PERCENT | PN_LOCAL_ESC
+[171s]  PERCENT               ::= '%' HEX HEX
+[172s]  HEX                   ::= [0-9] | [A-F] | [a-f]
+[173s]  PN_LOCAL_ESC          ::= '\\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%')
+# [18]    EXTENSION             ::= '`' ([^`\\] | '\\' '`')* '`'
+
+
+@pass ::= [ \t\r\n]+
+        | "#" [^\r\n]*
+        | "/*" ([^*] | '*' ([^/] | '\\/'))* "*/"

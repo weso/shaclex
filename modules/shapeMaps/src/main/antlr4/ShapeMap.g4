@@ -1,10 +1,19 @@
 // ANTLR4 corresponding to ShapeMaps grammar: https://shexspec.github.io/shape-map/#grammar
 
+// changelog
+// 2018/03: Added SPARQL syntax with strings
+
 grammar ShapeMap;
 
-shapeMap         : shapeAssociation (',' shapeAssociation)* ;
-shapeAssociation : nodeSelector shapeLabel ;
+shapeMap         : pair (',' pair)* ;
+pair             : nodeSelector statusAndShape reason? jsonAttributes? ;
+statusAndShape   : '@' status? shapeSelector
+                 | AT_START
+                 | ATPNAME_NS
+                 | ATPNAME_LN
+                 ;
 nodeSelector     : objectTerm | triplePattern | extended ;
+shapeSelector    : shapeIri | KW_START ;
 extended         : (KW_SPARQL | nodeIri) string ;
 subjectTerm      : nodeIri | rdfType ;
 objectTerm       : subjectTerm | literal ;
@@ -13,8 +22,9 @@ objectTerm       : subjectTerm | literal ;
 triplePattern    : '{' KW_FOCUS path (objectTerm | '_' ) '}' # focusSubject
                  | '{' (subjectTerm | '_') path KW_FOCUS '}' # focusObject
                  ;
-
-sparql           : KW_SPARQL SPARQL_STRING ;
+status           : negation | questionMark ;
+reason           : '/' string ;
+jsonAttributes   : '$' ; // TODO
 
 // SPARQL Grammar rule 82
 path             : pathAlternative ;
@@ -55,10 +65,11 @@ predicate       : nodeIri
 				;
 rdfType			: RDF_TYPE ;
 datatype        : nodeIri ;
-shapeLabel      : '@' negation? (nodeIri | KW_START)
-                | AT_START ;
+//shapeLabel      : '@' negation? (nodeIri | KW_START)
+//                | AT_START ;
 
 negation        : KW_NOT | '!' ;
+questionMark    : '?' ;
 
 numericLiteral  : INTEGER
 				| DECIMAL
@@ -77,6 +88,9 @@ string          : STRING_LITERAL_LONG1
 nodeIri         : IRIREF
 				| prefixedName
 				;
+shapeIri        : IRIREF
+   				| prefixedName
+   				;
 prefixedName    : PNAME_LN
 				| PNAME_NS
 				;
@@ -102,8 +116,8 @@ RDF_TYPE              : 'a' ;
 IRIREF                : '<' (~[\u0000-\u0020=<>"{}|^`\\] | UCHAR)* '>' ; /* #x00=NULL #01-#x1F=control codes #x20=space */
 PNAME_NS              : PN_PREFIX? ':' ;
 PNAME_LN              : PNAME_NS PN_LOCAL ;
-// ATPNAME_NS			  : '@' PN_PREFIX? ':' ;
-// ATPNAME_LN			  : '@' PNAME_NS PN_LOCAL ;
+ATPNAME_NS			  : '@' PNAME_NS ;
+ATPNAME_LN			  : '@' PNAME_LN ;
 BLANK_NODE_LABEL      : '_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)? ;
 LANGTAG               : '@' [a-zA-Z]+ ('-' [a-zA-Z0-9]+)* ;
 INTEGER               : [+-]? [0-9]+ ;

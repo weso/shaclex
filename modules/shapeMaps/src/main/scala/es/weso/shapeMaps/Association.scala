@@ -23,7 +23,7 @@ object Association {
         add("node", a.node.asJson).
         add("shape", a.shape.asJson).
         add("status", a.info.status.asJson).
-        add("appInfo", a.info.appInfo)
+        add("appInfo", a.info.appInfo.asJson)
       Json.fromJsonObject(a.info.reason match {
         case None => obj
         case Some(reason) => obj.add("reason", reason.asJson)
@@ -56,7 +56,7 @@ object Association {
       status <- c.downField("status").as[Status]
       reason <- optFieldDecode[String](c, "reason")
       appInfo <- c.downField("appInfo").as[Json]
-    } yield Association(node, shape, Info(status, reason, appInfo))
+    } yield Association(node, shape, Info(status, reason, Some(appInfo)))
   }
 
 }

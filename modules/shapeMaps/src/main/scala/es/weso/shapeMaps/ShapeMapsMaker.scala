@@ -9,6 +9,7 @@ import es.weso.rdf.path._
 import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext, _}
 import es.weso.shapeMaps.parser._
 import es.weso.utils.FileUtils
+import io.circe.Json
 
 import scala.collection.JavaConverters._
 
@@ -23,16 +24,57 @@ class ShapeMapsMaker(
   val baseIRI = IRI(base.getOrElse(FileUtils.currentFolderURL))
 
   override def visitShapeMap(ctx: ShapeMapContext): Builder[QueryShapeMap] = for {
-    associations <- visitList(visitShapeAssociation, ctx.shapeAssociation())
+    associations <- visitList(visitPair, ctx.pair)
   } yield QueryShapeMap(associations, nodesPrefixMap, shapesPrefixMap)
 
-  override def visitShapeAssociation(ctx: ShapeAssociationContext): Builder[Association] = for {
-    nodeSelector <- visitNodeSelector(ctx.nodeSelector())
-    pair <- visitShapeLabel(ctx.shapeLabel())
+  override def visitPair(ctx: PairContext): Builder[Association] = for {
+    nodeSelector <- visitNodeSelector(ctx.nodeSelector)
+    pair <- visitStatusAndShape(ctx.statusAndShape)
+    reason <-visitReason(ctx.reason())
+    appInfo <- visitJsonAttributes(ctx.jsonAttributes())
   } yield {
-    val (shapeLabel, info) = pair
+    val (shapeLabel, status) = pair
+    val info = Info(status = status, reason = reason, appInfo = appInfo)
     Association(nodeSelector, shapeLabel, info)
   }
+
+  override def visitStatusAndShape(ctx: StatusAndShapeContext): Builder[(ShapeMapLabel, Status)] = ctx match {
+    case _ if isDefined(ctx.AT_START()) => ok((Start, Conformant))
+    case _ if isDefined(ctx.shapeSelector) => for {
+      status <- visitStatusAndShapeInfo(ctx)
+      label <- visitShapeSelector(ctx.shapeSelector)
+    } yield ((label,status))
+    case _ if isDefined(ctx.ATPNAME_NS()) => err(s"visitStatusAndShape. ATPNAME_NS ${ctx.ATPNAME_NS().getText}")
+    case _ if isDefined(ctx.ATPNAME_LN()) => for {
+      iri <- resolve(ctx.ATPNAME_LN().getText.substring(1), shapesPrefixMap)
+    } yield ((IRILabel(iri), Conformant))
+    case _ => err(s"visitStatusAndShape: Unsupported case $ctx")
+  }
+
+  private def visitStatusAndShapeInfo(ctx: StatusAndShapeContext): Builder[Status] =
+    if (isDefined(ctx.status())) {
+      visitStatus(ctx.status)
+    } else {
+      ok(Conformant)
+    }
+
+  override def visitShapeSelector(ctx: ShapeSelectorContext): Builder[ShapeMapLabel] = ctx match {
+    case _ if isDefined(ctx.shapeIri()) => for {
+      iri <- visitShapeIri(ctx.shapeIri(), shapesPrefixMap)
+    } yield IRILabel(iri)
+    case _ if isDefined(ctx.KW_START()) => ok(Start)
+    case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
+  }
+
+  override def visitReason(ctx: ReasonContext): Builder[Option[String]] =
+    if (isDefined(ctx)) for {
+      str <- visitString(ctx.string())
+    } yield Some(str)
+    else ok(None)
+
+  override def visitJsonAttributes(ctx: JsonAttributesContext): Builder[Option[Json]] =
+    if (isDefined(ctx)) ok(Some(Json.Null)) // TODO
+    else ok(None)
 
   override def visitNodeSelector(ctx: NodeSelectorContext): Builder[NodeSelector] = ctx match {
     case _ if isDefined(ctx.objectTerm()) => for {
@@ -43,12 +85,15 @@ class ShapeMapsMaker(
     case _ => err(s"Internal error visitNodeSelector: unknown ctx $ctx")
   }
 
-  override def visitExtended(ctx: ExtendedContext): Builder[SparqlSelector] = ctx match {
-    case _ if isDefined(ctx.KW_SPARQL()) => for {
-      str <- visitString(ctx.string())
+  override def visitExtended(ctx: ExtendedContext): Builder[NodeSelector] = ctx match {
+    case _ if isDefined(ctx.KW_SPARQL) => for {
+      str <- visitString(ctx.string)
     } yield SparqlSelector(str)
-    // TODO
-    case _ => err(s"Internal error visitExtended: unSupported Not SPARQL")
+    case _ if isDefined(ctx.nodeIri) => for {
+      iri <- visitNodeIri(ctx.nodeIri, nodesPrefixMap)
+      str <- visitString(ctx.string)
+    } yield GenericSelector(iri,str)
+    case _ => err(s"Internal error visitExtended: unknoen ctx $ctx")
   }
 
   // TODO: It would be safer to check that the first and last characters are indeed backquotes
@@ -132,20 +177,11 @@ class ShapeMapsMaker(
     case _ if isDefined(ctx.rdfType()) => ok(PredicatePath(rdf_type))
   }
 
-  override def visitShapeLabel(ctx: ShapeLabelContext): Builder[(ShapeMapLabel, Info)] = {
-    val info = if (isDefined(ctx.negation())) {
-      Info(status = NonConformant)
-    } else {
-      Info(status = Conformant)
-    }
-    ctx match {
-      case _ if isDefined(ctx.AT_START()) => ok((Start, info))
-      case _ if isDefined(ctx.nodeIri()) => for {
-        iri <- visitNodeIri(ctx.nodeIri(), shapesPrefixMap)
-      } yield (IRILabel(iri), info)
-      case _ if isDefined(ctx.KW_START()) => ok((Start, info))
-      case _ => err(s"Internal error visitShapeLabel: unknown ctx $ctx")
-    }
+
+  override def visitStatus(ctx: StatusContext): Builder[Status] = ctx match {
+    case _ if (isDefined(ctx.negation)) => ok(NonConformant)
+    case _ if (isDefined(ctx.questionMark)) => ok(Undefined)
+    case _ => err(s"Internal error visitStatus: undefined ctx $ctx")
   }
 
   override def visitLiteral(ctx: LiteralContext): Builder[Literal] = {
@@ -202,20 +238,10 @@ class ShapeMapsMaker(
 
   def stripStringLiteral1(s: String): String = {
     s.substring(1,s.length - 1)
-    /*    val regexStr = "\'(.*)\'".r
-    s match {
-      case regexStr(s) => s
-      case _ => throw new Exception(s"stripStringLiteral2 $s doesn't match regex")
-    } */
   }
 
   def stripStringLiteral2(s: String): String = {
     s.substring(1,s.length - 1)
-/*    val regexStr = "\"(.*)\"".r
-    s match {
-      case regexStr(s) => s
-      case _ => throw new Exception(s"stripStringLiteral2 $s doesn't match regex")
-    } */
   }
 
   def stripStringLiteralLong1(s: String): String = {
@@ -224,11 +250,6 @@ class ShapeMapsMaker(
 
   def stripStringLiteralLong2(s: String): String = {
     s.substring(3,s.length - 3)
-/*    val regexStr = "\"\"\"(.*)\"\"\"".r
-    s match {
-      case regexStr(s) => s
-      case _ => throw new Exception(s"stripStringLiteralLong1 $s doesn't match regex")
-    } */
   }
 
   def visitDatatype(ctx: DatatypeContext, prefixMap: PrefixMap): Builder[IRI] = {
@@ -237,7 +258,16 @@ class ShapeMapsMaker(
 
   def getBase: Builder[Option[IRI]] = ok(Some(baseIRI))
 
-  def visitNodeIri(ctx: NodeIriContext, prefixMap: PrefixMap): Builder[IRI] =
+  private def visitNodeIri(ctx: NodeIriContext, prefixMap: PrefixMap): Builder[IRI] =
+    if (isDefined(ctx.IRIREF())) for {
+      base <- getBase
+    } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+    else for {
+      prefixedName <- visitPrefixedName(ctx.prefixedName())
+      iri <- resolve(prefixedName, prefixMap)
+    } yield iri
+
+  private def visitShapeIri(ctx: ShapeIriContext, prefixMap: PrefixMap): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
     } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
