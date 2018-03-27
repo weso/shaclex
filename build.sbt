@@ -307,7 +307,7 @@ lazy val srdf4j = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-      logbackClassic,
+      logbackClassic % Test,
       scalaLogging,
       typesafeConfig % Test,
       rdf4j_runtime,

@@ -600,7 +600,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       case n: DecimalLiteral => ok(n.decimal.toInt)
       case n: DoubleLiteral => ok(n.double.toInt)
       case DatatypeLiteral(str,`xsd_integer`) => {
-        println(s"Integer! str: $str")
+        logger.debug(s"Integer! str: $str")
         ok(Integer.parseInt(str))
       }
       case _ => err(notNumeric(node, attempt)) *> ok(0)

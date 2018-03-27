@@ -1,6 +1,7 @@
 package es.weso.manifest
 
 import es.weso.rdf.nodes._
+
 import scala.util._
 import es.weso.rdf._
 import ManifestPrefixes._
@@ -9,9 +10,10 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.utils.FileUtils._
 import cats._
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 
 case class RDF2Manifest(base: Option[IRI],
-                        derefIncludes: Boolean) extends RDFParser {
+                        derefIncludes: Boolean) extends RDFParser with LazyLogging {
 
   def rdf2Manifest(rdf: RDFReader,
                    visited: List[RDFNode] = List()
@@ -27,7 +29,7 @@ case class RDF2Manifest(base: Option[IRI],
       entries <- entries(n, rdf)
       includes <- includes(visited)(n, rdf)
     } yield {
-      println(s"Manifest read. Entries: $entries\nIncludes: $includes")
+      logger.info(s"Manifest read. Entries: $entries\nIncludes: $includes")
       Manifest(
         label = maybeLabel,
         comment = maybeComment,
@@ -163,15 +165,15 @@ case class RDF2Manifest(base: Option[IRI],
   }
 
   def includes(visited: List[RDFNode]): RDFParser[List[(RDFNode, Manifest)]] = { (n, rdf) => {
-    println(s"Parsing includes...$derefIncludes")
+    logger.debug(s"Parsing includes...$derefIncludes")
     if (derefIncludes) {
       for {
         includes <- {
-          println(s"Looking for include at node: $n")
+          logger.debug(s"Looking for include at node: $n")
           objectsFromPredicate(mf_include)(n, rdf)
         }
         result <- {
-          println(s"Includes: $includes")
+          logger.info(s"Includes: $includes")
           val ds: List[Either[String, (IRI, Manifest)]] =
             includes.toList.map(iri => derefInclude(iri, base, iri +: visited))
           ds.sequence
@@ -189,7 +191,7 @@ case class RDF2Manifest(base: Option[IRI],
                    visited: List[RDFNode]): Either[String,(IRI,Manifest)] = node match {
     case iri: IRI => {
       val iriResolved = base.fold(iri)(base => base.resolve(iri))
-      println(s"Resolving base: $base with iri: $iri = $iriResolved")
+      logger.info(s"Resolving base: $base with iri: $iri = $iriResolved")
       for {
         rdf <- RDFAsJenaModel.fromURI(iriResolved.getLexicalForm,"TURTLE",None)
         mfs <- RDF2Manifest(Some(iriResolved), true).rdf2Manifest(rdf, iri +: visited)
