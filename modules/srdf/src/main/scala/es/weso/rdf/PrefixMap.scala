@@ -30,7 +30,7 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
       case n => {
         val (alias, colonLocalname) = str.splitAt(n)
         val localname = colonLocalname.drop(1)
-        println(s"Alias: '$alias', localName: '$localname'")
+        logger.debug(s"Alias: '$alias', localName: '$localname'")
         getIRI(alias).map(iri => iri.add(localname))
       }
     }

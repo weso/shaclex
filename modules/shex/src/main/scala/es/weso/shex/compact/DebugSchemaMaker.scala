@@ -11,7 +11,7 @@ import es.weso.shex.parser.ShExDocParser.ShExDocContext
 class DebugSchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitShExDoc(ctx: ShExDocContext): Builder[Schema] = {
-    println("Visiting ShExDoc")
+    logger.debug("Visiting ShExDoc")
     visitChildren(ctx)
     ok(Schema.empty)
   }

@@ -101,7 +101,7 @@ lazy val shaclex = project
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
-      logbackClassic,
+      logbackClassic % Test,
       scalaLogging,
       scallop
     ),
@@ -187,7 +187,7 @@ lazy val shex = project
   .settings(
     libraryDependencies ++= Seq(
       typesafeConfig % Test,
-      logbackClassic,
+      logbackClassic % Test,
       scalaLogging,
       circeCore,
       circeGeneric,
@@ -290,7 +290,7 @@ lazy val srdfJena = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-      logbackClassic,
+      logbackClassic % Test,
       scalaLogging,
       typesafeConfig % Test,
       jenaArq,
@@ -307,7 +307,7 @@ lazy val srdf4j = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-      logbackClassic,
+      logbackClassic % Test,
       scalaLogging,
       typesafeConfig % Test,
       rdf4j_runtime,

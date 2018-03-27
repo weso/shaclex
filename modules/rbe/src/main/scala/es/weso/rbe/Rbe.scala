@@ -4,6 +4,7 @@ import es.weso.collection._
 import interval._
 import IntOrUnbounded._
 import cats._
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * This trait defines Single Occurrence Regular Bag Expressions (Rbe)
@@ -17,7 +18,7 @@ import cats._
  *     S. Staworko, I. Boneva, J. Labra, S. Hym, E. Prud'hommeaux, H. Solbrig
  *
  */
-sealed trait Rbe[+A] {
+sealed trait Rbe[+A] extends LazyLogging {
 
   /**
    * Checks if a RBE contains repetitions
@@ -94,7 +95,7 @@ sealed trait Rbe[+A] {
       case Repeat(_, 0, _) => true //
       case Repeat(e, _, _) => e.nullable
     }
-    println(s"$this nullable?: $r")
+    logger.debug(s"$this nullable?: $r")
     r
   }
 

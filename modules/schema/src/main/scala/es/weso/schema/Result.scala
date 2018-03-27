@@ -165,7 +165,7 @@ object Result extends LazyLogging {
   // TODO: implement this
   implicit val decodeTrigger: Decoder[Option[ValidationTrigger]] = Decoder.instance { c =>
     {
-      println("Trigger decoder not implemented")
+      logger.warn("Trigger decoder not implemented")
       ??? //Right(None)
     }
   }
@@ -173,7 +173,7 @@ object Result extends LazyLogging {
   // TODO: implement this
   implicit val decodePrefixMap: Decoder[PrefixMap] = Decoder.instance { c =>
     {
-      println("PrefixMap decoder not implemented")
+      logger.warn("PrefixMap decoder not implemented")
       ??? //Right(None)
     }
   }
