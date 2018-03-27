@@ -117,6 +117,7 @@ Contributors:
 
 * [Eric Prud'hommeaux](https://www.w3.org/People/Eric/)
 * [Bogdan Roman](https://github.com/bogdanromanx)
+* [Andrew Berezovskyi](https://github.com/berezovskyi)
 
 ## Contribution
 
