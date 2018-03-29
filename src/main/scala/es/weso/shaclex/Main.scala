@@ -96,6 +96,10 @@ object Main extends App with LazyLogging {
             FileUtils.writeFile(opts.outputFile(), resultSerialized)
         }
 
+        if (opts.showValidationReport()) {
+          println(s"Validation report!!")
+        }
+
         if (opts.cnvEngine.isDefined) {
           logger.error("Conversion between engines don't implemented yet")
         }

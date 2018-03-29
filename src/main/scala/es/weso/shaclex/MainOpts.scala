@@ -68,6 +68,15 @@ class MainOpts(
     validate = isMemberOf(shapeMapFormats),
     noshort = true)
 
+  val showValidationReport = toggle(
+    name = "showValidationReport",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show SHACL validation report",
+    descrNo = "don't show SHACL validation report",
+    noshort = true
+  )
+
   val engine = opt[String](
     "engine",
     default = Some(defaultEngine),
@@ -86,7 +95,8 @@ class MainOpts(
     default = Some(false),
     descrYes = "show more extra info about validation process",
     descrNo = "don't show extra info",
-    noshort = true)
+    noshort = true
+  )
 
   val showResult = toggle(
     "showResult",

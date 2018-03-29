@@ -1,13 +1,10 @@
 package es.weso.schema
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
-import cats._
-import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.shapeMaps._
 import io.circe._
-import io.circe.syntax._
 import io.circe.JsonObject._
 
 import util._

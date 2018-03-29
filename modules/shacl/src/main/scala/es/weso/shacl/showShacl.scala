@@ -13,7 +13,7 @@ object showShacl {
 
   implicit def showError = new Show[ViolationError] {
     def show(ve: ViolationError): String = {
-      s"Violation Error(${ve.id}). Node(${ve.focusNode}) ${ve.message.getOrElse("")}"
+      s"Violation Error(${ve.sourceConstraintComponent}). Node(${ve.focusNode}) ${ve.message.getOrElse("")}"
     }
   }
 

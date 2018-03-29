@@ -318,12 +318,11 @@ case class Validator(schema: Schema) extends LazyLogging {
     for {
       s <- getShapeRef(sref, attempt, node)
       typing <- getTyping
-      shape <- getShapeRef(sref, attempt, node)
+      // shape <- getShapeRef(sref, attempt, node)
       newTyping <- if (typing.getOkValues(node).contains(s))
         getTyping
       else if (typing.getFailedValues(node).contains(s)) {
-        err(failedNodeShape(
-          node, s, attempt,
+        err(errorNode(node, s, attempt,
           s"Failed because $node doesn't match shape $s")) *>
           getTyping
       } else runLocal(nodeShape(node, s), _.addType(node, s))

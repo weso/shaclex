@@ -3,18 +3,13 @@ package es.weso.shacl.validator
 import cats._
 import cats.implicits._
 import es.weso.rdf._
-import es.weso.rdf.nodes._
 import es.weso.checking.CheckerCats
-import es.weso.shacl._
-import es.weso.typing._
-import es.weso.shacl.showShacl._
 
 object SHACLChecker extends CheckerCats {
 
   type Config = RDFReader
   type Env = ShapeTyping
   type Err = ViolationError
-  //    type Evidence = (NodeShapePair, String)
   type Log = List[Evidence]
   implicit val envMonoid: Monoid[Env] = Monoid[ShapeTyping]
   implicit val logMonoid: Monoid[Log] = new Monoid[Log] {

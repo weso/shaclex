@@ -1,8 +1,8 @@
 package es.weso.schema
 import cats.Show
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes.{ IRI, RDFNode }
+import es.weso.rdf.{PrefixMap, RDFReader}
+import es.weso.rdf.nodes.{IRI, RDFNode}
 import io.circe.JsonObject._
 import io.circe._
 import io.circe.generic.auto._
@@ -16,6 +16,7 @@ case class Result(
   isValid: Boolean,
   message: String,
   shapeMaps: Seq[ResultShapeMap],
+  validationReport: Option[RDFReader],
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
@@ -145,6 +146,7 @@ object Result extends LazyLogging {
       isValid = true,
       message = "",
       shapeMaps = Seq(),
+      validationReport = None,
       errors = Seq(),
       None,
       PrefixMap.empty,
@@ -195,17 +197,18 @@ object Result extends LazyLogging {
       solutions <- if (isValid) {
         for {
           ls <- c.downField("shapeMap").as[List[ResultShapeMap]]
-        } yield ls.toSeq
+        } yield ls
       } else Right(Seq())
       errors <- if (isValid) {
         Right(Seq())
       } else for {
         ls <- c.downField("shapeMap").as[List[ErrorInfo]]
-      } yield ls.toSeq
+      } yield ls
     } yield Result(
       isValid,
       message,
       solutions,
+      None,
       errors,
       trigger,
       nodesPrefixMap,

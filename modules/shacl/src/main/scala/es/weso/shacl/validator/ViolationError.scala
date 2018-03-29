@@ -3,30 +3,47 @@ package es.weso.shacl.validator
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.{PredicatePath, SHACLPath}
 import es.weso.shacl.SHACLPrefixes.sh
-import es.weso.shacl.{PropertyShape, Shape, ShapeRef, Value}
+import es.weso.shacl.report.{Severity, ValidationResult}
+import es.weso.shacl._
 
-case class ViolationError(
-  id: IRI,
-  focusNode: RDFNode,
-  subject: Option[RDFNode],
-  path: Option[SHACLPath],
-  obj: Option[RDFNode],
-  message: Option[String],
-  sourceConstraint: RDFNode) {
+class ViolationError(val sourceConstraintComponent: IRI,
+                     val focusNode: RDFNode,
+                     path: Option[SHACLPath],
+                     severity: Severity,
+                     sourceShape: ShapeRef,
+                     values: Seq[RDFNode],
+                     val message: Option[String],
+                     sourceConstraint: RDFNode
+  ) {
   override def toString = s"Violation error on $focusNode: ${message.getOrElse("")}"
+
+  def toValidationResult: ValidationResult = {
+    ValidationResult(
+      focusNode = focusNode,
+      resultSeverity = severity,
+      sourceConstraintComponent = sourceConstraintComponent,
+      focusPath = path,
+      values = values,
+      sourceShape = sourceShape,
+      details = Seq(),
+      message = message.map(str => LiteralValue(StringLiteral(str))).toSeq
+    )
+  }
 }
 
 object ViolationError {
 
  def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) =
-    ViolationError(
-      id = sh + suffix,
+    new ViolationError(
+      sourceConstraintComponent = sh + suffix,
       focusNode = focusNode,
-      subject = None,
+      severity = Severity.defaultSeverity,
+      sourceShape = attempt.shapeRef,
+      values = Seq(),
       path = attempt.path,
-      obj = None,
       message = Some(msg + s" Node: ${attempt.node}, Constraint: ${attempt.shapeId}, path: ${attempt.path.getOrElse(PredicatePath(IRI("")))}"),
-      sourceConstraint = attempt.shapeId)
+      sourceConstraint = attempt.shapeId
+    )
 
   def notFoundShapeRef(node: RDFNode, attempt: Attempt, msg: String) =
     basic("NotFoundShapeRef", node, attempt, msg)
@@ -34,8 +51,8 @@ object ViolationError {
   def expectedPropertyShape(node: RDFNode, attempt: Attempt, msg: String) =
     basic("ExpectedPropertyShape", node, attempt, msg)
 
-  def failedNodeShape(node: RDFNode, shape: Shape, attempt: Attempt, msg: String) =
-    basic("FailedNodeShape", node, attempt, msg)
+  def errorNode(node: RDFNode, shape: Shape, attempt: Attempt, msg: String): ViolationError =
+    basic("NodeConstraintComponent", node, attempt, msg)
 
   def shapesFailed(node: RDFNode, shape: Shape, ps: Set[Shape], attempt: Attempt, msg: String) =
     basic("ShapesFailed", node, attempt, msg)

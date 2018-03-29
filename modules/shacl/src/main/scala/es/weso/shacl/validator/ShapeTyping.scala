@@ -32,11 +32,14 @@ case class ShapeTyping(t: Typing[RDFNode, Shape, ViolationError, String]) {
   def toValidationReport: ValidationReport = {
     ValidationReport(
       conforms = t.allOk,
-      results = Seq(),
+      results = {
+        val rs: Seq[(RDFNode, Shape, TypingResult[ViolationError, String])] =
+          t.getMap.toSeq.map { case (node,valueMap) => valueMap.toSeq.map { case (shape, result) => (node, shape, result)}}.flatten
+        rs.map(_._3.getErrors.toList.flatten).flatten.map(_.toValidationResult)
+      },
       shapesGraphWellFormed = true
     )
   }
-
 
 }
 
