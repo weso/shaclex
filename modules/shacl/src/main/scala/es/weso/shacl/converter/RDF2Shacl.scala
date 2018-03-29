@@ -1,7 +1,5 @@
 package es.weso.shacl.converter
 
-import cats._
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.RDFReader
@@ -10,7 +8,6 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.path._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.shacl._
-import es.weso.utils.TryUtils._
 
 import scala.util.{ Failure, Success, Try }
 

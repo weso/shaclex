@@ -11,7 +11,6 @@ import ViolationError._
 import es.weso.shacl._
 import es.weso.typing._
 import es.weso.utils.RegEx
-import Validator._
 import es.weso.shacl.showShacl._
 import SHACLChecker._
 import es.weso.rdf.PREFIXES._
@@ -40,7 +39,7 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   def runCheck[A: Show](c: Check[A], rdf: RDFReader): CheckResult[ViolationError, A, Log] = {
-    val initial: ShapeTyping = Typing.empty
+    val initial: ShapeTyping = ShapeTyping.empty
     val r = run(c)(rdf)(initial)
     CheckResult(r)
   }
@@ -758,9 +757,9 @@ case class Validator(schema: Schema) extends LazyLogging {
   def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
-  private def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
+  private def getRDF: Check[RDFReader] = getConfig
 
-  private def getTyping: Check[ShapeTyping] = getEnv // ask[Comput,ShapeTyping]
+  private def getTyping: Check[ShapeTyping] = getEnv
 
   ////////////////////////////////////////////
   /**
@@ -817,33 +816,10 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def combineTypings(ts: Seq[ShapeTyping]): Check[ShapeTyping] = {
-    ok(Typing.combineTypings(ts))
+    ok(ShapeTyping.combineTypings(ts))
   }
 
-  /*
-  // TODO
-  // Define a more general method?
-  // This method should validate some of the nodes/shapes not raising a whole error if one fails,
-  // but collecting the good ones and the errors...
-  def checkAny(xs: Seq[Check[(RDFNode, Shape)]]): Check[Seq[(RDFNode, Shape)]] = {
-    val zero: Check[Seq[(RDFNode, Shape)]] = ok(Seq())
-    def next(
-      x: Check[(RDFNode, Shape)],
-      rest: Check[Seq[(RDFNode, Shape)]]): Check[Seq[(RDFNode, Shape)]] = ???
-    /*      for {
-       rs1 <- catchWrong(x.flatMap(v => Seq(x)))(_ => ok(Seq()))
-       rs2 <- rest
-      } rs1 ++ rs2 */
-    xs.foldRight(zero)(next)
-  } */
-
-  // Fails if there is any error
   def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    /* implicit def showPair = new Show[(ShapeTyping, Evidences)] {
-      def show(e: (ShapeTyping, Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences: ${e._2}"
-      }
-    } */
     runCheck(checkSchemaAll, rdf)
   }
 
@@ -853,13 +829,6 @@ case class Validator(schema: Schema) extends LazyLogging {
 
 object Validator {
   def empty = Validator(schema = Schema.empty)
-
-  type ShapeTyping = Typing[RDFNode, Shape, ViolationError, String]
-
-  type Result[A] = Either[NonEmptyList[ViolationError], List[(A, Evidences)]]
-
-  def isOK[A](r: Result[A]): Boolean =
-    r.isRight && r.toList.isEmpty == false
 
   def validate(schema: Schema, rdf: RDFReader): Either[ViolationError, ShapeTyping] = {
     Validator(schema).validateAll(rdf).result

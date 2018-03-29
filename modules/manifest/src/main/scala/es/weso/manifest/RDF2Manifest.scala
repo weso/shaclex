@@ -8,7 +8,6 @@ import ManifestPrefixes._
 import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.utils.FileUtils._
-import cats._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 
