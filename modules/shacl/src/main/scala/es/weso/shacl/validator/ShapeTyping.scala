@@ -8,6 +8,9 @@ import es.weso.typing._
 
 case class ShapeTyping(t: Typing[RDFNode, Shape, ViolationError, String]) {
 
+  def getMap : Map[RDFNode, Map[Shape, TypingResult[ViolationError, String]]] =
+    t.getMap
+
   def hasType(node: RDFNode, shape: Shape): Boolean =
     t.hasType(node,shape)
 

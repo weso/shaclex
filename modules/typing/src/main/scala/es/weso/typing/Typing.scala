@@ -6,12 +6,14 @@ abstract class Typing[Key, Value, Err, Evidence] {
 
   type Evidences = List[Evidence]
 
-  def allOk: Boolean = ???
+  def allOk: Boolean
 
   def hasType(key: Key, value: Value): Boolean =
     getOkValues(key) contains value
 
   def getValues(key: Key): Map[Value, TypingResult[Err, Evidence]]
+
+  def getKeys: Seq[Key]
 
   def getOkValues(key: Key): Set[Value]
 

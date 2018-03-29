@@ -1,6 +1,5 @@
 package es.weso.schema
 import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
@@ -9,7 +8,7 @@ import es.weso.shacl.{Schema => ShaclSchema, Shape => ShaclNodeShape, _}
 import es.weso.shacl.validator.Validator._
 import es.weso.shacl._
 import es.weso.shacl.converter.RDF2Shacl
-import es.weso.shacl.validator.{CheckResult, Evidence, Validator, ViolationError}
+import es.weso.shacl.validator.{CheckResult, Evidence, Validator, ViolationError, ShapeTyping}
 import es.weso.shapeMaps._
 
 import util._
