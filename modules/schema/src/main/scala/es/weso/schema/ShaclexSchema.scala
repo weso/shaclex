@@ -1,5 +1,4 @@
 package es.weso.schema
-import cats._
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
@@ -7,7 +6,8 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.{Schema => ShaclSchema, _}
 import es.weso.shacl._
 import es.weso.shacl.converter.RDF2Shacl
-import es.weso.shacl.validator.{CheckResult, Evidence, Validator, ViolationError, ShapeTyping}
+import es.weso.shacl.report.ValidationReport
+import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator, ViolationError}
 import es.weso.shapeMaps._
 import util._
 import es.weso.typing._
@@ -28,21 +28,29 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   def validateTargetDecls(rdf: RDFReader): Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
-    cnvResult(r, rdf)
+    val builder = RDFAsJenaModel.empty
+    cnvResult(r, rdf, builder)
   }
 
   def cnvResult(
-    r: CheckResult[ViolationError, ShapeTyping, List[Evidence]],
-    rdf: RDFReader): Result =
+                 r: CheckResult[ViolationError, ShapeTyping, List[Evidence]],
+                 rdf: RDFReader,
+                 builder: RDFBuilder
+               ): Result = {
+    val vr: ValidationReport =
+      r.result.fold(e => ValidationReport.fromError(e),
+        _.toValidationReport
+      )
     Result(
       isValid = r.isOK,
       message = if (r.isOK) "Valid" else "Not valid",
       shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
-      validationReport = None,
+      validationReport = vr.toRDF(builder),
       errors = r.errors.map(cnvViolationError(_)),
       trigger = None,
       nodesPrefixMap = rdf.getPrefixMap(),
       shapesPrefixMap = schema.pm)
+  }
 
   def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): ResultShapeMap = {
     ResultShapeMap(
@@ -65,11 +73,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
     import showShacl._
     import TypingResult.showTypingResult
-    val showVE = implicitly[Show[ViolationError]]
-    val x = implicitly[Show[TypingResult[ViolationError, String]]]
     Info(
       status = if (t.isOK) Conformant else NonConformant,
-      reason = Some(x.show(t))
+      reason = Some(t.show)
     // TODO: Convert typing result to JSON and add it to appInfo
     )
   }

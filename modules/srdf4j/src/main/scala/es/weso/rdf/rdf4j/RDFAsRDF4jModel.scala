@@ -1,22 +1,19 @@
 package es.weso.rdf.rdf4j
 
 import java.io._
-
 import es.weso.rdf._
 import es.weso.rdf.path.SHACLPath
 import es.weso.rdf.triples.RDFTriple
 import io.circe.Json
 import org.eclipse.rdf4j.model.{IRI => IRI_RDF4j, BNode => _, Literal => _, _}
 import es.weso.rdf.nodes._
-import org.eclipse.rdf4j.model.util.{ModelBuilder, Statements}
+import org.eclipse.rdf4j.model.util.ModelBuilder
 import org.eclipse.rdf4j.rio.RDFFormat._
 import org.eclipse.rdf4j.rio.{RDFFormat, Rio}
 import org.apache.commons.io.input.CharSequenceInputStream
-
 import scala.util._
 import scala.collection.JavaConverters._
 import RDF4jMapper._
-import cats._
 import cats.implicits._
 
 case class RDFAsRDF4jModel(model: Model)

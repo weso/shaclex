@@ -7,10 +7,6 @@ import es.weso.rdf._
 
 object SHACLPrefixes {
 
-  def add(iri: IRI, str: String): IRI = {
-    iri + str
-  }
-
   lazy val sh = IRI("http://www.w3.org/ns/shacl#")
 
   lazy val sh_IRI: IRI = sh + "IRI"
@@ -19,6 +15,7 @@ object SHACLPrefixes {
   lazy val sh_IRIOrLiteral: IRI = sh + "IRIOrLiteral"
   lazy val sh_BlankNodeOrIRI: IRI = sh + "BlankNodeOrIRI"
   lazy val sh_BlankNodeOrLiteral: IRI = sh + "BlankNodeOrLiteral"
+  lazy val sh_ValidationReport: IRI = sh + "ValidationReport"
 
   lazy val sh_Shape: IRI = sh + "Shape"
   lazy val sh_NodeShape: IRI = sh + "NodeShape"
