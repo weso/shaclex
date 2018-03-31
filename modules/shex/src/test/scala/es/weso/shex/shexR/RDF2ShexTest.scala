@@ -41,12 +41,13 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
       result match {
         case Right(schema) => {
-          val model1 = ShEx2RDF.shEx2Model(schema, Some(IRI("http://example.org/x")))
-          val model2 = ShEx2RDF.shEx2Model(expected, Some(IRI("http://example.org/x")))
-          if (model1.isIsomorphicWith(model2)) {
+          val builder = RDFAsJenaModel.empty
+          val rdf1 = ShEx2RDF(schema, Some(IRI("http://example.org/x")),builder)
+          val rdf2 = ShEx2RDF(expected, Some(IRI("http://example.org/x")),builder)
+          if (rdf1.isIsomorphicWith(rdf2).getOrElse(false)) {
             info(s"Models are isomorphic")
           } else {
-            info(s"Schema obtained: ${model1}\nSchema expected: ${model2} are not isomorphic")
+            info(s"Schema obtained: ${rdf1.serialize("TURTLE")}\nSchema expected: ${rdf2.serialize("TURTLE")} are not isomorphic")
             fail("Schemas are not isomorphic")
           }
         }

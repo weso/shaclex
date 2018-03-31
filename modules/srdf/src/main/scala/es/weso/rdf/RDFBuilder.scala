@@ -14,6 +14,8 @@ trait RDFBuilder extends RDFReader {
 
   def createBNode: (RDFNode, Rdf)
 
+  def mkBNode: Either[String, (RDFNode, Rdf)] = Right(createBNode)
+
   def addTriples(triples: Set[RDFTriple]): Either[String,Rdf]
 
   def addTriple(triple: RDFTriple): Either[String,Rdf] = {

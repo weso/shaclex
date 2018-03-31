@@ -4,24 +4,24 @@ import es.weso.shex._
 import PREFIXES._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.jena._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
-import org.apache.jena.rdf.model.Model
+import es.weso.rdf.RDFBuilder
+import es.weso.rdf.saver.RDFSaver
 
 trait ShEx2RDF extends RDFSaver with LazyLogging {
 
-  def serialize(shex: Schema, node: Option[IRI], format: String): Either[String,String] = {
-    val rdf: RDFAsJenaModel = toRDF(shex, node, RDFAsJenaModel.empty)
+  def serialize(shex: Schema, node: Option[IRI], format: String, rdfBuilder: RDFBuilder): Either[String,String] = {
+    val rdf: RDFBuilder = toRDF(shex, node, rdfBuilder)
     rdf.serialize(format)
   }
 
-  def toRDF(s: Schema, node: Option[IRI], initial: RDFAsJenaModel): RDFAsJenaModel = {
+  def toRDF(s: Schema, node: Option[IRI], initial: RDFBuilder): RDFBuilder = {
     val result = schema(s, node).run(initial)
     result.value._1
   }
 
-  def schema(s: Schema, id: Option[IRI]): RDFSaver[Unit] = {
+  private def schema(s: Schema, id: Option[IRI]): RDFSaver[Unit] = {
     for {
       node <- makeId(id)
       _ <- addPrefixMap(s.prefixMap)
@@ -32,7 +32,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield ()
   }
 
-  def shapeExpr(e: ShapeExpr): RDFSaver[RDFNode] = e match {
+  private def shapeExpr(e: ShapeExpr): RDFSaver[RDFNode] = e match {
 
     case ShapeAnd(id, shapeExprs) => for {
       node <- mkId(id)
@@ -79,7 +79,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case ShapeRef(lbl) => label(lbl)
   }
 
-  def xsFacet(facet: XsFacet, node: RDFNode): RDFSaver[Unit] = facet match {
+  private def xsFacet(facet: XsFacet, node: RDFNode): RDFSaver[Unit] = facet match {
     case Length(n) => addTriple(node, sx_length, IntegerLiteral(n))
     case MinLength(n) => addTriple(node, sx_minlength, IntegerLiteral(n))
     case MaxLength(n) => addTriple(node, sx_maxlength, IntegerLiteral(n))
@@ -95,13 +95,13 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case TotalDigits(n) => addTriple(node, sx_totaldigits, IntegerLiteral(n))
   }
 
-  def numericLiteral(n: NumericLiteral): RDFSaver[RDFNode] = n match {
+  private def numericLiteral(n: NumericLiteral): RDFSaver[RDFNode] = n match {
     case NumericInt(n) => ok(IntegerLiteral(n))
     case NumericDouble(n,_) => ok(DoubleLiteral(n))
     case NumericDecimal(n,_) => ok(DecimalLiteral(n))
   }
 
-  def valueSetValue(x: ValueSetValue): RDFSaver[RDFNode] = x match {
+  private def valueSetValue(x: ValueSetValue): RDFSaver[RDFNode] = x match {
     case IRIValue(iri) => ok(iri)
     case StringValue(s) => ok(StringLiteral(s))
     case DatatypeString(s, iri) => ok(DatatypeLiteral(s, iri))
@@ -115,48 +115,47 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case l: LiteralStemRange => literalStemRange(l)
   }
 
-
-  def iriExclusion(iri: IRIExclusion): RDFSaver[RDFNode] = iri match {
+  private def iriExclusion(iri: IRIExclusion): RDFSaver[RDFNode] = iri match {
     case IRIRefExclusion(iri) => ok(iri)
     case IRIStemExclusion(stem) => iriStem(stem)
   }
 
-  def literalExclusion(le: LiteralExclusion): RDFSaver[RDFNode] = le match {
+  private def literalExclusion(le: LiteralExclusion): RDFSaver[RDFNode] = le match {
     case LiteralStringExclusion(str) => ok(StringLiteral(str))
     case LiteralStemExclusion(stem) => literalStem(stem)
   }
 
-  def languageExclusion(le: LanguageExclusion): RDFSaver[RDFNode] = le match {
+  private def languageExclusion(le: LanguageExclusion): RDFSaver[RDFNode] = le match {
     case LanguageTagExclusion(Lang(str)) => ok(StringLiteral(str))
     case LanguageStemExclusion(stem) => languageStem(stem)
   }
 
-  def iriStem(x: IRIStem): RDFSaver[RDFNode] = for {
+  private def iriStem(x: IRIStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_IriStem)
     _ <- addTriple(node, sx_stem, DatatypeLiteral(x.stem.str, xsd_anyUri))
   } yield node
 
-  def languageStem(x: LanguageStem): RDFSaver[RDFNode] = for {
+  private def languageStem(x: LanguageStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_LanguageStem)
     _ <- addTriple(node, sx_stem, StringLiteral(x.stem.lang))
   } yield node
 
-  def literalStem(x: LiteralStem): RDFSaver[RDFNode] = for {
+  private def literalStem(x: LiteralStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_LiteralStem)
     _ <- addTriple(node, sx_stem, StringLiteral(x.stem))
   } yield node
 
-  def iriStemRange(range: IRIStemRange): RDFSaver[RDFNode] = for {
+  private def iriStemRange(range: IRIStemRange): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_IriStemRange)
     _ <- addContent(range.stem, node, sx_stem, iriStemRangeValue)
     _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, iriExclusion)
   } yield node
 
-  def iriStemRangeValue(x: IRIStemRangeValue): RDFSaver[RDFNode] = x match {
+  private def iriStemRangeValue(x: IRIStemRangeValue): RDFSaver[RDFNode] = x match {
     case IRIStemValueIRI(iri) => ok(DatatypeLiteral(iri.str, xsd_anyUri))
     case IRIStemWildcard() => for {
       node <- createBNode()
@@ -164,14 +163,14 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
   }
 
-  def literalStemRange(range: LiteralStemRange): RDFSaver[RDFNode] = for {
+  private def literalStemRange(range: LiteralStemRange): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_LiteralStemRange)
     _ <- addContent(range.stem, node, sx_stem, literalStemRangeValue)
     _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, literalExclusion)
   } yield node
 
-  def literalStemRangeValue(x: LiteralStemRangeValue): RDFSaver[RDFNode] = x match {
+  private def literalStemRangeValue(x: LiteralStemRangeValue): RDFSaver[RDFNode] = x match {
     case LiteralStemRangeString(str) => ok(StringLiteral(str))
     case LiteralStemRangeWildcard() => for {
       node <- createBNode()
@@ -179,14 +178,14 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
   }
 
-  def languageStemRange(range: LanguageStemRange): RDFSaver[RDFNode] = for {
+  private def languageStemRange(range: LanguageStemRange): RDFSaver[RDFNode] = for {
     node <- createBNode()
     _ <- addTriple(node, rdf_type, sx_LanguageStemRange)
     _ <- addContent(range.stem, node, sx_stem, languageStemRangeValue)
     _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, languageExclusion)
   } yield node
 
-  def languageStemRangeValue(x: LanguageStemRangeValue): RDFSaver[RDFNode] = x match {
+  private def languageStemRangeValue(x: LanguageStemRangeValue): RDFSaver[RDFNode] = x match {
     case LanguageStemRangeLang(Lang(lang)) => ok(StringLiteral(lang))
     case LanguageStemRangeWildcard() => for {
       node <- createBNode()
@@ -194,7 +193,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
   }
 
-  def tripleExpr(te: TripleExpr): RDFSaver[RDFNode] = te match {
+  private def tripleExpr(te: TripleExpr): RDFSaver[RDFNode] = te match {
     case TripleConstraint(id, inverse, negated, pred, valueExpr, min, max, semActs, annotations) => for {
       teId <- mkId(id)
       _ <- addTriple(teId, rdf_type, sx_TripleConstraint)
@@ -228,38 +227,38 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case Inclusion(lbl) => label(lbl)
   }
 
-  def semAct(x: SemAct): RDFSaver[RDFNode] = for {
+  private def semAct(x: SemAct): RDFSaver[RDFNode] = for {
     id <- createBNode()
     _ <- addTriple(id, rdf_type, sx_SemAct)
     _ <- addTriple(id, sx_name, x.name)
     _ <- maybeAddContent(x.code, id, sx_code, rdfString)
   } yield id
 
-  def rdfMax(x: Max): RDFSaver[RDFNode] = x match {
+  private def rdfMax(x: Max): RDFSaver[RDFNode] = x match {
     case IntMax(n) => rdfInt(n)
     case Star => ok(sx_INF)
   }
 
-  def annotation(x: Annotation): RDFSaver[RDFNode] = for {
+  private def annotation(x: Annotation): RDFSaver[RDFNode] = for {
     id <- createBNode()
     _ <- addTriple(id, rdf_type, sx_Annotation)
     _ <- addTriple(id, sx_predicate, x.predicate)
     _ <- addContent(x.obj, id, sx_object, objectValue)
   } yield id
 
-  def objectValue(x: ObjectValue): RDFSaver[RDFNode] = x match {
+  private def objectValue(x: ObjectValue): RDFSaver[RDFNode] = x match {
     case IRIValue(iri) => ok(iri)
     case StringValue(s) => ok(StringLiteral(s))
     case DatatypeString(s, iri) => ok(DatatypeLiteral(s, iri))
     case LangString(s, lang) => ok(LangLiteral(s, lang))
   }
 
-  def label(lbl: ShapeLabel): RDFSaver[RDFNode] = lbl match {
+  private def label(lbl: ShapeLabel): RDFSaver[RDFNode] = lbl match {
     case IRILabel(iri) => ok(iri)
     case BNodeLabel(bnode) => ok(bnode)
   }
 
-  def nodeKind(nk: NodeKind): RDFSaver[RDFNode] =
+  private def nodeKind(nk: NodeKind): RDFSaver[RDFNode] =
     nk match {
       case IRIKind => ok(sx_iri)
       case BNodeKind => ok(sx_bnode)
@@ -267,7 +266,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
       case NonLiteralKind => ok(sx_nonliteral)
     }
 
-  def mkId(id: Option[ShapeLabel]): RDFSaver[RDFNode] = id match {
+  private def mkId(id: Option[ShapeLabel]): RDFSaver[RDFNode] = id match {
     case None => createBNode
     case Some(IRILabel(iri)) => ok(iri)
     case Some(BNodeLabel(bNode)) => ok(bNode)
@@ -277,9 +276,9 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
 object ShEx2RDF {
 
-  def shEx2Model(s: Schema, n: Option[IRI]): Model = {
+  def apply(s: Schema, n: Option[IRI], builder: RDFBuilder): RDFBuilder = {
     val srdf = new ShEx2RDF {}
-    srdf.toRDF(s, n, RDFAsJenaModel.empty).model
+    srdf.toRDF(s, n, builder)
   }
 
 }

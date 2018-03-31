@@ -104,8 +104,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   } yield ShaclexSchema(schemaShacl)
 
   override def serialize(format: String): Either[String, String] = {
+    val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formats.contains(format))
-      schema.serialize(format)
+      schema.serialize(format, builder)
     else
       Left(s"Format $format not supported to serialize $name. Supported formats=$formats")
   }

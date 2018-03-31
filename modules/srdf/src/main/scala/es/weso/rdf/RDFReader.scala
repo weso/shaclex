@@ -170,5 +170,7 @@ trait RDFReader {
 
   def getNumberOfStatements(): Either[String,Int]
 
+  def isIsomorphicWith(other: RDFReader): Either[String,Boolean]
+
 }
 

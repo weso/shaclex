@@ -1,16 +1,18 @@
 package es.weso.rdf.rdf4j
 
 import java.io._
+
 import es.weso.rdf._
 import es.weso.rdf.path.SHACLPath
 import es.weso.rdf.triples.RDFTriple
 import io.circe.Json
 import org.eclipse.rdf4j.model.{IRI => IRI_RDF4j, BNode => _, Literal => _, _}
 import es.weso.rdf.nodes._
-import org.eclipse.rdf4j.model.util.ModelBuilder
+import org.eclipse.rdf4j.model.util.{ModelBuilder, Models}
 import org.eclipse.rdf4j.rio.RDFFormat._
 import org.eclipse.rdf4j.rio.{RDFFormat, Rio}
 import org.apache.commons.io.input.CharSequenceInputStream
+
 import scala.util._
 import scala.collection.JavaConverters._
 import RDF4jMapper._
@@ -212,7 +214,7 @@ case class RDFAsRDF4jModel(model: Model)
 */
   }
 
-  def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
+  override def availableInferenceEngines: List[String] = List(NONE, RDFS, OWL)
 
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] =
    Left(s"Not implemented querySelect for RDf4j yet")
@@ -220,10 +222,13 @@ case class RDFAsRDF4jModel(model: Model)
   override def queryAsJson(queryStr: String): Either[String, Json] =
     Left(s"Not implemented queryAsJson for RDf4j")
 
-
-
   override def getNumberOfStatements(): Either[String,Int] =
     Right(model.size)
+
+  def isIsomorphicWith(other: RDFReader): Either[String,Boolean] = other match {
+    case o: RDFAsRDF4jModel => Right(Models.isomorphic(model,o.model))
+    case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
+  }
 
 }
 

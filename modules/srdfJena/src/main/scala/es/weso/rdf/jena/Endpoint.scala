@@ -160,7 +160,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
     }
   }
 
-  def availableInferenceEngines: List[String] = List("NONE")
+  override def availableInferenceEngines: List[String] = List("NONE")
 
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
     val query = QueryFactory.create(queryStr)
@@ -168,7 +168,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
     qExec.getQuery.getQueryType match {
       case Query.QueryTypeSelect => {
         val result = qExec.execSelect()
-        val varNames = result.getResultVars
+        // val varNames = result.getResultVars
         val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
           val qsm = new QuerySolutionMap()
           qsm.addAll(qs)
@@ -192,7 +192,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
         parse(jsonStr).leftMap(f => f.getMessage)
       }
       case Query.QueryTypeConstruct => {
-        val result = qExec.execConstruct()
+        // val result = qExec.execConstruct()
         Left(s"Unimplemented CONSTRUCT queries yet")
       }
       case Query.QueryTypeAsk => {
@@ -208,14 +208,15 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
     }
   }.toEither.fold(f => Left(f.getMessage), es => es)
 
-  def getNumberOfStatements(): Either[String,Int] = {
+  override def getNumberOfStatements(): Either[String,Int] = {
     Try{
       val resultSet = QueryExecutionFactory.sparqlService(endpoint, countStatements).execSelect()
       resultSet.asScala.map(qs => qs.get("c").asLiteral().getInt).toList.head
     }.toEither.leftMap(_.getMessage)
   }
 
-
+  override def isIsomorphicWith(other: RDFReader): Either[String,Boolean] =
+    Left(s"Unimplemented isIsomorphicWith between endpoints")
 
 }
 

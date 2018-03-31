@@ -443,7 +443,7 @@ object Schema {
     }
   }
 
-  def serialize(schema: Schema, format: String): Either[String,String] = {
+  def serialize(schema: Schema, format: String, rdfBuilder: RDFBuilder): Either[String,String] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
@@ -456,8 +456,7 @@ object Schema {
         Right(schema.asJson.spaces2)
       }
       case _ if (rdfDataFormats.contains(formatUpperCase)) => {
-        val model = ShEx2RDF.shEx2Model(schema, None)
-        val rdf = RDFAsJenaModel(model)
+        val rdf = ShEx2RDF(schema, None, rdfBuilder.empty)
         rdf.serialize(formatUpperCase)
       }
       case _ =>

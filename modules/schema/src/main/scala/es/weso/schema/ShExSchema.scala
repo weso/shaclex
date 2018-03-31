@@ -161,8 +161,9 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
 
   override def serialize(format: String): Either[String, String] = {
+    val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formatsUpperCase.contains(format.toUpperCase()))
-      Schema_.serialize(schema, format)
+      Schema_.serialize(schema, format, builder)
     else
       Left(s"Can't serialize to format $format. Supported formats=$formats")
   }

@@ -1,14 +1,14 @@
-package es.weso.rdf.jena
+package es.weso.rdf.saver
 
-import cats.data.{ State, _ }
+import cats.data.{State, _}
 import cats.implicits._
-import es.weso.rdf.PrefixMap
-import es.weso.rdf.PREFIXES.{ rdf_first, rdf_nil, rdf_rest}
+import es.weso.rdf.PREFIXES.{rdf_first, rdf_nil, rdf_rest}
 import es.weso.rdf.nodes._
 import es.weso.rdf.triples.RDFTriple
+import es.weso.rdf.{PrefixMap, RDFBuilder}
 
 trait RDFSaver {
-  type RDFSaver[A] = State[RDFAsJenaModel, A]
+  type RDFSaver[A] = State[RDFBuilder, A]
 
   def ok[A](x: A): RDFSaver[A] = StateT.pure(x)
 
@@ -38,9 +38,9 @@ trait RDFSaver {
     State.modify(_.addPrefix(alias, value))
 
   def createBNode(): RDFSaver[RDFNode] = for {
-    rdf <- State.get[RDFAsJenaModel]
+    rdf <- State.get[RDFBuilder]
     (bNode, newRdf) = rdf.createBNode
-    _ <- State.set[RDFAsJenaModel](newRdf)
+    _ <- State.set[RDFBuilder](newRdf)
   } yield bNode
 
   def makeId(v: Option[IRI]): RDFSaver[RDFNode] = v match {

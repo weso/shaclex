@@ -146,6 +146,9 @@ case class RDFFromWeb() extends RDFReader {
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = Left(s"Unimplemented query on RDFFromWeb")
   override def queryAsJson(queryStr: String): Either[String, Json] = Left(s"Unimplemented query on RDFFromWeb")
 
-  def getNumberOfStatements(): Either[String,Int] = Left(s"Unimplemented number of statements of endpoint")
+  override def getNumberOfStatements(): Either[String,Int] = Left(s"Unimplemented number of statements of endpoint")
+
+  override def isIsomorphicWith(other: RDFReader) = Left(s"Unimplemented isomorphic test in RDFFromWeb")
+
 
 }

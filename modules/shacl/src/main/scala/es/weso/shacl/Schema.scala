@@ -1,8 +1,9 @@
 package es.weso.shacl
 
-import es.weso.rdf.PrefixMap
+import es.weso.rdf.{PrefixMap, RDFBuilder}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shacl.converter.Shacl2RDF
+
 import scala.util.{Either, Left, Right}
 import sext._
 
@@ -91,13 +92,13 @@ case class Schema(
     targetNodeShapes.collect { case (node, shape) if shape.id.isIRI => (node, shape.id.toIRI) }
   }
 
-  def serialize(format: String = "TURTLE"): Either[String, String] = {
+  def serialize(format: String = "TURTLE", builder: RDFBuilder): Either[String, String] = {
     format.toUpperCase match {
       case "TREE" => {
         Right(s"PrefixMap ${pm.treeString}\nShapes: ${shapes.treeString}")
       }
       case _ =>
-        new Shacl2RDF {}.serialize(this, format)
+        new Shacl2RDF {}.serialize(this, format, builder)
     }
   }
 }

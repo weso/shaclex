@@ -81,13 +81,8 @@ object Main extends App with LazyLogging {
 
         if (opts.showLog()) {
           logger.info("Show log info = true")
-          logger.info(s"Result: ${result.show}")
           logger.info(s"JSON result: ${result.toJsonString2spaces}")
-          logger.info(s"Plain result: ${result.toString}")
         }
-        println(s"JSON result: ${result.toJsonString2spaces}")
-        println(s"Plain result: ${result.toString}")
-
 
         if (opts.showResult() || opts.outputFile.isDefined) {
           val resultSerialized = result.serialize(opts.resultFormat())
@@ -97,7 +92,14 @@ object Main extends App with LazyLogging {
         }
 
         if (opts.showValidationReport()) {
-          println(s"Validation report!!")
+          val vr = result.validationReport
+          (for {
+            rdf <- vr
+            str <- rdf.serialize(opts.validationReportFormat())
+          } yield str).fold(
+            e => println(s"Error: $e"),
+            println(_)
+          )
         }
 
         if (opts.cnvEngine.isDefined) {
@@ -147,7 +149,6 @@ object Main extends App with LazyLogging {
 
   def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
     val base = Some(FileUtils.currentFolderURL)
-    println(s"RDF Reader base = $base")
     if (opts.data.isDefined) {
       val path = baseFolder.resolve(opts.data())
       for {
@@ -171,7 +172,6 @@ object Main extends App with LazyLogging {
 
   def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Either[String, Schema] = {
     val base = Some(FileUtils.currentFolderURL)
-    println(s"Schema base = $base")
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
       val schema = Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), base)
