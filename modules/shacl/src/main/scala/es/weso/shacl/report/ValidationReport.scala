@@ -2,7 +2,6 @@ package es.weso.shacl.report
 
 import es.weso.rdf.RDFBuilder
 import es.weso.rdf.saver.RDFSaver
-import es.weso.shacl.validator.ViolationError
 
 case class ValidationReport(conforms: Boolean,
                             results: Seq[ValidationResult],
@@ -16,7 +15,7 @@ case class ValidationReport(conforms: Boolean,
 }
 
 object ValidationReport {
-  def fromError(e: ViolationError): ValidationReport = {
-    ValidationReport(conforms = false, results = Seq(e.toValidationResult), true)
+  def fromError(e: ValidationResult): ValidationReport = {
+    ValidationReport(conforms = false, results = Seq(e), true)
   }
 }

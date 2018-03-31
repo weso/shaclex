@@ -6,9 +6,10 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.{Schema => ShaclSchema, _}
 import es.weso.shacl._
 import es.weso.shacl.converter.RDF2Shacl
-import es.weso.shacl.report.ValidationReport
-import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator, ViolationError}
+import es.weso.shacl.report.{ValidationReport, ValidationResult}
+import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator}
 import es.weso.shapeMaps._
+
 import util._
 import es.weso.typing._
 import es.weso.utils.MapUtils
@@ -33,7 +34,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   }
 
   def cnvResult(
-                 r: CheckResult[ViolationError, ShapeTyping, List[Evidence]],
+                 r: CheckResult[ValidationResult, ShapeTyping, List[Evidence]],
                  rdf: RDFReader,
                  builder: RDFBuilder
                ): Result = {
@@ -57,7 +58,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       t.getMap.mapValues(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
   }
 
-  private def cnvMapShapeResult(m: Map[Shape, TypingResult[ViolationError, String]]): Map[ShapeMapLabel, Info] = {
+  private def cnvMapShapeResult(m: Map[Shape, TypingResult[ValidationResult, String]]): Map[ShapeMapLabel, Info] = {
 
     MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
   }
@@ -70,7 +71,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     }
   }
 
-  private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
+  private def cnvTypingResult(t: TypingResult[ValidationResult, String]): Info = {
     import showShacl._
     import TypingResult.showTypingResult
     Info(
@@ -80,12 +81,12 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     )
   }
 
-  private def cnvViolationError(v: ViolationError): ErrorInfo = {
+  private def cnvViolationError(v: ValidationResult): ErrorInfo = {
     val pm = schema.pm
     ErrorInfo(
       pm.qualify(v.sourceConstraintComponent) +
         " FocusNode: " + schema.pm.qualify(v.focusNode) + " " +
-        v.message.getOrElse(""))
+        v.message.mkString(","))
   }
 
   /*def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {

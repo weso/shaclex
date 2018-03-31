@@ -4,12 +4,13 @@ import cats._
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.checking.CheckerCats
+import es.weso.shacl.report.ValidationResult
 
 object SHACLChecker extends CheckerCats {
 
   type Config = RDFReader
   type Env = ShapeTyping
-  type Err = ViolationError
+  type Err = ValidationResult
   type Log = List[Evidence]
   implicit val envMonoid: Monoid[Env] = Monoid[ShapeTyping]
   implicit val logMonoid: Monoid[Log] = new Monoid[Log] {

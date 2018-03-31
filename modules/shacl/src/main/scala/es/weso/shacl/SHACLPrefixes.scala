@@ -66,6 +66,7 @@ object SHACLPrefixes {
   lazy val sh_qualifiedValueShape: IRI = sh + "qualifiedValueShape"
   lazy val sh_qualifiedValueShapesDisjoint: IRI = sh + "qualifiedValueShapesDisjoint"
   lazy val sh_result: IRI = sh + "result"
+  lazy val sh_resultPath: IRI = sh + "resultPath"
   lazy val sh_resultSeverity: IRI = sh + "resultSeverity"
   lazy val sh_sourceConstraintComponent: IRI = sh + "sourceConstraintComponent"
   lazy val sh_targetNode: IRI = sh + "targetNode"
