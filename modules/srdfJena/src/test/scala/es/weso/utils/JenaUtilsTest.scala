@@ -3,7 +3,6 @@ package es.weso.utils
 import es.weso.rdf.jena.JenaMapper
 import es.weso.rdf.nodes.IRI
 import es.weso.rdf.path.PredicatePath
-import org.apache.jena.rdf.model.AnonId
 import org.apache.jena.sparql.path.{P_Link, P_OneOrMoreN}
 import org.scalatest._
 
@@ -100,7 +99,7 @@ class JenaUtilsTest extends FunSpec with Matchers {
 
   describe(s"HasSHACLInstances") {
     it(s"hasSHACLinstances should obtain SHACL instances") {
-      val ex = "http://example.org"
+      val ex = "http://example.org/"
       val rdfStr = s"""|@prefix : <$ex> .
                        |@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
                        |@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.

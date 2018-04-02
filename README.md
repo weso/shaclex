@@ -36,11 +36,18 @@ It is possible to run the program inside `sbt` as:
 
 ### Validating RDF data with SHACL 
 
-Example:
+Example with conformant RDF data:
 
 ```
 sbt "run -d examples/shacl/good1.ttl --engine ShaClex"
 ```
+
+Example with non-conformant RDF generating SHACL validation report:
+
+```
+sbt "run -d examples/shacl/bad1.ttl --engine ShaClex --showValidationReport --validationReportFormat TURTLE"
+```
+
 
 ### Validating RDF with ShEx 
 

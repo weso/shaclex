@@ -42,9 +42,6 @@ object ValidationResult {
   def expectedPropertyShape(node: RDFNode, attempt: Attempt, msg: String) =
     basic("ExpectedPropertyShape", node, attempt, msg)
 
-  def errorNode(node: RDFNode, shape: Shape, attempt: Attempt, msg: String): ValidationResult =
-    basic("NodeConstraintComponent", node, attempt, msg)
-
   def shapesFailed(node: RDFNode, shape: Shape, ps: Set[Shape], attempt: Attempt, msg: String) =
     basic("ShapesFailed", node, attempt, msg)
 
@@ -53,6 +50,9 @@ object ValidationResult {
 
   def noSiblingsError(focusNode: RDFNode, p: PropertyShape, msg: String, attempt: Attempt) =
     basic("noSiblingsError", focusNode, attempt, s"No siblings found for property shape $p in schema: $msg")
+
+  def errorNode(node: RDFNode, shape: Shape, attempt: Attempt, msg: String): ValidationResult =
+    basic("NodeConstraintComponent", node, attempt, msg)
 
   def classError(focusNode: RDFNode, cls: RDFNode, attempt: Attempt) =
     basic("ClassConstraintComponent", focusNode, attempt, s"Node $focusNode doesn't belong to class $cls")
@@ -64,106 +64,100 @@ object ValidationResult {
     basic("unsupported", focusNode, attempt, "Unsupported: " + msg)
 
   def notNumeric(focusNode: RDFNode, attempt: Attempt) =
-    basic("notNumericError", focusNode, attempt, s"NotNumeric violation. Expected $focusNode to be a number")
+    basic("NotNumericConstraintComponent", focusNode, attempt, s"NotNumeric violation. Expected $focusNode to be a number")
 
   def minExclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
-    basic("minExclusiveError", focusNode, attempt, s"minExclusive violation. Expected $focusNode > $n")
+    basic("MinExclusiveConstraintComponent", focusNode, attempt, s"minExclusive violation. Expected $focusNode > $n")
 
   def minInclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
-    basic("minInclusiveError", focusNode, attempt, s"minInclusive violation. Expected $focusNode >= $n")
+    basic("MinInclusiveConstraintComponent", focusNode, attempt, s"minInclusive violation. Expected $focusNode >= $n")
 
   def maxExclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
-    basic("maxExclusiveError", focusNode, attempt, s"maxExclusive violation. Expected $focusNode < $n")
+    basic("MaxExclusiveConstraintComponent", focusNode, attempt, s"maxExclusive violation. Expected $focusNode < $n")
 
   def maxInclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
-    basic("maxInclusiveError", focusNode, attempt, s"maxInclusive violation. Expected $focusNode <= $n")
+    basic("MaxInclusiveConstraintComponent", focusNode, attempt, s"maxInclusive violation. Expected $focusNode <= $n")
 
   def minLengthError(focusNode: RDFNode, attempt: Attempt, n: Int) =
-    basic("minLengthError", focusNode, attempt, s"minLength violation. Expected length($focusNode) >= $n")
+    basic("MinLengthConstraintComponent", focusNode, attempt, s"minLength violation. Expected length($focusNode) >= $n")
 
   def maxLengthError(focusNode: RDFNode, attempt: Attempt, n: Int) =
-    basic("maxLengthError", focusNode, attempt, s"maxLength violation. Expected length($focusNode) <= $n")
+    basic("MaxLengthConstraintComponent", focusNode, attempt, s"maxLength violation. Expected length($focusNode) <= $n")
 
   def patternError(focusNode: RDFNode, attempt: Attempt, p: String, flags: Option[String]) =
-    basic("patternError", focusNode, attempt, s"pattern violation. Expected $focusNode to match '$p'${flags.getOrElse("")}")
+    basic("PatternConstraintComponent", focusNode, attempt, s"pattern violation. Expected $focusNode to match '$p'${flags.getOrElse("")}")
 
   def uniqueLangError(focusNode: RDFNode, attempt: Attempt, path: SHACLPath, vs: Seq[RDFNode]) =
-    basic("uniqueLangError", focusNode, attempt, s"uniqueLang violation. Expected $focusNode to have a unique language for path $path with values $vs")
+    basic("UniqueLangConstraintComponent", focusNode, attempt, s"uniqueLang violation. Expected $focusNode to have a unique language for path $path with values $vs")
 
   def languageInError(focusNode: RDFNode, attempt: Attempt, langs: List[String]) =
-    basic("languageInError", focusNode, attempt, s"languageIn violation. Expected $focusNode to match 'languageIn(${langs.mkString(",")})'")
+    basic("LanguageInConstraintComponent", focusNode, attempt, s"languageIn violation. Expected $focusNode to match 'languageIn(${langs.mkString(",")})'")
 
   def equalsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
-    comparisonError("equals", focusNode, attempt, p, vs)
+    comparisonError("EqualsConstraintComponent", focusNode, attempt, p, vs)
 
   def disjointError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
-    comparisonError("disjoint", focusNode, attempt, p, vs)
+    comparisonError("DisjointConstraintComponent", focusNode, attempt, p, vs)
 
   def lessThanError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
-    comparisonError("lessThan", focusNode, attempt, p, vs)
+    comparisonError("LessThanConstraintComponent", focusNode, attempt, p, vs)
 
   def lessThanOrEqualsError(focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
-    comparisonError("lessThanOrEquals", focusNode, attempt, p, vs)
+    comparisonError("LessThanOrEqualsConstraintComponent", focusNode, attempt, p, vs)
 
   def comparisonError(name: String, focusNode: RDFNode, attempt: Attempt, p: IRI, vs: Set[RDFNode]) =
-    basic(s"${name}Error", focusNode, attempt, s"$name violation. Expected $focusNode to match $name '$p', values: $vs")
+    basic(s"${name}ConstraintComponent", focusNode, attempt, s"$name violation. Expected $focusNode to match $name '$p', values: $vs")
 
   def minCountError(focusNode: RDFNode, attempt: Attempt, minCount: Int, count: Int) =
     basic("MinCountConstraintComponent", focusNode, attempt, s"MinCount violation. Expected $minCount, obtained: $count")
 
   def maxCountError(focusNode: RDFNode, attempt: Attempt, maxCount: Int, count: Int) =
-    basic("maxCountError", focusNode, attempt, s"MaxCount violation. Expected $maxCount, obtained: $count")
+    basic("MaxCountConstraintComponent", focusNode, attempt, s"MaxCount violation. Expected $maxCount, obtained: $count")
 
   def iriKindError(focusNode: RDFNode, attempt: Attempt) =
-    basic("iriKindError", focusNode, attempt, s"Node $focusNode is not an IRI")
+    basic("IriConstraintComponent", focusNode, attempt, s"Node $focusNode is not an IRI")
 
   def literalKindError(focusNode: RDFNode, attempt: Attempt) =
-    basic("literalKindError", focusNode, attempt, s"Node $focusNode is not a Literal")
+    basic("LiteralConstraintComponent", focusNode, attempt, s"Node $focusNode is not a Literal")
 
   def bNodeKindError(focusNode: RDFNode, attempt: Attempt) =
-    basic("bNodeKindError", focusNode, attempt, s"Node $focusNode is not a blank node")
+    basic("BNodeConstraintComponent", focusNode, attempt, s"Node $focusNode is not a blank node")
 
   def bNodeOrIRIKindError(focusNode: RDFNode, attempt: Attempt) =
-    basic("bNodeOrIRIKindError", focusNode, attempt, s"Node $focusNode is not a blank node or an IRI")
+    basic("BNodeOrIRIConstraintComponent", focusNode, attempt, s"Node $focusNode is not a blank node or an IRI")
 
   def bNodeOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) =
-    basic("bNodeOrLiteralKindError", focusNode, attempt, s"Node $focusNode is not a blank node or a Literal")
+    basic("BNodeOrLiteralConstraintComponent", focusNode, attempt, s"Node $focusNode is not a blank node or a Literal")
 
   def iriOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) =
-    basic("iriOrLiteralKindError", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
+    basic("IriOrLiteralConstraintComponent", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
 
   def notError(focusNode: RDFNode, attempt: Attempt, shape: ShapeRef) =
-    basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
+    basic("NotConstraintComponent", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
   def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
-    basic("andConstraintComponent", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
+    basic("AndConstraintComponent", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
-    basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
-
-/*  def xoneErrorNone(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
-    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but none satisfied")
-
-  def xoneErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef])(ls: List[ShapeTyping]) =
-    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy one and only one of the shapes ${shapes.map(_.showId).mkString(",")} but more than one satisfied: $ls") */
+    basic("OrConstraintComponent", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: Seq[ShapeRef]) =
-    basic("xoneError", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy exactly one of the shapes ${shapes.map(_.showId).mkString(",")}")
+    basic("XoneConstraintComponent", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy exactly one of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =
-    basic("qualifiedShapeError", focusNode, attempt, s"qualified shape error. Expected $focusNode to satisfy qualifiedValueShape. Value = ${value}, min: ${min.map(_.toString).getOrElse("-")}, max: ${max.map(_.toString).getOrElse("-")}")
+    basic("QualifiedShapeConstraintComponent", focusNode, attempt, s"qualified shape error. Expected $focusNode to satisfy qualifiedValueShape. Value = ${value}, min: ${min.map(_.toString).getOrElse("-")}, max: ${max.map(_.toString).getOrElse("-")}")
 
   def hasValueError(focusNode: RDFNode, attempt: Attempt, value: Value) =
-    basic("hasValueError", focusNode, attempt, s"HasValue error. Expected $focusNode to be  $value")
+    basic("HasValueConstraintComponent", focusNode, attempt, s"HasValue error. Expected $focusNode to be  $value")
 
   def hasValueErrorNoValue(focusNode: RDFNode, attempt: Attempt, value: Value, path: SHACLPath) =
-    basic("hasValueError", focusNode, attempt, s"HasValue error. Missing value for path $path on $focusNode. Value must be $value")
+    basic("HasValueConstraintComponent", focusNode, attempt, s"HasValue error. Missing value for path $path on $focusNode. Value must be $value")
 
   def hasValueErrorMoreThanOne(focusNode: RDFNode, attempt: Attempt, value: Value, path: SHACLPath, n: Int) =
-    basic("hasValueError", focusNode, attempt, s"HasValue error. More than one value ($n) for path $path on $focusNode. Value must be $value")
+    basic("HasValueConstraintComponent", focusNode, attempt, s"HasValue error. More than one value ($n) for path $path on $focusNode. Value must be $value")
 
   def inError(focusNode: RDFNode, attempt: Attempt, values: Seq[Value]) =
-    basic("inError", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
+    basic("InConstraintComponent", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
 
   def notShapeError(focusNode: RDFNode, shapeRef: ShapeRef, attempt: Attempt) =
     basic("notShape", focusNode, attempt, s"Not failed because $focusNode has shape $shapeRef and it should not have")
@@ -174,7 +168,7 @@ object ValidationResult {
     allowedProperties: List[IRI],
     ignoredProperties: List[IRI],
     notAllowed: List[IRI]) =
-    basic("closedError", focusNode, attempt,
+    basic("ClosedConstraintComponent", focusNode, attempt,
       s"closed violation. $focusNode has more properties than $allowedProperties. Extra properties found: $notAllowed, ignoredProperties: $ignoredProperties")
 
 }

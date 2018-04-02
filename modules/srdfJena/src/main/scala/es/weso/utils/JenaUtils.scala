@@ -13,16 +13,18 @@ import java.net.URI
 import java.net.URL
 import java.io.InputStream
 import java.io.FileOutputStream
+
 import org.apache.jena.atlas.AtlasException
 import org.apache.jena.riot.RiotException
 import org.apache.jena.query.ResultSet
+
 import scala.collection.JavaConverters._
-import org.apache.jena.query.ParameterizedSparqlString
 import org.apache.jena.reasoner.ReasonerRegistry
 import org.apache.jena.sparql.core.{TriplePath, Var}
 import org.apache.jena.sparql.path.Path
 import org.apache.jena.util.{FileUtils => FileJenaUtils}
-import cats.data._
+
+import scala.annotation.tailrec
 
 object JenaUtils {
 
@@ -34,7 +36,7 @@ object JenaUtils {
   lazy val N3 = "N3"
 
   // In Jena selectors, null represents any node
-  lazy val any: RDFNode = null
+  lazy val any: Resource = null
 
   def extractModel(resource: Resource, model: Model): Model = {
     val nModel = ModelFactory.createDefaultModel()
@@ -199,13 +201,16 @@ object JenaUtils {
    * Given a class `cls`, obtains all nodes such as `node rdf:type/rdfs:subClassOf* cls`
    */
   def getSHACLInstances(cls: RDFNode, model: Model): Seq[RDFNode] = {
+    /*
     val pss: ParameterizedSparqlString = new ParameterizedSparqlString()
     pss.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
     pss.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
     pss.setCommandText("SELECT ?n { ?n rdf:type/rdfs:subClassOf* ?c . }")
     pss.setParam("c", cls)
     val result = QueryExecutionFactory.create(pss.asQuery, model).execSelect
-    result.asScala.toSeq.map(qs => qs.get("n"))
+    result.asScala.toSeq.map(qs => qs.get("n")) */
+    (getDirectInstances(cls,model) ++
+     getAllSubClasses(cls,model).map(c => getDirectInstances(c,model)).flatten).toSeq
   }
 
   /**
@@ -230,6 +235,12 @@ object JenaUtils {
     } else Set()
   }
 
+  def getDirectInstances(n: RDFNode, model: Model): Set[RDFNode] = {
+      val rdfType = model.getProperty(rdfTypeUrl)
+      val selector = new SimpleSelector(any, rdfType, n)
+      model.listStatements(selector).asScala.map(_.getSubject).toSet
+  }
+
   def getSuperClasses(c: RDFNode, model: Model): Set[RDFNode] = {
     if (c.isResource) {
       val subClassOf = model.getProperty(subClassOfUrl)
@@ -239,33 +250,43 @@ object JenaUtils {
   }
 
   private def extendWithSuperClasses(types: List[RDFNode], model: Model): Set[RDFNode] = {
-    extendWithSuperClassesAux(types, model).run(Set[RDFNode]()).value._2
+    extendWithSuperClassesAux(types, model, Set[RDFNode]())
   }
 
-  type StateNodes[A] = State[Set[RDFNode],A]
 
-  def ok(x: Set[RDFNode]): StateNodes[Set[RDFNode]] = StateT.pure(x)
+  private def getAllSubClasses(cls: RDFNode,model: Model): Set[RDFNode] = {
+    val directSubclasses = getDirectSubclasses(cls,model)
+    getAllSubClassesAux(directSubclasses.toList,model, Set())
+  }
 
-  private def extendWithSuperClassesAux(types: List[RDFNode], model: Model): StateNodes[Set[RDFNode]] = {
-    types match {
-      case Nil => State.get
-      case (t :: ts) => for {
-        visited <- State.get
-        enriched <- {
-          if (visited.contains(t))
-            extendWithSuperClassesAux(ts, model)
-          else for {
-            _ <- State.modify((s: Set[RDFNode]) => s + t)
-            rs <- {
-              extendWithSuperClassesAux(getSuperClasses(t, model).toList ++ ts, model)
-            }
-          } yield rs
-        }
-        } yield enriched
+  private def getDirectSubclasses(cls: RDFNode, model: Model): Set[RDFNode] = {
+    val subClassOf = model.getProperty(subClassOfUrl)
+    val selector = new SimpleSelector(any, subClassOf, cls)
+    model.listStatements(selector).asScala.map(_.getSubject).toSet
+  }
+
+  @tailrec
+  private def getAllSubClassesAux(cls: List[RDFNode], model: Model, visited: Set[RDFNode]): Set[RDFNode] = {
+    cls match {
+      case Nil => visited
+      case c :: cs => if (visited.contains(c))
+        getAllSubClassesAux(cs,model,visited)
+      else
+        getAllSubClassesAux(getDirectSubclasses(c,model).toList,model,visited + c)
     }
   }
 
-
+  @tailrec
+  private def extendWithSuperClassesAux(types: List[RDFNode], model: Model, visited: Set[RDFNode]): Set[RDFNode] = {
+    types match {
+      case Nil => visited
+      case t :: ts =>
+          if (visited.contains(t))
+            extendWithSuperClassesAux(ts, model, visited)
+          else
+            extendWithSuperClassesAux(getSuperClasses(t, model).toList ++ ts, model, visited + t)
+    }
+  }
 
   def sameNodeAs(v1: RDFNode, v2: RDFNode): Boolean = {
     (v1,v2) match {
