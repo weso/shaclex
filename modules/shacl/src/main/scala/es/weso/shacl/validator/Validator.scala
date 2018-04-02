@@ -241,16 +241,6 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   private def checkComponent(c: Component): NodeChecker = component2Checker(c)
 
-  /*
-  private def validateNodeCheckers(attempt: Attempt, cs: Seq[NodeChecker]): Check[ShapeTyping] = {
-    val newAttempt = attempt.copy(path = None)
-    val xs = cs.map(c => c(newAttempt)(newAttempt.node)).toList
-    for {
-      ts <- checkAll(xs)
-      t <- combineTypings(ts)
-    } yield t
-  } */
-
   private def validatePathCheckers(attempt: Attempt, path: SHACLPath, cs: Seq[PropertyChecker]): Check[ShapeTyping] = {
     val newAttempt = attempt.copy(path = Some(path))
     val xs = cs.map(c => c(newAttempt, path)).toList
@@ -484,17 +474,22 @@ case class Validator(schema: Schema) extends LazyLogging {
       shapes <- getShapeRefs(srefs.toList, attempt, node)
       es = shapes.map(nodeShape(node, _))
       ts <- checkAll(es)
-      t1 <- addEvidence(attempt, s"$node passes and(${shapes.map(_.showId).mkString(",")})")
-      t <- combineTypings(t1 +: ts)
-    } yield t
+      t <- combineTypings(ts)
+      t1 <- condition(checkAnd(node, shapes, t),
+        attempt,
+        andError(node, attempt, srefs.toList),
+        s"and condition failed on $node")
+    } yield t1
+  }
+
+  private def checkAnd(node: RDFNode, shapes: List[Shape], t: ShapeTyping) : Boolean = {
+    t.getFailedValues(node).isEmpty
   }
 
   private def xone(sRefs: Seq[ShapeRef]): NodeChecker = attempt => node => {
     for {
       shapes <- getShapeRefs(sRefs.toList, attempt, node)
       es = shapes.map(nodeShape(node, _))
-/*      t1 <- checkOneOf(es, xoneErrorNone(node, attempt, sRefs.toList),
-        xoneErrorMoreThanOne(node, attempt, sRefs.toList)) */
       ts <- checkAll(es)
       t <- combineTypings(ts)
       t1 <- condition(checkXoneType(node, shapes, t),

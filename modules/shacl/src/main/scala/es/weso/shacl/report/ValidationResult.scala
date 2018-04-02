@@ -1,7 +1,7 @@
 package es.weso.shacl.report
 
 import es.weso.rdf.nodes._
-import es.weso.rdf.path.{PredicatePath, SHACLPath}
+import es.weso.rdf.path._
 import es.weso.shacl.SHACLPrefixes.sh
 import es.weso.shacl._
 import es.weso.shacl.validator.Attempt
@@ -55,10 +55,10 @@ object ValidationResult {
     basic("noSiblingsError", focusNode, attempt, s"No siblings found for property shape $p in schema: $msg")
 
   def classError(focusNode: RDFNode, cls: RDFNode, attempt: Attempt) =
-    basic("classError", focusNode, attempt, s"Node $focusNode doesn't belong to class $cls")
+    basic("ClassConstraintComponent", focusNode, attempt, s"Node $focusNode doesn't belong to class $cls")
 
   def datatypeError(focusNode: RDFNode, datatype: RDFNode, attempt: Attempt) =
-    basic("dataTypeError", focusNode, attempt, s"Node $focusNode doesn't have dataType $datatype")
+    basic("DatatypeConstraintComponent", focusNode, attempt, s"Node $focusNode doesn't have dataType $datatype")
 
   def unsupported(focusNode: RDFNode, attempt: Attempt, msg: String) =
     basic("unsupported", focusNode, attempt, "Unsupported: " + msg)
@@ -136,7 +136,7 @@ object ValidationResult {
     basic("notError", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
   def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
-    basic("andError", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
+    basic("andConstraintComponent", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
     basic("orError", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")

@@ -33,7 +33,11 @@ case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
       conforms = t.allOk,
       results = {
         val rs: Seq[(RDFNode, Shape, TypingResult[ValidationResult, String])] =
-          t.getMap.toSeq.map { case (node,valueMap) => valueMap.toSeq.map { case (shape, result) => (node, shape, result)}}.flatten
+          t.getMap.toSeq.map {
+            case (node,valueMap) => valueMap.toSeq.map {
+              case (shape, result) => (node, shape, result)
+            }
+          }.flatten
         rs.map(_._3.getErrors.toList.flatten).flatten
       },
       shapesGraphWellFormed = true

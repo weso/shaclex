@@ -30,6 +30,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
     val builder = RDFAsJenaModel.empty
+    builder.addPrefixMap(schema.pm)
     cnvResult(r, rdf, builder)
   }
 
