@@ -1,7 +1,7 @@
 package es.weso.schema
+
 import cats._
 import com.typesafe.scalalogging.LazyLogging
-import data._
 import implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
@@ -10,11 +10,8 @@ import es.weso.shapeMaps._
 import es.weso.shex.{ Schema => Schema_, _ }
 import es.weso.shex.validator._
 import es.weso.shex._
-import es.weso.typing._
 import es.weso.shex.shexR._
-
 import scala.util._
-import es.weso.shex.implicits.showShEx.showShapeLabel
 
 case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   override def name = "ShEx"
@@ -52,10 +49,12 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       false,
       message = "Error validating",
       shapeMaps = Seq(),
+      validationReport = Left("No validation report in ShEx"),
       errors = Seq(ErrorInfo(msg)), None, rdf.getPrefixMap(), schema.prefixMap)
     case Right(resultShapeMap) =>
       Result(true, "Validated",
         shapeMaps = Seq(resultShapeMap),
+        validationReport = Left(s"No validaton report in ShEx"),
         errors = Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
   }
 
@@ -80,10 +79,24 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     rdf: RDFReader): Result = {
     Validator.validate(schema, shapeMap, rdf) match {
       case Left(error) =>
-        Result(false, "Error validating", Seq(), Seq(ErrorInfo(error)), None, rdf.getPrefixMap(), schema.prefixMap)
+        Result(false,
+          "Error validating",
+          Seq(),
+          Left("No validation report yet"),
+          Seq(ErrorInfo(error)),
+          None,
+          rdf.getPrefixMap(),
+          schema.prefixMap)
       case Right(resultShapeMap) => {
         // println(s"Validated, result=$resultShapeMap")
-        Result(true, "Validated", Seq(resultShapeMap), Seq(), None, rdf.getPrefixMap(), schema.prefixMap)
+        Result(true,
+          "Validated",
+          Seq(resultShapeMap),
+          Left(s"No validation report for ShEx"),
+          Seq(),
+          None,
+          rdf.getPrefixMap(),
+          schema.prefixMap)
       }
     }
   }
@@ -148,8 +161,9 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
 
   override def serialize(format: String): Either[String, String] = {
+    val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formatsUpperCase.contains(format.toUpperCase()))
-      Schema_.serialize(schema, format)
+      Schema_.serialize(schema, format, builder)
     else
       Left(s"Can't serialize to format $format. Supported formats=$formats")
   }

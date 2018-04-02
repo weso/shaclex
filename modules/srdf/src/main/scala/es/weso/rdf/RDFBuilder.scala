@@ -4,7 +4,7 @@ import es.weso.rdf.triples._
 import es.weso.rdf.nodes._
 import PREFIXES._
 
-trait RDFBuilder {
+trait RDFBuilder extends RDFReader {
 
   type Rdf <: RDFBuilder
 
@@ -13,6 +13,8 @@ trait RDFBuilder {
   def addPrefix(alias: String, iri: String): Rdf
 
   def createBNode: (RDFNode, Rdf)
+
+  def mkBNode: Either[String, (RDFNode, Rdf)] = Right(createBNode)
 
   def addTriples(triples: Set[RDFTriple]): Either[String,Rdf]
 

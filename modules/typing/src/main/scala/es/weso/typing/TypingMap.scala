@@ -7,6 +7,13 @@ case class TypingMap[Key, Value, Err, Evidence](
   m: Map[Key, Map[Value, TypingResult[Err, Evidence]]])
   extends Typing[Key, Value, Err, Evidence] {
 
+  override def allOk: Boolean = {
+    m.keys.map(key => getFailedValues(key).isEmpty).forall(identity)
+  }
+
+  override def getKeys: Seq[Key] =
+    m.keys.toSeq
+
   override def getValues(key: Key): Map[Value, TypingResult[Err, Evidence]] =
     m.get(key).getOrElse(Map())
 

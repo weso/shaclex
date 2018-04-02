@@ -300,8 +300,13 @@ case class RDFAsJenaModel(model: Model)
     }
   }.toEither.fold(f => Left(f.getMessage), es => es)
 
-  def getNumberOfStatements(): Either[String,Int] =
+  override def getNumberOfStatements(): Either[String,Int] =
     Right(model.size.toInt)
+
+  override def isIsomorphicWith(other: RDFReader): Either[String,Boolean] = other match {
+    case o: RDFAsJenaModel => Right(model.isIsomorphicWith(o.model))
+    case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
+  }
 
 }
 

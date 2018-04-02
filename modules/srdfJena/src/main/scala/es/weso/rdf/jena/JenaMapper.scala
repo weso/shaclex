@@ -70,31 +70,14 @@ object JenaMapper {
 
   def rdfNode2JenaNode(n: RDFNode, m: JenaModel): JenaRDFNode =
     createRDFNode(m, n)
-  /*{
-    n match {
-      case i: IRI => m.getResource(i.str)
-      case BNodeId(id) => {
-        // Creates the BNode if it doesn't exist
-        m.createResource(new AnonId(id))
-      }
-      case IntegerLiteral(n)            => {
-        val i: Integer = n
-        m.createTypedLiteral(i)
-      }
-      case DecimalLiteral(d)            => m.createTypedLiteral(d)
-      //      case BooleanLiteral(b) => m.createLiteral(b)
-      case LangLiteral(str, Lang(lang)) => m.createLiteral(str, lang)
-      case _                            => throw new Exception("rdfNode2JenaNode: unexpected node " + n)
-    }
-  } */
 
   // TODO: Change this code to return an Either[String,RDFNode]
   def jenaNode2RDFNode(r: JenaRDFNode): RDFNode = {
     if (r.isURIResource()) {
-      // println(s"jenaNode2RDFNode: URI = ${r.asResource().getURI()}")
       IRI(r.asResource().getURI)
     } else if (r.isAnon) {
-      BNode(r.asResource().getId.getLabelString)
+      val b = BNode(r.asResource().getId.getLabelString)
+      b
     } else if (r.isLiteral) {
       val lit = r.asLiteral()
       if (lit.getLanguage() != "") {

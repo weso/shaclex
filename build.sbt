@@ -101,7 +101,7 @@ lazy val shaclex = project
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
-      logbackClassic % Test,
+      logbackClassic,
       scalaLogging,
       scallop
     ),

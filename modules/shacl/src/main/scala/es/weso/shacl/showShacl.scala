@@ -1,7 +1,7 @@
 package es.weso.shacl
 import cats._
 import es.weso.rdf.nodes._
-import es.weso.shacl.validator.ViolationError
+import es.weso.shacl.report.ValidationResult
 
 object showShacl {
 
@@ -11,9 +11,9 @@ object showShacl {
     }
   }
 
-  implicit def showError = new Show[ViolationError] {
-    def show(ve: ViolationError): String = {
-      s"Violation Error(${ve.id}). Node(${ve.focusNode}) ${ve.message.getOrElse("")}"
+  implicit def showError = new Show[ValidationResult] {
+    def show(ve: ValidationResult): String = {
+      s"Violation Error(${ve.sourceConstraintComponent}). Node(${ve.focusNode}) ${ve.message.mkString(",")}"
     }
   }
 

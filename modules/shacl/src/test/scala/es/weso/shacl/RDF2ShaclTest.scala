@@ -3,7 +3,6 @@ package es.weso.shacl
 import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf._
 import es.weso.rdf.path.{ InversePath, PredicatePath }
 import es.weso.shacl.converter.RDF2Shacl
 
@@ -46,7 +45,6 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
                  |:T a sh:Shape .
                  |""".stripMargin
       val s = ex + "S"
-      val t = ex + "T"
       val n1 = ex + "n1"
       val attempt = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
@@ -100,7 +98,6 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
          |       sh:nodeKind sh:IRI .
          |""".stripMargin
       val S = ex + "S"
-      val p = ex + "p"
       val prop = ex + "prop"
       val attempt = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
@@ -153,7 +150,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
               pc.predicate should be(p)
               pc.components should contain only (NodeKind(IRIKind), MinCount(1), MaxCount(1))
             }
-            case other => fail("Failed with $other")
+            case other => fail(s"Failed with $other")
           }
         }
       }

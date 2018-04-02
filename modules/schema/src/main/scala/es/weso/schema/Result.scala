@@ -1,14 +1,12 @@
 package es.weso.schema
+
 import cats.Show
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes.{ IRI, RDFNode }
-import io.circe.JsonObject._
+import es.weso.rdf.{PrefixMap, RDFReader}
+import es.weso.rdf.nodes.{IRI, RDFNode}
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import cats.syntax.either._
-import cats.instances.either._
 import es.weso.shapeMaps._
 import es.weso.utils.MapUtils._
 
@@ -16,6 +14,7 @@ case class Result(
   isValid: Boolean,
   message: String,
   shapeMaps: Seq[ResultShapeMap],
+  validationReport: Either[String,RDFReader],
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
@@ -145,6 +144,7 @@ object Result extends LazyLogging {
       isValid = true,
       message = "",
       shapeMaps = Seq(),
+      validationReport = Left("No report"),
       errors = Seq(),
       None,
       PrefixMap.empty,
@@ -195,17 +195,18 @@ object Result extends LazyLogging {
       solutions <- if (isValid) {
         for {
           ls <- c.downField("shapeMap").as[List[ResultShapeMap]]
-        } yield ls.toSeq
+        } yield ls
       } else Right(Seq())
       errors <- if (isValid) {
         Right(Seq())
       } else for {
         ls <- c.downField("shapeMap").as[List[ErrorInfo]]
-      } yield ls.toSeq
+      } yield ls
     } yield Result(
       isValid,
       message,
       solutions,
+      Left("Not implemented ValidationReport Json decoder yet"),
       errors,
       trigger,
       nodesPrefixMap,

@@ -1,9 +1,7 @@
 package es.weso.utils
 
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.rdf.model.Resource
+import org.apache.jena.rdf.model.{Literal, Model, ModelFactory, Property, RDFNode, Resource, SimpleSelector}
 import org.apache.jena.sparql.syntax.ElementPathBlock
-import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.system.IRIResolver
 import java.io.ByteArrayInputStream
 
@@ -11,9 +9,6 @@ import org.apache.jena.query.Query
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import java.io.StringWriter
-
-import org.apache.jena.rdf.model.RDFNode
-import org.apache.jena.rdf.model.Property
 import java.net.URI
 import java.net.URL
 import java.io.InputStream
@@ -22,22 +17,14 @@ import java.io.FileOutputStream
 import org.apache.jena.atlas.AtlasException
 import org.apache.jena.riot.RiotException
 import org.apache.jena.query.ResultSet
-import org.apache.jena.rdf.model.Literal
 
 import scala.collection.JavaConverters._
-import org.apache.jena.query.ParameterizedSparqlString
 import org.apache.jena.reasoner.ReasonerRegistry
 import org.apache.jena.sparql.core.{TriplePath, Var}
 import org.apache.jena.sparql.path.Path
 import org.apache.jena.util.{FileUtils => FileJenaUtils}
 
-sealed abstract class ParserReport[+A, +B]
-
-final case class Parsed[A](info: A)
-  extends ParserReport[A, Nothing]
-
-final case class NotParsed[B](error: B)
-  extends ParserReport[Nothing, B]
+import scala.annotation.tailrec
 
 object JenaUtils {
 
@@ -49,7 +36,7 @@ object JenaUtils {
   lazy val N3 = "N3"
 
   // In Jena selectors, null represents any node
-  lazy val any: RDFNode = null
+  lazy val any: Resource = null
 
   def extractModel(resource: Resource, model: Model): Model = {
     val nModel = ModelFactory.createDefaultModel()
@@ -71,29 +58,6 @@ object JenaUtils {
     }
     inner(resource)
   }
-
-  /*def statementAsString(statement: Statement, model: Model, preffix: Boolean): String = {
-    val resource = try {
-      val uri = statement.getResource.toString
-      val preffixUri = statement.getResource.getNameSpace
-      val preffixNS = model.getNsURIPrefix(statement.getResource.getNameSpace)
-      val suffix = statement.getResource.getLocalName
-      if (preffix && preffixUri != null)
-        preffixNS + ":" + suffix
-      else uri
-    } catch {
-      case _: ResourceRequiredException => null
-    }
-    if (resource == null) {
-      try {
-        if (preffix)
-          statement.getLiteral().getValue().toString
-        else statement.getLiteral().toString
-      } catch {
-        case _: LiteralRequiredException => null
-      }
-    } else resource
-  } */
 
   def dereferenceURI(uri: String): InputStream = {
     val url = new URL(uri)
@@ -237,26 +201,100 @@ object JenaUtils {
    * Given a class `cls`, obtains all nodes such as `node rdf:type/rdfs:subClassOf* cls`
    */
   def getSHACLInstances(cls: RDFNode, model: Model): Seq[RDFNode] = {
+    /*
     val pss: ParameterizedSparqlString = new ParameterizedSparqlString()
     pss.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
     pss.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
     pss.setCommandText("SELECT ?n { ?n rdf:type/rdfs:subClassOf* ?c . }")
     pss.setParam("c", cls)
     val result = QueryExecutionFactory.create(pss.asQuery, model).execSelect
-    result.asScala.toSeq.map(qs => qs.get("n"))
+    result.asScala.toSeq.map(qs => qs.get("n")) */
+    (getDirectInstances(cls,model) ++
+     getAllSubClasses(cls,model).map(c => getDirectInstances(c,model)).flatten).toSeq
   }
 
   /**
    * Checks is a `node rdf:type/rdfs:subClassOf* cls`
    */
   def hasClass(n: RDFNode, c: RDFNode, model: Model): Boolean = {
-    val pss: ParameterizedSparqlString = new ParameterizedSparqlString()
-    pss.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-    pss.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-    pss.setCommandText("ASK { ?n rdf:type/rdfs:subClassOf* ?c . }")
-    pss.setParam("n", n)
-    pss.setParam("c", c)
-    QueryExecutionFactory.create(pss.asQuery, model).execAsk
+    getSHACLTypes(n, model).exists(sameNodeAs(_,c))
+  }
+
+  lazy val rdfTypeUrl = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+  lazy val subClassOfUrl = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+
+  def getSHACLTypes(n: RDFNode, model: Model): Set[RDFNode] = {
+    extendWithSuperClasses(getDirectTypes(n,model).toList,model)
+  }
+
+  def getDirectTypes(n: RDFNode, model: Model): Set[RDFNode] = {
+    if (n.isResource) {
+      val rdfType = model.getProperty(rdfTypeUrl)
+      val selector = new SimpleSelector(n.asResource(), rdfType, any)
+      model.listStatements(selector).asScala.map(_.getObject).toSet
+    } else Set()
+  }
+
+  def getDirectInstances(n: RDFNode, model: Model): Set[RDFNode] = {
+      val rdfType = model.getProperty(rdfTypeUrl)
+      val selector = new SimpleSelector(any, rdfType, n)
+      model.listStatements(selector).asScala.map(_.getSubject).toSet
+  }
+
+  def getSuperClasses(c: RDFNode, model: Model): Set[RDFNode] = {
+    if (c.isResource) {
+      val subClassOf = model.getProperty(subClassOfUrl)
+      val selector = new SimpleSelector(c.asResource(), subClassOf, any)
+      model.listStatements(selector).asScala.map(_.getObject).toSet
+    } else Set()
+  }
+
+  private def extendWithSuperClasses(types: List[RDFNode], model: Model): Set[RDFNode] = {
+    extendWithSuperClassesAux(types, model, Set[RDFNode]())
+  }
+
+
+  private def getAllSubClasses(cls: RDFNode,model: Model): Set[RDFNode] = {
+    val directSubclasses = getDirectSubclasses(cls,model)
+    getAllSubClassesAux(directSubclasses.toList,model, Set())
+  }
+
+  private def getDirectSubclasses(cls: RDFNode, model: Model): Set[RDFNode] = {
+    val subClassOf = model.getProperty(subClassOfUrl)
+    val selector = new SimpleSelector(any, subClassOf, cls)
+    model.listStatements(selector).asScala.map(_.getSubject).toSet
+  }
+
+  @tailrec
+  private def getAllSubClassesAux(cls: List[RDFNode], model: Model, visited: Set[RDFNode]): Set[RDFNode] = {
+    cls match {
+      case Nil => visited
+      case c :: cs => if (visited.contains(c))
+        getAllSubClassesAux(cs,model,visited)
+      else
+        getAllSubClassesAux(getDirectSubclasses(c,model).toList,model,visited + c)
+    }
+  }
+
+  @tailrec
+  private def extendWithSuperClassesAux(types: List[RDFNode], model: Model, visited: Set[RDFNode]): Set[RDFNode] = {
+    types match {
+      case Nil => visited
+      case t :: ts =>
+          if (visited.contains(t))
+            extendWithSuperClassesAux(ts, model, visited)
+          else
+            extendWithSuperClassesAux(getSuperClasses(t, model).toList ++ ts, model, visited + t)
+    }
+  }
+
+  def sameNodeAs(v1: RDFNode, v2: RDFNode): Boolean = {
+    (v1,v2) match {
+      case (r1: Resource, r2: Resource) if r1.isURIResource && r2.isURIResource => r1.getURI == r2.getURI
+      case (r1:Resource,r2: Resource) if r1.isAnon && r2.isAnon => r1.getId == r2.getId
+      case (b1: Literal, b2: Literal) => b1.getLexicalForm == b2.getLexicalForm
+      case (_,_) => false
+    }
   }
 
   def getNodesFromPath(path: Path, model: Model): Seq[(RDFNode, RDFNode)] = {

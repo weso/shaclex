@@ -1,20 +1,18 @@
 package es.weso.shacl.validator
 
 import cats._
-import cats.data._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.SHACLPath
-import ViolationError._
 import es.weso.shacl._
-import es.weso.typing._
 import es.weso.utils.RegEx
-import Validator._
 import es.weso.shacl.showShacl._
 import SHACLChecker._
 import es.weso.rdf.PREFIXES._
+import es.weso.shacl.report.ValidationResult
+import es.weso.shacl.report.ValidationResult._
 
 /**
  * This validator is implemented directly in Scala using cats library
@@ -39,8 +37,8 @@ case class Validator(schema: Schema) extends LazyLogging {
     schema.targetNodeShapes
   }
 
-  def runCheck[A: Show](c: Check[A], rdf: RDFReader): CheckResult[ViolationError, A, Log] = {
-    val initial: ShapeTyping = Typing.empty
+  def runCheck[A: Show](c: Check[A], rdf: RDFReader): CheckResult[ValidationResult, A, Log] = {
+    val initial: ShapeTyping = ShapeTyping.empty
     val r = run(c)(rdf)(initial)
     CheckResult(r)
   }
@@ -180,9 +178,11 @@ case class Validator(schema: Schema) extends LazyLogging {
       propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
     } yield {
       val failedPropertyShapes = t.getFailedValues(node).intersect(propertyShapes.toSet)
+      // TODO: Remove the following condition?
       if (!failedPropertyShapes.isEmpty) {
-        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
-        newt
+//        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
+//        newt
+        t
       }
       else
         t
@@ -240,16 +240,6 @@ case class Validator(schema: Schema) extends LazyLogging {
   } yield t
 
   private def checkComponent(c: Component): NodeChecker = component2Checker(c)
-
-  /*
-  private def validateNodeCheckers(attempt: Attempt, cs: Seq[NodeChecker]): Check[ShapeTyping] = {
-    val newAttempt = attempt.copy(path = None)
-    val xs = cs.map(c => c(newAttempt)(newAttempt.node)).toList
-    for {
-      ts <- checkAll(xs)
-      t <- combineTypings(ts)
-    } yield t
-  } */
 
   private def validatePathCheckers(attempt: Attempt, path: SHACLPath, cs: Seq[PropertyChecker]): Check[ShapeTyping] = {
     val newAttempt = attempt.copy(path = Some(path))
@@ -319,12 +309,11 @@ case class Validator(schema: Schema) extends LazyLogging {
     for {
       s <- getShapeRef(sref, attempt, node)
       typing <- getTyping
-      shape <- getShapeRef(sref, attempt, node)
+      // shape <- getShapeRef(sref, attempt, node)
       newTyping <- if (typing.getOkValues(node).contains(s))
         getTyping
       else if (typing.getFailedValues(node).contains(s)) {
-        err(failedNodeShape(
-          node, s, attempt,
+        err(errorNode(node, s, attempt,
           s"Failed because $node doesn't match shape $s")) *>
           getTyping
       } else runLocal(nodeShape(node, s), _.addType(node, s))
@@ -375,10 +364,10 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def compareIntLiterals(
-    n: Literal,
-    f: (Int, Int) => Boolean,
-    err: (RDFNode, Attempt, Int) => ViolationError,
-    msg: String): NodeChecker = attempt => node => for {
+                                  n: Literal,
+                                  f: (Int, Int) => Boolean,
+                                  err: (RDFNode, Attempt, Int) => ValidationResult,
+                                  msg: String): NodeChecker = attempt => node => for {
     ctrolValue <- checkNumeric(n, attempt)
     value <- checkNumeric(node, attempt)
     t <- condition(f(ctrolValue, value), attempt,
@@ -467,10 +456,10 @@ case class Validator(schema: Schema) extends LazyLogging {
   // TODO: Maybe add a check to see if the nodes are comparable
   // With current definition, if nodes are not comparable, always returns false without raising any error...
   private def comparison(
-    p: IRI,
-    name: String,
-    errorMaker: (RDFNode, Attempt, IRI, Set[RDFNode]) => ViolationError,
-    cond: (RDFNode, RDFNode) => Boolean): NodeChecker =
+                          p: IRI,
+                          name: String,
+                          errorMaker: (RDFNode, Attempt, IRI, Set[RDFNode]) => ValidationResult,
+                          cond: (RDFNode, RDFNode) => Boolean): NodeChecker =
     attempt => node => for {
       rdf <- getRDF
       subject = attempt.node
@@ -485,17 +474,22 @@ case class Validator(schema: Schema) extends LazyLogging {
       shapes <- getShapeRefs(srefs.toList, attempt, node)
       es = shapes.map(nodeShape(node, _))
       ts <- checkAll(es)
-      t1 <- addEvidence(attempt, s"$node passes and(${shapes.map(_.showId).mkString(",")})")
-      t <- combineTypings(t1 +: ts)
-    } yield t
+      t <- combineTypings(ts)
+      t1 <- condition(checkAnd(node, shapes, t),
+        attempt,
+        andError(node, attempt, srefs.toList),
+        s"and condition failed on $node")
+    } yield t1
+  }
+
+  private def checkAnd(node: RDFNode, shapes: List[Shape], t: ShapeTyping) : Boolean = {
+    t.getFailedValues(node).isEmpty
   }
 
   private def xone(sRefs: Seq[ShapeRef]): NodeChecker = attempt => node => {
     for {
       shapes <- getShapeRefs(sRefs.toList, attempt, node)
       es = shapes.map(nodeShape(node, _))
-/*      t1 <- checkOneOf(es, xoneErrorNone(node, attempt, sRefs.toList),
-        xoneErrorMoreThanOne(node, attempt, sRefs.toList)) */
       ts <- checkAll(es)
       t <- combineTypings(ts)
       t1 <- condition(checkXoneType(node, shapes, t),
@@ -717,10 +711,10 @@ case class Validator(schema: Schema) extends LazyLogging {
    * @param evidence evidence to add to `attempt` in case `condition` is true
    */
   private def condition(
-    condition: Boolean,
-    attempt: Attempt,
-    error: ViolationError,
-    evidence: String): CheckTyping = for {
+                         condition: Boolean,
+                         attempt: Attempt,
+                         error: ValidationResult,
+                         evidence: String): CheckTyping = for {
     t <- getTyping
     newType <- cond(validateCheck(condition, error),
                     (_: Unit) => addEvidence(attempt, evidence),
@@ -741,9 +735,9 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def addNotEvidence(
-    attempt: Attempt,
-    e: ViolationError,
-    msg: String): Check[ShapeTyping] = {
+                              attempt: Attempt,
+                              e: ValidationResult,
+                              msg: String): Check[ShapeTyping] = {
     val node = attempt.node
     // val sref = attempt.shapeRef
     for {
@@ -758,9 +752,9 @@ case class Validator(schema: Schema) extends LazyLogging {
   def runLocal[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
-  private def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
+  private def getRDF: Check[RDFReader] = getConfig
 
-  private def getTyping: Check[ShapeTyping] = getEnv // ask[Comput,ShapeTyping]
+  private def getTyping: Check[ShapeTyping] = getEnv
 
   ////////////////////////////////////////////
   /**
@@ -817,33 +811,10 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def combineTypings(ts: Seq[ShapeTyping]): Check[ShapeTyping] = {
-    ok(Typing.combineTypings(ts))
+    ok(ShapeTyping.combineTypings(ts))
   }
 
-  /*
-  // TODO
-  // Define a more general method?
-  // This method should validate some of the nodes/shapes not raising a whole error if one fails,
-  // but collecting the good ones and the errors...
-  def checkAny(xs: Seq[Check[(RDFNode, Shape)]]): Check[Seq[(RDFNode, Shape)]] = {
-    val zero: Check[Seq[(RDFNode, Shape)]] = ok(Seq())
-    def next(
-      x: Check[(RDFNode, Shape)],
-      rest: Check[Seq[(RDFNode, Shape)]]): Check[Seq[(RDFNode, Shape)]] = ???
-    /*      for {
-       rs1 <- catchWrong(x.flatMap(v => Seq(x)))(_ => ok(Seq()))
-       rs2 <- rest
-      } rs1 ++ rs2 */
-    xs.foldRight(zero)(next)
-  } */
-
-  // Fails if there is any error
-  def validateAll(rdf: RDFReader): CheckResult[ViolationError, ShapeTyping, Log] = {
-    /* implicit def showPair = new Show[(ShapeTyping, Evidences)] {
-      def show(e: (ShapeTyping, Evidences)): String = {
-        s"Typing: ${e._1}\n Evidences: ${e._2}"
-      }
-    } */
+  def validateAll(rdf: RDFReader): CheckResult[ValidationResult, ShapeTyping, Log] = {
     runCheck(checkSchemaAll, rdf)
   }
 
@@ -854,14 +825,7 @@ case class Validator(schema: Schema) extends LazyLogging {
 object Validator {
   def empty = Validator(schema = Schema.empty)
 
-  type ShapeTyping = Typing[RDFNode, Shape, ViolationError, String]
-
-  type Result[A] = Either[NonEmptyList[ViolationError], List[(A, Evidences)]]
-
-  def isOK[A](r: Result[A]): Boolean =
-    r.isRight && r.toList.isEmpty == false
-
-  def validate(schema: Schema, rdf: RDFReader): Either[ViolationError, ShapeTyping] = {
+  def validate(schema: Schema, rdf: RDFReader): Either[ValidationResult, ShapeTyping] = {
     Validator(schema).validateAll(rdf).result
   }
 

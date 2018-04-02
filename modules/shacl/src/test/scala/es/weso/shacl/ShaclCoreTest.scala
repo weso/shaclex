@@ -1,20 +1,12 @@
 package es.weso.shacl
 
 import com.typesafe.config.{Config, ConfigFactory}
-import java.io.File
 import java.nio.file.Paths
-
 import org.scalatest._
-import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
-
-import scala.io.Source
 import util._
-import es.weso.utils.FileUtils._
 import es.weso.manifest.{Entry => ManifestEntry, Result => ManifestResult, _}
-import java.net._
-
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 

@@ -1,15 +1,13 @@
 package es.weso.schema
-import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl.{Schema => ShaclSchema, Shape => ShaclNodeShape, _}
-import es.weso.shacl.validator.Validator._
+import es.weso.shacl.{Schema => ShaclSchema, _}
 import es.weso.shacl._
 import es.weso.shacl.converter.RDF2Shacl
-import es.weso.shacl.validator.{CheckResult, Evidence, Validator, ViolationError}
+import es.weso.shacl.report.{ValidationReport, ValidationResult}
+import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator}
 import es.weso.shapeMaps._
 
 import util._
@@ -31,27 +29,37 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   def validateTargetDecls(rdf: RDFReader): Result = {
     val validator = Validator(schema)
     val r = validator.validateAll(rdf)
-    cnvResult(r, rdf)
+    val builder = RDFAsJenaModel.empty
+    builder.addPrefixMap(schema.pm)
+    cnvResult(r, rdf, builder)
   }
 
   def cnvResult(
-    r: CheckResult[ViolationError, ShapeTyping, List[Evidence]],
-    rdf: RDFReader): Result =
+                 r: CheckResult[ValidationResult, ShapeTyping, List[Evidence]],
+                 rdf: RDFReader,
+                 builder: RDFBuilder
+               ): Result = {
+    val vr: ValidationReport =
+      r.result.fold(e => ValidationReport.fromError(e),
+        _.toValidationReport
+      )
     Result(
       isValid = r.isOK,
       message = if (r.isOK) "Valid" else "Not valid",
       shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
+      validationReport = vr.toRDF(builder),
       errors = r.errors.map(cnvViolationError(_)),
       trigger = None,
       nodesPrefixMap = rdf.getPrefixMap(),
       shapesPrefixMap = schema.pm)
+  }
 
   def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): ResultShapeMap = {
     ResultShapeMap(
       t.getMap.mapValues(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
   }
 
-  private def cnvMapShapeResult(m: Map[Shape, TypingResult[ViolationError, String]]): Map[ShapeMapLabel, Info] = {
+  private def cnvMapShapeResult(m: Map[Shape, TypingResult[ValidationResult, String]]): Map[ShapeMapLabel, Info] = {
 
     MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
   }
@@ -64,24 +72,22 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     }
   }
 
-  private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
+  private def cnvTypingResult(t: TypingResult[ValidationResult, String]): Info = {
     import showShacl._
     import TypingResult.showTypingResult
-    val showVE = implicitly[Show[ViolationError]]
-    val x = implicitly[Show[TypingResult[ViolationError, String]]]
     Info(
       status = if (t.isOK) Conformant else NonConformant,
-      reason = Some(x.show(t))
+      reason = Some(t.show)
     // TODO: Convert typing result to JSON and add it to appInfo
     )
   }
 
-  private def cnvViolationError(v: ViolationError): ErrorInfo = {
+  private def cnvViolationError(v: ValidationResult): ErrorInfo = {
     val pm = schema.pm
     ErrorInfo(
-      pm.qualify(v.id) +
+      pm.qualify(v.sourceConstraintComponent) +
         " FocusNode: " + schema.pm.qualify(v.focusNode) + " " +
-        v.message.getOrElse(""))
+        v.message.mkString(","))
   }
 
   /*def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {
@@ -100,8 +106,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   } yield ShaclexSchema(schemaShacl)
 
   override def serialize(format: String): Either[String, String] = {
+    val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formats.contains(format))
-      schema.serialize(format)
+      schema.serialize(format, builder)
     else
       Left(s"Format $format not supported to serialize $name. Supported formats=$formats")
   }

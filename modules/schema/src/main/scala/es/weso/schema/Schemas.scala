@@ -5,9 +5,6 @@ import util._
 import es.weso.rdf.RDFReader
 import es.weso.utils.FileUtils
 
-import scala.io._
-import scala.util.{ Failure, Success, Try }
-
 object Schemas {
 
   type SchemaParser = (CharSequence, String, Option[String]) => Either[String, Schema]
@@ -26,6 +23,7 @@ object Schemas {
   val availableFormats: List[String] = {
     availableSchemas.map(_.formats).flatten.distinct
   }
+
 
   val availableTriggerModes: List[String] = {
     ValidationTrigger.triggerValues.map(_._1)

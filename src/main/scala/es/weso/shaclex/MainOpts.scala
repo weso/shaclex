@@ -22,6 +22,8 @@ class MainOpts(
   lazy val defaultResultFormat = Result.defaultResultFormat
   lazy val defaultShapeMapFormat = ShapeMap.defaultFormat
   lazy val shapeMapFormats = ShapeMap.formats
+  lazy val defaultValidationReportFormat = "TURTLE"
+  lazy val validationReportFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase).distinct
 
   banner("""| shaclex: SHACL/ShEx processor
             | Options:
@@ -68,6 +70,21 @@ class MainOpts(
     validate = isMemberOf(shapeMapFormats),
     noshort = true)
 
+  val showValidationReport = toggle(
+    name = "showValidationReport",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show SHACL validation report",
+    descrNo = "don't show SHACL validation report",
+    noshort = true
+  )
+
+  val validationReportFormat = opt[String](
+    "validationReportFormat",
+    default = Some(defaultValidationReportFormat),
+    descr = s"Engine. Default ($defaultValidationReportFormat). Possible values: ${showLs(validationReportFormats)}",
+    validate = isMemberOf(validationReportFormats))
+
   val engine = opt[String](
     "engine",
     default = Some(defaultEngine),
@@ -86,7 +103,8 @@ class MainOpts(
     default = Some(false),
     descrYes = "show more extra info about validation process",
     descrNo = "don't show extra info",
-    noshort = true)
+    noshort = true
+  )
 
   val showResult = toggle(
     "showResult",
