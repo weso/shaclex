@@ -4,7 +4,6 @@ import java.net.URI
 
 import es.weso.rdf.nodes._
 import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.rdf.{PrefixMap, RDFReader}
 import io.circe._

@@ -120,7 +120,7 @@ object RDF4jMapper {
     case l: Literal => Try {
       val datatypeIRI = valueFactory.createIRI(l.dataType.str)
       val rdf4jLiteral = valueFactory.createLiteral(l.getLexicalForm, datatypeIRI)
-      val x = rdf4jLiteral.getLabel
+      // val x = rdf4jLiteral.getLabel
       rdf4jLiteral.getDatatype
     } match {
       case Success(iri) => {

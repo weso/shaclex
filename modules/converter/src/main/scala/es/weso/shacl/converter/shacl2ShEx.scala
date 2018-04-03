@@ -11,8 +11,9 @@ object Shacl2ShEx extends Converter {
 
   def shacl2ShEx(schema: shacl.Schema): Result[shex.Schema] = {
     val rs: List[Result[shex.ShapeExpr]] = ??? // schema.shapes.map(cnvShape(_)).toList
-    val r: Result[List[shex.ShapeExpr]] = rs.sequence
-    r.map(m => shex.Schema.empty.copy(shapes = Some(m)))
+    val r: Result[List[shex.ShapeExpr]] = ??? // rs.sequence
+    // r.map(m => shex.Schema.empty.copy(shapes = Some(m)))
+    ???
   }
 
   def collect[A, B, E](xs: List[(A, ValidatedNel[E, B])]): ValidatedNel[E, List[(A, B)]] = {

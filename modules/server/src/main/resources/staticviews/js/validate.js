@@ -263,8 +263,32 @@ $("#permalink").click(function(e) {
   console.log("click on permalink...");
   var data = codeMirrorData.getValue();
   var schema = codeMirrorSchema.getValue();
-  var dataFormat = $("#dataFormat").find(":selected").text();
-  var schemaFormat = $("#schemaFormat").find(":selected").text();
+  var dataActiveTab = $("#rdfDataActiveTab").attr("value");
+  var dataFormat = "";
+  switch (dataActiveTab) {
+      case "#dataTextArea": dataFormat = $("#dataFormatTextArea").find(":selected").text();
+                            break;
+      case "#dataFile": dataFormat = $("#dataFormatFile").find(":selected").text();
+                            break;
+      case "#dataUrl": dataFormat = $("#dataFormatUrl").find(":selected").text();
+                            break;
+      default: console.log("Unknown value of dataActiveTab:" + dataActiveTab);
+               dataFormat = $("#dataFormatTextArea").find(":selected").text();
+               break;                            
+  }
+  var schemaFormat = "";
+  var activeSchemaTab = $("#activeSchemaTab").attr("value");
+  switch (activeSchemaTab) {
+      case "#schemaTextArea": schemaFormat = $("#schemaFormatTextArea").find(":selected").text();
+                        break;
+      case "#schemaFile": schemaFormat = $("#schemaFormatFile").find(":selected").text();
+                        break;
+      case "#schemaUrl": schemaFormat = $("#schemaFormatUrl").find(":selected").text();
+                        break;
+      default: console.log("Unknown value of activeSchemaTab:" + activeSchemaTab);
+                        schemaFormat = $("#schemaFormatTextArea").find(":selected").text();
+                        break;                                                    
+  }
   var schemaEngine = $("#schemaEngine").find(":selected").text();
   var triggerMode = $("#triggerMode").find(":selected").text();
   var inference = $("#inference").find(":selected").text();

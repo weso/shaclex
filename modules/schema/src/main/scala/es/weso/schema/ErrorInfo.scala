@@ -1,8 +1,6 @@
 package es.weso.schema
-import es.weso.rdf.PrefixMap
 import cats.Show
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.schema.Result.logger
 import io.circe.JsonObject._
 import io.circe.{ Decoder, Encoder, Json }
 

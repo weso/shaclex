@@ -2,7 +2,6 @@ package es.weso.utils
 
 import scala.io.Source
 import scala.util.Try
-import cats._
 import cats.implicits._
 
 object UriUtils {

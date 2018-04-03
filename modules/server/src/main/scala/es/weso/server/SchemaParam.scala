@@ -4,8 +4,6 @@ import Defaults._
 import cats.effect.IO
 import es.weso.rdf.RDFReasoner
 import es.weso.schema.{Schema, Schemas}
-import es.weso.utils.FileUtils
-
 import scala.io.Source
 import scala.util.Try
 

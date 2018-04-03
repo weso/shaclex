@@ -13,6 +13,7 @@ object Status {
       a match {
         case Conformant => Json.fromString("conformant")
         case NonConformant => Json.fromString("nonconformant")
+        case Undefined => Json.fromString("undefined")
       }
     }
   }

@@ -1,6 +1,5 @@
 package es.weso.server
 
-import io.circe.Json
 import scala.xml.Utility.escape
 
 case class SchemaConversionResult(

@@ -1,6 +1,4 @@
 package es.weso.utils
-import cats._
-import cats.implicits._
 
 object StrUtils {
 
@@ -163,7 +161,7 @@ object StrUtils {
     case _ => None
   }
 
-  private def cnvBackslashPattern: Converter = (str,i) =>
+/*  private def cnvBackslashPattern: Converter = (str,i) =>
    str(i) match {
     case '\\' => {
       val newIndex = i + 1
@@ -175,7 +173,7 @@ object StrUtils {
     }
     case _ => None
   }
-
+*/
 
   private def noConverter(str: String, i: Int): CharConversion =
    (Array(str(i)),i)

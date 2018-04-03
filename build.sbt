@@ -26,26 +26,26 @@ scalafmt: {
 
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
-lazy val circeVersion          = "0.9.0"
-lazy val effVersion            = "4.6.1"
 lazy val catsVersion           = "1.0.1"
-lazy val scalaTestVersion      = "3.0.4"
-lazy val scalacticVersion      = "3.0.4"
+lazy val commonsTextVersion    = "1.2"
+lazy val circeVersion          = "0.9.0"
+lazy val diffsonVersion        = "2.2.5"
+lazy val effVersion            = "4.6.1"
+lazy val http4sVersion         = "0.18.5"
+lazy val jenaVersion           = "3.6.0"
+lazy val jgraphtVersion        = "1.1.0"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.7.2"
-lazy val http4sVersion         = "0.18.0-M8"
+lazy val rdf4jVersion          = "2.2.4"
+lazy val scalacheckVersion     = "1.13.5"
+lazy val scalacticVersion      = "3.0.4"
+lazy val scalaGraphVersion     = "1.11.5"
+lazy val scalaTestVersion      = "3.0.4"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.1.1"
-lazy val jenaVersion           = "3.6.0"
-lazy val rdf4jVersion          = "2.2.4"
-lazy val jgraphtVersion        = "1.1.0"
-lazy val diffsonVersion        = "2.2.5"
-lazy val xercesVersion         = "2.11.0"
 lazy val sextVersion           = "0.2.6"
-lazy val scalaGraphVersion     = "1.11.5"
 lazy val typesafeConfigVersion = "1.3.2"
-lazy val scalacheckVersion     = "1.13.5"
-lazy val commonsTextVersion    = "1.2"
+lazy val xercesVersion         = "2.11.0"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "0.11.0"
@@ -395,7 +395,7 @@ lazy val packagingSettings = Seq(
 )
 
 lazy val compilationSettings = Seq(
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.5",
   // format: off
   scalacOptions ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.

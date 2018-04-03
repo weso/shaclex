@@ -75,13 +75,19 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     t <- combineTypings(ts)
   } yield t
 
-  private[validator] def checkNodeShapeMapLabel(node: RDFNode, label: ShapeMapLabel, info: Info): CheckTyping = info.status match {
+  private[validator] def checkNodeShapeMapLabel(
+                                                 node: RDFNode,
+                                                 label: ShapeMapLabel,
+                                                 info: Info
+                                               ): CheckTyping =
+    info.status match {
     case Conformant => label match {
       case Start => checkNodeStart(node)
       case IRIMapLabel(iri) => checkNodeShapeName(node, iri.getLexicalForm)
       case BNodeMapLabel(b) => checkNodeShapeName(node, b.getLexicalForm)
     }
     case NonConformant => errStr(s"checkNodeShapeMapLabel: Not implemented negative info yet. Node: $node, label: $label")
+    case Undefined => errStr(s"checkNodeShapeMapLabel: Not implemented undefined status yet. Node: $node, label: $label")
   }
 
   private[validator] def checkNodeShapesMap(node: RDFNode, shapesMap: Map[ShapeMapLabel, Info]): CheckTyping = for {

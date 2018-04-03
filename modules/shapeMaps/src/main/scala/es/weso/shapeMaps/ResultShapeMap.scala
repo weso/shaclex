@@ -1,6 +1,5 @@
 package es.weso.shapeMaps
 
-import cats.Show
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 import cats.implicits._

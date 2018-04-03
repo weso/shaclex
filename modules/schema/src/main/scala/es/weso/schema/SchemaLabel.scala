@@ -1,7 +1,5 @@
 package es.weso.schema
 import cats._
-import data._
-import cats.implicits
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
 

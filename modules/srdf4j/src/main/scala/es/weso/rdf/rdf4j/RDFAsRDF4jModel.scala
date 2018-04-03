@@ -28,7 +28,7 @@ case class RDFAsRDF4jModel(model: Model)
   override def fromString(cs: CharSequence,
                           format: String,
                           base: Option[String] = None): Either[String, Rdf] = {
-      val builder = new ModelBuilder()
+      // val builder = new ModelBuilder()
       val baseURI = base.getOrElse("")
       for {
         format <- getRDFFormat(format)
@@ -61,12 +61,12 @@ case class RDFAsRDF4jModel(model: Model)
     )
   } yield str
 
-  private def extend_rdfs: Rdf = {
+/*  private def extend_rdfs: Rdf = {
     this
     // TODO: Check how to add inference in RDF4j
     /* val infModel = ModelFactory.createRDFSModel(model)
     RDFAsJenaModel(infModel) */
-  }
+  } */
 
   // TODO: this implementation only returns subjects
   override def iris(): Set[IRI] = {
@@ -129,7 +129,7 @@ case class RDFAsRDF4jModel(model: Model)
 
   override def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
     val obj = rdfNode2Resource(node).toOption
-    val empty: Set[RDFTriple] = Set()
+    // val empty: Set[RDFTriple] = Set()
     obj.fold(emptySet) { o => {
       statements2RDFTriples(triplesObject(o, model))
     }
@@ -163,7 +163,7 @@ case class RDFAsRDF4jModel(model: Model)
   override def addTriples(triples: Set[RDFTriple]): Either[String,Rdf]  = for {
     statements <- triples.map(rdfTriple2Statement(_)).toList.sequence
   } yield {
-    val xs: List[Statement] = statements
+    // val xs: List[Statement] = statements
     model.addAll(statements.asJava)
     this
   }
