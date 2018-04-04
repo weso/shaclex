@@ -33,6 +33,7 @@ object WebService {
 
     case req@GET -> Root / "dataConversions" :?
       OptDataParam(optData) +&
+      OptDataURLParam(optDataURL) +&
       DataFormatParam(optDataFormat) +&
       InferenceParam(optInference) +&
       OptEndpointParam(optEndpoint) +&
@@ -40,6 +41,7 @@ object WebService {
       TargetDataFormatParam(optTargetDataFormat) => {
       Ok(html.dataConversions(
         optData,
+        optDataURL,
         availableDataFormats,
         optDataFormat.getOrElse(defaultDataFormat),
         availableInferenceEngines,
@@ -62,6 +64,7 @@ object WebService {
               val targetFormat = dp.targetDataFormat.getOrElse(defaultDataFormat)
               val result = rdf.serialize(targetFormat).map(Some(_))
               Ok(html.dataConversions(dp.data,
+                  dp.dataURL,
                   availableDataFormats,
                   dp.dataFormat.getOrElse(defaultDataFormat),
                   availableInferenceEngines,
@@ -78,6 +81,7 @@ object WebService {
 
     case req@GET -> Root / "dataInfo" :?
       OptDataParam(optData) +&
+      OptDataURLParam(optDataURL) +&
       DataFormatParam(optDataFormat) +&
       InferenceParam(optInference) +&
       OptEndpointParam(optEndpoint) +&
@@ -86,6 +90,7 @@ object WebService {
         str => BadRequest(str),
         rdf => Ok(html.dataInfo(dataInfo(rdf),
           optData,
+          optDataURL,
           availableDataFormats,
           defaultDataFormat,
           availableInferenceEngines,
@@ -104,6 +109,7 @@ object WebService {
             case Right((rdf,dp)) =>
               Ok(html.dataInfo(dataInfo(rdf),
                 dp.data,
+                dp.dataURL,
                 availableDataFormats,
                 dp.dataFormat.getOrElse(defaultDataFormat),
                 availableInferenceEngines,
@@ -261,6 +267,7 @@ object WebService {
                   case Right((schema, sp)) => for {
                     tp <- {
                       println(s">>>>>>>>>>>>>>>> Data: ${rdf.serialize()}\ndata string:${dp.data}")
+                      println(s">>>>>>>>>>>>>>>> Data URL: ${dp.dataURL}")
                       println(s">>>>>>>>>>>>>>>> Schema: $schema")
                       TriggerModeParam.mkTriggerModeParam(partsMap)
                     }
@@ -355,6 +362,7 @@ object WebService {
             Ok(html.validate(
               result.map(_._1),
               optData,
+              optDataURL,
               availableDataFormats,
               optDataFormat.getOrElse(defaultDataFormat),
               optSchema,
@@ -381,6 +389,7 @@ object WebService {
     }
     case req@GET -> Root / "query" :?
       OptDataParam(optData) +&
+        OptDataURLParam(optDataURL) +&
         DataFormatParam(optDataFormat) +&
         OptQueryParam(optQuery) +&
         InferenceParam(optInference) +&
@@ -392,6 +401,7 @@ object WebService {
       Ok(html.query(
         result,
         optData,
+        optDataURL,
         availableDataFormats,
         optDataFormat.getOrElse(defaultDataFormat),
         optQuery,
@@ -421,6 +431,7 @@ object WebService {
                   Ok(html.query(
                     result,
                     dp.data,
+                    dp.dataURL,
                     availableDataFormats,
                     dp.dataFormat.getOrElse(defaultDataFormat),
                     optQueryStr,
@@ -461,7 +472,7 @@ object WebService {
                                dp: DataParam,
                                sp: SchemaParam,
                                tp: TriggerModeParam): IO[Response[IO]] =
-    Ok(html.validate(Some(result),dp.data,
+    Ok(html.validate(Some(result),dp.data,dp.dataURL,
     availableDataFormats,
     dp.dataFormat.getOrElse(defaultDataFormat),
     sp.schema,

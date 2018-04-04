@@ -29,7 +29,7 @@
         </div>
         <div class='@{if (activeSchemaTab=="#schemaUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="schemaUrl" role="tabpanel" aria-labelledby="schemaUrl-tab">
-            <input type="url" name="schemaURL" >
+            <input type="url" name="schemaURL" id="schemaURL">
             @selectSchemaFormat(formName,"Url",availableSchemaFormats,currentSchemaFormat)
         </div>
         <div class='@{if (activeSchemaTab=="#schemaFile") "tab-pane fade show active" else "tab-pane fade"}'

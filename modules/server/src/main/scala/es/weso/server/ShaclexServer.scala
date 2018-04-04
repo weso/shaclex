@@ -32,7 +32,7 @@ class ShaclexServer(host: String, port: Int) {
     req
   }
 
-  def build() =
+  def build(): fs2.Stream[IO, ExitCode] =
     BlazeBuilder[IO]
       .bindHttp(port, host)
       .mountService(service).

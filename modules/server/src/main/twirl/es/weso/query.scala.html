@@ -3,6 +3,7 @@
 
 @(result: Either[String,Json],
   data:Option[String],
+  dataURL:Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
   query:Option[String],
@@ -26,7 +27,7 @@
   <div id="resultDiv" data-result='null' class="alert alert-danger" role="alert"><code>@{result.left.get}</code></div>
 }
 <form action="/query" method="POST" enctype="multipart/form-data" id="query">
-    @dataPanel("query", data, availableDataFormats, currentDataFormat,
+    @dataPanel("query", data, dataURL, availableDataFormats, currentDataFormat,
                         availableInferenceEngines, currentInferenceEngine, endpoint, activeDataTab, true)
     <div id="queryDiv">
      @queryPanel("query", query, activeQueryTab)

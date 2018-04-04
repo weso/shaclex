@@ -40,9 +40,10 @@ lazy val rdf4jVersion          = "2.2.4"
 lazy val scalacheckVersion     = "1.13.5"
 lazy val scalacticVersion      = "3.0.4"
 lazy val scalaGraphVersion     = "1.11.5"
-lazy val scalaTestVersion      = "3.0.4"
+lazy val scalaTestVersion      = "3.0.5"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.1.1"
+lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.2"
 lazy val xercesVersion         = "2.11.0"
@@ -53,34 +54,36 @@ lazy val kindProjectorVersion = "0.9.5"
 lazy val scalaMacrosVersion   = "2.1.1"
 
 // Dependency modules
-lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
-lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
-lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
-lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val antlr4            = "org.antlr"                  % "antlr4"               % antlrVersion
-lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
-lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
-lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
-lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
-lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
-lazy val scalaTest         = "org.scalatest"              %% "scalatest"           % scalaTestVersion
 lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
 lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
 lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
 lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
 lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
 lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
+lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
+lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
+lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
 lazy val http4sDsl         = "org.http4s"                 %% "http4s-dsl"          % http4sVersion
 lazy val http4sBlazeServer = "org.http4s"                 %% "http4s-blaze-server" % http4sVersion
 lazy val http4sBlazeClient = "org.http4s"                 %% "http4s-blaze-client" % http4sVersion
 lazy val http4sCirce       = "org.http4s"                 %% "http4s-circe"        % http4sVersion
 lazy val http4sTwirl       = "org.http4s"                 %% "http4s-twirl"        % http4sVersion
-lazy val scalatags         = "com.lihaoyi"                %% "scalatags"           % scalatagsVersion
-lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
+lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
+lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
+lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
+lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
+lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
+lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
 lazy val scalacheck        = "org.scalacheck"             %% "scalacheck"          % scalacheckVersion
-lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
-lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
+lazy val scalaTest         = "org.scalatest"              %% "scalatest"           % scalaTestVersion
+lazy val scalatags         = "com.lihaoyi"                %% "scalatags"           % scalatagsVersion
+lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"        % seleniumVersion
+// lazy val htmlUnit          = "org.seleniumhq.selenium"    % "htmlunit-driver"      % seleniumVersion
+lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
+lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
+lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
 
 // Compiler plugin modules
 lazy val scalaMacrosParadise = "org.scalamacros"      % "paradise"        % scalaMacrosVersion cross CrossVersion.full
@@ -229,7 +232,8 @@ lazy val server = project
       http4sBlazeClient,
       http4sCirce,
       http4sTwirl,
-      scalatags
+      scalatags,
+      selenium
     )
   )
 
@@ -407,6 +411,7 @@ lazy val compilationSettings = Seq(
     "-Xfuture",                          // Turn on future language features.
     "-Xlint",
     "-Yrangepos",
+//    "-Ylog-classpath",
     "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
     "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.

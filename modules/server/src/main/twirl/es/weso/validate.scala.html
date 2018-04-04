@@ -4,6 +4,7 @@
 
 @(result: Option[Result],
   data:Option[String],
+  dataURL: Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
   schema:Option[String],
@@ -40,7 +41,7 @@
             /></label>
     </fieldset>
 
-    @dataPanel("validate", data,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,endpoint,activeDataTab,true)
+    @dataPanel("validate", data,dataURL,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,endpoint,activeDataTab,true)
 
     <div id="schemaDiv">
       @schemaPanel("validate", schema, availableSchemaFormats, currentSchemaFormat, activeSchemaTab,true)

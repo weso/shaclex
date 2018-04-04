@@ -28,7 +28,7 @@
         </div>
         <div class='@{if (activeShapeMapTab=="#shapeMapUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="shapeMapUrl" role="tabpanel" aria-labelledby="shapeMapUrl-tab">
-            <input type="url" name="shapeMapURL" >
+            <input type="url" name="shapeMapURL" id="shapeMapURL">
             @selectFormat("shapeMap",formName,"Url",availableShapeMapFormats,currentShapeMapFormat)
         </div>
         <div class='@{if (activeShapeMapTab=="#shapeMapFile") "tab-pane fade show active" else "tab-pane fade"}'

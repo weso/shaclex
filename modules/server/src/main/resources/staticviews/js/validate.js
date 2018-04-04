@@ -265,46 +265,93 @@ $("#permalink").click(function(e) {
   var schema = codeMirrorSchema.getValue();
   var dataActiveTab = $("#rdfDataActiveTab").attr("value");
   var dataFormat = "";
+  var dataPart="";
   switch (dataActiveTab) {
-      case "#dataTextArea": dataFormat = $("#dataFormatTextArea").find(":selected").text();
-                            break;
-      case "#dataFile": dataFormat = $("#dataFormatFile").find(":selected").text();
-                            break;
-      case "#dataUrl": dataFormat = $("#dataFormatUrl").find(":selected").text();
-                            break;
-      default: console.log("Unknown value of dataActiveTab:" + dataActiveTab);
-               dataFormat = $("#dataFormatTextArea").find(":selected").text();
-               break;                            
+      case "#dataTextArea":
+          dataFormat = $("#dataFormatTextArea").find(":selected").text();
+          dataPart = "data=" + encodeURIComponent(data) ;
+          break;
+      case "#dataFile":
+          dataFormat = $("#dataFormatFile").find(":selected").text();
+          dataPart = "data=" + encodeURIComponent(data) ;
+          break;
+      case "#dataUrl":
+          dataFormat = $("#dataFormatUrl").find(":selected").text();
+          var dataURL = $("#dataURL").val();
+          dataPart = "dataURL=" + encodeURIComponent(dataURL) ;
+          break;
+      default:
+          console.log("Unknown value of dataActiveTab:" + dataActiveTab);
+          dataFormat = $("#dataFormatTextArea").find(":selected").text();
+          dataPart = "data=" + encodeURIComponent(data) ;
+          break;
   }
   var schemaFormat = "";
+  var schemaPart = "";
   var activeSchemaTab = $("#activeSchemaTab").attr("value");
   switch (activeSchemaTab) {
-      case "#schemaTextArea": schemaFormat = $("#schemaFormatTextArea").find(":selected").text();
-                        break;
-      case "#schemaFile": schemaFormat = $("#schemaFormatFile").find(":selected").text();
-                        break;
-      case "#schemaUrl": schemaFormat = $("#schemaFormatUrl").find(":selected").text();
-                        break;
-      default: console.log("Unknown value of activeSchemaTab:" + activeSchemaTab);
-                        schemaFormat = $("#schemaFormatTextArea").find(":selected").text();
-                        break;                                                    
+      case "#schemaTextArea":
+          schemaFormat = $("#schemaFormatTextArea").find(":selected").text();
+          schemaPart = "schema=" + encodeURIComponent(schema) ;
+          break;
+      case "#schemaFile":
+          schemaFormat = $("#schemaFormatFile").find(":selected").text();
+          schemaPart = "schema=" + encodeURIComponent(schema) ;
+          break;
+      case "#schemaUrl":
+          schemaFormat = $("#schemaFormatUrl").find(":selected").text();
+          var schemaURL = $("#schemaURL").val();
+          schemaPart = "schemaURL=" + encodeURIComponent(schemaURL) ;
+          break;
+      default:
+          console.log("Unknown value of activeSchemaTab:" + activeSchemaTab);
+          schemaFormat = $("#schemaFormatTextArea").find(":selected").text();
+          schemaPart = "schema=" + encodeURIComponent(schema) ;
+          break;
   }
   var schemaEngine = $("#schemaEngine").find(":selected").text();
   var triggerMode = $("#triggerMode").find(":selected").text();
   var inference = $("#inference").find(":selected").text();
   var shapeMap = codeMirrorShapeMap.getValue(); // prepareShapeMap();
+  var shapeMapFormat = "";
+  var shapeMapPart = "";
+  var shapeMapActiveTab = $("#shapeMapActiveTab").attr("value");
+  switch (shapeMapActiveTab) {
+        case "#shapeMapTextArea":
+            shapeMapFormat = $("#shapeMapFormatTextArea").find(":selected").text();
+            shapeMapPart = "&shapeMap=" + encodeURIComponent(shapeMap) ;
+            break;
+        case "#shapeMapFile":
+            shapeMapFormat = $("#shapeMapFormatFile").find(":selected").text();
+            shapeMapPart = "&shapeMap=" + encodeURIComponent(shapeMap) ;
+            break;
+        case "#shapeMapUrl":
+            shapeMapFormat = $("#shapeMapFormatUrl").find(":selected").text();
+            var shapeMapURL = $("#shapeMapURL").val();
+            shapeMapPart = "&shapeMapURL=" + encodeURIComponent(shapeMapURL) ;
+            break;
+        default:
+            console.log("Unknown value of shapeMapActiveTab:" + shapeMapActiveTab);
+            shapeMapFormat = $("#shapeMapFormatTextArea").find(":selected").text();
+            shapeMapPart = "&shapeMap=" + encodeURIComponent(shapeMap) ;
+            break;
+    }
   var schemaEmbedded = $("#schemaEmbedded").is(":checked");
   if (schemaEmbedded) {  schema = ""; }
+
   var location = "/validate?" +
-      "data=" + encodeURIComponent(data) +
-      "&dataFormat=" + encodeURIComponent(dataFormat) +
-      "&schema=" + encodeURIComponent(schema) +
-      "&schemaFormat=" + encodeURIComponent(schemaFormat) +
-      "&schemaEngine=" + encodeURIComponent(schemaEngine) +
-      "&triggerMode=" + encodeURIComponent(triggerMode) +
-      "&schemaEmbedded=" + encodeURIComponent(schemaEmbedded) +
-      "&inference=" + encodeURIComponent(inference) +
-      "&shapeMap=" + encodeURIComponent(shapeMap);
+      dataPart + "&" +
+      "dataFormat=" + encodeURIComponent(dataFormat) + "&" +
+      schemaPart + "&" +
+      "schemaFormat=" + encodeURIComponent(schemaFormat) + "&" +
+      "schemaEngine=" + encodeURIComponent(schemaEngine) + "&" +
+      "triggerMode=" + encodeURIComponent(triggerMode) + "&" +
+      "schemaEmbedded=" + encodeURIComponent(schemaEmbedded) + "&" +
+      "inference=" + encodeURIComponent(inference) + "&" +
+      "activeDataTab=" + encodeURIComponent(dataActiveTab) + "&" +
+      "activeSchemaTab=" + encodeURIComponent(activeSchemaTab) + "&" +
+      "activeShapeMapTab=" + encodeURIComponent(shapeMapActiveTab) + "&" +
+      shapeMapPart ;
     var href = urlShaclex + location
     console.log("NewHRef: " + href)
     window.location.assign(href) ;

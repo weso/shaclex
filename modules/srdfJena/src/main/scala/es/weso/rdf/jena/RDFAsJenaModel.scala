@@ -150,7 +150,7 @@ case class RDFAsJenaModel(model: Model)
     obj.fold(empty) { o => {
       val statements: Set[Statement] = triplesObject(o, model)
       toRDFTriples(statements)
-    }
+     }
     }
   }
 
