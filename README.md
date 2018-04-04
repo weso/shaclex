@@ -9,6 +9,7 @@ This project contains an implementation of
 [![CircleCI](https://circleci.com/gh/labra/shaclex.svg?style=svg)](https://circleci.com/gh/labra/shaclex)
 [![Build Status](https://travis-ci.org/labra/shaclex.svg?branch=master)](https://travis-ci.org/labra/shaclex)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex)
+[![DOI](https://zenodo.org/badge/55072395.svg)](https://zenodo.org/badge/latestdoi/55072395)
 
 ## Introduction
 
