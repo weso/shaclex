@@ -1,56 +1,51 @@
+@import es.weso.server.DataValue
+
 @(formName: String,
-  data:Option[String],
-  dataURL: Option[String],
-  availableDataFormats: List[String],
-  currentDataFormat: String,
-  availableInferenceEngines: List[String],
-  currentInferenceEngine: String,
-  endpoint: Option[String],
-  activeDataTab: String,
+  dv: DataValue,
   twocolumns: Boolean
 )
 <fieldset class='@{if (twocolumns) "dataPanel2" else "dataPanel"}'>
     <legend>RDF Data</legend>
     <ul id="rdfDataTabs" class="nav nav-tabs">
         <li class="nav-item">
-            <a class='@{if (activeDataTab=="#dataTextArea") "nav-link active" else "nav-link"}'
+            <a class='@{if (dv.activeDataTab=="#dataTextArea") "nav-link active" else "nav-link"}'
                id="dataTextArea-tab" data-toggle="tab" href="#dataTextArea" aria-controls="dataTextArea" aria-selected="true">By input</a>
         </li>
         <li class="nav-item">
-            <a class='@{if (activeDataTab=="#dataUrl") "nav-link active" else "nav-link"}'
+            <a class='@{if (dv.activeDataTab=="#dataUrl") "nav-link active" else "nav-link"}'
                id="dataUrl-tab" data-toggle="tab" href="#dataUrl" aria-controls="dataUrl" aria-selected="false">By URL</a>
         </li>
         <li class="nav-item">
-            <a class='@{if (activeDataTab=="#dataFile") "nav-link active" else "nav-link"}'
+            <a class='@{if (dv.activeDataTab=="#dataFile") "nav-link active" else "nav-link"}'
                id="dataFile-tab" data-toggle="tab" href="#dataFile" aria-controls="dataFile" aria-selected="false">By File</a>
         </li>
         <li class="nav-item">
-            <a class='@{if (activeDataTab=="#dataEndpoint") "nav-link active" else "nav-link"}'
+            <a class='@{if (dv.activeDataTab=="#dataEndpoint") "nav-link active" else "nav-link"}'
                id="dataEndpoint-tab" data-toggle="tab" href="#dataEndpoint" aria-controls="dataEndpoint" aria-selected="false">By Endpoint</a>
         </li>
     </ul>
     <div class="tab-content" id="rdfDataContent">
-        <div class='@{if (activeDataTab=="#dataTextArea") "tab-pane fade show active" else "tab-pane fade"}'
+        <div class='@{if (dv.activeDataTab=="#dataTextArea") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataTextArea" role="tabpanel" aria-labelledby="dataTextArea-tab">
-            <textarea id="rdfData" placeHolder="RDF data" name="data">@{data.getOrElse("")}</textarea>
-            @selectDataFormat(formName,"TextArea",availableDataFormats,currentDataFormat)
+            <textarea id="rdfData" placeHolder="RDF data" name="data">@{dv.data.getOrElse("")}</textarea><br/>
+            @selectDataFormat(formName,"TextArea",dv.availableDataFormats,dv.currentDataFormat)
         </div>
-        <div class='@{if (activeDataTab=="#dataUrl") "tab-pane fade show active" else "tab-pane fade"}'
+        <div class='@{if (dv.activeDataTab=="#dataUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataUrl" role="tabpanel" aria-labelledby="dataUrl-tab">
-            <label>Data URL: </label><input type="url" name="dataURL" id="dataURL" value='@{dataURL.getOrElse("")}' />
+            <label>Data URL: </label><input type="url" name="dataURL" id="dataURL" value='@{dv.dataURL.getOrElse("")}' />
             <br/>
-            @selectDataFormat(formName,"Url",availableDataFormats,currentDataFormat)
+            @selectDataFormat(formName,"Url",dv.availableDataFormats,dv.currentDataFormat)
         </div>
-        <div class='@{if (activeDataTab=="#dataFile") "tab-pane fade show active" else "tab-pane fade"}'
+        <div class='@{if (dv.activeDataTab=="#dataFile") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataFile" role="tabpanel" aria-labelledby="dataFile-tab">
             <input type="file" name="dataFile" >
-            @selectDataFormat(formName,"File",availableDataFormats,currentDataFormat)
+            @selectDataFormat(formName,"File",dv.availableDataFormats,dv.currentDataFormat)
         </div>
-        <div class='@{if (activeDataTab=="#dataEndpoint") "tab-pane fade show active" else "tab-pane fade"}'
+        <div class='@{if (dv.activeDataTab=="#dataEndpoint") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataEndpoint" role="tabpanel" aria-labelledby="dataEndpoint-tab">
-            <input type="url" name="endpoint" placeholder="endpoint" value='@{endpoint.getOrElse("")}'>
+            <input type="url" name="endpoint" placeholder="endpoint" value='@{dv.endpoint.getOrElse("")}'>
         </div>
-        <input id="rdfDataActiveTab" type="hidden" name="rdfDataActiveTab" value="@{activeDataTab}">
+        <input id="rdfDataActiveTab" type="hidden" name="rdfDataActiveTab" value="@{dv.activeDataTab}">
     </div>
-    @selectInferenceEngine(formName, availableInferenceEngines,currentInferenceEngine)
+    @selectInferenceEngine(formName, dv.availableInferenceEngines,dv.currentInferenceEngine)
 </fieldset>

@@ -39,16 +39,17 @@ object WebService {
       OptEndpointParam(optEndpoint) +&
       OptActiveDataTabParam(optActiveDataTab) +&
       TargetDataFormatParam(optTargetDataFormat) => {
-      Ok(html.dataConversions(
-        optData,
+      val dv = DataValue(optData,
         optDataURL,
-        availableDataFormats,
         optDataFormat.getOrElse(defaultDataFormat),
-        availableInferenceEngines,
+        availableDataFormats,
         optInference.getOrElse(defaultInference),
+        availableInferenceEngines,
         optEndpoint,
+        optActiveDataTab.getOrElse(defaultActiveDataTab)
+      )
+      Ok(html.dataConversions(dv,
         optTargetDataFormat.getOrElse(defaultDataFormat),
-        optActiveDataTab.getOrElse(defaultActiveDataTab),
         dataConvert(optData, optDataFormat, optTargetDataFormat)))
 
     }
@@ -63,15 +64,15 @@ object WebService {
             case Right((rdf,dp)) => {
               val targetFormat = dp.targetDataFormat.getOrElse(defaultDataFormat)
               val result = rdf.serialize(targetFormat).map(Some(_))
-              Ok(html.dataConversions(dp.data,
-                  dp.dataURL,
-                  availableDataFormats,
-                  dp.dataFormat.getOrElse(defaultDataFormat),
-                  availableInferenceEngines,
-                  dp.inference.getOrElse(defaultInference),
-                  dp.endpoint,
+              val dv = DataValue(
+                dp.data, dp.dataURL,
+                dp.dataFormat.getOrElse(defaultDataFormat), availableDataFormats,
+                dp.inference.getOrElse(defaultInference), availableInferenceEngines,
+                dp.endpoint,
+                dp.activeDataTab.getOrElse(defaultActiveDataTab)
+              )
+              Ok(html.dataConversions(dv,
                   dp.targetDataFormat.getOrElse(defaultDataFormat),
-                  dp.activeDataTab.getOrElse(defaultActiveDataTab),
                   result))
             }
           }
@@ -88,15 +89,18 @@ object WebService {
       OptActiveDataTabParam(optActiveDataTab) => {
       RDFAsJenaModel.fromChars(optData.getOrElse(""), optDataFormat.getOrElse(defaultDataFormat)).fold(
         str => BadRequest(str),
-        rdf => Ok(html.dataInfo(dataInfo(rdf),
-          optData,
-          optDataURL,
-          availableDataFormats,
-          defaultDataFormat,
-          availableInferenceEngines,
-          optInference.getOrElse(defaultInference),
-          optEndpoint,
-          optActiveDataTab.getOrElse(defaultActiveDataTab))))
+        rdf => {
+          val dv = DataValue(optData,
+            optDataURL,
+            optDataFormat.getOrElse(defaultDataFormat),
+            availableDataFormats,
+            optInference.getOrElse(defaultInference),
+            availableInferenceEngines,
+            optEndpoint,
+            optActiveDataTab.getOrElse(defaultActiveDataTab)
+          )
+          Ok(html.dataInfo(dataInfo(rdf),dv))
+        })
     }
 
     case req@POST -> Root / "dataInfo" => {
@@ -106,16 +110,16 @@ object WebService {
           maybeData <- DataParam.mkData(partsMap)
           response <- maybeData match {
             case Left(str) => BadRequest (s"Error obtaining data: $str")
-            case Right((rdf,dp)) =>
-              Ok(html.dataInfo(dataInfo(rdf),
-                dp.data,
-                dp.dataURL,
-                availableDataFormats,
-                dp.dataFormat.getOrElse(defaultDataFormat),
-                availableInferenceEngines,
-                dp.inference.getOrElse(defaultInference),
+            case Right((rdf,dp)) => {
+              val dv = DataValue(
+                dp.data, dp.dataURL,
+                dp.dataFormat.getOrElse(defaultDataFormat), availableDataFormats,
+                dp.inference.getOrElse(defaultInference), availableInferenceEngines,
                 dp.endpoint,
-                dp.activeDataTab.getOrElse(defaultActiveDataTab)))
+                dp.activeDataTab.getOrElse(defaultActiveDataTab)
+              )
+              Ok(html.dataInfo(dataInfo(rdf),dv))
+            }
           }
         } yield response
       }
@@ -270,7 +274,6 @@ object WebService {
                       println(s">>>> Trigger: $tp")
                       getSchemaEmbedded(sp)
                     }
-                    // optShapeMapStr = tp.getShapeMap._1
                     (result, maybeTriggerMode) = validate(dp.data.getOrElse(""), dp.dataFormat,
                       sp.schema, sp.schemaFormat, sp.schemaEngine, tp,
                       None, None, dp.inference)
@@ -364,6 +367,15 @@ object WebService {
               case TargetDeclarations => None
               case ShapeMapTrigger(sm) => Some(sm.toString)
             }
+            val dv = DataValue(optData,
+              optDataURL,
+              optDataFormat.getOrElse(defaultDataFormat),
+              availableDataFormats,
+              optInference.getOrElse(defaultInference),
+              availableInferenceEngines,
+              optEndpoint,
+              optActiveDataTab.getOrElse(defaultActiveDataTab)
+            )
             val sv = SchemaValue(optSchema, optSchemaURL,
               optSchemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
               optSchemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
@@ -377,19 +389,12 @@ object WebService {
             )
             Ok(html.validate(
               result.map(_._1),
-              optData,
-              optDataURL,
-              availableDataFormats,
-              optDataFormat.getOrElse(defaultDataFormat),
+              dv,
               sv,
               availableTriggerModes,
               triggerMode.name,
               smv,
-              optSchemaEmbedded.getOrElse(defaultSchemaEmbedded),
-              availableInferenceEngines,
-              optInference.getOrElse("NONE"),
-              optEndpoint,
-              optActiveDataTab.getOrElse(defaultActiveDataTab)
+              optSchemaEmbedded.getOrElse(defaultSchemaEmbedded)
             ))
           }
         }
@@ -406,17 +411,19 @@ object WebService {
         OptActiveQueryTabParam(optActiveQueryTab)
         => {
       val result = query(optData.getOrElse(""), optDataFormat, optQuery, optInference)
+      val dv = DataValue(optData,
+        optDataURL,
+        optDataFormat.getOrElse(defaultDataFormat),
+        availableDataFormats,
+        optInference.getOrElse(defaultInference),
+        availableInferenceEngines,
+        optEndpoint,
+        optActiveDataTab.getOrElse(defaultActiveDataTab)
+      )
       Ok(html.query(
         result,
-        optData,
-        optDataURL,
-        availableDataFormats,
-        optDataFormat.getOrElse(defaultDataFormat),
+        dv,
         optQuery,
-        availableInferenceEngines,
-        optInference.getOrElse("NONE"),
-        optEndpoint,
-        optActiveDataTab.getOrElse(defaultActiveDataTab),
         optActiveQueryTab.getOrElse(defaultActiveQueryTab)
       ))
     }
@@ -436,17 +443,17 @@ object WebService {
                   val optQueryStr = qp.query.map(_.str)
                   val result = rdf.queryAsJson(optQueryStr.getOrElse(""))
                   println(s"Result: ${result}")
+                  val dv = DataValue(
+                    dp.data, dp.dataURL,
+                    dp.dataFormat.getOrElse(defaultDataFormat), availableDataFormats,
+                    dp.inference.getOrElse(defaultInference), availableInferenceEngines,
+                    dp.endpoint,
+                    dp.activeDataTab.getOrElse(defaultActiveDataTab)
+                  )
                   Ok(html.query(
                     result,
-                    dp.data,
-                    dp.dataURL,
-                    availableDataFormats,
-                    dp.dataFormat.getOrElse(defaultDataFormat),
+                    dv,
                     optQueryStr,
-                    availableInferenceEngines,
-                    dp.inference.getOrElse(defaultInference),
-                    dp.endpoint,
-                    dp.activeDataTab.getOrElse(defaultActiveDataTab),
                     qp.activeQueryTab.getOrElse(defaultActiveQueryTab)
                   ))
                 }
@@ -480,6 +487,13 @@ object WebService {
                                dp: DataParam,
                                sp: SchemaParam,
                                tp: TriggerModeParam): IO[Response[IO]] = {
+    val dv = DataValue(
+      dp.data, dp.dataURL,
+      dp.dataFormat.getOrElse(defaultDataFormat), availableDataFormats,
+      dp.inference.getOrElse(defaultInference), availableInferenceEngines,
+      dp.endpoint,
+      dp.activeDataTab.getOrElse(defaultActiveDataTab)
+    )
     val sv = SchemaValue(sp.schema,
       sp.schemaURL,
       sp.schemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
@@ -492,16 +506,10 @@ object WebService {
       availableShapeMapFormats,
       tp.activeShapeMapTab.getOrElse(defaultActiveShapeMapTab)
     )
-    Ok(html.validate(Some(result), dp.data, dp.dataURL,
-      availableDataFormats, dp.dataFormat.getOrElse(defaultDataFormat),
-      sv,
+    Ok(html.validate(Some(result), dv, sv,
       availableTriggerModes, tp.triggerMode.getOrElse(defaultTriggerMode),
       smv,
-      getSchemaEmbedded(sp),
-      availableInferenceEngines,
-      dp.inference.getOrElse(defaultInference),
-      dp.endpoint,
-      dp.activeDataTab.getOrElse(defaultActiveDataTab),
+      getSchemaEmbedded(sp)
     ))
   }
 

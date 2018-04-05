@@ -1,23 +1,17 @@
 @import es.weso.json.JsonTwirl
 @import io.circe._
 @import es.weso.schema.Result
+@import es.weso.server.DataValue
 @import es.weso.server.SchemaValue
 @import es.weso.server.ShapeMapValue
 
 @(result: Option[Result],
-  data:Option[String],
-  dataURL: Option[String],
-  availableDataFormats: List[String],
-  currentDataFormat: String,
+  dv: DataValue,
   sv:SchemaValue,
   availableTriggerModes: List[String],
   currentTriggerMode: String,
   smv: ShapeMapValue,
-  schemaEmbedded: Boolean,
-  availableInferenceEngines: List[String],
-  currentInferenceEngine: String,
-  endpoint: Option[String],
-  activeDataTab: String
+  schemaEmbedded: Boolean
 )
 
 <html>
@@ -35,7 +29,7 @@
             /></label>
     </fieldset>
 
-    @dataPanel("validate", data, dataURL, availableDataFormats, currentDataFormat, availableInferenceEngines, currentInferenceEngine, endpoint, activeDataTab, true)
+    @dataPanel("validate", dv, true)
 
     <div id="schemaDiv">
       @schemaPanel("validate", sv, true)

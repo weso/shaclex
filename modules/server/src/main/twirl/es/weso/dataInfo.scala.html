@@ -1,16 +1,10 @@
 @import es.weso.json.JsonTwirl
+@import es.weso.server.DataValue
 @import io.circe._
 
 @(result: Option[Json],
-  data: Option[String],
-  dataURL: Option[String],
-  availableDataFormats: List[String],
-  currentDataFormat: String,
-  availableInferenceEngines: List[String],
-  currentInference: String,
-  endpoint: Option[String],
-  activeDataTab: String
-)
+  dv: DataValue
+ )
 <html lang="en">
 @head("SHACLex: Data info")
 <body>
@@ -20,7 +14,7 @@
 <div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.getOrElse(Json.Null)))}'></div>
 
 <form action="/dataInfo" method="POST" enctype="multipart/form-data" id="info">
-    @dataPanel("info",data,dataURL,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInference,endpoint,activeDataTab,false)
+    @dataPanel("info",dv,false)
     <button type="submit">Data Info</button>
 </form>
 <div class="otherOptions">

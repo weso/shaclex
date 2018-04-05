@@ -1,21 +1,12 @@
+@import es.weso.server.DataValue
 @import es.weso.json.JsonTwirl
 @import io.circe._
 
 @(result: Either[String,Json],
-  data:Option[String],
-  dataURL:Option[String],
-  availableDataFormats: List[String],
-  currentDataFormat: String,
-  query:Option[String],
-  availableInferenceEngines: List[String],
-  currentInferenceEngine: String,
-  endpoint: Option[String],
-  activeDataTab: String,
+  dv:DataValue,
+  query: Option[String],
   activeQueryTab: String
 )
-
-@import java.net.URLEncoder
-
 <html>
 @head("SHACLex: Query")
 <body>
@@ -27,8 +18,7 @@
   <div id="resultDiv" data-result='null' class="alert alert-danger" role="alert"><code>@{result.left.get}</code></div>
 }
 <form action="/query" method="POST" enctype="multipart/form-data" id="query">
-    @dataPanel("query", data, dataURL, availableDataFormats, currentDataFormat,
-                        availableInferenceEngines, currentInferenceEngine, endpoint, activeDataTab, true)
+    @dataPanel("query", dv, true)
     <div id="queryDiv">
      @queryPanel("query", query, activeQueryTab)
     </div>
@@ -58,7 +48,3 @@
 @scripts("query")
 </body>
 </html>
-
-
-
-
