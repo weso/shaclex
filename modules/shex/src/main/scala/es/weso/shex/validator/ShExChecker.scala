@@ -4,7 +4,9 @@ import cats._
 import implicits._
 import es.weso.checking.CheckerCats
 import es.weso.rdf.RDFReader
+import es.weso.rdf.nodes.IRI
 import es.weso.shex.ViolationError
+import es.weso.shex.validator.Action._
 
 object ShExChecker extends CheckerCats {
 
@@ -14,7 +16,7 @@ object ShExChecker extends CheckerCats {
   type Env = ShapeTyping
   type Err = ViolationError
   type Evidence = (NodeShape, String)
-  type Log = List[Evidence]
+  type Log = List[Action]
   type CheckTyping = Check[ShapeTyping]
 
   implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
@@ -29,9 +31,9 @@ object ShExChecker extends CheckerCats {
     def combine(l1: Log, l2: Log): Log = l1 ++ l2
     def empty: Log = List()
   }
-  implicit val logShow: Show[Log] = new Show[Log] {
+/*  implicit val logShow: Show[Log] = new Show[Log] {
     def show(l: Log): String = l.map { case (ns, msg) => s"${ns}: $msg" }.mkString("\n")
-  }
+  } */
   implicit val typingShow: Show[ShapeTyping] = new Show[ShapeTyping] {
     def show(t: ShapeTyping): String = t.toString
   }
@@ -49,18 +51,20 @@ object ShExChecker extends CheckerCats {
   } yield newTyping
 
   def addEvidence(nodeShape: NodeShape, msg: String): Check[ShapeTyping] = {
+    val action = Action(IRI("http://shex.io/actions/log"),Some(s"Evidence added: $nodeShape: $msg"))
     for {
       t <- getTyping
-      _ <- addLog(List((nodeShape, msg)))
+      _ <- addLog(List(action))
     } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
   }
 
   def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
+    val action = Action(IRI("http://shex.io/actions/log"),Some(s"Not Evidence: $nodeShape: $msg"))
     val node = nodeShape.node
     val shape = nodeShape.shape
     for {
       t <- getTyping
-      _ <- addLog(List((nodeShape, msg)))
+      _ <- addLog(List(action))
     } yield t.addNotEvidence(node, shape, e)
   }
 

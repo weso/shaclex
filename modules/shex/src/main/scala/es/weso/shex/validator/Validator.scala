@@ -322,8 +322,28 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       (candidates, rest) = csRest
       _ <- checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
       typing <- checkCandidates(attempt, bagChecker, cTable)(candidates)
+      _ <- checkOptSemActs(s.semActs)
     } yield typing
   }
+
+  private[validator] def checkOptSemActs(maybeActs: Option[List[SemAct]]): Check[Unit] =
+    maybeActs match {
+      case None => ok(())
+      case Some(as) => checkListSemActs(as)
+  }
+
+  private[validator] def checkListSemActs(as: List[SemAct]): Check[Unit] = for {
+    _ <- checkAll(as.map(checkSemAct(_)))
+  } yield ()
+
+  private[validator] def checkSemAct(a: SemAct): Check[Unit] = for {
+    rdf <- getRDF
+    _ <- runAction(a.name,a.code,rdf)
+  } yield ()
+
+  private[validator] def runAction(name: IRI, code: Option[String], rdf: RDFReader): Check[Unit] = for {
+    _ <- addLog(List(Action(name,code)))
+  } yield ()
 
   private[validator] def checkRests(rests: List[(Path, RDFNode)],
                                     extras: List[Path],
