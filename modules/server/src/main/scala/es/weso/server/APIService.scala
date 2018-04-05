@@ -249,10 +249,24 @@ object APIService {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParameter(optShapeMap) +&
+      ShapeMapURLParameter(optShapeMapURL) +&
+      ShapeMapFileParameter(optShapeMapFile) +&
+      ShapeMapFormatParam(optShapeMapFormat) +&
+      OptActiveShapeMapTabParam(optActiveShapeMapTab) +&
       InferenceParam(optInference) => {
+      val tp = TriggerModeParam(
+        optTriggerMode,
+        optShapeMap,
+        optShapeMapFormat,
+        optShapeMapURL,
+        optShapeMapFormat, // TODO: Maybe a more specific param for URL format?
+        optShapeMapFile,
+        optShapeMapFormat, // TODO: Maybe a more specific param for File format?
+        optActiveShapeMapTab
+      )
       val result = validate(data, optDataFormat,
         optSchema, optSchemaFormat, optSchemaEngine,
-        optTriggerMode, optNode, optShape, optShapeMap, optInference)
+        tp, optNode, optShape, optInference)
       val default = Ok(result._1.toJson)
         // .withContentType(Some(`Content-Type`(`application/json`)))
       /*              req.headers.get(`Accept`) match {

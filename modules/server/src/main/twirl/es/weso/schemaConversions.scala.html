@@ -1,15 +1,11 @@
 @import io.circe._
+@import es.weso.server.SchemaValue
 
-@(schema: Option[String],
-  availableSchemaFormats: List[String],
-  currentSchemaFormat: String,
-  availableSchemaEngines: List[String],
-  currentSchemaEngine: String,
+@(sv: SchemaValue,
   currentTargetSchemaFormat: String,
   currentTargetSchemaEngine: String,
-  activeSchemaTab: String,
   result: Either[String, Option[String]]
-)
+ )
 
 
 <html lang="en">
@@ -31,13 +27,13 @@
 <form action="/schemaConversions" method="POST" enctype="multipart/form-data" id="convert">
   <fieldset>
       <legend>Source</legend>
-      @schemaPanel("convert",schema,availableSchemaFormats,currentSchemaFormat,activeSchemaTab,false)
-      @selectSchemaEngine("convert", availableSchemaEngines,currentSchemaEngine)
+      @schemaPanel("convert",sv,false)
+      @selectSchemaEngine("convert", sv.availableSchemaEngines,sv.currentSchemaEngine)
   </fieldset>
     <fieldset>
         <legend>Target</legend>
-        @selectTargetSchemaFormat("convert",availableSchemaFormats,currentTargetSchemaFormat)
-        @selectTargetSchemaEngine("convert",availableSchemaEngines,currentTargetSchemaEngine)
+        @selectTargetSchemaFormat("convert",sv.availableSchemaFormats,currentTargetSchemaFormat)
+        @selectTargetSchemaEngine("convert",sv.availableSchemaEngines,currentTargetSchemaEngine)
     </fieldset>
     <div class="submit">
       <button type="submit">Convert</button>

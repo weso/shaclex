@@ -37,7 +37,8 @@
         </div>
         <div class='@{if (activeDataTab=="#dataUrl") "tab-pane fade show active" else "tab-pane fade"}'
              id="dataUrl" role="tabpanel" aria-labelledby="dataUrl-tab">
-            <input type="url" name="dataURL" id="dataURL" value='@{dataURL.getOrElse("")}' />
+            <label>Data URL: </label><input type="url" name="dataURL" id="dataURL" value='@{dataURL.getOrElse("")}' />
+            <br/>
             @selectDataFormat(formName,"Url",availableDataFormats,currentDataFormat)
         </div>
         <div class='@{if (activeDataTab=="#dataFile") "tab-pane fade show active" else "tab-pane fade"}'

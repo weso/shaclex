@@ -20,6 +20,8 @@ object QueryParams {
   object ShapeParam extends OptionalQueryParamDecoderMatcher[String]("shape")
   object NameParam extends OptionalQueryParamDecoderMatcher[String]("name")
   object ShapeMapParameter extends OptionalQueryParamDecoderMatcher[String]("shapeMap")
+  object ShapeMapURLParameter extends OptionalQueryParamDecoderMatcher[String]("shapeMapURL")
+  object ShapeMapFileParameter extends OptionalQueryParamDecoderMatcher[String]("shapeMapFile")
   object ShapeMapFormatParam extends OptionalQueryParamDecoderMatcher[String]("shapeMapFormat")
   object SchemaEmbedded extends OptionalQueryParamDecoderMatcher[Boolean]("schemaEmbedded")
   object InferenceParam extends OptionalQueryParamDecoderMatcher[String]("inference")

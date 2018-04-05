@@ -68,8 +68,8 @@ case class SchemaParam(schema: Option[String],
             schemaURL match {
               case None => (None, Left(s"Non value for dataURL"))
               case Some(schemaUrl) => Try {
-                val uri = new java.net.URI(schemaUrl)
-                Source.fromURI(uri).mkString
+                // val uri = new java.net.URI(schemaUrl)
+                Source.fromURL(schemaUrl).mkString
               }.toEither match {
                 case Left(err) => (None, Left(s"Error obtaining schema from url $schemaUrl: ${err.getMessage} "))
                 case Right(schemaStr) => Schemas.fromString(schemaStr,

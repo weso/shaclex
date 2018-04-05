@@ -1,29 +1,23 @@
 @import es.weso.json.JsonTwirl
 @import io.circe._
 @import es.weso.schema.Result
+@import es.weso.server.SchemaValue
+@import es.weso.server.ShapeMapValue
 
 @(result: Option[Result],
   data:Option[String],
   dataURL: Option[String],
   availableDataFormats: List[String],
   currentDataFormat: String,
-  schema:Option[String],
-  availableSchemaFormats: List[String],
-  currentSchemaFormat: String,
-  availableSchemaEngines: List[String],
-  currentSchemaEngine: String,
+  sv:SchemaValue,
   availableTriggerModes: List[String],
   currentTriggerMode: String,
-  shapeMap: Option[String],
-  availableShapeMapFormats: List[String],
-  currentShapeMapFormat: String,
+  smv: ShapeMapValue,
   schemaEmbedded: Boolean,
   availableInferenceEngines: List[String],
   currentInferenceEngine: String,
   endpoint: Option[String],
-  activeDataTab: String,
-  activeSchemaTab: String,
-  activeShapeMapTab: String
+  activeDataTab: String
 )
 
 <html>
@@ -34,22 +28,22 @@
 <div id="resultDiv" data-result='@{Html(JsonTwirl.json2htmlAttr(result.map(_.toJson).getOrElse(Json.Null)))}'></div>
 <form action="/validate" method="POST" enctype="multipart/form-data" id="validate">
     <fieldset>
-        @selectSchemaEngine("validate", availableSchemaEngines,currentSchemaEngine)
+        @selectSchemaEngine("validate", sv.availableSchemaEngines,sv.currentSchemaEngine)
         <label>Schema embedded:
             <input type="checkbox" id="schemaEmbedded" name="schemaEmbedded" @{if(schemaEmbedded == true) { "checked" }}
                    onChange="changeSchemaEmbedded(this);"
             /></label>
     </fieldset>
 
-    @dataPanel("validate", data,dataURL,availableDataFormats,currentDataFormat,availableInferenceEngines,currentInferenceEngine,endpoint,activeDataTab,true)
+    @dataPanel("validate", data, dataURL, availableDataFormats, currentDataFormat, availableInferenceEngines, currentInferenceEngine, endpoint, activeDataTab, true)
 
     <div id="schemaDiv">
-      @schemaPanel("validate", schema, availableSchemaFormats, currentSchemaFormat, activeSchemaTab,true)
+      @schemaPanel("validate", sv, true)
     </div>
 
     @selectTriggerMode("validate", availableTriggerModes,currentTriggerMode)
     <div id="shapeMapDiv">
-      @shapeMapPanel("validate", shapeMap, availableShapeMapFormats, currentShapeMapFormat, activeShapeMapTab)
+      @shapeMapPanel("validate", smv)
     </div>
 
     </fieldset>

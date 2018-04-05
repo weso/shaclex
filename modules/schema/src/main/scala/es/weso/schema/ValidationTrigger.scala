@@ -85,9 +85,9 @@ object ValidationTrigger extends LazyLogging {
     base: Option[String],
     optNode: Option[String],
     optShape: Option[String],
-    nodePrefixMap: PrefixMap = PrefixMap.empty,
-    shapePrefixMap: PrefixMap = PrefixMap.empty): Either[String, ValidationTrigger] = {
-    logger.info(s"Finding trigger $name, shapeMapStr: $shapeMapStr")
+    nodePrefixMap: PrefixMap,
+    shapePrefixMap: PrefixMap): Either[String, ValidationTrigger] = {
+    // logger.info(s"Finding trigger $name, shapeMapStr: $shapeMapStr")
     name.toUpperCase match {
       case "TARGETDECLS" => Right(TargetDeclarations)
       case "SHAPEMAP" =>

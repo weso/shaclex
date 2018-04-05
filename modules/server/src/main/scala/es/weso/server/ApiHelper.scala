@@ -75,10 +75,10 @@ object ApiHelper {
                optSchema: Option[String],
                optSchemaFormat: Option[String],
                optSchemaEngine: Option[String],
-               optTriggerMode: Option[String],
+               tp: TriggerModeParam,
                optNode: Option[String],
                optShape: Option[String],
-               optShapeMap: Option[String],
+               // optShapeMap: Option[String],
                optInference: Option[String]
               ): (Result, Option[ValidationTrigger]) = {
 
@@ -107,11 +107,14 @@ object ApiHelper {
             rdf.applyInference(optInference.getOrElse("None")) match {
               case Left(msg) => (Result.errStr(s"Error applying inference to RDF: $msg"), None)
               case Right(newRdf) => {
-                val triggerMode = optTriggerMode.getOrElse(ValidationTrigger.default.name)
-                val shapeMap = optShapeMap.getOrElse("")
-                ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
+                val triggerMode = tp.triggerMode // optTriggerMode.getOrElse(ValidationTrigger.default.name)
+                // val shapeMap = optShapeMap.getOrElse("")
+                val (optShapeMapStr, eitherShapeMap) = tp.getShapeMap(rdf.getPrefixMap,schema.pm)
+                ValidationTrigger.findTrigger(triggerMode.getOrElse(ValidationTrigger.default.name),
+                  optShapeMapStr.getOrElse(""),
+                  base, optNode, optShape, rdf.getPrefixMap, schema.pm) match {
                   case Left(msg) => (
-                    Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $shapeMap\nmsg: $msg"),
+                    Result.errStr(s"Cannot obtain trigger: $triggerMode\nshapeMap: $optShapeMapStr\nmsg: $msg"),
                     None)
                   case Right(trigger) => (schema.validate(newRdf, trigger), Some(trigger))
                 }

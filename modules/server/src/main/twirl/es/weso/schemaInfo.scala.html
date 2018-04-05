@@ -1,13 +1,7 @@
 @import io.circe._
+@import es.weso.server.SchemaValue
 
-@(result: Option[Json],
-  schema: Option[String],
-  availableSchemaFormats: List[String],
-  currentSchemaFormat: String,
-  availableSchemaEngines: List[String],
-  currentSchemaEngine: String,
-  activeSchemaTab: String
-)
+@(result: Option[Json], sv: SchemaValue)
 <html lang="en">
 @head("SHACLex: Schema info")
 <body>
@@ -17,8 +11,8 @@
 <div id="resultDiv">@{if(result.isDefined){result.get.spaces2}}</div>
 
 <form action="schemaInfo" method="POST" enctype="multipart/form-data" id="info">
-    @schemaPanel("info",schema,availableSchemaFormats,currentSchemaFormat,activeSchemaTab,false)
-    @selectSchemaEngine("info", availableSchemaEngines,currentSchemaEngine)
+    @schemaPanel("info",sv,false)
+    @selectSchemaEngine("info", sv.availableSchemaEngines,sv.currentSchemaEngine)
     <button type="submit">Schema Info</button>
 </form>
 </div>

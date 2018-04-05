@@ -2,6 +2,7 @@ package es.weso.server
 
 import cats.effect.IO
 import Defaults._
+import es.weso.rdf.PrefixMap
 import es.weso.shapeMaps.ShapeMap
 
 case class TriggerModeParam(triggerMode: Option[String],
@@ -31,7 +32,6 @@ case class TriggerModeParam(triggerMode: Option[String],
   }
 
   def parseShapeMapTab(tab: String): Either[String, ShapeMapInputType] = {
-    println(s"parseShapeMapTab: tab = $tab")
     val inputTypes = List(shapeMapUrlType, shapeMapFileType, shapeMapTextAreaType)
     inputTypes.find(_.id == tab) match {
       case Some(x) => Right(x)
@@ -46,16 +46,15 @@ case class TriggerModeParam(triggerMode: Option[String],
     case _ => None
   }
 
-  def getShapeMap: (Option[String], Either[String,ShapeMap]) = {
+  def getShapeMap(nodesPrefixMap: PrefixMap, shapesPrefixMap: PrefixMap): (Option[String], Either[String,ShapeMap]) = {
     val inputType = parseShapeMapTab(activeShapeMapTab.getOrElse(defaultActiveShapeMapTab))
-    println(s"Input type: $inputType")
     inputType match {
       case Right(`shapeMapUrlType`) => {
         shapeMapURL match {
           case None => (None, Left(s"No value for shapeMapURL"))
           case Some(shapeMapUrl) => {
             val shapeMapFormat = shapeMapFormatUrl.getOrElse(defaultShapeMapFormat)
-            ShapeMap.fromURI(shapeMapUrl, shapeMapFormat, None) match {
+            ShapeMap.fromURI(shapeMapUrl, shapeMapFormat, None, nodesPrefixMap, shapesPrefixMap) match {
               case Left(str) => (None, Left(s"Error obtaining $shapeMapUrl with $shapeMapFormat: $str"))
               case Right(shapeMap) => (Some(shapeMap.toString), Right(shapeMap))
             }

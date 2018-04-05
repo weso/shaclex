@@ -127,6 +127,12 @@ Contributors:
 * [Bogdan Roman](https://github.com/bogdanromanx)
 * [Andrew Berezovskyi](https://github.com/berezovskyi)
 
+## Adopters
+
+* [Eclipse lyo](http://www.eclipse.org/lyo/): An SDK and a modelling environment to 
+ design and develop linked data applications based on the [OSLC standards](http://open-services.net/). 
+ The validation library is [lyo-validation](https://github.com/eclipse/lyo-validation).
+ 
 ## Contribution
 
 Contributions are greatly appreciated. 

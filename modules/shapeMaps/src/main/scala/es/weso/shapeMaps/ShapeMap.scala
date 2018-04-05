@@ -1,7 +1,5 @@
 package es.weso.shapeMaps
 
-import java.net.URI
-
 import es.weso.rdf.nodes._
 import cats._
 import cats.implicits._
@@ -12,7 +10,6 @@ import io.circe.parser._
 import ShapeMap._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path._
-
 import scala.io.Source
 import scala.util.Try
 
@@ -45,11 +42,13 @@ object ShapeMap {
   def fromURI(uri: String,
               format: String,
               base: Option[String],
-              nodesPrefixMap: PrefixMap = PrefixMap.empty,
-              shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ShapeMap] = {
+              nodesPrefixMap: PrefixMap,
+              shapesPrefixMap: PrefixMap): Either[String, ShapeMap] = {
    val t = Try {
-      val contents = Source.fromURI(new URI(uri)).mkString
-      val either: Either[String, ShapeMap] = fromString(contents, format, base, nodesPrefixMap, shapesPrefixMap)
+      val contents = Source.fromURL(uri).mkString
+      val either: Either[String, ShapeMap] = {
+        fromString(contents, format, base, nodesPrefixMap, shapesPrefixMap)
+      }
       either
     }
    t.fold(e => Left(s"Exception obtaining URI contents. URI = ${uri}. Error: ${e.getLocalizedMessage}"),
@@ -64,7 +63,9 @@ object ShapeMap {
                 ): Either[String,ShapeMap] =
     format.toUpperCase match {
      case "JSON" => fromJson(str)
-     case "COMPACT" => fromCompact(str,base,nodesPrefixMap,shapesPrefixMap)
+     case "COMPACT" => {
+       fromCompact(str,base,nodesPrefixMap,shapesPrefixMap)
+     }
      case _ => Left(s"Unknown format for shapeMap")
    }
 
@@ -85,7 +86,9 @@ object ShapeMap {
     base: Option[String],
     rdf: RDFReader,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ResultShapeMap] = for {
-    queryMap <- Parser.parse(str, base, rdf.getPrefixMap, shapesPrefixMap)
+    queryMap <- {
+      Parser.parse(str, base, rdf.getPrefixMap, shapesPrefixMap)
+    }
     fixMap <- fixShapeMap(queryMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
   } yield ResultShapeMap(fixMap.shapeMap, rdf.getPrefixMap, shapesPrefixMap)
 

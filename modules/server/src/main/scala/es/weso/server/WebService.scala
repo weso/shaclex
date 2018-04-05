@@ -131,15 +131,16 @@ object WebService {
           response <- maybePair match {
             case Left(msg) => BadRequest(s"Error obtaining schema: $msg")
             case Right((schema, sp)) => {
+              val sv = SchemaValue(sp.schema,
+                sp.schemaURL,
+                sp.schemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
+                sp.schemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
+                sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)
+              )
               Ok(html.schemaConversions(
-                sp.schema,
-                availableSchemaFormats,
-                sp.schemaFormat.getOrElse(defaultSchemaFormat),
-                availableSchemaEngines,
-                sp.schemaEngine.getOrElse(defaultSchemaEngine),
+                sv,
                 optTargetSchemaFormat.getOrElse(defaultSchemaFormat),
                 optTargetSchemaEngine.getOrElse(defaultSchemaEngine),
-                sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab),
                 schemaConvert(sp.schema,sp.schemaFormat,sp.schemaEngine,
                   optTargetSchemaFormat,optTargetSchemaEngine,
                   ApiHelper.getBase))
@@ -159,25 +160,16 @@ object WebService {
         TargetSchemaFormatParam(optTargetSchemaFormat) +&
         TargetSchemaEngineParam(optTargetSchemaEngine) +&
         OptActiveSchemaTabParam(optActiveSchemaTab) => {
-/*      val baseUri = req.uri
-      val eitherSchema: Either[String, Option[String]] = optSchema match {
-        case None => optSchemaURL match {
-          case None => Right(None)
-          case Some(schemaURL) => resolveUri(baseUri, schemaURL)
-        }
-        case Some(schemaStr) => Right(Some(schemaStr))
-      } */
 
-
+      val sv = SchemaValue(optSchema, optSchemaURL,
+        optSchemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
+        optSchemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
+        optActiveSchemaTab.getOrElse(defaultActiveSchemaTab)
+      )
       Ok(html.schemaConversions(
-        optSchema,
-        availableSchemaFormats,
-        optSchemaFormat.getOrElse(defaultSchemaFormat),
-        availableSchemaEngines,
-        optSchemaEngine.getOrElse(defaultSchemaEngine),
+        sv,
         optTargetSchemaFormat.getOrElse(defaultSchemaFormat),
         optTargetSchemaEngine.getOrElse(defaultSchemaEngine),
-        optActiveSchemaTab.getOrElse(defaultActiveSchemaTab),
         schemaConvert(optSchema,optSchemaFormat,optSchemaEngine,
           optTargetSchemaFormat,optTargetSchemaEngine,
           ApiHelper.getBase))
@@ -193,14 +185,13 @@ object WebService {
            case Left(msg) => BadRequest(s"Error obtaining schema: $msg")
            case Right((schema, sp)) => {
              val info: Json = Json.fromString(s"Schema parsed OK")
-             Ok(html.schemaInfo(
-               Some(info),
-               sp.schema,
-               availableSchemaFormats,
-               sp.schemaFormat.getOrElse(defaultSchemaFormat),
-               availableSchemaEngines,
-               sp.schemaEngine.getOrElse(defaultSchemaEngine),
-               sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)))
+             val sv = SchemaValue(sp.schema,
+               sp.schemaURL,
+               sp.schemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
+               sp.schemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
+               sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)
+             )
+             Ok(html.schemaInfo(Some(info),sv))
            }
         }
       } yield response
@@ -208,15 +199,19 @@ object WebService {
     }
 
     case req@GET -> Root / "schemaInfo" :?
-      OptSchemaParam(optSchema) => {
+      OptSchemaParam(optSchema) +&
+      SchemaURLParam(optSchemaURL) +&
+      SchemaFormatParam(optSchemaFormat) +&
+      SchemaEngineParam(optSchemaEngine) +&
+      OptActiveSchemaTabParam(optActiveSchemaTab)
+    => {
       val info = Json.fromString(s"Schema $optSchema")
-      Ok(html.schemaInfo(Some(info),
-        optSchema,
-        availableSchemaFormats,
-        defaultSchemaFormat,
-        availableSchemaEngines,
-        defaultSchemaEngine,
-        defaultActiveSchemaTab))
+      val sv = SchemaValue(optSchema, optSchemaURL,
+        optSchemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
+        optSchemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
+        optActiveSchemaTab.getOrElse(defaultActiveSchemaTab)
+      )
+      Ok(html.schemaInfo(Some(info),sv))
     }
 
     case req@GET -> Root / "dataOptions" => {
@@ -275,12 +270,10 @@ object WebService {
                       println(s">>>> Trigger: $tp")
                       getSchemaEmbedded(sp)
                     }
-                    optShapeMapStr = tp.getShapeMap._1
+                    // optShapeMapStr = tp.getShapeMap._1
                     (result, maybeTriggerMode) = validate(dp.data.getOrElse(""), dp.dataFormat,
-                      sp.schema, sp.schemaFormat, sp.schemaEngine,
-                      tp.triggerMode,
-                      None, None,
-                      optShapeMapStr, dp.inference)
+                      sp.schema, sp.schemaFormat, sp.schemaEngine, tp,
+                      None, None, dp.inference)
                     r <- validateResponse(result,dp,sp,tp)
                   } yield r
                 }
@@ -303,6 +296,8 @@ object WebService {
       NodeParam(optNode) +&
       ShapeParam(optShape) +&
       ShapeMapParameter(optShapeMap) +&
+      ShapeMapURLParameter(optShapeMapURL) +&
+      ShapeMapFileParameter(optShapeMapFile) +&
       ShapeMapFormatParam(optShapeMapFormat) +&
       SchemaEmbedded(optSchemaEmbedded) +&
       InferenceParam(optInference) +&
@@ -334,6 +329,17 @@ object WebService {
           case Some(schemaStr) => Right(Some(schemaStr))
         }
 
+        val tp = TriggerModeParam(
+          optTriggerMode,
+          optShapeMap,
+          optShapeMapFormat,
+          optShapeMapURL,
+          optShapeMapFormat, // TODO: Maybe a more specific param for URL format?
+          optShapeMapFile,
+          optShapeMapFormat, // TODO: Maybe a more specific param for File format?
+          optActiveShapeMapTab
+        )
+
         println(s"Either schema: $eitherSchema")
         println(s"OptSchema: $optSchema")
         println(s"OptSchemaFormat: $optSchemaFormat")
@@ -344,9 +350,8 @@ object WebService {
         } yield {
           data.map(validate(_, optDataFormat,
             schema, optSchemaFormat, optSchemaEngine,
-            optTriggerMode,
-            optNode, optShape, optShapeMap,
-            optInference))
+            tp,
+            optNode, optShape, optInference))
         }
         eitherResult match {
           case Left(msg) => BadRequest(msg)
@@ -359,29 +364,32 @@ object WebService {
               case TargetDeclarations => None
               case ShapeMapTrigger(sm) => Some(sm.toString)
             }
+            val sv = SchemaValue(optSchema, optSchemaURL,
+              optSchemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
+              optSchemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
+              optActiveSchemaTab.getOrElse(defaultActiveSchemaTab)
+            )
+            val smv = ShapeMapValue(
+              shapeMap, optShapeMapURL,
+              optShapeMapFormat.getOrElse(defaultShapeMapFormat),
+              availableShapeMapFormats,
+              optActiveShapeMapTab.getOrElse(defaultActiveShapeMapTab)
+            )
             Ok(html.validate(
               result.map(_._1),
               optData,
               optDataURL,
               availableDataFormats,
               optDataFormat.getOrElse(defaultDataFormat),
-              optSchema,
-              availableSchemaFormats,
-              optSchemaFormat.getOrElse(defaultSchemaFormat),
-              availableSchemaEngines,
-              optSchemaEngine.getOrElse(Schemas.shEx.name),
+              sv,
               availableTriggerModes,
               triggerMode.name,
-              shapeMap,
-              availableShapeMapFormats,
-              optShapeMapFormat.getOrElse(defaultShapeMapFormat),
+              smv,
               optSchemaEmbedded.getOrElse(defaultSchemaEmbedded),
               availableInferenceEngines,
               optInference.getOrElse("NONE"),
               optEndpoint,
-              optActiveDataTab.getOrElse(defaultActiveDataTab),
-              optActiveSchemaTab.getOrElse(defaultActiveSchemaTab),
-              optActiveShapeMapTab.getOrElse(defaultActiveShapeMapTab)
+              optActiveDataTab.getOrElse(defaultActiveDataTab)
             ))
           }
         }
@@ -471,28 +479,31 @@ object WebService {
   private def validateResponse(result: Result,
                                dp: DataParam,
                                sp: SchemaParam,
-                               tp: TriggerModeParam): IO[Response[IO]] =
-    Ok(html.validate(Some(result),dp.data,dp.dataURL,
-    availableDataFormats,
-    dp.dataFormat.getOrElse(defaultDataFormat),
-    sp.schema,
-    availableSchemaFormats,
-    sp.schemaFormat.getOrElse(defaultSchemaFormat),
-    availableSchemaEngines,
-    sp.schemaEngine.getOrElse(defaultSchemaEngine),
-    availableTriggerModes,
-    tp.triggerMode.getOrElse(defaultTriggerMode),
-    tp.shapeMap,
-    availableShapeMapFormats,
-    tp.shapeMapFormat.getOrElse(defaultShapeMapFormat),
-    getSchemaEmbedded(sp),
-    availableInferenceEngines,
-    dp.inference.getOrElse(defaultInference),
-    dp.endpoint,
-    dp.activeDataTab.getOrElse(defaultActiveDataTab),
-    sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab),
-    tp.activeShapeMapTab.getOrElse(defaultActiveShapeMapTab)
-  ))
+                               tp: TriggerModeParam): IO[Response[IO]] = {
+    val sv = SchemaValue(sp.schema,
+      sp.schemaURL,
+      sp.schemaFormat.getOrElse(defaultSchemaFormat), availableSchemaFormats,
+      sp.schemaEngine.getOrElse(defaultSchemaEngine), availableSchemaEngines,
+      sp.activeSchemaTab.getOrElse(defaultActiveSchemaTab)
+    )
+    val smv = ShapeMapValue(
+      tp.shapeMap, tp.shapeMapURL,
+      tp.shapeMapFormat.getOrElse(defaultShapeMapFormat),
+      availableShapeMapFormats,
+      tp.activeShapeMapTab.getOrElse(defaultActiveShapeMapTab)
+    )
+    Ok(html.validate(Some(result), dp.data, dp.dataURL,
+      availableDataFormats, dp.dataFormat.getOrElse(defaultDataFormat),
+      sv,
+      availableTriggerModes, tp.triggerMode.getOrElse(defaultTriggerMode),
+      smv,
+      getSchemaEmbedded(sp),
+      availableInferenceEngines,
+      dp.inference.getOrElse(defaultInference),
+      dp.endpoint,
+      dp.activeDataTab.getOrElse(defaultActiveDataTab),
+    ))
+  }
 
   private def getSchemaEmbedded(sp: SchemaParam): Boolean = {
     sp.schemaEmbedded match {
