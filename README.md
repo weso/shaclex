@@ -1,6 +1,6 @@
 # shaclex
 
-SHACL and SHEX Implementation.
+Scala implementation of SHEX and SHACL.
 
 This project contains an implementation of
 [SHACL](http://w3c.github.io/data-shapes/shacl/) and
@@ -8,8 +8,8 @@ This project contains an implementation of
 
 [![CircleCI](https://circleci.com/gh/labra/shaclex.svg?style=svg)](https://circleci.com/gh/labra/shaclex)
 [![Build Status](https://travis-ci.org/labra/shaclex.svg?branch=master)](https://travis-ci.org/labra/shaclex)
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex)
-[![DOI](https://zenodo.org/badge/55072395.svg)](https://zenodo.org/badge/latestdoi/55072395)
+[![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex) 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214239.svg)](https://doi.org/10.5281/zenodo.1214239)
 
 ## Introduction
 
@@ -37,18 +37,11 @@ It is possible to run the program inside `sbt` as:
 
 ### Validating RDF data with SHACL 
 
-Example with conformant RDF data:
+Example:
 
 ```
 sbt "run -d examples/shacl/good1.ttl --engine ShaClex"
 ```
-
-Example with non-conformant RDF generating SHACL validation report:
-
-```
-sbt "run -d examples/shacl/bad1.ttl --engine ShaClex --showValidationReport --validationReportFormat TURTLE"
-```
-
 
 ### Validating RDF with ShEx 
 
@@ -127,12 +120,6 @@ Contributors:
 * [Bogdan Roman](https://github.com/bogdanromanx)
 * [Andrew Berezovskyi](https://github.com/berezovskyi)
 
-## Adopters
-
-* [Eclipse lyo](http://www.eclipse.org/lyo/): An SDK and a modelling environment to 
- design and develop linked data applications based on the [OSLC standards](http://open-services.net/). 
- The validation library is [lyo-validation](https://github.com/eclipse/lyo-validation).
- 
 ## Contribution
 
 Contributions are greatly appreciated. 
