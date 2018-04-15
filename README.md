@@ -21,7 +21,6 @@ The library handles RDF using a [simple RDF interface](https://github.com/labra/
 one using [Apache Jena](https://jena.apache.org/) and another one using [RDF4j](http://rdf4j.org/), this means
 that it is possible to use this library to validate RDF models from any of those RDF libraries, as well as 
 from external SPARQL endpoints.
-  
 
 ## Installation and compilation
 
