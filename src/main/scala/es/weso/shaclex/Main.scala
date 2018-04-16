@@ -3,7 +3,7 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
-import es.weso.server._
+// import es.weso.server._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
@@ -25,9 +25,9 @@ object Main extends App with LazyLogging {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
 
-    if (opts.server()) {
+/*    if (opts.server()) {
       ShaclexServer.main(args)
-    }
+    } */
 
     val baseFolder: Path = if (opts.baseFolder.isDefined) {
       Paths.get(opts.baseFolder())

@@ -99,8 +99,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
-  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
+  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
+  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -110,7 +110,7 @@ lazy val shaclex = project
     ),
     cancelable in Global      := true,
     fork                      := true,
-    reStartArgs               := Seq("--server"),
+//    reStartArgs               := Seq("--server"),
     parallelExecution in Test := false
   )
 
@@ -217,23 +217,6 @@ lazy val shapeMaps = project
       circeCore,
       circeGeneric,
       circeParser
-    )
-  )
-
-lazy val server = project
-  .in(file("modules/server"))
-  .enablePlugins(SbtTwirl)
-  .dependsOn(schema, srdf, srdfJena)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      http4sDsl,
-      http4sBlazeServer,
-      http4sBlazeClient,
-      http4sCirce,
-      http4sTwirl,
-      scalatags,
-      selenium
     )
   )
 
