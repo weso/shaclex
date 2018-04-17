@@ -25,10 +25,6 @@ object Main extends App with LazyLogging {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
 
-/*    if (opts.server()) {
-      ShaclexServer.main(args)
-    } */
-
     val baseFolder: Path = if (opts.baseFolder.isDefined) {
       Paths.get(opts.baseFolder())
     } else {

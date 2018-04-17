@@ -11,9 +11,10 @@ object DataFormats {
   lazy val NTRIPLES = DataFormats("N-TRIPLES")
   lazy val RDFJSON = DataFormats("RDF/JSON")
   lazy val TRIG = DataFormats("TRIG")
+  lazy val DOT = DataFormats("DOT")
 
   lazy val availableFormats: Seq[DataFormats] =
-    List(TURTLE, RDFXML, JSONLD, NTRIPLES, RDFJSON, TRIG)
+    List(TURTLE, RDFXML, JSONLD, NTRIPLES, RDFJSON, TRIG, DOT)
 
   lazy val formatNames: Seq[String] =
     availableFormats.map(_.name)

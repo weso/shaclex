@@ -64,11 +64,6 @@ lazy val circeParser       = "io.circe"                   %% "circe-parser"     
 lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
 lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
 lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
-lazy val http4sDsl         = "org.http4s"                 %% "http4s-dsl"          % http4sVersion
-lazy val http4sBlazeServer = "org.http4s"                 %% "http4s-blaze-server" % http4sVersion
-lazy val http4sBlazeClient = "org.http4s"                 %% "http4s-blaze-client" % http4sVersion
-lazy val http4sCirce       = "org.http4s"                 %% "http4s-circe"        % http4sVersion
-lazy val http4sTwirl       = "org.http4s"                 %% "http4s-twirl"        % http4sVersion
 lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
@@ -110,7 +105,6 @@ lazy val shaclex = project
     ),
     cancelable in Global      := true,
     fork                      := true,
-//    reStartArgs               := Seq("--server"),
     parallelExecution in Test := false
   )
 

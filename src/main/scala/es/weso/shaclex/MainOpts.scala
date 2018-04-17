@@ -11,7 +11,7 @@ class MainOpts(
   onError: (Throwable, Scallop) => Nothing) extends ScallopConf(arguments) {
 
   lazy val defaultEngine = engines.head
-  lazy val engines = Schemas.availableSchemaNames.map(_.toUpperCase) // List("SHEX","SHACL")
+  lazy val engines = Schemas.availableSchemaNames.map(_.toUpperCase) ++ List("None")// List("SHEX","SHACL")
   lazy val defaultDataFormat = "TURTLE"
   lazy val dataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase).distinct
   lazy val schemaFormats = Schemas.availableFormats.map(_.toUpperCase).distinct
@@ -210,13 +210,13 @@ class MainOpts(
     required = false,
     descr = "Apply some inference before. Available values: RDFS")
 
-  val server = toggle(
+/*  val server = toggle(
     "server",
     prefix = "no-",
     default = Some(false),
     descrYes = "server mode",
     descrNo = "command line mode",
-    noshort = true)
+    noshort = true)  */
 
   val time = toggle(
     "time",
