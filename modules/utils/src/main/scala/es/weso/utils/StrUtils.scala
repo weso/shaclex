@@ -3,7 +3,16 @@ package es.weso.utils
 object StrUtils {
 
   /**
-    * Unscape unicode numbers
+    * Converter takes an index i into a string and checks how many charts it can replace
+    * If it can't replace, it returns None (no conversion)
+    * If it replaces, it returns the characters that are replaced and the next index in the string
+    * Rationale: Some conversions may require some lookahead, in which case, the index will be i + characters read
+    */
+  type Converter = (String, Int) => Option[CharConversion]
+  type CharConversion = (Array[Char],Int)
+
+  /**
+    * Unescape unicode numbers
     * Given a string like: "p\u0031", return "p1"
     * The code implements the Turtle rules: https://www.w3.org/TR/turtle/#sec-escapes
     *
@@ -109,13 +118,10 @@ object StrUtils {
     * @param str
     * @return
     */
-
   def escapeStringLiteral(str: String): String = cnvLoop(str, List(cnvCtrl))
 
   def escapePattern(str: String): String = cnvLoop(str,List())
 
-  type Converter = (String, Int) => Option[CharConversion]
-  type CharConversion = (Array[Char],Int)
 
   def cnvLoop(str: String, converters: List[Converter]): String = {
     var i = 0
@@ -161,21 +167,24 @@ object StrUtils {
     case _ => None
   }
 
-/*  private def cnvBackslashPattern: Converter = (str,i) =>
-   str(i) match {
-    case '\\' => {
-      val newIndex = i + 1
-      str(newIndex) match {
-        case '^' => Some((Array('^'), newIndex))
-        case '$' => Some((Array('$'), newIndex))
-        case _ => Some((Array('\\'), i))
-      }
-    }
-    case _ => None
-  }
-*/
-
   private def noConverter(str: String, i: Int): CharConversion =
    (Array(str(i)),i)
+
+  /**
+    * escapeDot: Escapes strings to be represented as labels in Dot
+    * It follows dot conventions: https://graphviz.gitlab.io/_pages/doc/info/lang.html
+    * Extra characters are escaped using their Unicode representation
+    * @param str
+    * @return
+    */
+  def escapeDot(str: String): String = cnvLoop(str, List(dotConverter))
+
+  private def dotConverter: Converter = (str,i) => str(i) match {
+    case c if c.isLetterOrDigit => None
+    case c if c.toInt > 200 && c.toInt < 377 => None
+    case c => {
+      Some((s"&#${c.toInt};".toCharArray, i))
+    }
+  }
 
 }

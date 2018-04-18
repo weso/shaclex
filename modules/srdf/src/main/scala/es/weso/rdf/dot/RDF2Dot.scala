@@ -1,6 +1,5 @@
 package es.weso.rdf.dot
 
-import cats._
 import cats.implicits._
 import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
@@ -32,10 +31,7 @@ object RDF2Dot {
     _ <- setGraph(g1)
   } yield n
 
-  def getGraph: Converter[DotGraph] = {
-    println(s"getGraph")
-    StateT.get
-  }
+  def getGraph: Converter[DotGraph] = StateT.get
   def setGraph(g: DotGraph): Converter[Unit] = StateT.set(g)
   def ok[A](x:A): Converter[A] = StateT.pure(x)
 

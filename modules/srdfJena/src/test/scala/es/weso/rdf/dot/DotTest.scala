@@ -10,18 +10,21 @@ class DotTest extends FunSpec with Matchers {
       RDFAsJenaModel.fromChars(
         """|prefix : <http://example.org/>
            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+           |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
            |
-           |:x :a 1, :y .
+           |:x :a 1, :y, _:1 .
+           |:x :b ("a" "b") .
            |:y :b "Hi" .
            |:z :c "Hola"@es .
            |:z :c "1984"^^<xsd:year> .
+           |_:1 :a :z .
            |:z :a :x .
         """.stripMargin, "TURTLE", None).fold(e => fail(s"Error: $e"),
         rdf => {
           val dot = RDF2Dot.rdf2dot(rdf)
           println(s"Size of triples: ${rdf.rdfTriples().size}")
           println(s"Dot generated: $dot")
-          dot.edges.size should be(3)
+          dot.edges.size should be(7)
         }
       )
     }
