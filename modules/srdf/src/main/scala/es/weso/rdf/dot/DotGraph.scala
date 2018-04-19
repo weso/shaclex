@@ -56,7 +56,7 @@ case class DotGraph(
     case Some(n) => (this, n)
   }
 
-  def nextId = rdfNodeIdMap.size
+  private def nextId = rdfNodeIdMap.size
 
   def addEdge(edge: Edge): DotGraph = {
     this.copy(edges = edge +: edges)

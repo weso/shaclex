@@ -1,5 +1,7 @@
 package es.weso.uml
 
+import es.weso.uml.UMLDiagram.UML
+
 object UMLDiagram {
 
   type NodeId = String
@@ -39,6 +41,16 @@ object UMLDiagram {
     */
   case class UML(classes: Map[NodeId, UMLClass], links: List[UMLLink]) {
 
+    def addClass(cls: UMLClass): UML = {
+      val id = "C" + nextId
+      this.copy(classes = classes.updated(id,cls))
+    }
+
+    def addLink(link: UMLLink): UML =
+      this.copy(links = link :: links)
+
+    private def nextId = classes.size
+
     def toPlantUML: String = {
       val sb = new StringBuilder
       sb.append("@startuml\n")
@@ -65,4 +77,8 @@ object UMLDiagram {
     }
   }
 
+  object UML {
+    def empty: UML = UML(Map(), List())
+  }
 }
+
