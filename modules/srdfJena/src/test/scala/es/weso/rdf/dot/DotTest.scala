@@ -24,7 +24,7 @@ class DotTest extends FunSpec with Matchers {
           val dot = RDF2Dot.rdf2dot(rdf)
           println(s"Size of triples: ${rdf.rdfTriples().size}")
           println(s"Dot generated: $dot")
-          dot.edges.size should be(7)
+          dot.edges.size should be(13)
         }
       )
     }

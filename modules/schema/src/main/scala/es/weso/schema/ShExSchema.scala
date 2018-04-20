@@ -18,6 +18,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
 
   lazy val shExCFormat = "ShExC"
   lazy val shExJFormat = "ShExJ"
+//  lazy val svgFormat = "SVG"
   lazy val validator = Validator(schema)
 
   override def formats =
