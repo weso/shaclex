@@ -150,6 +150,13 @@ class MainOpts(
     descr = "schema format to show",
     noshort = true)
 
+  val outSchemaFile = opt[String](
+    "outSchemaFile",
+    default = None,
+    descr = "filename to save output schema",
+    noshort = true)
+
+
   val outShapeMapFormat = opt[String](
     "outShapeMapFormat",
     default = Some(defaultShapeMapFormat),

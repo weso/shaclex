@@ -58,11 +58,16 @@ object Main extends App with LazyLogging {
             case Right(str) => println(str)
           }
         }
-        if (opts.showSchema()) {
+        if (opts.showSchema() || opts.outSchemaFile.isDefined) {
           // If not specified uses the input schema format
           val outSchemaFormat = opts.outSchemaFormat.getOrElse(opts.schemaFormat())
           schema.serialize(outSchemaFormat) match {
-            case Right(str) => println(str)
+            case Right(str) => {
+              if (opts.showSchema()) println(str)
+              if (opts.outSchemaFile.isDefined) {
+                FileUtils.writeFile(opts.outSchemaFile(), str)
+              }
+            }
             case Left(e) => println(s"Error showing schema $schema with format $outSchemaFormat: $e")
           }
         }

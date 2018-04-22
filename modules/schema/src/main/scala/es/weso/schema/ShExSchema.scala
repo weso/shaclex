@@ -12,18 +12,22 @@ import es.weso.shex.validator._
 import es.weso.shex._
 import es.weso.shex.shexR._
 import scala.util._
+import es.weso.shex.converter.ShEx2UML
+
 
 case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   override def name = "ShEx"
 
   lazy val shExCFormat = "ShExC"
   lazy val shExJFormat = "ShExJ"
-//  lazy val svgFormat = "SVG"
+  lazy val svgFormat = "SVG"
   lazy val validator = Validator(schema)
 
+  // TODO: Separate input/output formats
   override def formats =
     List(shExCFormat, shExJFormat) ++
-      RDFAsJenaModel.availableFormats
+      RDFAsJenaModel.availableFormats ++
+    List(svgFormat)
 
   lazy val formatsUpperCase = formats.map(_.toUpperCase)
 
@@ -162,9 +166,15 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
 
   override def serialize(format: String): Either[String, String] = {
+    val fmt = format.toUpperCase
     val builder: RDFBuilder = RDFAsJenaModel.empty
-    if (formatsUpperCase.contains(format.toUpperCase()))
-      Schema_.serialize(schema, format, builder)
+    if (formatsUpperCase.contains(fmt))
+      fmt match {
+        case "SVG" => for {
+          uml <- ShEx2UML.schema2Uml(schema)
+        } yield uml.toSVG
+        case _ => Schema_.serialize(schema, fmt, builder)
+      }
     else
       Left(s"Can't serialize to format $format. Supported formats=$formats")
   }

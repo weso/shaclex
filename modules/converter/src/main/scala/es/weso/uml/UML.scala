@@ -3,13 +3,14 @@ package es.weso.uml
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 
+import es.weso.shex.ShapeLabel
 import es.weso.uml.UMLDiagram.UML
 import net.sourceforge.plantuml.SourceStringReader
 import net.sourceforge.plantuml.api.PlantumlUtils
 
 object UMLDiagram {
 
-  type NodeId = String
+  type NodeId = Int
 
   sealed abstract class UMLCardinality
   case object Star extends UMLCardinality {
@@ -37,19 +38,42 @@ object UMLDiagram {
 
   sealed abstract class UMLEntry
 
-  case class ValueConstraint(name: String, href: Option[String]) extends UMLEntry
-  case class UMLField(name: String, href: Option[String], valueConstraints: List[ValueConstraint], card: UMLCardinality) extends UMLEntry
+  case class ValueConstraint(name: String,
+                             href: Option[String]
+                            ) extends UMLEntry
 
+  case class UMLField(name: String,
+                      href: Option[String],
+                      valueConstraints: List[ValueConstraint],
+                      card: UMLCardinality
+                     ) extends UMLEntry
 
   case class UMLClass(id: NodeId, label: String, href: Option[String], entries: List[List[UMLEntry]])
 
-  case class UMLLink(source: UMLClass, target: UMLClass, label: String, href: String, card: UMLCardinality)
+  case class UMLLink(source: NodeId, target: NodeId, label: String, href: String, card: UMLCardinality)
 
   /**
     * Represents an UML class diagram that can be serialized to PlantUML syntax
     *
     */
-  case class UML(classes: Map[NodeId, UMLClass], links: List[UMLLink]) {
+  case class UML(labels: Map[ShapeLabel,NodeId], classes: Map[NodeId, UMLClass], links: List[UMLLink]) {
+
+    /**
+      * Adds a label to a UML diagram
+      * If exists, return the existing nodeId
+      * @param label
+      * @return a pair with the updated UML diagram and the nodeId
+      */
+    def newLabel(label: ShapeLabel): (UML, NodeId) = {
+      labels.get(label).fold{
+        val id = this.labels.size
+        (this.copy(labels = this.labels.updated(label, id)), id)
+      } { id =>
+        (this, id)
+      }
+    }
+
+    def getId(label: ShapeLabel): Option[NodeId] = labels.get(label)
 
     def addClass(cls: UMLClass): UML = {
       this.copy(classes = classes.updated(cls.id,cls))
@@ -100,17 +124,17 @@ object UMLDiagram {
         sb.append("}\n")
       }
       links.foreach { link =>
-        sb.append(s"""${link.source.id} --> "${link.card}" ${link.target.id} : [[${link.href} ${link.label}]]\n""")
+        sb.append(s"""${link.source} --> "${link.card}" ${link.target} : [[${link.href} ${link.label}]]\n""")
       }
       sb.append("@enduml\n")
       sb.toString
     }
 
     def toSVG: String = {
-      val reader: SourceStringReader = new SourceStringReader(this.toPlantUML)
-      val os: ByteArrayOutputStream = new ByteArrayOutputStream()
       import net.sourceforge.plantuml.FileFormat
       import net.sourceforge.plantuml.FileFormatOption
+      val reader: SourceStringReader = new SourceStringReader(this.toPlantUML)
+      val os: ByteArrayOutputStream = new ByteArrayOutputStream()
       val desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG))
       os.close
       val svg: String = new String(os.toByteArray(), Charset.forName("UTF-8"))
@@ -119,12 +143,15 @@ object UMLDiagram {
   }
 
   object UML {
-    def empty: UML = UML(Map(), List())
-    def external = ValueConstraint("External",None)
-    def iriKind = ValueConstraint("IRI",None)
-    def bnodeKind = ValueConstraint("BNode",None)
-    def nonLiteralKind = ValueConstraint("NonLiteral",None)
-    def literalKind = ValueConstraint("Literal",None)
+    def empty: UML = UML(Map(),Map(), List())
+    lazy val external = ValueConstraint("External",None)
+    lazy val iriKind = ValueConstraint("IRI",None)
+    lazy val bnodeKind = ValueConstraint("BNode",None)
+    lazy val nonLiteralKind = ValueConstraint("NonLiteral",None)
+    lazy val literalKind = ValueConstraint("Literal",None)
+    lazy val umlClosed = ValueConstraint("Closed",None)
+    lazy val anyConstraint = ValueConstraint(".",None)
+    def datatype(label: String, href: String) = ValueConstraint(label,Some(href))
 
   }
 }
