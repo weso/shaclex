@@ -29,11 +29,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   type ShapeChecker = ShapeExpr => CheckTyping
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
   type NodeChecker = Attempt => RDFNode => CheckTyping
-  type Neighs = List[Neigh]
-  type Neigh = (Path, RDFNode)
-  type Arc = (Path, RDFNode)
+  type Neighs = List[Arc]
   type Candidates = List[(Arc, Set[ConstraintRef])]
-  type CandidateLine = List[(Arc, ConstraintRef)]
   type NoCandidates = List[Arc]
   type Bag_ = Bag[ConstraintRef]
   type Rbe_ = Rbe[ConstraintRef]
@@ -325,7 +322,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     } yield typing
   }
 
-  private[validator] def checkRests(rests: List[(Path, RDFNode)],
+  private[validator] def checkRests(rests: List[Arc],
                                     extras: List[Path],
                                     isClosed: Boolean,
                                     ignoredPathsClosed: List[Path]): Check[Unit] = for {
@@ -333,11 +330,11 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   } yield ()
 
   private[validator] def checkRest(
-    rest: (Path, RDFNode),
+    rest: Arc,
     extras: List[Path],
     isClosed: Boolean,
     ignoredPathsClosed: List[Path]): Check[Unit] = {
-    val restPath = rest._1
+    val restPath = rest.path
 	// Ignore extra predicates if they are inverse
     if (isClosed && restPath.isDirect) {
       // TODO: Review if the extra.contains(restpath) check is necessary
@@ -383,16 +380,16 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     neighs: Neighs,
     table: CTable): List[(Arc, Set[ConstraintRef])] = {
     // println(s"neighs2Candidates: neighs=$neighs")
-    neighs.map {
-      case arc @ (path, _) => (arc, table.paths.get(path).getOrElse(Set()))
-    }
+    neighs.map(arc =>
+      (arc, table.paths.get(arc.path).getOrElse(Set()))
+    )
   }
 
   private[validator] def checkCandidates(
     attempt: Attempt,
     bagChecker: BagChecker_,
     table: CTable)(cs: Candidates): CheckTyping = {
-    val as: List[CandidateLine] = SeqUtils.transpose(cs)
+    val as: List[CandidateLine] = SeqUtils.transpose(cs).map(CandidateLine(_))
     logger.info(s"Candidate lines: $as")
     as.length match {
       case 1 => { // Deterministic
@@ -408,7 +405,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
           ShExError.msgErr(
             s"""|None of the candidates matched. Attempt: ${attempt.show}
                 |Bag: ${bagChecker.show}
-                |Candidate lines: ${showListCandidateLine(as)}
+                |Candidate lines:${as.map(_.show).mkString(",")}
                 |""".stripMargin)
         )
       }
@@ -424,15 +421,12 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     attempt: Attempt,
     bagChecker: BagChecker_,
     table: CTable)(cl: CandidateLine): CheckTyping = {
-    val bag = Bag.toBag(cl.map(_._2))
+    val bag = Bag.toBag(cl.values.map(_._2))
     bagChecker.check(bag, false) match {
       case Right(_) => {
         val nodeShapes: List[(RDFNode, ShapeExpr)] =
-          filterOptions(cl.map {
-            case (arc, cref) => {
-              val (_, node) = arc
-              (node, table.getShapeExpr(cref))
-            }
+          filterOptions(cl.values.map {
+            case (arc, cref) => (arc.node, table.getShapeExpr(cref))
           })
         val checkNodeShapes: List[CheckTyping] =
           nodeShapes.map {
@@ -445,7 +439,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         } yield t
       }
       case Left(err) => {
-        errStr(s"${attempt.show} Candidate line ${cl.show} does not match regular expression\nBag ${bag} does not match Rbe ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $err")
+        errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $err")
       }
     }
   }
@@ -453,10 +447,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   private[validator] def getNeighs(node: RDFNode): Check[Neighs] = for {
     rdf <- getRDF
   } yield {
-    val outgoing: List[(Path, RDFNode)] = rdf.triplesWithSubject(node).
-      map(t => (Direct(t.pred), t.obj)).toList
-    val incoming: List[(Path, RDFNode)] = rdf.triplesWithObject(node).
-      map(t => (Inverse(t.pred), t.subj)).toList
+    val outgoing: List[Arc] = rdf.triplesWithSubject(node).
+      map(t => Arc(Direct(t.pred), t.obj)).toList
+    val incoming: List[Arc] = rdf.triplesWithObject(node).
+      map(t => Arc(Inverse(t.pred), t.subj)).toList
     val neighs = outgoing ++ incoming
     neighs
   }
@@ -488,18 +482,6 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     shapeTyping <- r.toEither.leftMap(_.msg)
     result <- shapeTyping.toShapeMap(rdf.getPrefixMap, schema.prefixMap)
   } yield result
-
-  implicit lazy val showCandidateLine = new Show[CandidateLine] {
-    override def show(cl: CandidateLine): String = {
-      def showPair(pair: (Arc, ConstraintRef)): String =
-        s"${pair._1.show}->${pair._2.toString}"
-
-      def sepByComma(cs: List[String]): String =
-        SeqUtils.intersperse(",", cs).toList.mkString("")
-
-      s"${sepByComma(cl.map(showPair(_)))}"
-    }
-  }
 
 }
 

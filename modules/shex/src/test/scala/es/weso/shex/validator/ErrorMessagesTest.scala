@@ -12,11 +12,11 @@ class ErrorMessagesTest extends FunSpec with Matchers with EitherValues {
     it(s"Should generate good error message") {
       val rdfStr =
         s"""prefix : <http://example.org/>
-           |:x :q 1 .
+           |:x :p "One" .
          """.stripMargin
       val shexStr =
         s"""prefix : <http://example.org/>
-           |:S { :p BNode | :r  IRI }
+           |:S { :p BNode | :p  IRI }
          """.stripMargin
       val smapStr =
         s"""

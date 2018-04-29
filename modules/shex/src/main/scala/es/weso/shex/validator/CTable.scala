@@ -15,32 +15,11 @@ object table {
   type PathsMap = Map[Path, Set[ConstraintRef]]
   type ResultPair = (CTable, Rbe_)
 
-  trait CheckExpr
-  case class Pos(se: ShapeExpr) extends CheckExpr
-  case class Neg(se: ShapeExpr) extends CheckExpr
-
-  case class ConstraintRef(n: Int) extends AnyVal {
-    override def toString(): String = s"C$n"
-  }
-
-  object ConstraintRef {
-    implicit lazy val orderingConstraintRef = new Ordering[ConstraintRef] {
-      def compare(c1: ConstraintRef, c2: ConstraintRef): Int = {
-        Ordering[Int].compare(c1.n, c2.n)
-      }
-    }
-
-    implicit lazy val showConstraintRef =
-      Show.fromToString[ConstraintRef]
-
-  }
-
   // Constraints table
   case class CTable(
     constraints: ConstraintsMap,
     paths: PathsMap,
-    elems: Int,
-    schema: Schema) {
+    elems: Int) {
 
     private[validator] def addPath(p: Path, n: ConstraintRef): PathsMap =
       paths.updated(p, paths.get(p).getOrElse(Set()) + n)
@@ -68,7 +47,7 @@ object table {
   }
 
   object CTable {
-    def empty: CTable = CTable(Map(), Map(), 0, Schema.empty)
+    def empty: CTable = CTable(Map(), Map(), 0)
 
     def simplify(rbe: Rbe_): Rbe_ = {
       rbe match {
@@ -190,13 +169,6 @@ object table {
         }
         cs.foldLeft(List[String]())(combine).mkString(",")
       }
-/*      def showPaths(pm: PathsMap): String = {
-        def combine(s: List[String], current: (Path,Set[ConstraintRef])): List[String] = {
-          val (path,cs) = current
-          s"${path.toString}->[${cs.map(_.toString).mkString(",")}]" :: s
-        }
-        pm.foldLeft(List[String]())(combine).mkString(",")
-      } */
       s"""Constraints: ${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}""".stripMargin
     }
   }

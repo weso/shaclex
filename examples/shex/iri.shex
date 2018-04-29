@@ -16,5 +16,11 @@ prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 
 <Product> {
     :name .;
-    :skos .
+    :sku xsd:string ;
+    :manufacturer @<Organization>
+}
+
+<Organization> {
+    :name xsd:string ;
+    :isPartOf @<Organization>
 }
