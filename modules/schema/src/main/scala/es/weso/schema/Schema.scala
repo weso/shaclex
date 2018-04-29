@@ -64,4 +64,6 @@ abstract class Schema {
 
   def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String]
 
+  def info: SchemaInfo
+
 }

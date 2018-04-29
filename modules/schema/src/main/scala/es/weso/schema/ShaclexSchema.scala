@@ -132,6 +132,10 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
    }
   }
 
+  override def info: SchemaInfo = {
+    // TODO: Check if shacl schemas are well formed
+    SchemaInfo(name,"SHACLex", true, List())
+  }
 }
 
 object ShaclexSchema {
