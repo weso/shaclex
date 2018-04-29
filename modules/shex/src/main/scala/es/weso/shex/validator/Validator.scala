@@ -12,7 +12,7 @@ import es.weso.rbe.{ BagChecker, Empty, Rbe }
 import es.weso.rbe.BagChecker._
 import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
-import ViolationError._
+import ShExError._
 import es.weso.rdf.PREFIXES._
 import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
@@ -162,7 +162,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   private[validator] def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
-    def addNot(typing: ShapeTyping)(err: ViolationError): CheckTyping = {
+    def addNot(typing: ShapeTyping)(err: ShExError): CheckTyping = {
       val shapeType = ShapeType(ShapeExpr.fail, Some(label), schema)
       ok(typing.addNotEvidence(node, shapeType, err))
     }
@@ -205,7 +205,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     for {
       t1 <- checkSome(
         vs,
-        ViolationError.msgErr(s"None of the alternatives of OR(${ses.map(_.showPrefixMap(schema.prefixMap)).mkString(",")}) is valid for node ${node.show}"))
+        ShExError.msgErr(s"None of the alternatives of OR(${ses.map(_.showPrefixMap(schema.prefixMap)).mkString(",")}) is valid for node ${node.show}"))
       t2 <- addEvidence(attempt.nodeShape, s"${node.show} passes OR")
       t3 <- combineTypings(Seq(t1, t2))
     } yield t3
@@ -217,7 +217,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     s: ShapeExpr): CheckTyping = {
     val parentShape = attempt.nodeShape.shape
     val check: CheckTyping = checkNodeShapeExpr(attempt, node, s)
-    val handleError: ViolationError => Check[ShapeTyping] = e => for {
+    val handleError: ShExError => Check[ShapeTyping] = e => for {
       t1 <- addNotEvidence(NodeShape(node, ShapeType(s, None, schema)), e,
         s"${node.show} does not satisfy ${s.show}. Negation declared in ${parentShape.show}. Error: $e")
       t2 <- addEvidence(attempt.nodeShape, s"${node.show} satisfies not(${{ s.show }})")
@@ -263,7 +263,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     logger.info(s"valueSet(${node.show},$values) ")
     val cs: List[CheckTyping] =
       values.map(v => ValueChecker(schema).checkValue(attempt, node)(v))
-    checkSome(cs, ViolationError.msgErr(s"${node.show} does not belong to [${values.map(_.show).mkString(",")}]"))
+    checkSome(cs, ShExError.msgErr(s"${node.show} does not belong to [${values.map(_.show).mkString(",")}]"))
   }
 
   private[validator] def checkDatatype(attempt: Attempt, node: RDFNode)(datatype: IRI): CheckTyping = for {
@@ -405,7 +405,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
         logger.info(s"More than one candidate line. Attempt: ${attempt.show}, Rbe: ${bagChecker.rbe}")
         val checks: List[CheckTyping] = as.map(checkCandidateLine(attempt, bagChecker, table)(_))
         checkSome(checks,
-          ViolationError.msgErr(
+          ShExError.msgErr(
             s"""|None of the candidates matched. Attempt: ${attempt.show}
                 |Bag: ${bagChecker.show}
                 |Candidate lines: ${showListCandidateLine(as)}
@@ -483,7 +483,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     cnvResult(runCheck(chk, rdf),rdf)
   }
 
-  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, Log],
+  def cnvResult(r: CheckResult[ShExError, ShapeTyping, Log],
                 rdf: RDFReader): Result = for {
     shapeTyping <- r.toEither.leftMap(_.msg)
     result <- shapeTyping.toShapeMap(rdf.getPrefixMap, schema.prefixMap)
@@ -507,7 +507,7 @@ object Validator {
 
   def empty = Validator(schema = Schema.empty)
 
-  type Result[A] = Either[NonEmptyList[ViolationError], List[(A, Evidences)]]
+  type Result[A] = Either[NonEmptyList[ShExError], List[(A, Evidences)]]
 
   def isOK[A](r: Result[A]): Boolean =
     r.isRight && r.toList.isEmpty == false

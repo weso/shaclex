@@ -154,7 +154,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
         rs.map(" " + _).mkString(","))
   } */
 
-  def cnvViolationError(v: ViolationError): ErrorInfo = {
+  def cnvViolationError(v: ShExError): ErrorInfo = {
     ErrorInfo(v.show)
   }
 

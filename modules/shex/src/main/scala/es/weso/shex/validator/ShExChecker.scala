@@ -4,7 +4,7 @@ import cats._
 import implicits._
 import es.weso.checking.CheckerCats
 import es.weso.rdf.RDFReader
-import es.weso.shex.ViolationError
+import es.weso.shex.ShExError
 
 object ShExChecker extends CheckerCats {
 
@@ -12,7 +12,7 @@ object ShExChecker extends CheckerCats {
 
   type Config = RDFReader
   type Env = ShapeTyping
-  type Err = ViolationError
+  type Err = ShExError
   type Evidence = (NodeShape, String)
   type Log = List[Evidence]
   type CheckTyping = Check[ShapeTyping]
@@ -37,13 +37,13 @@ object ShExChecker extends CheckerCats {
   }
 
   def errStr[A](msg: String): Check[A] =
-    err[A](ViolationError.msgErr(msg))
+    err[A](ShExError.msgErr(msg))
 
   def checkCond(
-    condition: Boolean,
-    attempt: Attempt,
-    error: ViolationError,
-    evidence: String): CheckTyping = for {
+                 condition: Boolean,
+                 attempt: Attempt,
+                 error: ShExError,
+                 evidence: String): CheckTyping = for {
     _ <- validateCheck(condition, error)
     newTyping <- addEvidence(attempt.nodeShape, evidence)
   } yield newTyping
@@ -55,7 +55,7 @@ object ShExChecker extends CheckerCats {
     } yield t.addEvidence(nodeShape.node, nodeShape.shape, msg)
   }
 
-  def addNotEvidence(nodeShape: NodeShape, e: ViolationError, msg: String): Check[ShapeTyping] = {
+  def addNotEvidence(nodeShape: NodeShape, e: ShExError, msg: String): Check[ShapeTyping] = {
     val node = nodeShape.node
     val shape = nodeShape.shape
     for {
@@ -87,7 +87,7 @@ object ShExChecker extends CheckerCats {
 
   def runCheck[A: Show](
     c: Check[A],
-    rdf: RDFReader): CheckResult[ViolationError, A, Log] = {
+    rdf: RDFReader): CheckResult[ShExError, A, Log] = {
     val initial: ShapeTyping = Monoid[ShapeTyping].empty
     runCheckWithTyping(c, rdf, initial)
   }
@@ -95,7 +95,7 @@ object ShExChecker extends CheckerCats {
   def runCheckWithTyping[A: Show](
     c: Check[A],
     rdf: RDFReader,
-    typing: ShapeTyping): CheckResult[ViolationError, A, Log] = {
+    typing: ShapeTyping): CheckResult[ShExError, A, Log] = {
     val r = run(c)(rdf)(typing)
     CheckResult(r)
   }

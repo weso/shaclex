@@ -6,10 +6,10 @@ import es.weso.rdf.PrefixMap
 import es.weso.typing._
 import es.weso.rdf.nodes._
 import es.weso.shapeMaps.{BNodeLabel, IRILabel => IRIMapLabel, _}
-import es.weso.shex.{ShapeLabel, ViolationError}
+import es.weso.shex.{ShapeLabel, ShExError}
 import io.circe.Json
 
-case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) extends LazyLogging {
+case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends LazyLogging {
 
   def getOkValues(node: RDFNode): Set[ShapeType] =
     t.getOkValues(node)
@@ -29,7 +29,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
     !getFailedValues(node).filter(_.hasLabel(label)).isEmpty
   }
 
-  def getTypingResult(node: RDFNode, label: ShapeLabel): Option[TypingResult[ViolationError, String]] =
+  def getTypingResult(node: RDFNode, label: ShapeLabel): Option[TypingResult[ShExError, String]] =
     t.getMap.get(node).map(_.toList.filter(_._1.label == Some(label)).map(_._2).head)
 
   def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping =
@@ -38,10 +38,10 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
   def addEvidence(node: RDFNode, shapeType: ShapeType, evidence: String): ShapeTyping =
     this.copy(t = t.addEvidence(node, shapeType, evidence))
 
-  def addNotEvidence(node: RDFNode, shapeType: ShapeType, err: ViolationError): ShapeTyping =
+  def addNotEvidence(node: RDFNode, shapeType: ShapeType, err: ShExError): ShapeTyping =
     this.copy(t = t.addNotEvidence(node, shapeType, err))
 
-  def getMap: Map[RDFNode, Map[ShapeType, TypingResult[ViolationError, String]]] =
+  def getMap: Map[RDFNode, Map[ShapeType, TypingResult[ShExError, String]]] =
     t.getMap
 
   override def toString = showShapeTyping
@@ -55,7 +55,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
     }
   }
 
-  private def cnvTypingResult(t: TypingResult[ViolationError, String]): Info = {
+  private def cnvTypingResult(t: TypingResult[ShExError, String]): Info = {
     val status = if (t.isOK) Conformant else NonConformant
     val reason =
       if (t.isOK) t.getEvidences.map(_.mkString("\n"))
@@ -64,10 +64,10 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
     Info(status, reason, Some(appInfo))
   }
 
-  private def typing2Labels(m: Map[ShapeType, TypingResult[ViolationError, String]]
+  private def typing2Labels(m: Map[ShapeType, TypingResult[ShExError, String]]
                    ): Either[String, Map[ShapeMapLabel, Info]] = {
     def processType(m: Either[String, Map[ShapeMapLabel, Info]],
-                    current: (ShapeType, TypingResult[ViolationError, String])
+                    current: (ShapeType, TypingResult[ShExError, String])
                    ): Either[String, Map[ShapeMapLabel, Info]] =
       cnvShapeType(current._1) match {
         case Left(s) => {
@@ -86,7 +86,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
   def toShapeMap(nodesPrefixMap: PrefixMap, shapesPrefixMap: PrefixMap): Either[String, ResultShapeMap] = {
     type Result = Either[String, ResultShapeMap]
     def combine(m: Result,
-                current: (RDFNode, Map[ShapeType, TypingResult[ViolationError, String]])
+                current: (RDFNode, Map[ShapeType, TypingResult[ShExError, String]])
                ): Result = for {
       rm <- m
       ls <- typing2Labels(current._2)
@@ -110,7 +110,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ViolationError, String]) ex
 object ShapeTyping {
 
   def emptyShapeTyping: ShapeTyping = {
-    val emptyTyping: Typing[RDFNode, ShapeType, ViolationError, String] = Typing.empty
+    val emptyTyping: Typing[RDFNode, ShapeType, ShExError, String] = Typing.empty
     ShapeTyping(emptyTyping)
   }
 
