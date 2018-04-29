@@ -47,6 +47,7 @@ lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.2"
 lazy val xercesVersion         = "2.11.0"
+lazy val plantumlVersion       = "1.2017.12"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "0.11.0"
@@ -64,14 +65,10 @@ lazy val circeParser       = "io.circe"                   %% "circe-parser"     
 lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
 lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
 lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
-lazy val http4sDsl         = "org.http4s"                 %% "http4s-dsl"          % http4sVersion
-lazy val http4sBlazeServer = "org.http4s"                 %% "http4s-blaze-server" % http4sVersion
-lazy val http4sBlazeClient = "org.http4s"                 %% "http4s-blaze-client" % http4sVersion
-lazy val http4sCirce       = "org.http4s"                 %% "http4s-circe"        % http4sVersion
-lazy val http4sTwirl       = "org.http4s"                 %% "http4s-twirl"        % http4sVersion
 lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val plantuml          = "net.sourceforge.plantuml"   % "plantuml"             % plantumlVersion
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
@@ -99,8 +96,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
-  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, server, shapeMaps, depGraphs)
+  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
+  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -110,7 +107,6 @@ lazy val shaclex = project
     ),
     cancelable in Global      := true,
     fork                      := true,
-    reStartArgs               := Seq("--server"),
     parallelExecution in Test := false
   )
 
@@ -118,7 +114,7 @@ lazy val schema = project
   .in(file("modules/schema"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(shex, shacl, shapeMaps)
+  .dependsOn(shex, shacl, shapeMaps, converter)
 
 lazy val depGraphs = project
   .in(file("modules/depGraphs"))
@@ -194,7 +190,8 @@ lazy val shex = project
       scalaLogging,
       circeCore,
       circeGeneric,
-      circeParser
+      circeParser,
+      plantuml
     )
   )
 
@@ -217,23 +214,6 @@ lazy val shapeMaps = project
       circeCore,
       circeGeneric,
       circeParser
-    )
-  )
-
-lazy val server = project
-  .in(file("modules/server"))
-  .enablePlugins(SbtTwirl)
-  .dependsOn(schema, srdf, srdfJena)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      http4sDsl,
-      http4sBlazeServer,
-      http4sBlazeClient,
-      http4sCirce,
-      http4sTwirl,
-      scalatags,
-      selenium
     )
   )
 

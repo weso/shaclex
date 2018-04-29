@@ -17,7 +17,7 @@ abstract class ValidationTrigger {
 }
 
 /**
- * Validates only scope declarations
+ * Validates only target declarations
  */
 case object TargetDeclarations extends ValidationTrigger {
   override def explain = "Only SHACL target declarations"
@@ -32,31 +32,6 @@ case class ShapeMapTrigger(shapeMap: ShapeMap) extends ValidationTrigger {
   override def name = "ShapeMap"
   override def toJson = shapeMap.toJson
 }
-
-/*case class MapTrigger(
-  map: Map[RDFNode, Set[String]],
-  nodes: Set[RDFNode]) extends ValidationTrigger {
-  override def explain = "A Map"
-  override def name = "Map"
-
-  implicit val rdfNodeKeyEncoder = new KeyEncoder[RDFNode] {
-    override def apply(node: RDFNode): String = node.toString
-  }
-
-  // TODO: Improve this...
-  implicit val rdfNodeEncoder = new Encoder[RDFNode] {
-    override def apply(node: RDFNode): Json =
-      Json.fromJsonObject(
-        singleton("type", Json.fromString("RDFNode")).
-          add("value", Json.fromString(node.toString)))
-  }
-
-  override def toJson = Json.fromJsonObject(
-    singleton("type", Json.fromString("ShapeMap")).
-      add("shapeMap", map.asJson).
-      add("nodesStart", nodes.asJson))
-
-} */
 
 object ShapeMapTrigger {
   def apply: ShapeMapTrigger = empty

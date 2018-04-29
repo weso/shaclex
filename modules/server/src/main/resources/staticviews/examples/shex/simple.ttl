@@ -1,3 +1,0 @@
-PREFIX : <http://example.org/>
-PREFIX schema: <http://schema.org/>
-:alice schema:name "Alice" .

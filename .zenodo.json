@@ -1,0 +1,27 @@
+{
+    "description": "SHACL/ShEx implementation", 
+    "license": "other-open", 
+    "title": "SHACLex: Scala implementation of ShEx and SHACL", 
+    "version": "v0.0.70", 
+    "upload_type": "software", 
+    "publication_date": "2018-04-04", 
+    "creators": [
+        {
+            "affiliation": "University of Oviedo", 
+            "name": "Jose Emilio Labra Gayo"
+        }
+    ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/labra/shaclex/tree/v0.0.69", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.1212658", 
+            "relation": "isPartOf"
+        }
+    ]
+}

@@ -3,7 +3,7 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
-import es.weso.server._
+// import es.weso.server._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
@@ -24,10 +24,6 @@ object Main extends App with LazyLogging {
   def run(args: Array[String]): Unit = {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
-
-    if (opts.server()) {
-      ShaclexServer.main(args)
-    }
 
     val baseFolder: Path = if (opts.baseFolder.isDefined) {
       Paths.get(opts.baseFolder())
@@ -62,11 +58,16 @@ object Main extends App with LazyLogging {
             case Right(str) => println(str)
           }
         }
-        if (opts.showSchema()) {
+        if (opts.showSchema() || opts.outSchemaFile.isDefined) {
           // If not specified uses the input schema format
           val outSchemaFormat = opts.outSchemaFormat.getOrElse(opts.schemaFormat())
           schema.serialize(outSchemaFormat) match {
-            case Right(str) => println(str)
+            case Right(str) => {
+              if (opts.showSchema()) println(str)
+              if (opts.outSchemaFile.isDefined) {
+                FileUtils.writeFile(opts.outSchemaFile(), str)
+              }
+            }
             case Left(e) => println(s"Error showing schema $schema with format $outSchemaFormat: $e")
           }
         }

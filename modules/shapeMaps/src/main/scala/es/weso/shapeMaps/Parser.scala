@@ -19,11 +19,9 @@ object Parser extends LazyLogging {
   def removeBOM(str: String): String = {
     val UTF8_BOM = "\uFEFF"
     if (str.startsWith(UTF8_BOM)) {
-      println(s"BOM detected and removed in $str")
       logger.info("BOM detected and removed")
       str.substring(1)
     } else {
-      println(s"No BOM in $str")
       str
     }
   }
@@ -36,9 +34,7 @@ object Parser extends LazyLogging {
     val s = removeBOM(str)
     val reader: JavaReader =
       new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    println(s"Before parsing: $s with nodesPrefixMap=${nodesPrefixMap}, shapesPrefixMap=${shapesPrefixMap}")
     val r = parseSchemaReader(reader, base, nodesPrefixMap, shapesPrefixMap)
-    println(s"Result of parsing $s = $r")
     r
   }
 

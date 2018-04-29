@@ -1,0 +1,26 @@
+prefix : <http://example.org/>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+
+:User CLOSED {
+    :name xsd:string;
+    :age xsd:int;
+    :knows @:User ;
+    :worksFor @:Company ;
+    :buys @<Product> {1,10}
+}
+
+:Company {
+    :name xsd:string ;
+    :hasEmployee @:User *
+}
+
+<Product> {
+    :name .;
+    :sku xsd:string ;
+    :manufacturer @<Organization>
+}
+
+<Organization> {
+    :name xsd:string ;
+    :isPartOf @<Organization>
+}

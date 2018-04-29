@@ -3,7 +3,7 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.nodes._
-import es.weso.shex.ViolationError._
+import es.weso.shex.ShExError._
 import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
 import es.weso.utils.RegEx

@@ -25,6 +25,7 @@ import io.circe.parser.parse
 import org.apache.jena.query.{Query, QueryExecutionFactory, QuerySolutionMap, ResultSetFormatter}
 import org.apache.jena.sparql.path.Path
 import cats.implicits._
+import es.weso.rdf.dot.RDF2Dot
 
 case class RDFAsJenaModel(model: Model)
   extends RDFReader
@@ -50,7 +51,8 @@ case class RDFAsJenaModel(model: Model)
   }
 
   private def getRDFFormat(formatName: String): Either[String,String] = {
-    val supportedFormats: List[String] = RDFLanguages.getRegisteredLanguages().asScala.toList.map(_.getName.toUpperCase).distinct
+    val supportedFormats: List[String] =
+      RDFLanguages.getRegisteredLanguages().asScala.toList.map(_.getName.toUpperCase).distinct ++ List("DOT")
     formatName.toUpperCase match {
       case format if supportedFormats.contains(format) => Right(format)
       case unknown => Left(s"Unsupported format $unknown. Available formats: ${supportedFormats.mkString(",")} ")
@@ -59,13 +61,16 @@ case class RDFAsJenaModel(model: Model)
 
   override def serialize(formatName: String): Either[String, String] = for {
     format <- getRDFFormat(formatName)
-    str <- Try {
-     val out: StringWriter = new StringWriter()
-     model.write(out, format)
-     out.toString
-    }.fold(e => Left(s"Error serializing RDF to format $formatName: $e"),
-      Right(_)
-    )
+    str <- format match {
+      case "DOT" => Right(RDF2Dot.rdf2dot(this).toString)
+      case _ => Try {
+        val out: StringWriter = new StringWriter()
+        model.write(out, format)
+        out.toString
+      }.fold(e => Left(s"Error serializing RDF to format $formatName: $e"),
+        Right(_)
+      )
+    }
   } yield str
 
 /*  private def extend_rdfs: Rdf = {

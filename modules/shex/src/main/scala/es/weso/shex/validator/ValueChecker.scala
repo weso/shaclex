@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import implicits._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
-import es.weso.shex.ViolationError._
+import es.weso.shex.ShExError._
 import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
 

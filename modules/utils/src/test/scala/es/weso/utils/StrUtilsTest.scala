@@ -37,6 +37,14 @@ class StrUtilsTest extends FunSpec with Matchers {
     // shouldUnescape("\\U0001D4B8","\uD835\uDCB8")
   }
 
+  describe("StrUtils escapeDot") {
+    shouldConvert("escapeDot", escapeDot, "pepe", "pepe")
+    shouldConvert("escapeDot", escapeDot, "pepe1", "pepe1")
+    shouldConvert("escapeDot", escapeDot, "1pepe1", "1pepe1")
+    shouldConvert("escapeDot", escapeDot, "2\"1", "2&#34;1")
+    shouldConvert("escapeDot", escapeDot, "2¥1", "2&#165;1")
+  }
+
   def shouldConvert(name: String, cnv: String => String, str: String, expected: String): Unit = {
     it(s"$name should convert $str and obtain $expected") {
       cnv(str) should be(expected)
