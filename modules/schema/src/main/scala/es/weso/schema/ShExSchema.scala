@@ -106,54 +106,6 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     }
   }
 
-  /*  def cnvResult(r: CheckResult[ViolationError, ShapeTyping, List[(es.weso.shex.validator.NodeShape, String)]], rdf: RDFReader): Result =
-    Result(
-      isValid = r.isOK,
-      message = if (r.isOK) "Valid" else "Not valid",
-      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
-      errors = r.errors.map(cnvViolationError(_)),
-      None,
-      rdf.getPrefixMap(),
-      schema.prefixMap)
-
-  def cnvShapeTyping(st: ShapeTyping, rdf: RDFReader): ResultShapeMap = ???  */
-  /*{
-    Solution(
-      st.t.getMap.mapValues(cnvResult),
-      rdf.getPrefixMap(),
-      schema.prefixMap)
-  }
-
-  def cnvResult(
-    r: Map[ShapeType, TypingResult[ViolationError, String]]): InfoNode = {
-    val (oks, bads) = r.toSeq.partition(_._2.isOK)
-    InfoNode(
-      oks.map(cnvShapeResult(_)),
-      bads.map(cnvShapeResult(_)),
-      schema.prefixMap)
-  } */
-
-  /*  def cnvShapeResult(
-    p: (ShapeType, TypingResult[ViolationError, String])): (SchemaLabel, Explanation) = {
-    val shapeLabel = p._1.label match {
-      case Some(lbl) => {
-        val str = lbl.toRDFNode.getLexicalForm
-        println(s"Converting shapeLabel: $str")
-        SchemaLabel(str, schema.prefixMap)
-      }
-      case None => SchemaLabel("_", schema.prefixMap)
-    }
-    val explanation = Explanation(cnvTypingResult(p._2))
-    (shapeLabel, explanation)
-  }
-
-  def cnvTypingResult(result: TypingResult[ViolationError, String]): String = {
-    result.t.fold(
-      es => "Errors: " +
-        es.toList.mkString(","), rs => "Evidences:" +
-        rs.map(" " + _).mkString(","))
-  } */
-
   def cnvViolationError(v: ShExError): ErrorInfo = {
     ErrorInfo(v.show)
   }
@@ -199,7 +151,18 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     }
   }
 
+  override def info: SchemaInfo = {
+
+    val reasons: List[String] = schema.negCycles.fold(e => List(e), ns => {
+      if (ns.isEmpty) List()
+      else
+        List(s"Negative cycles found: [${ns.map(s => s.map(_.toString).mkString(",")).mkString(",")}]")
+    })
+    val wellFormed = reasons.isEmpty
+    SchemaInfo(name, "Iterative", wellFormed, reasons)
   }
+
+}
 
 object ShExSchema {
   def empty: ShExSchema = ShExSchema(schema = Schema_.empty)
@@ -210,6 +173,5 @@ object ShExSchema {
     base: Option[String]): Either[String, ShExSchema] = {
     Schema_.fromString(cs, format, base).map(p => ShExSchema(p))
   }
-
 
 }
