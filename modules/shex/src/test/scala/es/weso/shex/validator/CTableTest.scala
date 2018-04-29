@@ -12,9 +12,9 @@ class CTableTest extends FunSpec with Matchers with EitherValues {
       val xsd = IRI(s"http://www.w3.org/2001/XMLSchema#")
       val p = IRI(ex) + "p"
       val q = IRI(ex) + "q"
-      val xsd_string = xsd + "string"
-      val te1: TripleExpr = TripleConstraint.datatype(p,xsd_string, List())
-      val te2: TripleExpr = TripleConstraint.datatype(q,xsd_string, List())
+      val xsdString = xsd + "string"
+      val te1: TripleExpr = TripleConstraint.datatype(p,xsdString, List())
+      val te2: TripleExpr = TripleConstraint.datatype(q,xsdString, List())
       val te : TripleExpr = EachOf(None, List(te1,te2),None,None,None,None)
       val extras: List[IRI] = List()
       val s: ShapeLabel = IRILabel(IRI(ex + "S"))
