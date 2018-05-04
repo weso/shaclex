@@ -59,16 +59,14 @@ object Main extends App with LazyLogging {
           }
         }
         if (opts.showSchema() || opts.outSchemaFile.isDefined) {
-          // If not specified uses the input schema format
-          val outSchemaFormat = opts.outSchemaFormat.getOrElse(opts.schemaFormat())
-          schema.serialize(outSchemaFormat) match {
-            case Right(str) => {
-              if (opts.showSchema()) println(str)
-              if (opts.outSchemaFile.isDefined) {
-                FileUtils.writeFile(opts.outSchemaFile(), str)
-              }
-            }
-            case Left(e) => println(s"Error showing schema $schema with format $outSchemaFormat: $e")
+          schema.convert(opts.outSchemaFormat.toOption, opts.outEngine.toOption) match {
+                case Right(str) => {
+                  if (opts.showSchema()) println(str)
+                  if (opts.outSchemaFile.isDefined) {
+                    FileUtils.writeFile(opts.outSchemaFile(), str)
+                  }
+                }
+                case Left(e) => println(s"Error showing schema $schema with format ${opts.outSchemaFormat}: $e")
           }
         }
 
@@ -94,18 +92,16 @@ object Main extends App with LazyLogging {
 
         if (opts.showValidationReport()) {
           val vr = result.validationReport
-          (for {
+          val eitherReport = for {
             rdf <- vr
             str <- rdf.serialize(opts.validationReportFormat())
-          } yield str).fold(
+          } yield str
+          eitherReport.fold(
             e => println(s"Error: $e"),
             println(_)
           )
         }
 
-        if (opts.cnvEngine.isDefined) {
-          logger.error("Conversion between engines don't implemented yet")
-        }
 
         if (opts.time()) {
           val endTime = System.nanoTime()

@@ -322,7 +322,7 @@ object RDFAsJenaModel {
     RDFAsJenaModel.empty
   }
 
-  lazy val empty: RDFAsJenaModel = {
+  def empty: RDFAsJenaModel = {
     RDFAsJenaModel(ModelFactory.createDefaultModel)
   }
 

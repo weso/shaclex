@@ -139,7 +139,7 @@ class MainOpts(
     noshort = true)
 
   val outputFile = opt[String](
-    "outputFile",
+    "outFile",
     default = None,
     descr = "save report a file",
     short = 'f')
@@ -178,10 +178,10 @@ class MainOpts(
     noshort = true,
     validate = isMemberOf(resultFormats))
 
-  val cnvEngine = opt[String](
-    "cnvEngine",
+  val outEngine = opt[String](
+    "outEngine",
     default = None,
-    descr = "convert schema to schema in another engine",
+    descr = s"output schema engine (for conversions). Possible values: ${showLs(engines)}",
     noshort = true,
     validate = isMemberOf(engines))
 
