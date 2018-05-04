@@ -1,5 +1,6 @@
 package es.weso.converter
 import cats._, data._
+import cats.implicits._
 
 trait Converter {
 
@@ -12,5 +13,10 @@ trait Converter {
 
   def err[A](msg: String): Result[A] =
     Validated.invalidNel(msg)
+
+  def sequence[A](ls: List[Result[A]]): Result[List[A]] =
+    ls.sequence
+
+
 
 }
