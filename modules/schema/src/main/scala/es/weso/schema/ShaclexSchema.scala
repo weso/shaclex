@@ -1,15 +1,15 @@
 package es.weso.schema
+
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.{Schema => ShaclSchema, _}
-import es.weso.shacl._
+// import es.weso.shacl._
 import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
 import es.weso.shacl.report.{ValidationReport, ValidationResult}
 import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator}
 import es.weso.shapeMaps._
-import es.weso.shex.Schema
 
 import util._
 import es.weso.typing._
@@ -131,7 +131,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
      case Some("SHEX") => for {
        newSchema <- Shacl2ShEx.shacl2ShEx(schema).toEither.leftMap(es => es.toList.mkString("\n"))
        builder = RDFAsJenaModel.empty
-       str <- Schema.serialize(newSchema,targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
+       str <- es.weso.shex.Schema.serialize(newSchema,targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
      } yield str
      case Some(other) => Left(s"Conversion $name -> $other not implemented yet")
    }
