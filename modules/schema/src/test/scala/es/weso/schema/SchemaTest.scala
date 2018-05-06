@@ -40,5 +40,25 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
         case Left(e) => fail(s"Error trying to validate: $e")
       }
     }
+
+    it("fails to validate a wrong SHACL validation") {
+      val data =
+        """
+          |@prefix :      <http://example.org/> .
+          |@prefix sh:    <http://www.w3.org/ns/shacl#> .
+          |@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+          |
+          |:User   a            sh:NodeShape , rdfs:Class ;
+          |        sh:nodeKind  sh:BlankNode .
+          |:alice  a       :User .
+        """.stripMargin
+      val eitherResult = for {
+        schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
+        rdf <- RDFAsJenaModel.fromChars(data,"TURTLE",None)
+      } yield schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm)
+      eitherResult.fold(e => fail(s"Error: $e"), result => {
+        result.isValid should be(false)
+      })
+    }
   }
 }
