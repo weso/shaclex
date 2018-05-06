@@ -45,11 +45,11 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
         _.toValidationReport
       )
     Result(
-      isValid = r.isOK,
-      message = if (r.isOK) "Valid" else "Not valid",
+      isValid = vr.conforms,
+      message = if (vr.conforms) "Valid" else "Not valid",
       shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
       validationReport = vr.toRDF(builder),
-      errors = r.errors.map(cnvViolationError(_)),
+      errors = vr.results.map(cnvViolationError(_)),
       trigger = None,
       nodesPrefixMap = rdf.getPrefixMap(),
       shapesPrefixMap = schema.pm)
