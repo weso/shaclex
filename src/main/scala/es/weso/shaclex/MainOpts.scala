@@ -44,11 +44,25 @@ class MainOpts(
     descr = s"Schema format. Default ($defaultDataFormat) Possible values: ${showLs(schemaFormats)}",
     validate = isMemberOf(schemaFormats))
 
+  val schemaUrl = opt[String](
+    "schemaUrl",
+    noshort = true,
+    default = None,
+    descr = "schema Url")
+
   val data = opt[String](
     "data",
     default = None,
     descr = "Data file(s) to validate",
     short = 'd')
+
+  val dataUrl = opt[String](
+    "dataUrl",
+    default = None,
+    descr = "Data URL to validate",
+    noshort = true
+  )
+
 
   val dataFormat = opt[String](
     "dataFormat",
@@ -56,6 +70,13 @@ class MainOpts(
     descr = s"Data format. Default ($defaultDataFormat). Possible values = ${showLs(dataFormats)}",
     validate = isMemberOf(dataFormats),
     noshort = true)
+
+
+  val endpoint = opt[String](
+    "endpoint",
+    default = None,
+    descr = "Endpoint",
+    short = 'e')
 
   val shapeMap = opt[String](
     "shapeMap",

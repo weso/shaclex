@@ -20,10 +20,11 @@ import io.circe.Json
 import io.circe.parser.parse
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.jena.JenaMapper.jenaNode2RDFNode
 
 // TODO: Refactor to change String type by Url
-case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
+case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with LazyLogging {
   type Rdf = Endpoint
 
   override def getPrefixMap: PrefixMap = {
@@ -92,6 +93,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
   }
 
   def triplesWithSubject(node: RDFNode): Set[RDFTriple] = {
+    logger.debug(s"Triples with subject ${node.show}")
     if (node.isIRI) {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(node.toIRI)).execConstruct()
       model2triples(model)
@@ -104,6 +106,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
   }
 
   def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
+    log.debug(s"Triples with object ${node}")
     if (node.isIRI) {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithObject(node.toIRI)).execConstruct()
       model2triples(model)
@@ -111,6 +114,7 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
   }
 
   def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = {
+    log.debug(s"Triples with predicate ${p} and object $o")
     if (o.isIRI) {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithPredicateObject(p, o.toIRI)).execConstruct()
       model2triples(model)
@@ -118,7 +122,9 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner {
   }
 
   def model2triples(model: Model): Set[RDFTriple] = {
-    model.listStatements().asScala.map(st => statement2triple(st)).toSet
+    val ts = model.listStatements().asScala.map(st => statement2triple(st)).toSet
+    logger.debug(s"Total triples = ${ts.size}")
+    ts
   }
 
   def statement2triple(st: Statement): RDFTriple = {

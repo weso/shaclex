@@ -90,7 +90,7 @@ object Parser extends LazyLogging {
     val UTF8_BOM = "\uFEFF"
     val s =
       if (str.startsWith(UTF8_BOM)) {
-        logger.info("BOM detected and removed")
+        logger.debug("BOM detected and removed")
         str.substring(1)
       } else str
     val reader: JavaReader =

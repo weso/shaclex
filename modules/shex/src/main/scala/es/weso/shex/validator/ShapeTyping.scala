@@ -71,7 +71,6 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends
                    ): Either[String, Map[ShapeMapLabel, Info]] =
       cnvShapeType(current._1) match {
         case Left(s) => {
-          logger.info(s)
           m
         }
         case Right(label) => {

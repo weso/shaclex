@@ -41,7 +41,8 @@ It is possible to run the program inside `sbt` as:
 Example:
 
 ```sh
-sbt "run -d examples/shacl/good1.ttl --engine ShaClex"
+sbt "run --data examples/shacl/good1.ttl 
+         --engine ShaClex"
 ```
 
 ### Validating RDF with ShEx 
@@ -49,9 +50,28 @@ sbt "run -d examples/shacl/good1.ttl --engine ShaClex"
 Example:
 
 ```sh
-sbt "run -e ShEx -s examples/shex/good1.shex --schemaFormat ShExC -d examples/shex/good1.ttl"
+sbt "run --engine=ShEx 
+         --schema examples/shex/good1.shex 
+         --schemaFormat ShExC 
+         --data examples/shex/good1.ttl"
 ```
 
+### Validating RDF data through an SPARQL endpoint
+
+The following example validates RDF nodes from wikidata using [Gene-wiki ShEx](https://github.com/SuLab/Genewiki-ShEx):
+
+```sh
+sbt "run --endpoint=https://query.wikidata.org/sparql 
+         --schemaUrl=https://raw.githubusercontent.com/SuLab/Genewiki-ShEx/master/diseases/wikidata-disease-ontology.shex 
+         --shapeMap=examples/shex/wikidata/disease1.shapeMap 
+         --schemaFormat=ShExC 
+         --engine=ShEx 
+         --trigger=ShapeMap 
+         --showResult 
+         --resultFormat=JSON"
+```
+   
+ 
 ### Interactive mode with `sbt` 
 
 It is usually faster to run the `sbt` command, which opens the interactive `sbt` shell and inside that shell, execute 
@@ -95,8 +115,9 @@ In order to run the test suite and generate the EARL report, you can do the foll
 
 ## More information
 
-* This project is a based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
-* The aim of Shaclex is to support both ShEx and SHACL and to provide conversions between both languages. More information about both languages can be read in the [Validating RDF data](http://book.validatingrdf.com) written by the authors.
+* This project is based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
+* The aim of Shaclex is to support both ShEx and SHACL and to provide conversions between both languages. 
+  More information about both languages can be read in the [Validating RDF data](http://book.validatingrdf.com) written by the authors.
 * An online demo based on this library is available at [http://rdfshape.weso.es](http://rdfshape.weso.es).
 
 ## Author & contributors
@@ -110,6 +131,8 @@ Contributors:
 * [Andrew Berezovskyi](https://github.com/berezovskyi)
 
 ## Adopters
+
+* [RDFShape](http://rdfshape.weso.es): An online demo powered by this library.
 
 * [Eclipse lyo](http://www.eclipse.org/lyo/): An SDK and a modelling environment to 
  design and develop linked data applications based on the [OSLC standards](http://open-services.net/). 

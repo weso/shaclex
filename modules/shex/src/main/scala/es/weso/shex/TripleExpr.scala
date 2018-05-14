@@ -4,10 +4,10 @@ import es.weso.rdf.nodes.IRI
 
 abstract sealed trait TripleExpr {
   def addId(label: ShapeLabel): TripleExpr
+  def id: Option[ShapeLabel]
 }
 
-case class EachOf(
-                   id: Option[ShapeLabel],
+case class EachOf( id: Option[ShapeLabel],
                    expressions: List[TripleExpr],
                    optMin: Option[Int],
                    optMax: Option[Max],
@@ -31,7 +31,8 @@ case class OneOf(
 }
 
 case class Inclusion(include: ShapeLabel) extends TripleExpr {
-  override def addId(lbl: ShapeLabel) = this // Inclusions have no label
+  override def addId(lbl: ShapeLabel) = this
+  override def id = None
 }
 
 case class TripleConstraint(

@@ -3,6 +3,9 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
+import es.weso.rdf.jena.Endpoint
+
+import scala.io.Source
 // import es.weso.server._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -146,10 +149,14 @@ object Main extends App with LazyLogging {
 
   def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
     val base = Some(FileUtils.currentFolderURL)
-    if (opts.data.isDefined) {
-      val path = baseFolder.resolve(opts.data())
+    if (opts.data.isDefined || opts.dataUrl.isDefined) {
       for {
-        rdf <- RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
+        rdf <- if (opts.data.isDefined) {
+          val path = baseFolder.resolve(opts.data())
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
+        } else {
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), base)
+        }
       } yield {
         if (opts.inference.isDefined) {
           rdf.applyInference(opts.inference()) match {
@@ -161,6 +168,8 @@ object Main extends App with LazyLogging {
           }
         } else rdf
       }
+    } else if (opts.endpoint.isDefined) {
+      Right(Endpoint(opts.endpoint()))
     } else {
       logger.info("RDF Data option not specified")
       Right(RDFAsJenaModel.empty)
@@ -171,13 +180,15 @@ object Main extends App with LazyLogging {
     val base = Some(FileUtils.currentFolderURL)
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
-      val schema = Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), base)
-      schema
-    } else {
+      Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), base)
+    } else if (opts.schemaUrl.isDefined) {
+      val str = Source.fromURL(opts.schemaUrl()).mkString
+      Schemas.fromString(str,opts.schemaFormat(),opts.engine(),base)
+    }
+    else {
       logger.info("Schema not specified. Extracting schema from data")
       Schemas.fromRDF(rdf, opts.engine())
     }
-    //  }
 
   }
 }

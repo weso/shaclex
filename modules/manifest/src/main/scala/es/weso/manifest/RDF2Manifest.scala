@@ -28,7 +28,7 @@ case class RDF2Manifest(base: Option[IRI],
       entries <- entries(n, rdf)
       includes <- includes(visited)(n, rdf)
     } yield {
-      logger.info(s"Manifest read. Entries: $entries\nIncludes: $includes")
+      logger.debug(s"Manifest read. Entries: $entries\nIncludes: $includes")
       Manifest(
         label = maybeLabel,
         comment = maybeComment,
@@ -172,7 +172,7 @@ case class RDF2Manifest(base: Option[IRI],
           objectsFromPredicate(mf_include)(n, rdf)
         }
         result <- {
-          logger.info(s"Includes: $includes")
+          logger.debug(s"Includes: $includes")
           val ds: List[Either[String, (IRI, Manifest)]] =
             includes.toList.map(iri => derefInclude(iri, base, iri +: visited))
           ds.sequence
@@ -190,7 +190,7 @@ case class RDF2Manifest(base: Option[IRI],
                    visited: List[RDFNode]): Either[String,(IRI,Manifest)] = node match {
     case iri: IRI => {
       val iriResolved = base.fold(iri)(base => base.resolve(iri))
-      logger.info(s"Resolving base: $base with iri: $iri = $iriResolved")
+      logger.debug(s"Resolving base: $base with iri: $iri = $iriResolved")
       for {
         rdf <- RDFAsJenaModel.fromURI(iriResolved.getLexicalForm,"TURTLE",None)
         mfs <- RDF2Manifest(Some(iriResolved), true).rdf2Manifest(rdf, iri +: visited)

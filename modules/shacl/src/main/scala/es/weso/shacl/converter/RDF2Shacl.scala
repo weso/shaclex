@@ -53,7 +53,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       case _ => {
         val nodes = pendingNodes
         pendingNodes = List() // Cleans list of pending nodes...
-        logger.info(s"parseShapes: Nodes: ${nodes.mkString(",")}. Pending nodes: ${pendingNodes.mkString(",")}")
+        logger.debug(s"parseShapes: Nodes: ${nodes.mkString(",")}. Pending nodes: ${pendingNodes.mkString(",")}")
         parseNodes(nodes, shape)(rdf) match {
           case Left(s) => Left(s)
           case Right(vs) => // Continue parsing in case pendingNodes was filled with some values during parsing
@@ -389,15 +389,15 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def maxCount = parsePredicateInt(sh_maxCount, MaxCount)
 
   def hasValue: RDFParser[Component] = (n, rdf) => {
-    logger.info(s"Parsing hasValue on $n")
+    logger.debug(s"Parsing hasValue on $n")
     for {
       o <- objectFromPredicate(sh_hasValue)(n, rdf)
       v <- {
-        logger.info(s"Object of hasValue $n = $o")
+        logger.debug(s"Object of hasValue $n = $o")
         node2Value(o)
       }
     } yield {
-      logger.info(s"Value parsed: $v")
+      logger.debug(s"Value parsed: $v")
       HasValue(v)
     }
   }

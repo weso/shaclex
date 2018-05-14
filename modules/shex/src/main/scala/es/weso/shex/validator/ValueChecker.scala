@@ -14,7 +14,7 @@ case class ValueChecker(schema: Schema)
   def checkValue(
     attempt: Attempt,
     node: RDFNode)(value: ValueSetValue): CheckTyping = {
-    logger.info(s"checkValue: $node $value")
+    logger.debug(s"checkValue: $node $value")
     value match {
       case IRIValue(iri) => node match {
         case i: IRI =>

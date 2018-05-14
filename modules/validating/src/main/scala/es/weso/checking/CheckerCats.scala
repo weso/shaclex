@@ -119,7 +119,8 @@ abstract class CheckerCats extends Checker {
    * Checks all elements in a list
    * If any of the elements fail, fails
    */
-  def checkAll[A](xs: List[Check[A]]): Check[List[A]] = xs.sequence
+  def checkAll[A](xs: List[Check[A]]): Check[List[A]] =
+    xs.sequence  // Question: Is this stack safe?
 
   def checkPair1st[A, B](p: (Check[A], B)): Check[(A, B)] = for {
     v <- p._1

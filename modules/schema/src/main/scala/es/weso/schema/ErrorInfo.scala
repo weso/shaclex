@@ -20,7 +20,7 @@ object ErrorInfo extends LazyLogging {
   }
 
   implicit val decodeErrorInfo: Decoder[ErrorInfo] = Decoder.instance { c =>
-    logger.info(s"Decoding error info: $c")
+    logger.debug(s"Decoding error info: $c")
     for {
       msg <- c.get[String]("error")
     } yield ErrorInfo(msg)

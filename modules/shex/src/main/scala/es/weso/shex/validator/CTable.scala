@@ -1,14 +1,16 @@
 package es.weso.shex.validator
 
 import cats._
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rbe.interval.{IntLimit, IntOrUnbounded, Unbounded}
 import es.weso.rbe.{Direct => _, Schema => _, Star => _, _}
 import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 import es.weso.shex.compact.Parser.TripleExprMap
 
+
 /* Candidates table */
-object table {
+object table extends LazyLogging {
 
   type Rbe_ = Rbe[ConstraintRef]
   type ConstraintsMap = Map[ConstraintRef, CheckExpr]
@@ -84,9 +86,12 @@ object table {
 
     private[validator] def mkTable(te: TripleExpr,
                                    extras: List[IRI],
-                                   tripleExprMap: TripleExprMap): Either[String, ResultPair] = for {
-      pair <- mkTableAux(te, CTable.empty, tripleExprMap)
-    } yield extendWithExtras(pair, te, extras)
+                                   tripleExprMap: TripleExprMap): Either[String, ResultPair] = {
+      logger.info(s"mkTable from ${te.id}")
+      for {
+        pair <- mkTableAux(te, CTable.empty, tripleExprMap)
+      } yield extendWithExtras(pair, te, extras)
+    }
 
     private def mkTableAux(te: TripleExpr, current: CTable, teMap: TripleExprMap): Either[String,ResultPair] = {
       te match {
