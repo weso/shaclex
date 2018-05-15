@@ -169,21 +169,24 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with La
   override def availableInferenceEngines: List[String] = List("NONE")
 
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
-    val query = QueryFactory.create(queryStr)
-    val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
-    qExec.getQuery.getQueryType match {
-      case Query.QueryTypeSelect => {
-        val result = qExec.execSelect()
-        // val varNames = result.getResultVars
-        val ls: List[Map[String,RDFNode]] = result.asScala.toList.map(qs => {
-          val qsm = new QuerySolutionMap()
-          qsm.addAll(qs)
-          qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
-        })
-        Right(ls)
+    val tryQuery: Try[List[Map[String,RDFNode]]] = Try {
+      val query = QueryFactory.create(queryStr)
+      val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
+      qExec.getQuery.getQueryType match {
+        case Query.QueryTypeSelect => {
+          val result = qExec.execSelect()
+          // val varNames = result.getResultVars
+          val ls: List[Map[String, RDFNode]] = result.asScala.toList.map(qs => {
+            val qsm = new QuerySolutionMap()
+            qsm.addAll(qs)
+            qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
+          })
+          ls
+        }
+        case qtype => throw new Exception(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
       }
-      case qtype => Left(s"Query ${queryStr} has type ${qtype} and must be SELECT query ")
     }
+    tryQuery.toEither.leftMap(_.getMessage)
   }
 
   override def queryAsJson(queryStr: String): Either[String, Json] = Try {

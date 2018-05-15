@@ -1,0 +1,131 @@
+# Shape Expression for Diseases in Wikidata 
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX prv: <http://www.wikidata.org/prop/reference/value/>
+PREFIX pr:  <http://www.wikidata.org/prop/reference/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/> 
+PREFIX do: <http://purl.obolibrary.org/obo/DOID_>
+PREFIX doio: <http://identifiers.org/doid/>
+PREFIX mir: <http://www.ebi.ac.uk/miriam/main/collections/>
+PREFIX gw: <http://micel.io/genewiki/>
+
+
+start = @gw:disease
+
+gw:disease EXTRA p:P31 p:P279 {
+
+  # Statements 
+  p:P31  @gw:P31_disease-class ;
+  p:P279  @gw:P279_disease-parent-class* ;
+  p:P2888 @gw:P2888_disease-ontology-iri ;
+  p:P2888 @gw:P2888_identifiers-org-iri ;
+
+  ## IDENTIFIERS
+  p:P699 @gw:P699_disease_ontology_id ;
+  p:P486 @gw:P486_mesh_id* ;
+  p:P492 @gw:P492_omim_id* ;
+  p:P493 @gw:P493_icd_9* ;
+  p:P494 @gw:P494_icd_10* ;
+  p:P1550 @gw:P1550_orphanet_id* ;
+  p:P1748 @gw:P1748_nci_thesaurus* ;
+  p:P2892 @gw:P2892_umls-cui? ;
+} 
+
+## Statements 
+
+gw:P31_disease-class {
+  ps:P31 [wd:Q12136] ;
+  prov:wasDerivedFrom @gw:do-reference ;
+
+} 
+
+gw:P279_disease-parent-class {
+  # ps:P279  @gw:disease ; # checking this recursive constraint is to expensive, hence it being a comment for now
+  prov:wasDerivedFrom @gw:do-reference ;
+}
+
+gw:P2888_disease-ontology-iri {
+  ps:P2888  [do:~] ;
+  prov:wasDerivedFrom @gw:do-reference ;
+}
+
+gw:P2888_identifiers-org-iri {
+  ps:P2888  [doio:~] ;
+  prov:wasDerivedFrom @gw:miriam-reference
+}
+
+## Identifiers
+gw:P699_disease_ontology_id { 
+  ps:P699 LITERAL  /^DOID:[0-9]+$/;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+
+gw:P486_mesh_id { 
+  ps:P486 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+
+gw:P492_omim_id { 
+  ps:P492 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+
+gw:P493_icd_9 { 
+  ps:P493 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+     
+gw:P494_icd_10 { 
+  ps:P494 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+  
+gw:P1550_orphanet_id {
+  ps:P1550 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+     
+gw:P1748_nci_thesaurus {
+  ps:P1748 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+
+gw:P2888_exact_match {
+  ps:P2888 IRI ;
+  prov:wasDerivedFrom @gw:miriam-reference OR @gw:do-reference ;
+} 
+     
+gw:P2892_umls-cui { 
+  ps:P2892 LITERAL ;
+  prov:wasDerivedFrom @gw:do-reference ;
+} 
+
+
+gw:do-reference {
+  pr:P248   IRI ; #Needs to be fixed by downloading the addtional arcs
+  pr:P813   xsd:dateTime ;
+  pr:P699   LITERAL  /^DOID:[0-9]+$/; 
+} 
+
+gw:version-disease-ontology {
+  p:P629 { ps:P629 [ wd:Q5282129 ] } ; # edition or translation of (P629) Disease Ontology (Q5282129)
+} 
+
+gw:miriam-reference {
+  pr:P248  [ wd:Q16335166 ] ; # stated in (P248) Miriam registry (Q16335166)
+  pr:P854  [ mir:~ ] ;
+} 
+
+
+
+
+
+
+
+

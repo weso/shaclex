@@ -74,7 +74,8 @@ object ShapeMap {
     base: Option[String] = None,
     nodesPrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ShapeMap] = {
-    Parser.parse(str, base, nodesPrefixMap, shapesPrefixMap)
+    if (str.isEmpty) Right(ShapeMap.empty)
+    else Parser.parse(str, base, nodesPrefixMap, shapesPrefixMap)
   }
 
   def fromJson(jsonStr: String): Either[String, ShapeMap] = {

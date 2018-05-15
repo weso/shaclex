@@ -171,6 +171,10 @@ object ShEx2UML {
     // TODO: datatype, facets...
   } yield mkLs(nks,dt,facets,values)
 
+  private def cnvShapeOrInline(orId: NodeId,sos: List[ShapeExpr], pm: PrefixMap): Converter[List[List[ValueConstraint]]] =
+    err(s"Not implemented cnvShapeOrInline for $sos")
+
+
   private def cnvFacets(fs: List[XsFacet], pm:PrefixMap): Converter[List[ValueConstraint]] = {
     val zero: List[ValueConstraint] = List()
     def cmb(next: List[ValueConstraint], c: XsFacet): Converter[List[ValueConstraint]] = for {
@@ -247,7 +251,12 @@ object ShEx2UML {
         } yield {
           List(List(UMLField(label, Some(href), constraints.flatten, card)))
         }
+        case so: ShapeOr => err(s"Inline OR for label ${label} not implemented yet. ${so.shapeExprs}") /* for {
+          id <- newLabel(Some("?"))
+          soLabels <- cnvShapeOrInline(id, so.shapeExprs, pm)
+        } yield List(List(UMLField(label, Some(href), soLabels.flatten, card))) */
         case _ if se === Shape.empty => ok(List(List(UMLField(label, Some(href), List(UML.anyConstraint), card))))
+
         case _ => err(s"Complex shape $se in triple constraint with predicate ${label} not implemented yet")
       }
     }
