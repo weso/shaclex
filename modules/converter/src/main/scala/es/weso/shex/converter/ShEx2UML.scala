@@ -39,6 +39,9 @@ object ShEx2UML {
     EitherT.liftF(s)
   }
 
+  private def cnvList[A,B](vs: List[A], cnv: A => Converter[B]): Converter[List[B]] =
+    vs.map(cnv(_)).sequence
+
   private def newLabel(maybeLbl: Option[ShapeLabel]): Converter[NodeId] = maybeLbl match {
     case Some(lbl) => for {
       uml <- getUML
@@ -147,21 +150,6 @@ object ShEx2UML {
     }
   } yield mkList(closedEntries, exprEntries)
 
-  def mkLs[A](ls: List[A]*): List[List[A]] = {
-    val zero: List[List[A]] = List()
-    def cmb(rest: List[List[A]], x: List[A]): List[List[A]] =
-      if (x.isEmpty) rest
-      else x :: rest
-    ls.foldLeft(zero)(cmb)
-  }
-
-  def mkList[A](lss: List[List[A]]*): List[List[A]] = {
-    val zero: List[List[A]] = List()
-    def cmb(rest: List[List[A]], current: List[List[A]]): List[List[A]] =
-      if (current == List() || current == List(List())) rest
-      else rest ++ current
-    lss.foldLeft(zero)(cmb)
-  }
 
   private def cnvNodeConstraint(nc: NodeConstraint, pm: PrefixMap): Converter[List[List[ValueConstraint]]] = for {
     nks <- cnvNodeKind(nc.nodeKind)
@@ -199,8 +187,21 @@ object ShEx2UML {
   private def cnvValues(vs: Option[List[ValueSetValue]], pm:PrefixMap): Converter[List[ValueConstraint]] =
     vs match {
       case None => ok(List())
-      case Some(vs) => // TODO
-         ok(List())
+      case Some(vs) => cnvList(vs, cnvValue(_: ValueSetValue, pm))
+  }
+
+  private def cnvValue(v: ValueSetValue, pm: PrefixMap): Converter[ValueConstraint] = v match {
+    case IRIValue(iri) => ok(ValueConstraint(iri.str,Some(iri.str)))
+    case StringValue(str) => ok(ValueConstraint(str,None))
+    case DatatypeString(s,iri) => ok(ValueConstraint("\"" + s + "\"^^" + pm.qualify(iri), None))
+    case LangString(s,lang) => ok(ValueConstraint("\"" + s + "\"@" + lang.lang,None))
+    case IRIStem(stem) => ok(ValueConstraint(s"${pm.qualify(stem)}~",None))
+    case IRIStemRange(stem,excs) => err(s"Not implemented UML visualization of IRIStemRange($stem,$excs) yet")
+    case LanguageStem(lang) => ok(ValueConstraint(s"@${lang.lang}~",None))
+    case LanguageStemRange(lang,excs) => err(s"Not implemented UML visualization of LanguageStemRange($lang,$excs) yet")
+    case LiteralStem(stem) => ok(ValueConstraint("\"" + "\"" + stem + "\"~",None))
+    case LiteralStemRange(stem,excs) => err(s"Not implemented UML visualization of LiteralStemRange($stem,$excs) yet")
+    case Language(lang) => ok(ValueConstraint(s"@${lang.lang}",None))
   }
 
   private def cnvDatatype(dt: Option[IRI], pm:PrefixMap): Converter[List[ValueConstraint]] = dt match {
@@ -238,7 +239,7 @@ object ShEx2UML {
     val label = pm.qualify(tc.predicate)
     val href = tc.predicate.str
     tc.valueExpr match {
-      case None => err(s"No value expr")
+      case None => err(s"No value expr for triple constraint $tc")
       case Some(se) => se match {
         case r: ShapeRef => for {
           rid <- newLabel(Some(r.reference))
@@ -270,4 +271,20 @@ object ShEx2UML {
     case (m,es.weso.shex.IntMax(n)) => UMLDiagram.Range(m,UMLDiagram.IntMax(n))
   }
 
+  private def mkLs[A](ls: List[A]*): List[List[A]] = {
+    val zero: List[List[A]] = List()
+    def cmb(rest: List[List[A]], x: List[A]): List[List[A]] =
+      if (x.isEmpty) rest
+      else x :: rest
+    ls.foldLeft(zero)(cmb)
   }
+
+  private def mkList[A](lss: List[List[A]]*): List[List[A]] = {
+    val zero: List[List[A]] = List()
+    def cmb(rest: List[List[A]], current: List[List[A]]): List[List[A]] =
+      if (current == List() || current == List(List())) rest
+      else rest ++ current
+    lss.foldLeft(zero)(cmb)
+  }
+
+}

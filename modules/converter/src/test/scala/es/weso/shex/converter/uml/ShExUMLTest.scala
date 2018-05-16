@@ -51,5 +51,28 @@ class ShExUMLTest extends FunSpec with Matchers {
       }
     )
   }
+
+    it(s"Should convert value set with rdf:type") {
+      val shexStr =
+        """|prefix : <http://example.org/>
+           |
+           |:User {
+           | :name [ :Person ] ;
+           | :knows @:User ;
+           |}
+        """.stripMargin
+      val maybe = for {
+        shex <- Schema.fromString(shexStr,"ShExC",None)
+        uml <- ShEx2UML.schema2Uml(shex)
+      } yield uml
+      maybe.fold(
+        e => fail(s"Error converting to UML: $e"),
+        uml => {
+          println(s"Converted uml:\n${uml.toPlantUML}")
+          println(s"Converted to SVG:\n${uml.toSVG}")
+        }
+      )
+    }
   }
+
 }
