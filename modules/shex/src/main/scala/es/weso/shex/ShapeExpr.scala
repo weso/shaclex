@@ -37,7 +37,8 @@ case class NodeConstraint(
                            nodeKind: Option[NodeKind],
                            datatype: Option[IRI],
                            xsFacets: List[XsFacet],
-                           values: Option[List[ValueSetValue]]) extends ShapeExpr {
+                           values: Option[List[ValueSetValue]]
+                         ) extends ShapeExpr {
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
 }

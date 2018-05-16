@@ -11,6 +11,8 @@ import net.sourceforge.plantuml.api.PlantumlUtils
 object UMLDiagram {
 
   type NodeId = Int
+  type Name   = String
+  type HRef   = String
 
   sealed abstract class UMLCardinality
   case object Star extends UMLCardinality {
@@ -38,19 +40,28 @@ object UMLDiagram {
 
   sealed abstract class UMLEntry
 
-  case class ValueConstraint(name: String,
-                             href: Option[String]
-                            ) extends UMLEntry
+  sealed abstract class ValueConstraint extends UMLEntry
+  case class DatatypeConstraint(name: Name,
+                                href: String
+                               ) extends ValueConstraint
 
-  case class UMLField(name: String,
-                      href: Option[String],
+  case class Constant(name: Name) extends ValueConstraint
+
+  case class ValueSet(values: List[Value]) extends ValueConstraint
+
+  case class ValueExpr(operator: Name, vs: List[ValueConstraint]) extends ValueConstraint
+
+  case class Value(name: String, href: Option[String])
+
+  case class UMLField(name: Name,
+                      href: Option[HRef],
                       valueConstraints: List[ValueConstraint],
                       card: UMLCardinality
                      ) extends UMLEntry
 
-  case class UMLClass(id: NodeId, label: String, href: Option[String], entries: List[List[UMLEntry]])
+  case class UMLClass(id: NodeId, label: Name, href: Option[HRef], entries: List[List[UMLEntry]])
 
-  case class UMLLink(source: NodeId, target: NodeId, label: String, href: String, card: UMLCardinality)
+  case class UMLLink(source: NodeId, target: NodeId, label: Name, href: HRef, card: UMLCardinality)
 
   /**
     * Represents an UML class diagram that can be serialized to PlantUML syntax
@@ -83,12 +94,25 @@ object UMLDiagram {
       this.copy(links = link :: links)
 
 
-    private def strHref(href: Option[String],
-                        lbl: String) = href match {
+    private def strHref(href: Option[HRef],
+                        lbl: Name): String = href match {
       case None => ""
       case Some(href) => s"[[${href} ${lbl}]]"
     }
 
+    def cnvValueConstraint(vc: ValueConstraint): String = vc match {
+      case Constant(c) => c
+      case ValueSet(vs) => {
+        "[ " + vs.map{ v => v.href match {
+          case None => v.name
+          case Some(href) => s"[[${href} ${v.name}]]" }
+        }.mkString(" ") + " ]"
+      }
+      case DatatypeConstraint(name,href) => {
+        s"[[${href} ${name}]] "
+      }
+      case ValueExpr(op,vs) => vs.map(cnvValueConstraint(_)).mkString(s" ${op} ")
+    }
 
     def toPlantUML: String = {
       val sb = new StringBuilder
@@ -100,23 +124,13 @@ object UMLDiagram {
             case field: UMLField => {
               sb.append(s"""${strHref(field.href,field.name)}""")
               sb.append(" : ")
-              field.valueConstraints.foreach { valueConstraint =>
-                sb.append(valueConstraint.href match {
-                  case None => valueConstraint.name
-                  case Some(href) => s"[[${href} ${valueConstraint.name}]] "
-                })
+              field.valueConstraints.foreach { vc =>
+                sb.append(cnvValueConstraint(vc))
               }
               sb.append(field.card)
             }
-            case vc: ValueConstraint => {
-              sb.append(vc.href match {
-                case None => vc.name
-                case Some(href) => s"[[${vc.href} ${vc.name}]] "
-              })
-            }
+            case vc: ValueConstraint => sb.append(cnvValueConstraint(vc))
           }
-
-
             sb.append("\n")
           }
           sb.append("--\n")
@@ -144,14 +158,14 @@ object UMLDiagram {
 
   object UML {
     def empty: UML = UML(Map(),Map(), List())
-    lazy val external = ValueConstraint("External",None)
-    lazy val iriKind = ValueConstraint("IRI",None)
-    lazy val bnodeKind = ValueConstraint("BNode",None)
-    lazy val nonLiteralKind = ValueConstraint("NonLiteral",None)
-    lazy val literalKind = ValueConstraint("Literal",None)
-    lazy val umlClosed = ValueConstraint("Closed",None)
-    lazy val anyConstraint = ValueConstraint(".",None)
-    def datatype(label: String, href: String) = ValueConstraint(label,Some(href))
+    lazy val external = Constant("External")
+    lazy val iriKind = Constant("IRI")
+    lazy val bnodeKind = Constant("BNode")
+    lazy val nonLiteralKind = Constant("NonLiteral")
+    lazy val literalKind = Constant("Literal")
+    lazy val umlClosed = Constant("Closed")
+    lazy val anyConstraint = Constant(".")
+    def datatype(label: String, href: String) = DatatypeConstraint(label,href)
 
   }
 }
