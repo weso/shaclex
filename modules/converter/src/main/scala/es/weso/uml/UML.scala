@@ -59,6 +59,10 @@ object UMLDiagram {
                       card: UMLCardinality
                      ) extends UMLEntry
 
+  case class FieldExpr(operator: Name,
+                       es: List[UMLField]
+                      ) extends UMLEntry
+
   case class UMLClass(id: NodeId, label: Name, href: Option[HRef], entries: List[List[UMLEntry]])
 
   case class UMLLink(source: NodeId, target: NodeId, label: Name, href: HRef, card: UMLCardinality)
@@ -114,23 +118,27 @@ object UMLDiagram {
       case ValueExpr(op,vs) => vs.map(cnvValueConstraint(_)).mkString(s" ${op} ")
     }
 
+    def cnvFieldExpr(fe: FieldExpr): String = {
+      fe.es.map(cnvEntry(_)).mkString(fe.operator)
+    }
+
+    def cnvEntry(entry: UMLEntry): String = entry match {
+      case field: UMLField => cnvField(field)
+      case vc: ValueConstraint => cnvValueConstraint(vc)
+      case fe: FieldExpr => cnvFieldExpr(fe)
+    }
+
+    def cnvField(field: UMLField): String =
+      s"${strHref(field.href,field.name)} : ${field.valueConstraints.map(cnvValueConstraint(_)).mkString(" ")} ${field.card}"
+
     def toPlantUML: String = {
       val sb = new StringBuilder
       sb.append("@startuml\n")
       classes.values.foreach { cls =>
         sb.append(s"""class "${cls.label}" as ${cls.id} <<(S,#FF7700)>> ${strHref(cls.href,cls.label)} {\n""")
         cls.entries.foreach { entryLs =>
-          entryLs.foreach { entry => entry match {
-            case field: UMLField => {
-              sb.append(s"""${strHref(field.href,field.name)}""")
-              sb.append(" : ")
-              field.valueConstraints.foreach { vc =>
-                sb.append(cnvValueConstraint(vc))
-              }
-              sb.append(field.card)
-            }
-            case vc: ValueConstraint => sb.append(cnvValueConstraint(vc))
-          }
+          entryLs.foreach { entry =>
+            sb.append(cnvEntry(entry))
             sb.append("\n")
           }
           sb.append("--\n")

@@ -9,6 +9,7 @@ import es.weso.rdf.PREFIXES._
 import es.weso.shex._
 import es.weso.uml.UMLDiagram
 import es.weso.uml.UMLDiagram._
+import es.weso.shex.implicits.showShEx._
 
 object ShEx2UML {
 
@@ -148,8 +149,8 @@ object ShEx2UML {
     case sa: ShapeAnd => for {
       ess <- cnvListShapeExprEntries(sa.shapeExprs,id,pm)
     } yield ess
-    case so: ShapeOr => err(s"Nested OR not supported yet")
-    case sn: ShapeNot => err(s"Nested NOT not supported yet")
+    case so: ShapeOr => err(s"Nested OR not supported yet $so")
+    case sn: ShapeNot => err(s"Nested NOT not supported yet $sn")
     case s: Shape => cnvShape(s,id,pm)
     case nk: NodeConstraint => for {
       vcs <- cnvNodeConstraint(nk,pm)
@@ -179,11 +180,15 @@ object ShEx2UML {
   } yield mkLs(nks,dt,facets,values)
 
   private def cnvShapeOrInline(es: List[ShapeExpr], pm: PrefixMap): Converter[List[List[ValueConstraint]]] =
-    if (allReferences(es)) for {
-      values <- cnvList(es, cnvShapeRef(pm))
+    for {
+      values <- cnvList(es, cnvFlat(pm))
     } yield List(List(ValueExpr("OR", values)))
-    else err(s"Complex OR not implemented yet: $es in ShapeOrInline")
 
+
+  private def cnvShapeAndInline(es: List[ShapeExpr], pm: PrefixMap): Converter[List[List[ValueConstraint]]] =
+    for {
+      values <- cnvList(es, cnvFlat(pm))
+    } yield List(List(ValueExpr("AND", values)))
 
   private def cnvFacets(fs: List[XsFacet], pm:PrefixMap): Converter[List[ValueConstraint]] = {
     val zero: List[ValueConstraint] = List()
@@ -243,7 +248,7 @@ object ShEx2UML {
 
   private def cnvTripleExpr(e: TripleExpr, id: NodeId, pm: PrefixMap): Converter[List[List[UMLEntry]]] = e match {
     case eo: EachOf => cnvEachOf(eo,id,pm)
-    case oo: OneOf => err(s"Not supported oneOf yet")
+    case oo: OneOf => ok(List(List(Constant(s"Not supported oneOf yet $oo"))))
     case i: Inclusion => err(s"Not supported inclusion yet")
     case tc: TripleConstraint => cnvTripleConstraint(tc,id,pm)
   }
@@ -290,6 +295,9 @@ object ShEx2UML {
         case so: ShapeOr => for {
           vso <- cnvShapeOrInline(so.shapeExprs,pm)
         } yield List(List(UMLField(label, Some(href), vso.flatten, card)))
+        case so: ShapeAnd => for {
+          vso <- cnvShapeAndInline(so.shapeExprs,pm)
+        } yield List(List(UMLField(label, Some(href), vso.flatten, card)))
 
 
 
@@ -298,18 +306,27 @@ object ShEx2UML {
     }
   }
 
-  private def cnvShapeRef(pm: PrefixMap)(sr: ShapeExpr): Converter[ValueConstraint] = sr match {
+  private def cnvFlat(pm: PrefixMap)(sr: ShapeExpr): Converter[ValueConstraint] = sr match {
     case sr:ShapeRef => ok(DatatypeConstraint(iri2Label(sr.reference.toRDFNode.toIRI,pm),sr.reference.toRDFNode.toIRI.str))
+    case nc:NodeConstraint => for {
+      vs <- cnvNodeConstraint(nc,pm)
+      single <- vs match {
+        case List(List(vc)) => ok(vc)
+        case _ => err(s"cnvFlat: result of cnvNodeConstraint($nc) = $vs (too complex)")
+      }
+    } yield single
+    case s: Shape => ok(Constant(s"Complex shape: ${s.show}"))
     case _ => err(s"cnvShapeRef. Expected shapeRef but found $sr")
   }
 
-  private def allReferences(es: List[ShapeExpr]): Boolean =
-    es.forall(isReference(_))
+/*  private def allFlat(es: List[ShapeExpr]): Boolean =
+    es.forall(isFlat(_)) */
 
-  private def isReference(e: ShapeExpr): Boolean = e match {
+/*  private def isFlat(e: ShapeExpr): Boolean = e match {
     case ShapeRef(r) => true
+    case nc: NodeConstraint => true
     case _ => false
-  }
+  } */
 
   private def cnvCard(min: Int, max: Max): UMLCardinality = (min,max) match {
     case (0,es.weso.shex.Star) => UMLDiagram.Star

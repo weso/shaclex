@@ -4,6 +4,7 @@ import es.weso.rdf.nodes.IRI
 import es.weso.shex.{IRILabel, Schema}
 import es.weso.shex.converter.ShEx2UML
 import es.weso.uml.UMLDiagram._
+import es.weso.utils.FileUtils
 import org.scalatest.{FunSpec, Matchers}
 
 class ShExUMLTest extends FunSpec with Matchers {
@@ -46,8 +47,7 @@ class ShExUMLTest extends FunSpec with Matchers {
     maybe.fold(
       e => fail(s"Error converting to UML: $e"),
       uml => {
-        println(s"Converted uml:\n${uml.toPlantUML}")
-        println(s"Converted to SVG:\n${uml.toSVG}")
+        info(s"Converted to SVG:\n${uml.toSVG}")
       }
     )
   }
@@ -56,9 +56,9 @@ class ShExUMLTest extends FunSpec with Matchers {
       val shexStr =
         """|prefix : <http://example.org/>
            |
-           |:User {
+           |:User CLOSED Extra a {
            | a [ :Person <Friend> "Hi"~ @es] ;
-           | :worksFor @:Company OR @:Factory ;
+           | :worksFor @:Company OR :Factory ;
            | :unknwon . ;
            | :parent { :name . } ;
            | :knows @:User ;
@@ -71,7 +71,21 @@ class ShExUMLTest extends FunSpec with Matchers {
       maybe.fold(
         e => fail(s"Error converting to UML: $e"),
         uml => {
-          println(s"Converted uml:\n${uml.toPlantUML}")
+          println(s"Converted to SVG:\n${uml.toSVG}")
+        }
+      )
+    }
+
+    it(s"Shouldn't fail with FHIR schema") {
+      val fhirFile = "examples/shex/fhir/observation.shex"
+      val maybe = for {
+        str <- FileUtils.getContents(fhirFile)
+        shex <- Schema.fromString(str,"ShExC",None)
+        uml <- ShEx2UML.schema2Uml(shex)
+      } yield uml
+      maybe.fold(
+        e => fail(s"Error converting to UML: $e"),
+        uml => {
           println(s"Converted to SVG:\n${uml.toSVG}")
         }
       )
