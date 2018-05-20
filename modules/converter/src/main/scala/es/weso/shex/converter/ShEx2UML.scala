@@ -266,7 +266,8 @@ object ShEx2UML {
       case Some(se) => se match {
         case r: ShapeRef => for {
           rid <- newLabel(Some(r.reference))
-          _ <- updateUML(_.addLink(UMLLink(id, rid, label, href, card)))
+          _ <- if (!tc.inverse) updateUML(_.addLink(UMLLink(id, rid, label, href, card)))
+                else updateUML(_.addLink(UMLLink(rid, id, label, href, card)))
         } yield {
           List()
         }
