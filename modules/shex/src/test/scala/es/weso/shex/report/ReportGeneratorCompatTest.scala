@@ -6,7 +6,7 @@ import java.io._
 import java.nio.file.Paths
 
 import org.scalatest.Matchers
-import es.weso.manifest.ManifestPrefixes._
+import es.weso.shex.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.parser.RDFParser

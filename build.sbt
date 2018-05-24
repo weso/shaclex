@@ -96,8 +96,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
-  .dependsOn(schema, shacl, shex, manifest, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
+  .aggregate(schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
+  .dependsOn(schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -134,7 +134,6 @@ lazy val shacl = project
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(srdf,
-    manifest,
     utils,
     typing,
     validating,
@@ -178,7 +177,6 @@ lazy val shex = project
     validating,
     shapeMaps,
     rbe,
-    manifest,
     depGraphs,
     srdfJena % Test,
     srdf4j % Test
@@ -224,18 +222,6 @@ lazy val converter = project
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(shex, shacl)
-
-lazy val manifest = project
-  .in(file("modules/manifestTest"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .dependsOn(srdf, utils, srdfJena)
-  .settings(
-    libraryDependencies ++= Seq(
-      typesafeConfig % Test,
-      sext
-    )
-  )
 
 lazy val rbe = project
   .in(file("modules/rbe"))

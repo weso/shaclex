@@ -4,11 +4,12 @@ import java.nio.file.Paths
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest._
-import sext._
+//import sext._
 
 import scala.util._
 
-class RDF2ManifestTest extends FunSpec with Matchers with TryValues with OptionValues {
+class RDF2ManifestTest extends FunSpec
+  with Matchers with TryValues with OptionValues {
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclStdTests")
@@ -27,7 +28,7 @@ class RDF2ManifestTest extends FunSpec with Matchers with TryValues with OptionV
         case Left(e) =>
           fail(s"Error reading $fileName\n$e")
         case Right(mf) =>
-          info(s"Manifest successfully read. ${mf.treeString}")
+          info(s"Manifest successfully read. ${mf.label.getOrElse("")}")
       }
     }
   }

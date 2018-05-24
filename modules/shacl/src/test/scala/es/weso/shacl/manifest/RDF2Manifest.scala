@@ -163,7 +163,8 @@ case class RDF2Manifest(base: Option[IRI],
     types.getOrElse(Set()).isEmpty
   }
 
-  def includes(visited: List[RDFNode]): RDFParser[List[(RDFNode, Manifest)]] = { (n, rdf) => {
+  def includes(visited: List[RDFNode]):
+     RDFParser[List[(RDFNode, Manifest)]] = { (n, rdf) => {
     logger.debug(s"Parsing includes...$derefIncludes")
     if (derefIncludes) {
       for {
@@ -250,7 +251,7 @@ case class RDF2Manifest(base: Option[IRI],
 
 }
 
-object RDF2Manifest {
+object RDF2Manifest extends LazyLogging {
 
   def read(fileName: String,
            format: String,
@@ -264,9 +265,11 @@ object RDF2Manifest {
         case None => Right(None)
         case Some(str) => IRI.fromString(str).map(Some(_))
       }
-      mfs <- RDF2Manifest(iriBase,derefIncludes).rdf2Manifest(rdf)
+      mfs <- {
+        RDF2Manifest(iriBase,derefIncludes).rdf2Manifest(rdf)
+      }
       manifest <- if (mfs.size == 1) Right(mfs.head)
-      else Left(s"More than one manifests found: ${mfs}")
+      else Left(s"Number of manifests != 1: ${mfs}")
     } yield manifest
   }
 
