@@ -34,7 +34,7 @@ object ShEx2UML {
 
   private def setUML(uml: UML): Converter[Unit] = modify(s => s.copy(uml = uml))
 
-  private def generateId: Converter[Id] = for {
+ private def generateId: Converter[Id] = for {
     s <- get
     _ <- modify(_ => s.copy(currentId = s.currentId + 1))
   } yield s.currentId
