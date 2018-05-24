@@ -12,9 +12,10 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
 import cats.implicits._
+import es.weso.rdf.jena.RDFAsJenaModel
 import gnieh.diffson.circe._
+
 import scala.io._
-import sext._
 
 class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
@@ -26,7 +27,7 @@ class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers wi
     val file: File = getFileFromFolderWithExt(schemasFolder, name, "shex")
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString
-      Schema.fromString(str, "SHEXC", None) match {
+      Schema.fromString(str, "SHEXC", None,RDFAsJenaModel.empty) match {
         case Right(schema) => {
           val (name, ext) = splitExtension(file.getName)
           val jsonFile = schemasFolder + "/" + name + ".json"
@@ -43,8 +44,7 @@ class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers wi
                         |Diff: ${JsonCompare.diff(json,json2)}
                         |Diffson: ${JsonDiff.diff(json,json2,false)}
                         |Schema\n${schema.show}
-                        |Plain schema\n${schema}
-                        |Schema ext: \n${schema.treeString}""".stripMargin)
+                        |Plain schema\n${schema}""".stripMargin)
               }
             }
           }

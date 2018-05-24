@@ -24,6 +24,9 @@ case class RDFFromWeb() extends RDFReader {
 
   val log = LoggerFactory.getLogger("RDFFromWeb")
 
+  def availableParseFormats: List[String] = List()
+  def availableSerializeFormats: List[String] = List()
+
   override def getPrefixMap: PrefixMap = {
     // TODO: Can we get more info about prefix maps from an endpoint?
     PrefixMap(Map())

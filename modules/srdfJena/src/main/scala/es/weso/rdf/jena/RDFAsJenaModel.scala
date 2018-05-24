@@ -36,6 +36,9 @@ case class RDFAsJenaModel(model: Model)
 
   val log = LoggerFactory.getLogger("RDFAsJenaModel")
 
+  def availableParseFormats: List[String] = RDFAsJenaModel.availableFormats
+  def availableSerializeFormats: List[String] = RDFAsJenaModel.availableFormats ++ List("DOT")
+
   override def fromString(cs: CharSequence,
                           format: String,
                           base: Option[String] = None): Either[String, Rdf] = {

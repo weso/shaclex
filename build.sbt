@@ -114,7 +114,7 @@ lazy val schema = project
   .in(file("modules/schema"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(shex, shacl, shapeMaps, converter)
+  .dependsOn(shex, shacl, shapeMaps, converter, srdfJena)
 
 lazy val depGraphs = project
   .in(file("modules/depGraphs"))
@@ -221,7 +221,7 @@ lazy val converter = project
   .in(file("modules/converter"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(shex, shacl)
+  .dependsOn(shex, shacl,srdfJena)
 
 lazy val rbe = project
   .in(file("modules/rbe"))

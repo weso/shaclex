@@ -1,5 +1,6 @@
 package es.weso.shex.converter.uml
 
+import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.{IRILabel, Schema}
 import es.weso.shex.converter.ShEx2UML
@@ -41,7 +42,7 @@ class ShExUMLTest extends FunSpec with Matchers {
          |}
       """.stripMargin
     val maybe = for {
-      shex <- Schema.fromString(shexStr,"ShExC",None)
+      shex <- Schema.fromString(shexStr,"ShExC",None,RDFAsJenaModel.empty)
       uml <- ShEx2UML.schema2Uml(shex)
     } yield uml
     maybe.fold(
@@ -65,7 +66,7 @@ class ShExUMLTest extends FunSpec with Matchers {
            |}
         """.stripMargin
       val maybe = for {
-        shex <- Schema.fromString(shexStr,"ShExC",None)
+        shex <- Schema.fromString(shexStr,"ShExC",None,RDFAsJenaModel.empty)
         uml <- ShEx2UML.schema2Uml(shex)
       } yield uml
       maybe.fold(
@@ -80,7 +81,7 @@ class ShExUMLTest extends FunSpec with Matchers {
       val fhirFile = "examples/shex/fhir/observation.shex"
       val maybe = for {
         str <- FileUtils.getContents(fhirFile)
-        shex <- Schema.fromString(str,"ShExC",None)
+        shex <- Schema.fromString(str,"ShExC",None,RDFAsJenaModel.empty)
         uml <- ShEx2UML.schema2Uml(shex)
       } yield uml
       maybe.fold(

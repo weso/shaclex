@@ -16,6 +16,10 @@ trait RDFReader {
 
   type Rdf <: RDFReader
 
+  def availableParseFormats: List[String]
+
+  def availableSerializeFormats: List[String]
+
   /**
     * Parse a char sequence to obtain an RDFReader
     * @param cs char sequence to parse

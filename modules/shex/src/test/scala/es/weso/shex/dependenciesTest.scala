@@ -1,6 +1,7 @@
 package es.weso.shex
 
-import es.weso.depgraphs.{ DepGraph, Neg, Pos, PosNeg }
+import es.weso.depgraphs.{DepGraph, Neg, Pos, PosNeg}
+import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
 import org.scalatest._
 
@@ -17,7 +18,7 @@ class dependenciesTest extends FunSpec with Matchers with EitherValues {
     def depGraphTest(schema: String, expectedGraph: Set[(ShapeLabel, Set[(PosNeg, ShapeLabel)])]): Unit = {
       it(s"should check that dependency graph of $schema matches $expectedGraph") {
         val expectedDepGraph = DepGraph.makeGraph(expectedGraph)
-        Schema.fromString(schema, "SHEXC") match {
+        Schema.fromString(schema, "SHEXC",None,RDFAsJenaModel.empty) match {
           case Left(e) => fail(s"Error $e parsing $schema")
           case Right(schema) => {
             schema.depGraph match {
@@ -65,7 +66,7 @@ class dependenciesTest extends FunSpec with Matchers with EitherValues {
 
     def negCyclesTest(schemaStr: String, negCyclesLabels: Set[Set[ShapeLabel]]): Unit = {
       it(s"should check that negCycles of $schemaStr are $negCyclesLabels") {
-        Schema.fromString(schemaStr, "SHEXC") match {
+        Schema.fromString(schemaStr, "SHEXC",None,RDFAsJenaModel.empty) match {
           case Left(e) => fail(s"Error $e parsing $schemaStr")
           case Right(schema) => {
             schema.negCycles match {

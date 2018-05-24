@@ -25,6 +25,9 @@ case class RDFAsRDF4jModel(model: Model)
 
   type Rdf = RDFAsRDF4jModel
 
+  override def availableParseFormats: List[String] = RDFAsRDF4jModel.availableFormats
+  override def availableSerializeFormats: List[String] = RDFAsRDF4jModel.availableFormats
+
   override def fromString(cs: CharSequence,
                           format: String,
                           base: Option[String] = None): Either[String, Rdf] = {

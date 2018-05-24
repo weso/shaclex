@@ -60,7 +60,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
         action <- objectFromPredicate(mf_action)(node, rdf)
         schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
         str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str, "SHEXC", baseIRI)
+        schema <- Schema.fromString(str, "SHEXC", baseIRI,RDFAsJenaModel.empty)
         dataIRI <- iriFromPredicate(sht_data)(action, rdf)
         strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
         data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
@@ -109,7 +109,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
         action <- objectFromPredicate(mf_action)(node, rdf)
         schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
         str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str, "SHEXC", baseIRI)
+        schema <- Schema.fromString(str, "SHEXC", baseIRI,RDFAsJenaModel.empty)
         dataIRI <- iriFromPredicate(sht_data)(action, rdf)
         strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
         data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)

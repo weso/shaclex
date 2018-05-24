@@ -27,6 +27,9 @@ import es.weso.rdf.jena.JenaMapper.jenaNode2RDFNode
 case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with LazyLogging {
   type Rdf = Endpoint
 
+  def availableParseFormats: List[String] = List()
+  def availableSerializeFormats: List[String] = List()
+
   override def getPrefixMap: PrefixMap = {
     // TODO: Can we get more info about prefix maps from an endpoint?
     PrefixMap(Map())

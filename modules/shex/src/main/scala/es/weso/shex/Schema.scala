@@ -2,8 +2,7 @@ package es.weso.shex
 
 import cats.implicits._
 import es.weso.depgraphs.DepGraph
-import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.{PrefixMap, RDFBuilder}
+import es.weso.rdf.{PrefixMap, RDFBuilder, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
 
@@ -53,15 +52,16 @@ case class Schema(prefixes: Option[PrefixMap],
 
 object Schema {
 
-  lazy val rdfDataFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase)
+  def rdfDataFormats(rdfReader: RDFReader) = rdfReader.availableParseFormats //   RDFAsJenaModel.availableFormats.map(_.toUpperCase)
 
   def empty: Schema =
     Schema(None, None, None, None, None, None, List())
 
-  def fromString(
-                  cs: CharSequence,
-                  format: String,
-                  base: Option[String] = None): Either[String, Schema] = {
+  def fromString(cs: CharSequence,
+                 format: String,
+                 base: Option[String],
+                 rdfReader: RDFReader
+                ): Either[String, Schema] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
@@ -73,8 +73,8 @@ object Schema {
         import es.weso.shex.implicits.decoderShEx._
         decode[Schema](cs.toString).leftMap(_.getMessage)
       }
-      case _ if (rdfDataFormats.contains(formatUpperCase)) => for {
-        rdf <- RDFAsJenaModel.fromChars(cs, formatUpperCase, base)
+      case _ if (rdfDataFormats(rdfReader).contains(formatUpperCase)) => for {
+        rdf <- rdfReader.fromString(cs, formatUpperCase, base)
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
@@ -82,7 +82,9 @@ object Schema {
     }
   }
 
-  def serialize(schema: Schema, format: String, rdfBuilder: RDFBuilder): Either[String,String] = {
+  def serialize(schema: Schema,
+                format: String,
+                rdfBuilder: RDFBuilder): Either[String,String] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {
@@ -94,7 +96,7 @@ object Schema {
         import es.weso.shex.implicits.encoderShEx._
         Right(schema.asJson.spaces2)
       }
-      case _ if (rdfDataFormats.contains(formatUpperCase)) => {
+      case _ if (rdfDataFormats(rdfBuilder).contains(formatUpperCase)) => {
         val rdf = ShEx2RDF(schema, None, rdfBuilder.empty)
         rdf.serialize(formatUpperCase)
       }
