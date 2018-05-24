@@ -1,8 +1,5 @@
 package es.weso.shex
 import org.scalatest._
-import cats._
-import cats.data._
-import cats.implicits._
 import es.weso.rdf.nodes._
 import es.weso.rdf._
 

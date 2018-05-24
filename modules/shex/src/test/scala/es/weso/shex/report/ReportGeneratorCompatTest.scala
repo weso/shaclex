@@ -23,7 +23,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
 
   describe("Generate W3c EARL report") {
     RDFAsJenaModel.fromFile(manifestFile, "TURTLE", baseIRI) match {
-      case Left(e) => info(s"Error reading manifest file: $e")
+      case Left(e) => info(s"Error reading manifestTest file: $e")
       case Right(rdf) => {
         val report = prepareReport(rdf)
         val earlModel = report.generateEARL

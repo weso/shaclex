@@ -37,10 +37,10 @@ lazy val jgraphtVersion        = "1.1.0"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.7.2"
 lazy val rdf4jVersion          = "2.2.4"
-lazy val scalacheckVersion     = "1.13.5"
-lazy val scalacticVersion      = "3.0.4"
-lazy val scalaGraphVersion     = "1.11.5"
+lazy val scalacheckVersion     = "1.14.0"
+lazy val scalacticVersion      = "3.0.5"
 lazy val scalaTestVersion      = "3.0.5"
+lazy val scalaGraphVersion     = "1.11.5"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.1.1"
 lazy val seleniumVersion       = "2.35.0"
@@ -191,7 +191,9 @@ lazy val shex = project
       circeCore,
       circeGeneric,
       circeParser,
-      plantuml
+      plantuml,
+      scalaTest % Test,
+      scalacheck % Test
     )
   )
 
@@ -224,7 +226,7 @@ lazy val converter = project
   .dependsOn(shex, shacl)
 
 lazy val manifest = project
-  .in(file("modules/manifest"))
+  .in(file("modules/manifestTest"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(srdf, utils, srdfJena)

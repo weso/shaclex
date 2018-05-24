@@ -1,10 +1,10 @@
-package es.weso.manifest
+package es.weso.shacl.manifest
 
 import es.weso.rdf.nodes.IRI
 
 object ManifestPrefixes {
 
-  lazy val mf = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
+  lazy val mf = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifestTest#")
   lazy val qt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-query#")
   lazy val sht = IRI("http://www.w3.org/ns/shacl-test#")
   lazy val dc = IRI("http://purl.org/dc/elements/1.1/")

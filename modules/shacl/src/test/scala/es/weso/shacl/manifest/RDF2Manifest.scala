@@ -1,15 +1,15 @@
-package es.weso.manifest
+package es.weso.shacl.manifest
 
-import es.weso.rdf.nodes._
-
-import scala.util._
-import es.weso.rdf._
-import ManifestPrefixes._
-import es.weso.rdf.parser.RDFParser
-import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.utils.FileUtils._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.rdf._
+import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.rdf.nodes._
+import es.weso.rdf.parser.RDFParser
+import es.weso.utils.FileUtils._
+import ManifestPrefixes._
+
+import scala.util._
 
 case class RDF2Manifest(base: Option[IRI],
                         derefIncludes: Boolean) extends RDFParser with LazyLogging {

@@ -2,12 +2,15 @@ package es.weso.shacl
 
 import com.typesafe.config.{Config, ConfigFactory}
 import java.nio.file.Paths
+
 import org.scalatest._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf._
+
 import util._
-import es.weso.manifest.{Entry => ManifestEntry, Result => ManifestResult, _}
+import es.weso.shacl.manifest.{Entry => ManifestEntry, Result => ManifestResult, _}
 import es.weso.shacl.converter.RDF2Shacl
+import es.weso.shacl.manifest.{Manifest, ManifestAction, Result}
 import es.weso.shacl.validator.Validator
 
 class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValues
@@ -16,13 +19,13 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclTests")
-  val fileName = shaclFolder + "/manifest.ttl"
+  val fileName = shaclFolder + "/manifestTest.ttl"
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
 
-  describe(s"Validate shacl Core from manifest file located at $fileName") {
+  describe(s"Validate shacl Core from manifestTest file located at $fileName") {
     RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
       case Left(e) => {
-        println(s"Error reading manifest file:$e")
+        println(s"Error reading manifestTest file:$e")
       }
       case Right(m) => processManifest(m)
     }
@@ -33,7 +36,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
       processEntry(e)
   }
 
-  def processEntry(e: ManifestEntry): Unit = {
+  def processEntry(e: manifest.Entry): Unit = {
     it(s"Should check entry ${e.name}") {
       getSchemaRdf(e.action) match {
         case Left(f) => fail(s"Error processing Entry: $e \n $f")
@@ -56,7 +59,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     }
   }
 
-  def validate(schema: Schema, rdf: RDFReader, expectedResult: ManifestResult): Unit = {
+  def validate(schema: Schema, rdf: RDFReader, expectedResult: Result): Unit = {
     val validator = Validator(schema)
     val result = validator.validateAll(rdf)
     expectedResult match {
@@ -73,7 +76,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
         else {
           fail(s"Expected result($b)!= obtained result\n$result")
         }
-      case _ => fail(s"Unsupported manifest result $result")
+      case _ => fail(s"Unsupported manifestTest result $result")
     }
   }
 

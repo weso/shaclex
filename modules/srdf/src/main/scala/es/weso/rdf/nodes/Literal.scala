@@ -1,6 +1,6 @@
 package es.weso.rdf.nodes
 
-trait Literal extends RDFNode {
+trait Literal extends RDFNode with Product with Serializable {
   def dataType: IRI
 
   def isLangLiteral: Boolean

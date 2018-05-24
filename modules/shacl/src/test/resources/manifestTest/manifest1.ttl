@@ -1,0 +1,58 @@
+@prefix dc:     <http://purl.org/dc/elements/1.1/> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix sht:    <http://www.w3.org/ns/shacl/test-suite#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:     <http://example.org/> .
+
+<>
+	a mf:Manifest ;
+	rdfs:comment "Tests of Core features" ;
+	rdfs:label "Core Features tests" ;
+	mf:entries (
+		<example-001>
+	)
+.
+
+<example-001>
+	a sht:Validate ;
+	mf:name "Example with two violations of datatype" ;
+	mf:action [
+   	  sht:data <example1.ttl> ;
+	] ;
+	mf:result [
+      rdf:type sht:NotValid ;
+      sht:details [
+        sht:validationReport [
+         a sh:ValidationReport ;
+         sh:result [
+          a sh:ValidationResult;
+          sh:focusNode ex:InvalidResource1 ;
+           sh:path ex:dateProperty ;
+           sh:severity sh:Violation ;
+          sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
+          sh:sourceShape ex:TestShape;
+          sh:value "2011-01-01"^^xsd:dateTime ;
+	    ] ;
+        sh:result [
+         a sh:ValidationResult ;
+         sh:focusNode ex:InvalidResource1 ;
+         sh:path ex:integerProperty ;
+         sh:severity sh:Violation ;
+         sh:sourceShape ex:TestShape ;
+         sh:sourceConstraintComponent sh:DatatypeConstraintComponent ;
+         sh:value 11.1 ;
+	    ] ;
+      ];
+      sht:validatedPairs [
+       sht:pair [
+         sht:node ex:ValidResource ;
+         sht:shape ex:TestShape
+       ];
+      ];
+     ];
+    ];
+	mf:status sht:proposed.

@@ -1,15 +1,17 @@
-package es.weso.manifest
+package es.weso.shacl.manifest
 
-import com.typesafe.config.{ Config, ConfigFactory }
-import org.scalatest._
-import util._
-import sext._
 import java.nio.file.Paths
+
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest._
+import sext._
+
+import scala.util._
 
 class RDF2ManifestTest extends FunSpec with Matchers with TryValues with OptionValues {
 
   val conf: Config = ConfigFactory.load()
-  val shaclFolder = conf.getString("shaclTests")
+  val shaclFolder = conf.getString("shaclStdTests")
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
 
   describe("RDF2Manifest") {
@@ -19,7 +21,7 @@ class RDF2ManifestTest extends FunSpec with Matchers with TryValues with OptionV
   }
 
   def parseManifest(name: String,folder: String): Unit = {
-    it(s"Should parse manifest $folder/$name") {
+    it(s"Should parse manifestTest $folder/$name") {
       val fileName = s"$shaclFolder/$folder/$name.ttl"
       RDF2Manifest.read(fileName, "TURTLE", Some(s"$shaclFolderURI$folder/"), true) match {
         case Left(e) =>

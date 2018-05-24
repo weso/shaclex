@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// test for schemas referenced by validation/manifest.ttl that aren't in schemas/manifest.ttl
+// test for schemas referenced by validation/manifestTest.ttl that aren't in schemas/manifestTest.ttl
 // ./missing.js OR node ./missing.js
 // empty array ([]) means nothing to do
 
 let fs = require('fs')
-let s = JSON.parse(fs.readFileSync('schemas/manifest.jsonld', 'utf-8'))
+let s = JSON.parse(fs.readFileSync('schemas/manifestTest.jsonld', 'utf-8'))
 ['@graph'][0]
   .entries.map(e => e.shex)
-let v = JSON.parse(fs.readFileSync('validation/manifest.jsonld', 'utf-8'))
+let v = JSON.parse(fs.readFileSync('validation/manifestTest.jsonld', 'utf-8'))
 ['@graph'][0].entries
   .map(e => e.action.schema)
   .filter(e => e.startsWith('../schemas/'))

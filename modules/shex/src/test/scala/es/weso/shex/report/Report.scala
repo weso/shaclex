@@ -43,7 +43,7 @@ case class Report(
     val dc = "http://purl.org/dc/terms/"
     val rdfs = "http://www.w3.org/2000/01/rdf-schema#"
     val xsd = "http://www.w3.org/2001/XMLSchema#"
-    val turtleTests = "http://www.w3.org/2013/TurtleTests/manifest.ttl#"
+    val turtleTests = "http://www.w3.org/2013/TurtleTests/manifestTest.ttl#"
 
     model.setNsPrefix("doap", doap)
     model.setNsPrefix("rdf", rdf)

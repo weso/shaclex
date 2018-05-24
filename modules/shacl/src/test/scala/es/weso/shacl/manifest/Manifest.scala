@@ -1,4 +1,5 @@
-package es.weso.manifest
+package es.weso.shacl.manifest
+
 import es.weso.rdf.nodes._
 import ManifestPrefixes._
 
