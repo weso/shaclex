@@ -87,7 +87,7 @@ class shexCodecTest extends FunSpec with Matchers with EitherValues {
   }
 
   def codecStrTest[A: Encoder: Decoder: Manifest: Eq](str: String, expected: String): Unit = {
-    it(s"Should decode $str and obtain $expected through decoder of type ${manifest[A].runtimeClass.getSimpleName}") {
+    it(s"Should decode $str and obtain $expected through decoder") { // of type ${manifest[A].runtimeClass.getSimpleName}") {
       decode[A](str).fold(
         e => fail(s"Error parsing $str: $e"),
         _.asJson.noSpaces should ===(expected))
