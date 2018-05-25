@@ -56,6 +56,10 @@ case class TripleConstraint(
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 }
 
+/*case class Expr(id: Option[ShapeLabel], e: ValueExpr) extends TripleExpr {
+  def addId(label: ShapeLabel) = this.copy(id = Some(label))
+}*/
+
 object TripleConstraint {
   def emptyPred(pred: IRI): TripleConstraint =
     TripleConstraint(

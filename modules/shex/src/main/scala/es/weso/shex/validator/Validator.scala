@@ -452,7 +452,6 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     ls.map(_.show).mkString("\n")
   }
 
-
   private[validator] def checkCandidateLine(
     attempt: Attempt,
     bagChecker: BagChecker_,
