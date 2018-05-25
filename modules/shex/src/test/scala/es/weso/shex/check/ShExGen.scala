@@ -8,8 +8,6 @@ import org.scalacheck.{Arbitrary, Gen, Properties}
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary.arbitrary
 
-import scala.util.Try
-
 object ShExSpec extends Properties("ShEx") {
 
   lazy val iriGen: Gen[IRI] = for {

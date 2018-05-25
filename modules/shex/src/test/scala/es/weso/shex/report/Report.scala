@@ -1,7 +1,7 @@
 package es.weso.shex.report
 
 import java.text.SimpleDateFormat
-import java.util.{ Calendar, GregorianCalendar }
+import java.util.Calendar
 
 import org.apache.jena.datatypes.xsd.{ XSDDatatype, XSDDateTime }
 import org.apache.jena.rdf.model.{ Model, ModelFactory }
@@ -42,7 +42,7 @@ case class Report(
     val earl = "http://www.w3.org/ns/earl#"
     val dc = "http://purl.org/dc/terms/"
     val rdfs = "http://www.w3.org/2000/01/rdf-schema#"
-    val xsd = "http://www.w3.org/2001/XMLSchema#"
+    // val xsd = "http://www.w3.org/2001/XMLSchema#"
     val turtleTests = "http://www.w3.org/2013/TurtleTests/manifestTest.ttl#"
 
     model.setNsPrefix("doap", doap)
@@ -64,7 +64,7 @@ case class Report(
     val doapVersion = model.createResource(doap + "Version")
 
     val doap_name = model.createProperty(doap + "name")
-    val doap_license = model.createProperty(doap + "license")
+    // val doap_license = model.createProperty(doap + "license")
     val doap_developer = model.createProperty(doap + "developer")
     val doap_maintainer = model.createProperty(doap + "maintainer")
     val doap_documenter = model.createProperty(doap + "documenter")

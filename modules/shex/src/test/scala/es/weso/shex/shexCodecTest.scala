@@ -1,4 +1,5 @@
 package es.weso.shex
+
 import org.scalatest._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._

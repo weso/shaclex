@@ -1,8 +1,6 @@
 package es.weso.shex.validator
 
-import es.weso.rdf.jena._
 import es.weso.rdf.nodes._
-import es.weso.shex._
 import org.scalatest._
 import es.weso.rdf.PREFIXES._
 
