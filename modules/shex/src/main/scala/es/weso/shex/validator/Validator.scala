@@ -512,7 +512,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     cnvResult(runCheck(chk, rdf),rdf)
   }
 
-  def cnvResult(r: CheckResult[ShExError, ShapeTyping, Log],
+  private def cnvResult(r: CheckResult[ShExError, ShapeTyping, Log],
                 rdf: RDFReader): Result = for {
     shapeTyping <- r.toEither.leftMap(_.msg)
     result <- shapeTyping.toShapeMap(rdf.getPrefixMap, schema.prefixMap)

@@ -70,6 +70,7 @@ object table extends LazyLogging {
       case oneOf: OneOf =>
         oneOf.expressions.map(appearances(iri,_)).flatten
       case i: Inclusion => List() // TODO
+      case e: Expr => List()
     }
 
     private[validator] def extendWithExtras(pair: ResultPair, te: TripleExpr, extras: List[IRI]): ResultPair = {
@@ -154,7 +155,10 @@ object table extends LazyLogging {
           } else posSymbol
           Right((newTable, symbol))
         }
+
+        case e:Expr => ???
       }
+
     }
 
     def max2IntOrUnbounded(m: Max): IntOrUnbounded = {

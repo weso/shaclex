@@ -1,6 +1,7 @@
 package es.weso.shex
 
 import es.weso.rdf.nodes.IRI
+import values._
 
 abstract sealed trait TripleExpr {
   def addId(label: ShapeLabel): TripleExpr
@@ -56,9 +57,16 @@ case class TripleConstraint(
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 }
 
-/*case class Expr(id: Option[ShapeLabel], e: ValueExpr) extends TripleExpr {
+/**
+  * Support for arithmetic expressions
+  * @param id
+  * @param e
+  */
+case class Expr(id: Option[ShapeLabel],
+                e: ValueExpr
+               ) extends TripleExpr {
   def addId(label: ShapeLabel) = this.copy(id = Some(label))
-}*/
+}
 
 object TripleConstraint {
   def emptyPred(pred: IRI): TripleConstraint =
