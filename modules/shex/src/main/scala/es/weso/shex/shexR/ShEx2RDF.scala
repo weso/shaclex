@@ -194,7 +194,8 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
   }
 
   private def tripleExpr(te: TripleExpr): RDFSaver[RDFNode] = te match {
-    case TripleConstraint(id, inverse, negated, pred, valueExpr, min, max, semActs, annotations) => for {
+    // TODO: Variable declaration
+    case TripleConstraint(id, inverse, negated, pred, valueExpr, min, max, _, semActs, annotations) => for {
       teId <- mkId(id)
       _ <- addTriple(teId, rdf_type, sx_TripleConstraint)
       _ <- maybeAddContent(inverse, teId, sx_inverse, rdfBoolean)

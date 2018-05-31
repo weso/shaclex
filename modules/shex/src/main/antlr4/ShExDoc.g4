@@ -72,7 +72,7 @@ groupTripleExpr      : singleElementGroup
 				;
 singleElementGroup : unaryTripleExpr ';'? ;
 multiElementGroup : unaryTripleExpr (';' unaryTripleExpr)+ ';'? ;
-unaryTripleExpr      : ('$' tripleExprLabel)? (tripleConstraint | bracketedTripleExpr)
+unaryTripleExpr      : ('$' tripleExprLabel)? (tripleConstraint | bracketedTripleExpr | expr )
 				| include
 				;
 bracketedTripleExpr  : '(' innerTripleExpr ')' cardinality? annotation* semanticActions ;
@@ -115,7 +115,15 @@ numericRange	: KW_MININCLUSIVE
 numericLength   : KW_TOTALDIGITS
 				| KW_FRACTIONDIGITS
 				;
-tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticActions ;
+tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticActions variableDecl? ;
+variableDecl    : KW_AS var ;
+var             : var1 | var2 ;
+var1            : '$' varname ;
+var2            : '?' varname ;
+expr            : basicExpr (binOp expr)+ ;
+binOp           : '=' ;
+basicExpr       : var | literal | iri | blankNode ;
+varname         : PN_LOCAL ;
 senseFlags      : '!' '^'?
 				| '^' '!'?		// inverse not
 				;
@@ -203,6 +211,7 @@ includeSet      : '&' tripleExprLabel+ ;
 
 
 // Keywords
+KW_AS 			    : A S ;
 KW_BASE 			: B A S E ;
 KW_EXTERNAL			: E X T E R N A L ;
 KW_PREFIX       	: P R E F I X ;

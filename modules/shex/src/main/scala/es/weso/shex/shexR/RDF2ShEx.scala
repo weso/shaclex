@@ -190,9 +190,10 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     valueExpr <- opt(sx_valueExpr, shapeExpr)(n, rdf)
     semActs <- opt(sx_semActs, semActList1Plus)(n, rdf)
     annotations <- star(sx_annotation, annotationParser)(n, rdf)
-  } yield TripleConstraint(
+  } yield // TODO: Variable decl
+    TripleConstraint(
     mkId(n),
-    optInverse, optNegated, predicate, valueExpr, optMin, optMax, semActs,
+    optInverse, optNegated, predicate, valueExpr, optMin, optMax, None, semActs,
     ls2Option(annotations))
 
   private def valueSetValue: RDFParser[ValueSetValue] = firstOf(
