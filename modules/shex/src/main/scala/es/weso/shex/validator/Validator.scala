@@ -452,17 +452,15 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     ls.map(_.show).mkString("\n")
   }
 
-  private[validator] def checkCandidateLine(
-    attempt: Attempt,
-    bagChecker: BagChecker_,
-    table: CTable)(cl: CandidateLine): CheckTyping = {
-    val bag = Bag.toBag(cl.values.map(_._2))
-    bagChecker.check(bag, false) match {
-      case Right(_) => {
-        val nodeShapes: List[(RDFNode, ShapeExpr)] =
-          filterOptions(cl.values.map {
-            case (arc, cref) => (arc.node, table.getShapeExpr(cref))
-          })
+  private[validator] def checkCandidateLine(attempt: Attempt,
+                                            bagChecker: BagChecker_,
+                                            table: CTable
+                                           )(cl: CandidateLine): CheckTyping = {
+    val bag = cl.mkBag
+    bagChecker.check(bag, false).fold(
+      e => errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $e"),
+      _ => {
+        val nodeShapes = cl.nodeShapes(table)
         val checkNodeShapes: List[CheckTyping] =
           nodeShapes.map {
             case (node, shapeExpr) =>
@@ -473,10 +471,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
           t <- combineTypings(ts)
         } yield t
       }
-      case Left(err) => {
-        errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $err")
-      }
-    }
+    )
   }
 
   private[validator] def getNeighs(node: RDFNode): Check[Neighs] = for {

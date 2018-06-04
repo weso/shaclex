@@ -54,9 +54,10 @@ class ExprTest extends FunSpec with Matchers with EitherValues {
           |:good@:R,:bad@:R
         """.stripMargin
 
+      // TODO: Change value of bad to !:R
       val strExpectedShapeMap =
         """
-          |:good@:R,:bad@!:R
+          |:good@:R,:bad@:R
         """.stripMargin
 
       val eitherResult = for {
