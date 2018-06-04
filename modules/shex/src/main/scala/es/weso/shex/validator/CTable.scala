@@ -156,7 +156,11 @@ object table extends LazyLogging {
           Right((newTable, symbol))
         }
 
-        case e:Expr => ???
+        case e:Expr => {
+          val e: Rbe_ = Empty
+          val table = current
+          Right((current,e))
+        }
       }
 
     }

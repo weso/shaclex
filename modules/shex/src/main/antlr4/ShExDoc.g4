@@ -72,8 +72,9 @@ groupTripleExpr      : singleElementGroup
 				;
 singleElementGroup : unaryTripleExpr ';'? ;
 multiElementGroup : unaryTripleExpr (';' unaryTripleExpr)+ ';'? ;
-unaryTripleExpr      : ('$' tripleExprLabel)? (tripleConstraint | bracketedTripleExpr | expr )
+unaryTripleExpr      : ('$' tripleExprLabel)? (tripleConstraint | bracketedTripleExpr )
 				| include
+				| expr
 				;
 bracketedTripleExpr  : '(' innerTripleExpr ')' cardinality? annotation* semanticActions ;
 shapeAtom		: nodeConstraint shapeOrRef?    # shapeAtomNodeConstraint
@@ -115,15 +116,25 @@ numericRange	: KW_MININCLUSIVE
 numericLength   : KW_TOTALDIGITS
 				| KW_FRACTIONDIGITS
 				;
-tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticActions variableDecl? ;
-variableDecl    : KW_AS var ;
-var             : var1 | var2 ;
-var1            : '$' varname ;
-var2            : '?' varname ;
-expr            : basicExpr (binOp expr)+ ;
-binOp           : '=' ;
-basicExpr       : var | literal | iri | blankNode ;
-varname         : PN_LOCAL ;
+tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticActions variableDecl?
+                 ;
+variableDecl    : KW_AS varName ;
+varName         : VAR ;
+expr            : expr binOp expr
+                | basicExpr
+				;
+binOp           : '='  # equals
+                | '!=' # notEquals
+                | '>'  # gt
+                | '<'  # lt
+                | '>=' # ge
+                | '<=' # le
+                | '*'  # mult
+                | '/'  # div
+                | '+'  # add
+                | '-'  # minus
+                ;
+basicExpr       : varName | literal | iri | blankNode ;
 senseFlags      : '!' '^'?
 				| '^' '!'?		// inverse not
 				;
@@ -244,6 +255,9 @@ PASS				  : [ \t\r\n]+ -> skip;
 COMMENT				  : '#' ~[\r\n]* -> skip;
 
 CODE                  : '{' (~[%\\] | '\\' [%\\] | UCHAR)* '%' '}' ;
+VAR                   : VAR1 | VAR2 ;
+VAR1                  : '$' VARNAME ;
+VAR2            	  : '?' VARNAME ;
 RDF_TYPE              : 'a' ;
 IRIREF                : '<' (~[\u0000-\u0020=<>"{}|^`\\] | UCHAR)* '>' ; /* #x00=NULL #01-#x1F=control codes #x20=space */
 PNAME_NS			  : PN_PREFIX? ':' ;
@@ -284,6 +298,9 @@ fragment HEX                   : [0-9] | [A-F] | [a-f] ;
 fragment PN_LOCAL_ESC          : '\\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ','
 					  		   | ';' | '=' | '/' | '?' | '#' | '@' | '%') ;
 
+VARNAME : ( PN_CHARS_U | DIGIT ) ( PN_CHARS_U | DIGIT | '\u00B7' | ('\u0300'..'\u036F') | ('\u203F'..'\u2040') )* ;
+
+fragment DIGIT: '0'..'9' ;
 fragment A:('a'|'A');
 fragment B:('b'|'B');
 fragment C:('c'|'C');

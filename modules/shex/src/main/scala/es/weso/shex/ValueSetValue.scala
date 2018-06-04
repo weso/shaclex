@@ -27,8 +27,8 @@ object ObjectValue {
     l match {
       case DatatypeLiteral(lex, dt) => DatatypeString(lex, dt)
       case IntegerLiteral(n) => intValue(n)
-      case DecimalLiteral(d) => decimalValue(d, d.toString)
-      case DoubleLiteral(d) => doubleValue(d, d.toString)
+      case DecimalLiteral(d) => decimalValue(d,d.toString)
+      case DoubleLiteral(d) => doubleValue(d,d.toString)
       case StringLiteral(s) => DatatypeString(s, xsd_string)
       case BooleanLiteral(b) => if (b) trueValue else falseValue
       case LangLiteral(lex, lang) => LangString(lex, lang)
