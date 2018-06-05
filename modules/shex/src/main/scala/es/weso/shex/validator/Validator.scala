@@ -15,11 +15,9 @@ import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
 import ShExError._
 import es.weso.rdf.PREFIXES._
-import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
 import ShExChecker._
 import es.weso.shapeMaps.{ IRILabel => IRIMapLabel, BNodeLabel => BNodeMapLabel, _ }
-import es.weso.shex.compact.CompactShow
 
 /**
  * ShEx validator
@@ -462,10 +460,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       _ => {
         val nodeShapes = cl.nodeShapes(table)
         val checkNodeShapes: List[CheckTyping] =
-          nodeShapes.map {
-            case (node, shapeExpr) =>
-              checkNodeShapeExpr(attempt, node, shapeExpr)
-          }
+          nodeShapes.map { case (node, shapeExpr) => checkNodeShapeExpr(attempt, node, shapeExpr) }
         for {
           ts <- checkAll(checkNodeShapes)
           t <- combineTypings(ts)

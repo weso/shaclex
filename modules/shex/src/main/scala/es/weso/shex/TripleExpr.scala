@@ -36,8 +36,6 @@ case class Inclusion(include: ShapeLabel) extends TripleExpr {
   override def id = None
 }
 
-case class VarName(str:String)  extends AnyVal
-
 case class TripleConstraint(
                              id: Option[ShapeLabel],
                              optInverse: Option[Boolean],
