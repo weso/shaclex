@@ -37,12 +37,15 @@ object SeqUtils {
     } yield as.zip(s)
   }
 
+  /**
+    * filterOptions((1,Some('a')),(2,None),(3,Some('c'))) = List((1,'a'),(3,'c'))
+    * @param ls
+    * @tparam A
+    * @tparam B
+    * @return
+    */
   def filterOptions[A, B](ls: List[(A, Option[B])]): List[(A, B)] = {
-    def cnv(p: (A, Option[B])): Option[(A, B)] = p._2 match {
-      case None => None
-      case Some(v) => Some((p._1, v))
-    }
-    ls.map(cnv).flatten
+    ls.collect { case (x, Some(y)) => (x,y )}
   }
 
   /**

@@ -15,11 +15,9 @@ import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
 import ShExError._
 import es.weso.rdf.PREFIXES._
-import es.weso.utils.SeqUtils._
 import es.weso.shex.validator.table._
 import ShExChecker._
 import es.weso.shapeMaps.{ IRILabel => IRIMapLabel, BNodeLabel => BNodeMapLabel, _ }
-import es.weso.shex.compact.CompactShow
 
 /**
  * ShEx validator
@@ -151,7 +149,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       shapeType = ShapeType(shape, Some(label), schema)
       attempt = Attempt(NodeShape(node, shapeType), None)
       t <- {
-        runLocalSafe(
+        runLocalSafeTyping(
           checkNodeShapeExpr(attempt, node, shape),
           _.addType(node, shapeType),
           (err, t) => {
@@ -452,31 +450,23 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     ls.map(_.show).mkString("\n")
   }
 
-  private[validator] def checkCandidateLine(
-    attempt: Attempt,
-    bagChecker: BagChecker_,
-    table: CTable)(cl: CandidateLine): CheckTyping = {
-    val bag = Bag.toBag(cl.values.map(_._2))
-    bagChecker.check(bag, false) match {
-      case Right(_) => {
-        val nodeShapes: List[(RDFNode, ShapeExpr)] =
-          filterOptions(cl.values.map {
-            case (arc, cref) => (arc.node, table.getShapeExpr(cref))
-          })
+  private[validator] def checkCandidateLine(attempt: Attempt,
+                                            bagChecker: BagChecker_,
+                                            table: CTable
+                                           )(cl: CandidateLine): CheckTyping = {
+    val bag = cl.mkBag
+    bagChecker.check(bag, false).fold(
+      e => errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $e"),
+      _ => {
+        val nodeShapes = cl.nodeShapes(table)
         val checkNodeShapes: List[CheckTyping] =
-          nodeShapes.map {
-            case (node, shapeExpr) =>
-              checkNodeShapeExpr(attempt, node, shapeExpr)
-          }
+          nodeShapes.map { case (node, shapeExpr) => checkNodeShapeExpr(attempt, node, shapeExpr) }
         for {
           ts <- checkAll(checkNodeShapes)
           t <- combineTypings(ts)
         } yield t
       }
-      case Left(err) => {
-        errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $err")
-      }
-    }
+    )
   }
 
   private[validator] def getNeighs(node: RDFNode): Check[Neighs] = for {

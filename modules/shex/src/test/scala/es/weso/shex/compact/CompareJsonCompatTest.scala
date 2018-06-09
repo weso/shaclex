@@ -13,7 +13,7 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 
 import scala.io._
 
-class CompareJsonTest extends FunSpec with JsonTest with Matchers with EitherValues {
+class CompareJsonCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")

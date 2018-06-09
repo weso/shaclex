@@ -44,6 +44,7 @@ case class TripleConstraint(
                              valueExpr: Option[ShapeExpr],
                              optMin: Option[Int],
                              optMax: Option[Max],
+                             optVariableDecl: Option[VarName],
                              semActs: Option[List[SemAct]],
                              annotations: Option[List[Annotation]]) extends TripleExpr {
   lazy val inverse = optInverse.getOrElse(false)
@@ -71,7 +72,7 @@ case class Expr(id: Option[ShapeLabel],
 object TripleConstraint {
   def emptyPred(pred: IRI): TripleConstraint =
     TripleConstraint(
-      None, None, None, pred, None, None, None, None, None)
+      None, None, None, pred, None, None, None, None, None, None)
 
   def valueExpr(pred: IRI, ve: ShapeExpr): TripleConstraint =
     emptyPred(pred).copy(valueExpr = Some(ve))

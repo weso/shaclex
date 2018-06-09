@@ -9,7 +9,9 @@ import es.weso.shex._
 import es.weso.shex.parser.ShExDocBaseVisitor
 import es.weso.shex.compact.Parser._
 import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
+import es.weso.shex.values._
 import es.weso.utils.StrUtils._
+
 import scala.collection.JavaConverters._
 
 /**
@@ -383,7 +385,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       exclusions <- visitList(visitLiteralExclusion, ctx.literalExclusion)
       str <- if (isDefined(ctx.STEM_MARK())) value2String(literal)
              else ok("Unused string") // Unused string...if no STEM_MARK, returns the literal
-    } yield if (!isDefined(ctx.STEM_MARK())) literal
+    } yield if (!isDefined(ctx.STEM_MARK()))
+      ObjectValue.literalValue(literal)
     else { // it is a stem
       if (exclusions.isEmpty) {
         LiteralStem(str)
@@ -391,6 +394,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         LiteralStemRange(LiteralStemRangeString(str), Some(exclusions))
     }
   }
+
 
   override def visitLanguageRange(ctx: LanguageRangeContext): Builder[ValueSetValue] = {
     for {
@@ -421,10 +425,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     )
   }
 
-  private def value2String(v: ValueSetValue): Builder[String] = v match {
-    case StringValue(str) => ok(str)
-    case _ => err(s"Cannot convert value $v to string")
-  }
+  private def value2String(v: Literal): Builder[String] = ok(v.getLexicalForm)
 
   override def visitLiteralExclusion(ctx: LiteralExclusionContext): Builder[LiteralExclusion] = for {
     literal <- visitLiteral(ctx.literal())
@@ -447,20 +448,23 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  override def visitLiteral(ctx: LiteralContext): Builder[ValueSetValue] = {
+  override def visitLiteral(ctx: LiteralContext): Builder[Literal] = {
     ctx match {
       case _ if isDefined(ctx.rdfLiteral()) => visitRdfLiteral(ctx.rdfLiteral())
       case _ if isDefined(ctx.numericLiteral()) => for {
         nl <- visitNumericLiteral(ctx.numericLiteral())
-        v <- numericLiteral2ValueObject(nl)
-      } yield v
+//        v <- numericLiteral2ValueObject(nl)
+      } yield nl
       case _ if isDefined(ctx.booleanLiteral()) => visitBooleanLiteral(ctx.booleanLiteral())
       case _ => err(s"visitLiteral: Unknown ${ctx}")
     }
   }
 
   private def getNumericLiteralOrNumericDatatype(ctx: NumericFacetContext): Builder[NumericLiteral] = ctx match {
-    case _ if isDefined(ctx.numericLiteral()) => visitNumericLiteral(ctx.numericLiteral())
+    case _ if isDefined(ctx.numericLiteral()) => for {
+      lit <- visitNumericLiteral(ctx.numericLiteral())
+      nl <- literal2NumericLiteral(lit)
+    } yield nl
     case _ if isDefined(ctx.string()) => for {
       str <- visitString(ctx.string())
       dt <- visitDatatype(ctx.datatype())
@@ -473,27 +477,34 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     } yield nl
   }
 
-    private def numericLiteral2ValueObject(nl: NumericLiteral): Builder[ValueSetValue] = {
+  private def literal2NumericLiteral(l: Literal): Builder[NumericLiteral] = l match {
+    case IntegerLiteral(n) => ok(NumericInt(n))
+    case DecimalLiteral(d) => ok(NumericDecimal(d, d.toString))
+    case DoubleLiteral(d) => ok(NumericDouble(d, d.toString))
+    case _ => err(s"Cannot convert literal $l to numeric literal")
+  }
+
+   private def numericLiteral2ValueObject(nl: Literal): Builder[ValueSetValue] = {
     nl match {
-      case NumericInt(n) => ok(ObjectValue.intValue(n))
-      case NumericDouble(d,repr) => ok(ObjectValue.doubleValue(d,repr))
-      case NumericDecimal(d,repr) => ok(ObjectValue.decimalValue(d,repr))
+      case IntegerLiteral(n) => ok(ObjectValue.intValue(n))
+      case DoubleLiteral(d) => ok(ObjectValue.doubleValue(d,d.toString))
+      case DecimalLiteral(d) => ok(ObjectValue.decimalValue(d,d.toString))
     }
   }
 
   override def visitRdfLiteral(
-    ctx: RdfLiteralContext): Builder[ValueSetValue] = {
+    ctx: RdfLiteralContext): Builder[Literal] = {
     val str = visitString(ctx.string())
     if (isDefined(ctx.LANGTAG())) {
       val lang = getLanguage(ctx.LANGTAG().getText())
-      str.map(s => LangString(s, lang))
+      str.map(s => LangLiteral(s, lang))
     } else if (isDefined(ctx.datatype)) {
       for {
         s <- str
         d <- visitDatatype(ctx.datatype())
-      } yield DatatypeString(s, d)
+      } yield DatatypeLiteral(s, d)
     } else {
-      str.map(StringValue(_))
+      str.map(StringLiteral(_))
     }
   }
 
@@ -607,17 +618,17 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       }
     }
   }
-  override def visitNumericLiteral(ctx: NumericLiteralContext): Builder[NumericLiteral] = {
+  override def visitNumericLiteral(ctx: NumericLiteralContext): Builder[Literal] = {
     ctx match {
       case _ if (isDefined(ctx.INTEGER())) =>
-        ok(NumericInt(Integer.parseInt(ctx.INTEGER().getText)))
+        ok(IntegerLiteral(Integer.parseInt(ctx.INTEGER().getText)))
       case _ if (isDefined(ctx.DECIMAL())) => {
         val repr = ctx.DECIMAL().getText
-        ok(NumericDecimal(BigDecimal(repr), repr))
+        ok(DecimalLiteral(BigDecimal(repr)))
       }
       case _ if (isDefined(ctx.DOUBLE())) => {
         val repr = ctx.DOUBLE().getText
-        ok(NumericDouble(repr.toDouble,repr))
+        ok(DoubleLiteral(repr.toDouble))
       }
       case _ => err("Unknown ctx in numericLiteral")
     }
@@ -651,11 +662,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitBooleanLiteral(
-    ctx: BooleanLiteralContext): Builder[ValueSetValue] = {
+    ctx: BooleanLiteralContext): Builder[Literal] = {
     if (isDefined(ctx.KW_TRUE()))
-      ok(DatatypeString("true", xsd_boolean))
+      ok(BooleanLiteral(true))
     else
-      ok(DatatypeString("false", xsd_boolean))
+      ok(BooleanLiteral(false))
   }
 
   override def visitXsFacet(ctx: XsFacetContext): Builder[XsFacet] =
@@ -937,6 +948,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx match {
       case _ if (isDefined(ctx.include())) =>
         visitInclude(ctx.include())
+      case _ if (isDefined(ctx.expr())) => for {
+        e <- visitExpr(ctx.expr())
+      } yield Expr(None, e)
       case _ => for {
         maybeLbl <- visitOpt(visitTripleExprLabel, ctx.tripleExprLabel())
         te <- if (isDefined(ctx.bracketedTripleExpr()))
@@ -951,6 +965,40 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       } yield te1
     }
 
+  override def visitExpr(e: ExprContext): Builder[ValueExpr] = e match {
+    case _ if (isDefined(e.basicExpr())) => for {
+      e <- visitBasicExpr(e.basicExpr())
+    } yield e
+    case _ if (isDefined(e.binOp())) => for {
+      e1 <- visitExpr(e.expr(0))
+      op <- visitBinOp(e.binOp())
+      e2 <- visitExpr(e.expr(1))
+    } yield BinExpr(e1,op,e2)
+  }
+
+  override def visitBasicExpr(e: BasicExprContext): Builder[ValueExpr] = e match {
+    case _ if (isDefined(e.varName())) => {
+      ok(Var(VarName(e.varName().getText)))
+    }
+    case _ if (isDefined(e.literal())) => for {
+      literal <- visitLiteral(e.literal())
+    } yield Const(literal)
+    case _ if (isDefined(e.iri())) => throw new Exception("Not implemented iris yet in visitBasicExpr")
+    case _ if (isDefined(e.blankNode())) => throw new Exception("Not implemented blankNode yet in visitBasicExpr")
+  }
+  private def visitBinOp(b: BinOpContext): Builder[BinOp] = b match {
+    case _: EqualsContext => ok(Equals)
+    case _: NotEqualsContext => ok(NotEquals)
+    case _: AddContext => ok(Add)
+    case _: MinusContext => ok(Minus)
+    case _: DivContext => ok(Div)
+    case _: MultContext => ok(Mul)
+    case _: LeContext => ok(LE)
+    case _: GeContext => ok(GE)
+    case _: LtContext => ok(LT)
+    case _: GtContext => ok(GT)
+  }
+
   // TODO: Where should I put ProductionLabels ?
   override def visitTripleExprLabel(ctx: TripleExprLabelContext): Builder[ShapeLabel] = ctx match {
     case _ if (isDefined(ctx.iri())) => visitIri(ctx.iri()).map(IRILabel(_))
@@ -958,6 +1006,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     case _ => err(s"Unknown tripelExprLabel")
   }
 
+  override def visitVariableDecl(ctx: VariableDeclContext):Builder[VarName] = {
+    ok(VarName(ctx.varName().getText))
+  }
 
   override def visitTripleConstraint(
     ctx: TripleConstraintContext): Builder[TripleExpr] =
@@ -966,6 +1017,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       predicate <- visitPredicate(ctx.predicate())
       shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
+      varDecl <- visitOpt(visitVariableDecl, ctx.variableDecl())
       semActs <- visitSemanticActions(ctx.semanticActions())
       anns <- visitList(visitAnnotation, ctx.annotation())
     } yield {
@@ -976,6 +1028,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           valueExpr = Some(shapeExpr),
           optMin = cardinality._1,
           optMax = cardinality._2,
+          optVariableDecl = varDecl,
           annotations = if (anns.isEmpty) None
           else Some(anns),
           semActs =
@@ -1107,6 +1160,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case i: Inclusion =>
         // TODO: Check how to extend include
         i
+      case e: Expr =>
+        // TODO: Check how to extend include
+        e
     }
 
   override def visitAnnotation(ctx: AnnotationContext): Builder[Annotation] = for {

@@ -18,10 +18,10 @@ object table extends LazyLogging {
   type ResultPair = (CTable, Rbe_)
 
   // Constraints table
-  case class CTable(
-    constraints: ConstraintsMap,
-    paths: PathsMap,
-    elems: Int) {
+  case class CTable(constraints: ConstraintsMap,
+                    paths: PathsMap,
+                    elems: Int,
+                   ) {
 
     private[validator] def addPath(p: Path, n: ConstraintRef): PathsMap =
       paths.updated(p, paths.get(p).getOrElse(Set()) + n)
@@ -156,7 +156,11 @@ object table extends LazyLogging {
           Right((newTable, symbol))
         }
 
-        case e:Expr => ???
+        case e:Expr => {
+          val e: Rbe_ = Empty
+          val table = current
+          Right((current,e))
+        }
       }
 
     }

@@ -1,9 +1,9 @@
 package es.weso.checking
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
 
 abstract class CheckerCats extends Checker {
-  implicit val envMonoid: Monoid[Env]
   implicit val logMonoid: Monoid[Log]
 
   type ReaderConfig[A] = Kleisli[Id, Config, A]
@@ -47,6 +47,30 @@ abstract class CheckerCats extends Checker {
     def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
     cs.foldRight(z)(comb)
   }
+
+  /**
+    * Run a computation in a local environment. If the computation fails, return the result of calling `safe` function over the current environment
+    * @param c computation to run
+    * @param f environment
+    * @param safe function to call if the computation fails
+    * @tparam A
+    * @return
+    */
+  def runLocalSafe[A](c: Check[A],
+                      f: Env => Env,
+                      safe: (Err, Env) => A
+                     ): Check[A] = {
+    def fnOk(t: A): Check[A] = ok(t)
+    def fnErr(err:Err): Check[A] = for {
+      t <- getEnv
+    } yield safe(err, t)
+    cond(local(f)(c), fnOk, fnErr)
+  }
+
+  def runLocal[A](c: Check[A],
+                  f: Env => Env): Check[A] =
+    local(f)(c)
+
 
   /**
    * Given a list of checks, return the list of values that pass
@@ -110,6 +134,8 @@ abstract class CheckerCats extends Checker {
     thenPart: A => Check[B],
     elsePart: Err => Check[B]): Check[B] =
     attempt(check).flatMap(_.fold(elsePart(_), thenPart(_)))
+
+
 
   def checkList[A, B](ls: List[A], check: A => Check[B]): Check[List[B]] = {
     checkAll(ls.map(check))

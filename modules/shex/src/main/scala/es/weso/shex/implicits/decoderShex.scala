@@ -400,7 +400,8 @@ object decoderShEx {
       max <- optFieldDecode[Max](c, "max")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c, "annotations")
-    } yield TripleConstraint(id, inverse, negated, predicate, valueExpr, min, max, semActs, annotations)
+    } yield  // TODO: Variable decl
+      TripleConstraint(id, inverse, negated, predicate, valueExpr, min, max, None, semActs, annotations)
   }
 
   def parsePrefix(str: String): Either[String, Prefix] =
