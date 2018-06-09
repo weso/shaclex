@@ -46,7 +46,6 @@ lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.2"
 lazy val xercesVersion         = "2.11.0"
-lazy val plantumlVersion       = "1.2017.12"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "0.11.0"
@@ -67,7 +66,6 @@ lazy val eff               = "org.atnos"                  %% "eff"              
 lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
-lazy val plantuml          = "net.sourceforge.plantuml"   % "plantuml"             % plantumlVersion
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
@@ -193,7 +191,6 @@ lazy val shex = project
       circeCore,
       circeGeneric,
       circeParser,
-      plantuml,
       scalaTest % Test,
       scalacheck % Test
     )
