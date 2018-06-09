@@ -1,41 +1,26 @@
 package es.weso.shex.validator
 
 import cats._
-import implicits._
+import cats.implicits._
 import es.weso.checking.CheckerCats
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.IRI
-import es.weso.shex.validator.Action._
 import es.weso.shex.ShExError
+import es.weso.shex.validator.Action._
+import Context._
 
 object ShExChecker extends CheckerCats {
 
-  import ShapeTyping._
-
   type Config = RDFReader
-  type Env = ShapeTyping
+  type Env = Context
   type Err = ShExError
   type Evidence = (NodeShape, String)
   type Log = List[Action]
   type CheckTyping = Check[ShapeTyping]
 
-  implicit val envMonoid: Monoid[Env] = new Monoid[Env] {
-    def combine(e1: Env, e2: Env): Env = e1 |+| e2
-    def empty: Env = Monoid[ShapeTyping].empty
-  }
-  /*    implicit val logCanLog: CanLog[Log] = new CanLog[Log] {
-        def log(msg: String): Log =
-          throw new Exception("Not implemented logCanlog")
-      } */
   implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
     def combine(l1: Log, l2: Log): Log = l1 ++ l2
     def empty: Log = List()
-  }
-/*  implicit val logShow: Show[Log] = new Show[Log] {
-    def show(l: Log): String = l.map { case (ns, msg) => s"${ns}: $msg" }.mkString("\n")
-  } */
-  implicit val typingShow: Show[ShapeTyping] = new Show[ShapeTyping] {
-    def show(t: ShapeTyping): String = t.toString
   }
 
   def errStr[A](msg: String): Check[A] =
@@ -69,22 +54,27 @@ object ShExChecker extends CheckerCats {
     } yield t.addNotEvidence(node, shape, e)
   }
 
-  def runLocal[A](
-    c: Check[A],
-    f: ShapeTyping => ShapeTyping): Check[A] =
-    local(f)(c)
+  def runLocalTyping[A](c: Check[A],
+                        f: ShapeTyping => ShapeTyping): Check[A] = {
+    def liftedF(c: Context): Context = Context.updateTyping(c,f)
+    runLocal(c, liftedF)
+  }
 
-  def runLocalSafe[A](
-    c: Check[ShapeTyping],
-    f: ShapeTyping => ShapeTyping,
-    safe: (Err, ShapeTyping) => ShapeTyping): Check[ShapeTyping] =
-    cond(local(f)(c), (t: ShapeTyping) => ok(t), err => for {
-      t <- getTyping
-    } yield safe(err, t))
+  def runLocalSafeTyping[A](c: Check[A],
+                            f: ShapeTyping => ShapeTyping,
+                            safe: (Err, ShapeTyping) => A
+                           ): Check[A] = {
+    def liftedF(c: Context): Context = Context.updateTyping(c,f)
+    def liftedSafe(e: Err, c: Context): A = safe(e,c.typing)
+    runLocalSafe(c,liftedF,liftedSafe)
+  }
+
 
   def getRDF: Check[RDFReader] = getConfig // ask[Comput,RDFReader]
 
-  def getTyping: Check[ShapeTyping] = getEnv // ask[Comput,ShapeTyping]
+  def getTyping: Check[ShapeTyping] = for {
+    env <- getEnv
+  } yield env.typing
 
   def combineTypings(ts: Seq[ShapeTyping]): Check[ShapeTyping] = {
     ok(ShapeTyping.combineTypings(ts))
@@ -93,16 +83,19 @@ object ShExChecker extends CheckerCats {
   def runCheck[A: Show](
     c: Check[A],
     rdf: RDFReader): CheckResult[ShExError, A, Log] = {
-    val initial: ShapeTyping = Monoid[ShapeTyping].empty
-    runCheckWithTyping(c, rdf, initial)
+    println(s"Looking for initial")
+    val initial: Context = Monoid[Context].empty
+    println(s"Initial: $initial")
+    CheckResult(run(c)(rdf)(initial))
   }
 
-  def runCheckWithTyping[A: Show](
+/*  def runCheckWithTyping[A: Show](
     c: Check[A],
     rdf: RDFReader,
     typing: ShapeTyping): CheckResult[ShExError, A, Log] = {
-    val r = run(c)(rdf)(typing)
+    val ctx = Context.fromTyping(typing)
+    val r = run(c)(rdf)(ctx)
     CheckResult(r)
-  }
+  } */
 
 }

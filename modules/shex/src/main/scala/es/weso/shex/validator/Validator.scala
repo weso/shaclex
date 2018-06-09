@@ -149,7 +149,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       shapeType = ShapeType(shape, Some(label), schema)
       attempt = Attempt(NodeShape(node, shapeType), None)
       t <- {
-        runLocalSafe(
+        runLocalSafeTyping(
           checkNodeShapeExpr(attempt, node, shape),
           _.addType(node, shapeType),
           (err, t) => {
