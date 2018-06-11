@@ -44,6 +44,7 @@ case class DotGraph(
     case None => {
       val id = "N" + nextId
       val label = pm.qualify(node)
+      println(s"Label: $label, node: $node\nPrefixMap: $pm")
       val (href,style, color) = node match {
         case i: IRI => (i.str, IRIStyle, IRIColor)
         case l: Literal => (l.getLexicalForm, LiteralStyle, LiteralColor)

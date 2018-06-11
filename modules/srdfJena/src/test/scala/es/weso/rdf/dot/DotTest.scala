@@ -28,5 +28,21 @@ class DotTest extends FunSpec with Matchers {
         }
       )
     }
+
+    it("Should generate from RDF with 2 overlapping prefixes") {
+      RDFAsJenaModel.fromChars(
+        """|prefix e: <http://example.org/>
+           |prefix ep: <http://example.org/p/>
+           |e:x ep:a ep:y .
+        """.stripMargin, "TURTLE", None).fold(e => fail(s"Error: $e"),
+        rdf => {
+          val dot = RDF2Dot.rdf2dot(rdf)
+          println(s"Size of triples: ${rdf.rdfTriples().size}")
+          println(s"Dot generated: $dot")
+          dot.edges.size should be(1)
+        }
+      )
+    }
+
   }
 }

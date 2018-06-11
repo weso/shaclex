@@ -68,14 +68,15 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
    * else <http://example.org/x>
    */
   def qualifyString(str: String): String = {
+
     def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
       str.startsWith(p._2.str)
     }
 
-    pm.find(startsWithPredicate) match {
+    val found = pm.collect{ case p if startsWithPredicate(p) => (p, str.stripPrefix(p._2.str)) }.toSeq.sortBy(_._2.length)
+    found.headOption match {
       case None => "<" ++ str ++ ">"
-      case Some(p) => {
-        val localName = str.stripPrefix(p._2.str)
+      case Some((p,localName)) => {
         if (localName contains ("/")) {
           "<" ++ str ++ ">"
         } else {
