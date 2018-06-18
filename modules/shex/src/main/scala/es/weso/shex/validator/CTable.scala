@@ -46,6 +46,12 @@ object table extends LazyLogging {
       )
       (newTable,cref)
     }
+
+    private[validator] def neighs2Candidates(neighs: List[Arc]): List[(Arc, Set[ConstraintRef])] = {
+      neighs.map(arc =>
+        (arc, paths.get(arc.path).getOrElse(Set()))
+      )
+    }
   }
 
   object CTable {

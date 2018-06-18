@@ -368,7 +368,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     isClosed: Boolean,
     ignoredPathsClosed: List[Path]): Either[String,Unit] = {
     val restPath = rest.path
-	// Ignore extra predicates if they are inverse
+	  // Ignore extra predicates if they are inverse
     if (isClosed && restPath.isDirect) {
       // TODO: Review if the extra.contains(restpath) check is necessary
       // Extra has been implemented as a negation
@@ -403,22 +403,13 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   private[validator] def calculateCandidates(
     neighs: Neighs,
     table: CTable): Check[(Candidates, NoCandidates)] = {
-    val candidates = neighs2Candidates(neighs, table)
+    val candidates = table.neighs2Candidates(neighs)
     if (candidates.isEmpty) {
       errStr(s"No candidates match. Neighs: ${neighs.show}, Table: ${table.show}")
     } else {
       val (cs, rs) = candidates.partition { case (_, s) => !s.isEmpty }
       ok((cs, rs.map { case (arc, _) => arc }))
     }
-  }
-
-  private[validator] def neighs2Candidates(
-    neighs: Neighs,
-    table: CTable): List[(Arc, Set[ConstraintRef])] = {
-    val r = neighs.map(arc =>
-      (arc, table.paths.get(arc.path).getOrElse(Set()))
-    )
-    r
   }
 
   private[validator] def checkCandidates(

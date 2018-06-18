@@ -5,8 +5,8 @@ import org.scalatest.{FunSpec, Matchers}
 
 class DotTest extends FunSpec with Matchers {
 
-  describe("Dot") {
-    it("Should generate from empty RDF") {
+/*  describe("Dot") {
+    it("Should generate from example") {
       RDFAsJenaModel.fromChars(
         """|prefix : <http://example.org/>
            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -44,5 +44,19 @@ class DotTest extends FunSpec with Matchers {
       )
     }
 
+  } */
+
+  it("Should generate from RDF with literal") {
+    RDFAsJenaModel.fromChars(
+      """|<x> <p> <y> ; <p> "Hi" .
+      """.stripMargin, "TURTLE", None).fold(e => fail(s"Error: $e"),
+      rdf => {
+        val dot = RDF2Dot.rdf2dot(rdf)
+        println(s"Size of triples: ${rdf.rdfTriples().size}")
+        println(s"Dot generated: $dot")
+        dot.edges.size should be(1)
+      }
+    )
   }
+
 }

@@ -249,6 +249,7 @@ lazy val srdf = project
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .settings(
+//    crossScalaVersions := Seq("2.12.6","2.13.0-M3"),
     libraryDependencies ++= Seq(
       catsCore,
       catsKernel,
