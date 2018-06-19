@@ -22,6 +22,20 @@ case class ResultShapeMap(
     }
   }
 
+  def getConformantShapes(node: RDFNode): List[ShapeMapLabel] = {
+    resultMap.get(node) match {
+      case None => List()
+      case Some(m) => m.toList.collect { case p if p._2.status == Conformant => p._1 }
+    }
+  }
+
+  def getNonConformantShapes(node: RDFNode): List[ShapeMapLabel] = {
+    resultMap.get(node) match {
+      case None => List()
+      case Some(m) => m.toList.collect { case p if p._2.status == NonConformant => p._1 }
+    }
+  }
+
   def hasShapes(node: RDFNode): Seq[ShapeMapLabel] = {
     resultMap.get(node).map(_.keySet.toSeq).getOrElse(Seq())
   }
@@ -122,6 +136,5 @@ case class ResultShapeMap(
 
 object ResultShapeMap {
   def empty = ResultShapeMap(Map(), PrefixMap.empty, PrefixMap.empty)
-
 }
 

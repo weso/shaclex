@@ -5,8 +5,6 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
 import org.scalatest._
 
-import scala.util.{ Failure, Success }
-
 class ResultShapeMapTest extends FunSpec with Matchers with TryValues with OptionValues {
 
   describe("ResultShapeMaps") {
@@ -40,5 +38,34 @@ class ResultShapeMapTest extends FunSpec with Matchers with TryValues with Optio
           }
         })
     }
+  }
+
+  describe(s"Get conformant shapes") {
+    val pm = PrefixMap.empty.addPrefix("",IRI("http://example.org/"))
+    val x: RDFNode = IRI("http://example.org/x")
+    val y: RDFNode = IRI("http://example.org/y")
+    val z: RDFNode = IRI("http://example.org/z")
+    val s: ShapeMapLabel = IRILabel(IRI("http://example.org/s"))
+    val t: ShapeMapLabel = IRILabel(IRI("http://example.org/t"))
+    val conformant = Info(Conformant, Some("ok"),None)
+    val nonConformant = Info(NonConformant, Some("fail"), None)
+    val rm = ResultShapeMap(
+      Map(x -> Map(s -> conformant, t -> nonConformant),
+        y -> Map(t -> conformant),
+        z -> Map(t -> nonConformant) ), pm, pm
+    )
+    it("should get conformant shapes of x ") {
+      rm.getConformantShapes(x) should contain theSameElementsAs (List(s))
+      rm.getNonConformantShapes(x) should contain theSameElementsAs (List(t))
+    }
+    it("should get conformant shapes of y ") {
+      rm.getConformantShapes(y) should contain theSameElementsAs (List(t))
+      rm.getNonConformantShapes(y) should contain theSameElementsAs (List())
+    }
+    it("should get conformant shapes of z ") {
+      rm.getConformantShapes(z) should contain theSameElementsAs (List())
+      rm.getNonConformantShapes(z) should contain theSameElementsAs (List(t))
+    }
+
   }
 }
