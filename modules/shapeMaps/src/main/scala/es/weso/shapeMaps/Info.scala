@@ -16,4 +16,7 @@ object Info {
       ("reason", i.reason.asJson),
       ("appInfo", i.appInfo.asJson))
   }
+
+  def undefined(msg: String): Info =
+    Info(Undefined, Some(msg), Some(Json.fromString(msg)))
 }

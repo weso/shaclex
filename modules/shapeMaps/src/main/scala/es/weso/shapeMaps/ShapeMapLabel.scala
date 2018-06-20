@@ -1,6 +1,9 @@
 package es.weso.shapeMaps
+
 import es.weso.rdf.nodes.{ BNode, IRI }
 import io.circe.{ Encoder, Json }
+import cats._
+import cats.implicits._
 
 abstract class ShapeMapLabel {
   def isStart: Boolean = this match {
@@ -26,6 +29,14 @@ object ShapeMapLabel {
         case IRILabel(iri) => Json.fromString(iri.toString)
         case BNodeLabel(bnode) => Json.fromString(bnode.toString)
       }
+    }
+  }
+
+  implicit val showShapeMapLabel: Show[ShapeMapLabel] = new Show[ShapeMapLabel] {
+    def show(s: ShapeMapLabel): String = s match {
+      case IRILabel(iri) => iri.show
+      case BNodeLabel(bn) => bn.show
+      case Start => "start"
     }
   }
 

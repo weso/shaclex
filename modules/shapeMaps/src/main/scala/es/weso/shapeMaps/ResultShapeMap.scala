@@ -1,8 +1,10 @@
 package es.weso.shapeMaps
 
+import cats._
+import cats.implicits._
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.RDFNode
-import cats.implicits._
+
 
 case class ResultShapeMap(
   resultMap: Map[RDFNode, Map[ShapeMapLabel, Info]],
@@ -27,6 +29,17 @@ case class ResultShapeMap(
       case None => List()
       case Some(m) => m.toList.collect { case p if p._2.status == Conformant => p._1 }
     }
+  }
+
+  def getInfo(node: RDFNode, shape: ShapeMapLabel): Info =
+    resultMap.get(node) match {
+      case None => {
+        Info.undefined(s"Node ${node.show} not found in ${Show[ShapeMap].show(this)}")
+      }
+      case Some(m) => m.get(shape) match {
+        case None => Info.undefined(s"Node ${node.show} has no value for shape ${shape.show} in ${Show[ShapeMap].show(this)}")
+        case Some(info) => info
+      }
   }
 
   def getNonConformantShapes(node: RDFNode): List[ShapeMapLabel] = {
@@ -136,5 +149,6 @@ case class ResultShapeMap(
 
 object ResultShapeMap {
   def empty = ResultShapeMap(Map(), PrefixMap.empty, PrefixMap.empty)
+
 }
 

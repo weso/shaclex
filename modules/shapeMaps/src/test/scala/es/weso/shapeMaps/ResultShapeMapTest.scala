@@ -47,6 +47,7 @@ class ResultShapeMapTest extends FunSpec with Matchers with TryValues with Optio
     val z: RDFNode = IRI("http://example.org/z")
     val s: ShapeMapLabel = IRILabel(IRI("http://example.org/s"))
     val t: ShapeMapLabel = IRILabel(IRI("http://example.org/t"))
+    val u: ShapeMapLabel = IRILabel(IRI("http://example.org/u"))
     val conformant = Info(Conformant, Some("ok"),None)
     val nonConformant = Info(NonConformant, Some("fail"), None)
     val rm = ResultShapeMap(
@@ -66,6 +67,20 @@ class ResultShapeMapTest extends FunSpec with Matchers with TryValues with Optio
       rm.getConformantShapes(z) should contain theSameElementsAs (List())
       rm.getNonConformantShapes(z) should contain theSameElementsAs (List(t))
     }
-
+    it("should get info about x") {
+      rm.getInfo(x,s).status should be(Conformant)
+      rm.getInfo(x,t).status should be(NonConformant)
+      rm.getInfo(x,u).status should be(Undefined)
+    }
+    it("should get info about y") {
+      rm.getInfo(y,s).status should be(Undefined)
+      rm.getInfo(y,t).status should be(Conformant)
+      rm.getInfo(y,u).status should be(Undefined)
+    }
+    it("should get info about z") {
+      rm.getInfo(z,s).status should be(Undefined)
+      rm.getInfo(z,t).status should be(NonConformant)
+      rm.getInfo(z,u).status should be(Undefined)
+    }
   }
 }
