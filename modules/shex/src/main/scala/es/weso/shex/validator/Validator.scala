@@ -303,8 +303,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
     else
     for {
-      neighs <- getNeighs(node)
+      neighs <- getNeighPaths(node, s.paths(schema))
       tableRbe <- {
+        logger.info(s"checkShape of $node with shape ${s.id}. Neighs: $neighs for paths: ${s.paths(schema)}")
         mkTable(s.expression, s.extra.getOrElse(List()))
       }
       (cTable, rbe) = {
@@ -359,7 +360,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
     val ts: List[Either[String,Unit]] = rests.map(checkRest(_, extras, isClosed, ignoredPathsClosed))
     val r: Either[String, Unit] = ts.foldLeft(zero)(combine)
-    r.fold(e => errStr(e), _ => ok(()))
+    r.fold(e => errStr(e),
+      _ => ok(())
+    )
   }
 
   private[validator] def checkRest(
@@ -470,6 +473,19 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     val neighs = outgoing ++ incoming
     neighs
   }
+
+  private[validator] def getNeighPaths(node: RDFNode, paths: List[Path]): Check[Neighs] = for {
+    rdf <- getRDF
+  } yield {
+    val outgoingPredicates = paths.collect { case Direct(p) => p }
+    val outgoing: List[Arc] = rdf.triplesWithSubjectPredicates(node, outgoingPredicates).
+      map(t => Arc(Direct(t.pred), t.obj)).toList
+    val incoming: List[Arc] = rdf.triplesWithObject(node).
+      map(t => Arc(Inverse(t.pred), t.subj)).toList
+    val neighs = outgoing ++ incoming
+    neighs
+  }
+
 
   lazy val emptyTyping: ShapeTyping = Monoid[ShapeTyping].empty
 

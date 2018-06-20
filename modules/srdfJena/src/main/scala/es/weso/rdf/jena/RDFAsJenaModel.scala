@@ -106,6 +106,17 @@ case class RDFAsJenaModel(model: Model)
     }
   }
 
+  override def triplesWithSubjectPredicate(node: RDFNode, p: IRI): Set[RDFTriple] = {
+    val maybeResource = rdfNode2Resource(node, model)
+    val empty: Set[RDFTriple] = Set()
+    maybeResource.fold(empty) {
+      case resource =>
+        val statements: Set[Statement] = triplesSubjectPredicate(resource, p, model)
+        toRDFTriples(statements)
+    }
+  }
+
+
   /**
     * return the SHACL instances of a node `cls`
     * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`

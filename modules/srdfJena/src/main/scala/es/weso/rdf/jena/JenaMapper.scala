@@ -167,6 +167,14 @@ object JenaMapper {
     model.listStatements(resource, null, null).toSet.asScala.toSet
   }
 
+  def triplesSubjectPredicate(resource: Resource, pred: IRI, model: JenaModel): Set[Statement] = {
+    model.listStatements(resource, createProperty(model,pred), null).toSet.asScala.toSet
+  }
+
+  def triplesPredicateObject(pred: IRI, resource: Resource, model: JenaModel): Set[Statement] = {
+    model.listStatements(null, createProperty(model,pred), resource).toSet.asScala.toSet
+  }
+
   def triplesPredicate(pred: Property, model: JenaModel): Set[Statement] = {
     model.listStatements(null, pred, null).toSet.asScala.toSet
   }

@@ -1,9 +1,8 @@
-package es.weso.shex.validator
+package es.weso.shex
 
 import cats._
 import cats.implicits._
 import es.weso.rdf.nodes.RDFNode
-import es.weso.shex.VarName
 
 case class VarTable(table: Map[VarName,List[RDFNode]])
 

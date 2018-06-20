@@ -11,6 +11,8 @@ abstract sealed trait ShapeExpr {
     import es.weso.shex.compact.CompactShow._
     showShapeExpr(this, pm)
   }
+
+  def paths(schema: Schema): List[Path]
 }
 
 object ShapeExpr {
@@ -22,14 +24,21 @@ object ShapeExpr {
 case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
+  override def paths(schema: Schema): List[Path] = shapeExprs.map(_.paths(schema)).flatten
 }
 
 case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  override def paths(schema: Schema): List[Path] = shapeExprs.map(_.paths(schema)).flatten
+
 }
 
 case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  override def paths(schema: Schema): List[Path] = shapeExpr.paths(schema)
+
 }
 
 case class NodeConstraint(
@@ -40,6 +49,8 @@ case class NodeConstraint(
                            values: Option[List[ValueSetValue]]
                          ) extends ShapeExpr {
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  override def paths(schema: Schema): List[Path] = List()
 
 }
 
@@ -103,6 +114,7 @@ case class Shape(
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
 
+  def paths(schema: Schema): List[Path] = expression.map(_.paths(schema)).getOrElse(List())
 }
 
 object Shape {
@@ -132,9 +144,13 @@ case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
   def id = None
   def addId(lbl: ShapeLabel) = this
 
+  override def paths(schema: Schema): List[Path] =
+    schema.getShape(reference).map(_.paths(schema)).getOrElse(List())
+
 }
 
 case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def paths(schema: Schema): List[Path] = List()
 
 }

@@ -2,6 +2,7 @@ package es.weso.shex.validator
 
 import cats._
 import cats.implicits._
+import es.weso.shex.VarTable
 
 case class Context(typing: ShapeTyping, varTable: VarTable)
 
@@ -11,7 +12,6 @@ object Context {
       Context(e1.typing |+| e2.typing, e1.varTable |+| e2.varTable)
 
     def empty: Context = {
-      println(s"Preparing empty Context")
       Context(Monoid[ShapeTyping].empty, Monoid[VarTable].empty)
     }
   }

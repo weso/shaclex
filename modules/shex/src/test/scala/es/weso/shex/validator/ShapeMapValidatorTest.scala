@@ -218,6 +218,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A,:b@:B", ":a@:A,:b@:B")
   }
+
   describe("Relative uris with base") {
     val shexStr =
       """
@@ -232,6 +233,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@<A>", ":a@<http://base.org/A>")
   }
+
   def shouldValidateWithShapeMap(
     rdfStr: String,
     shexStr: String,

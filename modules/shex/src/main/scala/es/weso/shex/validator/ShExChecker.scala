@@ -83,9 +83,7 @@ object ShExChecker extends CheckerCats {
   def runCheck[A: Show](
     c: Check[A],
     rdf: RDFReader): CheckResult[ShExError, A, Log] = {
-    println(s"Looking for initial")
     val initial: Context = Monoid[Context].empty
-    println(s"Initial: $initial")
     CheckResult(run(c)(rdf)(initial))
   }
 

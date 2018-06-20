@@ -17,6 +17,9 @@ case class Schema(prefixes: Option[PrefixMap],
                   imports: List[IRI]
                  ) {
 
+  def getTripleExpr(lbl: ShapeLabel): Option[TripleExpr] =
+    tripleExprMap.map(_.get(lbl)).getOrElse(None)
+
   def resolveShapeLabel(l: ShapeLabel): Either[String, IRI] = l match {
     case IRILabel(iri) => Right(iri)
     case _ => Left(s"Label $l can't be converted to IRI")

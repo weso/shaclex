@@ -6,6 +6,7 @@ import values._
 abstract sealed trait TripleExpr {
   def addId(label: ShapeLabel): TripleExpr
   def id: Option[ShapeLabel]
+  def paths(schema: Schema): List[Path]
 }
 
 case class EachOf( id: Option[ShapeLabel],
@@ -17,6 +18,9 @@ case class EachOf( id: Option[ShapeLabel],
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  override def paths(schema: Schema): List[Path] = expressions.map(_.paths(schema)).flatten
+
 }
 
 case class OneOf(
@@ -29,11 +33,18 @@ case class OneOf(
   lazy val min = optMin.getOrElse(Cardinality.defaultMin)
   lazy val max = optMax.getOrElse(Cardinality.defaultMax)
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+
+  override def paths(schema:Schema): List[Path] = expressions.map(_.paths(schema)).flatten
 }
 
 case class Inclusion(include: ShapeLabel) extends TripleExpr {
   override def addId(lbl: ShapeLabel) = this
   override def id = None
+
+  override def paths(schema: Schema): List[Path] = {
+    schema.getTripleExpr(include).map(_.paths(schema)).getOrElse(List())
+  }
+
 }
 
 case class TripleConstraint(
@@ -56,6 +67,8 @@ case class TripleConstraint(
     if (direct) Direct(predicate)
     else Inverse(predicate)
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def paths(schema: Schema): List[Path] = List(path)
+
 }
 
 /**
@@ -67,6 +80,7 @@ case class Expr(id: Option[ShapeLabel],
                 e: ValueExpr
                ) extends TripleExpr {
   def addId(label: ShapeLabel) = this.copy(id = Some(label))
+  override def paths(schema: Schema): List[Path] = List()
 }
 
 object TripleConstraint {
