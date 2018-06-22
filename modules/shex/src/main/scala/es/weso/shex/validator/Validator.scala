@@ -15,7 +15,7 @@ import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
 import ShExError._
 import es.weso.rdf.PREFIXES._
-import es.weso.shex.validator.table._
+import es.weso.shex.validator.Table._
 import ShExChecker._
 import es.weso.shapeMaps.{ IRILabel => IRIMapLabel, BNodeLabel => BNodeMapLabel, _ }
 

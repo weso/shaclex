@@ -2,7 +2,7 @@ package es.weso.shex.validator
 
 import es.weso.rdf.nodes._
 import es.weso.shex._
-import es.weso.shex.validator.table.CTable
+import es.weso.shex.validator.Table.CTable
 import org.scalatest._
 
 class CTableTest extends FunSpec with Matchers with EitherValues {

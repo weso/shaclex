@@ -1,8 +1,8 @@
 package es.weso.shex.btValidator
 
-import cats.Id
-import cats.data.{EitherT, Kleisli, ReaderT}
-import cats.kernel.Monoid
+import cats._
+import cats.data._
+import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shapeMaps.{FixedShapeMap, ResultShapeMap, ShapeMapLabel}
@@ -15,26 +15,48 @@ import es.weso.typing.Typing
 object BtValidator {
 
   type ShapeTyping = Typing[RDFNode,ShapeMapLabel,ShExErr,List[String]]
-  type ReaderRDF[A] = ReaderT[Id,RDFReader,A]
-  type ReaderSchema[A] = ReaderT[ReaderRDF, Schema, A]
-  type ReaderVarTable[A] = ReaderT[ReaderSchema,VarTable,A]
-  type ReaderTyping[A] = ReaderT[ReaderVarTable, ShapeTyping, A]
-  type Check[A] = EitherT[ReaderTyping,ShExErr, A]
+
+  case class Env(rdf: RDFReader, schema: Schema, typing: ShapeTyping, table: VarTable)
+
+  type ReaderEnv[A] = ReaderT[Id,Env,A]
+  type Check[A] = EitherT[ReaderEnv,ShExErr, A]
 
   def getRDF: Check[RDFReader] = {
-    val r1: ReaderRDF[RDFReader] = ReaderT.ask
-    val r2: ReaderSchema[RDFReader] = ReaderT.liftF(r1)
-    var r3: ReaderVarTable[RDFReader] = ReaderT.liftF(r2)
-    val r4: ReaderTyping[RDFReader] = ReaderT.liftF(r3)
-    EitherT.liftF[ReaderTyping,ShExErr,RDFReader](r4)
+    val r: ReaderEnv[Env] = ReaderT.ask
+    EitherT.liftF[ReaderEnv,ShExErr,RDFReader](r.map(_.rdf))
+  }
+
+  def getSchema: Check[Schema] = {
+    val r: ReaderEnv[Env] = ReaderT.ask
+    EitherT.liftF[ReaderEnv,ShExErr,Schema](r.map(_.schema))
+  }
+
+  def getTyping: Check[ShapeTyping] = {
+    val r: ReaderEnv[Env] = ReaderT.ask
+    EitherT.liftF[ReaderEnv,ShExErr,ShapeTyping](r.map(_.typing))
   }
 
   def getVarTable: Check[VarTable] = {
-    ???
+    val r: ReaderEnv[Env] = ReaderT.ask
+    EitherT.liftF[ReaderEnv,ShExErr,VarTable](r.map(_.table))
   }
 
-  def ok[A](x: A): Check[A] = EitherT.rightT[ReaderTyping,ShExErr](x)
-  def err[A](e: ShExErr): Check[A] = EitherT.leftT[ReaderTyping,A](e)
+  def local[A](f: Env => Env)(c: Check[A]): Check[A] = {
+    EitherT(c.value.local(f))
+  }
+
+  def localWithTable[A](f: VarTable => VarTable, c: Check[A]): Check[A] = {
+    def fn: Env => Env = e => e.copy(table = f(e.table))
+    local(fn)(c)
+  }
+
+  def localWithTyping[A](f: ShapeTyping => ShapeTyping, c: Check[A]): Check[A] = {
+    def fn: Env => Env = e => e.copy(typing = f(e.typing))
+    local(fn)(c)
+  }
+
+  def ok[A](x: A): Check[A] = x.pure[Check]
+  def err[A](e: ShExErr): Check[A] = EitherT.leftT[ReaderEnv,A](e)
   def unimplemented[A](msg: String): Check[A] = err(Unimplemented(msg))
 
   def checkNodeTripleExpr(node: RDFNode, te: TripleExpr): Check[(ShapeTyping,VarTable)] =
@@ -43,14 +65,32 @@ object BtValidator {
       case _ => unimplemented(s"checkNodeTripleExpr: $te")
     }
 
-  def checkNodeTripleConstraint(node: RDFNode, tc: TripleConstraint): Check[(ShapeTyping, VarTable)] = ???
+  def checkNodeTripleConstraint(node: RDFNode,
+                                tc: TripleConstraint
+                               ): Check[(ShapeTyping, VarTable)] =
+    if (tc.direct) {
+      for {
+        rdf <- getRDF
+        triples = rdf.triplesWithSubjectPredicate(node, tc.predicate)
+        typing <- getTyping
+        table <- getVarTable
+      } yield {
+        val newTable = tc.optVariableDecl match {
+          case None => table
+          case Some(name) => table.set(name,triples.map(_.obj).toList)
+        }
+        (typing, newTable)
+      }
+    } else unimplemented("checkTripleConstraint with inverse ")
 
-  def checkShapeMap(shapeMap: FixedShapeMap, rdf: RDFReader): Check[ResultShapeMap] = {
-    ???
-  }
+
+  def satisfies(n: RDFNode, se: ShapeExpr, rdf: RDFReader, m: ShapeTyping): Boolean = ???
+
+
 
   def runCheck[A](rdf: RDFReader, schema: Schema, c: Check[A]): Either[ShExErr,A] = {
-    c.value.run(Typing.empty).run(Monoid[VarTable].empty).run(schema).run(rdf)
+    val env = Env(rdf,schema,Typing.empty,Monoid[VarTable].empty)
+    c.value.run(env)
   }
 
 }

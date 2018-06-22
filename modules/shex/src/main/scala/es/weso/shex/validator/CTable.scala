@@ -10,7 +10,7 @@ import es.weso.shex.compact.Parser.TripleExprMap
 
 
 /* Candidates table */
-object table extends LazyLogging {
+object Table extends LazyLogging {
 
   type Rbe_ = Rbe[ConstraintRef]
   type ConstraintsMap = Map[ConstraintRef, CheckExpr]

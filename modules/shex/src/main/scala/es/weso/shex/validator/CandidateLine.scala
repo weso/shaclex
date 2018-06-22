@@ -5,7 +5,7 @@ import cats.implicits._
 import es.weso.collection.Bag
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shex.ShapeExpr
-import es.weso.shex.validator.table.CTable
+import es.weso.shex.validator.Table.CTable
 import es.weso.utils.SeqUtils.filterOptions
 
 case class CandidateLine(values: List[(Arc,ConstraintRef)]) {
