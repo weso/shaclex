@@ -84,10 +84,6 @@ object BtValidator {
     } else unimplemented("checkTripleConstraint with inverse ")
 
 
-  def satisfies(n: RDFNode, se: ShapeExpr, rdf: RDFReader, m: ShapeTyping): Boolean = ???
-
-
-
   def runCheck[A](rdf: RDFReader, schema: Schema, c: Check[A]): Either[ShExErr,A] = {
     val env = Env(rdf,schema,Typing.empty,Monoid[VarTable].empty)
     c.value.run(env)

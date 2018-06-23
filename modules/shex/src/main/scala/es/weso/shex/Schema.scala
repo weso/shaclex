@@ -17,6 +17,13 @@ case class Schema(prefixes: Option[PrefixMap],
                   imports: List[IRI]
                  ) {
 
+  def addShape(se: ShapeExpr): Schema = this.copy(shapes = addToOptionList(se,shapes))
+
+  private def addToOptionList[A](x: A, maybeLs: Option[List[A]]): Option[List[A]] = maybeLs match {
+    case None => Some(List(x))
+    case Some(xs) => Some(x :: xs)
+  }
+
   def getTripleExpr(lbl: ShapeLabel): Option[TripleExpr] =
     tripleExprMap.map(_.get(lbl)).getOrElse(None)
 
@@ -28,6 +35,15 @@ case class Schema(prefixes: Option[PrefixMap],
   lazy val prefixMap: PrefixMap =
     prefixes.getOrElse(PrefixMap.empty)
 
+  lazy val shapesMap: Map[ShapeLabel,ShapeExpr] = {
+    shapes match {
+      case None => Map()
+      case Some(ls) => {
+        ls.collect{ case s if s.id.isDefined => (s.id.get, s)}.toMap
+      }
+    }
+  }
+
   def qualify(node: RDFNode): String =
     prefixMap.qualify(node)
 
@@ -36,7 +52,7 @@ case class Schema(prefixes: Option[PrefixMap],
 
   // TODO: Convert to Either[String,ShapeExpr]
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
-    shapes.getOrElse(List()).find(_.id == Some(label))
+    shapesMap.get(label) // shapes.getOrElse(List()).find(_.id == Some(label))
 
   lazy val shapeList = shapes.getOrElse(List())
 
