@@ -5,7 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 
 class DotTest extends FunSpec with Matchers {
 
-/*  describe("Dot") {
+  describe("Dot") {
     it("Should generate from example") {
       RDFAsJenaModel.fromChars(
         """|prefix : <http://example.org/>
@@ -44,7 +44,7 @@ class DotTest extends FunSpec with Matchers {
       )
     }
 
-  } */
+  }
 
   it("Should generate from RDF with literal") {
     RDFAsJenaModel.fromChars(
@@ -54,7 +54,7 @@ class DotTest extends FunSpec with Matchers {
         val dot = RDF2Dot.rdf2dot(rdf)
         println(s"Size of triples: ${rdf.rdfTriples().size}")
         println(s"Dot generated: $dot")
-        dot.edges.size should be(1)
+        dot.edges.size should be(2)
       }
     )
   }

@@ -9,6 +9,8 @@ import es.weso.typing.Typing
 import Check._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.triples.RDFTriple
+import es.weso.shex.spec.Spec.neighs
+import es.weso.utils.SetUtils
 
 object Spec extends LazyLogging {
 
@@ -31,9 +33,27 @@ object Spec extends LazyLogging {
    } yield v
 
   def satisfyShape(n: RDFNode, shape: Shape, rdf: RDFReader, m: FixedShapeMap): Check[Boolean] =
-    for {
-      neighs <- neighs(n,rdf)
-    } yield ???
+    shape.expression match {
+      case None => ???
+      case Some(te) => {
+        for {
+          neighs <- neighs(n,rdf)
+          b <- satisfyFirst(SetUtils.pSet(neighs), satisfyMatches(te,rdf,m))
+        } yield b
+      }
+    }
+
+  def satisfyMatches(
+                      te: TripleExpr,
+                      rdf: RDFReader,
+                      m: FixedShapeMap
+                    )(pair: (Set[RDFTriple], Set[RDFTriple])): Check[Boolean] = {
+    val (matched,remainder) = pair
+    matches(matched,te,m)
+    // TODO: rest of conditions
+  }
+
+  def matches(matched: Set[RDFTriple], te: TripleExpr, m: FixedShapeMap): Check[Boolean] = ???
 
   def neighs(n: RDFNode, rdf: RDFReader): Check[Set[RDFTriple]] = {
     val outArcs = rdf.triplesWithSubject(n)
@@ -41,7 +61,6 @@ object Spec extends LazyLogging {
     pure(outArcs ++ inArcs)
   }
 
-  def partition[A](ns: Set[A]): Check[(List[A], List[A])] = ???
 
   def satisfies2(n: RDFNode, nc: NodeConstraint): Check[Boolean] = nodeSatisfies(n,nc)
 

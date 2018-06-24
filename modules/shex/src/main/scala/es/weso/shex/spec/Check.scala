@@ -25,16 +25,19 @@ object Check {
   def satisfyNot(check: Check[Boolean]): Check[Boolean] =
     check.map(e => !e)
 
-  def satisfyFirst[A](ls: Stream[A],
-                      check: A => Check[Boolean]
-                     ): Check[Boolean] = {
-    val z = pure(false)
-    def cmb(next: Check[Boolean], x: A): Check[Boolean] = for {
-      b <- check(x)
-      n <- if (b) pure(true)
-           else next
-    } yield n
-    ls.foldLeft(z)(cmb)
+  def satisfyFirst[A,F[_]: Monad](ls: => Stream[A],
+                                  check: A => F[Boolean]
+                                 ): F[Boolean] = {
+    val z : Eval[F[Boolean]] = Eval.later(Monad[F].pure(false))
+    def cmb(x : A, next: Eval[F[Boolean]]): Eval[F[Boolean]] =
+      Eval.later(
+        for {
+         b <- check(x)
+         n <- if (b) Monad[F].pure(true)
+              else next.value
+        } yield n
+      )
+    Foldable[Stream].foldRight(ls,z)(cmb).value
   }
 
 

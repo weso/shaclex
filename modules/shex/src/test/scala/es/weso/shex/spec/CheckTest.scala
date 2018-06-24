@@ -1,11 +1,12 @@
 package es.weso.shex.spec
 
 import Check._
+import cats._
 import es.weso.shex.Schema
 import org.scalatest._
 
 class CheckTest extends FunSpec with Matchers with EitherValues {
-/*
+
   describe(s"satisfy all") {
 
     it(s"Should satisfy a list of values when all true") {
@@ -124,7 +125,7 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
     }
 
   }
-*/
+
   describe(s"satisfyFirst") {
 
     it(s"Should satisfyFirst on 1,2,3") {
@@ -151,11 +152,31 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
       )
     }
 
+    it(s"Should work on infinite list") {
+      type E[A] = Id[A]
+      val s: Stream[Int] = Stream.from(1)
+      def check(x: Int): E[Boolean] = Monad[E].pure(x == 3)
+      satisfyFirst(s,check)  should be(true)
+    }
+
+    it(s"Should work on finite list and return false") {
+      type E[A] = Id[A]
+      val s: Stream[Int] = Stream.from(1).take(100)
+      def check(x: Int): E[Boolean] = Monad[E].pure(x < 0)
+      satisfyFirst(s,check)  should be(false)
+    }
+
+
     it(s"Should satisfyFirst on infinite") {
-      val ls = Stream.from(1).take(5)
+      val ls = Stream.from(1)
       def even(n: Int): Check[Boolean] = {
+        println(s"Checking $n")
         if (n < 0) err(s"Negative")
-        else pure(n % 2 == 0)
+        else {
+          val b = n % 2 == 0
+          println(s"Returning $b")
+          pure(b)
+        }
       }
       runCheck(Schema.empty, satisfyFirst(ls, even)).fold(
         e => fail(s"Error"),
