@@ -5,7 +5,7 @@ import io.circe.{ Encoder, Json }
 import cats._
 import cats.implicits._
 
-abstract class ShapeMapLabel {
+sealed abstract class ShapeMapLabel {
   def isStart: Boolean = this match {
     case Start => true
     case _ => false

@@ -10,6 +10,9 @@ case class FixedShapeMap(
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap) extends ShapeMap {
 
+  lazy val flatten: List[(RDFNode, ShapeMapLabel, Status)] =
+    shapeMap.toList.map(p => p._2.toList.map(q => (p._1, q._1, q._2.status))).flatten
+
   val associations: List[Association] = shapeMap.toList.flatMap {
     case (node, labelsMap) => {
       labelsMap.toList.map {

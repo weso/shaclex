@@ -69,6 +69,11 @@ case class TripleConstraint(
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
   override def paths(schema: Schema): List[Path] = List(path)
 
+  def decreaseCard: TripleConstraint = this.copy(
+    optMin = optMin.map(x => Math.min(x - 1,0)),
+    optMax = optMax.map(_.decreaseCard)
+  )
+
 }
 
 /**

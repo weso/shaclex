@@ -52,7 +52,7 @@ case class Schema(prefixes: Option[PrefixMap],
 
   // TODO: Convert to Either[String,ShapeExpr]
   def getShape(label: ShapeLabel): Option[ShapeExpr] =
-    shapesMap.get(label) // shapes.getOrElse(List()).find(_.id == Some(label))
+    shapesMap.get(label)
 
   lazy val shapeList = shapes.getOrElse(List())
 

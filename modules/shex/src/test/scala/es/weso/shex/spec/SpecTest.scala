@@ -6,15 +6,20 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.triples.RDFTriple
 import es.weso.shapeMaps._
 import es.weso.shex.{IRILabel => ShExIriLabel, _}
+import es.weso.typing.Typing
 import org.scalatest._
 
 class SpecTest extends FunSpec with Matchers with EitherValues {
+
+  val emptyEnv = Env(Schema.empty,Typing.empty,RDFAsJenaModel.empty)
 
   describe(s"Spec test") {
     val x = IRI(s"http://example.org/x")
     val p = IRI(s"http://example.org/p")
     val y = IRI(s"http://example.org/y")
+    val s = IRI(s"http://example.org/s")
     val b = BNode("b1")
+    val slbl = IRILabel(s)
     val lbl = ShExIriLabel(IRI(s"http://example.org/lbl"))
     val lbl2 = ShExIriLabel(IRI(s"http://example.org/lbl2"))
 
@@ -24,8 +29,8 @@ class SpecTest extends FunSpec with Matchers with EitherValues {
       val s: ShapeMapLabel = IRILabel(x)
       val conformant = Info(Conformant,None,None)
       val map = FixedShapeMap(Map(x -> Map(s -> conformant)), PrefixMap.empty,PrefixMap.empty)
-      Check.runCheck(Schema.empty, Spec.satisfies(x,se,rdf,map)) should be(Right(true))
-      Check.runCheck(Schema.empty, Spec.satisfies(b,se,rdf,map)) should be(Right(false))
+      Check.runCheck(emptyEnv, Spec.satisfies(x,se)) should be(Right(true))
+      Check.runCheck(emptyEnv, Spec.satisfies(b,se)) should be(Right(false))
     }
 
     it(s"Should validate ShapeRef") {
@@ -38,12 +43,53 @@ class SpecTest extends FunSpec with Matchers with EitherValues {
       val s: ShapeMapLabel = IRILabel(x)
       val conformant = Info(Conformant,None,None)
       val map = FixedShapeMap(Map(x -> Map(s -> conformant)), PrefixMap.empty,PrefixMap.empty)
-      Check.runCheck(schema, Spec.satisfies(x,se2,rdf,map)) should be(Right(true))
-      Check.runCheck(schema, Spec.satisfies(b,se2,rdf,map)) should be(Right(false))
-      Check.runCheck(schema, Spec.satisfies(b,se3,rdf,map)).fold(
+      val env = emptyEnv.copy(schema = schema)
+      Check.runCheck(env, Spec.satisfies(x,se2)) should be(Right(true))
+      Check.runCheck(env, Spec.satisfies(b,se2)) should be(Right(false))
+      Check.runCheck(env, Spec.satisfies(b,se3)).fold(
         e => info(s"Failed with $e as expected"),
         v => fail(s"Returned $v but should have failed")
       )
     }
-  }
+
+    it(s"Should validate TripleConstraint with (x,p,y)") {
+      val rdf = RDFAsJenaModel.empty.addTriple(RDFTriple(x,p,y)).getOrElse(RDFAsJenaModel.empty)
+      val tc = TripleConstraint(None,None,None,p,None,Some(1),Some(IntMax(1)),None,None,None)
+      val se = Shape(Some(lbl),None,None,None,Some(tc),None,None,None)
+      val schema = Schema.empty.addShape(se)
+      val env = emptyEnv.copy(schema = schema, rdf = rdf)
+      val slbl: ShapeMapLabel = IRILabel(s)
+      val conformant = Info(Conformant,None,None)
+      val map = FixedShapeMap(Map(x -> Map(slbl -> conformant)), PrefixMap.empty,PrefixMap.empty)
+      Check.runCheck(env, Spec.satisfies(x,se)) should be(Right(true))
+
+      val map2 = FixedShapeMap(Map(y -> Map(slbl -> conformant)), PrefixMap.empty,PrefixMap.empty)
+      Check.runCheck(env, Spec.satisfies(y,se)) should be(Right(false))
+    }
+
+    it(s"Should validate TripleConstraint") {
+      val strRdf =
+        """|prefix : <http://example.org/>
+           |:x :p 1; :q 1 .
+        """.stripMargin
+      val strshex =
+        """|prefix : <http://example.org/>
+          |:S { :p . }
+        """.stripMargin
+      val strShapemap = ":x@:S"
+      val r = for {
+        rdf <- RDFAsJenaModel.fromChars(strRdf, "Turtle", None)
+        schema <- Schema.fromString(strshex, "ShExC", None, RDFAsJenaModel.empty)
+        shapeMap <- ShapeMap.fromString(strShapemap, "Compact",None,rdf.getPrefixMap,schema.prefixMap)
+        fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, schema.prefixMap)
+        r <- Check.runCheck(Env(schema, Typing.empty, rdf), Spec.satisfiesLabel(x, IRILabel(IRI("http://example.org/S"))))
+      } yield r
+      r.fold(
+          e => fail(s"Error $e"),
+          v => v should be(true)
+        )
+      }
+
+    }
+
 }

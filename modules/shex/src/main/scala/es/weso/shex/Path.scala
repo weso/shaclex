@@ -3,13 +3,14 @@ import cats._
 import es.weso.rdf.nodes.IRI
 
 sealed trait Path {
- def isDirect: Boolean 
+ def isDirect: Boolean
 }
 case class Direct(p: IRI) extends Path {
  val isDirect = true
 }
 case class Inverse(p: IRI) extends Path {
  val isDirect = false
+
 }
 
 object Path {

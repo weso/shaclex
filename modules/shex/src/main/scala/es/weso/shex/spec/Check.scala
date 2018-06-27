@@ -2,19 +2,36 @@ package es.weso.shex.spec
 import cats._
 import cats.data.{EitherT, ReaderT}
 import cats.implicits._
+import es.weso.rdf.RDFReader
+import es.weso.rdf.nodes.RDFNode
+import es.weso.shapeMaps.ShapeMapLabel
 import es.weso.shex.Schema
-import es.weso.shex.btValidator.BtValidator.ReaderEnv
+import es.weso.shex.btValidator.ShExErr
+import es.weso.typing.Typing
 
 object Check {
 
-  type ReaderSchema[A] = ReaderT[Id,Schema,A]
-  type Check[A] = EitherT[ReaderSchema,String,A]
+  type ShapeTyping = Typing[RDFNode,ShapeMapLabel,ShExErr,List[String]]
+  type ReaderEnv[A] = ReaderT[Id, Env, A]
+  type Check[A] = EitherT[ReaderEnv,String,A]
 
   def optSatisfy[A](maybeA: Option[A], check: A => Check[Boolean]): Check[Boolean] =
    maybeA match {
     case None => true.pure[Check]
     case Some(a) => check(a)
   }
+
+  def satisfyOr(c1: Check[Boolean],
+                c2: => Check[Boolean]
+               ): Check[Boolean] = c1.flatMap(x =>
+    if (x) pure(true) else c2
+  )
+
+  def satisfyAnd(c1: Check[Boolean],
+                 c2: => Check[Boolean]
+                ): Check[Boolean] = c1.flatMap(x =>
+    if (x) c2 else pure(false)
+  )
 
   def satisfyAll(ls: List[Check[Boolean]]): Check[Boolean] =
     ls.sequence.map(_.forall(_ == true))
@@ -46,15 +63,41 @@ object Check {
 
   def pure[A](x:A): Check[A] = x.pure[Check]
 
-  def err[A](msg: String): Check[A] = EitherT.leftT[ReaderSchema,A](msg)
+  def err[A](msg: String): Check[A] = EitherT.leftT[ReaderEnv,A](msg)
 
   def getSchema: Check[Schema] = {
-    val r: ReaderSchema[Schema] = ReaderT.ask
-    EitherT.liftF[ReaderSchema,String,Schema](r)
+    val r: ReaderEnv[Env] = ReaderT.ask
+    for {
+      env <- EitherT.liftF[ReaderEnv,String,Env](r)
+    } yield env.schema
   }
 
-  def runCheck[A](schema: Schema, check: Check[A]): Either[String,A] =
-    check.value.run(schema)
+  def getTyping: Check[ShapeTyping] = {
+    val r: ReaderEnv[Env] = ReaderT.ask
+    for {
+      env <- EitherT.liftF[ReaderEnv,String,Env](r)
+    } yield env.typing
+  }
+
+  def getRDF: Check[RDFReader] = {
+    val r: ReaderEnv[Env] = ReaderT.ask
+    for {
+      env <- EitherT.liftF[ReaderEnv,String,Env](r)
+    } yield env.rdf
+  }
+
+  def runLocal[A](fn: Env => Env, check: Check[A]): Check[A] = {
+    EitherT(check.value.local(fn))
+  }
+
+  def runLocalWithTyping[A](fn: ShapeTyping => ShapeTyping, check: Check[A]): Check[A] = {
+    runLocal(env => env.copy(typing = fn(env.typing)), check)
+  }
+
+  def runCheck[A](env: Env, check: Check[A]): Either[String,A] = {
+    check.value.run(env)
+  }
+
 
 
 }
