@@ -9,7 +9,7 @@ import org.scalatest._
 
 class CheckTest extends FunSpec with Matchers with EitherValues {
 
-  val emptyEnv = Env(Schema.empty,Typing.empty,RDFAsJenaModel.empty)
+  val emptyEnv = Env(Schema.empty,TypingMap.empty,RDFAsJenaModel.empty)
 
   describe(s"satisfy all") {
 
@@ -228,7 +228,7 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
         pure(false)
       }
       val c = satisfyOr(c1, c2)
-      val env = Env(Schema.empty,Typing.empty,RDFAsJenaModel.empty)
+      val env = Env(Schema.empty,TypingMap.empty,RDFAsJenaModel.empty)
       runCheck(env, c).fold(e => fail(s"Error $e"),
         n => n should be(false))
 

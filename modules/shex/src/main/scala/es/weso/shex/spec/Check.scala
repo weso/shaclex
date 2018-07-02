@@ -4,16 +4,26 @@ import cats.data.{EitherT, ReaderT}
 import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.RDFNode
-import es.weso.shapeMaps.ShapeMapLabel
+import es.weso.shapeMaps.{FixedShapeMap, ShapeMapLabel}
 import es.weso.shex.Schema
 import es.weso.shex.btValidator.ShExErr
 import es.weso.typing.Typing
 
 object Check {
 
-  type ShapeTyping = Typing[RDFNode,ShapeMapLabel,ShExErr,List[String]]
+  type Evidence = String
+  type ShapeTyping = TypingMap[RDFNode, ShapeMapLabel, Evidence]
   type ReaderEnv[A] = ReaderT[Id, Env, A]
   type Check[A] = EitherT[ReaderEnv,String,A]
+
+  def satisfyChain[A](ls: List[A], check: A => Check[ShapeTyping]): Check[ShapeTyping] = {
+    val zero: Check[ShapeTyping] = getTyping
+    def cmb(next: Check[ShapeTyping],x: A): Check[ShapeTyping] = for {
+      typing <- check(x)
+      newTyping <- runLocalWithTyping(_ => Right(typing), next)
+    } yield newTyping
+    ls.foldLeft(zero)(cmb)
+  }
 
   def optSatisfy[A](maybeA: Option[A], check: A => Check[Boolean]): Check[Boolean] =
    maybeA match {
@@ -90,9 +100,11 @@ object Check {
     EitherT(check.value.local(fn))
   }
 
-  def runLocalWithTyping[A](fn: ShapeTyping => ShapeTyping, check: Check[A]): Check[A] = {
-    runLocal(env => env.copy(typing = fn(env.typing)), check)
-  }
+  def runLocalWithTyping[A](fn: ShapeTyping => Either[String,ShapeTyping], check: Check[A]): Check[A] = for {
+    typing <- getTyping
+    newTyping <- fn(typing).fold(e => err(e), t => pure(t))
+    x <- runLocal(env => env.copy(typing = newTyping), check)
+  } yield x
 
   def runCheck[A](env: Env, check: Check[A]): Either[String,A] = {
     check.value.run(env)

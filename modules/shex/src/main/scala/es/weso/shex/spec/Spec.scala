@@ -5,19 +5,30 @@ import cats.implicits._
 import es.weso.shex.implicits.showShEx._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.{IRI, Literal, RDFNode}
-import es.weso.shapeMaps.{IRILabel => IriShapeMapLabel,BNodeLabel => BNodeShapeMapLabel,_}
+import es.weso.shapeMaps.{BNodeLabel => BNodeShapeMapLabel, IRILabel => IriShapeMapLabel, _}
 import es.weso.shex._
 import Check._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.shex.validator.Arc
+import es.weso.typing.Typing
 import es.weso.utils.SetUtils
 
 object Spec extends LazyLogging {
   def logInfo(str: String):Unit = println(str)
 
-  def fixedShapeMap2Typing(m: FixedShapeMap): ShapeTyping = ???
-
-  def checkShapeMap(rdf: RDFReader, m: FixedShapeMap): Check[Boolean] = {
+ /* def fixedShapeMap2Typing(m: FixedShapeMap): ShapeTyping = {
+    val zero: ShapeTyping = TypingMap.empty
+    def cmb(next: ShapeTyping, current:(RDFNode,ShapeMapLabel,Status)): ShapeTyping = {
+      val (node,lbl,status) = current
+      status match {
+        case Conformant => next.addType(node,lbl)
+//        case NonConformant => next.add
+      }
+    }
+    m.flatten.foldLeft(zero)(cmb)
+  }
+*/
+/*  def checkShapeMap(rdf: RDFReader, m: FixedShapeMap): Check[Boolean] = {
     val typing = fixedShapeMap2Typing(m)
     def checkAll: Check[Boolean] = {
       val ls: List[Check[Boolean]] = m.flatten.map{ case (node,lbl,status) => status match {
@@ -28,6 +39,7 @@ object Spec extends LazyLogging {
     }
     runLocalWithTyping(_ => typing, checkAll)
   }
+*/
 
   def satisfyStatus(node: RDFNode, lbl: ShapeMapLabel, status: Status): Check[Boolean] = ???
 
@@ -39,12 +51,12 @@ object Spec extends LazyLogging {
 
   def satisfiesLabel(node: RDFNode, lbl: ShapeMapLabel): Check[Boolean] = for {
      se <- getShapeFromShapeMapLabel(lbl)
-     r <- runLocalWithTyping(_.addType(node,lbl), satisfies(node,se))
+     r <- runLocalWithTyping(_.addConformant(node,lbl), satisfies(node,se))
   } yield r
 
   def notSatisfiesLabel(node: RDFNode, lbl: ShapeMapLabel): Check[Boolean] = for {
     se <- getShapeFromShapeMapLabel(lbl)
-    r <- runLocalWithTyping(_.addType(node,lbl), satisfies(node,se))
+    r <- runLocalWithTyping(_.addConformant(node,lbl), satisfies(node,se))
   } yield !r
 
 
