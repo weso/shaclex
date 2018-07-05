@@ -16,6 +16,12 @@ object Check {
   type ReaderEnv[A] = ReaderT[Id, Env, A]
   type Check[A] = EitherT[ReaderEnv,String,A]
 
+  def emptyTyping: ShapeTyping = TypingMap.empty
+
+
+  def fromEither[A](e: Either[String, A]): Check[A] =
+    EitherT.fromEither[ReaderEnv](e)
+
   def satisfyChain[A](ls: List[A], check: A => Check[ShapeTyping]): Check[ShapeTyping] = {
     val zero: Check[ShapeTyping] = getTyping
     def cmb(next: Check[ShapeTyping],x: A): Check[ShapeTyping] = for {
@@ -110,6 +116,5 @@ object Check {
     check.value.run(env)
   }
 
-
-
 }
+

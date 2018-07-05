@@ -2,7 +2,10 @@ package es.weso.shex.spec
 
 import Check._
 import cats._
+import cats.data.EitherT
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.rdf.nodes.IRI
+import es.weso.shapeMaps.{IRILabel, ShapeMapLabel}
 import es.weso.shex.Schema
 import es.weso.typing.Typing
 import org.scalatest._
@@ -236,4 +239,44 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
     }
   }
 
+  describe("satisfyChain") {
+    val ex = IRI("http://example.org/")
+    def mkLabel(x: String): ShapeMapLabel = IRILabel(ex + x)
+    val x = ex + "x"
+    it("satisfy a chain of updates") {
+      val ls = List("1","2","3")
+      def check(v: String): Check[ShapeTyping] = for {
+        typing <- getTyping
+        newTyping <- fromEither(typing.addConformant(x, mkLabel(v), List()))
+      } yield newTyping
+      val c = satisfyChain(ls,check)
+      val env = Env(Schema.empty,TypingMap.empty,RDFAsJenaModel.empty)
+      runCheck(env,c).fold(
+        e => fail(s"Error: $e"),
+        typing => {
+          typing.conformingValues(x) should contain theSameElementsAs(List(mkLabel("1"),mkLabel("2"),mkLabel("3")))
+        }
+      )
+    }
+
+    it("error when adding a type to a non-conforming node") {
+      val ls = List("1","2")
+      def check(v: String): Check[ShapeTyping] = for {
+        typing <- getTyping
+        newTyping <- fromEither(typing.addConformant(x, mkLabel(v), List()))
+      } yield newTyping
+      val c = satisfyChain(ls,check)
+      val r : Either[String,ShapeTyping] = for {
+        typing <- emptyTyping.addNonConformant(x,mkLabel("2"), List())
+        env = Env(Schema.empty,typing,RDFAsJenaModel.empty)
+        r <- runCheck(env,c)
+      } yield r
+      r.fold(
+        e => info(s"Fails as expected"),
+        typing => {
+          fail(s"It returned a good typing $typing but should return an error")
+        }
+      )
+    }
+  }
 }

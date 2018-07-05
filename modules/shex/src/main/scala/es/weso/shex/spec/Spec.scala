@@ -3,9 +3,16 @@ package es.weso.shex.spec
 import cats._
 import cats.implicits._
 import es.weso.shex.implicits.showShEx._
-import es.weso.rdf.RDFReader
+import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, Literal, RDFNode}
-import es.weso.shapeMaps.{BNodeLabel => BNodeShapeMapLabel, IRILabel => IriShapeMapLabel, _}
+import es.weso.shapeMaps.{
+  Info => ShapeMapInfo,
+  BNodeLabel => BNodeShapeMapLabel,
+  Conformant => ConformantStatus,
+  IRILabel => IriShapeMapLabel,
+  NonConformant => NonConformantStatus,
+  _
+}
 import es.weso.shex._
 import Check._
 import com.typesafe.scalalogging.LazyLogging
@@ -28,18 +35,21 @@ object Spec extends LazyLogging {
     m.flatten.foldLeft(zero)(cmb)
   }
 */
-/*  def checkShapeMap(rdf: RDFReader, m: FixedShapeMap): Check[Boolean] = {
-    val typing = fixedShapeMap2Typing(m)
-    def checkAll: Check[Boolean] = {
-      val ls: List[Check[Boolean]] = m.flatten.map{ case (node,lbl,status) => status match {
-        case Conformant => satisfiesLabel(node,lbl)
-        case NonConformant => notSatisfiesLabel(node,lbl)
-      } }
-      satisfyAll(ls)
+  def checkNodeLabelStatus: ((RDFNode, ShapeMapLabel, Status)) => Check[ShapeTyping] = t => {
+    val (node, lbl, status) = t
+    status match {
+      case ConformantStatus =>
+        runLocalWithTyping(_.addTesting(node,lbl), satisfiesLabel(node,lbl))
+      case NonConformantStatus =>
+        runLocalWithTyping(_.addTesting(node,lbl), notSatisfiesLabel(node,lbl))
     }
-    runLocalWithTyping(_ => typing, checkAll)
   }
-*/
+
+  def checkShapeMap(rdf: RDFReader, m: FixedShapeMap): Check[ShapeTyping] = {
+    val ls : List[(RDFNode, ShapeMapLabel, Status)] = m.flatten
+    satisfyChain(ls,checkNodeLabelStatus)
+  }
+
 
   def satisfyStatus(node: RDFNode, lbl: ShapeMapLabel, status: Status): Check[Boolean] = ???
 
@@ -49,15 +59,29 @@ object Spec extends LazyLogging {
     })
   } */
 
-  def satisfiesLabel(node: RDFNode, lbl: ShapeMapLabel): Check[Boolean] = for {
+  def satisfiesLabel(node: RDFNode, lbl: ShapeMapLabel): Check[ShapeTyping] = for {
+     typing <- getTyping
      se <- getShapeFromShapeMapLabel(lbl)
-     r <- runLocalWithTyping(_.addConformant(node,lbl), satisfies(node,se))
-  } yield r
+     b <- runLocalWithTyping(_.addConformant(node,lbl, List()), satisfies(node,se))
+     newTyping <- if (b) {
+       fromEither(typing.addConformant(node,lbl,List(s"Node $node satisfies $lbl")))
+     } else {
+       fromEither(typing.addNonConformant(node,lbl,List(s"Node $node does not satisfy $lbl")))
+     }
+  } yield newTyping
 
-  def notSatisfiesLabel(node: RDFNode, lbl: ShapeMapLabel): Check[Boolean] = for {
+
+  def notSatisfiesLabel(node: RDFNode, lbl: ShapeMapLabel): Check[ShapeTyping] = for {
+    typing <- getTyping
     se <- getShapeFromShapeMapLabel(lbl)
-    r <- runLocalWithTyping(_.addConformant(node,lbl), satisfies(node,se))
-  } yield !r
+    b <- runLocalWithTyping(_.addNonConformant(node,lbl,List()), notSatisfies(node,se))
+    newTyping <- if (b) {
+      fromEither(typing.addNonConformant(node,lbl,List(s"Node $node does not satisfy $lbl")))
+    } else {
+      fromEither(typing.addConformant(node,lbl,List(s"Node $node does satisfy $lbl")))
+    }
+  } yield newTyping
+
 
 
   def satisfies(n: RDFNode, se: ShapeExpr): Check[Boolean] = {
@@ -72,6 +96,10 @@ object Spec extends LazyLogging {
       case s: Shape => satisfyShape(n,s)
     }
   }
+
+  def notSatisfies(n: RDFNode, se: ShapeExpr): Check[Boolean] = for {
+    b <- satisfies(n,se)
+  } yield (!b)
 
   def satisfyShapeRef(n: RDFNode, lbl: ShapeLabel): Check[Boolean] =
    for {
@@ -226,5 +254,21 @@ object Spec extends LazyLogging {
     }
   } yield shape
 
+  def cnvInfo(info: Info[Evidence]): ShapeMapInfo =
+    /* TOOD: add evidences...*/
+    info match {
+    case Conformant(es) => ShapeMapInfo(ConformantStatus, None, None)
+    case NonConformant(es) => ShapeMapInfo(NonConformantStatus,None,None)
+    case Unknown => ShapeMapInfo(Undefined, None, None)
+  }
+
+  def shapeTyping2ResultShapeMap(typing: ShapeTyping,
+                                 nodesPrefixMap: PrefixMap,
+                                 shapesPrefixMap: PrefixMap
+                                ): ResultShapeMap = {
+    val resultMap: Map[RDFNode,Map[ShapeMapLabel,ShapeMapInfo]] =
+      typing.m.mapValues(valueMap => valueMap.mapValues(info => cnvInfo(info)))
+    ResultShapeMap(resultMap, nodesPrefixMap, shapesPrefixMap)
+  }
 
 }
