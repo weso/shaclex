@@ -1,5 +1,6 @@
 package es.weso.shacl
 
+import cats.implicits._
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.RDF2Shacl
@@ -12,7 +13,7 @@ import scala.util._
 class ValidateSingleTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
-  val name = "uniqueLang"
+  val name = "issue105"
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclTests")
@@ -35,7 +36,12 @@ class ValidateSingleTest extends FunSpec with Matchers with TryValues with Optio
     } yield result
     attempt match {
       case Left(e) => fail(s"Error validating $name: $e")
-      case Right(typing) => info(s"Validated $name")
+      case Right(typing) => {
+        info(s"Typing: ${typing.show}")
+        val builder = RDFAsJenaModel.empty
+        info(s"Validation report: ${typing.toValidationReport.toRDF(builder).getOrElse(builder).serialize("TURTLE")}")
+        typing.t.allOk should be(true)
+      }
     }
   }
 

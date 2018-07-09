@@ -6,6 +6,7 @@ import cats.implicits._
 import es.weso.shex._
 import showShEx._
 import es.weso.rdf._
+import es.weso.rdf.operations.Comparisons._
 import es.weso.utils.StrUtils._
 
 object encoderShEx {

@@ -1,8 +1,8 @@
 package es.weso.shex.compact
 
 import java.io.{ByteArrayInputStream, InputStreamReader, Reader => JavaReader}
-
 import cats.data._
+import cats.implicits._
 import com.typesafe.scalalogging._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
@@ -33,6 +33,9 @@ object Parser extends LazyLogging {
     val v: Builder[A] = EitherT.left[A](r)
     v
   }
+
+  def sequence[A](bs: List[Builder[A]]): Builder[List[A]] =
+    bs.sequence
 
   def getPrefixMap: Builder[PrefixMap] =
     getState.map(_.prefixMap)

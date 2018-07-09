@@ -7,6 +7,8 @@ import es.weso.shex._
 import es.weso.utils.SeqUtils.intersperse
 import es.weso.document._
 import es.weso.document.Document._
+import es.weso.rdf.operations.Comparisons._
+
 
 
 /**

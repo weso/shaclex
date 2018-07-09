@@ -5,6 +5,7 @@ import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
 import es.weso.shex.implicits.eqShEx._
+import es.weso.rdf.operations.Comparisons._
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._

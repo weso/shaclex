@@ -1,5 +1,6 @@
 package es.weso.shacl.validator
 import cats._
+import cats.implicits._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shacl.Shape
 import es.weso.shacl.report.{ValidationReport, ValidationResult}
@@ -44,6 +45,7 @@ case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
     )
   }
 
+  override def toString: String = Show[ShapeTyping].show(this)
 }
 
 object ShapeTyping {
@@ -54,10 +56,19 @@ object ShapeTyping {
 
   implicit def showShapeTyping: Show[ShapeTyping] = new Show[ShapeTyping] {
     override def show(st: ShapeTyping): String = {
-      st.toString
-      // TODO
-      // Should be: st.t.show
+      val sb: StringBuilder = new StringBuilder
+      st.getMap.toList.map{ case (node,shapeMap) => {
+         shapeMap.toList.map{ case (shape, typingResult) => {
+           sb.append(s"${node.show}-${shape.showId} = ${showTypingResult(typingResult)}\n")
+         }}
+        }
+      }
+      sb.toString
     }
+
+    private def showTypingResult(tr: TypingResult[ValidationResult, String]): String =
+      if (tr.isOK) "Valid"
+      else "Not valid"
   }
 
   implicit def monoidShapeTyping: Monoid[ShapeTyping] = new Monoid[ShapeTyping] {

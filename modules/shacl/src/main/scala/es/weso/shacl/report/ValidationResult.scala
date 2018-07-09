@@ -66,16 +66,16 @@ object ValidationResult {
   def notNumeric(focusNode: RDFNode, attempt: Attempt) =
     basic("NotNumericConstraintComponent", focusNode, attempt, s"NotNumeric violation. Expected $focusNode to be a number")
 
-  def minExclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
+  def minExclusiveError(focusNode: RDFNode, attempt: Attempt, n: RDFNode) =
     basic("MinExclusiveConstraintComponent", focusNode, attempt, s"minExclusive violation. Expected $focusNode > $n")
 
-  def minInclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
+  def minInclusiveError(focusNode: RDFNode, attempt: Attempt, n: RDFNode) =
     basic("MinInclusiveConstraintComponent", focusNode, attempt, s"minInclusive violation. Expected $focusNode >= $n")
 
-  def maxExclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
+  def maxExclusiveError(focusNode: RDFNode, attempt: Attempt, n: RDFNode) =
     basic("MaxExclusiveConstraintComponent", focusNode, attempt, s"maxExclusive violation. Expected $focusNode < $n")
 
-  def maxInclusiveError(focusNode: RDFNode, attempt: Attempt, n: Int) =
+  def maxInclusiveError(focusNode: RDFNode, attempt: Attempt, n: RDFNode) =
     basic("MaxInclusiveConstraintComponent", focusNode, attempt, s"maxInclusive violation. Expected $focusNode <= $n")
 
   def minLengthError(focusNode: RDFNode, attempt: Attempt, n: Int) =

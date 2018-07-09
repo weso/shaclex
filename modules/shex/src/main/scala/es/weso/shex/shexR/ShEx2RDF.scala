@@ -8,6 +8,8 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.RDFBuilder
 import es.weso.rdf.saver.RDFSaver
+import es.weso.rdf.operations.Comparisons._
+
 
 trait ShEx2RDF extends RDFSaver with LazyLogging {
 

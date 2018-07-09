@@ -5,6 +5,8 @@ import es.weso.rdf.nodes._
 import es.weso.shex._
 import es.weso.rdf._
 import compact.CompactShow
+import es.weso.rdf.operations.Comparisons._
+
 
 object showShEx {
 
@@ -34,8 +36,10 @@ object showShEx {
   }
 
   implicit lazy val showShape: Show[Shape] = new Show[Shape] {
-    final def show(a: Shape): String =
-      s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a.inherit)}, ${optShow(a.semActs)})"
+    final def show(a: Shape): String = a match {
+      case Shape(None,None,None,None,None,None,None,None) => "."
+      case _ => s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a.inherit)}, ${optShow(a.semActs)})"
+    }
   }
 
   implicit lazy val showNodeConstraint: Show[NodeConstraint] = new Show[NodeConstraint] {

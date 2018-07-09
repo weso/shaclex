@@ -5,6 +5,7 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.shex._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.shexR.PREFIXES._
+import es.weso.rdf.operations.Comparisons._
 import es.weso.rdf.nodes._
 
 

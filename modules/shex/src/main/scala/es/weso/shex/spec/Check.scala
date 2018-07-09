@@ -49,6 +49,9 @@ object Check {
     if (x) c2 else pure(false)
   )
 
+  def sequence[A](ls: List[Check[A]]): Check[List[A]] =
+    ls.sequence
+
   def satisfyAll(ls: List[Check[Boolean]]): Check[Boolean] =
     ls.sequence.map(_.forall(_ == true))
 

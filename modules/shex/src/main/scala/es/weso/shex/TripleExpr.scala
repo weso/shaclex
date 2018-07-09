@@ -23,6 +23,11 @@ case class EachOf( id: Option[ShapeLabel],
 
 }
 
+object EachOf {
+  def fromExpressions(es: TripleExpr*): EachOf =
+    EachOf(None,es.toList,None,None,None,None)
+}
+
 case class OneOf(
                   id: Option[ShapeLabel],
                   expressions: List[TripleExpr],
@@ -35,6 +40,11 @@ case class OneOf(
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   override def paths(schema:Schema): List[Path] = expressions.map(_.paths(schema)).flatten
+}
+
+object OneOf {
+  def fromExpressions(es: TripleExpr*): OneOf =
+    OneOf(None,es.toList,None,None,None,None)
 }
 
 case class Inclusion(include: ShapeLabel) extends TripleExpr {

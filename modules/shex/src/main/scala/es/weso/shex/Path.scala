@@ -4,11 +4,13 @@ import es.weso.rdf.nodes.IRI
 
 sealed trait Path {
  def isDirect: Boolean
+ def pred: IRI
 }
-case class Direct(p: IRI) extends Path {
+case class Direct(pred: IRI) extends Path {
  val isDirect = true
+
 }
-case class Inverse(p: IRI) extends Path {
+case class Inverse(pred: IRI) extends Path {
  val isDirect = false
 
 }

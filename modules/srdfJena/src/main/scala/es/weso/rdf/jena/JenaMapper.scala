@@ -100,6 +100,11 @@ object JenaMapper {
                 logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a decimal to create literal")
                 DatatypeLiteral(lit.getLexicalForm, datatype)
               }
+            case RDFNode.DoubleDatatypeIRI =>
+              Try(DoubleLiteral(lit.getLexicalForm.toDouble)).getOrElse {
+                logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a double to create literal")
+                DatatypeLiteral(lit.getLexicalForm, datatype)
+              }
             case RDFNode.BooleanDatatypeIRI =>
               Try(BooleanLiteral(lit.getLexicalForm.toBoolean)).getOrElse {
                 logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as boolean to create literal")

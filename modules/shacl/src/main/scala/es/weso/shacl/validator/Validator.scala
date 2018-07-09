@@ -10,18 +10,16 @@ import es.weso.shacl._
 import es.weso.utils.RegEx
 import es.weso.shacl.showShacl._
 import SHACLChecker._
-import es.weso.rdf.PREFIXES._
+import es.weso.rdf.operations.Comparisons
 import es.weso.shacl.report.ValidationResult
 import es.weso.shacl.report.ValidationResult._
+import es.weso.rdf.operations.Comparisons._
 
 /**
  * This validator is implemented directly in Scala using cats library
  */
 case class Validator(schema: Schema) extends LazyLogging {
 
-  /**
-   * Checks that a node satisfies a shape
-   */
   type CheckTyping = Check[ShapeTyping]
   type PropertyChecker = (Attempt, SHACLPath) => CheckTyping
   type NodeChecker = Attempt => RDFNode => CheckTyping
@@ -131,7 +129,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       for {
         t <- runLocal(checkNodeShape(shape)(attempt)(node), _.addType(node, shape))
       } yield {
-        logger.debug(s"Result of node $node - NodeShape ${shape.showId}: ${showResult(t)}")
+        logger.debug(s"Result of node $node - NodeShape ${shape.showId})\n$t")
         t
       }
     }
@@ -165,10 +163,11 @@ case class Validator(schema: Schema) extends LazyLogging {
       } yield c
       else ok(t)
       t2 <- {
+        logger.debug(s"Before checkFailed($node,${shape.showId})=\n$t1")
         checkFailed(attempt, node, shape, t1)
       }
     } yield {
-      logger.debug(s"Result of checkNodeShape($node,${shape.showId} = ${showResult(t1)}")
+      logger.debug(s"Result of checkNodeShape($node,${shape.showId})=\n${t2}")
       t2
     }
   }
@@ -178,11 +177,9 @@ case class Validator(schema: Schema) extends LazyLogging {
       propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
     } yield {
       val failedPropertyShapes = t.getFailedValues(node).intersect(propertyShapes.toSet)
-      // TODO: Remove the following condition?
       if (!failedPropertyShapes.isEmpty) {
-//        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
-//        newt
-        t
+        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
+        newt
       }
       else
         t
@@ -354,7 +351,7 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   private def unsupportedNodeChecker(msg: String): NodeChecker = attempt => node => {
     err(unsupported(node, attempt, msg)) *>
-      getTyping
+    getTyping
   }
 
   private def iriChecker: NodeChecker = attempt => node => {
@@ -363,29 +360,29 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"$node is an IRI")
   }
 
-  private def compareIntLiterals(
-                                  n: Literal,
-                                  f: (Int, Int) => Boolean,
-                                  err: (RDFNode, Attempt, Int) => ValidationResult,
-                                  msg: String): NodeChecker = attempt => node => for {
+  def compareLiterals(n: Literal,
+                      f: (NumericLiteral, NumericLiteral) => Boolean,
+                      err: (RDFNode, Attempt, RDFNode) => ValidationResult,
+                      msg: String
+                     ): NodeChecker = attempt => node => for {
     ctrolValue <- checkNumeric(n, attempt)
     value <- checkNumeric(node, attempt)
     t <- condition(f(ctrolValue, value), attempt,
-      err(node, attempt, ctrolValue),
-      s"$node satisfies $msg($n)")
+      err(node, attempt, n),
+      s"$node satisfies $msg(${n})")
   } yield t
 
   private def minExclusive(n: Literal): NodeChecker =
-    compareIntLiterals(n, _ < _, minExclusiveError, "minExclusive")
+    compareLiterals(n, Comparisons.lessThan, minExclusiveError, "minExclusive")
 
   private def minInclusive(n: Literal): NodeChecker =
-    compareIntLiterals(n, _ <= _, minInclusiveError, "minInclusive")
+    compareLiterals(n, Comparisons.lessThanOrEquals, minInclusiveError, "minInclusive")
 
   private def maxExclusive(n: Literal): NodeChecker =
-    compareIntLiterals(n, _ > _, maxExclusiveError, "maxExclusive")
+    compareLiterals(n, Comparisons.greaterThan, maxExclusiveError, "maxExclusive")
 
   private def maxInclusive(n: Literal): NodeChecker =
-    compareIntLiterals(n, _ >= _, maxInclusiveError, "maxInclusive")
+    compareLiterals(n, Comparisons.greaterThanOrEquals, maxInclusiveError, "maxInclusive")
 
   private def minLength(n: Int): NodeChecker = attempt => node =>
     condition(node.getLexicalForm.length >= n, attempt,
@@ -583,22 +580,22 @@ case class Validator(schema: Schema) extends LazyLogging {
       err(notError(node, attempt, sref)) */
     for {
       shape <- getShapeRef(sref, attempt, node)
-      t <- nodeShape(node,shape)
-      t1 <- condition(!t.hasType(node,shape), attempt, notShapeError(node,sref,attempt), s"$node does not have shape $sref")
+      typing <- getTyping
+      t <- {
+        logger.debug(s"\nTesting not nodeShape($node,${shape.showId}) with typing\n${typing}")
+        nodeShape(node,shape)
+      }
+      t1 <- {
+        logger.debug(s"\nnot($sref). Value of nodeShape($node,${shape.showId})=\n$t")
+        condition(!t.hasType(node,shape), attempt, notShapeError(node,sref,attempt), s"$node does not have shape $sref")
+      }
     } yield t1
   }
 
-  private def checkNumeric(node: RDFNode, attempt: Attempt): Check[Int] =
-    node match {
-      case n: IntegerLiteral => ok(n.int)
-      case n: DecimalLiteral => ok(n.decimal.toInt)
-      case n: DoubleLiteral => ok(n.double.toInt)
-      case DatatypeLiteral(str,`xsd_integer`) => {
-        logger.debug(s"Integer! str: $str")
-        ok(Integer.parseInt(str))
-      }
-      case _ => err(notNumeric(node, attempt)) *> ok(0)
-    }
+  private def checkNumeric(node: RDFNode, attempt: Attempt): Check[NumericLiteral] =
+    numericValue(node).fold(e => err(notNumeric(node,attempt)),
+      value => ok(value)
+    )
 
   private def literalChecker: NodeChecker = attempt => node => {
     condition(node.isLiteral, attempt,

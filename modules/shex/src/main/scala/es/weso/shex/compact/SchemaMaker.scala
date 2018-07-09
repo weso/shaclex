@@ -11,6 +11,7 @@ import es.weso.shex.compact.Parser._
 import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
 import es.weso.shex.values._
 import es.weso.utils.StrUtils._
+import es.weso.rdf.operations.Comparisons._
 
 import scala.collection.JavaConverters._
 
@@ -90,7 +91,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     if (isDefined(ctx)) {
       val r: List[Builder[SemAct]] =
         ctx.codeDecl().asScala.map(visitCodeDecl(_)).toList
-      r.sequence.map(Some(_))
+      sequence(r).map(Some(_))
     } else ok(None)
   }
 
@@ -484,13 +485,13 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     case _ => err(s"Cannot convert literal $l to numeric literal")
   }
 
-   private def numericLiteral2ValueObject(nl: Literal): Builder[ValueSetValue] = {
+/*   private def numericLiteral2ValueObject(nl: Literal): Builder[ValueSetValue] = {
     nl match {
       case IntegerLiteral(n) => ok(ObjectValue.intValue(n))
       case DoubleLiteral(d) => ok(ObjectValue.doubleValue(d,d.toString))
       case DecimalLiteral(d) => ok(ObjectValue.decimalValue(d,d.toString))
     }
-  }
+  } */
 
   override def visitRdfLiteral(
     ctx: RdfLiteralContext): Builder[Literal] = {
@@ -1304,10 +1305,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   def isDefined[A](x: A): Boolean = x != null
 
-  def visitList[A, B](
-    visitFn: A => Builder[B],
-    ls: java.util.List[A]): Builder[List[B]] =
-    ls.asScala.toList.map(visitFn(_)).sequence
+  def visitList[A, B](visitFn: A => Builder[B],
+                      ls: java.util.List[A]
+                     ): Builder[List[B]] = {
+    val bs: List[Builder[B]] = ls.asScala.toList.map(visitFn(_))
+    sequence(bs)
+  }
 
   def visitOpt[A, B](
     visitFn: A => Builder[B],

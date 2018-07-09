@@ -1,5 +1,7 @@
 package es.weso.shex
 
+import es.weso.rdf.operations.Comparisons.NumericLiteral
+
 sealed trait XsFacet {
   val fieldName: String
 }
@@ -43,7 +45,3 @@ case class FractionDigits(n: Int) extends NumericFacet {
   val fieldName = "fractiondigits"
 }
 
-sealed trait NumericLiteral
-case class NumericInt(n: Int) extends NumericLiteral
-case class NumericDouble(n: Double, repr: String) extends NumericLiteral
-case class NumericDecimal(n: BigDecimal, repr: String) extends NumericLiteral

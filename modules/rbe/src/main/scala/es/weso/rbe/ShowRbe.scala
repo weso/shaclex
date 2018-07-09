@@ -21,7 +21,7 @@ object ShowRbe {
       case Or(v1, v2) => s"${show(v1)}|${show(v2)}"
       case Star(v) => s"${show(v)}*"
       case Plus(v) => s"${show(v)}+"
-      case Repeat(v, n, m) => s"(${show(v)}){$n,${m.show}"
+      case Repeat(v, n, m) => s"(${show(v)}){$n,${m.show}}"
     }
   }
 

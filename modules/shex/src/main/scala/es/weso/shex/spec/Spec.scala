@@ -5,23 +5,15 @@ import cats.implicits._
 import es.weso.shex.implicits.showShEx._
 import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, Literal, RDFNode}
-import es.weso.shapeMaps.{
-  Info => ShapeMapInfo,
-  BNodeLabel => BNodeShapeMapLabel,
-  Conformant => ConformantStatus,
-  IRILabel => IriShapeMapLabel,
-  NonConformant => NonConformantStatus,
-  _
-}
+import es.weso.shapeMaps.{BNodeLabel => BNodeShapeMapLabel, Conformant => ConformantStatus, IRILabel => IriShapeMapLabel, Info => ShapeMapInfo, NonConformant => NonConformantStatus, _}
 import es.weso.shex._
 import Check._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.shex.validator.Arc
-import es.weso.typing.Typing
-import es.weso.utils.SetUtils
+import es.weso.utils.{LogInfo, SetUtils}
 
 object Spec extends LazyLogging {
-  def logInfo(str: String):Unit = println(str)
+  def logInfo(str: String, incr: Int):Unit = LogInfo(str, incr)
 
  /* def fixedShapeMap2Typing(m: FixedShapeMap): ShapeTyping = {
     val zero: ShapeTyping = TypingMap.empty
@@ -85,8 +77,8 @@ object Spec extends LazyLogging {
 
 
   def satisfies(n: RDFNode, se: ShapeExpr): Check[Boolean] = {
-    logInfo(s"satisfies(${n.show},${se.show})?")
-    se match {
+    logInfo(s"satisfies(${n.show},${se.show})?",1)
+    val r = se match {
       case nc: NodeConstraint => satisfies2(n, nc)
       case ShapeAnd(_,ses) => satisfyAll(ses.map(satisfies(n,_)))
       case ShapeOr(_,ses) => satisfySome(ses.map(satisfies(n,_)))
@@ -94,6 +86,12 @@ object Spec extends LazyLogging {
       case ShapeRef(lbl) => satisfyShapeRef(n,lbl)
       case ShapeExternal(id) => unimplemented(s"ShapeExpternal($id)")
       case s: Shape => satisfyShape(n,s)
+    }
+    for {
+      b <- r
+    } yield {
+      logInfo(s"Result satisfies(${n.show},${se.show})=$b",-1)
+      b
     }
   }
 
@@ -108,15 +106,18 @@ object Spec extends LazyLogging {
    } yield v
 
   def satisfyShape(n: RDFNode, shape: Shape): Check[Boolean] = {
-    logInfo(s"satisfyShape(${n.show},${shape.show})")
+    logInfo(s"satisfyShape(${n.show},${shape.show})",1)
     shape.expression match {
-      case None => pure(true)
+      case None => {
+        logInfo(s"result of satisfyShape(${n.show},None)=true",-1)
+        pure(true)
+      }
       case Some(te) => {
         for {
           neighs <- neighs(n)
           b <- satisfyFirst(SetUtils.pSet(neighs), satisfyMatches(te))
         } yield {
-          logInfo(s"> satisfyShape(${n.show},${shape.show})=$b")
+          logInfo(s"> satisfyShape(${n.show},${shape.show})=$b",-1)
           b
         }
       }
@@ -124,41 +125,113 @@ object Spec extends LazyLogging {
   }
 
   private def showArcs(arcs: Set[Arc]) = arcs.map(_.show).mkString(",")
+  private def showList[A: Show](ls: List[A]) = ls.map(_.show).mkString(",")
 
   def satisfyMatches(te: TripleExpr)(pair: (Set[Arc], Set[Arc])): Check[Boolean] = {
     val (matched,remainder) = pair
-    logInfo(s"satisfyMatches(te=$te,matched=${showArcs(matched)},remainder=${showArcs(remainder)}")
-    val r = matches(matched,te)
-    logInfo(s"> satisfyMatches(${te.show}, ${showArcs(matched)}, ${showArcs(remainder)}) = $r")
-    r
-    // TODO: rest of conditions
+    logInfo(s"satisfyMatches(te=${te.show},matched=${showArcs(matched)},remainder=${showArcs(remainder)}",1)
+    val outs = remainder.filter(_.path.isDirect)
+    logInfo(s"Outs: ${outs.show}",0)
+    for {
+      matchables <- getMatchables(outs,te)
+      unmatchables = outs diff matchables // matchables
+      r <- {
+        logInfo(s"matchables: ${matchables.show}",0)
+        satisfyAll(
+          List(
+            matches(matched,te),
+            notSatisfyMatchablesTCs(matchables, getTripleConstraints(te))
+            // satisfyNot(matchesList(matchables, getTripleConstraints(te))
+            // TODO: rest of conditions
+          )
+        )
+      }
+    } yield {
+      logInfo(s"Tesult satisfyMatches(te=${te.show},matched=${showArcs(matched)},remainder=${showArcs(remainder)}=$r",-1)
+      r
+    }
+  }
+
+  def notSatisfyMatchablesTCs(arcs: Set[Arc], tcs: List[TripleConstraint]): Check[Boolean] = {
+    logInfo(s"Not satisfy ${showArcs(arcs)} any of ${showList(tcs)}",1)
+    for {r <- satisfyNot(
+      satisfySome(arcs.toList.map(a =>
+        satisfySome(tcs.map(tc =>
+          matches(Set(a), tc))
+        ))))
+    } yield {
+      logInfo(s"Result Not satisfy ${showArcs(arcs)} any of ${showList(tcs)}",-1)
+      r
+    }
+  }
+
+  def getTripleConstraints(te: TripleExpr): List[TripleConstraint] = te match {
+    case tc: TripleConstraint => List(tc)
+    case eo: EachOf => eo.expressions.map(e => getTripleConstraints(e)).flatten
+    case oo: OneOf => oo.expressions.map(e => getTripleConstraints(e)).flatten
+    case i: Inclusion => throw new Exception(s"getTripleConstraints of inclusion: $i")
+    case e: Expr => List()
+  }
+
+  def getMatchables(arcs: Set[Arc], te: TripleExpr): Check[Set[Arc]] = te match {
+    case tc: TripleConstraint => pure(arcs.filter(_.path.pred == tc.predicate))
+    case eo: EachOf => {
+      sequence(eo.expressions.map(te => getMatchables(arcs,te))).map(_.flatten.toSet)
+    }
+    case oo: OneOf => {
+      sequence(oo.expressions.map(te => getMatchables(arcs,te))).map(_.flatten.toSet)
+    } // oo.expressions.map(te => getMatchables(arcs,te)).toSet.flatten.sequence
+    case e: Expr => pure(Set())
+    case i: Inclusion => unimplemented(s"getMatchables inclusion")
   }
 
   def matches(matched: Set[Arc],
               te: TripleExpr
              ): Check[Boolean] = {
-    logInfo(s"matches(matched=${showArcs(matched)},$te)")
-    te match {
+    logInfo(s"matches(matched=${showArcs(matched)},te=${te.show})",1)
+    val r = te match {
       case oneOf: OneOf => matchesOneOf(matched, oneOf)
       case eachOf: EachOf => matchesEachOf(matched, eachOf)
       case tc: TripleConstraint => matchesTripleConstraint(matched, tc)
       case i: Inclusion => matchesInclusion(matched, i)
       case e: Expr => matchesExpr(matched, e)
     }
+    for {
+      b <- r
+    } yield {
+      logInfo(s"Result matches(matched=${showArcs(matched)},te=${te.show}=$b",-1)
+      b
+    }
   }
 
-  def matchesOneOf(matched: Set[Arc], oneOf: OneOf): Check[Boolean] =
-    unimplemented(s"matchedOneOf $oneOf")
+  def matchesOneOf(matched: Set[Arc], oneOf: OneOf): Check[Boolean] = {
+    logInfo(s"matchesOneOf(matched=${showArcs(matched)},${oneOf.show})",1)
+    for { b <- satisfySome(oneOf.expressions.map(te => matches(matched,te)))
+    } yield {
+      logInfo(s"Result of matchesOneOf(matched=${showArcs(matched)}, ${oneOf.show}=$b",-1)
+      b
+    }
+  }
 
-  def matchesEachOf(matched: Set[Arc], eachOf: EachOf): Check[Boolean] =
-    unimplemented(s"matchedEachOf $eachOf")
+  def matchesEachOf(matched: Set[Arc], eachOf: EachOf): Check[Boolean] = {
+    logInfo(s"matchesEachOf(matched=${showArcs(matched)},${eachOf.show})",0)
+    satisfyFirst(
+      SetUtils.partition(matched, eachOf.expressions.length),
+      (ls: List[Set[Arc]]) => matchesList(ls, eachOf.expressions))
+  }
+
+  def matchesList(arcs: List[Set[Arc]], expressions: List[TripleExpr]): Check[Boolean] = {
+    satisfyAll((arcs zip expressions).map{
+      case (as,e) => matches(as,e) }
+    )
+  }
 
   def matchesTripleConstraint(matched: Set[Arc],
                               tc: TripleConstraint
                              ): Check[Boolean] =
    {
-     logInfo(s"matchesTripleConstraint($matched,$tc)")
-     matched.size match {
+     logInfo(s"matchesTripleConstraint(${showArcs(matched)},${tc.show})",1)
+     val r = matched.size match {
        case 0 =>
          if (tc.min == 0) pure(true)
          else pure(false)
@@ -172,13 +245,19 @@ object Spec extends LazyLogging {
            matchesTripleConstraint(matched.tail, tc)
          )
      }
+     for {
+       b <- r
+     } yield {
+       logInfo(s"Result matchesTripleConstraint(${showArcs(matched)},${tc.show})=$b",-1)
+       b
+     }
    }
 
   def matchTripleConstraint(arc: Arc,
                             tc: TripleConstraint
                            ): Check[Boolean] = {
-    logInfo(s"matchTripleConstraint(${arc.show},${tc.show})")
-    if (tc.direct) {
+    logInfo(s"matchTripleConstraint(${arc.show},${tc.show})",1)
+    val r = if (tc.direct) {
       arc match {
         case Arc(Direct(p), n) if (p == tc.predicate) =>
           tc.valueExpr match {
@@ -197,6 +276,12 @@ object Spec extends LazyLogging {
           }
       }
     }
+    for {
+      b <- r
+    } yield {
+      logInfo(s"Result matchTripleConstraint(${arc.show},${tc.show})=$b",-1)
+      b
+    }
   }
 
   def matchesExpr(matched: Set[Arc], e: Expr): Check[Boolean] =
@@ -211,7 +296,7 @@ object Spec extends LazyLogging {
     val outArcs = rdf.triplesWithSubject(n).map(t => Arc(Direct(t.pred),t.obj))
     val inArcs = rdf.triplesWithObject(n).map(t => Arc(Inverse(t.pred),t.obj))
     val allArcs = outArcs ++ inArcs
-    logInfo(s"neighs($n): ${allArcs.map(_.show).mkString(",")}")
+    logInfo(s"neighs($n): ${allArcs.map(_.show).mkString(",")}",0)
     allArcs
   }
 

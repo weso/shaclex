@@ -1,0 +1,29 @@
+prefix :       <http://example.org/>
+prefix sh:     <http://www.w3.org/ns/shacl#>
+prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
+prefix schema: <http://schema.org/>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+
+schema:QuantitativeValue a sh:NodeShape ;
+   sh:nodeKind sh:IRI ;
+   sh:property [
+    sh:path schema:value ;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:datatype xsd:double ;
+    sh:minInclusive 0.001 ;
+    sh:maxInclusive 0.01 ;
+  ] .
+
+schema:NotQuantitativeValue a sh:NodeShape ;
+  sh:not schema:QuantitativeValue .
+
+# schema:QuantitativeValue sh:targetNode :echotime .
+:echotime  a schema:QuantitativeValue ;
+        schema:unitCode  "second" ;
+        schema:value     "0.002996"^^xsd:double .
+
+schema:QuantitativeValue sh:targetNode :noEchoTime .
+:noEchoTime a schema:NotQuantitativeValue ;
+        schema:unitCode  "second" ;
+        schema:value     "0.00002996"^^xsd:double .
