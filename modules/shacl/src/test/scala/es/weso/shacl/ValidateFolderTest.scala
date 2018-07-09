@@ -8,7 +8,6 @@ import es.weso.shacl.validator.Validator
 import es.weso.utils.FileUtils._
 import org.scalatest._
 import scala.io.Source
-import scala.util._
 
 class ValidateFolderTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
@@ -40,12 +39,14 @@ class ValidateFolderTest extends FunSpec with Matchers with TryValues with Optio
       schema <- RDF2Shacl.getShacl(rdf)
       result <- Validator.validate(schema, rdf)
     } yield result
-    attempt match {
-      case Left(e) => {
-        fail(s"Error validating $name: $e")
+    attempt.fold(e => fail(s"Error validating $name: $e"),
+      typing => {
+        if (!typing.t.allOk) {
+          info(s"Failed nodes: ${typing.t.getFailed}")
+        }
+        typing.t.allOk should be(true)
       }
-      case Right(typing) => ()
-    }
+    )
   }
 
 }

@@ -23,7 +23,7 @@ schema:NotQuantitativeValue a sh:NodeShape ;
         schema:unitCode  "second" ;
         schema:value     "0.002996"^^xsd:double .
 
-schema:QuantitativeValue sh:targetNode :noEchoTime .
+schema:NotQuantitativeValue sh:targetNode :noEchoTime .
 :noEchoTime a schema:NotQuantitativeValue ;
         schema:unitCode  "second" ;
         schema:value     "0.00002996"^^xsd:double .

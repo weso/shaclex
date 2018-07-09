@@ -172,13 +172,21 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
+  /**
+    * Checks that there are no property shapes that have failed in a shape
+    * @param attempt
+    * @param node
+    * @param shape
+    * @param t
+    * @return
+    */
   private def checkFailed(attempt: Attempt, node: RDFNode, shape: Shape, t: ShapeTyping): Check[ShapeTyping] = {
     for {
       propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
     } yield {
       val failedPropertyShapes = t.getFailedValues(node).intersect(propertyShapes.toSet)
       if (!failedPropertyShapes.isEmpty) {
-        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"Failed property shapes"))
+        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"${node.show} doesn't match ${shape.showId} because the following property shapes failed: ${failedPropertyShapes.map(_.showId).mkString(",")}"))
         newt
       }
       else
@@ -512,15 +520,20 @@ case class Validator(schema: Schema) extends LazyLogging {
     val disjoint = maybeDisjoint.getOrElse(false)
     for {
       vs <- if (disjoint) filterConformSiblings(values, p, attempt)
-      else ok(values)
+            else ok(values)
       cs: List[Check[ShapeTyping]] = vs.toList.map(o => nodeShapeRef(o, shape, attempt))
       ts <- checkLs(cs)
       value = ts.length
-      t <- condition(between(value, min, max), attempt,
-        qualifiedShapeError(attempt.node, attempt, value, min, max),
-        s"qualifiedValueShape value = ${value}, min=${min.map(_.toString).getOrElse("-")}, max=${max.map(_.toString).getOrElse("-")}")
+      t <- {
+        condition(between(value, min, max), attempt,
+          qualifiedShapeError(attempt.node, attempt, value, min, max),
+          s"qualifiedValueShape value = ${value}, min=${min.map(_.toString).getOrElse("-")}, max=${max.map(_.toString).getOrElse("-")}")
+      }
       ts1 <- combineTypings(t :: ts)
-    } yield ts1
+    } yield {
+      println(s"qualifiedValueShape(attempt: ${attempt},${shape.showId}): t=\n$t")
+      t   // TODO: Should return ts1
+    }
   }
 
   private def filterConformSiblings(values: Seq[RDFNode], p: PropertyShape, attempt: Attempt): Check[Seq[RDFNode]] = {
@@ -563,21 +576,11 @@ case class Validator(schema: Schema) extends LazyLogging {
       t0 <- getTyping
       t1 <- checkSome(checks, orError(node, attempt, sRefs.toList))
       t2 <- addEvidence(attempt, s"$node passes or(${sRefs.map(_.showId).mkString(",")})")
-      t3 <- combineTypings(Seq(t1, t2))
-    } yield t3
+      // t3 <- combineTypings(Seq(t1, t2))
+    } yield t2
   }
 
   private def not(sref: ShapeRef): NodeChecker = attempt => node => {
-    // val parentShape = attempt.nodeShape.shape
-    // val check: Shape => Check[ShapeTyping] = shape => nodeShape(node, shape)
-    /*val handleError: Shape => ViolationError => Check[ShapeTyping] = s => e => for {
-      t1 <- addNotEvidence(attempt, e,
-        s"$node doesn't satisfy ${sref}. Negation declared in ${parentShape}. Error: $e")
-      t2 <- addEvidence(attempt, s"$node satisfies not(${s.showId})")
-      t <- combineTypings(List(t1, t2))
-    } yield t
-    val handleNotError: ShapeTyping => Check[ShapeTyping] = t =>
-      err(notError(node, attempt, sref)) */
     for {
       shape <- getShapeRef(sref, attempt, node)
       typing <- getTyping

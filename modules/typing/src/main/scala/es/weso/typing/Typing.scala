@@ -8,6 +8,8 @@ abstract class Typing[Key, Value, Err, Evidence] {
 
   def allOk: Boolean
 
+  def getFailed: List[Key]
+
   def hasType(key: Key, value: Value): Boolean =
     getOkValues(key) contains value
 

@@ -11,6 +11,11 @@ case class TypingMap[Key, Value, Err, Evidence](
     m.keys.map(key => getFailedValues(key).isEmpty).forall(identity)
   }
 
+  override def getFailed: List[Key] = {
+    m.keys.filter(key => !getFailedValues(key).isEmpty).toList
+  }
+
+
   override def getKeys: Seq[Key] =
     m.keys.toSeq
 

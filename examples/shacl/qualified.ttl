@@ -47,6 +47,6 @@ prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 :female :like :roses .
 	   
 :UserShape sh:targetNode :alice, :bob, :carol .
-:NotUserShape sh:targetNode :dave .
+:UserShape sh:targetNode :dave .
 
 	 

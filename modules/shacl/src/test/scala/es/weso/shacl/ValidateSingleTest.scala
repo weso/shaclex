@@ -13,7 +13,7 @@ import scala.util._
 class ValidateSingleTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
-  val name = "issue105"
+  val name = "qualified"
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclTests")
