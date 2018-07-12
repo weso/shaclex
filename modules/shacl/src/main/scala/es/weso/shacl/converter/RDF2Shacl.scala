@@ -93,6 +93,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     ignoredIRIs <- nodes2iris(ignoredNodes)
+    classes <- objectsFromPredicate(sh_class)(n,rdf)
   } yield {
     val shape: Shape = NodeShape(
       id = n,
@@ -279,43 +280,54 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     SequencePath(paths)
   }
 
-  def components: RDFParser[Seq[Component]] =
-    anyOf(
-      classComponent,
-      datatype,
-      nodeKind,
-      minCount, maxCount,
-      minExclusive, maxExclusive, minInclusive, maxInclusive,
-      minLength, maxLength,
+  def components: RDFParser[Seq[Component]] = (n,rdf) => for {
+    cs1 <- anyOf(
       pattern, languageIn, uniqueLang,
       equals, disjoint, lessThan, lessThanOrEquals,
       or, and, not, xone, qualifiedValueShape,
       nodeComponent,
       hasValue,
-      in)
+      in)(n,rdf)
+    cs2 <- anyOfLs(
+      classComponent,
+      datatype,
+      nodeKind,
+      minCount, maxCount,
+      minExclusive, maxExclusive, minInclusive, maxInclusive,
+      minLength, maxLength
+    )(n,rdf)
+  } yield cs1 ++ cs2
 
-  def classComponent = parsePredicate(sh_class, ClassComponent)
+  def classComponent: RDFParser[List[ClassComponent]] = (n,rdf) => for {
+    cs <- {
+      println(s"Parsing predicate class")
+      parsePredicateList(sh_class, ClassComponent)(n,rdf)
+    }
+  } yield {
+    println(s"classComponent: $cs")
+    cs
+  }
 
-  def datatype = parsePredicateIRI(sh_datatype, Datatype)
+  private def datatype: RDFParser[List[Datatype]] = parsePredicateIRIList(sh_datatype, Datatype)
 
-  def minInclusive = parsePredicateLiteral(sh_minInclusive, MinInclusive)
+  private def minInclusive : RDFParser[List[MinInclusive]] = parsePredicateLiteralList(sh_minInclusive, MinInclusive)
 
-  def maxInclusive = parsePredicateLiteral(sh_maxInclusive, MaxInclusive)
+  private def maxInclusive : RDFParser[List[MaxInclusive]] = parsePredicateLiteralList(sh_maxInclusive, MaxInclusive)
 
-  def minExclusive = parsePredicateLiteral(sh_minExclusive, MinExclusive)
+  private def minExclusive : RDFParser[List[MinExclusive]] = parsePredicateLiteralList(sh_minExclusive, MinExclusive)
 
-  def maxExclusive = parsePredicateLiteral(sh_maxExclusive, MaxExclusive)
+  private def maxExclusive:  RDFParser[List[MaxExclusive]] = parsePredicateLiteralList(sh_maxExclusive, MaxExclusive)
 
-  def minLength = parsePredicateInt(sh_minLength, MinLength)
+  private def minLength: RDFParser[List[MinLength]] = parsePredicateIntList(sh_minLength, MinLength)
 
-  def maxLength = parsePredicateInt(sh_maxLength, MaxLength)
+  private def maxLength : RDFParser[List[MaxLength]] = parsePredicateIntList(sh_maxLength, MaxLength)
 
-  def pattern: RDFParser[Pattern] = (n, rdf) => for {
+  private def pattern: RDFParser[Pattern] = (n, rdf) => for {
     pat <- stringFromPredicate(sh_pattern)(n, rdf)
     flags <- stringFromPredicateOptional(sh_flags)(n, rdf)
   } yield Pattern(pat, flags)
 
-  def languageIn: RDFParser[LanguageIn] = (n, rdf) => for {
+  private def languageIn: RDFParser[LanguageIn] = (n, rdf) => for {
     rs <- rdfListForPredicate(sh_languageIn)(n, rdf)
     ls <- sequenceEither(rs.map(n => n match {
       case StringLiteral(str) => parseOk(str)
@@ -323,13 +335,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }))
   } yield LanguageIn(ls)
 
-  def uniqueLang: RDFParser[UniqueLang] = (n, rdf) => for {
+  private def uniqueLang: RDFParser[UniqueLang] = (n, rdf) => for {
     b <- booleanFromPredicate(sh_uniqueLang)(n, rdf)
   } yield UniqueLang(b)
 
-  def equals = parsePredicateComparison(sh_equals, Equals)
+  private def equals = parsePredicateComparison(sh_equals, Equals)
 
-  def disjoint = parsePredicateComparison(sh_disjoint, Disjoint)
+  private def disjoint = parsePredicateComparison(sh_disjoint, Disjoint)
 
   def lessThan = parsePredicateComparison(sh_lessThan, LessThan)
 
@@ -385,8 +397,8 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def shapeRefConst(sref: RDFNode): RDFParser[ShapeRef] = (_, rdf) =>
     shapeRef(sref, rdf)
 
-  def minCount = parsePredicateInt(sh_minCount, MinCount)
-  def maxCount = parsePredicateInt(sh_maxCount, MaxCount)
+  def minCount : RDFParser[List[MinCount]] = parsePredicateIntList(sh_minCount, MinCount)
+  def maxCount : RDFParser[List[MaxCount]] = parsePredicateIntList(sh_maxCount, MaxCount)
 
   def hasValue: RDFParser[Component] = (n, rdf) => {
     logger.debug(s"Parsing hasValue on $n")
@@ -425,12 +437,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     }
   }
 
-  def nodeKind: RDFParser[Component] = (n, rdf) => {
+  def nodeKind: RDFParser[List[Component]] = (n, rdf) => {
     for {
       os <- objectsFromPredicate(sh_nodeKind)(n, rdf)
       nk <- parseNodeKind(os)
     } yield {
-      nk
+      List(nk)
     }
   }
 
@@ -460,26 +472,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       case n => parseFail(s"iriObjects of nodeKind property > 1. $os")
     }
   }
-
-  def parsePredicateLiteral[A](p: IRI, maker: Literal => A): RDFParser[A] = (n, rdf) => for {
-    v <- literalFromPredicate(p)(n, rdf)
-  } yield maker(v)
-
-  def parsePredicateInt[A](p: IRI, maker: Int => A): RDFParser[A] = (n, rdf) => for {
-    v <- integerLiteralForPredicate(p)(n, rdf)
-  } yield maker(v.intValue())
-
-  def parsePredicateString[A](p: IRI, maker: String => A): RDFParser[A] = (n, rdf) => for {
-    v <- stringFromPredicate(p)(n, rdf)
-  } yield maker(v)
-
-  def parsePredicate[A](p: IRI, maker: RDFNode => A): RDFParser[A] = (n, rdf) => for {
-    o <- objectFromPredicate(p)(n, rdf)
-  } yield maker(o)
-
-  def parsePredicateIRI[A](p: IRI, maker: IRI => A): RDFParser[A] = (n, rdf) => for {
-    iri <- iriFromPredicate(p)(n, rdf)
-  } yield maker(iri)
 
   def noTarget: Seq[Target] = Seq()
   def noPropertyShapes: Seq[PropertyShape] = Seq()

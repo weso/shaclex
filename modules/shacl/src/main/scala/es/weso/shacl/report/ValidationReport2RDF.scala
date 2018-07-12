@@ -35,6 +35,8 @@ class ValidationReport2RDF extends RDFSaver with LazyLogging {
     _ <- addTriple(node, sh_resultSeverity, vr.resultSeverity.toIRI)
     _ <- addTriple(node, sh_focusNode, vr.focusNode)
     _ <- addTriple(node, sh_sourceConstraintComponent, vr.sourceConstraintComponent)
+    _ <- addTriple(node, sh_sourceShape, vr.sourceShape.id)
+    _ <- addTripleObjects(node, sh_value, vr.values.toList)
     _ <- saveList(vr.message.toList, message(node))
     _ <- vr.focusPath match {
       case None => ok(())

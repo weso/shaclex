@@ -27,7 +27,7 @@ object ManifestPrefixes {
   lazy val sh_path = sh + "path"
   lazy val sh_severity = sh + "severity"
   lazy val sh_sourceConstraintComponent = sh + "sourceConstraintComponent"
-  lazy val sh_sourceShape = sh + "sourceConstraintComponent"
+  lazy val sh_sourceShape = sh + "sourceShape"
   lazy val sh_value = sh + "value"
   lazy val sh_result = sh + "result"
   lazy val sh_ValidationReport = sh + "ValidationReport"
@@ -39,9 +39,9 @@ object ManifestPrefixes {
   lazy val sht_approved = sht.add("approved")
   lazy val sht_rejected = sht.add("rejected")
   lazy val sht_specRef = sht.add("specRef")
-  lazy val sht_schema = sht.add("schema")
+  lazy val sht_shapesGraph = sht.add("shapesGraph")
   lazy val sht_schema_format = sht.add("schema-format")
-  lazy val sht_data = sht.add("data")
+  lazy val sht_dataGraph = sht.add("dataGraph")
   lazy val sht_data_format = sht.add("data-format")
   lazy val sht_schema_output_format = sht.add("schema-output-format")
   lazy val sht_node = sht.add("node")

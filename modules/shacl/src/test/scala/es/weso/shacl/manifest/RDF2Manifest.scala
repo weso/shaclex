@@ -1,6 +1,5 @@
 package es.weso.shacl.manifest
 
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -8,6 +7,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.parser.RDFParser
 import es.weso.utils.FileUtils._
 import ManifestPrefixes._
+import es.weso.utils.EitherUtils._
 
 import scala.util._
 
@@ -28,7 +28,7 @@ case class RDF2Manifest(base: Option[IRI],
       entries <- entries(n, rdf)
       includes <- includes(visited)(n, rdf)
     } yield {
-      logger.debug(s"Manifest read. Entries: $entries\nIncludes: $includes")
+      println(s"Manifest read. Entries: ${entries.length}\nIncludes: $includes")
       Manifest(
         label = maybeLabel,
         comment = maybeComment,
@@ -90,8 +90,10 @@ case class RDF2Manifest(base: Option[IRI],
 
   def action: RDFParser[ManifestAction] = { (n, rdf) =>
     for {
-      data <- optional(iriFromPredicate(sht_data))(n, rdf)
-      schema <- iriFromPredicateOptional(sht_schema)(n, rdf)
+      data <- optional(iriFromPredicate(sht_dataGraph))(n, rdf)
+      schema <- {
+        iriFromPredicateOptional(sht_shapesGraph)(n, rdf)
+      }
       dataFormatIri <- optional(iriFromPredicate(sht_data_format))(n, rdf)
       dataFormat <- mapOptional(dataFormatIri, iriDataFormat2str)
       schemaFormatIRI <- optional(iriFromPredicate(sht_schema_format))(n, rdf)
@@ -156,7 +158,9 @@ case class RDF2Manifest(base: Option[IRI],
     scc <- optional(iriFromPredicate(sh_sourceConstraintComponent))(n, rdf)
     sourceShape <- optional(iriFromPredicate(sh_sourceShape))(n, rdf)
     value <- optional(objectFromPredicate(sh_value))(n, rdf)
-  } yield ViolationError(errorType, focusNode, path, severity, scc, sourceShape, value)
+  } yield {
+    ViolationError(errorType, focusNode, path, severity, scc, sourceShape, value)
+  }
 
   def noType(n: RDFNode, rdf: RDFReader): Boolean = {
     val types = objectsFromPredicate(rdf_type)(n, rdf)
@@ -165,18 +169,15 @@ case class RDF2Manifest(base: Option[IRI],
 
   def includes(visited: List[RDFNode]):
      RDFParser[List[(RDFNode, Manifest)]] = { (n, rdf) => {
-    logger.debug(s"Parsing includes...$derefIncludes")
     if (derefIncludes) {
       for {
         includes <- {
-          logger.debug(s"Looking for include at node: $n")
           objectsFromPredicate(mf_include)(n, rdf)
         }
         result <- {
-          logger.debug(s"Includes: $includes")
           val ds: List[Either[String, (IRI, Manifest)]] =
             includes.toList.map(iri => derefInclude(iri, base, iri +: visited))
-          ds.sequence
+          sequence(ds)
         }
       } yield
         result
@@ -191,13 +192,11 @@ case class RDF2Manifest(base: Option[IRI],
                    visited: List[RDFNode]): Either[String,(IRI,Manifest)] = node match {
     case iri: IRI => {
       val iriResolved = base.fold(iri)(base => base.resolve(iri))
-      logger.debug(s"Resolving base: $base with iri: $iri = $iriResolved")
       for {
         rdf <- RDFAsJenaModel.fromURI(iriResolved.getLexicalForm,"TURTLE",None)
         mfs <- RDF2Manifest(Some(iriResolved), true).rdf2Manifest(rdf, iri +: visited)
-          manifest <-
-        if (mfs.size == 1) Right(mfs.head)
-        else Left(s"More than one manifests found: ${mfs} at iri $iri")
+        manifest <- if (mfs.size == 1) Right(mfs.head)
+                    else Left(s"More than one manifests found: ${mfs} at iri $iri")
       } yield (iri, manifest)
     }
     case _ => Left(s"Trying to deref an include from node $node which is not an IRI")
@@ -249,6 +248,7 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
+
 }
 
 object RDF2Manifest extends LazyLogging {
@@ -266,7 +266,7 @@ object RDF2Manifest extends LazyLogging {
         case Some(str) => IRI.fromString(str).map(Some(_))
       }
       mfs <- {
-        RDF2Manifest(iriBase,derefIncludes).rdf2Manifest(rdf)
+        RDF2Manifest(iriBase, derefIncludes).rdf2Manifest(rdf)
       }
       manifest <- if (mfs.size == 1) Right(mfs.head)
       else Left(s"Number of manifests != 1: ${mfs}")

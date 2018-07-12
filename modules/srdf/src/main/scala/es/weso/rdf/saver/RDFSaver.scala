@@ -13,7 +13,12 @@ trait RDFSaver {
   def ok[A](x: A): RDFSaver[A] = StateT.pure(x)
 
   def saveList[A](ls: List[A], f: A => RDFSaver[Unit]): RDFSaver[Unit] = {
-    ls.map(f(_)).sequence.map(_ => ())
+    sequence(ls.map(f(_))).map(_ => ())
+  }
+
+  // TODO:
+  def listSaver[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[List[RDFNode]] = {
+    sequence(ls.map(saver(_)))
   }
 
   def saveToRDFList[A](ls: List[A], f: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = ls match {
@@ -27,9 +32,12 @@ trait RDFSaver {
     } yield bNode
   }
 
-  // TODO: Check possibility of errors
   def addTriple(s: RDFNode, p: IRI, o: RDFNode): RDFSaver[Unit] =
     State.modify(_.addTriple(RDFTriple(s, p, o)).right.get)
+
+  def addTripleObjects(s:RDFNode, p: IRI, os: List[RDFNode]): RDFSaver[Unit] = {
+    saveList(os, (o: RDFNode) => addTriple(s,p,o))
+  }
 
   def addPrefixMap(pm: PrefixMap): RDFSaver[Unit] =
     State.modify(_.addPrefixMap(pm))
@@ -92,9 +100,6 @@ trait RDFSaver {
     State.modify(_.addPrefix(alias, iri.str))
   }
 
-  def listSaver[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[List[RDFNode]] = {
-    ls.map(saver(_)).sequence
-  }
 
   def saveAsRDFList[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = for {
     nodes <- listSaver(ls, saver)
@@ -132,5 +137,7 @@ trait RDFSaver {
       case Some(ls) => addStarContent(ls, node, pred, saver)
     }
 
+  def sequence[A](ls: List[RDFSaver[A]]): RDFSaver[List[A]] =
+    ls.sequence
 }
 

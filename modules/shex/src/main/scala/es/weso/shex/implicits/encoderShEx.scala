@@ -147,6 +147,7 @@ object encoderShEx {
       case s: EachOf => s.asJson
       case Inclusion(i) => i.asJson // mkObjectTyped("Inclusion",List(field("include",i)))
       case tc: TripleConstraint => tc.asJson
+      case e: Expr => throw new Exception(s"Unimplemented encodeTripleExpr($e:Expr)")
     }
   }
 

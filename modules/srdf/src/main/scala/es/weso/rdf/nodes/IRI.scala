@@ -42,6 +42,8 @@ case class IRI(uri: URI) extends RDFNode {
     str
   }
 
+  def isEmpty: Boolean = this == IRI("")
+
 }
 
 object IRI {

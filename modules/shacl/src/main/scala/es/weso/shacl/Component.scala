@@ -4,7 +4,9 @@ import es.weso.rdf.nodes.{IRI, Literal, RDFNode}
 
 sealed abstract class Component
 
-case class ClassComponent(value: RDFNode) extends Component
+case class ClassComponent(value: RDFNode) extends Component {
+  println(s"ClassComponent($value(")
+}
 case class Datatype(value: IRI) extends Component
 case class NodeKind(value: NodeKindType) extends Component
 case class MinCount(value: Int) extends Component

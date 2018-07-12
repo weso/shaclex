@@ -115,6 +115,12 @@ final case object EmptyResult
 final case class ValidationReport(violationErrors: Set[ViolationError]) {
   def failingNodes: Set[IRI] =
     violationErrors.map(_.focusNode).flatten
+
+  def failingNodesShapes: List[(IRI,IRI)] =
+    violationErrors.toList.collect {
+      case v if v.focusNode.isDefined && v.sourceShape.isDefined =>
+        (v.focusNode.get,v.sourceShape.get)
+    }
 }
 
 final case class ViolationError(
