@@ -21,7 +21,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclCore")
-  val name = "node-001.ttl"
+  val name = "or-001.ttl"
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
@@ -29,7 +29,9 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
   describe(s"Validate from manifest file $fileName") {
     RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
       case Left(e) => {
-        fail(s"Error reading manifestTest file:$e")
+        it(s"Fails to read $fileName") {
+          fail(s"Error reading manifestTest file:$e")
+        }
       }
       case Right(m) => {
         info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes")
@@ -57,20 +59,54 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
   }
 
   def getSchemaRdf(a: ManifestAction, fileName: String): Either[String, (Schema, RDFReader)] = {
+    info(s"Manifest action $a, fileName $fileName")
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
-    a.data match {
-      case None => {
+    (a.data,a.schema) match {
+      case (None,None) => {
         info(s"No data in manifestAction $a")
         Right((Schema.empty, RDFAsJenaModel.empty))
       }
-      case Some(iri) => {
-        val realIri = if (iri.isEmpty) {
+      case (Some(dataIri), Some(shapesIri)) => {
+        val realDataIri = if (dataIri.isEmpty) {
           absoluteIri + fileName
         } else {
-          absoluteIri.resolve(iri)
+          absoluteIri.resolve(dataIri)
+        }
+        println(s"iri: $dataIri, realDataIri $realDataIri")
+        val realSchemaIri = if (shapesIri.isEmpty) {
+          absoluteIri + fileName
+        } else {
+          absoluteIri.resolve(shapesIri)
         }
         for {
-          rdf <- RDFAsJenaModel.fromURI(realIri.str, dataFormat)
+          rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
+          schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
+          schema <- {
+            RDF2Shacl.getShacl(schemaRdf)
+          }
+        } yield (schema, rdf)
+      }
+      case (None, Some(shapesIri)) => {
+        val realSchemaIri = if (shapesIri.isEmpty) {
+          absoluteIri + fileName
+        } else {
+          absoluteIri.resolve(shapesIri)
+        }
+        for {
+          schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
+          schema <- {
+            RDF2Shacl.getShacl(schemaRdf)
+          }
+        } yield (schema, RDFAsJenaModel.empty)
+      }
+      case (Some(dataIri),None) => {
+        val realDataIri = if (dataIri.isEmpty) {
+          absoluteIri + fileName
+        } else {
+          absoluteIri.resolve(dataIri)
+        }
+        for {
+          rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
           schema <- {
             RDF2Shacl.getShacl(rdf)
           }

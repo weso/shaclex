@@ -33,6 +33,15 @@ sealed abstract class Shape {
   def targetObjectsOf: Seq[IRI] =
     targets.map(_.toTargetObjectsOf).flatten.map(_.pred)
 
+  def componentShapes: Seq[ShapeRef] = {
+    components.collect {
+      case NodeComponent(sref) => sref
+//      case Or(srefs) => srefs
+//      case And(srefs) => srefs
+//      case Not(sref) => List(sref) // TODO: Not sure if this should be included...
+    }
+  }
+
 }
 
 
@@ -54,6 +63,7 @@ case class NodeShape(
                       ignoredProperties: List[IRI]) extends Shape {
 
   def isPropertyConstraint = false
+
 }
 
 case class PropertyShape(

@@ -18,7 +18,20 @@ import es.weso.rdf.operations.Comparisons._
 /**
  * This validator is implemented directly in Scala using cats library
  */
-case class Validator(schema: Schema) extends LazyLogging {
+
+trait MyLogging {
+  class Logger {
+    def debug(str:String): Unit = {
+      println(s"DEBUG: $str")
+    }
+    def info(str:String): Unit = {
+      println(s"DEBUG: $str")
+    }
+  }
+  val logger = new Logger
+}
+
+case class Validator(schema: Schema) extends MyLogging {
 
   type CheckTyping = Check[ShapeTyping]
   type PropertyChecker = (Attempt, SHACLPath) => CheckTyping
@@ -181,10 +194,14 @@ case class Validator(schema: Schema) extends LazyLogging {
     * @return
     */
   private def checkFailed(attempt: Attempt, node: RDFNode, shape: Shape, t: ShapeTyping): Check[ShapeTyping] = {
+    logger.debug(s"checkFailed(${node.show},${shape.showId}")
+    logger.debug(s"components: ${shape.components}")
     for {
       propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
+      componentShapes <- getShapeRefs(shape.componentShapes.toList,attempt,node)
     } yield {
-      val failedPropertyShapes = t.getFailedValues(node).intersect(propertyShapes.toSet)
+      val containedShapes = propertyShapes.toSet.union(componentShapes.toSet)
+      val failedPropertyShapes = t.getFailedValues(node).intersect(containedShapes)
       if (!failedPropertyShapes.isEmpty) {
         val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"${node.show} doesn't match ${shape.showId} because the following property shapes failed: ${failedPropertyShapes.map(_.showId).mkString(",")}"))
         newt
@@ -465,14 +482,23 @@ case class Validator(schema: Schema) extends LazyLogging {
                           name: String,
                           errorMaker: (RDFNode, Attempt, IRI, Set[RDFNode]) => ValidationResult,
                           cond: (RDFNode, RDFNode) => Boolean): NodeChecker =
-    attempt => node => for {
-      rdf <- getRDF
-      subject = attempt.node
-      vs = rdf.triplesWithSubjectPredicate(subject, p).map(_.obj)
-      t <- condition(vs.forall(cond(node, _)), attempt,
-        errorMaker(node, attempt, p, vs),
-        s"$node satisfies $name $p with values ${vs})")
-    } yield t
+    attempt => node => {
+      logger.debug(s"Comparison on node $node")
+      for {
+        rdf <- getRDF
+        subject = attempt.node
+        vs = rdf.triplesWithSubjectPredicate(subject, p).map(_.obj)
+        t <- {
+          logger.debug(s"Values: $vs")
+          if (vs.isEmpty) {
+            addNotEvidence(attempt,errorMaker(node,attempt,p,vs),s"No values for node $subject with predicate $p")
+          } else
+          condition(vs.forall(cond(node, _)), attempt,
+            errorMaker(node, attempt, p, vs),
+            s"$node satisfies $name $p with values ${vs})")
+        }
+      } yield t
+    }
 
   private def and(srefs: Seq[ShapeRef]): NodeChecker = attempt => node => {
     for {
@@ -531,7 +557,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       }
       ts1 <- combineTypings(t :: ts)
     } yield {
-      println(s"qualifiedValueShape(attempt: ${attempt},${shape.showId}): t=\n$t")
+      logger.debug(s"qualifiedValueShape(attempt: ${attempt},${shape.showId}): t=\n$t")
       t   // TODO: Should return ts1
     }
   }
@@ -575,7 +601,10 @@ case class Validator(schema: Schema) extends LazyLogging {
     for {
       t0 <- getTyping
       t1 <- checkSome(checks, orError(node, attempt, sRefs.toList))
-      t2 <- addEvidence(attempt, s"$node passes or(${sRefs.map(_.showId).mkString(",")})")
+      t2 <- {
+        logger.debug(s"@@@ Inside or. result of checkSome:\n${showResult(t1)}")
+        addEvidence(attempt, s"$node passes or(${sRefs.map(_.showId).mkString(",")})")
+      }
       // t3 <- combineTypings(Seq(t1, t2))
     } yield t2
   }
@@ -681,10 +710,10 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def getShapeRefs(sRefs: List[ShapeRef], attempt: Attempt, node: RDFNode): Check[List[Shape]] =
-    sRefs.map(getShapeRef(_, attempt, node)).sequence
+    sequence(sRefs.map(getShapeRef(_, attempt, node)))
 
   private def getPropertyShapeRefs(srefs: List[ShapeRef], attempt: Attempt, node: RDFNode): Check[List[PropertyShape]] =
-    srefs.map(getPropertyShapeRef(_, attempt, node)).sequence
+    sequence(srefs.map(getPropertyShapeRef(_, attempt, node)))
 
   private def getPropertyShapeRef(sref: ShapeRef, attempt: Attempt, node: RDFNode): Check[PropertyShape] = for {
     shape <- getShapeRef(sref, attempt, node)

@@ -1,6 +1,9 @@
 package es.weso.checking
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.scalatest._
-import cats._, data._
+import cats._
+import data._
 import cats.implicits._
 
 
@@ -9,10 +12,11 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 
   import CheckerCatsStr._
 
-  def runValue_(c:Check[Int]) = runValue(c)(c0)(e0)
-  def runLog_(c:Check[Int]) = runLog(c)(c0)(e0)
+  def runValue_(c:Check[Int]): Either[Err,Int] = runValue(c)(c0)(e0)
+  def runLog_(c:Check[Int]): Log = runLog(c)(c0)(e0)
+  def runValueFlag(c:Check[(Int,Boolean)]): Either[Err,(Int,Boolean)] = runValue(c)(c0)(e0)
 
-    describe(s"Checker Cats") {
+    ignore(s"Checker Cats") {
       it("Should be able to return a value") {
         val c: Check[Int] = ok(2)
         runValue_(c) should ===(Right(2))
@@ -102,4 +106,71 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
         runCheck(c)(c0)(e0) should ===(List("X"),(Right(2),List(1)))
       } */
  }
+
+  describe(s"Check some with flag") {
+    val counter = new AtomicInteger(0)
+
+    def comp(x: Int): Check[(Int,Boolean)] = {
+      counter.getAndIncrement;
+      println(s"Comp($x), steps: $counter")
+      if (x % 2 == 0) {
+        ok((x, true))
+      } else {
+        ok((x, false))
+      }
+    }
+
+    counter.set(0)
+    shouldCheckSomeFlag("checkSomeFlag(List(comp(2),comp(4)), (0,false)) = (2, true)|1",
+      Stream(2, 4),
+      comp,
+      ok((0,false)),
+      (2,true),
+      1
+    )
+
+    def shouldCheckSomeFlag(msg: String,
+                            ls: => Stream[Int],
+                            check: Int => Check[(Int,Boolean)],
+                            last: => Check[(Int,Boolean)],
+                            expected: (Int,Boolean),
+                            stepsExpected: Int): Unit = {
+      it(msg) {
+        runValueFlag(checkSomeFlag(ls, check, last)).fold(e => fail(s"Error: $e"), v => {
+          println(s"After checkSome. Value $v, steps: $counter")
+          v should be(expected)
+          counter.get should equal(stepsExpected)
+        })
+      }
+    }
+
+  }
+
+  ignore(s"Call counter") {
+
+    val counter = new AtomicInteger()
+
+    def f(): Unit = {
+      counter.getAndIncrement()
+    }
+
+    def cmp: Unit = {
+      f();
+      f();
+    }
+      counter.set(0)
+      shouldCheck("Cmp(1 with 3 calls)", cmp, (1, true), 2)
+
+    def shouldCheck(msg: String,
+                    c: Unit,
+                    expected: (Int,Boolean),
+                    stepsExpected: Int): Unit = {
+      it(msg) {
+        c
+        counter.get should equal(stepsExpected)
+      }
+    }
+
+  }
+
 }

@@ -300,11 +300,9 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def classComponent: RDFParser[List[ClassComponent]] = (n,rdf) => for {
     cs <- {
-      println(s"Parsing predicate class")
       parsePredicateList(sh_class, ClassComponent)(n,rdf)
     }
   } yield {
-    println(s"classComponent: $cs")
     cs
   }
 

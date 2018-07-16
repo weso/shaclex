@@ -1,9 +1,16 @@
 package es.weso.rdf.operations
 
+import java.sql.Time
+import java.time.Instant
+
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 
 object Comparisons {
+
+  sealed trait PrimitiveLiteral
+
+  case class Datetime(dt: Instant) extends PrimitiveLiteral
 
   sealed trait NumericLiteral
   case class NumericInt(n: Int) extends NumericLiteral
@@ -51,6 +58,8 @@ object Comparisons {
     case DatatypeLiteral(str, `xsd_unsignedShort`) => str2NumericInt(str)
     case DatatypeLiteral(str, `xsd_unsignedByte`) => str2NumericInt(str)
     case DatatypeLiteral(str, `xsd_float`) => str2NumericDouble(str)
+    case DatatypeLiteral(str, other) => Left(s"Cannot convert to numeric value datatype literal $str^^$other")
+    case _ => Left(s"Cannot convert $node to numeric literal for comparison")
   }
 
   def lessThanOrEquals(nl1: NumericLiteral, nl2: NumericLiteral): Boolean = (nl1,nl2) match {

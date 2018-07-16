@@ -48,6 +48,35 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
+  def checkFirst[A,B,F[_]: Monad](ls: => Stream[A],
+                                check: A => F[(B,Boolean)],
+                                last: F[(B,Boolean)]
+                               ): F[(B,Boolean)] = {
+    val z : Eval[F[(B,Boolean)]] = Eval.later(last)
+    def cmb(x : A, next: Eval[F[(B,Boolean)]]): Eval[F[(B,Boolean)]] =
+      Eval.later(
+        for {
+          r <- check(x)
+          n <- if (r._2) Monad[F].pure(r)
+          else next.value
+        } yield n
+      )
+    Foldable[Stream].foldRight(ls,z)(cmb).value
+  }
+
+  def checkSomeFlag[A,B](cs: => Stream[A], check: A => Check[(B,Boolean)], last: => Check[(B,Boolean)]): Check[(B,Boolean)] = {
+    println(s"checkSomeFlag")
+/*    lazy val z: Check[(A,Boolean)] = last
+    def comb(c1: Check[(A,Boolean)], c2: Check[(A,Boolean)]): Check[(A,Boolean)] = for {
+      pair <- c1
+      r <- if (pair._2) ok(pair)
+           else c2
+    } yield r
+    cs.foldRight(z)(comb) */
+    checkFirst(cs,check,last)
+  }
+
+
   /**
     * Run a computation in a local environment. If the computation fails, return the result of calling `safe` function over the current environment
     * @param c computation to run
@@ -146,7 +175,11 @@ abstract class CheckerCats extends Checker {
    * If any of the elements fail, fails
    */
   def checkAll[A](xs: List[Check[A]]): Check[List[A]] =
+    sequence(xs)  // Question: Is this stack safe?
+
+  def sequence[A](xs: List[Check[A]]): Check[List[A]] =
     xs.sequence  // Question: Is this stack safe?
+
 
   def checkPair1st[A, B](p: (Check[A], B)): Check[(A, B)] = for {
     v <- p._1

@@ -8,52 +8,65 @@
 @prefix sht: <http://www.w3.org/ns/shacl-test#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ex:InvalidRectangle1
-  rdf:type ex:RectangleWithArea ;
-  ex:height 3 ;
-.
+#ex:InvalidRectangle1
+#  rdf:type ex:RectangleWithArea ;
+#  ex:height 3 ;
+#.
 ex:InvalidRectangle2
   rdf:type ex:RectangleWithArea ;
 .
+prefix : <http://e/>
 ex:RectangleWithArea
   rdf:type rdfs:Class ;
   rdf:type sh:NodeShape ;
   rdfs:subClassOf rdfs:Resource ;
-  sh:or (
-      [
-        sh:property [
-            sh:path ex:height ;
-            sh:minCount 1 ;
-          ] ;
-        sh:property [
-            sh:path ex:width ;
-            sh:minCount 1 ;
-          ] ;
-      ]
-      [
-        sh:property [
-            sh:path ex:area ;
-            sh:minCount 1 ;
-          ] ;
-      ]
+  sh:or ( :r1 :r2
+#      [
+#        sh:property [
+#            sh:path ex:height ;
+#            sh:minCount 1 ;
+#          ] ;
+#        sh:property [
+#            sh:path ex:width ;
+#            sh:minCount 1 ;
+#          ] ;
+#      ]
+#      [
+#        sh:property [
+#            sh:path ex:area ;
+#            sh:minCount 1 ;
+#          ] ;
+#      ]
     ) ;
 .
-ex:ValidRectangle1
-  rdf:type ex:RectangleWithArea ;
-  ex:height 3 ;
-  ex:width 2 ;
-.
+:r1   sh:property :height ; sh:property :width .
+:height sh:path ex:height ;
+                  sh:minCount 1 ;
+                 .
+:width  sh:path ex:width ;
+          sh:minCount 1 ;
+          .
+
+:r2 sh:property ex:area .
+ex:area sh:path ex:area ;
+                sh:minCount 1 ;
+                 .
+#ex:ValidRectangle1
+#  rdf:type ex:RectangleWithArea ;
+#  ex:height 3 ;
+#  ex:width 2 ;
+#.
 ex:ValidRectangle2
   rdf:type ex:RectangleWithArea ;
   ex:area 6 ;
   ex:height 3 ;
   ex:width 2 ;
 .
-ex:ValidRectangle3
-  rdf:type ex:RectangleWithArea ;
-  ex:area 6 ;
-  ex:height 3 ;
-.
+#ex:ValidRectangle3
+#  rdf:type ex:RectangleWithArea ;
+#  ex:area 6 ;
+#  ex:height 3 ;
+#.
 <>
   rdf:type mf:Manifest ;
   mf:entries (
@@ -70,14 +83,14 @@ ex:ValidRectangle3
   mf:result [
       rdf:type sh:ValidationReport ;
       sh:conforms "false"^^xsd:boolean ;
-      sh:result [
-          rdf:type sh:ValidationResult ;
-          sh:focusNode ex:InvalidRectangle1 ;
-          sh:resultSeverity sh:Violation ;
-          sh:sourceConstraintComponent sh:OrConstraintComponent ;
-          sh:sourceShape ex:RectangleWithArea ;
-          sh:value ex:InvalidRectangle1 ;
-        ] ;
+#      sh:result [
+#          rdf:type sh:ValidationResult ;
+#          sh:focusNode ex:InvalidRectangle1 ;
+#          sh:resultSeverity sh:Violation ;
+#          sh:sourceConstraintComponent sh:OrConstraintComponent ;
+#          sh:sourceShape ex:RectangleWithArea ;
+#          sh:value ex:InvalidRectangle1 ;
+#        ] ;
       sh:result [
           rdf:type sh:ValidationResult ;
           sh:focusNode ex:InvalidRectangle2 ;
