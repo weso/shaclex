@@ -120,14 +120,11 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       }
     }
 
-    counter.set(0)
-    shouldCheckSomeFlag("checkSomeFlag(List(comp(2),comp(4)), (0,false)) = (2, true)|1",
-      Stream(2, 4),
-      comp,
-      ok((0,false)),
-      (2,true),
-      1
-    )
+    shouldCheckSomeFlag("checkSomeFlag(List(2,4), (0,false)) = (2, true)|1",Stream(2, 4),comp,ok((0,false)),(2,true),1)
+    shouldCheckSomeFlag("checkSomeFlag(List(1,4), (0,false)) = (4, true)|2",Stream(1, 4),comp,ok((0,false)),(4,true),2)
+    shouldCheckSomeFlag("checkSomeFlag(List(1,3,5), (0,false)) = (0, false)|3",Stream(1, 3, 5),comp,ok((0,false)),(0,false),3)
+    shouldCheckSomeFlag("checkSomeFlag(Stream(2,4,...), (0,false)) = (2, true)|1",Stream.from(2,2),comp,ok((0,false)),(2,true),1)
+    shouldCheckSomeFlag("checkSomeFlag(Stream(), (0,false)) = (0, false)|0",Stream(),comp,ok((0,false)),(0,false),0)
 
     def shouldCheckSomeFlag(msg: String,
                             ls: => Stream[Int],
@@ -136,6 +133,8 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
                             expected: (Int,Boolean),
                             stepsExpected: Int): Unit = {
       it(msg) {
+        counter.set(0)
+        println(s"counter in it: $counter")
         runValueFlag(checkSomeFlag(ls, check, last)).fold(e => fail(s"Error: $e"), v => {
           println(s"After checkSome. Value $v, steps: $counter")
           v should be(expected)
@@ -146,28 +145,41 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 
   }
 
-  ignore(s"Call counter") {
+  describe(s"Check all with flag") {
 
-    val counter = new AtomicInteger()
-
-    def f(): Unit = {
-      counter.getAndIncrement()
+    val counter = new AtomicInteger(0)
+    def comp(x: Int): Check[(Int,Boolean)] = {
+      counter.getAndIncrement;
+      println(s"Comp($x), steps: $counter")
+      if (x % 2 == 0) {
+        ok((x, true))
+      } else {
+        ok((x, false))
+      }
     }
 
-    def cmp: Unit = {
-      f();
-      f();
-    }
-      counter.set(0)
-      shouldCheck("Cmp(1 with 3 calls)", cmp, (1, true), 2)
+    shouldCheckAllFlag("checkAllFlag(List(2,4), 0)) = (6, true)|2",Stream(2, 4),comp,0,(6,true),2)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1), 0)) = (7, false)|3",Stream(2, 4, 1),comp,0,(7,false),3)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1,2), 0)) = (7, false)|3",Stream(2, 4, 1,2),comp,0,(7,false),3)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",Stream(2, 4, 6, 2),comp,0,(14,true),4)
+    shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|1",Stream(1, 4),comp,0,(1,false),1)
+    shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|1",Stream(1, 3, 5),comp,0,(1,false),1)
+    shouldCheckAllFlag("checkAllFlag(Stream(), 0) = (0, true)|0",Stream(),comp,0,(0,true),0)
 
-    def shouldCheck(msg: String,
-                    c: Unit,
-                    expected: (Int,Boolean),
-                    stepsExpected: Int): Unit = {
+    def shouldCheckAllFlag(msg: String,
+                           ls: => Stream[Int],
+                           check: Int => Check[(Int,Boolean)],
+                           last: => Int,
+                           expected: (Int,Boolean),
+                           stepsExpected: Int): Unit = {
       it(msg) {
-        c
-        counter.get should equal(stepsExpected)
+        counter.set(0)
+        println(s"counter in it: $counter")
+        runValueFlag(checkAllFlag(ls, check, last)).fold(e => fail(s"Error: $e"), v => {
+          println(s"After checkSome. Value $v, steps: $counter")
+          v should be(expected)
+          counter.get should equal(stepsExpected)
+        })
       }
     }
 

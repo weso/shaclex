@@ -33,7 +33,7 @@ trait MyLogging {
 
 case class Validator(schema: Schema) extends MyLogging {
 
-  type CheckTyping = Check[ShapeTyping]
+  type CheckTyping = Check[(ShapeTyping,Boolean)]
   type PropertyChecker = (Attempt, SHACLPath) => CheckTyping
   type NodeChecker = Attempt => RDFNode => CheckTyping
   type ShapeChecker = Shape => CheckTyping
@@ -59,39 +59,38 @@ case class Validator(schema: Schema) extends MyLogging {
    * Fails if any of them is not correct
    */
   def checkSchemaAll: CheckTyping = {
-    val shapes = schema.shapes
-    val results = shapes.map(sh => shapeChecker(sh)).toList
+    val shapes = schema.shapes.toStream
     for {
-      ts <- checkAll(results)
-      t <- combineTypings(ts)
-    } yield t
+      t <- getTyping
+      r <- checkAllFlag(shapes, shapeChecker, t)
+    } yield r
   }
 
-  def shapeChecker: ShapeChecker = shape => {
+  def shapeChecker: ShapeChecker = shape => ??? /*{
     logger.debug(s"Checking shape: ${shape.showId}")
     for {
       _ <- addLogMsg(s"Checking shape ${shape.showId}")
-      t1 <- checkTargetNodes(shape.targetNodes)(shape)
+      t <- checkTargetNodes(shape.targetNodes)(shape)
       t2 <- checkTargetClasses(shape.targetClasses)(shape)
       t3 <- checkTargetSubjectsOf(shape.targetSubjectsOf)(shape)
       t4 <- checkTargetObjectsOf(shape.targetObjectsOf)(shape)
-      t <- combineTypings(List(t1, t2, t3, t4))
     } yield t
-  }
+  } */
 
   def checkTargetNodes(nodes: Seq[RDFNode]): ShapeChecker = shape => {
     logger.debug(s"Target nodes of ${shape.showId} = ${nodes.mkString(",")}")
+    def chk(n: RDFNode): Check[(ShapeTyping,Boolean)] = nodeShape(n,shape)
     for {
       rdf <- getRDF
-      nodesShapes = nodes.map(n => nodeShape(n, shape)).toList
+      nodesShapes = nodes.map(n => nodeShape(n, shape)).toStream
       _ <- addLogMsg(s"Checking targetNode declarations for shape ${shape.showId}. Nodes: ${nodes}")
-      ts <- checkAll(nodesShapes)
-      t <- combineTypings(ts)
+      t <- getTyping
+      r <- checkAllFlag(nodes.toStream, chk, t)
     } yield {
-      t
+      r
     }
   }
-
+/* TODO
   def checkTargetClasses(classes: Seq[RDFNode]): ShapeChecker = shape => {
     logger.debug(s"Target classes of ${shape.showId} = ${classes.map(_.show).mkString(",")}")
     for {
@@ -125,6 +124,7 @@ case class Validator(schema: Schema) extends MyLogging {
       t <- combineTypings(ts)
     } yield t
   }
+*/
 
   def findNodesInClass(cls: RDFNode, rdf: RDFReader): List[RDFNode] =
     rdf.getSHACLInstances(cls).toList
@@ -248,18 +248,20 @@ case class Validator(schema: Schema) extends MyLogging {
     logger.debug(s"Check propertyShapes($node, ${shapeRefs.map(_.showId).mkString(",")})")
     for {
       pss <- getPropertyShapeRefs(shapeRefs, attempt, node)
-      ts <- checkAll(pss.map(checkPropertyShape(_)(attempt)(node)))
-      t <- combineTypings(ts)
+      ts <- checkAllWithTyping(pss, checkPropertyShape(_)(attempt)(node))
     } yield {
       logger.debug(s"Result of check propertyShapes($node, ${shapeRefs.map(_.showId).mkString(",")})=${showResult(t)}")
-      t
+      ts
     }
   }
 
-  private def checkComponents(cs: List[Component]): NodeChecker = attempt => node => for {
-    ts <- checkAll(cs.map(checkComponent(_)(attempt)(node)))
-    t <- combineTypings(ts)
+  private def checkAllWithTyping[A](cs: List[A], chk: A => CheckTyping): CheckTyping = for {
+    t <- getTyping
+    r <- checkAllFlag(cs.toStream, chk, t)
   } yield t
+
+  private def checkComponents(cs: List[Component]): NodeChecker = attempt => node =>
+    checkAllWithTyping(cs, checkComponent(_)(attempt)(node))
 
   private def checkComponent(c: Component): NodeChecker = component2Checker(c)
 
@@ -267,7 +269,7 @@ case class Validator(schema: Schema) extends MyLogging {
     val newAttempt = attempt.copy(path = Some(path))
     val xs = cs.map(c => c(newAttempt, path)).toList
     for {
-      ts <- checkAll(xs)
+      ts <- checkAllWithTyping(cs)
       t <- combineTypings(ts)
     } yield t
   }
@@ -745,7 +747,7 @@ case class Validator(schema: Schema) extends MyLogging {
                          error: ValidationResult,
                          evidence: String): CheckTyping = for {
     t <- getTyping
-    newType <- cond(validateCheck(condition, error),
+    newType <- condFlag(validateCheck(condition, error),
                     (_: Unit) => addEvidence(attempt, evidence),
                     err => addNotEvidence(attempt, err, "Condition failed")
                    )
@@ -843,7 +845,7 @@ case class Validator(schema: Schema) extends MyLogging {
     ok(ShapeTyping.combineTypings(ts))
   }
 
-  def validateAll(rdf: RDFReader): CheckResult[ValidationResult, ShapeTyping, Log] = {
+  def validateAll(rdf: RDFReader): CheckResult[ValidationResult, (ShapeTyping, Boolean), Log] = {
     runCheck(checkSchemaAll, rdf)
   }
 
@@ -854,7 +856,7 @@ case class Validator(schema: Schema) extends MyLogging {
 object Validator {
   def empty = Validator(schema = Schema.empty)
 
-  def validate(schema: Schema, rdf: RDFReader): Either[ValidationResult, ShapeTyping] = {
+  def validate(schema: Schema, rdf: RDFReader): Either[ValidationResult, (ShapeTyping, Boolean)] = {
     Validator(schema).validateAll(rdf).result
   }
 
