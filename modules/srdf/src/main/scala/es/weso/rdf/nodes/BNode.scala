@@ -16,6 +16,13 @@ case class BNode(id: String) extends RDFNode {
 
   override def getLexicalForm = id
 
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case BNode(i) => i == id
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+
 }
 
 object BNode {

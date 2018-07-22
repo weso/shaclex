@@ -18,6 +18,14 @@ case class DatatypeLiteral(lexicalForm: String, dataType: IRI) extends Literal {
   }
 
   override def getLexicalForm = lexicalForm
+
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case DatatypeLiteral(l, d) => l == lexicalForm && d == dataType
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+
 }
 
 // It should be better to inherit from DatatypeLiteral,
@@ -34,6 +42,12 @@ case class IntegerLiteral(int: Int) extends Literal {
   }
   override def getLexicalForm = lexicalForm
 
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case IntegerLiteral(d) => d == int
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
 }
 
 case class DecimalLiteral(decimal: BigDecimal) extends Literal {
@@ -48,6 +62,12 @@ case class DecimalLiteral(decimal: BigDecimal) extends Literal {
   }
   override def getLexicalForm = lexicalForm
 
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case DecimalLiteral(d) => d == decimal
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
 }
 
 case class DoubleLiteral(double: Double) extends Literal {
@@ -62,6 +82,13 @@ case class DoubleLiteral(double: Double) extends Literal {
   }
 
   override def getLexicalForm = lexicalForm
+
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case DoubleLiteral(d) => d == double
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
 }
 
 case class StringLiteral(lexicalForm: String) extends Literal {
@@ -76,6 +103,13 @@ case class StringLiteral(lexicalForm: String) extends Literal {
   }
 
   override def getLexicalForm = lexicalForm
+
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case StringLiteral(s) => s == lexicalForm
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
 }
 
 case class BooleanLiteral(bool: Boolean) extends Literal {
@@ -90,6 +124,14 @@ case class BooleanLiteral(bool: Boolean) extends Literal {
   }
 
   override def getLexicalForm = lexicalForm
+
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case BooleanLiteral(b) => bool == b
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+
 }
 
 object BooleanLiteral {
@@ -109,5 +151,13 @@ case class LangLiteral(lexicalForm: String, lang: Lang) extends Literal {
   }
 
   override def getLexicalForm = lexicalForm
+
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case LangLiteral(l, lan) => l == lexicalForm && lan == lang
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+
 }
 

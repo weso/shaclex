@@ -44,6 +44,13 @@ case class IRI(uri: URI) extends RDFNode {
 
   def isEmpty: Boolean = this == IRI("")
 
+  def isEqualTo(other: RDFNode): Boolean = other match {
+    case i: IRI => i.uri == uri
+    case _ => false
+  }
+
+  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+
 }
 
 object IRI {

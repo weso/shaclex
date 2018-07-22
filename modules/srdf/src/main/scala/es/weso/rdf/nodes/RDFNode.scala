@@ -29,6 +29,10 @@ abstract class RDFNode {
 
   def getLexicalForm: String
 
+  def isEqualTo(other: RDFNode): Boolean
+
+  def lessThan(other: RDFNode): Boolean
+
 }
 
 object RDFNode {
