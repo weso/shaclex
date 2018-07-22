@@ -1,19 +1,18 @@
-package es.weso.shacl
+package es.weso.shacl.validator
 
-import com.typesafe.config.{Config, ConfigFactory}
 import java.nio.file.Paths
 
-import org.scalatest._
-import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf._
-
-import util._
-import es.weso.shacl.manifest._
-import es.weso.shacl.converter.RDF2Shacl
-import es.weso.shacl.manifest.{Manifest, ManifestAction, Result}
-import es.weso.shacl.validator.Validator
 import cats.implicits._
+import com.typesafe.config.{Config, ConfigFactory}
+import es.weso.rdf._
+import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
+import es.weso.shacl.converter.RDF2Shacl
+import es.weso.shacl.manifest.{Manifest, ManifestAction, Result => ManifestResult, _}
+import es.weso.shacl.{Schema, SchemaMatchers, Shacl, manifest}
+import org.scalatest._
+
+import scala.util._
 
 class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValues
 
@@ -21,7 +20,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclCore")
-  val name = "or-001.ttl"
+  val name = "manifest.ttl"
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
@@ -51,11 +50,11 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   def processEntry(e: manifest.Entry, name: String): Unit = {
     it(s"Should check entry ${e.node.getLexicalForm}") {
-          getSchemaRdf(e.action, name) match {
-            case Left(f) => fail(s"Error processing Entry: $e \n $f")
-            case Right((schema, rdf)) => validate(schema, rdf, e.result)
-          }
-        }
+      getSchemaRdf(e.action, name) match {
+        case Left(f) => fail(s"Error processing Entry: $e \n $f")
+        case Right((schema, rdf)) => validate(schema, rdf, e.result)
+      }
+    }
   }
 
   def getSchemaRdf(a: ManifestAction, fileName: String): Either[String, (Schema, RDFReader)] = {
@@ -115,7 +114,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     }
   }
 
-  def validate(schema: Schema, rdf: RDFReader, expectedResult: Result): Unit = {
+  def validate(schema: Schema, rdf: RDFReader, expectedResult: ManifestResult): Unit = {
     // info(s"Schema: ${schema.serialize("TURTLE", RDFAsJenaModel.empty)}")
     // info(s"RDF: ${rdf.serialize("TURTLE")}")
     val validator = Validator(schema)
