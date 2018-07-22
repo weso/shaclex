@@ -28,7 +28,6 @@ case class RDF2Manifest(base: Option[IRI],
       entries <- entries(n, rdf)
       includes <- includes(visited)(n, rdf)
     } yield {
-      println(s"Manifest read. Entries: ${entries.length}\nIncludes: $includes")
       Manifest(
         label = maybeLabel,
         comment = maybeComment,

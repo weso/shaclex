@@ -14,7 +14,11 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 .
 
 :S sh:targetNode :x0, :x1, :x01 .
+:NotS sh:targetNode :x2 .
+:NotS sh:not :S .
+
 
 :x0 :p [ a :t0 ] .
 :x1 :p [ a :t1 ] .
 :x01 :p [a :t0 ], [a :t1 ] .
+:x2 :p [ a :t2 ] .

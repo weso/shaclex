@@ -1,6 +1,6 @@
 package es.weso.shacl
 
-import es.weso.rdf.nodes.{BNode, IRI, RDFNode}
+import es.weso.rdf.nodes.{BNode, IRI, Literal, RDFNode}
 import es.weso.rdf.path.SHACLPath
 
 sealed abstract class Shape {
@@ -19,6 +19,7 @@ sealed abstract class Shape {
     id match {
       case iri: IRI => iri.str
       case bnode: BNode => bnode.toString
+      case l: Literal => l.getLexicalForm
     }
 
   def targetNodes: Seq[RDFNode] =

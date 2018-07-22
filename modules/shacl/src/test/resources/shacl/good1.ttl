@@ -2,11 +2,12 @@ prefix : <http://example.org/>
 prefix sh: <http://www.w3.org/ns/shacl#>
 
 :S a sh:NodeShape;
-   sh:property [
-     sh:path :p;
+   sh:property :hasP .
+
+:hasP sh:path :p;
      sh:minCount 1 ;
      sh:maxCount 2 ;
-   ] .
+    .
 
 :x :p "a" .
 
@@ -15,7 +16,7 @@ prefix sh: <http://www.w3.org/ns/shacl#>
 :NotS a sh:NodeShape ;
   sh:not :S .
 
-:S sh:targetNode :x, :y .
+#:S sh:targetNode :x, :y .
 :NotS sh:targetNode :z .
 
 :z :q 1 .

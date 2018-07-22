@@ -3,10 +3,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import org.scalatest._
 import cats._
-import data._
 import cats.implicits._
-
-
 
 class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 
@@ -39,7 +36,6 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       it("Should be able to do checkSome...") {
         val c1: Check[Int] = ok(1)
         val c2: Check[Int] = ok(2)
-        val c3: Check[Int] = ok(3)
         val e: Check[Int] = err("Err")
         val e1: Check[Int] = err("Err1")
         runValue_(checkSome(List(c1, e), "No one")) should ===(Right(1))
@@ -149,7 +145,7 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 
     val counter = new AtomicInteger(0)
     def comp(x: Int): Check[(Int,Boolean)] = {
-      counter.getAndIncrement;
+      counter.getAndIncrement
       println(s"Comp($x), steps: $counter")
       if (x % 2 == 0) {
         ok((x, true))
@@ -179,6 +175,36 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
           println(s"After checkSome. Value $v, steps: $counter")
           v should be(expected)
           counter.get should equal(stepsExpected)
+        })
+      }
+    }
+
+  }
+
+  describe(s"Check sequence with flag") {
+
+    def comp(x: Int): Check[(Int,Boolean)] = {
+      if (x % 2 == 0) {
+        ok((x, true))
+      } else {
+        ok((x, false))
+      }
+    }
+
+    shouldCheckSequenceFlag("checkSequenceFlag(List(2,4), 0)) = (6, true)",List(comp(2), comp(4)),0,(6,true))
+    shouldCheckSequenceFlag("checkSequenceFlag(List(2,1), 0)) = (3, false)",List(comp(2), comp(1)),0,(3,false))
+    shouldCheckSequenceFlag("checkSequenceFlag(List(), 0)) = (0, true)",List(),0,(0,true))
+    shouldCheckSequenceFlag("checkSequenceFlag(List(1), 0)) = (1, false)",List(comp(1)),0,(1,false))
+    shouldCheckSequenceFlag("checkSequenceFlag(List(2), 0)) = (1, false)",List(comp(2)),0,(2,true))
+    shouldCheckSequenceFlag("checkSequenceFlag(List(2,2,2), 0)) = (6, true)",List(comp(2), comp(2), comp(2)),0,(6,true))
+
+    def shouldCheckSequenceFlag(msg: String,
+                           ls: => List[Check[(Int,Boolean)]],
+                           last: => Int,
+                           expected: (Int,Boolean)): Unit = {
+      it(msg) {
+        runValueFlag(checkSequenceFlag(ls, last)).fold(e => fail(s"Error: $e"), v => {
+          v should be(expected)
         })
       }
     }

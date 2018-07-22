@@ -66,8 +66,8 @@ object Typing {
     TypingMap(m)
   }
 
-  def combineTypings[Key, Value, Err, Evidence](
-    ts: Seq[Typing[Key, Value, Err, Evidence]]): Typing[Key, Value, Err, Evidence] = {
+  def combineTypings[Key, Value, Err, Evidence](ts: Seq[Typing[Key, Value, Err, Evidence]]
+                                               ): Typing[Key, Value, Err, Evidence] = {
     val zero: Typing[Key, Value, Err, Evidence] = Typing.empty
     ts.foldLeft(zero)(_.combineTyping(_))
   }

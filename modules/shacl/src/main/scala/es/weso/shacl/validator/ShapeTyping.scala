@@ -8,6 +8,8 @@ import es.weso.typing._
 
 case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
 
+  def getNodes: Seq[RDFNode] = t.getKeys
+
   def getMap : Map[RDFNode, Map[Shape, TypingResult[ValidationResult, String]]] =
     t.getMap
 
@@ -46,6 +48,7 @@ case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
   }
 
   override def toString: String = Show[ShapeTyping].show(this)
+
 }
 
 object ShapeTyping {
@@ -71,10 +74,13 @@ object ShapeTyping {
       else "Not valid"
   }
 
-  implicit def monoidShapeTyping: Monoid[ShapeTyping] = new Monoid[ShapeTyping] {
-    override def empty: ShapeTyping = ShapeTyping.empty
-    override def combine(t1: ShapeTyping, t2: ShapeTyping): ShapeTyping =
-      ShapeTyping(Typing.combineTypings(Seq(t1.t,t2.t)))
+  implicit def monoidShapeTyping: Monoid[ShapeTyping] = {
+    new Monoid[ShapeTyping] {
+      override def empty: ShapeTyping = ShapeTyping.empty
+
+      override def combine(t1: ShapeTyping, t2: ShapeTyping): ShapeTyping =
+        ShapeTyping(Typing.combineTypings(Seq(t1.t, t2.t)))
+    }
   }
 
 }

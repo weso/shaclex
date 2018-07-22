@@ -1,0 +1,15 @@
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
+
+:S a sh:NodeShape;
+   sh:targetNode :x ;
+   sh:nodeKind sh:IRI .
+
+:x :p 1 .
+
+:NotS a sh:NodeShape ;
+  sh:not :S .
+
+:S sh:targetNode :x .
+:NotS sh:targetNode 1, _:bn .
+
