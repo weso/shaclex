@@ -48,7 +48,18 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
-  def checkFirst[A,B,F[_]: Monad](ls: => Stream[A],
+  /**
+    * Given a computation check that returns a pair of value and a flag, returns the first value whose flag is true
+    * If none is true, returns the value of the computation parameter last
+    * @param ls
+    * @param check
+    * @param last
+    * @tparam A
+    * @tparam B
+    * @tparam F
+    * @return
+    */
+  def checkSomeFlag[A,B,F[_]: Monad](ls: => Stream[A],
                                 check: A => F[(B,Boolean)],
                                 last: F[(B,Boolean)]
                                ): F[(B,Boolean)] = {
@@ -64,18 +75,57 @@ abstract class CheckerCats extends Checker {
     Foldable[Stream].foldRight(ls,z)(cmb).value
   }
 
-  def checkSomeFlag[A,B](cs: => Stream[A], check: A => Check[(B,Boolean)], last: => Check[(B,Boolean)]): Check[(B,Boolean)] = {
-    println(s"checkSomeFlag")
-/*    lazy val z: Check[(A,Boolean)] = last
-    def comb(c1: Check[(A,Boolean)], c2: Check[(A,Boolean)]): Check[(A,Boolean)] = for {
-      pair <- c1
-      r <- if (pair._2) ok(pair)
-           else c2
-    } yield r
-    cs.foldRight(z)(comb) */
-    checkFirst(cs,check,last)
+  def checkSomeFlagCount[A,B: Monoid](ls: => Stream[A],
+                                          check: A => Check[(B,Boolean)],
+                                          last: B
+                                    ): Check[(B,Int)] = {
+    val z : Eval[Check[(B,Int)]] = Eval.later(ok((last,0)))
+    def cmb(x : A, next: Eval[Check[(B,Int)]]): Eval[Check[(B,Int)]] =
+      Eval.later(
+        for {
+          r1 <- check(x)
+          r2 <- next.value
+        } yield {
+          if (r1._2) (r1._1 |+| r2._1, 1 + r2._2)
+          else r2
+        }
+      )
+    Foldable[Stream].foldRight(ls,z)(cmb).value
   }
 
+
+  def checkAllFlag[A,B: Monoid, F[_]: Monad](ls: => Stream[A],
+                                             check: A => F[(B,Boolean)],
+                                             last: => B
+                                            ): F[(B,Boolean)] = {
+    val z : Eval[F[(B,Boolean)]] = {
+      Eval.later(Monad[F].pure((last,true)))
+    }
+    def cmb(x : A, next: Eval[F[(B,Boolean)]]): Eval[F[(B,Boolean)]] = {
+      Eval.later(
+        for {
+          r <- check(x)
+          n <- if (!r._2) Monad[F].pure(r)
+          else for {
+            v <- next.value
+          } yield (v._1 |+| r._1, v._2)
+        } yield n
+      )
+    }
+    Foldable[Stream].foldRight(ls,z)(cmb).value
+  }
+
+  def checkSequenceFlag[A: Monoid, F[_]: Monad](ls: => List[F[(A,Boolean)]],
+                                                last: A): F[(A,Boolean)] = {
+    val z : Eval[F[(A,Boolean)]] = Eval.later(Monad[F].pure((last,true)))
+    def cmb(x : F[(A,Boolean)], next: Eval[F[(A,Boolean)]]): Eval[F[(A,Boolean)]] =
+      Eval.later(for {
+          r1 <- x
+          r2 <-next.value
+      } yield (r1._1 |+| r2._1, r1._2 && r2._2)
+    )
+    Foldable[List].foldRight(ls,z)(cmb).value
+  }
 
   /**
     * Run a computation in a local environment. If the computation fails, return the result of calling `safe` function over the current environment
@@ -164,6 +214,14 @@ abstract class CheckerCats extends Checker {
     elsePart: Err => Check[B]): Check[B] =
     attempt(check).flatMap(_.fold(elsePart(_), thenPart(_)))
 
+  def condFlag[A, B](
+                  check: Check[A],
+                  thenPart: A => Check[B],
+                  elsePart: Err => Check[B]): Check[(B,Boolean)] =
+    attempt(check).flatMap(_.fold(
+      elsePart(_).map((_,false)),
+      thenPart(_).map((_,true)))
+    )
 
 
   def checkList[A, B](ls: List[A], check: A => Check[B]): Check[List[B]] = {

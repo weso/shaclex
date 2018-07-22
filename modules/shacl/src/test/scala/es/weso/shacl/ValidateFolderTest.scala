@@ -40,8 +40,9 @@ class ValidateFolderTest extends FunSpec with Matchers with TryValues with Optio
       result <- Validator.validate(schema, rdf)
     } yield result
     attempt.fold(e => fail(s"Error validating $name: $e"),
-      typing => {
-        if (!typing.t.allOk) {
+      result => {
+        val (typing,ok) = result
+        if (!ok) {
           info(s"Failed nodes: ${typing.t.getFailed}")
         }
         typing.t.allOk should be(true)

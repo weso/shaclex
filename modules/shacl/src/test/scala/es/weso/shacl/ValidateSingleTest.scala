@@ -13,7 +13,7 @@ import scala.util._
 class ValidateSingleTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
-  val name = "qualified"
+  val name = "orPropertyConstraint"
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclTests")
@@ -22,7 +22,7 @@ class ValidateSingleTest extends FunSpec with Matchers with TryValues with Optio
 
   describe("Validate single") {
     val file = getFileFromFolderWithExt(shaclFolder, name, "ttl")
-    it(s"Should validate file ${name}") {
+    it(s"Should validate file ${name} in folder ${shaclFolder}") {
       val str = Source.fromFile(file)("UTF-8").mkString
       validate(name, str)
     }
@@ -36,11 +36,12 @@ class ValidateSingleTest extends FunSpec with Matchers with TryValues with Optio
     } yield result
     attempt match {
       case Left(e) => fail(s"Error validating $name: $e")
-      case Right(typing) => {
+      case Right(result) => {
+        val (typing,ok) = result
         info(s"Typing: ${typing.show}")
         val builder = RDFAsJenaModel.empty
         info(s"Validation report: ${typing.toValidationReport.toRDF(builder).getOrElse(builder).serialize("TURTLE")}")
-        typing.t.allOk should be(true)
+        ok should be(true)
       }
     }
   }

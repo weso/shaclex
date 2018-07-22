@@ -72,7 +72,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
         } else {
           absoluteIri.resolve(dataIri)
         }
-        println(s"iri: $dataIri, realDataIri $realDataIri")
+        // println(s"iri: $dataIri, realDataIri $realDataIri")
         val realSchemaIri = if (shapesIri.isEmpty) {
           absoluteIri + fileName
         } else {
@@ -126,7 +126,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
           result.result.fold(vr => fail(s"Validating error: ${vr}"), typing => {
             info(s"Checking that $node fails for shape $shape")
             info(s"Typing: ${typing.show}")
-            typing.getFailedValues(node).map(_.id) should contain (shape)
+            typing._1.getFailedValues(node).map(_.id) should contain (shape)
           })
         }
       }
