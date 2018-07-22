@@ -36,13 +36,13 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   }
 
   def cnvResult(
-                 r: CheckResult[ValidationResult, ShapeTyping, List[Evidence]],
+                 r: CheckResult[ValidationResult, (ShapeTyping,Boolean), List[Evidence]],
                  rdf: RDFReader,
                  builder: RDFBuilder
                ): Result = {
     val vr: ValidationReport =
-      r.result.fold(e => ValidationReport.fromError(e),
-        _.toValidationReport
+      r.result.fold(e => ValidationReport.fromError(e), r =>
+        r._1.toValidationReport
       )
     Result(
       isValid = vr.conforms,
@@ -55,9 +55,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       shapesPrefixMap = schema.pm)
   }
 
-  def cnvShapeTyping(t: ShapeTyping, rdf: RDFReader): ResultShapeMap = {
+  def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
     ResultShapeMap(
-      t.getMap.mapValues(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
+      t._1.getMap.mapValues(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
   }
 
   private def cnvMapShapeResult(m: Map[Shape, TypingResult[ValidationResult, String]]): Map[ShapeMapLabel, Info] = {
