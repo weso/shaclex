@@ -44,12 +44,17 @@ case class IRI(uri: URI) extends RDFNode {
 
   def isEmpty: Boolean = this == IRI("")
 
-  def isEqualTo(other: RDFNode): Boolean = other match {
-    case i: IRI => i.uri == uri
-    case _ => false
+  def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
+    case i: IRI => Right(i.uri == uri)
+    case _ => Left(s"Type error comaring $this with $other")
   }
 
-  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+  def lessThan(other: RDFNode): Either[String,Boolean] = {
+    other match {
+      case otherIri: IRI => Right(uri.toString < otherIri.uri.toString)
+      case _ => Left(s"Type error comaring $this with $other which is not an IRI")
+    }
+  }
 
 }
 

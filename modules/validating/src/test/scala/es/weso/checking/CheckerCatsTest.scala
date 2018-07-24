@@ -141,7 +141,7 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 
   }
 
-  describe(s"Check all with flag") {
+  describe(s"Check all failing first with flag") {
 
     val counter = new AtomicInteger(0)
     def comp(x: Int): Check[(Int,Boolean)] = {
@@ -160,6 +160,46 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
     shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",Stream(2, 4, 6, 2),comp,0,(14,true),4)
     shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|1",Stream(1, 4),comp,0,(1,false),1)
     shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|1",Stream(1, 3, 5),comp,0,(1,false),1)
+    shouldCheckAllFlag("checkAllFlag(Stream(), 0) = (0, true)|0",Stream(),comp,0,(0,true),0)
+
+    def shouldCheckAllFlag(msg: String,
+                           ls: => Stream[Int],
+                           check: Int => Check[(Int,Boolean)],
+                           last: => Int,
+                           expected: (Int,Boolean),
+                           stepsExpected: Int): Unit = {
+      it(msg) {
+        counter.set(0)
+        println(s"counter in it: $counter")
+        runValueFlag(checkAllFailFAtFirstFlag(ls, check, last)).fold(e => fail(s"Error: $e"), v => {
+          println(s"After checkSome. Value $v, steps: $counter")
+          v should be(expected)
+          counter.get should equal(stepsExpected)
+        })
+      }
+    }
+
+  }
+
+  describe(s"Check all with flag") {
+
+    val counter = new AtomicInteger(0)
+    def comp(x: Int): Check[(Int,Boolean)] = {
+      counter.getAndIncrement
+      println(s"Comp($x), steps: $counter")
+      if (x % 2 == 0) {
+        ok((x, true))
+      } else {
+        ok((x, false))
+      }
+    }
+
+    shouldCheckAllFlag("checkAllFlag(List(2,4), 0)) = (6, true)|2",Stream(2, 4),comp,0,(6,true),2)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1), 0)) = (7, false)|3",Stream(2, 4, 1),comp,0,(7,false),3)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1,2), 0)) = (7, false)|4",Stream(2, 4, 1,2),comp,0,(9,false),4)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",Stream(2, 4, 6, 2),comp,0,(14,true),4)
+    shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|2",Stream(1, 4),comp,0,(5,false),2)
+    shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|3",Stream(1, 3, 5),comp,0,(9,false),3)
     shouldCheckAllFlag("checkAllFlag(Stream(), 0) = (0, true)|0",Stream(),comp,0,(0,true),0)
 
     def shouldCheckAllFlag(msg: String,

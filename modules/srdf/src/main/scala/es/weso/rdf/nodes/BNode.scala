@@ -16,12 +16,15 @@ case class BNode(id: String) extends RDFNode {
 
   override def getLexicalForm = id
 
-  def isEqualTo(other: RDFNode): Boolean = other match {
-    case BNode(i) => i == id
-    case _ => false
+  def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
+    case BNode(i) => Right(i == id)
+    case _ => Left(s"Type error comaring $this with $other")
   }
 
-  def lessThan(other: RDFNode): Boolean = throw new Exception("Unimplemented lessThan")
+  def lessThan(other: RDFNode): Either[String,Boolean] = other match {
+    case BNode(idOther) => Right(id < idOther)
+    case _ => Left(s"Type error comaring $this with $other")
+  }
 
 }
 

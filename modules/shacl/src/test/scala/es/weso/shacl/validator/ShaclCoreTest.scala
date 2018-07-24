@@ -20,7 +20,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclCore")
-  val name = "manifest.ttl"
+  val name = "minInclusive-002.ttl"
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)

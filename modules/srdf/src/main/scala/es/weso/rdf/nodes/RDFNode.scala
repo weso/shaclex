@@ -29,9 +29,9 @@ abstract class RDFNode {
 
   def getLexicalForm: String
 
-  def isEqualTo(other: RDFNode): Boolean
+  def isEqualTo(other: RDFNode): Either[String,Boolean]
 
-  def lessThan(other: RDFNode): Boolean
+  def lessThan(other: RDFNode): Either[String,Boolean]
 
 }
 

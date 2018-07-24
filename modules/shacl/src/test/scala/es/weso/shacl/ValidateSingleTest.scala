@@ -13,7 +13,7 @@ import scala.util._
 class ValidateSingleTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
-  val name = "orPropertyConstraint"
+  val name = "good7"
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclTests")

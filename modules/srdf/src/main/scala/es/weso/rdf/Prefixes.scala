@@ -15,6 +15,7 @@ object PREFIXES {
 
   lazy val xsd_string = xsd.add("string")
   lazy val xsd_byte = xsd.add("byte")
+  lazy val xsd_dateTime = xsd.add("dateTime")
   lazy val xsd_decimal = xsd.add("decimal")
   lazy val xsd_double = xsd.add("double")
   lazy val xsd_int = xsd.add("int")
