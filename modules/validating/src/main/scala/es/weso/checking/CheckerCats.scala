@@ -108,7 +108,6 @@ abstract class CheckerCats extends Checker {
           n <- next.value
         } yield {
           val newR = (n._1 |+| r._1, n._2 && r._2)
-          println(s"@@@ checkAllFlag(x: $x, r: $newR")
           newR
         }
       )

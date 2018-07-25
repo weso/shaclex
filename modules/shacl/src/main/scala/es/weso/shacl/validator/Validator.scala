@@ -198,7 +198,7 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   private def predicatesInPropertyConstraints(shape: Shape, attempt: Attempt, node: RDFNode): Check[List[IRI]] = for {
     shapes <- getPropertyShapeRefs(shape.propertyShapes.toList, attempt, node)
-  } yield shapes.map(_.predicate)
+  } yield shapes.map(_.predicate).collect { case Some(iri) => iri }
 
   // TODO. Does it validate property shapes of a property shape?
   private def checkPropertyShape(attempt: Attempt)(node: RDFNode)(ps:PropertyShape): CheckTyping = {
@@ -373,7 +373,6 @@ case class Validator(schema: Schema) extends LazyLogging {
               err: (RDFNode, Attempt, RDFNode) => ValidationResult,
               msg: String
               ): NodeChecker = attempt => node => {
-    println(s"Compare $msg between ${control} and ${node}")
     val c = comparison(control, node).getOrElse(false)
     for {
       t <- condition(c, attempt,
@@ -398,7 +397,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     compare(n, lessThanNodes, minExclusiveError, "minExclusive")
 
   private def minInclusive(n: Literal): NodeChecker = {
-    println(s"Comparing minInclusive($n)")
     compare(n, lessThanOrEqualsNodes, minInclusiveError, "minInclusive")
   }
 
@@ -726,7 +724,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       predicates = neighbours.map(_.pred).toList
       notAllowed = predicates.diff(ignoredProperties).diff(allowedProperties)
       t <- {
-        println(s"closed condition: notAllowed=$notAllowed")
         condition(notAllowed.isEmpty, attempt,
           closedError(node, attempt, allowedProperties, ignoredProperties, notAllowed),
           s"Passes closed condition with predicates $predicates and ignoredProperties $ignoredProperties")
