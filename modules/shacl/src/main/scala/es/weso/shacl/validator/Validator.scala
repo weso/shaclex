@@ -124,7 +124,7 @@ case class Validator(schema: Schema) extends LazyLogging {
         t <- runLocal(checkNodeShape(ns)(attempt)(node), _.addType(node, ns))
       } yield {
         val r = if (t._2) t
-                else (t0.addNotEvidence(node, ns, shapesFailed(node, ns, Set(), attempt, s"$node does not have nodeShape ${ns.showId} because some shapes failed.")), false)
+                else (t._1.addNotEvidence(node, ns, shapesFailed(node, ns, Set(), attempt, s"$node does not have nodeShape ${ns.showId} because some shapes failed.")), false)
         logger.debug(s"Result of node $node - NodeShape ${ns.showId})\n${showResult(r)}")
         r
       }
@@ -154,18 +154,18 @@ case class Validator(schema: Schema) extends LazyLogging {
       r1 <- checkComponents(shape.components.toList)(attempt)(node)
       r2 <- checkPropertyShapes(shape.propertyShapes.toList)(attempt)(node)
       r = combineResults(r1, r2)
-      /* TODO t1 <- if (shape.closed) for {
+      r1 <- if (shape.closed) for {
         predicates <- predicatesInPropertyConstraints(shape, attempt, node)
         c <- checkClosed(shape.ignoredProperties, predicates)(attempt)(node)
       } yield c
-      else ok(t) */
+      else ok(r)
       /* t2 <- {
         logger.debug(s"Before checkFailed($node,${shape.showId})=\n$t1")
         checkFailed(attempt, node, shape, t1)
       } */
     } yield {
-      logger.debug(s"Result of checkNodeShape($node,${shape.showId})=\n${r}")
-      r
+      logger.debug(s"Result of checkNodeShape($node,${shape.showId})=\n${r1}")
+      r1
     }
   }
 
@@ -198,7 +198,7 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   private def predicatesInPropertyConstraints(shape: Shape, attempt: Attempt, node: RDFNode): Check[List[IRI]] = for {
     shapes <- getPropertyShapeRefs(shape.propertyShapes.toList, attempt, node)
-  } yield shapes.map(_.predicate)
+  } yield shapes.map(_.predicate).collect { case Some(iri) => iri }
 
   // TODO. Does it validate property shapes of a property shape?
   private def checkPropertyShape(attempt: Attempt)(node: RDFNode)(ps:PropertyShape): CheckTyping = {
@@ -368,6 +368,19 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"$node is an IRI", "iri")
   }
 
+  def compare(control: RDFNode,
+              comparison: (RDFNode, RDFNode) => Either[String,Boolean],
+              err: (RDFNode, Attempt, RDFNode) => ValidationResult,
+              msg: String
+              ): NodeChecker = attempt => node => {
+    val c = comparison(control, node).getOrElse(false)
+    for {
+      t <- condition(c, attempt,
+        err(node, attempt, control),
+        s"$node satisfies $msg(${control})")
+    } yield t
+  }
+
   def compareLiterals(n: Literal,
                       f: (NumericLiteral, NumericLiteral) => Boolean,
                       err: (RDFNode, Attempt, RDFNode) => ValidationResult,
@@ -381,16 +394,17 @@ case class Validator(schema: Schema) extends LazyLogging {
   } yield t
 
   private def minExclusive(n: Literal): NodeChecker =
-    compareLiterals(n, Comparisons.lessThan, minExclusiveError, "minExclusive")
+    compare(n, lessThanNodes, minExclusiveError, "minExclusive")
 
-  private def minInclusive(n: Literal): NodeChecker =
-    compareLiterals(n, Comparisons.lessThanOrEquals, minInclusiveError, "minInclusive")
+  private def minInclusive(n: Literal): NodeChecker = {
+    compare(n, lessThanOrEqualsNodes, minInclusiveError, "minInclusive")
+  }
 
   private def maxExclusive(n: Literal): NodeChecker =
-    compareLiterals(n, Comparisons.greaterThan, maxExclusiveError, "maxExclusive")
+    compare(n, greaterThanNodes, maxExclusiveError, "maxExclusive")
 
   private def maxInclusive(n: Literal): NodeChecker =
-    compareLiterals(n, Comparisons.greaterThanOrEquals, maxInclusiveError, "maxInclusive")
+    compare(n, greaterThanOrEqualsNodes, maxInclusiveError, "maxInclusive")
 
   private def minLength(n: Int): NodeChecker = attempt => node =>
     condition(node.getLexicalForm.length >= n, attempt,
@@ -449,6 +463,24 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
+  private def lessThanOrEqualsNodes(n1: RDFNode, n2: RDFNode): Either[String,Boolean] =
+    for {
+      c1 <- n1.lessThan(n2)
+      c2 <- n1.isEqualTo(n2)
+    } yield c1 || c2
+
+  private def lessThanNodes(n1: RDFNode, n2: RDFNode): Either[String, Boolean] =
+    n1.lessThan(n2)
+
+  private def greaterThanNodes(n1: RDFNode, n2: RDFNode): Either[String,Boolean] =
+    n2.lessThan(n1)
+
+  private def greaterThanOrEqualsNodes(n1: RDFNode, n2: RDFNode): Either[String,Boolean] =
+    for {
+     c1 <- n2.lessThan(n1)
+     c2 <- n2.isEqualTo(n1)
+    } yield c1 || c2
+
   def equals(p: IRI): NodeChecker =
     comparison(p, "equals", equalsError, equalsNode)
   def disjoint(p: IRI): NodeChecker =
@@ -457,6 +489,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     comparison(p, "lessThan", lessThanError, lessThanNode)
   def lessThanOrEquals(p: IRI): NodeChecker =
     comparison(p, "lessThanOrEquals", lessThanOrEqualsError, lessThanOrEqualNode)
+
 
   // TODO: Maybe add a check to see if the nodes are comparable
   // With current definition, if nodes are not comparable, always returns false without raising any error...
@@ -684,14 +717,17 @@ case class Validator(schema: Schema) extends LazyLogging {
   }
 
   private def checkClosed(ignoredProperties: List[IRI], allowedProperties: List[IRI]): NodeChecker = attempt => node => {
+    logger.debug(s"checkClosed(ignored=$ignoredProperties, allowed=$allowedProperties")
     for {
       rdf <- getRDF
       neighbours = rdf.triplesWithSubject(node)
       predicates = neighbours.map(_.pred).toList
       notAllowed = predicates.diff(ignoredProperties).diff(allowedProperties)
-      t <- condition(notAllowed.isEmpty, attempt,
-        closedError(node, attempt, allowedProperties, ignoredProperties, notAllowed),
-        s"Passes closed condition with predicates $predicates and ignoredProperties $ignoredProperties")
+      t <- {
+        condition(notAllowed.isEmpty, attempt,
+          closedError(node, attempt, allowedProperties, ignoredProperties, notAllowed),
+          s"Passes closed condition with predicates $predicates and ignoredProperties $ignoredProperties")
+      }
     } yield t
   }
 

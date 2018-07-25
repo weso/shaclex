@@ -105,6 +105,28 @@ abstract class CheckerCats extends Checker {
       Eval.later(
         for {
           r <- check(x)
+          n <- next.value
+        } yield {
+          val newR = (n._1 |+| r._1, n._2 && r._2)
+          newR
+        }
+      )
+    }
+    Foldable[Stream].foldRight(ls,z)(cmb).value
+  }
+
+
+  def checkAllFailFAtFirstFlag[A,B: Monoid, F[_]: Monad](ls: => Stream[A],
+                                             check: A => F[(B,Boolean)],
+                                             last: => B
+                                            ): F[(B,Boolean)] = {
+    val z : Eval[F[(B,Boolean)]] = {
+      Eval.later(Monad[F].pure((last,true)))
+    }
+    def cmb(x : A, next: Eval[F[(B,Boolean)]]): Eval[F[(B,Boolean)]] = {
+      Eval.later(
+        for {
+          r <- check(x)
           n <- if (!r._2) Monad[F].pure(r)
           else for {
             v <- next.value

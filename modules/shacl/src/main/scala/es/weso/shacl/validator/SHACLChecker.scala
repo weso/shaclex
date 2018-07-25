@@ -82,5 +82,4 @@ object SHACLChecker extends CheckerCats with LazyLogging {
     r <- checkSequenceFlag(ls,t)
   } yield r
 
-
 }

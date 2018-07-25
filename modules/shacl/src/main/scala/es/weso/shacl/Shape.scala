@@ -78,7 +78,7 @@ case class PropertyShape(
 
   def isPropertyConstraint = true
 
-  def predicate: IRI = path.predicate.get
+  def predicate: Option[IRI] = path.predicate
 
 }
 

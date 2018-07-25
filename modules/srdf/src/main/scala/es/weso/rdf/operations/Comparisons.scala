@@ -1,6 +1,5 @@
 package es.weso.rdf.operations
 
-import java.sql.Time
 import java.time.Instant
 
 import es.weso.rdf.nodes._

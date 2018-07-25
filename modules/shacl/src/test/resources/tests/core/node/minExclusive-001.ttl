@@ -11,13 +11,13 @@
 ex:TestShape
   rdf:type sh:NodeShape ;
   sh:minExclusive 4 ;
-  sh:targetClass ex:TestClass ;
+#  sh:targetClass ex:TestClass ;
   sh:targetNode ex:John ;
   sh:targetNode 3.9 ;
-  sh:targetNode 4 ;
-  sh:targetNode 4.0 ;
-  sh:targetNode 4.1 ;
-  sh:targetNode "Hello" ;
+#  sh:targetNode 4 ;
+#  sh:targetNode 4.0 ;
+#  sh:targetNode 4.1 ;
+#  sh:targetNode "Hello" ;
 .
 <>
   rdf:type mf:Manifest ;
@@ -51,38 +51,38 @@ ex:TestShape
           sh:sourceShape ex:TestShape ;
           sh:value 3.9 ;
         ] ;
-      sh:result [
-          rdf:type sh:ValidationResult ;
-          sh:focusNode 4 ;
-          sh:resultSeverity sh:Violation ;
-          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
-          sh:sourceShape ex:TestShape ;
-          sh:value 4 ;
-        ] ;
-      sh:result [
-          rdf:type sh:ValidationResult ;
-          sh:focusNode 4.0 ;
-          sh:resultSeverity sh:Violation ;
-          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
-          sh:sourceShape ex:TestShape ;
-          sh:value 4.0 ;
-        ] ;
-      sh:result [
-          rdf:type sh:ValidationResult ;
-          sh:focusNode "Hello" ;
-          sh:resultSeverity sh:Violation ;
-          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
-          sh:sourceShape ex:TestShape ;
-          sh:value "Hello" ;
-        ] ;
-      sh:result [
-          rdf:type sh:ValidationResult ;
-          sh:focusNode _:b33079 ;
-          sh:resultSeverity sh:Violation ;
-          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
-          sh:sourceShape ex:TestShape ;
-          sh:value _:b33079 ;
-        ] ;
+#      sh:result [
+#          rdf:type sh:ValidationResult ;
+#          sh:focusNode 4 ;
+#          sh:resultSeverity sh:Violation ;
+#          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
+#          sh:sourceShape ex:TestShape ;
+#          sh:value 4 ;
+#        ] ;
+#      sh:result [
+#          rdf:type sh:ValidationResult ;
+#          sh:focusNode 4.0 ;
+#          sh:resultSeverity sh:Violation ;
+#          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
+#          sh:sourceShape ex:TestShape ;
+#          sh:value 4.0 ;
+#        ] ;
+#      sh:result [
+#          rdf:type sh:ValidationResult ;
+#          sh:focusNode "Hello" ;
+#          sh:resultSeverity sh:Violation ;
+#          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
+#          sh:sourceShape ex:TestShape ;
+#          sh:value "Hello" ;
+#        ] ;
+#      sh:result [
+#          rdf:type sh:ValidationResult ;
+#          sh:focusNode _:b33079 ;
+#          sh:resultSeverity sh:Violation ;
+#          sh:sourceConstraintComponent sh:MinExclusiveConstraintComponent ;
+#          sh:sourceShape ex:TestShape ;
+#          sh:value _:b33079 ;
+#        ] ;
     ] ;
   mf:status sht:approved ;
 .
