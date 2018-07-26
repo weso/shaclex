@@ -95,7 +95,7 @@ case class Shape(
                   closed: Option[Boolean],
                   extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
                   expression: Option[TripleExpr],
-                  inherit: Option[ShapeLabel],
+                  _extends: Option[List[ShapeLabel]],
                   semActs: Option[List[SemAct]],
                   annotations: Option[List[Annotation]]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
@@ -124,7 +124,7 @@ object Shape {
     closed = None,
     extra = None,
     expression = None,
-    inherit = None,
+    _extends = None,
     semActs = None,
     annotations = None
   )

@@ -30,6 +30,7 @@
 // ~ s/groupShape/groupTripleExpr/ (EGP 20160930)
 // ~ s/unaryShape/unaryTripleExpr/ (EGP 20160930)
 // ~ s/encapsulatedShape/bracketedTripleExpr/ (EGP 20160930)
+// Jul 26, 2018 - Replace extensions by includeSet, added extends/restricts
 
 grammar ShExDoc;
 
@@ -45,7 +46,7 @@ notStartAction  : start | shapeExprDecl ;
 start           : KW_START '=' shapeExpression ;
 startActions	: codeDecl+ ;
 statement 		: directive | notStartAction ;
-shapeExprDecl   : shapeExprLabel (shapeExpression | KW_EXTERNAL) ;
+shapeExprDecl   : KW_ABSTRACT? shapeExprLabel restrictions* (shapeExpression | KW_EXTERNAL) ;
 shapeExpression : shapeOr ;
 shapeOr  		: shapeAnd (KW_OR shapeAnd)* ;
 shapeAnd		: shapeNot (KW_AND shapeNot)* ;
@@ -57,7 +58,7 @@ inlineShapeAnd  : inlineShapeNot (KW_AND inlineShapeNot)* ;
 inlineShapeNot  : negation? inlineShapeAtom ;
 inlineShapeDefinition : qualifier* '{' tripleExpression? '}' ;
 shapeDefinition : qualifier* '{' tripleExpression? '}' annotation* semanticActions ;
-qualifier       : includeSet | extraPropertySet | KW_CLOSED ;
+qualifier       : extensions | extraPropertySet | KW_CLOSED ;
 extraPropertySet : KW_EXTRA predicate+ ;
 tripleExpression : oneOfTripleExpr ;
 oneOfTripleExpr     : groupTripleExpr
@@ -217,11 +218,16 @@ prefixedName    : PNAME_LN
 blankNode       : BLANK_NODE_LABEL ;
 codeDecl		: '%' iri (CODE | '%') ;
 
-// Reserved for future use
-includeSet      : '&' tripleExprLabel+ ;
+extensions      : KW_ EXTENDS shapeExprLabel+
+                | '&' shapeExprLabel+
+                ;
+restrictions    : KW_RESTRICTS shapeExprLabel+
+                | '-' shapeExprLabel+
+                ;
 
 
 // Keywords
+KW_ABSTRACT         : A B S T R A C T ;
 KW_AS 			    : A S ;
 KW_BASE 			: B A S E ;
 KW_EXTERNAL			: E X T E R N A L ;
@@ -231,6 +237,7 @@ KW_START        	: S T A R T ;
 KW_VIRTUAL      	: V I R T U A L ;
 KW_CLOSED       	: C L O S E D ;
 KW_EXTRA        	: E X T R A ;
+KW_EXTENDS          : E X T E N D S ;
 KW_LITERAL      	: L I T E R A L ;
 KW_IRI          	: I R I ;
 KW_NONLITERAL   	: N O N L I T E R A L ;
@@ -249,6 +256,7 @@ KW_FRACTIONDIGITS 	: F R A C T I O N D I G I T S ;
 KW_NOT				: N O T ;
 KW_TRUE         	: 'true' ;
 KW_FALSE        	: 'false' ;
+KW_RESTRICTS        : R E S T R I C T S ;
 
 // terminals
 PASS				  : [ \t\r\n]+ -> skip;
