@@ -218,7 +218,7 @@ prefixedName    : PNAME_LN
 blankNode       : BLANK_NODE_LABEL ;
 codeDecl		: '%' iri (CODE | '%') ;
 
-extensions      : KW_ EXTENDS shapeExprLabel+
+extensions      : KW_EXTENDS shapeExprLabel+
                 | '&' shapeExprLabel+
                 ;
 restrictions    : KW_RESTRICTS shapeExprLabel+
@@ -228,35 +228,35 @@ restrictions    : KW_RESTRICTS shapeExprLabel+
 
 // Keywords
 KW_ABSTRACT         : A B S T R A C T ;
+KW_AND          	: A N D ;
 KW_AS 			    : A S ;
 KW_BASE 			: B A S E ;
-KW_EXTERNAL			: E X T E R N A L ;
-KW_PREFIX       	: P R E F I X ;
-KW_IMPORT       	: I M P O R T ;
-KW_START        	: S T A R T ;
-KW_VIRTUAL      	: V I R T U A L ;
-KW_CLOSED       	: C L O S E D ;
-KW_EXTRA        	: E X T R A ;
-KW_EXTENDS          : E X T E N D S ;
-KW_LITERAL      	: L I T E R A L ;
-KW_IRI          	: I R I ;
-KW_NONLITERAL   	: N O N L I T E R A L ;
 KW_BNODE        	: B N O D E ;
-KW_AND          	: A N D ;
-KW_OR           	: O R ;
+KW_CLOSED       	: C L O S E D ;
+KW_EXTERNAL			: E X T E R N A L ;
+KW_EXTENDS          : E X T E N D S ;
+KW_EXTRA        	: E X T R A ;
+KW_FALSE        	: 'false' ;
+KW_FRACTIONDIGITS 	: F R A C T I O N D I G I T S ;
+KW_IMPORT       	: I M P O R T ;
+KW_IRI          	: I R I ;
+KW_LENGTH       	: L E N G T H ;
+KW_LITERAL      	: L I T E R A L ;
+KW_MINLENGTH    	: M I N L E N G T H ;
+KW_MAXLENGTH    	: M A X L E N G T H ;
 KW_MININCLUSIVE 	: M I N I N C L U S I V E ;
 KW_MINEXCLUSIVE 	: M I N E X C L U S I V E ;
 KW_MAXINCLUSIVE 	: M A X I N C L U S I V E ;
 KW_MAXEXCLUSIVE 	: M A X E X C L U S I V E ;
-KW_LENGTH       	: L E N G T H ;
-KW_MINLENGTH    	: M I N L E N G T H ;
-KW_MAXLENGTH    	: M A X L E N G T H ;
-KW_TOTALDIGITS  	: T O T A L D I G I T S ;
-KW_FRACTIONDIGITS 	: F R A C T I O N D I G I T S ;
+KW_NONLITERAL   	: N O N L I T E R A L ;
+KW_OR           	: O R ;
+KW_PREFIX       	: P R E F I X ;
 KW_NOT				: N O T ;
-KW_TRUE         	: 'true' ;
-KW_FALSE        	: 'false' ;
 KW_RESTRICTS        : R E S T R I C T S ;
+KW_START        	: S T A R T ;
+KW_TOTALDIGITS  	: T O T A L D I G I T S ;
+KW_TRUE         	: 'true' ;
+KW_VIRTUAL      	: V I R T U A L ;
 
 // terminals
 PASS				  : [ \t\r\n]+ -> skip;

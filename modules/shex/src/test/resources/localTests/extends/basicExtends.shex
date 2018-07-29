@@ -1,0 +1,9 @@
+prefix : <http://example.org/>
+
+:S {
+ :p .
+}
+
+:T extends :S {
+ :q .
+}
