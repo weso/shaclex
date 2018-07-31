@@ -2,6 +2,8 @@ package es.weso.shex
 
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.IRI
+import es.weso.shex.extend.Extend
+import es.weso.utils.EitherUtils._
 
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
@@ -12,7 +14,7 @@ abstract sealed trait ShapeExpr {
     showShapeExpr(this, pm)
   }
 
-  def paths(schema: Schema): List[Path]
+  def paths(schema: Schema): Either[String,List[Path]]
 }
 
 object ShapeExpr {
@@ -24,20 +26,20 @@ object ShapeExpr {
 case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
-  override def paths(schema: Schema): List[Path] = shapeExprs.map(_.paths(schema)).flatten
+  override def paths(schema: Schema): Either[String,List[Path]] = sequence(shapeExprs.map(_.paths(schema))).map(_.flatten)
 }
 
 case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
-  override def paths(schema: Schema): List[Path] = shapeExprs.map(_.paths(schema)).flatten
+  override def paths(schema: Schema): Either[String,List[Path]] = sequence(shapeExprs.map(_.paths(schema))).map(_.flatten)
 
 }
 
 case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
-  override def paths(schema: Schema): List[Path] = shapeExpr.paths(schema)
+  override def paths(schema: Schema): Either[String,List[Path]] = shapeExpr.paths(schema)
 
 }
 
@@ -48,9 +50,11 @@ case class NodeConstraint(
                            xsFacets: List[XsFacet],
                            values: Option[List[ValueSetValue]]
                          ) extends ShapeExpr {
-  override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  override def addId(lbl: ShapeLabel) = {
+    this.copy(id = Some(lbl))
+  }
 
-  override def paths(schema: Schema): List[Path] = List()
+  override def paths(schema: Schema): Either[String,List[Path]] = Right(List())
 
 }
 
@@ -97,7 +101,7 @@ case class Shape(
                   expression: Option[TripleExpr],
                   _extends: Option[List[ShapeLabel]],
                   semActs: Option[List[SemAct]],
-                  annotations: Option[List[Annotation]]) extends ShapeExpr {
+                  annotations: Option[List[Annotation]]) extends ShapeExpr with Extend {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
@@ -113,8 +117,32 @@ case class Shape(
   def isEmpty: Boolean = this == Shape.empty
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
+  private def extend(s: ShapeExpr): Option[List[ShapeLabel]] = s match {
+    case s: Shape => s._extends
+    case _ => None
+  }
 
-  def paths(schema: Schema): List[Path] = expression.map(_.paths(schema)).getOrElse(List())
+  private def expr(s: ShapeExpr): Option[TripleExpr] = s match {
+    case s: Shape => s.expression
+    case _ => None
+  }
+
+  def paths(schema: Schema): Either[String,List[Path]] = {
+    def getPath(s: ShapeExpr): Option[List[Path]] = s match {
+      case s: Shape => Some(s.expression.map(_.paths(schema)).getOrElse(List()))
+      case _ => Some(List())
+    }
+    def combinePaths(p1: List[Path], p2: List[Path]): List[Path] = p1 ++ p2
+    flattenShape(this, schema.getShape(_), extend, combinePaths, getPath).map(_.getOrElse(List()))
+  }
+
+  def extendExpression(schema: Schema): Either[String,Option[TripleExpr]] = {
+    def combine(e1: TripleExpr, e2: TripleExpr): TripleExpr = {
+      EachOf(None,List(e1,e2),None,None,None,None)
+    }
+    flattenShape(this, schema.getShape(_), extend, combine, expr)
+  }
+
 }
 
 object Shape {
@@ -144,13 +172,16 @@ case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
   def id = None
   def addId(lbl: ShapeLabel) = this
 
-  override def paths(schema: Schema): List[Path] =
-    schema.getShape(reference).map(_.paths(schema)).getOrElse(List())
+  override def paths(schema: Schema): Either[String,List[Path]] =
+    schema.getShape(reference) match {
+      case None => Left(s"$reference not found in schema")
+      case Some(se) => se.paths(schema)
+    }
 
 }
 
 case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
-  override def paths(schema: Schema): List[Path] = List()
+  override def paths(schema: Schema): Either[String,List[Path]] = Right(List())
 
 }

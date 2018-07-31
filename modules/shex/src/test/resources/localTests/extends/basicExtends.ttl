@@ -8,4 +8,4 @@ prefix : <http://example.org/>
 :b2 :q 1 .
 :b3 :p 1; :q 1, 2 .
 :b4 :r 1 .
-:b5 :p 1, 1; :q 1 .
+:b5 :p 1, 2; :q 1 .

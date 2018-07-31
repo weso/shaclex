@@ -33,6 +33,9 @@ abstract class CheckerCats extends Checker {
   def err[A](e: Err): Check[A] =
     EitherT.left[A](mkErr[WriterEC](e))
 
+  def fromEither[A](e: Either[Err,A]): Check[A] = EitherT.fromEither[WriterEC](e)
+
+
   def orElse[A](c1: Check[A], c2: => Check[A]): Check[A] =
     c1.orElse(c2)
 

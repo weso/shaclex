@@ -30,7 +30,8 @@ class PathsTest extends FunSpec with Matchers with EitherValues {
       val result = for {
         schema <- Schema.fromString(strSchema, "ShExC", None, RDFAsJenaModel.empty)
         shape <- schema.getShape(shapeLbl).map(Right(_)).getOrElse(Left(s"Not found $shapeLbl"))
-      } yield shape.paths(schema)
+        paths <- shape.paths(schema)
+      } yield paths
       result.fold(e => fail(s"Error: $e"),
         ps => ps should contain theSameElementsAs (paths)
       )

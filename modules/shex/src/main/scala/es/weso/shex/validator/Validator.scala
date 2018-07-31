@@ -9,20 +9,20 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.collection.Bag
 import es.weso.rbe.interval.IntervalChecker
-import es.weso.rbe.{ BagChecker, Empty, Rbe }
+import es.weso.rbe.{BagChecker, Empty, Rbe}
 import es.weso.rbe.BagChecker._
-import es.weso.utils.SeqUtils
+import es.weso.utils.{MyLogging, SeqUtils}
 import es.weso.shex.implicits.showShEx._
 import ShExError._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.validator.Table._
 import ShExChecker._
-import es.weso.shapeMaps.{ IRILabel => IRIMapLabel, BNodeLabel => BNodeMapLabel, _ }
+import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, _}
 
 /**
  * ShEx validator
  */
-case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogging {
+case class Validator(schema: Schema) extends ShowValidator(schema) with MyLogging {
 
   type ShapeChecker = ShapeExpr => CheckTyping
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
@@ -303,16 +303,17 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
     else
     for {
-      neighs <- getNeighPaths(node, s.paths(schema))
+      paths <- fromEither(s.paths(schema).leftMap(msgErr(_)))
+      neighs <- getNeighPaths(node, paths)
+      extendedExpr <- fromEither(s.extendExpression(schema).leftMap(msgErr(_)))
       tableRbe <- {
         logger.info(s"checkShape of $node with shape ${s.id}. Neighs: $neighs for paths: ${s.paths(schema)}")
-        mkTable(s.expression, s.extra.getOrElse(List()))
+        mkTable(extendedExpr, s.extra.getOrElse(List()))
       }
-      (cTable, rbe) = {
-        tableRbe
-      }
+      (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
       csRest <- {
+        println(s"Table: $cTable\nrbe: $rbe")
         calculateCandidates(neighs, cTable)
       }
       (candidates, rest) = csRest
@@ -328,6 +329,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       typing
     }
   }
+
 
   private[validator] def checkOptSemActs(maybeActs: Option[List[SemAct]]): Check[Unit] =
     maybeActs match {

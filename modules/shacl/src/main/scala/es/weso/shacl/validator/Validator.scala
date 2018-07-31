@@ -206,27 +206,33 @@ case class Validator(schema: Schema) extends LazyLogging {
     val path = ps.path
     val newAttempt = Attempt(nodeShape = NodeShapePair(node, ShapeRef(ps.id)), Some(path))
     val components = ps.components.toList
-
+    logger.debug(s"checkPropertyShape. components: ($components})")
+    logger.debug(s"checkPropertyShape. propertyShapes: (${ps.propertyShapes}})")
     // TODO: Not 100% sure if ps argument is right
     // val propertyCheckers: Seq[PropertyChecker] = components.map(component2PropertyChecker(_, ps))
 
     for {
       t <- validatePathCheckers(components, newAttempt, path, component2PropertyChecker(ps)(newAttempt,path))
+      // TODO: Validate: property shapes of this property shape:
+      // t2 <- validatePathPropertyShapes(ps.propertyShapes, newAttempt, path, ...)
     } yield {
       logger.debug(s"Result of chechPropertyShape($node,${ps.showId}=${showResult(t)}")
       t
     }
   }
 
-  private def checkPropertyShapePath(path: SHACLPath)(attempt: Attempt)(node: RDFNode)(sref: ShapeRef): CheckTyping = for {
-    ps <- getPropertyShapeRef(sref, attempt, node)
-    rdf <- getRDF
-    os = rdf.objectsWithPath(node, path).toList
-    r <- checkAllWithTyping(os,(o: RDFNode) => {
-      val newAttempt = Attempt(NodeShapePair(o, ShapeRef(ps.id)), Some(path))
-      checkPropertyShape(newAttempt)(o)(ps)
-    })
-  } yield r
+  private def checkPropertyShapePath(path: SHACLPath)(attempt: Attempt)(node: RDFNode)(sref: ShapeRef): CheckTyping = {
+    logger.info(s"checkPropertyShapePath $path $node $sref")
+    for {
+      ps <- getPropertyShapeRef(sref, attempt, node)
+      rdf <- getRDF
+      os = rdf.objectsWithPath(node, path).toList
+      r <- checkAllWithTyping(os,(o: RDFNode) => {
+        val newAttempt = Attempt(NodeShapePair(o, ShapeRef(ps.id)), Some(path))
+        checkPropertyShape(newAttempt)(o)(ps)
+      })
+    } yield r
+  }
 
   private def checkPropertyShapes(shapeRefs: List[ShapeRef]): NodeChecker = attempt => node => {
     logger.debug(s"Check propertyShapes($node, ${shapeRefs.map(_.showId).mkString(",")})")
@@ -293,6 +299,7 @@ case class Validator(schema: Schema) extends LazyLogging {
   } yield r
 
   private def component2PropertyChecker(p: PropertyShape)(attempt: Attempt, path: SHACLPath)(c: Component): CheckTyping = {
+    logger.debug(s"component2PropertyChecker. propertyShape: $p, path: $path, component: $c")
     for {
       rdf <- getRDF
       node = attempt.node
@@ -308,6 +315,10 @@ case class Validator(schema: Schema) extends LazyLogging {
           logger.debug(s"HasValuePropertyChecker(v = $v, os=$os, node = $node, path= $path")
           hasValuePropertyChecker(v, os, attempt, node, path)
         }
+        case Equals(p) => {
+          logger.debug(s"Equals property checker")
+          checkValues(os, component2Checker(c)(attempt)(_))
+        }
         case _ => checkValues(os, component2Checker(c)(attempt)(_))
       }
       t <- check
@@ -322,8 +333,15 @@ case class Validator(schema: Schema) extends LazyLogging {
       r <- if (typing.getOkValues(node).contains(s)) done
       else if (typing.getFailedValues(node).contains(s)) fail(s"getFailedValues($node) already contains $s")
       else runLocal(nodeShape(node, s), _.addType(node, s))
-      _ <- addEvidence(attempt, s"$node has shape ${s.id}")
-    } yield r
+      t <- if (r._2) addEvidence(attempt, s"$node has shape ${s.id}")
+      else for {
+        shape <- getShapeRef(attempt.shapeRef,attempt,node)
+        t1 <- addNotEvidence(attempt,errorNode(node,shape,attempt,s"$node does not have shape ${s.id}"),s"$node does not have shape ${s.id}")
+      } yield t1
+    } yield {
+      // println(s"NodeComponentChecker: ref $sref, attempt: $attempt")
+      (t,r._2)
+    }
   }
 
   private def classComponentChecker(cls: RDFNode): NodeChecker = attempt => node => {

@@ -14,11 +14,11 @@ import org.scalatest._
 import scala.collection.mutable
 import scala.util._
 
-class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValues with SchemaMatchers {
+class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionValues with SchemaMatchers {
 
   val conf: Config = ConfigFactory.load()
-  val shaclFolder = conf.getString("shaclCore")
-  val name = "manifest.ttl"
+  val shaclFolder = conf.getString("shaclCore") + "/property"
+  val name = "equals-001.ttl"
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
@@ -63,7 +63,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: String): Either[String, (Schema, RDFReader)] = {
     info(s"Manifest action $a, fileName $fileName, parent: $parentFolder")
-    val parentIri = absoluteIri.resolve(IRI(parentFolder))
+    val parentIri = absoluteIri.resolve(IRI(fileName))
     //println(s"Resolved parent: $parentIri")
 
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
@@ -134,8 +134,8 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
       case ReportResult(report) => {
         report.failingNodesShapes.foreach { case (node,shape) =>
           result.result.fold(vr => fail(s"Validating error: ${vr}"), typing => {
-            // info(s"Checking that $node fails for shape $shape")
-            // info(s"Typing: ${typing.show}")
+            info(s"Checking that $node fails for shape $shape")
+            info(s"Typing: ${typing}")
             typing._1.getFailedValues(node).map(_.id) should contain (shape)
           })
         }

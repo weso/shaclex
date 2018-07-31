@@ -7,3 +7,4 @@ prefix : <http://example.org/>
 :T extends :S {
  :q .
 }
+
