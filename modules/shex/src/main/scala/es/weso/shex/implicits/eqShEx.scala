@@ -69,7 +69,7 @@ object eqShEx extends LazyLogging {
       s1.isVirtual === s2.isVirtual &&
         s1.isClosed === s2.isClosed &&
         s1.expression === s2.expression &&
-        s1.inherit === s2.inherit &&
+        s1._extends === s2._extends &&
         s1.semActs === s2.semActs
   }
 

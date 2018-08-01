@@ -10,7 +10,7 @@ class ExtendTest extends FunSpec with Extend with Matchers with EitherValues {
   case class Shape(extend: Option[List[Label]], expr: Option[Expr]) {
     def flattenExpr(schema: Schema): Either[String,Option[Expr]] = {
       def combine(e1: Expr, e2: Expr): Expr = Expr(e1.es ++ e2.es)
-      flattenShape[Shape,Expr,Label](this, schema.get(_), _.extend, combine,_.expr)
+      extendCheckingVisited[Shape,Expr,Label](this, schema.get(_), _.extend, combine,_.expr)
     }
   }
 

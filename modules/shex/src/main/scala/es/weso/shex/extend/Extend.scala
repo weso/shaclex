@@ -5,47 +5,7 @@ import cats.implicits._
 
 trait Extend {
 
-/*
-  def extendValues[S,Label,V](s: S,
-                        finder: Label => Option[S],
-                        extend: S => Option[List[Label]],
-                        getValue: S => List[V]
-                       ): Either[String,List[V]] = {
-    type Visited[A] = State[List[Label], A]
-    def getVisited: Visited[List[Label]] = State.get
-    def addVisited(x: Label): Visited[Unit] = {
-      def fn(ls: List[Label]): List[Label] = x :: ls
-      State.modify[List[Label]](fn)
-    }
-    def ok[A](x: A): Visited[A] = StateT.pure(x)
-
-    def err(msg: String): Visited[Either[String, List[V]]] = ok {
-      val e: Either[String, List[V]] = Left(msg)
-      e
-    }
-
-    def extendValuesAux(s: S): Visited[Either[String,List[V]]] = extend(s) match {
-      case None => ok(Right(getValue(s)))
-      case Some(lbls) => {
-        val zero: List[V] = List()
-        def comb(vs: Either[String,List[V]], x: Label): Visited[Either[String,List[V]]] = for {
-          visited <- getVisited
-          v <- if (visited contains x) {
-            ok(vs)
-          } else
-            finder(x) match {
-              case None        => err(s"$x not found")
-              case Some(shape) => extendValuesAux(shape)
-            }
-        } yield v
-        Foldable[List].foldM(lbls, zero)(comb)
-      }
-    }
-    val (visited, e) = extendValuesAux(s).run(List()).value
-    Right(e)
-  }
-*/
-  def flattenShape[S,E,Label](s: S,
+  def extendCheckingVisited[S,E,Label](s: S,
                    finder: Label => Option[S],
                    extend: S => Option[List[Label]],
                    combineExpr: (E, E) => E,

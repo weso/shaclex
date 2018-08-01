@@ -133,14 +133,14 @@ case class Shape(
       case _ => Some(List())
     }
     def combinePaths(p1: List[Path], p2: List[Path]): List[Path] = p1 ++ p2
-    flattenShape(this, schema.getShape(_), extend, combinePaths, getPath).map(_.getOrElse(List()))
+    extendCheckingVisited(this, schema.getShape(_), extend, combinePaths, getPath).map(_.getOrElse(List()))
   }
 
   def extendExpression(schema: Schema): Either[String,Option[TripleExpr]] = {
     def combine(e1: TripleExpr, e2: TripleExpr): TripleExpr = {
       EachOf(None,List(e1,e2),None,None,None,None)
     }
-    flattenShape(this, schema.getShape(_), extend, combine, expr)
+    extendCheckingVisited(this, schema.getShape(_), extend, combine, expr)
   }
 
 }
