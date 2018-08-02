@@ -5,9 +5,9 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import es.weso.rdf.path.SHACLPath
+import es.weso.rdf.path.{PredicatePath, SHACLPath}
 import es.weso.shacl._
-import es.weso.utils.{MyLogging, RegEx}
+import es.weso.utils.RegEx
 import es.weso.shacl.showShacl._
 import SHACLChecker._
 import es.weso.rdf.operations.Comparisons
@@ -169,33 +169,6 @@ case class Validator(schema: Schema) extends LazyLogging {
     }
   }
 
-  /* TODO
-  /**
-    * Checks that there are no property shapes that have failed in a shape
-    * @param attempt
-    * @param node
-    * @param shape
-    * @param t
-    * @return
-    */
-  private def checkFailed(attempt: Attempt, node: RDFNode, shape: Shape, t: ShapeTyping): Check[ShapeTyping] = {
-    logger.debug(s"checkFailed(${node.show},${shape.showId}")
-    logger.debug(s"components: ${shape.components}")
-    for {
-      propertyShapes <- getPropertyShapeRefs(shape.propertyShapes.toList,attempt,node)
-      componentShapes <- getShapeRefs(shape.componentShapes.toList,attempt,node)
-    } yield {
-      val containedShapes = propertyShapes.toSet.union(componentShapes.toSet)
-      val failedPropertyShapes = t.getFailedValues(node).intersect(containedShapes)
-      if (!failedPropertyShapes.isEmpty) {
-        val newt = t.addNotEvidence(node, shape, shapesFailed(node, shape, failedPropertyShapes, attempt, s"${node.show} doesn't match ${shape.showId} because the following property shapes failed: ${failedPropertyShapes.map(_.showId).mkString(",")}"))
-        newt
-      }
-      else
-        t
-    }
-  } */
-
   private def predicatesInPropertyConstraints(shape: Shape, attempt: Attempt, node: RDFNode): Check[List[IRI]] = for {
     shapes <- getPropertyShapeRefs(shape.propertyShapes.toList, attempt, node)
   } yield shapes.map(_.predicate).collect { case Some(iri) => iri }
@@ -304,7 +277,6 @@ case class Validator(schema: Schema) extends LazyLogging {
       rdf <- getRDF
       node = attempt.node
       os = rdf.objectsWithPath(node, path).toList
-      // rdf.triplesWithSubjectPredicate(node, predicate).map(_.obj).toList
       check: CheckTyping = c match {
         case MinCount(n) => minCount(n, os, attempt, path)
         case MaxCount(n) => maxCount(n, os, attempt, path)
@@ -316,8 +288,9 @@ case class Validator(schema: Schema) extends LazyLogging {
           hasValuePropertyChecker(v, os, attempt, node, path)
         }
         case Equals(p) => {
+          val values = rdf.objectsWithPath(node, PredicatePath(p))
           logger.debug(s"Equals property checker")
-          checkValues(os, component2Checker(c)(attempt)(_))
+          equalsPath(os, values.toList, p, attempt, path)
         }
         case _ => checkValues(os, component2Checker(c)(attempt)(_))
       }
@@ -734,6 +707,23 @@ case class Validator(schema: Schema) extends LazyLogging {
       s"Checked maxCount($maxCount) for path($path) on node $node")
   }
 
+  private def equalsPath(os: List[RDFNode], values: List[RDFNode], equalsIri: IRI, attempt: Attempt, path: SHACLPath): CheckTyping = {
+    logger.debug(s"equalsPath $equalsIri, os: $os, values: $values, attempt: $attempt, path: $path")
+    Comparisons.different(os.toList,values.toList) match {
+      case Left(msg) => for {
+        t <- addNotEvidence(attempt, equalsError(attempt.node,attempt,equalsIri,Set()),s"node ${attempt.node} fails equals condition. Error: $msg")
+      } yield (t,false)
+      case Right(List()) => for {
+       t <- addEvidence(attempt,
+         s"equals(${equalsIri.show}. nodes ${os.show} pass equals condition with values ${values.show}")
+      } yield (t,true)
+
+      case Right(ls) => checkAllWithTyping(ls, (n: RDFNode) => for {
+       t <- addNotEvidence(attempt, equalsError(n,attempt,equalsIri,Set()),s"node $n fails equals condition. ")
+      } yield (t, false))
+    }
+  }
+
   private def checkClosed(ignoredProperties: List[IRI], allowedProperties: List[IRI]): NodeChecker = attempt => node => {
     logger.debug(s"checkClosed(ignored=$ignoredProperties, allowed=$allowedProperties")
     for {
@@ -795,27 +785,15 @@ case class Validator(schema: Schema) extends LazyLogging {
         s"Shape ${sref.showId} not found in schema. Available srefs: ${schema.shapesMap.keys.map(_.showId).mkString(",")}"))
     }
 
+  def validateAll(rdf: RDFReader): CheckResult[ValidationResult, (ShapeTyping, Boolean), Log] = {
+    runCheck(checkSchemaAll, rdf)
+  }
 
+  def showResult(t: (ShapeTyping, Boolean)): String =
+    t.show
 
   ////////////////////////////////////////////
-  /**
-   * Checks that `node` is one of `values`
-   */
-  private def inValues(node: RDFNode, values: Seq[Value]): Boolean = {
-    values.exists(_.matchNode(node))
-  }
 
-  private def isValue(node: RDFNode, value: Value): Boolean = {
-    value.matchNode(node)
-  }
-
-  private def hasDatatype(rdf: RDFReader, node: RDFNode, d: IRI): Boolean = {
-    rdf.checkDatatype(node, d) match {
-      case Left(msg) => false
-      case Right(true) => true
-      case Right(false) => false
-    }
-  }
 
   /**
     * if condition is true adds an evidence, otherwise, adds a not typing with the Violation error as evidence
@@ -875,14 +853,25 @@ case class Validator(schema: Schema) extends LazyLogging {
     case (b1: BNode, b2: BNode) => b1.id <= b2.id
     case (_, _) => false
   }
-
-
-  def validateAll(rdf: RDFReader): CheckResult[ValidationResult, (ShapeTyping, Boolean), Log] = {
-    runCheck(checkSchemaAll, rdf)
+  /**
+    * Checks that `node` is one of `values`
+    */
+  private def inValues(node: RDFNode, values: Seq[Value]): Boolean = {
+    values.exists(_.matchNode(node))
   }
 
-  def showResult(t: (ShapeTyping, Boolean)): String =
-    t.show
+  private def isValue(node: RDFNode, value: Value): Boolean = {
+    value.matchNode(node)
+  }
+
+  private def hasDatatype(rdf: RDFReader, node: RDFNode, d: IRI): Boolean = {
+    rdf.checkDatatype(node, d) match {
+      case Left(msg) => false
+      case Right(true) => true
+      case Right(false) => false
+    }
+  }
+
 
 }
 

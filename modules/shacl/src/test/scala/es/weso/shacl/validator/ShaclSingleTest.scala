@@ -18,7 +18,7 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
 
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclCore") + "/property"
-  val name = "equals-001.ttl"
+  val name = "datatype-003.ttl"
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
