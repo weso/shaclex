@@ -17,8 +17,8 @@ import scala.util._
 class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionValues with SchemaMatchers {
 
   val conf: Config = ConfigFactory.load()
-  val shaclFolder = conf.getString("shaclCore") + "/property"
-  val name = "datatype-003.ttl"
+  val shaclFolder = conf.getString("shaclCore") + "/misc"
+  val name = "severity-002.ttl"
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
