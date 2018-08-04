@@ -16,8 +16,7 @@ prefix sh: <http://www.w3.org/ns/shacl#>
 
 :x :p :px .
 :px :q :qx .
-:qx a :R .
+:qx a :Q .
 
 :S sh:targetNode :x .
-# :NotS sh:targetNode  .
 

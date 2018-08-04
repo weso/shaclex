@@ -147,7 +147,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
           schema.shapesMap.get(sref) match {
             case Some(pc: PropertyShape) => {
               pc.id should be(prop)
-              pc.predicate should be(p)
+              pc.predicate should be(Some(p))
               pc.components should contain only (NodeKind(IRIKind), MinCount(1), MaxCount(1))
             }
             case other => fail(s"Failed with $other")
@@ -183,7 +183,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
             case None => fail(s"Not found shape with ref $sref in $schema")
             case Some(ps: PropertyShape) => {
               ps.id should be(prop)
-              ps.predicate should be(p)
+              ps.predicate should be(Some(p))
               ps.components should contain only (MinCount(1))
             }
             case other => fail(s"Unexpected value $other")
