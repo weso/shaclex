@@ -1,8 +1,8 @@
 package es.weso.shacl.report
 
 import es.weso.rdf.nodes._
+import es.weso.rdf.PREFIXES.sh
 import es.weso.rdf.path._
-import es.weso.shacl.SHACLPrefixes.sh
 import es.weso.shacl._
 import es.weso.shacl.validator.Attempt
 

@@ -1,0 +1,27 @@
+@prefix ex: <http://datashapes.org/sh/tests/core/node/maxExclusive-001.test#> .
+@prefix mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix sht: <http://www.w3.org/ns/shacl-test#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+<>
+  rdf:type mf:Manifest ;
+  mf:entries (
+      <basicExtends>
+    ) ;
+.
+<basicExtends>
+  rdf:type sht:Validate ;
+  rdfs:label "Test of basic extends" ;
+  mf:action [
+      sht:data <basicExtends.ttl> ;
+      sht:schema <basicExtends.shex> ;
+      sht:shapeMap <basicExtends.shapeMap>
+    ] ;
+  mf:result [
+    rdf:type sht:ResultShapeMap ;
+    sht:resultShapeMap <basicExtends.resultShapeMap>
+  ] ;
+  mf:status sht:proposed ;
+  .

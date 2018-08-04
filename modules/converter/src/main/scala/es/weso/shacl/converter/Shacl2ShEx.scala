@@ -10,9 +10,15 @@ import es.weso.{ shacl, _ }
 object Shacl2ShEx extends Converter {
 
   def shacl2ShEx(schema: shacl.Schema): Result[shex.Schema] = {
+    val prefixes = schema.pm
     val rs: List[Result[shex.ShapeExpr]] = schema.shapes.map(cnvShape(_)).toList
     val r: Result[List[shex.ShapeExpr]] = sequence(rs)
-    r.map(m => shex.Schema.empty.copy(shapes = Some(m)))
+    r.map(
+      m => shex.Schema.empty.copy(
+        prefixes = Some(prefixes),
+        shapes = Some(m)
+      )
+    )
   }
 
   def collect[A, B, E](xs: List[(A, ValidatedNel[E, B])]): ValidatedNel[E, List[(A, B)]] = {
@@ -48,7 +54,16 @@ object Shacl2ShEx extends Converter {
   def cnvNodeShape(c: shacl.NodeShape): Result[shex.ShapeExpr] = {
     val rs : Result[List[shex.ShapeExpr]] = sequence(c.components.map(cnvComponent(_)))
     def next(se: List[shex.ShapeExpr]): Result[shex.ShapeExpr] = se.size match {
-      case 1 => ok(se.head)
+      case 1 => {
+        shex.ShapeLabel
+          .fromRDFNode(c.id)
+          .fold(
+            e => err(e),
+            lbl => ok {
+              se.head.addId(lbl)
+            }
+          )
+      }
       case n if (n > 1) => {
         shex.ShapeLabel.fromRDFNode(c.id).fold(
           e => err(e),
@@ -60,8 +75,6 @@ object Shacl2ShEx extends Converter {
     rs andThen next
   }
 
-
-
   def cnvComponent(c: shacl.Component): Result[shex.NodeConstraint] = {
     c match {
       case shacl.NodeKind(shacl.IRIKind) => ok(shex.NodeConstraint.nodeKind(shex.IRIKind, List()))
@@ -69,8 +82,6 @@ object Shacl2ShEx extends Converter {
       case _ => err(s"cnvComponent: Unimplemented $c")
     }
   }
-
-
 
   def mkIRILabel(iri: IRI): shex.ShapeLabel =
     shex.IRILabel(iri)

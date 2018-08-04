@@ -9,6 +9,7 @@ import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
 import es.weso.utils.RegEx
 
+
 case class FacetChecker(schema: Schema)
   extends ShowValidator(schema) with LazyLogging {
 

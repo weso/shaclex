@@ -38,7 +38,7 @@ object showShEx {
   implicit lazy val showShape: Show[Shape] = new Show[Shape] {
     final def show(a: Shape): String = a match {
       case Shape(None,None,None,None,None,None,None,None) => "."
-      case _ => s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a.inherit)}, ${optShow(a.semActs)})"
+      case _ => s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a._extends)}, ${optShow(a.semActs)})"
     }
   }
 

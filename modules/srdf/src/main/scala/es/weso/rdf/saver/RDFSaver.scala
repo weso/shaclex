@@ -2,8 +2,9 @@ package es.weso.rdf.saver
 
 import cats.data.{State, _}
 import cats.implicits._
-import es.weso.rdf.PREFIXES.{rdf_first, rdf_nil, rdf_rest}
+import es.weso.rdf.PREFIXES._
 import es.weso.rdf.nodes._
+import es.weso.rdf.path._
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.{PrefixMap, RDFBuilder}
 
@@ -50,6 +51,40 @@ trait RDFSaver {
     (bNode, newRdf) = rdf.createBNode
     _ <- State.set[RDFBuilder](newRdf)
   } yield bNode
+
+  def makePath(path: SHACLPath): RDFSaver[RDFNode] = path match {
+    case PredicatePath(iri) => State.pure(iri)
+    case InversePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node, sh_inversePath, pathNode)
+    } yield node
+    case ZeroOrOnePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node, sh_zeroOrOnePath, pathNode)
+    } yield node
+    case ZeroOrMorePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node, sh_zeroOrMorePath, pathNode)
+    } yield node
+    case OneOrMorePath(p) => for {
+      node <- createBNode
+      pathNode <- makePath(p)
+      _ <- addTriple(node, sh_oneOrMorePath, pathNode)
+    } yield node
+    case SequencePath(ps) => for {
+      list <- saveToRDFList(ps.toList,makePath)
+    } yield list
+    case AlternativePath(ps) => for {
+      node <- createBNode
+      list <- saveToRDFList(ps.toList,makePath)
+      _ <- addTriple(node,sh_alternativePath,list)
+    } yield node
+    case _ => throw new Exception(s"Unimplemented conversion of path: $path")
+  }
+
 
   def makeId(v: Option[IRI]): RDFSaver[RDFNode] = v match {
     case None => for {
@@ -99,7 +134,6 @@ trait RDFSaver {
   def addPrefix(alias: String, iri: IRI): RDFSaver[Unit] = {
     State.modify(_.addPrefix(alias, iri.str))
   }
-
 
   def saveAsRDFList[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = for {
     nodes <- listSaver(ls, saver)

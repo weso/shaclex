@@ -33,6 +33,12 @@ abstract class RDFNode {
 
   def lessThan(other: RDFNode): Either[String,Boolean]
 
+  // TODO: Could be optimized to short-circuit
+  def lessThanOrEquals(other: RDFNode) = for {
+    b1 <- isEqualTo(other)
+    b2 <- lessThan(other)
+  } yield b1 || b2
+
 }
 
 object RDFNode {

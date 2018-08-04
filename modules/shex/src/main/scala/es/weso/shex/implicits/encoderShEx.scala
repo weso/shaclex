@@ -129,7 +129,7 @@ object encoderShEx {
           optFieldIfNotDefault("closed", a.closed, Shape.defaultClosed),
           optField("extra", a.extra),
           optField("expression", a.expression),
-          optField("inherit", a.inherit),
+          optField("extends", a._extends),
           optField("semActs", a.semActs),
           optField("annotations",a.annotations)
         ))
@@ -363,9 +363,12 @@ object encoderShEx {
   }
 
   def mkObjectTyped(typeName: String, fields: List[Option[(String, Json)]]): Json = {
+    val fs = sequenceOption(fields.filter(_.isDefined))
     val map = Map("type" -> Json.fromString(typeName)) ++
-      fields.filter(_.isDefined).sequence.getOrElse(List()).toMap
+      fs.getOrElse(List()).toMap
     Json.fromJsonObject(JsonObject.fromMap(map))
   }
 
+  def sequenceOption[A](os: List[Option[A]]): Option[List[A]] =
+    os.sequence
 }

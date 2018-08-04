@@ -63,8 +63,6 @@ object SHACLChecker extends CheckerCats with LazyLogging {
 
   private[validator] def getTyping: Check[ShapeTyping] = getEnv
 
-
-
   private[validator] def addLogMsg(msg: String): Check[Unit] =
     addLog(List(MsgEvidence(msg)))
 

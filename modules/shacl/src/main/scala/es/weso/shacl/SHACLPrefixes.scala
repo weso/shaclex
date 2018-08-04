@@ -7,7 +7,7 @@ import es.weso.rdf._
 
 object SHACLPrefixes {
 
-  lazy val sh = IRI("http://www.w3.org/ns/shacl#")
+//  lazy val sh = IRI("http://www.w3.org/ns/shacl#")
 
   lazy val sh_BlankNode: IRI = sh + "BlankNode"
   lazy val sh_BlankNodeOrIRI: IRI = sh + "BlankNodeOrIRI"
@@ -26,7 +26,6 @@ object SHACLPrefixes {
   lazy val sh_Warning: IRI = sh + "Warning"
 
   lazy val sh_and: IRI = sh + "and"
-  lazy val sh_alternativePath: IRI = sh + "alternativePath"
   lazy val sh_class: IRI = sh + "class"
   lazy val sh_closed: IRI = sh + "closed"
   lazy val sh_conforms: IRI = sh + "conforms"
@@ -39,7 +38,6 @@ object SHACLPrefixes {
   lazy val sh_hasValue: IRI = sh + "hasValue"
   lazy val sh_ignoredProperties: IRI = sh + "ignoredProperties"
   lazy val sh_in: IRI = sh + "in"
-  lazy val sh_inversePath: IRI = sh + "inversePath"
   lazy val sh_languageIn: IRI = sh + "languageIn"
   lazy val sh_lessThan: IRI = sh + "lessThan"
   lazy val sh_lessThanOrEquals: IRI = sh + "lessThanOrEquals"
@@ -56,7 +54,6 @@ object SHACLPrefixes {
   lazy val sh_name: IRI = sh + "name"
   lazy val sh_node: IRI = sh + "node"
   lazy val sh_not: IRI = sh + "not"
-  lazy val sh_oneOrMorePath: IRI = sh + "oneOrMorePath"
   lazy val sh_or: IRI = sh + "or"
   lazy val sh_path: IRI = sh + "path"
   lazy val sh_pattern: IRI = sh + "pattern"
@@ -78,8 +75,6 @@ object SHACLPrefixes {
   lazy val sh_text: IRI = sh + "text"
   lazy val sh_uniqueLang: IRI = sh + "uniqueLang"
   lazy val sh_xone: IRI = sh + "xone"
-  lazy val sh_zeroOrMorePath: IRI = sh + "zeroOrMorePath"
-  lazy val sh_zeroOrOnePath: IRI = sh + "zeroOrOnePath"
 
   lazy val defaultPrefixMap = PrefixMap(
     Map(

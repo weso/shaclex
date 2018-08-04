@@ -9,7 +9,8 @@ import es.weso.utils.FileUtils._
 import org.scalatest._
 import scala.io.Source
 
-class ValidateFolderTest extends FunSpec with Matchers with TryValues with OptionValues
+class ValidateFolderTest
+  extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
   val conf: Config = ConfigFactory.load()

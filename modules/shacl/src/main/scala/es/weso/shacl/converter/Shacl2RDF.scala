@@ -5,9 +5,8 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.nodes._
 import es.weso.shacl.SHACLPrefixes._
-import es.weso.rdf.PREFIXES.{sh => _, _}
+import es.weso.rdf.PREFIXES._
 import es.weso.rdf.RDFBuilder
-import es.weso.rdf.path._
 import es.weso.rdf.saver.RDFSaver
 import es.weso.shacl._
 
@@ -94,41 +93,6 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     _ <- ignoredProperties(shapeNode, n.ignoredProperties)
     _ <- saveList(n.components, component(shapeNode))
   } yield shapeNode
-
-  private def makePath(path: SHACLPath): RDFSaver[RDFNode] = path match {
-    case PredicatePath(iri) => State.pure(iri)
-    case InversePath(p) => for {
-      node <- createBNode
-      pathNode <- makePath(p)
-      _ <- addTriple(node, sh_inversePath, pathNode)
-    } yield node
-    case ZeroOrOnePath(p) => for {
-      node <- createBNode
-      pathNode <- makePath(p)
-      _ <- addTriple(node, sh_zeroOrOnePath, pathNode)
-    } yield node
-    case ZeroOrMorePath(p) => for {
-      node <- createBNode
-      pathNode <- makePath(p)
-      _ <- addTriple(node, sh_zeroOrMorePath, pathNode)
-    } yield node
-    case OneOrMorePath(p) => for {
-      node <- createBNode
-      pathNode <- makePath(p)
-      _ <- addTriple(node, sh_oneOrMorePath, pathNode)
-    } yield node
-    /*    case SequencePath(ps) => for {
-      list <- saveRDFList(ps, )
-      pathNodes <- makePath(p)
-      _ <- addTriple(node,sh_oneOrMorePath,pathNode)
-    } yield node
-    case AlternativePath(ps) => for {
-      node <- createBNode
-      pathNodes <- makePath(p)
-      _ <- addTriple(node,sh_oneOrMorePath,pathNode)
-    } yield node */
-    case _ => throw new Exception(s"Unimplemented conversion of path: $path")
-  }
 
   private def component(id: RDFNode)(c: Component): RDFSaver[Unit] = c match {
     case ClassComponent(v) => addTriple(id, sh_class, v)

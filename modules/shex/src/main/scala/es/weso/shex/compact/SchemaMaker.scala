@@ -1,6 +1,5 @@
 package es.weso.shex.compact
 
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.Prefix
 import es.weso.rdf.nodes._
@@ -178,7 +177,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     shapes <- {
       val r: List[Builder[ShapeExpr]] =
         ctx.inlineShapeAnd().asScala.map(visitInlineShapeAnd(_)).toList
-      r.sequence
+      sequence(r)
     }
   } yield mkShapeOr(shapes, Flatten)
 
@@ -188,7 +187,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       shapes <- {
         val r: List[Builder[ShapeExpr]] =
           ctx.inlineShapeNot().asScala.map(visitInlineShapeNot(_)).toList
-        r.sequence
+        sequence(r)
       }
     } yield {
       mkShapeAnd(shapes, Flatten)
@@ -207,7 +206,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     shapes <- {
       val r: List[Builder[ShapeExpr]] =
         ctx.shapeAnd().asScala.map(visitShapeAnd(_)).toList
-      r.sequence
+      sequence(r)
     }
   } yield mkShapeOr(shapes, NO_Flatten)
 
@@ -244,7 +243,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       shapes <- {
         val r: List[Builder[ShapeExpr]] =
           ctx.shapeNot().asScala.map(visitShapeNot(_)).toList
-        r.sequence
+        sequence(r)
       }
     } yield {
       mkShapeAnd(shapes, NO_Flatten)
@@ -891,33 +890,31 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       if (ls.isEmpty) None
       else Some(ls)
     val inheritList = qualifiers.map(_.getIncluded).flatten
-    val shape = Shape.empty.copy(
+    val shape =
+      Shape.empty.copy(
       closed = containsClosed,
       extra = extras,
       expression = tripleExpr,
+      _extends = if (inheritList.isEmpty) None else Some(inheritList),
       semActs = if (semActs.isEmpty) None else Some(semActs),
       annotations = if (anns.isEmpty) None else Some(anns)
     )
-    inheritList.length match {
-      case 0 => ok(shape)
-      case 1 => ok(shape.copy(inherit = Some(inheritList.head)))
-      case _ => err(s"Inherit list $inheritList has more than one shapeLabel")
-    }
+    ok(shape)
   }
 
   override def visitQualifier(ctx: QualifierContext): Builder[Qualifier] = {
     ctx match {
       case _ if (isDefined(ctx.KW_CLOSED())) => ok(Closed)
-      case _ if (isDefined(ctx.includeSet())) =>
-        visitIncludeSet(ctx.includeSet())
+      case _ if (isDefined(ctx.extensions())) =>
+        visitExtensions(ctx.extensions())
       case _ if (isDefined(ctx.extraPropertySet())) =>
         visitExtraPropertySet(ctx.extraPropertySet())
     }
   }
 
-  override def visitIncludeSet(ctx: IncludeSetContext): Builder[Qualifier] = for {
-    sl <- visitList(visitTripleExprLabel, ctx.tripleExprLabel())
-  } yield Include(sl)
+  override def visitExtensions(ctx: ExtensionsContext): Builder[Qualifier] = for {
+    sl <- visitList(visitShapeExprLabel, ctx.shapeExprLabel())
+  } yield Extends(sl)
 
   override def visitExtraPropertySet(ctx: ExtraPropertySetContext): Builder[Qualifier] = for {
     ls <- visitList(visitPredicate, ctx.predicate())
@@ -1289,7 +1286,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
     def getIncluded: List[ShapeLabel] = {
       this match {
-        case Include(labels) => labels
+        case Extends(labels) => labels
         case _ => List()
       }
     }
@@ -1297,7 +1294,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   case class Extra(iris: List[IRI]) extends Qualifier
 
-  case class Include(labels: List[ShapeLabel]) extends Qualifier
+  case class Extends(labels: List[ShapeLabel]) extends Qualifier
 
   case object Closed extends Qualifier
 

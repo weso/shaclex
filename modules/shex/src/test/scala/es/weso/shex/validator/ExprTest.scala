@@ -28,7 +28,7 @@ class ExprTest extends FunSpec with Matchers with EitherValues {
     }
   }
 
-  describe("Expr test") {
+  ignore("Expr test") {
     it(s"Should validate triple with expr") {
       val strSchema =
         """prefix : <http://example.org/>
