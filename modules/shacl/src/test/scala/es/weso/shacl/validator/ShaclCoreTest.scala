@@ -11,7 +11,6 @@ import es.weso.shacl.manifest.{Manifest, ManifestAction, Result => ManifestResul
 import es.weso.shacl.{Schema, SchemaMatchers, Shacl, manifest}
 import org.scalatest._
 
-import scala.collection.mutable
 import scala.util._
 
 class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValues with SchemaMatchers {
@@ -22,7 +21,6 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
   val fileName = shaclFolder + "/" + name
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
-  val failed = mutable.ArrayStack[String]()
 
   describe(s"Validate from manifest file $fileName") {
     RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
@@ -35,7 +33,6 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
         info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes")
         processManifest(m, name, fileName)
       }
-        info(s"@@@ Failed: $failed")
     }
   }
 
@@ -53,7 +50,6 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     it(s"Should check entry ${e.node.getLexicalForm} with $parentFolder") {
       getSchemaRdf(e.action, name, parentFolder) match {
         case Left(f) => {
-          failed.push(name)
           fail(s"Error processing Entry: $e \n $f")
         }
         case Right((schema, rdf)) => validate(schema, rdf, e.result,name)
@@ -144,7 +140,6 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
         if (result.isOK == b)
           info(s"Expected result = obtainedResult") // = $b.\nResult:\n${result}")
         else {
-          failed.push(name)
           fail(s"Expected result($b)!= obtained result\n$result")
 
         }

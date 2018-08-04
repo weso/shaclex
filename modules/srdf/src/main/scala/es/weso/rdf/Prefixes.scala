@@ -41,6 +41,11 @@ object PREFIXES {
   lazy val rdf_langString = rdf.add("langString")
   lazy val rdfs_subClassOf = rdfs.add("subClassOf")
 
+  lazy val sh_alternativePath: IRI = sh + "alternativePath"
+  lazy val sh_inversePath: IRI = sh + "inversePath"
+  lazy val sh_oneOrMorePath: IRI = sh + "oneOrMorePath"
+  lazy val sh_zeroOrMorePath: IRI = sh + "zeroOrMorePath"
+  lazy val sh_zeroOrOnePath: IRI = sh + "zeroOrOnePath"
 
   val basicMap: Map[String, IRI] =
     Map(

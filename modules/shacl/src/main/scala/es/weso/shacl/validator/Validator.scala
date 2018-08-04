@@ -19,7 +19,7 @@ import es.weso.rdf.operations.Comparisons._
  * This validator is implemented directly in Scala using cats library
  */
 
-case class Validator(schema: Schema) extends MyLogging {
+case class Validator(schema: Schema) extends LazyLogging {
 
   /**
    * Return all targetNode declarations which are pairs (n,s) where

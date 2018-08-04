@@ -53,15 +53,16 @@ object SHACLPath {
 
   implicit val shaclPathShow: Show[SHACLPath] = new Show[SHACLPath] {
     def show(path: SHACLPath): String = {
-    path match {
-      case PredicatePath(pred) => pred.show
-      case InversePath(p) => "^ " + p.show
-      case SequencePath(ps) => ps.map(_.show).mkString(" / ")
-      case AlternativePath(ps) => ps.map(_.show).mkString(" | ")
-      case ZeroOrMorePath(p) => p.show + "* "
-      case OneOrMorePath(p) => p.show + "+ "
-      case ZeroOrOnePath(p) => p.show + "? "
+      path match {
+        case PredicatePath(pred) => pred.show
+        case InversePath(p)      => "^ " + p.show
+        case SequencePath(ps)    => ps.map(_.show).mkString(" / ")
+        case AlternativePath(ps) => ps.map(_.show).mkString(" | ")
+        case ZeroOrMorePath(p)   => p.show + "* "
+        case OneOrMorePath(p)    => p.show + "+ "
+        case ZeroOrOnePath(p)    => p.show + "? "
+      }
     }
   }
-  }
+
 }

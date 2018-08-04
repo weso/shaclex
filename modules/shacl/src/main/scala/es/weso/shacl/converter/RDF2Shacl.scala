@@ -42,7 +42,9 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     val nodeShapes = subjectsWithType(sh_NodeShape, rdf)
     val propertyShapes = subjectsWithType(sh_PropertyShape, rdf)
     val shapes = subjectsWithType(sh_Shape, rdf)
-    val allShapes: Set[RDFNode] = nodeShapes ++ propertyShapes ++ shapes
+    val objectsPropertyShapes = subjectsWithProperty(sh_property, rdf)
+    val allShapes: Set[RDFNode] = nodeShapes ++ propertyShapes ++ shapes ++ objectsPropertyShapes
+
     pendingNodes = allShapes.toList
     parseShapes(rdf)
   }
@@ -237,12 +239,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     n match {
       case iri: IRI => Right(PredicatePath(iri))
       case bnode: BNode => someOf(
-        inversePath,
         oneOrMorePath,
         zeroOrMorePath,
         zeroOrOnePath,
         alternativePath,
-        sequencePath)(n, rdf)
+        sequencePath,
+        inversePath
+      )(n, rdf)
       case _ => parseFail(s"Unsupported value $n for path")
     }
   }

@@ -22,7 +22,7 @@ import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, 
 /**
  * ShEx validator
  */
-case class Validator(schema: Schema) extends ShowValidator(schema) with MyLogging {
+case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogging {
 
   type ShapeChecker = ShapeExpr => CheckTyping
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
