@@ -327,6 +327,10 @@ case class RDFAsJenaModel(model: Model)
     case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
   }
 
+  def normalizeBNodes: RDFBuilder  = {
+    NormalizaBNodes.normalizeBNodes(this,this.empty)
+  }
+
 }
 
 
@@ -340,14 +344,17 @@ object RDFAsJenaModel {
     RDFAsJenaModel(ModelFactory.createDefaultModel)
   }
 
-  def fromURI(uri: String, format: String = "TURTLE", base: Option[String] = None): Either[String,RDFAsJenaModel] = {
+  def fromURI(uri: String,
+              format: String = "TURTLE",
+              base: Option[String] = None
+             ): Either[String,RDFAsJenaModel] = {
     val baseURI = base.getOrElse(FileUtils.currentFolderURL)
     Try {
       val m = ModelFactory.createDefaultModel()
       RDFDataMgr.read(m, uri, baseURI, shortnameToLang(format))
       RDFAsJenaModel(JenaUtils.relativizeModel(m))
     }.fold(e => Left(s"Exception accessing uri $uri: ${e.getMessage}"),
-      Right(_)
+      (Right(_))
     )
   }
 

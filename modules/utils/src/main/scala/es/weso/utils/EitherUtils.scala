@@ -1,6 +1,6 @@
 package es.weso.utils
 
-import scala.util.Either
+import scala.util.{Either, Left, Right}
 import cats.implicits._
 
 
@@ -12,5 +12,9 @@ object EitherUtils {
     * */
   def sequence[A,E](ds: List[Either[E,A]]): Either[E, List[A]] =
     ds.sequence
+
+  def takeSingle[A](ls: List[A], msg: String): Either[String,A] =
+    if (ls.length == 1) Right(ls.head)
+    else Left(msg)
 
 }

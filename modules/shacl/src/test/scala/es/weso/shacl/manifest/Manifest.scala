@@ -7,7 +7,7 @@ case class Manifest(
   label: Option[String],
   comment: Option[String],
   entries: List[Entry],
-  includes: List[(RDFNode, Manifest)])
+  includes: List[(RDFNode, Option[Manifest])])
 
 object Manifest {
   def empty: Manifest = Manifest(None, None, List(), List())
@@ -113,10 +113,10 @@ final case object EmptyResult
 }
 
 final case class ValidationReport(violationErrors: Set[ViolationError]) {
-  def failingNodes: Set[IRI] =
+  def failingNodes: Set[RDFNode] =
     violationErrors.map(_.focusNode).flatten
 
-  def failingNodesShapes: List[(IRI,IRI)] =
+  def failingNodesShapes: List[(RDFNode,IRI)] =
     violationErrors.toList.collect {
       case v if v.focusNode.isDefined && v.sourceShape.isDefined =>
         (v.focusNode.get,v.sourceShape.get)
@@ -125,7 +125,7 @@ final case class ValidationReport(violationErrors: Set[ViolationError]) {
 
 final case class ViolationError(
   errorType: Option[IRI],
-  focusNode: Option[IRI],
+  focusNode: Option[RDFNode],
   path: Option[IRI],
   severity: Option[IRI],
   sourceConstraintComponent: Option[IRI],

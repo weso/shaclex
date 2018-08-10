@@ -5,5 +5,5 @@
 <>
 	a mf:Manifest ;
 	rdfs:label "Tests converted from http://datashapes.org/sh/tests/tests/core/node" ;
-	mf:include <and-001.ttl> ;
+	mf:include <qualified-001.ttl> ;
 	.

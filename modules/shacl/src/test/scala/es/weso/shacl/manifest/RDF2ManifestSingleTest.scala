@@ -25,7 +25,8 @@ class RDF2ManifestSingleTest extends FunSpec
       RDF2Manifest.read(fileName, "TURTLE", Some(s"$shaclFolderURI$folder/"), true) match {
         case Left(e) =>
           fail(s"Error reading $fileName\n$e")
-        case Right(mf) =>
+        case Right(pair) =>
+          val (mf,_) = pair
           info(s"Manifest successfully read. ${mf.label.getOrElse("")}")
       }
     }

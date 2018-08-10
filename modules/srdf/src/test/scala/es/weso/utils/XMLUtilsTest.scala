@@ -10,6 +10,7 @@ class XMLUtilsTest extends FunSpec with Matchers {
     shouldLessThanXMLDatetyme("2013", "2012", Right(false))
     shouldLessThanXMLDatetyme("2013-10-10", "2013-10-11", Right(true))
     shouldLessThanXMLDatetyme("2013-10-10T12:00:00", "2013-10-11", Right(true))
+    shouldLessThanXMLDatetyme("2002-10-10T12:00:01-05:00", "2002-10-10T12:00:00", Right(true))
     shouldLessThanXMLDatetyme("2013-10-10T00:00:00", "2013-10-10", Right(false)) // are equal
     shouldLessThanXMLDatetyme("???-10-10T00:00:00", "2013-10-10", Left("error parsing"))
     shouldLessThanXMLDatetyme("2014-10-10T00:00:00", "???-10-10", Left("error parsing"))

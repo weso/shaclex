@@ -1,11 +1,11 @@
 package es.weso.shacl.validator
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.IRI
+import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.manifest.{Manifest, ManifestAction, Result => ManifestResult, _}
 import es.weso.shacl.{Schema, SchemaMatchers, Shacl, manifest}
@@ -18,120 +18,108 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
   val conf: Config = ConfigFactory.load()
   val shaclFolder = conf.getString("shaclCore")
   val name = "manifest.ttl"
-  val fileName = shaclFolder + "/" + name
+  val shaclFolderPath = Paths.get(shaclFolder)
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
+  describeManifest(IRI(name), shaclFolderPath)
 
-  describe(s"Validate from manifest file $fileName") {
-    RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
-      case Left(e) => {
-        it(s"Fails to read $fileName") {
-          fail(s"Error reading manifestTest file:$e")
+  def describeManifest(name: RDFNode, parentFolder: Path): Unit = {
+    describe(s"Validate from manifest file $name with parent: $parentFolder (lexicalForm: ${name.getLexicalForm}") {
+      val fileName = parentFolder.resolve(name.getLexicalForm).toString
+      RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), false) match {
+        case Left(e) => {
+          it(s"Fails to read $fileName") {
+            fail(s"Error reading manifestTest file:$e")
+          }
+        }
+        case Right(pair) => {
+          val (m, rdfReader) = pair
+          val newParent = parentFolder.resolve(name.getLexicalForm).getParent
+          info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes. New parent: $newParent")
+          processManifest(m, name.getLexicalForm, newParent, rdfReader)
         }
       }
-      case Right(m) => {
-        info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes")
-        processManifest(m, name, fileName)
-      }
     }
   }
-
-  def processManifest(m: Manifest, name: String, parentFolder: String): Unit = {
+  def processManifest(m: Manifest, name: String, parentFolder: Path, rdfManifest: RDFReader): Unit = {
     // println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
-      // println(s"Include: $includeNode")
-      processManifest(manifest, includeNode.getLexicalForm, name)
+      describeManifest(includeNode, parentFolder)
     }
     for (e <- m.entries)
-      processEntry(e,name,parentFolder)
+      processEntry(e,name,parentFolder, rdfManifest)
   }
 
-  def processEntry(e: manifest.Entry, name: String, parentFolder: String): Unit = {
+  def processEntry(e: manifest.Entry, name: String, parentFolder: Path, rdfManifest: RDFReader): Unit = {
     it(s"Should check entry ${e.node.getLexicalForm} with $parentFolder") {
-      getSchemaRdf(e.action, name, parentFolder) match {
+      getSchemaRdf(e.action, name, parentFolder,rdfManifest) match {
         case Left(f) => {
           fail(s"Error processing Entry: $e \n $f")
         }
-        case Right((schema, rdf)) => validate(schema, rdf, e.result,name)
+        case Right((schema, rdf)) => {
+          validate(schema, rdf, e.result,name)
+        }
       }
     }
   }
 
-  def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: String): Either[String, (Schema, RDFReader)] = {
-    info(s"Manifest action $a, fileName $fileName, parent: $parentFolder")
-    val parentIri = absoluteIri.resolve(IRI(parentFolder))
-    //println(s"Resolved parent: $parentIri")
+  def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader): Either[String, (Schema,RDFReader)] = for {
+    pair  <- getSchema(a,fileName,parentFolder,manifestRdf)
+    (schema,schemaRdf) = pair
+    dataRdf <- getData(a,fileName,parentFolder,manifestRdf,schemaRdf)
+  } yield (schema, dataRdf)
 
-    val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
-    (a.data,a.schema) match {
-      case (None,None) => {
+  def getData(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader, schemaRdf: RDFReader): Either[String, RDFReader] =
+    {
+     a.data match {
+     case None                                              => Right(RDFAsJenaModel.empty)
+     case Some(iri) if iri.isEmpty => Right(manifestRdf)
+     case Some(iri) => {
+      val dataFileName = parentFolder.resolve(iri.getLexicalForm)
+      val dataFormat  = a.dataFormat.getOrElse(Shacl.defaultFormat)
+      for {
+        rdf <- RDFAsJenaModel.fromFile(dataFileName.toFile, dataFormat).map(_.normalizeBNodes)
+      } yield rdf
+     }
+    }
+  }
+
+  def getSchema(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader): Either[String, (Schema, RDFReader)] = {
+    info(s"Manifest action $a, fileName $fileName, parent: $parentFolder }")
+    val parentIri = absoluteIri // absoluteIri.resolve(IRI(parentFolder))
+    a.schema match {
+      case None => {
         info(s"No data in manifestAction $a")
         Right((Schema.empty, RDFAsJenaModel.empty))
       }
-      case (Some(dataIri), Some(shapesIri)) => {
-        val realDataIri = if (dataIri.isEmpty) {
-          // absoluteIri + fileName
-          parentIri.resolve(IRI(fileName))
-        } else {
-          parentIri.resolve(dataIri)
-          // absoluteIri.resolve(dataIri)
-        }
-        //println(s"iri: $dataIri, realDataIri $realDataIri")
-        val realSchemaIri = if (shapesIri.isEmpty) {
-          // absoluteIri + fileName
-          parentIri.resolve(IRI(fileName))
-        } else {
-          // absoluteIri.resolve(shapesIri)
-          parentIri.resolve(shapesIri)
-        }
+      case Some(iri) if iri.isEmpty => for {
+        schema <- RDF2Shacl.getShacl(manifestRdf)
+        } yield (schema, manifestRdf)
+      case Some(iri) => {
+        val schemaFile = parentFolder.resolve(iri.getLexicalForm)
+        val schemaFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
         for {
-          rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
-          schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
+          schemaRdf <- RDFAsJenaModel.fromFile(schemaFile.toFile, schemaFormat).map(_.normalizeBNodes)
           schema <- {
             RDF2Shacl.getShacl(schemaRdf)
           }
-        } yield (schema, rdf)
-      }
-      case (None, Some(shapesIri)) => {
-        val realSchemaIri = if (shapesIri.isEmpty) {
-          absoluteIri + fileName
-        } else {
-          absoluteIri.resolve(shapesIri)
-        }
-        for {
-          schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
-          schema <- {
-            RDF2Shacl.getShacl(schemaRdf)
-          }
-        } yield (schema, RDFAsJenaModel.empty)
-      }
-      case (Some(dataIri),None) => {
-        val realDataIri = if (dataIri.isEmpty) {
-          absoluteIri + fileName
-        } else {
-          absoluteIri.resolve(dataIri)
-        }
-        for {
-          rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
-          schema <- {
-            RDF2Shacl.getShacl(rdf)
-          }
-        } yield (schema, rdf)
+        } yield (schema, schemaRdf)
       }
     }
   }
 
-  def validate(schema: Schema, rdf: RDFReader, expectedResult: ManifestResult, name: String): Unit = {
-    // info(s"Schema: ${schema.serialize("TURTLE", RDFAsJenaModel.empty)}")
-    // info(s"RDF: ${rdf.serialize("TURTLE")}")
+  def validate(schema: Schema, rdf: RDFReader,
+               expectedResult: ManifestResult,
+               name: String
+              ): Unit = {
     val validator = Validator(schema)
     val result = validator.validateAll(rdf)
     expectedResult match {
       case ReportResult(report) => {
         report.failingNodesShapes.foreach { case (node,shape) =>
           result.result.fold(vr => fail(s"Validating error: ${vr}"), typing => {
-            // info(s"Checking that $node fails for shape $shape")
-            // info(s"Typing: ${typing.show}")
+            val failedNodes = typing._1.getFailedValues(node)
+            info(s"Checking $node with shape $shape\nFailed nodes($node) = $failedNodes\nTyping:$typing\n") // RDF:\n${rdf.serialize("N-TRIPLES")}")
             typing._1.getFailedValues(node).map(_.id) should contain (shape)
           })
         }

@@ -1,7 +1,7 @@
 package es.weso.shacl.report
 
 import java.io._
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import com.typesafe.config._
 import es.weso.rdf.RDFReader
@@ -26,262 +26,152 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
 
   val shaclFolder    = conf.getString("shaclCore")
   val name           = "manifest.ttl"
-  val fileName       = shaclFolder + "/" + name
+  val shaclFolderPath = Paths.get(shaclFolder)
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri    = IRI(shaclFolderURI)
 
   var numTests  = 0
+  var numNodeShapeTests  = 0
   var numPassed = 0
   var numFailed = 0
   var numErrors = 0
   val report = Report.empty
 
-    // Validation tests
-    /*    for (triple <- rdf.triplesWithType(sht_ValidationTest)) {
-      numTests += 1
-      val node = triple.subj
-      val nodeStr = node.getLexicalForm
-      val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
-      val tryReport = for {
-        name <- stringFromPredicate(mf_name)(node, rdf)
-        action <- objectFromPredicate(mf_action)(node, rdf)
-        schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
-        str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str, "SHEXC", baseIRI,RDFAsJenaModel.empty)
-        dataIRI <- iriFromPredicate(sht_data)(action, rdf)
-        strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
-        data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-        focus <- iriFromPredicate(sht_focus)(action, rdf)
-        shape <- iriFromPredicate(sht_shape)(action, rdf)
-      } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
-      val testReport = tryReport match {
-        case Right(report) => if (report.isRight) {
-          numPassed += 1
-          SingleTestReport(
-            passed = true,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"${report.right.get.serialize("Compact")}")
-        } else {
-          numFailed += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"${report.left.get}")
-        }
-        case Left(e) => {
-          numErrors += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = node.toIRI.str,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Error ${e}")
-        }
-      }
-      report.addTestReport(testReport)
-    }
+  describe(s"Generate EARL") {
+   it(s"Should write report to $outFile") {
+    describeManifest(IRI(name), shaclFolderPath)
+    val earlModel = report.generateEARL
+    earlModel.write(new FileOutputStream(outFile), "TURTLE")
+   }
+   it(s"Shows counters") {
+      info(s"#tests=$numTests, #passed=$numPassed, #failed=$numFailed, #errors=$numErrors")
+   }
+  }
 
-    // Validation tests
-    for (triple <- rdf.triplesWithType(sht_ValidationFailure)) {
-      numTests += 1
-      val node = triple.subj
-      val nodeStr = node.getLexicalForm
-      val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
-      val tryReport = for {
-        name <- stringFromPredicate(mf_name)(node, rdf)
-        action <- objectFromPredicate(mf_action)(node, rdf)
-        schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
-        str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str, "SHEXC", baseIRI,RDFAsJenaModel.empty)
-        dataIRI <- iriFromPredicate(sht_data)(action, rdf)
-        strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
-        data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-        focus <- iriFromPredicate(sht_focus)(action, rdf)
-        shape <- iriFromPredicate(sht_shape)(action, rdf)
-      } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
-      val testReport = tryReport match {
-        case Right(report) => if (!report.isRight) {
-          numPassed += 1
-          SingleTestReport(
-            passed = true,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Failed as expected with error: ${report.left.get}")
-        } else {
-          numFailed += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Passed but it was expected to fail. Result: ${report.right.get.serialize("Compact")}")
-        }
-        case Left(e) => {
-          numErrors += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Error ${e}")
-        }
-      }
-      report.addTestReport(testReport)
-    } */
-
-
-    describe(s"Generate W3c EARL report from $fileName") {
-      RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
+  def describeManifest(name: RDFNode, parentFolder: Path): Unit = {
+    val fileName = parentFolder.resolve(name.getLexicalForm).toString
+      RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), false) match {
         case Left(e) => {
           it(s"Fails to read $fileName") {
             fail(s"Error reading manifestTest file:$e")
           }
         }
-        case Right(m) => {
-          info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes")
-          processManifest(m, name, fileName)
-
-          it(s"Saves info in EARL file: ${outFile}") {
-            val earlModel = report.generateEARL
-            earlModel.write(new FileOutputStream(outFile), "TURTLE")
-          }
+        case Right(pair) => {
+          val (m, rdfReader) = pair
+          val newParent = parentFolder.resolve(name.getLexicalForm).getParent
+          info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes. New parent: $newParent")
+          processManifest(m, name.getLexicalForm, newParent, rdfReader)
         }
       }
-    it(s"Shows counters") {
-      info(s"#tests=$numTests, #passed=$numPassed, #failed=$numFailed, #errors=$numErrors")
+  }
+  def processManifest(m: Manifest, name: String, parentFolder: Path, rdfManifest: RDFReader): Unit = {
+    // println(s"processManifest with ${name} and parent folder $parentFolder")
+    for ((includeNode, manifest) <- m.includes) {
+      describeManifest(includeNode, parentFolder)
     }
+    for (e <- m.entries)
+      processEntry(e,name,parentFolder, rdfManifest)
   }
 
-  def processManifest(m: Manifest, name: String, parentFolder: String): Unit = {
-      // println(s"processManifest with ${name} and parent folder $parentFolder")
-      for ((includeNode, manifest) <- m.includes) {
-        // println(s"Include: $includeNode")
-        processManifest(manifest, includeNode.getLexicalForm, name)
-      }
-      for (e <- m.entries)
-        processEntry(e,name,parentFolder)
-    }
-
-    def processEntry(e: manifest.Entry, name: String, parentFolder: String): Unit = {
-      it(s"Should check entry ${e.node} with $parentFolder") {
-        getSchemaRdf(e.action, name, parentFolder) match {
-          case Left(f) => {
-            numErrors += 1
-            fail(s"Error processing Entry: $e \n $f")
-          }
-          case Right((schema, rdf)) =>
-            validate(schema, rdf, e.result, name, parentFolder, e.node)
+  def processEntry(e: manifest.Entry, name: String, parentFolder: Path, rdfManifest: RDFReader): Unit = {
+    println(s"Should check entry ${e.node.getLexicalForm} with $parentFolder")
+    getSchemaRdf(e.action, name, parentFolder,rdfManifest) match {
+        case Left(f) => {
+          fail(s"Error processing Entry: $e \n $f")
+        }
+        case Right((schema, rdf)) => {
+          val relativePath = shaclFolderPath.getParent.relativize(parentFolder)
+          val testUri = (new java.net.URI("urn:x-shacl-test:/" + relativePath + "/" + e.node.getLexicalForm)).toString
+          println(s"Absolute: $shaclFolderPath, parent: $parentFolder, Relative: $relativePath Name: $name Node: ${e.node.getLexicalForm}")
+          println(s"TestURI: $testUri")
+          validate(schema, rdf, e.result,testUri)
         }
       }
   }
 
-    def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: String): Either[String, (Schema, RDFReader)] = {
-      info(s"Manifest action $a, fileName $fileName, parent: $parentFolder")
-      val parentIri = absoluteIri.resolve(IRI(parentFolder))
-      //println(s"Resolved parent: $parentIri")
+  def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader): Either[String, (Schema,RDFReader)] = for {
+    pair  <- getSchema(a,fileName,parentFolder,manifestRdf)
+    (schema,schemaRdf) = pair
+    dataRdf <- getData(a,fileName,parentFolder,manifestRdf,schemaRdf)
+  } yield (schema, dataRdf)
 
-      val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
-      (a.data,a.schema) match {
-        case (None,None) => {
-          info(s"No data in manifestAction $a")
-          numErrors += 1
-          Right((Schema.empty, RDFAsJenaModel.empty))
-        }
-        case (Some(dataIri), Some(shapesIri)) => {
-          val realDataIri = if (dataIri.isEmpty) {
-            parentIri.resolve(IRI(fileName))
-          } else {
-            parentIri.resolve(dataIri)
-          }
-          val realSchemaIri = if (shapesIri.isEmpty) {
-            parentIri.resolve(IRI(fileName))
-          } else {
-            parentIri.resolve(shapesIri)
-          }
-          for {
-            rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
-            schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
-            schema <- {
-              RDF2Shacl.getShacl(schemaRdf)
-            }
-          } yield (schema, rdf)
-        }
-        case (None, Some(shapesIri)) => {
-          val realSchemaIri = if (shapesIri.isEmpty) {
-            absoluteIri + fileName
-          } else {
-            absoluteIri.resolve(shapesIri)
-          }
-          for {
-            schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
-            schema <- {
-              RDF2Shacl.getShacl(schemaRdf)
-            }
-          } yield (schema, RDFAsJenaModel.empty)
-        }
-        case (Some(dataIri),None) => {
-          val realDataIri = if (dataIri.isEmpty) {
-            absoluteIri + fileName
-          } else {
-            absoluteIri.resolve(dataIri)
-          }
-          for {
-            rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
-            schema <- {
-              RDF2Shacl.getShacl(rdf)
-            }
-          } yield (schema, rdf)
-        }
+  def getData(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader, schemaRdf: RDFReader): Either[String, RDFReader] =
+  {
+    a.data match {
+      case None                                              => Right(RDFAsJenaModel.empty)
+      case Some(iri) if iri.isEmpty => Right(manifestRdf)
+      case Some(iri) => {
+        val dataFileName = parentFolder.resolve(iri.getLexicalForm)
+        val dataFormat  = a.dataFormat.getOrElse(Shacl.defaultFormat)
+        for {
+          rdf <- RDFAsJenaModel.fromFile(dataFileName.toFile, dataFormat).map(_.normalizeBNodes)
+        } yield rdf
       }
     }
+  }
 
-    def validate(schema: Schema, rdf: RDFReader, expectedResult: ManifestResult, name: String, parentFolder: String, node: RDFNode): Unit = {
-      // info(s"Schema: ${schema.serialize("TURTLE", RDFAsJenaModel.empty)}")
-      // info(s"RDF: ${rdf.serialize("TURTLE")}")
+  def getSchema(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader): Either[String, (Schema, RDFReader)] = {
+    val parentIri = absoluteIri // absoluteIri.resolve(IRI(parentFolder))
+    a.schema match {
+      case None => {
+        info(s"No data in manifestAction $a")
+        Right((Schema.empty, RDFAsJenaModel.empty))
+      }
+      case Some(iri) if iri.isEmpty => for {
+        schema <- RDF2Shacl.getShacl(manifestRdf)
+      } yield (schema, manifestRdf)
+      case Some(iri) => {
+        val schemaFile = parentFolder.resolve(iri.getLexicalForm)
+        val schemaFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
+        for {
+          schemaRdf <- RDFAsJenaModel.fromFile(schemaFile.toFile, schemaFormat).map(_.normalizeBNodes)
+          schema <- {
+            RDF2Shacl.getShacl(schemaRdf)
+          }
+        } yield (schema, schemaRdf)
+      }
+    }
+  }
+
+
+
+    def validate(schema: Schema, rdf: RDFReader,
+                 expectedResult: ManifestResult,
+                 testUri: String
+                ): Unit = {
       val validator = Validator(schema)
       val result = validator.validateAll(rdf)
-      val parentFolderURI = new java.net.URI(parentFolder)
-      val testUriResolved = parentFolderURI.resolve(node.getLexicalForm)
-      val testUri = (new java.net.URI("urn:x-shacl-test:/" + testUriResolved)).toString
-      info(s"TestURI: $testUri, resolved: $testUriResolved, parent: $parentFolderURI")
+      numTests += 1
       expectedResult match {
         case ReportResult(rep) => {
+          var isOk = true
+          var numNodeShapes = 0
+          var numNodeShapesPassed = 0
           rep.failingNodesShapes.foreach { case (node,shape) => {
-            numTests += 1
+            numNodeShapes += 1
             result.result.fold(vr => {
               numErrors += 1
-              fail(s"Validating error: ${vr}")
+              isOk = false
               },
               typing => {
-              // info(s"Checking that $node fails for shape $shape")
-              // info(s"Typing: ${typing.show}")
               if (typing._1.getFailedValues(node).map(_.id) contains (shape)) {
-                numPassed += 1
-                val item = SingleTestReport(
-                  passed = true,
-                  name = name,
-                  uriTest = testUri,
-                  testType = "Validation",
-                  moreInfo = s"$node failed as expected for shape $shape")
-                report.addTestReport(item)
-              } else {
-                numFailed += 1
-                val item = SingleTestReport(
-                  passed = false,
-                  name = name,
-                  uriTest = testUri,
-                  testType = "Validation",
-                  moreInfo = s"$node did not fail for shape $shape")
-                report.addTestReport(item)
+                numNodeShapesPassed += 1
+                } else {
+                println(s">>> Error . $name | Node: $node, shape: $shape\nTyping:\n$typing\n<<<\n")
+                isOk = false
               }
             })
            }
           }
+          val item = SingleTestReport(
+            passed = isOk,
+            name = name,
+            uriTest = testUri,
+            testType = "Validation",
+            moreInfo = s"NodeShapes: ${numNodeShapes}\nPassed: ${numNodeShapesPassed} \n${result.show}")
+          numPassed += (if (isOk) 1 else 0)
+          numErrors += (if (isOk) 0 else 1)
+          report.addTestReport(item)
         }
         case BooleanResult(b) =>
           if (result.isOK == b) {
@@ -294,7 +184,6 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
               testType = "Validation",
               moreInfo = s"Expected $b and found it")
             report.addTestReport(item)
-            info(s"Expected result = obtainedResult") // = $b.\nResult:\n${result}")
           }
           else {
             numTests += 1
@@ -306,11 +195,10 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
               testType = "Validation",
               moreInfo = s"Expected $b and found ${!b}")
             report.addTestReport(item)
-            fail(s"Expected result($b)!= obtained result\n$result")
           }
-        case _ => fail(s"Unsupported manifestTest result $result")
+        case _ => {
+          fail(s"Unsupported manifestTest result $result")
+        }
       }
     }
-
-
 }

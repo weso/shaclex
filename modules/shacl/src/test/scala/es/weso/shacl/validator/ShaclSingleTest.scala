@@ -31,7 +31,8 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
           fail(s"Error reading manifestTest file:$e")
         }
       }
-      case Right(m) => {
+      case Right(pair) => {
+        val (m,_) = pair
         info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes")
         processManifest(m, name, fileName)
       }
@@ -43,7 +44,7 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
     // println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
       // println(s"Include: $includeNode")
-      processManifest(manifest, includeNode.getLexicalForm, name)
+      // TODO!!! processManifest(manifest, includeNode.getLexicalForm, name)
     }
     for (e <- m.entries)
       processEntry(e,name,parentFolder)

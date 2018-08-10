@@ -414,18 +414,18 @@ case class Validator(schema: Schema) extends LazyLogging {
     compare(n, greaterThanOrEqualsNodes, maxInclusiveError, "maxInclusive")
 
   private def minLength(n: Int): NodeChecker = attempt => node =>
-    condition(node.getLexicalForm.length >= n, attempt,
+    condition(!node.isBNode && node.getLexicalForm.length >= n, attempt,
       minLengthError(node, attempt, n),
       s"$node satisfies minLength($n)")
 
   private def maxLength(n: Int): NodeChecker = attempt => node =>
-    condition(node.getLexicalForm.length <= n, attempt,
+    condition(!node.isBNode && node.getLexicalForm.length <= n, attempt,
       maxLengthError(node, attempt, n),
       s"$node satisfies maxLength($n)")
 
   private def pattern(p: String, flags: Option[String]): NodeChecker = attempt => node => for {
     b <- regexMatch(p, flags, node.getLexicalForm, node, attempt)
-    t <- condition(b, attempt, patternError(node, attempt, p, flags),
+    t <- condition(!node.isBNode && b, attempt, patternError(node, attempt, p, flags),
       s"$node satisfies pattern ~/$p/${flags.getOrElse("")}")
   } yield t
 
