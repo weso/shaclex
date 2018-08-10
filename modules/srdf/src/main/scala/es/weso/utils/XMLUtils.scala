@@ -14,9 +14,6 @@ object XMLUtils {
     d1 <- xsdDatetime2GregorianCalendar(dateTime1)
     d2 <- xsdDatetime2GregorianCalendar(dateTime2)
   } yield {
-  //    val r1 = d1.toZonedDateTime.toLocalDateTime
-  //   val r2 = d2.toZonedDateTime.toLocalDateTime
-  //  r1.isBefore(r2)
     d1.compare(d2) == DatatypeConstants.LESSER
   }
 

@@ -1,0 +1,66 @@
+@startuml
+
+package SHACLex {
+[Schema] as Schema
+[ShExSchema] as ShExSchema
+[SHACLSchema] as SHACLSchema
+[Converter] as Converter
+[ShEx] as ShEx
+[SHACL] as SHACL
+'[RBE] as RBE
+[ShapeMaps] as shapeMaps
+'[DepGraphs] as depGraphs
+[SRDF] as SRDF
+[SRDF4j] as SRDF4j
+[SRDFJena] as SRDFJena
+note left of SRDFJena
+ RDFAsJenaModel
+end note
+
+note right of Converter
+ UML
+ conversion
+end note
+}
+[Apache Jena] as ApacheJena
+[RDF4j] as RDF4j
+
+Schema <|-- ShExSchema
+Schema <|-- SHACLSchema
+ShExSchema --> ShEx
+SHACLSchema --> SHACL
+Converter --> ShEx
+Converter --> SHACL
+ShEx --> shapeMaps
+'ShEx --> RBE
+'ShEx --> depGraphs
+SHACL --> SRDF
+ShEx --> SRDF
+SRDF <|-- SRDFJena
+SRDF <|-- SRDF4j
+SRDFJena --> ApacheJena
+SRDF4j --> RDF4j
+
+package RDFShape {
+
+} 
+package shexJava {
+
+}
+
+shexJava --> Schema
+RDFShape --> Schema
+
+note left of RDFShape 
+ Online demo deployed at
+ http://rdfshape.weso.es
+end note
+
+note left of shexJava 
+ Demo using
+ SHACLex from
+ Java
+end note
+
+
+@enduml
