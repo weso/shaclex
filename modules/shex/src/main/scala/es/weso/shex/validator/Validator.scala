@@ -313,7 +313,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
       csRest <- {
-        println(s"Table: $cTable\nrbe: $rbe")
+//        println(s"Table: $cTable\nrbe: $rbe")
         calculateCandidates(neighs, cTable)
       }
       (candidates, rest) = csRest

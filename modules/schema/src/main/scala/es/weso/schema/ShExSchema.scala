@@ -145,7 +145,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
         serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
       }
       case Some(other) =>
-        Left(s"Conversion between Schema engines not implemented yet")
+        Left(s"Conversion between Schema engines not implemented yet. this: $name, other: $other")
     }
   }
 

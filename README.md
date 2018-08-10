@@ -106,12 +106,38 @@ which contains the compressed binary code.
 
 ## Compatibility tests
 
-We aim to pass the standard test-suites of [ShEx](https://github.com/shexSpec/shexTest) 
-and [SHACL](https://w3c.github.io/data-shapes/data-shapes-test-suite/).
+The current implementation passes all [shacl-core tests](https://w3c.github.io/data-shapes/data-shapes-test-suite/). 
+ In order to generate the EARL report, run: 
+ 
+```
+$ sbt 
+[...]
+sbt:shaclex> project shacl 
+sbt:shacl> testOnly es.weso.shacl.report.ReportGeneratorCompatTest
+```
+ 
+We also aim to pass the [ShEx test-suite](https://github.com/shexSpec/shexTest).
 
-In order to run the test suite and generate the EARL report, you can do the following:
+In order to run the shex test-suite and generate the EARL report, you can do the following:
 
-* For ShEx, run `sbt`, select `project shex` and run `compat:test` for compatibility tests. 
+```
+sbt
+...
+sbt:shaclex> project shex
+sbt:shex> compat:test
+```
+
+## Convert between Schema formats
+
+Shaclex can be used to convert between different schemas. 
+The following example shows how to convert between ShExC to ShExJ:
+
+```
+$ sbt "run --schema examples/shex/good1.shex 
+           --schemaFormat ShExC
+           --outSchemaFormat ShExJ
+           --showSchema"
+```
 
 ## More information
 
