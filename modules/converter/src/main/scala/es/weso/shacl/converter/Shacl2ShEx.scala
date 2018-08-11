@@ -13,10 +13,14 @@ object Shacl2ShEx extends Converter {
     val prefixes = schema.pm
     val rs: List[Result[shex.ShapeExpr]] = schema.shapes.map(cnvShape(_)).toList
     val r: Result[List[shex.ShapeExpr]] = sequence(rs)
+
     r.map(
       m => shex.Schema.empty.copy(
         prefixes = Some(prefixes),
-        shapes = Some(m)
+        shapes = {
+          println(s"@@@Conversion Map: $m")
+           Some(m)
+        }
       )
     )
   }
@@ -31,17 +35,6 @@ object Shacl2ShEx extends Converter {
     }
     xs.foldLeft(zero)(comb)
   }
-
-  /*  def cnvShape(s: shacl.Shape): Result[shex.ShapeExpr] = {
-    val id : Id = cnvId(s.id)
-    val rs = s.propertyShapes.toList.map(cnvConstraint(id, _)).sequence
-    rs.map(ses => ses.size match {
-      case 1 => ses.head
-      case n if n > 1 => shex.ShapeAnd(id,ses)
-      case _ => ??? // TODO
-    })
-  } */
-
 
   def cnvShape(c: shacl.Shape): Result[shex.ShapeExpr] =
     c match {

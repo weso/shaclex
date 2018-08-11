@@ -71,7 +71,7 @@ case class Schema(prefixes: Option[PrefixMap],
 
 object Schema {
 
-  def rdfDataFormats(rdfReader: RDFReader) = rdfReader.availableParseFormats //   RDFAsJenaModel.availableFormats.map(_.toUpperCase)
+  def rdfDataFormats(rdfReader: RDFReader) = rdfReader.availableParseFormats.map(_.toUpperCase) //   RDFAsJenaModel.availableFormats.map(_.toUpperCase)
 
   def empty: Schema =
     Schema(None, None, None, None, None, None, List())
@@ -105,6 +105,7 @@ object Schema {
                 format: String,
                 rdfBuilder: RDFBuilder): Either[String,String] = {
     val formatUpperCase = format.toUpperCase
+    println(s"Target format: $formatUpperCase, available: ${rdfDataFormats(rdfBuilder)} ")
     formatUpperCase match {
       case "SHEXC" => {
         import compact.CompactShow._
