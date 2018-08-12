@@ -1,63 +1,42 @@
-package es.weso.shex.converter.uml
+package es.weso.shex.converter
 
 import es.weso._
-import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes._
-import es.weso.shacl._
-import es.weso.shacl.converter._
-import es.weso.shex.converter.ShEx2Shacl
+import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.shacl.converter.Shacl2RDF
 import org.scalatest._
+import cats.implicits._
 
 class shex2shaclTest extends FunSpec with Matchers with EitherValues {
 
-  describe("Shex2Shacl") {
-    ignore("Should convert simple node constraint") {
-      val shexSchema: shex.Schema =
-        shex.Schema.empty.
-          copy(shapes = Some(List(
-            shex.NodeConstraint.empty.copy(
-              id = Some(shex.IRILabel(IRI("http://example.org/S"))),
-              nodeKind = Some(shex.BNodeKind)))))
-
-      val iriS = IRI("http://example.org/S")
-
-      val shaclSchema: shacl.Schema =
-        shacl.Schema(
-          pm = PrefixMap.empty,
-          shapesMap = Map(ShapeRef(iriS) ->
-            shacl.Shape.empty(iriS).copy(
-              components = List(NodeKind(BlankNodeKind)))))
-
-      val r = ShEx2Shacl.shex2Shacl(shexSchema)
-      r.fold(
-        e => fail(s"Conversion failed: error: $e"),
-        v => v should be(shaclSchema))
-    }
+  describe(s"ShEx2SHACL") {
+    shouldConvertShacl2Shex(
+      """|prefix : <http://example.org/>
+        |:S IRI
+      """.stripMargin, """prefix : <http://example.org/>
+        |prefix sh: <http://www.w3.org/ns/shacl#>
+        |:S a sh:NodeShape ;
+        |   sh:closed false ;
+        |   sh:nodeKind sh:IRI .
+      """.stripMargin)
   }
 
-  describe("shacl2Shex") {
-    ignore("Should convert simple node constraint") {
-      val shexSchema: shex.Schema =
-        shex.Schema.empty.
-          copy(
-            shapes = Some(List(
-              shex.NodeConstraint.empty.copy(
-                id = Some(shex.IRILabel(IRI("http://example.org/S"))),
-                nodeKind = Some(shex.BNodeKind)))))
-
-      val iriS = IRI("http://example.org/S")
-
-      val shaclSchema: shacl.Schema =
-        shacl.Schema(
-          pm = PrefixMap.empty,
-          shapesMap = Map(ShapeRef(iriS) -> shacl.Shape.empty(iriS).copy(
-            components = List(NodeKind(BlankNodeKind)))))
-
-      val r = Shacl2ShEx.shacl2ShEx(shaclSchema)
-      r.fold(
-        e => fail(s"Conversion failed: error: $e"),
-        v => v should be(shexSchema))
+  def shouldConvertShacl2Shex(shexStr: String, shaclStrExpected: String): Unit = {
+    it(s"Should convert ShEx->SHACL\n$shexStr\n$shaclStrExpected\n--->") {
+      val result: Either[String,Boolean] = for {
+        schema <- shex.Schema.fromString(shexStr,"SHEXC",None, RDFAsJenaModel.empty)
+        shaclSchema <- ShEx2Shacl.shex2Shacl(schema).toEither.
+          leftMap(e => s"Error converting schema: $e\n$schema")
+        rdfShacl = (new Shacl2RDF {}).toRDF(shaclSchema, RDFAsJenaModel.empty)
+        rdfShaclExpected <- RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None)
+        b <-rdfShacl.isIsomorphicWith(rdfShaclExpected)
+        _ <- if (!b)
+           Left("RDFs are not isomorphic. Obtained RDF:\n" +
+             s"${rdfShacl.serialize("TURTLE")}\n" +
+             s"Expected: \n${rdfShaclExpected.serialize("TURTLE")}")
+          else Right(())
+      } yield b
+      result.fold(e => fail(s"Error: $e"),
+        b => b should be(true))
     }
   }
-
 }

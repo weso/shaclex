@@ -1,4 +1,4 @@
-package es.weso.shex.converter.uml
+package es.weso.shacl.converter
 
 import cats._
 import cats.implicits._

@@ -17,10 +17,7 @@ object Shacl2ShEx extends Converter {
     r.map(
       m => shex.Schema.empty.copy(
         prefixes = Some(prefixes),
-        shapes = {
-          println(s"@@@Conversion Map: $m")
-           Some(m)
-        }
+        shapes = Some(m)
       )
     )
   }

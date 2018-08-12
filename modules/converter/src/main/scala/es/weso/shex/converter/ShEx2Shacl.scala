@@ -5,11 +5,8 @@ import es.weso.shacl._
 import es.weso.rdf.nodes._
 import es.weso.rdf.path._
 import es.weso.rdf.PrefixMap
-import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.converter._
-import es.weso.rdf._
 
 object ShEx2Shacl extends Converter {
 
@@ -29,7 +26,7 @@ object ShEx2Shacl extends Converter {
     getShaclShapes(schema).map(
       smap => shacl.Schema(
         pm = schema.prefixMap,
-        shapesMap = shapesMap))
+        shapesMap = smap))
   }
 
   def cnvPrefixMap(pm: PrefixMap): Map[String, IRI] = {
@@ -42,26 +39,28 @@ object ShEx2Shacl extends Converter {
     def comb(
       rs: Result[Map[shacl.ShapeRef, shacl.Shape]],
       shapeExpr: shex.ShapeExpr): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
-      val r1: Result[shacl.ShapeRef] = shapeExpr.id match {
-        case None => err(s"shapeExpr $shapeExpr doesn't have id: Not implemented resolution of this case yet")
-        case Some(lbl) => ok(ShapeRef(lbl.toRDFNode))
-      }
+
+      val r1: Result[shacl.ShapeRef] =
+        cnvShapeRef(shapeExpr.id, s"ShapeRef(${shapeExpr})")
       val r2: Result[shacl.Shape] = cnvShapeExpr(shapeExpr, schema)
-      val r: Result[(shacl.ShapeRef, shacl.Shape)] = (r1 |@| r2).map { case (sref, shape) => (sref, shape) }
+      val r: Result[(shacl.ShapeRef, shacl.Shape)] =
+        (r1, r2).mapN { case (sref, shape) => (sref, shape) }
+
       r.product(rs).map { case (pair, smap) => smap + pair }
     }
+
     shexShapes.foldLeft(zero)(comb)
   }
 
   def cnvShapeExpr(se: shex.ShapeExpr, schema: shex.Schema): Result[shacl.Shape] =
     se match {
-      case s: shex.ShapeAnd => ??? // cnvShapeAnd(s,schema)
-      case s: shex.ShapeOr => ??? // cnvShapeOr(s,schema)
-      case s: shex.ShapeNot => ??? // cnvShapeNot(s,schema)
+      case s: shex.ShapeAnd => err(s"cnvShapeExpr: Not implemented $s") // cnvShapeAnd(s,schema)
+      case s: shex.ShapeOr => err(s"cnvShapeExpr: Not implemented $s") // cnvShapeOr(s,schema)
+      case s: shex.ShapeNot => err(s"cnvShapeExpr: Not implemented $s") // cnvShapeNot(s,schema)
       case nc: shex.NodeConstraint => cnvNodeConstraint(nc, schema)
       case s: shex.Shape => cnvShape(s, schema)
-      case s: shex.ShapeRef => err(s"mkShape: Not implemented $s")
-      case s: shex.ShapeExternal => err(s"mkShape: Not implemented $s")
+      case s: shex.ShapeRef => err(s"cnvShapeExpr: Not implemented $s")
+      case s: shex.ShapeExternal => err(s"cnvShapeExpr: Not implemented $s")
     }
 
   /*  def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema): Result[shacl.Shape] = {
@@ -149,14 +148,27 @@ object ShEx2Shacl extends Converter {
 
   def cnvNodeConstraint(
     nc: shex.NodeConstraint,
-    schema: shex.Schema): Result[shacl.Shape] = {
+    schema: shex.Schema): Result[shacl.NodeShape] = {
 
-    val nkShape: Result[List[Component]] =
-      nc.nodeKind.map(cnvNodeKind(_)).sequence.map(_.toList)
+    val nkComponents: Result[List[Component]] = {
+      sequence(nc.nodeKind.map(cnvNodeKind(_)).toList)
+    }
+   cnvId(nc.id, s"nodeConstraint(${nc})") andThen { id =>
+   nkComponents andThen { components =>
+   ok(shacl.Shape.empty(id).copy(components = components))
+   }}
+  }
 
-    //    nkShape.map(nks => shacl.Shape.empty(newRef).copy(components = nks))
-    //    nkShape
-    ???
+  def cnvShapeRef(maybeLabel: Option[shex.ShapeLabel], msg: String): Result[shacl.ShapeRef] =
+    cnvId(maybeLabel, msg) andThen {node =>
+    ok(ShapeRef(node))
+  }
+
+  def cnvId(maybeLabel: Option[shex.ShapeLabel],
+            msg: String): Result[RDFNode] = maybeLabel match {
+    case None => err(s"Cannot obtain id. $msg")
+    case Some(shex.IRILabel(iri)) => ok(iri)
+    case Some(shex.BNodeLabel(bnode)) => ok(bnode)
   }
 
   def cnvNodeKind(nk: shex.NodeKind): Result[shacl.NodeKind] =

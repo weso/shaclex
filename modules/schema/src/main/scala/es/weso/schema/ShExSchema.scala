@@ -6,11 +6,14 @@ import implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.shacl.converter.Shacl2ShEx
 import es.weso.shapeMaps._
-import es.weso.shex.{ Schema => Schema_, _ }
+import es.weso.shex.{Schema => Schema_, _}
 import es.weso.shex.validator._
 import es.weso.shex._
+import es.weso.shex.converter.ShEx2Shacl
 import es.weso.shex.shexR._
+
 import scala.util._
 
 case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
@@ -139,13 +142,18 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
   override def pm: PrefixMap = schema.prefixMap
 
   def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String] = {
-    targetEngine match {
+    targetEngine.map(_.toUpperCase) match {
       case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
       case Some(engine) if (engine.equalsIgnoreCase(name)) => {
         serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
       }
-      case Some(other) =>
-        Left(s"Conversion between Schema engines not implemented yet. this: $name, other: $other")
+      case Some("SHACL") | Some("SHACLEX") =>
+        for {
+          newSchema <- ShEx2Shacl.shex2Shacl(schema).toEither.leftMap(es => es.toList.mkString("\n"))
+          builder = RDFAsJenaModel.empty
+          str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
+        } yield str
+      case Some(unknown) => Left(s"Conversion from ShEx to $unknown not implemented yet")
     }
   }
 

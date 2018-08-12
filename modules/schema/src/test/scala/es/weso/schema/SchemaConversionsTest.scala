@@ -86,7 +86,7 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
     shouldConvert(strShacl, "Turtle", "Shaclex", "N-Triples", "Shaclex", strExpected, rdfCompare)
   }
 
-  describe(s"SHACL (Turtle) -> ShEx (Turtle)")  {
+  describe(s"SHACL (Turtle) -> ShEx (ShExJ)")  {
     val strShacl =
       """
         |prefix : <http://example.org/>
@@ -107,6 +107,37 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
     shouldConvert(strShacl, "Turtle", "Shaclex", "ShExJ", "ShEx", strExpected, jsonCompare)
   }
 
+  describe(s"SHACL (Turtle) -> ShEx (ShExC)")  {
+    val strShacl =
+      """
+        |prefix : <http://example.org/>
+        |prefix sh: <http://www.w3.org/ns/shacl#>
+        |:S a sh:NodeShape ;
+        |	sh:nodeKind sh:IRI
+      """.stripMargin
+
+    val strExpected = """
+       |<http://example.org/S> IRI
+       |""".stripMargin
+    shouldConvert(strShacl, "Turtle", "Shaclex", "ShExC", "ShEx", strExpected, shExCompare)
+  }
+
+  describe(s"ShEx (ShExC) -> SHACL (Turtle)")  {
+    val strShacl =
+      """
+        |prefix : <http://example.org/>
+        |:S IRI
+      """.stripMargin
+
+    val strExpected = """
+                        |prefix : <http://example.org/>
+                        |prefix sh: <http://www.w3.org/ns/shacl#>
+                        |:S a sh:NodeShape ;
+                        | sh:closed false ;
+                        |	sh:nodeKind sh:IRI
+                        |""".stripMargin
+    shouldConvert(strShacl, "ShExC", "ShEx", "Turtle", "SHACLEX", strExpected, rdfCompare)
+  }
 
   def shouldConvert(str: String, format: String, engine: String,
                     targetFormat: String, targetEngine: String,
@@ -153,8 +184,8 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
       leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
     schema2 <- Schemas.fromString(s2,"ShExC","ShEx",None).
       leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
-    json1 <- schema1.convert(Some("ShExJ"),Some("ShExC"))
-    json2 <- schema2.convert(Some("ShExJ"),Some("ShExC"))
+    json1 <- schema1.convert(Some("ShExJ"),Some("ShEx")).leftMap(e => s"Error converting schema1 to ShEx/ShExJ: $e\n$schema1")
+    json2 <- schema2.convert(Some("ShExJ"),Some("ShEx")).leftMap(e => s"Error converting schema2 to ShEx/ShExJ: $e\n$schema2")
     b <- jsonCompare(json1,json2)
   } yield b
 

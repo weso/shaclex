@@ -131,9 +131,11 @@ object CompactShow {
         idDoc(id, pm) :: space ::
           keyword("NOT") :: shapeExprDoc(pm)(e)
       case nc: NodeConstraint =>
-        nodeConstraintDoc(pm)(nc)
+        idDoc(nc.id, pm) :: space ::
+          nodeConstraintDoc(pm)(nc)
       case s: Shape =>
-        shapeDoc(pm)(s)
+        idDoc(s.id, pm) :: space ::
+          shapeDoc(pm)(s)
       case ShapeRef(r) =>
         str("@") :: shapeLabelDoc(pm)(r)
       case ShapeExternal(id) =>
@@ -253,6 +255,7 @@ object CompactShow {
       case e: OneOf => someOfDoc(pm)(e)
       case Inclusion(l) => keyword("&") :: shapeLabelDoc(pm)(l)
       case t: TripleConstraint => tripleConstraintDoc(pm)(t)
+      case e: Expr => exprDoc(pm)(e)
     }
 
   private def eachOfDoc(pm: PrefixMap)(e: EachOf): Doc = {
@@ -293,10 +296,13 @@ object CompactShow {
       optDoc(t.annotations, annotationsDoc(pm))
 
   private def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Doc =
-    str(s"todo: Annotations $as $pm")
+    str(s"CompactShow/TODO: Annotations $as $pm")
 
   private def cardinalityDoc(min: Option[Int], max: Option[Max]): Doc =
     str(s" {${min.getOrElse(1)},${max.getOrElse(IntMax(1)).show}}")
+
+  private def exprDoc(pm: PrefixMap)(e: Expr): Doc =
+    str(s"CompactShow/TODO: Expressions $e")
 
   private def listDocSep[A](
     xs: Seq[A],

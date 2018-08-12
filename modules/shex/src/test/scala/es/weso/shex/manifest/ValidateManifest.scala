@@ -2,7 +2,6 @@ package es.weso.shex.manifest
 
 import java.nio.file.Paths
 
-import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shapeMaps.ShapeMap

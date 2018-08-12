@@ -45,16 +45,6 @@ sealed abstract class Shape {
 
 }
 
-
-/**
-  * Captures the common parts of NodeShapes and PropertyShapes
-  */
-/*sealed abstract class Constraint {
-  def isPropertyConstraint: Boolean
-  def toPropertyConstraint: Option[PropertyShape] = None
-  def components: Seq[Component]
-} */
-
 case class NodeShape(
                       id: RDFNode,
                       components: List[Component],

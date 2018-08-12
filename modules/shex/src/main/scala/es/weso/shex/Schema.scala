@@ -76,6 +76,14 @@ object Schema {
   def empty: Schema =
     Schema(None, None, None, None, None, None, List())
 
+  /**
+  * Reads a Schema from a char sequence
+    * @param cs char sequence
+    * @param format syntax format
+    * @param base base URL
+    * @param rdfReader RDFReader value from which to obtain RDF data formats (in case of RDF format)
+    * @return either a Schema or a String message error
+    */
   def fromString(cs: CharSequence,
                  format: String,
                  base: Option[String],
