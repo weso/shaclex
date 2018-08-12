@@ -65,7 +65,7 @@ object Schemas {
     base: Option[String] = None): Either[String, Schema] = for {
     schema <- lookupSchema(schemaName)
     schemaParsed <- if (cs.length == 0) Right(schema.empty)
-                    else schema.fromString(cs, format, base)
+                    else schema.empty.fromString(cs, format, base)
   } yield schemaParsed
 
   def fromRDF(rdf: RDFReader, schemaName: String): Either[String, Schema] = {

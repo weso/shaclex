@@ -113,7 +113,6 @@ object Schema {
                 format: String,
                 rdfBuilder: RDFBuilder): Either[String,String] = {
     val formatUpperCase = format.toUpperCase
-    println(s"Target format: $formatUpperCase, available: ${rdfDataFormats(rdfBuilder)} ")
     formatUpperCase match {
       case "SHEXC" => {
         import compact.CompactShow._

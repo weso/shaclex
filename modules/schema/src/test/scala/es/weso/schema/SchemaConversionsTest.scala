@@ -8,6 +8,29 @@ import io.circe.parser._
 
 class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
 
+  describe(s"Convert 2 shaclex") {
+      val str1 =
+        """|prefix sh: <http://www.w3.org/ns/shacl#>
+           |<x> a sh:NodeShape .
+           |""".stripMargin
+      val strExpected =
+        """
+          |<x> <http://www.w3.org/ns/shacl#closed> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+          |<x> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .
+        """.stripMargin
+      shouldConvert(str1, "Turtle", "Shaclex", "N-Triples", "Shaclex", strExpected, rdfCompare)
+      val str2 =
+        """|prefix sh: <http://www.w3.org/ns/shacl#>
+           |<y> a sh:NodeShape .
+           |""".stripMargin
+      val str2Expected =
+        """
+          |<y> <http://www.w3.org/ns/shacl#closed> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+          |<y> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .
+        """.stripMargin
+      shouldConvert(str2, "Turtle", "Shaclex", "N-Triples", "Shaclex", str2Expected, rdfCompare)
+  }
+
   describe("ShExC -> ShExJ") {
     val strShExC =
       """
@@ -67,7 +90,6 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
         """.stripMargin
       shouldConvert(strShExC, "ShExC", "ShEx", "Turtle", "ShEx", strExpected, rdfCompare)
   }
-
   describe(s"SHACL (Turtle) -> SHACL (JSON-LD)")  {
     val strShacl =
       """
@@ -83,7 +105,9 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
         |<http://example.org/S> <http://www.w3.org/ns/shacl#closed> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
         |<http://example.org/S> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .
       """.stripMargin
+    info(s"@@@@@@@@@@@@@@@@@@@")
     shouldConvert(strShacl, "Turtle", "Shaclex", "N-Triples", "Shaclex", strExpected, rdfCompare)
+    info(s"<<<<<<<<<<<<<<<<<<<<")
   }
 
   describe(s"SHACL (Turtle) -> ShEx (ShExJ)")  {
@@ -148,8 +172,10 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
      val r = for {
       schema       <- Schemas.fromString(str, format, engine, None).
         leftMap(e => s"Error reading Schema ($format/$engine): $str\nError: $e")
+      _ <- { info(s"str:\n$str, format: $format, engine: $engine\nSchema: $schema)"); Right(())}
       strConverted <- schema.convert(Some(targetFormat), Some(targetEngine)).
         leftMap(e => s"Error converting schema(${schema.name}) to ($targetFormat/$targetEngine\n$e")
+      _ <- { info(s"strConverted:\n$strConverted\ntargetFormat: $targetFormat, targetEngine: $targetEngine"); Right(())}
       result       <- compare(strConverted, expected).
         leftMap(e => s"Error in comparison: $e")
     } yield (strConverted, expected, result)
@@ -174,18 +200,25 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
   } yield b
 
   def rdfCompare(s1: String, s2: String): Either[String, Boolean] = for {
+    _ <- { info(s"s1: $s1"); Right(()) }
     rdf1 <- RDFAsJenaModel.fromChars(s1,"TURTLE",None)
+    _ <- { info(s"RDF1: $rdf1"); Right(()) }
     rdf2 <- RDFAsJenaModel.fromChars(s2,"TURTLE",None)
+    _ <- { info(s"RDF2: $rdf2"); Right(()) }
     b <- rdf1.isIsomorphicWith(rdf2)
   } yield b
 
   def shExCompare(s1: String, s2: String): Either[String, Boolean] = for {
     schema1 <- Schemas.fromString(s1,"ShExC","ShEx",None).
       leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
+    _ <- { info(s"Schema1: $schema1"); Right(()) }
     schema2 <- Schemas.fromString(s2,"ShExC","ShEx",None).
       leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
+    _ <- { info(s"Schema2: $schema2"); Right(()) }
     json1 <- schema1.convert(Some("ShExJ"),Some("ShEx")).leftMap(e => s"Error converting schema1 to ShEx/ShExJ: $e\n$schema1")
+    _ <- { info(s"Json1: $json1"); Right(()) }
     json2 <- schema2.convert(Some("ShExJ"),Some("ShEx")).leftMap(e => s"Error converting schema2 to ShEx/ShExJ: $e\n$schema2")
+    _ <- { info(s"Json2: $json2"); Right(()) }
     b <- jsonCompare(json1,json2)
   } yield b
 

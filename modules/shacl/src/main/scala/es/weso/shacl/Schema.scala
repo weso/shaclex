@@ -97,8 +97,9 @@ case class Schema(
       case "TREE" => {
         Right(s"PrefixMap ${pm.treeString}\nShapes: ${shapes.treeString}")
       }
-      case _ =>
-        new Shacl2RDF {}.serialize(this, format, builder)
+      case _ => {
+        new Shacl2RDF {}.serialize(this, format, builder.empty)
+      }
     }
   }
 }

@@ -109,7 +109,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def serialize(format: String): Either[String, String] = {
     val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formats.contains(format.toUpperCase))
-      schema.serialize(format, builder)
+      schema.serialize(format, builder.empty)
     else
       Left(s"Format $format not supported to serialize $name. Supported formats=$formats")
   }
@@ -125,7 +125,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String] = {
    targetEngine.map(_.toUpperCase) match {
      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
-     case Some(engine) if (engine.equalsIgnoreCase(name)) => {
+     case Some("SHACL") | Some("SHACLEX") => {
        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      }
      case Some("SHEX") => for {
@@ -145,6 +145,5 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
 object ShaclexSchema {
   def empty: ShaclexSchema = ShaclexSchema(schema = ShaclSchema.empty)
-
 
 }
