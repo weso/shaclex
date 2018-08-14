@@ -6,7 +6,6 @@ import implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl.converter.Shacl2ShEx
 import es.weso.shapeMaps._
 import es.weso.shex.{Schema => Schema_, _}
 import es.weso.shex.validator._

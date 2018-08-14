@@ -1,6 +1,5 @@
 package es.weso.shacl.converter
 
-import cats._
 import cats.implicits._
 import es.weso._
 import es.weso.rdf._
@@ -80,8 +79,9 @@ class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
            |:S {
            | :p IRI
            |}
-        """.stripMargin)
-    } */
+        """.stripMargin) */
+
+    }
 
   }
 
