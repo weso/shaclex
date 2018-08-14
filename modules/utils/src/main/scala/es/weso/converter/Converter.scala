@@ -15,7 +15,6 @@ trait Converter {
     Validated.invalidNel(msg)
 
   def sequence[A](ls: List[Result[A]]): Result[List[A]] =
-    ls.sequence
-
+    ls.sequence[Result,A]
 
 }

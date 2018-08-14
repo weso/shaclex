@@ -34,7 +34,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
   }
 
   private def shape(shape: Shape): RDFSaver[RDFNode] = shape match {
-    case ns: NodeShape => nodeShape(ns)
+    case ns: NodeShape     => nodeShape(ns)
     case ps: PropertyShape => propertyShape(ps)
   }
 
@@ -46,22 +46,25 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     saveList(ts.toList, target(id))
 
   private def target(id: RDFNode)(t: Target): RDFSaver[Unit] = t match {
-    case TargetNode(node) => addTriple(id, sh_targetNode, node)
-    case TargetClass(node) => addTriple(id, sh_targetClass, node)
+    case TargetNode(node)       => addTriple(id, sh_targetNode, node)
+    case TargetClass(node)      => addTriple(id, sh_targetClass, node)
     case TargetSubjectsOf(node) => addTriple(id, sh_targetSubjectsOf, node)
-    case TargetObjectsOf(node) => addTriple(id, sh_targetObjectsOf, node)
+    case TargetObjectsOf(node)  => addTriple(id, sh_targetObjectsOf, node)
   }
 
   private def propertyShapes(id: RDFNode, ts: Seq[ShapeRef]): RDFSaver[Unit] =
     saveList(ts.toList, makePropertyShape(id))
 
-  private def makePropertyShape(id: RDFNode)(p: ShapeRef): RDFSaver[Unit] = for {
-    node <- ok(p.id) // propertyShape(p)
-    _ <- addTriple(id, sh_property, node)
-  } yield ()
+  private def makePropertyShape(id: RDFNode)(p: ShapeRef): RDFSaver[Unit] =
+    for {
+      node <- ok(p.id) // propertyShape(p)
+      _    <- addTriple(id, sh_property, node)
+    } yield ()
 
   private def closed(id: RDFNode, b: Boolean): RDFSaver[Unit] =
-    addTriple(id, sh_closed, BooleanLiteral(b))
+    if (b)
+      addTriple(id, sh_closed, BooleanLiteral(b))
+    else ok(())
 
   private def ignoredProperties(id: RDFNode, ignored: List[IRI]): RDFSaver[Unit] =
     if (!ignored.isEmpty) {

@@ -15,7 +15,6 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
            |""".stripMargin
       val strExpected =
         """
-          |<x> <http://www.w3.org/ns/shacl#closed> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
           |<x> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .
         """.stripMargin
       shouldConvert(str1, "Turtle", "Shaclex", "N-Triples", "Shaclex", strExpected, rdfCompare)
@@ -25,7 +24,6 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
            |""".stripMargin
       val str2Expected =
         """
-          |<y> <http://www.w3.org/ns/shacl#closed> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
           |<y> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .
         """.stripMargin
       shouldConvert(str2, "Turtle", "Shaclex", "N-Triples", "Shaclex", str2Expected, rdfCompare)
@@ -102,12 +100,9 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
     val strExpected =
       """
         |<http://example.org/S> <http://www.w3.org/ns/shacl#nodeKind> <http://www.w3.org/ns/shacl#IRI> .
-        |<http://example.org/S> <http://www.w3.org/ns/shacl#closed> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
         |<http://example.org/S> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shacl#NodeShape> .
       """.stripMargin
-    info(s"@@@@@@@@@@@@@@@@@@@")
     shouldConvert(strShacl, "Turtle", "Shaclex", "N-Triples", "Shaclex", strExpected, rdfCompare)
-    info(s"<<<<<<<<<<<<<<<<<<<<")
   }
 
   describe(s"SHACL (Turtle) -> ShEx (ShExJ)")  {
@@ -157,7 +152,6 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
                         |prefix : <http://example.org/>
                         |prefix sh: <http://www.w3.org/ns/shacl#>
                         |:S a sh:NodeShape ;
-                        | sh:closed false ;
                         |	sh:nodeKind sh:IRI
                         |""".stripMargin
     shouldConvert(strShacl, "ShExC", "ShEx", "Turtle", "SHACLEX", strExpected, rdfCompare)

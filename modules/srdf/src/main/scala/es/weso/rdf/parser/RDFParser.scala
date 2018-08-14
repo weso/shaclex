@@ -314,6 +314,11 @@ trait RDFParser {
     ps.foldLeft(zero)(comb)
   }
 
+  /**
+  * Applies a list of parsers
+    * @param ps: List of parsers. Each parser returns a list of values
+    * @tparam A
+    */
   def anyOfLs[A](ps: RDFParser[List[A]]*): RDFParser[Seq[A]] = {
     def comb(rest: RDFParser[Seq[A]], p: RDFParser[List[A]]): RDFParser[Seq[A]] = (n, rdf) => {
       p(n, rdf) match {

@@ -37,7 +37,7 @@ trait Extend {
       case Some(lbls) => {
         val zero: Result = Right(None)
         def comb(r: Result, x: Label): Visited[Result] = {
-          println(s"comb, x=$x, r=$r")
+          // println(s"comb, x=$x, r=$r")
           for {
             visited <- getVisited
             v <- if (visited contains x) {

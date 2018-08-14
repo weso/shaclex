@@ -149,7 +149,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
       }
       case Some("SHACL") | Some("SHACLEX") =>
         for {
-          newSchema <- ShEx2Shacl.shex2Shacl(schema).toEither.leftMap(es => es.toList.mkString("\n"))
+          newSchema <- ShEx2Shacl.shex2Shacl(schema,None).leftMap(es => es.mkString("\n"))
           builder = RDFAsJenaModel.empty
           str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
         } yield str

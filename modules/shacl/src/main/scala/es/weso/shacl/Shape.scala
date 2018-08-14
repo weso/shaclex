@@ -60,7 +60,7 @@ case class NodeShape(
 case class PropertyShape(
                           id: RDFNode,
                           path: SHACLPath,
-                          components: Seq[Component],
+                          components: List[Component],
                           targets: Seq[Target],
                           propertyShapes: Seq[ShapeRef],
                           closed: Boolean,
@@ -87,7 +87,7 @@ object Shape {
                           path: SHACLPath): PropertyShape = PropertyShape(
     id = id,
     path = path,
-    components = Seq(),
+    components = List(),
     targets = Seq(),
     propertyShapes = Seq(),
     closed = false,
