@@ -15,7 +15,10 @@ class AbstractSyntaxTest extends FunSpec with Matchers {
         targets = List(),
         propertyShapes = List(ShapeRef(x)),
         false,
-        List())
+        List(),
+        false,
+        Map()
+      )
 
       shape.id should be(id)
 

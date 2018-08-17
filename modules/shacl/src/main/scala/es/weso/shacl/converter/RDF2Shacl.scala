@@ -93,7 +93,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     propertyShapes <- propertyShapes(n, rdf)
     components <- components(n, rdf)
     closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
-    ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
+    deactivated <- booleanFromPredicateOptional(sh_deactivated)(n,rdf)
+    message <- parseMessage(n, rdf)
+    ignoredNodes <- {
+      println(s"Parsing deactivated: $deactivated for node: $n") ;
+      rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
+    }
     ignoredIRIs <- nodes2iris(ignoredNodes)
     classes <- objectsFromPredicate(sh_class)(n,rdf)
   } yield {
@@ -103,11 +108,42 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       targets = targets,
       propertyShapes = propertyShapes,
       closed = closed.getOrElse(false),
-      ignoredProperties = ignoredIRIs)
+      ignoredProperties = ignoredIRIs,
+      deactivated = deactivated.getOrElse(false),
+      message = message
+    )
     val sref = ShapeRef(n)
     parsedShapes += (sref -> shape)
     sref
   }
+
+  private def parseMessage: RDFParser[Map[Option[Lang],String]] = (n,rdf) => for {
+    nodes <- objectsFromPredicate(sh_message)(n,rdf)
+    map <- cnvMessages(nodes)(n,rdf)
+  } yield map
+
+  private def cnvMessages(ns: Set[RDFNode]): RDFParser[Map[Option[Lang], String]] = (n,rdf) => {
+    val zero: Either[String,Map[Option[Lang], String]] = Right(Map())
+    def cmb(next: Either[String,Map[Option[Lang], String]], x: RDFNode): Either[String,Map[Option[Lang], String]] = x match {
+      case StringLiteral(str) => for {
+        m <- next
+        updated <- m.get(None) match {
+          case None => Right(m.updated(None, str))
+          case Some(other) => Left(s"Two values for predicate sh:message: $str and $other for node $n")
+        }
+      } yield updated
+      case LangLiteral(str,lang) => for {
+        m <- next
+        updated <- m.get(Some(lang)) match {
+          case None => Right(m.updated(Some(lang), str))
+          case Some(other) => Left(s"Two values for predicate sh:message: $str and $other for node $n for lang $lang")
+        }
+      } yield updated
+      case _ => Left(s"Node $x must be a string or a language tagged string")
+    }
+    ns.foldLeft(zero)(cmb)
+  }
+
 
   def propertyShape: RDFParser[ShapeRef] = (n, rdf) => for {
     types <- rdfTypes(n, rdf)
@@ -119,7 +155,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     components <- components(n, rdf)
     closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
-    ignoredIRIs <- nodes2iris(ignoredNodes)
+    deactivated <- booleanFromPredicateOptional(sh_deactivated)(n, rdf)
+    message <- parseMessage(n, rdf)
+    ignoredIRIs <- {
+      println(s"Parsing deactivated: $deactivated for node: $n")
+      nodes2iris(ignoredNodes)
+    }
   } yield {
     val ps = PropertyShape(
       id = n,
@@ -128,7 +169,11 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       targets = targets,
       propertyShapes = propertyShapes,
       closed = closed.getOrElse(false),
-      ignoredProperties = ignoredIRIs)
+      ignoredProperties = ignoredIRIs,
+      deactivated = deactivated.getOrElse(false),
+      message = message
+    )
+
     val sref = ShapeRef(n)
     parsedShapes += (sref -> ps)
     sref
@@ -191,13 +236,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     case i: IRI => parseOk(TargetObjectsOf(i))
     case _ => parseFail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
-
-  /*  def propertyShapes: RDFParser[Seq[PropertyShape]] = (n,rdf) =>
-    if (!isPropertyShape(n,rdf)) {
-      ??? // combineAll(propertyConstraints, nodeConstraints)(n,rdf)
-  } else for {
-    p <- propertyShape(n,rdf)
-  } yield Seq(p) */
 
   def isPropertyShape(node: RDFNode, rdf: RDFReader): Boolean = {
     rdf.getTypes(node).contains(sh_PropertyShape) ||

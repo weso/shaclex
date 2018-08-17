@@ -3,23 +3,47 @@ package es.weso.shacl.converter
 import cats.Id
 import cats.data._
 import cats.implicits._
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.{InversePath, PredicatePath, SHACLPath}
 import es.weso.{shacl, _}
 
 object Shacl2ShEx {
 
-  def shacl2ShEx(schema: shacl.Schema): Either[String, shex.Schema] =
-    cnvSchema(schema).value
+  def shacl2ShEx(schema: shacl.Schema): Either[String, (shex.Schema, shapeMaps.QueryShapeMap)] = {
+    val (state, eitherSchema) = cnvSchema(schema).value.run(initialState)
+    for {
+     schema <- eitherSchema
+     schema1 = schema.addTripleExprMap(state.tripleExprMap)
+     queryMap <- cnvShapeMap(schema)
+    } yield (schema1,queryMap)
+  }
 
-  private type Result[A] = EitherT[Id,String,A]
+  def cnvShapeMap(schema: shex.Schema): Either[String,shapeMaps.QueryShapeMap] = Right(shapeMaps.QueryShapeMap(List(), PrefixMap.empty, PrefixMap.empty))
+
+  case class State(tripleExprMap: TEMap) {
+    def addLabelTripleExpr(lbl: shex.ShapeLabel, te: shex.TripleExpr): State = {
+      this.copy(tripleExprMap = tripleExprMap.updated(lbl,te))
+    }
+  }
+
+  lazy val initialState: State = State(Map())
+
+  type TEMap = Map[shex.ShapeLabel, shex.TripleExpr]
+
+  type S[A] = StateT[Id,State,A]
+
+  private type Result[A] = EitherT[S,String,A]
 
   private def ok[A](x:A): Result[A] =
     EitherT.pure(x)
 
   private def err[A](msg: String): Result[A] = {
-    EitherT.leftT[Id,A](msg)
+    EitherT.leftT[S,A](msg)
   }
+
+  private def modify(fn: State => State): Result[Unit] =
+    EitherT.liftF(StateT.modify(fn))
 
   private def sequence[A](rs: List[Result[A]]): Result[List[A]] = rs.sequence[Result,A]
 
@@ -58,7 +82,7 @@ object Shacl2ShEx {
       case s => err(s"cnvShape: Unimplemented conversion of $s")
     }
 
-  private type ShExId = Option[shex.ShapeLabel]
+//  private type ShExId = Option[shex.ShapeLabel]
 
   private def cnvId(node: RDFNode): Result[shex.ShapeLabel] =
     shex.ShapeLabel.fromRDFNode(node).fold(e => err(e), lbl => ok(lbl))
@@ -68,7 +92,7 @@ object Shacl2ShEx {
 
   private def cnvPropertyShapes(ps: List[shacl.ShapeRef],
                                 schema: shacl.Schema
-                               ): Result[List[shex.TripleExpr]] =
+                               ): Result[List[shex.ShapeExpr]] =
     sequence(ps.map(cnvPropertyShapeRef(_, schema)))
 
   private def cnvNodeShape(ns: shacl.NodeShape,
@@ -77,15 +101,20 @@ object Shacl2ShEx {
     for {
       id <- cnvId(ns.id)
       maybeSe <- cnvComponentsAsShapeExpr(ns.components)
+      _ <- { println(s"MaybeSe: $maybeSe"); ok(()) }
       ps <- cnvPropertyShapes(ns.propertyShapes.toList, schema)
+      _ <- { println(s"ps: $ps"); ok(()) }
       se = maybeSe.getOrElse(shex.ShapeExpr.any)
-      se1 <- ps.length match {
+      se1 = ps.length match {
           case 0 => // TODO: Check when there are more triple exprs...
-           ok(se)
-          case 1 =>
-            addExpression(se, ps.head)
+           se
+          case 1 => {
+            println(s"Length 1...")
+            ps.head // addExpression(se, ps.head)
+          }
           case n if (n > 1) =>
-           addExpression(se, shex.EachOf(None,ps,None,None,None,None))
+           // addExpression(se, shex.EachOf(None,ps,None,None,None,None))
+          shex.ShapeAnd(None, ps)
         }
       se2 <- addId(se1,id)
     } yield se2
@@ -94,31 +123,44 @@ object Shacl2ShEx {
     ok(se.addId(id))
   }
 
-  private def addExpression(se: shex.ShapeExpr, te: shex.TripleExpr): Result[shex.ShapeExpr] = se match {
+/*  private def addExpression(se: shex.ShapeExpr, te: shex.TripleExpr): Result[shex.ShapeExpr] = se match {
     case s: shex.Shape => ok(s.copy(expression = Some(te)))
     case nc: shex.NodeConstraint => ok(shex.ShapeAnd(None,
       List(nc,
            shex.Shape.empty.copy(expression=Some(te))))
     )
-  }
+  }*/
+
+  private def addLabelTripleExpr(lbl: shex.ShapeLabel,
+                                 te: shex.TripleExpr
+                                ): Result[Unit] =
+    for {
+     _ <- modify(_.addLabelTripleExpr(lbl,te))
+    } yield (())
+
   private def cnvPropertyShapeRef(sref: shacl.ShapeRef,
-                                  schema: shacl.Schema): Result[shex.TripleExpr] =
+                                  schema: shacl.Schema
+                                 ): Result[shex.ShapeExpr] =
     for {
      shape <- getShape(sref, schema)
-     te <- shape match {
-       case ps: shacl.PropertyShape => cnvPropertyShape(ps)
-       case _ => err(s"cnvPropertyShapeRef: reference $sref does not point to a property shape. Shape: $shape")
+     se <- shape match {
+       case ps: shacl.PropertyShape => for {
+         id <- cnvId(ps.id)
+         s <- cnvPropertyShape(ps)
+         _ <- addLabelTripleExpr(id,s)
+       } yield shapeInclusion(id)
+       case _ =>
+         err[shex.ShapeExpr](s"cnvPropertyShapeRef: reference $sref does not point to a property shape. Shape: $shape")
      }
-    } yield te
+    } yield se
 
   private def cnvPropertyShape(ps: shacl.PropertyShape): Result[shex.TripleExpr] =
    for {
-    id <- cnvId(ps.id)
     predicateInverse <- getPredicateInversePair(ps.path)
     se <- cnvComponentsAsShapeExpr(ps.components)
     min <- getMinComponent(ps.components)
     max <- getMaxComponent(ps.components)
-   } yield shex.TripleConstraint(Some(id),predicateInverse.inverse, None, predicateInverse.pred, se, min, max, None, None, None)
+   } yield shex.TripleConstraint(None,predicateInverse.inverse, None, predicateInverse.pred, se, min, max, None, None, None)
 
   case class PredicateInverse(pred: IRI, inverse: Option[Boolean])
 
@@ -175,9 +217,11 @@ object Shacl2ShEx {
     }
   }
 
-  private lazy val shexIri: shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.IRIKind, List())
-  private lazy val shexBNode: shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.BNodeKind, List())
-  private lazy val shexLiteral: shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.LiteralKind, List())
+  private def shexIri(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.IRIKind, List())
+  private def shexBNode(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.BNodeKind, List())
+  private def shexLiteral(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.LiteralKind, List())
+  private def shapeInclusion(lbl: shex.ShapeLabel): shex.ShapeExpr =
+    shex.Shape.empty.copy(expression = Some(shex.Inclusion(lbl)))
 
   private def cnvNodeKind(nk: shacl.NodeKind): Result[shex.ShapeExpr] =
    nk.value match {
@@ -217,10 +261,10 @@ object Shacl2ShEx {
   private def fromEither[A](e: Either[String,A]): Result[A] =
     EitherT.fromEither(e)
 
-  private def mkIRILabel(iri: IRI): shex.ShapeLabel =
+/*  private def mkIRILabel(iri: IRI): shex.ShapeLabel =
     shex.IRILabel(iri)
 
   private def mkBNodeLabel(n: Int): shex.ShapeLabel =
     shex.BNodeLabel(BNode(n.toString))
-
+*/
 }

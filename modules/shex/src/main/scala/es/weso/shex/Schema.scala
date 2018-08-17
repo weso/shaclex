@@ -35,6 +35,9 @@ case class Schema(prefixes: Option[PrefixMap],
   lazy val prefixMap: PrefixMap =
     prefixes.getOrElse(PrefixMap.empty)
 
+  def getTripleExprMap(): Map[ShapeLabel, TripleExpr] =
+    tripleExprMap.getOrElse(Map())
+
   lazy val shapesMap: Map[ShapeLabel,ShapeExpr] = {
     shapes match {
       case None => Map()
@@ -59,6 +62,9 @@ case class Schema(prefixes: Option[PrefixMap],
   def labels: List[ShapeLabel] = {
     shapeList.map(_.id).flatten
   }
+
+  def addTripleExprMap(te: Map[ShapeLabel,TripleExpr]): Schema =
+    this.copy(tripleExprMap = Some(te))
 
   def negCycles: Either[String, Set[Set[ShapeLabel]]] =
     Dependencies.negCycles(this)

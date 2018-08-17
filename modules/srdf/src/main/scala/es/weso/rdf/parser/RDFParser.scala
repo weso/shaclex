@@ -584,8 +584,6 @@ trait RDFParser {
     else
       list1PlusAux(parser, restNode :: visited)(restNode, rdf)
 
-  def ok[A](x: A): RDFParser[A] = (n, rdf) => Right(x)
-
   def rdfNil[A]: RDFParser[List[A]] = (n, rdf) =>
     if (n == rdf_nil) Right(List())
     else parseFail(s"Expected rdf_nil but got $n")
@@ -620,6 +618,9 @@ trait RDFParser {
   def hasPredicateWithSubject(n: RDFNode, p: IRI, rdf: RDFReader): Boolean = {
     rdf.triplesWithSubjectPredicate(n, p).size > 0
   }
+
+  def ok[A](x: A): RDFParser[A] = (_,_) =>
+    parseOk(x)
 
   def parseFail[A](str: String): Either[String, A] =
     Left(str)

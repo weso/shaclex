@@ -30,6 +30,7 @@ object SHACLPrefixes {
   lazy val sh_closed: IRI = sh + "closed"
   lazy val sh_conforms: IRI = sh + "conforms"
   lazy val sh_datatype: IRI = sh + "datatype"
+  lazy val sh_deactivated: IRI = sh + "deactivated"
   lazy val sh_description: IRI = sh + "description"
   lazy val sh_disjoint: IRI = sh + "disjoint"
   lazy val sh_equals: IRI = sh + "equals"

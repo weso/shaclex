@@ -1,10 +1,12 @@
 package es.weso.shacl.converter
 
+import cats._
 import cats.implicits._
 import es.weso._
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import org.scalatest._
+import es.weso.shex.implicits.eqShEx._
 
 class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
 
@@ -64,22 +66,37 @@ class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
            |:S ["hi" 2]
         """.stripMargin)
 
-/*    ignore by now:
+      shouldConvertSHACLShEx(
+        """|prefix : <http://example.org/>
+           |prefix sh: <http://www.w3.org/ns/shacl#>
+           |:PS a sh:PropertyShape ;
+           |    sh:path :p ;
+           |    sh:nodeKind sh:IRI .
+        """.stripMargin,
+        """|prefix : <http://example.org/>
+           |prefix sh: <http://www.w3.org/ns/shacl#>
+           |:PS { :p IRI }
+        """.stripMargin)
+
+
   shouldConvertSHACLShEx(
         """|prefix : <http://example.org/>
            |prefix sh: <http://www.w3.org/ns/shacl#>
            |:S a sh:NodeShape ;
-           |   sh:property [
+           |   sh:property :PS .
+           |:PS
            |    sh:path :p ;
-           |    sh:nodeKind sh:IRI
-           |   ] .
+           |    sh:nodeKind sh:IRI .
         """.stripMargin,
         """|prefix : <http://example.org/>
            |prefix sh: <http://www.w3.org/ns/shacl#>
-           |:S {
-           | :p IRI
+           |:S { &:PS }
+           |
+           |_:1 {
+           | $:PS :p IRI
            |}
-        """.stripMargin) */
+        """.stripMargin)
+
 
     }
 
@@ -98,9 +115,13 @@ class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
     r.fold(
         e => fail(s"Error: $e"),
         values => {
-          val (shexConverted, expected, shacl) = values
-          info(s"SHACL2ShEx: SHACL\n$shacl\nSHACL converted to ShEx:\n${shexConverted.show}\nExpected:\n$expected")
-          shexConverted should be(expected)
+          val (converted, expected, shacl) = values
+          val (schema,shapeMap) = converted
+          if (Eq[shex.Schema].eqv(schema,expected)) {
+            info(s"Schemas are equals")
+          } else {
+            fail(s"SHACL2ShEx schemas are not equal: SHACL:\n$shacl\n---\nSHACL converted to ShEx:\n${schema}\nExpected:\n$expected")
+          }
         }
       )
     }

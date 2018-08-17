@@ -5,7 +5,7 @@ import es.weso.rdf.path.SHACLPath
 import es.weso.shacl.Shape
 import SHACLChecker._
 
-object TestValidator {
+/*object TestValidator {
   type CheckTyping = Check[ShapeTyping]
   type PropertyChecker = (Attempt, SHACLPath) => CheckTyping
   type NodeChecker = Attempt => RDFNode => CheckTyping
@@ -14,4 +14,4 @@ object TestValidator {
 
   def getTyping: Check[ShapeTyping] = getEnv
 
-}
+}*/

@@ -6,7 +6,6 @@ import es.weso._
 import es.weso.shacl._
 import es.weso.rdf.nodes._
 import es.weso.rdf.path._
-import es.weso.rdf.PrefixMap
 import cats.implicits._
 import es.weso.shapeMaps.QueryShapeMap
 import es.weso.shex.ValueSetValue
@@ -91,9 +90,9 @@ object ShEx2Shacl {
    smap <- getShapesMap
   } yield shacl.Schema(pm = schema.prefixMap, shapesMap = smap)
 
-  private def cnvPrefixMap(pm: PrefixMap): Map[String, IRI] = {
+/*  private def cnvPrefixMap(pm: PrefixMap): Map[String, IRI] = {
     pm.pm.map { case (prefix, value) => (prefix.str, value) }
-  }
+  } */
 
   private def getShaclShapes(schema: shex.Schema): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
     val shexShapes: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())

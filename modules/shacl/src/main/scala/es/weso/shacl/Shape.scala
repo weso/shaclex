@@ -1,7 +1,8 @@
 package es.weso.shacl
 
-import es.weso.rdf.nodes.{BNode, IRI, Literal, RDFNode}
+import es.weso.rdf.nodes._
 import es.weso.rdf.path.SHACLPath
+
 
 sealed abstract class Shape {
   def id: RDFNode
@@ -9,6 +10,8 @@ sealed abstract class Shape {
   def components: Seq[Component]
   def propertyShapes: Seq[ShapeRef]
   def closed: Boolean
+  def deactivated: Boolean
+  def message: Map[Option[Lang],String]
   def ignoredProperties: List[IRI]
 
   def hasId(iri: IRI): Boolean = {
@@ -51,7 +54,10 @@ case class NodeShape(
                       targets: Seq[Target],
                       propertyShapes: Seq[ShapeRef],
                       closed: Boolean,
-                      ignoredProperties: List[IRI]) extends Shape {
+                      ignoredProperties: List[IRI],
+                      deactivated: Boolean,
+                      message: Map[Option[Lang],String]
+                    ) extends Shape {
 
   def isPropertyConstraint = false
 
@@ -64,7 +70,10 @@ case class PropertyShape(
                           targets: Seq[Target],
                           propertyShapes: Seq[ShapeRef],
                           closed: Boolean,
-                          ignoredProperties: List[IRI]) extends Shape {
+                          ignoredProperties: List[IRI],
+                          deactivated: Boolean,
+                          message: Map[Option[Lang],String]
+                        ) extends Shape {
 
   def isPropertyConstraint = true
 
@@ -80,7 +89,10 @@ object Shape {
     targets = Seq(),
     propertyShapes = Seq(),
     closed = false,
-    ignoredProperties = List())
+    ignoredProperties = List(),
+    deactivated = false,
+    message = Map()
+  )
 
   def emptyPropertyShape(
                           id: RDFNode,
@@ -91,5 +103,8 @@ object Shape {
     targets = Seq(),
     propertyShapes = Seq(),
     closed = false,
-    ignoredProperties = List())
+    ignoredProperties = List(),
+    deactivated = false,
+    message = Map()
+  )
 }

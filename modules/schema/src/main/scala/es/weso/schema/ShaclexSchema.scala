@@ -129,7 +129,8 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      }
      case Some("SHEX") => for {
-       newSchema <- Shacl2ShEx.shacl2ShEx(schema).leftMap(e => s"Error converting: $e")
+       pair <- Shacl2ShEx.shacl2ShEx(schema).leftMap(e => s"Error converting: $e")
+       (newSchema,queryMap) = pair
        builder = RDFAsJenaModel.empty
        str <- es.weso.shex.Schema.serialize(newSchema,targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
      } yield str
