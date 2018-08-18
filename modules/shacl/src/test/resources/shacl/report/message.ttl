@@ -1,0 +1,21 @@
+prefix xsd: <http://www.example.org/>
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
+
+:MyShape
+	a sh:NodeShape ;
+	sh:targetNode :MyInstance ;
+	sh:property :p1 ;
+	sh:property :p2 .
+
+:p1 sh:path :myProperty ;
+	sh:minCount 1 ;
+	sh:datatype xsd:string ;
+	sh:severity sh:Warning .
+:p2 sh:path :myProperty ;
+	sh:maxLength 10 ;
+	sh:message "Too many characters"@en ;
+	sh:message "Zu viele Zeichen"@de .
+
+:MyInstance
+	:myProperty "http://toomanycharacters"^^xsd:anyURI .

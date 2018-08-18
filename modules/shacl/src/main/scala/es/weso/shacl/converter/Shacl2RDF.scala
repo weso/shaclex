@@ -9,6 +9,7 @@ import es.weso.rdf.PREFIXES._
 import es.weso.rdf.{RDFBuilder, nodes}
 import es.weso.rdf.saver.RDFSaver
 import es.weso.shacl._
+import es.weso.shacl.report.Severity
 
 class Shacl2RDF extends RDFSaver with LazyLogging {
 
@@ -88,6 +89,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     _ <- deactivated(shapeNode, ps.deactivated)
     _ <- ignoredProperties(shapeNode, ps.ignoredProperties)
     _ <- message(shapeNode, ps.message)
+    _ <- severity(shapeNode, ps.severity)
     pathNode <- makePath(ps.path)
     _ <- addTriple(shapeNode, sh_path, pathNode)
     _ <- saveList(ps.components.toList, component(shapeNode))
@@ -103,15 +105,19 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     _ <- ignoredProperties(shapeNode, n.ignoredProperties)
     _ <- saveList(n.components, component(shapeNode))
     _ <- message(shapeNode, n.message)
+    _ <- severity(shapeNode, n.severity)
   } yield shapeNode
 
-  private def message(n: RDFNode, message: Map[Option[Lang],String]): RDFSaver[Unit] =
-    sequence(message.toList.map {
-      case (maybeLang, msg) => maybeLang match {
-       case None => addTriple(n,sh_message,StringLiteral(msg))
-       case Some(lang) => addTriple(n,sh_message, LangLiteral(msg,lang))
-      }
-    }).map(_ => ())
+  private def message(n: RDFNode, message: MessageMap): RDFSaver[Unit] =
+    sequence(message.getRDFNodes.map(addTriple(n,sh_message,_))
+    ).map(_ => ())
+
+  private def severity(n: RDFNode, severity: Option[Severity]): RDFSaver[Unit] =
+    severity match {
+      case None => ok(())
+      case Some(s) => addTriple(n,sh_severity,s.toIRI)
+    }
+
 
   private def component(id: RDFNode)(c: Component): RDFSaver[Unit] = c match {
     case ClassComponent(v) => addTriple(id, sh_class, v)

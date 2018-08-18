@@ -8,8 +8,9 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.rdf.path._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.shacl._
+import es.weso.shacl.report._
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 object RDF2Shacl extends RDFParser with LazyLogging {
 
@@ -95,6 +96,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
     deactivated <- booleanFromPredicateOptional(sh_deactivated)(n,rdf)
     message <- parseMessage(n, rdf)
+    severity <- parseSeverity(n,rdf)
     ignoredNodes <- {
       println(s"Parsing deactivated: $deactivated for node: $n") ;
       rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
@@ -110,38 +112,31 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       closed = closed.getOrElse(false),
       ignoredProperties = ignoredIRIs,
       deactivated = deactivated.getOrElse(false),
-      message = message
+      message = message,
+      severity = severity
     )
     val sref = ShapeRef(n)
     parsedShapes += (sref -> shape)
     sref
   }
 
-  private def parseMessage: RDFParser[Map[Option[Lang],String]] = (n,rdf) => for {
+  private def parseSeverity: RDFParser[Option[Severity]] = (n,rdf) => for {
+    maybeIri <- iriFromPredicateOptional(sh_severity)(n,rdf)
+  } yield maybeIri match {
+      case Some(`sh_Violation`) => Some(ViolationSeverity)
+      case Some(`sh_Warning`) => Some(WarningSeverity)
+      case Some(`sh_Info`) => Some(InfoSeverity)
+      case Some(iri) => Some(GenericSeverity(iri))
+      case None => None
+  }
+
+  private def parseMessage: RDFParser[MessageMap] = (n,rdf) => for {
     nodes <- objectsFromPredicate(sh_message)(n,rdf)
     map <- cnvMessages(nodes)(n,rdf)
   } yield map
 
-  private def cnvMessages(ns: Set[RDFNode]): RDFParser[Map[Option[Lang], String]] = (n,rdf) => {
-    val zero: Either[String,Map[Option[Lang], String]] = Right(Map())
-    def cmb(next: Either[String,Map[Option[Lang], String]], x: RDFNode): Either[String,Map[Option[Lang], String]] = x match {
-      case StringLiteral(str) => for {
-        m <- next
-        updated <- m.get(None) match {
-          case None => Right(m.updated(None, str))
-          case Some(other) => Left(s"Two values for predicate sh:message: $str and $other for node $n")
-        }
-      } yield updated
-      case LangLiteral(str,lang) => for {
-        m <- next
-        updated <- m.get(Some(lang)) match {
-          case None => Right(m.updated(Some(lang), str))
-          case Some(other) => Left(s"Two values for predicate sh:message: $str and $other for node $n for lang $lang")
-        }
-      } yield updated
-      case _ => Left(s"Node $x must be a string or a language tagged string")
-    }
-    ns.foldLeft(zero)(cmb)
+  private def cnvMessages(ns: Set[RDFNode]): RDFParser[MessageMap] = (n,rdf) => {
+    MessageMap.fromRDFNodes(ns.toList)
   }
 
 
@@ -157,6 +152,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     deactivated <- booleanFromPredicateOptional(sh_deactivated)(n, rdf)
     message <- parseMessage(n, rdf)
+    severity <- parseSeverity(n,rdf)
     ignoredIRIs <- {
       println(s"Parsing deactivated: $deactivated for node: $n")
       nodes2iris(ignoredNodes)
@@ -171,7 +167,8 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       closed = closed.getOrElse(false),
       ignoredProperties = ignoredIRIs,
       deactivated = deactivated.getOrElse(false),
-      message = message
+      message = message,
+      severity = severity
     )
 
     val sref = ShapeRef(n)

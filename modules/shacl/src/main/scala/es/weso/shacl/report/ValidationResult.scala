@@ -6,6 +6,9 @@ import es.weso.rdf.path._
 import es.weso.shacl._
 import es.weso.shacl.validator.Attempt
 
+
+// TODO: Refactor this code creating Classes for each error?
+
 abstract class AbstractResult
 
 class ValidationResult(val focusNode: RDFNode,
@@ -15,35 +18,38 @@ class ValidationResult(val focusNode: RDFNode,
                        val sourceShape: ShapeRef,
                        val values: Seq[RDFNode],
                        val message: Seq[LiteralValue],
+                       val messageMap: MessageMap,
                        val details: Seq[AbstractResult]
   ) {
   override def toString = s"Violation error on $focusNode: ${message.mkString(",")}"
 }
 
+
 object ValidationResult {
 
- def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String) =
+ def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String,
+           messageMap: MessageMap = MessageMap.empty
+          ) =
     new ValidationResult(
       sourceConstraintComponent = sh + suffix,
       focusNode = focusNode,
-      resultSeverity = Severity.defaultSeverity,
+      resultSeverity = attempt.severity,
       sourceShape = attempt.shapeRef,
       values = Seq(),
       focusPath = attempt.path,
-      message = Seq(LiteralValue(
-        StringLiteral(msg)
-      )),
+      message = Seq(LiteralValue(StringLiteral(msg))),
+      messageMap = messageMap,
       details = Seq()
     )
 
   def notFoundShapeRef(node: RDFNode, attempt: Attempt, msg: String) =
-    basic("NotFoundShapeRef", node, attempt, msg)
+    basic("NotFoundShapeRef", node, attempt, msg, MessageMap.fromString(msg))
 
   def expectedPropertyShape(node: RDFNode, attempt: Attempt, msg: String) =
-    basic("ExpectedPropertyShape", node, attempt, msg)
+    basic("ExpectedPropertyShape", node, attempt, msg, MessageMap.fromString(msg))
 
   def shapesFailed(node: RDFNode, shape: Shape, ps: Set[Shape], attempt: Attempt, msg: String) =
-    basic("ShapesFailed", node, attempt, msg)
+    basic("ShapesFailed", node, attempt, msg, MessageMap.fromString(msg))
 
   def regexError(node: RDFNode, attempt: Attempt, msg: String) =
     basic("RegEx error", node, attempt, msg)

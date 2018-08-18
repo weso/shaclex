@@ -15,6 +15,9 @@ case object WarningSeverity extends Severity {
 case object InfoSeverity extends Severity {
   override def toIRI: IRI = sh_Info
 }
+case class GenericSeverity(iri: IRI) extends Severity {
+  override def toIRI: IRI = iri
+}
 
 object Severity {
   val defaultSeverity = ViolationSeverity

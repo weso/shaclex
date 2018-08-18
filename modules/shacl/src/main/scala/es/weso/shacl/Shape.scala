@@ -2,6 +2,7 @@ package es.weso.shacl
 
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.SHACLPath
+import es.weso.shacl.report.Severity
 
 
 sealed abstract class Shape {
@@ -11,7 +12,8 @@ sealed abstract class Shape {
   def propertyShapes: Seq[ShapeRef]
   def closed: Boolean
   def deactivated: Boolean
-  def message: Map[Option[Lang],String]
+  def message: MessageMap
+  def severity: Option[Severity]
   def ignoredProperties: List[IRI]
 
   def hasId(iri: IRI): Boolean = {
@@ -56,7 +58,8 @@ case class NodeShape(
                       closed: Boolean,
                       ignoredProperties: List[IRI],
                       deactivated: Boolean,
-                      message: Map[Option[Lang],String]
+                      message: MessageMap,
+                      severity: Option[Severity]
                     ) extends Shape {
 
   def isPropertyConstraint = false
@@ -72,7 +75,8 @@ case class PropertyShape(
                           closed: Boolean,
                           ignoredProperties: List[IRI],
                           deactivated: Boolean,
-                          message: Map[Option[Lang],String]
+                          message: MessageMap,
+                          severity: Option[Severity]
                         ) extends Shape {
 
   def isPropertyConstraint = true
@@ -91,7 +95,8 @@ object Shape {
     closed = false,
     ignoredProperties = List(),
     deactivated = false,
-    message = Map()
+    message = MessageMap.empty,
+    severity = None
   )
 
   def emptyPropertyShape(
@@ -105,6 +110,7 @@ object Shape {
     closed = false,
     ignoredProperties = List(),
     deactivated = false,
-    message = Map()
+    message = MessageMap.empty,
+    severity = None
   )
 }
