@@ -8,7 +8,8 @@ import es.weso.shacl.{MessageMap, ShapeRef}
 case class AttemptInfo(node: RDFNode,
                        shape: ShapeRef,
                        messageMap: MessageMap,
-                       severity: Severity) {
+                       severity: Severity
+                      ) {
 
   override def toString = AttemptInfo.nodeShapeShow.show(this)
 

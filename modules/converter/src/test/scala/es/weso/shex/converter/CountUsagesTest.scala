@@ -3,8 +3,8 @@ package es.weso.shex.converter
 import cats._
 import es.weso._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.BNode
-import es.weso.shex.{BNodeLabel, Schema, ShapeLabel}
+import es.weso.rdf.nodes._
+import es.weso.shex._
 import es.weso.shex.implicits.eqShEx._
 import org.scalatest._
 
@@ -25,7 +25,7 @@ class CountUsagesTest extends FunSpec with Matchers with EitherValues {
                   |_:1 {
                   | $:PS :p IRI
                   |}
-               """.stripMargin, Map(BNodeLabel(BNode("PS")) -> 1))
+               """.stripMargin, Map(IRILabel(IRI("http://example.org/PS")) -> 1))
  }
 
  def shouldCount(shexStr: String,

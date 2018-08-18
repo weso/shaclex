@@ -11,26 +11,32 @@ import es.weso.shacl.validator.Attempt
 
 abstract class AbstractResult
 
-class ValidationResult(val focusNode: RDFNode,
-                       val resultSeverity: Severity,
-                       val sourceConstraintComponent: IRI,
-                       val focusPath: Option[SHACLPath],
-                       val sourceShape: ShapeRef,
-                       val values: Seq[RDFNode],
-                       val message: Seq[LiteralValue],
-                       val messageMap: MessageMap,
-                       val details: Seq[AbstractResult]
-  ) {
+case class ValidationResult(focusNode: RDFNode,
+                       resultSeverity: Severity,
+                       sourceConstraintComponent: IRI,
+                       focusPath: Option[SHACLPath],
+                       sourceShape: ShapeRef,
+                       values: Seq[RDFNode],
+                       message: Seq[LiteralValue],
+                       messageMap: MessageMap,
+                       details: Seq[AbstractResult]
+  ) extends AbstractResult {
+
+  def setSeverity(s: Severity): ValidationResult =
+    this.copy(resultSeverity = s)
+
   override def toString = s"Violation error on $focusNode: ${message.mkString(",")}"
 }
 
 
 object ValidationResult {
 
- def basic(suffix: String, focusNode: RDFNode, attempt: Attempt, msg: String,
-           messageMap: MessageMap = MessageMap.empty
+ def basic(suffix: String,
+           focusNode: RDFNode,
+           attempt: Attempt,
+           msg: String
           ) =
-    new ValidationResult(
+    ValidationResult(
       sourceConstraintComponent = sh + suffix,
       focusNode = focusNode,
       resultSeverity = attempt.severity,
@@ -38,18 +44,18 @@ object ValidationResult {
       values = Seq(),
       focusPath = attempt.path,
       message = Seq(LiteralValue(StringLiteral(msg))),
-      messageMap = messageMap,
+      messageMap = attempt.messageMap,
       details = Seq()
     )
 
   def notFoundShapeRef(node: RDFNode, attempt: Attempt, msg: String) =
-    basic("NotFoundShapeRef", node, attempt, msg, MessageMap.fromString(msg))
+    basic("NotFoundShapeRef", node, attempt, msg)
 
   def expectedPropertyShape(node: RDFNode, attempt: Attempt, msg: String) =
-    basic("ExpectedPropertyShape", node, attempt, msg, MessageMap.fromString(msg))
+    basic("ExpectedPropertyShape", node, attempt, msg)
 
   def shapesFailed(node: RDFNode, shape: Shape, ps: Set[Shape], attempt: Attempt, msg: String) =
-    basic("ShapesFailed", node, attempt, msg, MessageMap.fromString(msg))
+    basic("ShapesFailed", node, attempt, msg).setSeverity(InfoSeverity)
 
   def regexError(node: RDFNode, attempt: Attempt, msg: String) =
     basic("RegEx error", node, attempt, msg)

@@ -17,7 +17,8 @@ class AbstractSyntaxTest extends FunSpec with Matchers {
         false,
         List(),
         false,
-        MessageMap.empty
+        MessageMap.empty,
+        None
       )
 
       shape.id should be(id)
