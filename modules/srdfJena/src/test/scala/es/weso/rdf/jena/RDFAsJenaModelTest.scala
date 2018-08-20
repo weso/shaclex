@@ -30,10 +30,7 @@ class RDFAsJenaModelTest
   with Matchers {
 
   describe("Checking base") {
-    val conf: Config = ConfigFactory.load()
-    val shaclFolder = conf.getString("shaclCore")
-    val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
-    println(s"ShaclFolder file...${shaclFolderURI}")
+    // println(s"ShaclFolder file...${shaclFolderURI}")
 
     it("should be able to parse RDF with relative URIs and base") {
       val emptyModel = ModelFactory.createDefaultModel

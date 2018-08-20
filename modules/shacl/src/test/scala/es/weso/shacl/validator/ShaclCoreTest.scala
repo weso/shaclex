@@ -41,7 +41,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
       }
     }
   }
-  def processManifest(m: Manifest, name: String, parentFolder: Path, rdfManifest: RDFReader): Unit = {
+  def processManifest(m: Manifest, name: String, parentFolder: Path, rdfManifest: RDFBuilder): Unit = {
     // println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
       describeManifest(includeNode, parentFolder)
@@ -50,7 +50,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
       processEntry(e,name,parentFolder, rdfManifest)
   }
 
-  def processEntry(e: manifest.Entry, name: String, parentFolder: Path, rdfManifest: RDFReader): Unit = {
+  def processEntry(e: manifest.Entry, name: String, parentFolder: Path, rdfManifest: RDFBuilder): Unit = {
     it(s"Should check entry ${e.node.getLexicalForm} with $parentFolder") {
       getSchemaRdf(e.action, name, parentFolder,rdfManifest) match {
         case Left(f) => {
@@ -63,7 +63,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     }
   }
 
-  def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader): Either[String, (Schema,RDFReader)] = for {
+  def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFBuilder): Either[String, (Schema,RDFReader)] = for {
     pair  <- getSchema(a,fileName,parentFolder,manifestRdf)
     (schema,schemaRdf) = pair
     dataRdf <- getData(a,fileName,parentFolder,manifestRdf,schemaRdf)
@@ -84,7 +84,7 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     }
   }
 
-  def getSchema(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader): Either[String, (Schema, RDFReader)] = {
+  def getSchema(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFBuilder): Either[String, (Schema, RDFReader)] = {
     info(s"Manifest action $a, fileName $fileName, parent: $parentFolder }")
     val parentIri = absoluteIri // absoluteIri.resolve(IRI(parentFolder))
     a.schema match {

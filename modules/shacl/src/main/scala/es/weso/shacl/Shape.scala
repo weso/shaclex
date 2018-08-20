@@ -4,15 +4,20 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.path.SHACLPath
 import es.weso.shacl.report.Severity
 
-
 sealed abstract class Shape {
   def id: RDFNode
   def targets: Seq[Target]
   def components: Seq[Component]
-  def propertyShapes: Seq[ShapeRef]
+  def propertyShapes: Seq[RefNode]
   def closed: Boolean
   def deactivated: Boolean
   def message: MessageMap
+  def name: MessageMap
+  def description: MessageMap
+  def order: Option[DecimalLiteral]
+  def group: Option[RefNode]
+  def sourceIRI: Option[IRI]
+
   def severity: Option[Severity]
   def ignoredProperties: List[IRI]
 
@@ -39,7 +44,7 @@ sealed abstract class Shape {
   def targetObjectsOf: Seq[IRI] =
     targets.map(_.toTargetObjectsOf).flatten.map(_.pred)
 
-  def componentShapes: Seq[ShapeRef] = {
+  def componentShapes: Seq[RefNode] = {
     components.collect {
       case NodeComponent(sref) => sref
 //      case Or(srefs) => srefs
@@ -54,12 +59,17 @@ case class NodeShape(
                       id: RDFNode,
                       components: List[Component],
                       targets: Seq[Target],
-                      propertyShapes: Seq[ShapeRef],
+                      propertyShapes: Seq[RefNode],
                       closed: Boolean,
                       ignoredProperties: List[IRI],
                       deactivated: Boolean,
                       message: MessageMap,
-                      severity: Option[Severity]
+                      severity: Option[Severity],
+                      name: MessageMap,
+                      description: MessageMap,
+                      order: Option[DecimalLiteral],
+                      group: Option[RefNode],
+                      sourceIRI: Option[IRI]
                     ) extends Shape {
 
   def isPropertyConstraint = false
@@ -71,12 +81,17 @@ case class PropertyShape(
                           path: SHACLPath,
                           components: List[Component],
                           targets: Seq[Target],
-                          propertyShapes: Seq[ShapeRef],
+                          propertyShapes: Seq[RefNode],
                           closed: Boolean,
                           ignoredProperties: List[IRI],
                           deactivated: Boolean,
                           message: MessageMap,
-                          severity: Option[Severity]
+                          severity: Option[Severity],
+                          name: MessageMap,
+                          description: MessageMap,
+                          order: Option[DecimalLiteral],
+                          group: Option[RefNode],
+                          sourceIRI: Option[IRI]
                         ) extends Shape {
 
   def isPropertyConstraint = true
@@ -96,7 +111,12 @@ object Shape {
     ignoredProperties = List(),
     deactivated = false,
     message = MessageMap.empty,
-    severity = None
+    severity = None,
+    name = MessageMap.empty,
+    description = MessageMap.empty,
+    order = None,
+    group = None,
+    sourceIRI = None
   )
 
   def emptyPropertyShape(
@@ -111,6 +131,11 @@ object Shape {
     ignoredProperties = List(),
     deactivated = false,
     message = MessageMap.empty,
-    severity = None
+    severity = None,
+    name = MessageMap.empty,
+    description = MessageMap.empty,
+    order = None,
+    group = None,
+    sourceIRI = None
   )
 }

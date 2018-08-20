@@ -15,7 +15,7 @@ case class ValidationResult(focusNode: RDFNode,
                        resultSeverity: Severity,
                        sourceConstraintComponent: IRI,
                        focusPath: Option[SHACLPath],
-                       sourceShape: ShapeRef,
+                       sourceShape: RefNode,
                        values: Seq[RDFNode],
                        message: Seq[LiteralValue],
                        messageMap: MessageMap,
@@ -144,16 +144,16 @@ object ValidationResult {
   def iriOrLiteralKindError(focusNode: RDFNode, attempt: Attempt) =
     basic("IriOrLiteralConstraintComponent", focusNode, attempt, s"Node $focusNode is not a IRI or a Literal")
 
-  def notError(focusNode: RDFNode, attempt: Attempt, shape: ShapeRef) =
+  def notError(focusNode: RDFNode, attempt: Attempt, shape: RefNode) =
     basic("NotConstraintComponent", focusNode, attempt, s"Not violation. Expected $focusNode not to satisfy ${shape.showId}")
 
-  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
+  def andError(focusNode: RDFNode, attempt: Attempt, shapes: List[RefNode]) =
     basic("AndConstraintComponent", focusNode, attempt, s"And violation. Expected $focusNode to satisfy all of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[ShapeRef]) =
+  def orError(focusNode: RDFNode, attempt: Attempt, shapes: List[RefNode]) =
     basic("OrConstraintComponent", focusNode, attempt, s"Or violation. Expected $focusNode to satisfy some of the shapes ${shapes.map(_.showId).mkString(",")}")
 
-  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: Seq[ShapeRef]) =
+  def xoneError(focusNode: RDFNode, attempt: Attempt, shapes: Seq[RefNode]) =
     basic("XoneConstraintComponent", focusNode, attempt, s"Xone violation. Expected $focusNode to satisfy exactly one of the shapes ${shapes.map(_.showId).mkString(",")}")
 
   def qualifiedShapeError(focusNode: RDFNode, attempt: Attempt, value: Int, min: Option[Int], max: Option[Int]) =
@@ -171,7 +171,7 @@ object ValidationResult {
   def inError(focusNode: RDFNode, attempt: Attempt, values: Seq[Value]) =
     basic("InConstraintComponent", focusNode, attempt, s"In violation. Expected $focusNode to be in $values")
 
-  def notShapeError(focusNode: RDFNode, shapeRef: ShapeRef, attempt: Attempt) =
+  def notShapeError(focusNode: RDFNode, shapeRef: RefNode, attempt: Attempt) =
     basic("notShape", focusNode, attempt, s"Not failed because $focusNode has shape $shapeRef and it should not have")
 
   def closedError(

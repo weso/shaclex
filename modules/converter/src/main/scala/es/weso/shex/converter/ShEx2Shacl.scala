@@ -19,9 +19,9 @@ object ShEx2Shacl {
   }
 
   private type Err = String
-  private type ShapesMap = Map[shacl.ShapeRef, shacl.Shape]
-  private type ShapeExprsMap = Map[shex.ShapeExpr, shacl.ShapeRef]
-  private type TripleExprsMap = Map[shex.TripleExpr, shacl.ShapeRef]
+  private type ShapesMap = Map[shacl.RefNode, shacl.Shape]
+  private type ShapeExprsMap = Map[shex.ShapeExpr, shacl.RefNode]
+  private type TripleExprsMap = Map[shex.TripleExpr, shacl.RefNode]
 
   private case class State(shapesMap: ShapesMap,
                    shapeExprsMap: ShapeExprsMap,
@@ -29,11 +29,11 @@ object ShEx2Shacl {
                    counter: Int
                   ) {
 
-    def addShapeRefShape(sref: ShapeRef, s: Shape): State =
+    def addShapeRefShape(sref: RefNode, s: Shape): State =
       this.copy(shapesMap = shapesMap.updated(sref,s))
 
-    def newShapeExprRef(se: shex.ShapeExpr): (State, shacl.ShapeRef) = {
-      val id = ShapeRef(BNode("B" + counter))
+    def newShapeExprRef(se: shex.ShapeExpr): (State, shacl.RefNode) = {
+      val id = RefNode(BNode("B" + counter))
       (this.copy(
         shapeExprsMap = shapeExprsMap.updated(se, id),
         counter = counter + 1
@@ -41,8 +41,8 @@ object ShEx2Shacl {
       )
     }
 
-    def newTripleExprRef(te: shex.TripleExpr): (State, shacl.ShapeRef) = {
-      val id = ShapeRef(BNode("B" + counter))
+    def newTripleExprRef(te: shex.TripleExpr): (State, shacl.RefNode) = {
+      val id = RefNode(BNode("B" + counter))
       (this.copy(
         tripleExprsMap = tripleExprsMap.updated(te, id),
         counter = counter + 1
@@ -78,7 +78,7 @@ object ShEx2Shacl {
   private def setState(s: State): Result[Unit] =
     EitherT.liftF(StateT.set(s))
 
-  private def addShapeRefShape(ref: ShapeRef, shape: Shape): Result[Unit] =
+  private def addShapeRefShape(ref: RefNode, shape: Shape): Result[Unit] =
     EitherT.liftF(StateT.modify(_.addShapeRefShape(ref,shape)))
 
   private def getShapesMap: Result[ShapesMap] =
@@ -88,18 +88,24 @@ object ShEx2Shacl {
   private def getSchema(schema: shex.Schema): Result[shacl.Schema] = for {
    _ <- getShaclShapes(schema)
    smap <- getShapesMap
-  } yield shacl.Schema(pm = schema.prefixMap, shapesMap = smap)
+  } yield shacl.Schema(
+    pm = schema.prefixMap,
+    imports = List(),
+    entailments = List(),
+    shapesMap = smap,
+    propertyGroups = Map()
+  )
 
 /*  private def cnvPrefixMap(pm: PrefixMap): Map[String, IRI] = {
     pm.pm.map { case (prefix, value) => (prefix.str, value) }
   } */
 
-  private def getShaclShapes(schema: shex.Schema): Result[Map[shacl.ShapeRef, shacl.Shape]] = {
+  private def getShaclShapes(schema: shex.Schema): Result[Map[shacl.RefNode, shacl.Shape]] = {
     val shexShapes: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())
     sequence(shexShapes.map(s => cnvShapeRefShape(s,schema))).map(_.toMap)
   }
 
-  private type ShapeRefShape = (shacl.ShapeRef, shacl.Shape)
+  private type ShapeRefShape = (shacl.RefNode, shacl.Shape)
 
   private def cnvShapeRefShape(s: shex.ShapeExpr,
                        schema: shex.Schema
@@ -156,7 +162,7 @@ object ShEx2Shacl {
                id: RDFNode
               ): Result[shacl.Shape] = for {
     ps <- shape.expression match {
-      case None => ok(List[(shacl.PropertyShape,shacl.ShapeRef)]())
+      case None => ok(List[(shacl.PropertyShape,shacl.RefNode)]())
       case Some(te) => cnvTripleExpr(te, schema, id)
     }
   } yield {
@@ -165,7 +171,7 @@ object ShEx2Shacl {
 
   private def outCast[A,B >: A](r:Result[A]): Result[B] = r.map(x => x)
 
-  private def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema, id: RDFNode): Result[List[(shacl.PropertyShape, shacl.ShapeRef)]] = {
+  private def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema, id: RDFNode): Result[List[(shacl.PropertyShape, shacl.RefNode)]] = {
     te match {
       case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf $e conversion yet")
       case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf $e conversion yet")
@@ -178,7 +184,7 @@ object ShEx2Shacl {
   private def cnvTripleConstraint(tc: shex.TripleConstraint,
                           schema: shex.Schema,
                           id: RDFNode
-                         ): Result[(shacl.PropertyShape, shacl.ShapeRef)] = {
+                         ): Result[(shacl.PropertyShape, shacl.RefNode)] = {
     if (tc.negated)
       err(s"cnvTripleConstraint: Not implemented negated")
     else {
@@ -218,7 +224,7 @@ object ShEx2Shacl {
      ps: PropertyShape = Shape.emptyPropertyShape(id, path).copy(
        components = components
      )
-     _ <- addShapeRefShape(ShapeRef(id), ps)
+     _ <- addShapeRefShape(RefNode(id), ps)
     } yield ps
     rs
   }
@@ -246,9 +252,9 @@ object ShEx2Shacl {
   private def getShapeExprsMap: Result[ShapeExprsMap] = getState.map(_.shapeExprsMap)
   private def getTripleExprsMap: Result[TripleExprsMap] = getState.map(_.tripleExprsMap)
 
-  private def getShapeExprId(se: shex.ShapeExpr): Result[ShapeRef] = se.id match {
-    case Some(shex.IRILabel(iri)) => ok(ShapeRef(iri))
-    case Some(shex.BNodeLabel(bnode)) => ok(ShapeRef(bnode))
+  private def getShapeExprId(se: shex.ShapeExpr): Result[RefNode] = se.id match {
+    case Some(shex.IRILabel(iri)) => ok(RefNode(iri))
+    case Some(shex.BNodeLabel(bnode)) => ok(RefNode(bnode))
     case None => for {
      shapeExprsMap <- getShapeExprsMap
      id <- shapeExprsMap.get(se) match {
@@ -262,9 +268,9 @@ object ShEx2Shacl {
     } yield id
   }
 
-  private def getTripleExprId(te: shex.TripleExpr): Result[ShapeRef] = te.id match {
-    case Some(shex.IRILabel(iri)) => ok(ShapeRef(iri))
-    case Some(shex.BNodeLabel(bnode)) => ok(ShapeRef(bnode))
+  private def getTripleExprId(te: shex.TripleExpr): Result[RefNode] = te.id match {
+    case Some(shex.IRILabel(iri)) => ok(RefNode(iri))
+    case Some(shex.BNodeLabel(bnode)) => ok(RefNode(bnode))
     case None => for {
       tripleExprsMap <- getTripleExprsMap
       id <- tripleExprsMap.get(te) match {

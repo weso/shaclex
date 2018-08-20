@@ -18,13 +18,12 @@ abstract class RDFNode {
     case _ => false
   }
 
-  def isNonLiteral = this.isIRI || this.isBNode
+  def isNonLiteral =
+    this.isIRI || this.isBNode
 
-  // Change this code to use Option
-  def toIRI = this match {
-    case i: IRI => i
-    case _ =>
-      throw RDFNodeException("Cannot convert RDFNode " + this + " to IRI")
+  def toIRI: Either[String,IRI] = this match {
+    case i: IRI => Right(i)
+    case _ => Left(s"Cannot convert node $this to IRI")
   }
 
   def getLexicalForm: String

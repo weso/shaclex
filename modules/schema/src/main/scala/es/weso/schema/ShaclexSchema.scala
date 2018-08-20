@@ -4,6 +4,7 @@ import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.shacl.SHACLPrefixes.owl_imports
 import es.weso.shacl.{Schema => ShaclSchema, _}
 // import es.weso.shacl._
 import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
@@ -98,13 +99,21 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
     for {
       rdf <- RDFAsJenaModel.fromChars(cs, format, base)
-      schema <- RDF2Shacl.getShacl(rdf)
+      schema <- RDF2Shacl.getShacl(rdf, true)
     } yield ShaclexSchema(schema)
   }
 
-  override def fromRDF(rdf: RDFReader): Either[String, Schema] = for {
-    schemaShacl <- RDF2Shacl.getShacl(rdf)
-  } yield ShaclexSchema(schemaShacl)
+  override def fromRDF(rdf: RDFReader): Either[String, Schema] = rdf.asRDFBuilder match {
+    case Left(_) => rdf.triplesWithPredicate(owl_imports).size match {
+      case 0 => RDF2Shacl.getShaclFromRDFReader(rdf).map(ShaclexSchema(_))
+      case _ => Left(s"Nor supported owl:imports for this kind of RDF model")
+    }
+    case Right(rdfBuilder) =>
+      for {
+        schemaShacl <- RDF2Shacl.getShacl(rdfBuilder, true)
+      } yield ShaclexSchema(schemaShacl)
+  }
+
 
   override def serialize(format: String): Either[String, String] = {
     val builder: RDFBuilder = RDFAsJenaModel.empty

@@ -3,10 +3,10 @@ package es.weso.shacl.validator
 import cats._
 import es.weso.rdf.nodes._
 import es.weso.shacl.report.Severity
-import es.weso.shacl.{MessageMap, ShapeRef}
+import es.weso.shacl.{MessageMap, RefNode}
 
 case class AttemptInfo(node: RDFNode,
-                       shape: ShapeRef,
+                       shape: RefNode,
                        messageMap: MessageMap,
                        severity: Severity
                       ) {

@@ -60,7 +60,7 @@ trait RDFReader {
    */
   // TODO: Extend this to return all iriObjects: Seq[RDFNode]
   def iriObjects(): Set[IRI] = {
-    rdfTriples.map(_.obj).filter(_.isIRI).map(_.toIRI)
+    rdfTriples.map(_.obj).collect { case i: IRI => i }
   }
 
   /**
@@ -195,7 +195,20 @@ trait RDFReader {
 
   def getNumberOfStatements(): Either[String,Int]
 
+  /**
+  *
+    * @param other RDF reader
+    * @return true if this RDF graph is isomorphic with other
+    */
   def isIsomorphicWith(other: RDFReader): Either[String,Boolean]
 
+  /**
+    * @return Source IRI of this RDF graph if exists
+    */
+  def sourceIRI: Option[IRI]
+
+  def asRDFBuilder: Either[String, RDFBuilder]
+
+  def rdfReaderName: String
 }
 

@@ -90,7 +90,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
           SingleTestReport(
             passed = false,
             name = name,
-            uriTest = node.toIRI.str,
+            uriTest = node.getLexicalForm,
             testType = sht_ValidationTest.str,
             moreInfo = s"Error ${e}")
         }

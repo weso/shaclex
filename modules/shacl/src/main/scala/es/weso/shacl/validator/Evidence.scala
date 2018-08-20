@@ -2,7 +2,7 @@ package es.weso.shacl.validator
 
 import cats._
 import es.weso.rdf.nodes.RDFNode
-import es.weso.shacl.ShapeRef
+import es.weso.shacl.RefNode
 
 case class Evidences(ls: List[Evidence])
 
@@ -11,7 +11,7 @@ abstract class Evidence {
 }
 
 case class NodeShapeEvidence(node: RDFNode,
-                             shape: ShapeRef,
+                             shape: RefNode,
                              msg: String
                             ) extends Evidence
 case class MsgEvidence(msg: String) extends Evidence

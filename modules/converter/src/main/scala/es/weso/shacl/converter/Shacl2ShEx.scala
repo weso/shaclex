@@ -90,7 +90,7 @@ object Shacl2ShEx {
   private def cnvComponents(cs: List[shacl.Component]): Result[List[shex.ShapeExpr]] =
     sequence(cs.map(cnvComponent(_)))
 
-  private def cnvPropertyShapes(ps: List[shacl.ShapeRef],
+  private def cnvPropertyShapes(ps: List[shacl.RefNode],
                                 schema: shacl.Schema
                                ): Result[List[shex.ShapeExpr]] =
     sequence(ps.map(cnvPropertyShapeRef(_, schema)))
@@ -138,7 +138,7 @@ object Shacl2ShEx {
      _ <- modify(_.addLabelTripleExpr(lbl,te))
     } yield (())
 
-  private def cnvPropertyShapeRef(sref: shacl.ShapeRef,
+  private def cnvPropertyShapeRef(sref: shacl.RefNode,
                                   schema: shacl.Schema
                                  ): Result[shex.ShapeExpr] =
     for {
@@ -252,7 +252,7 @@ object Shacl2ShEx {
      }
   }
 
-  private def getShape(sref: shacl.ShapeRef,
+  private def getShape(sref: shacl.RefNode,
                        schema: shacl.Schema
                       ): Result[shacl.Shape] = {
     fromEither(schema.shape(sref.id))

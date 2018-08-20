@@ -1,4 +1,5 @@
 package es.weso.shacl.converter
+
 import scala.util._
 import cats.data._
 import cats.implicits._
@@ -6,7 +7,7 @@ import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.nodes._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.rdf.PREFIXES._
-import es.weso.rdf.{RDFBuilder, nodes}
+import es.weso.rdf._
 import es.weso.rdf.saver.RDFSaver
 import es.weso.shacl._
 import es.weso.shacl.report.Severity
@@ -30,6 +31,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
       _ <- addPrefix("rdf", rdf.str)
       _ <- addPrefix("rdfs", rdfs.str)
       _ <- sequence(shacl.shapes.toList.map(shape(_)))
+      _ <- sequence(shacl.propertyGroups.toList.map(propertyGroup))
     } yield ()
   }
 
@@ -38,7 +40,21 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     case ps: PropertyShape => propertyShape(ps)
   }
 
-  private def shapeRef(shape: ShapeRef): RDFSaver[RDFNode] = ok(shape.id)
+  private def propertyGroup(pair: (RefNode, PropertyGroup)): RDFSaver[RDFNode] = {
+    val (ref,pg) = pair
+    val node = ref.id
+    for {
+     _ <- order(node,pg.order)
+     _ <- labels(node, pg.label)
+    } yield node
+  }
+
+  private def labels(node: RDFNode, labels: Set[RDFNode]): RDFSaver[Unit] =
+    sequence(
+      labels.toList.map(lbl => addTriple(node,rdfs_label,lbl))
+    ).map(_ => ())
+
+  private def shapeRef(shape: RefNode): RDFSaver[RDFNode] = ok(shape.id)
 
   private def makeShapeId(v: RDFNode): RDFSaver[RDFNode] = ok(v)
 
@@ -52,10 +68,10 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     case TargetObjectsOf(node)  => addTriple(id, sh_targetObjectsOf, node)
   }
 
-  private def propertyShapes(id: RDFNode, ts: Seq[ShapeRef]): RDFSaver[Unit] =
+  private def propertyShapes(id: RDFNode, ts: Seq[RefNode]): RDFSaver[Unit] =
     saveList(ts.toList, makePropertyShape(id))
 
-  private def makePropertyShape(id: RDFNode)(p: ShapeRef): RDFSaver[Unit] =
+  private def makePropertyShape(id: RDFNode)(p: RefNode): RDFSaver[Unit] =
     for {
       node <- ok(p.id) // propertyShape(p)
       _    <- addTriple(id, sh_property, node)
@@ -88,7 +104,11 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     _ <- closed(shapeNode, ps.closed)
     _ <- deactivated(shapeNode, ps.deactivated)
     _ <- ignoredProperties(shapeNode, ps.ignoredProperties)
-    _ <- message(shapeNode, ps.message)
+    _ <- messageMap(shapeNode, ps.message, sh_message)
+    _ <- messageMap(shapeNode, ps.message, sh_name)
+    _ <- messageMap(shapeNode, ps.message, sh_description)
+    _ <- order(shapeNode,ps.order)
+    _ <- group(shapeNode,ps.group)
     _ <- severity(shapeNode, ps.severity)
     pathNode <- makePath(ps.path)
     _ <- addTriple(shapeNode, sh_path, pathNode)
@@ -104,12 +124,30 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     _ <- deactivated(shapeNode, n.deactivated)
     _ <- ignoredProperties(shapeNode, n.ignoredProperties)
     _ <- saveList(n.components, component(shapeNode))
-    _ <- message(shapeNode, n.message)
+    _ <- messageMap(shapeNode, n.message, sh_message)
+    _ <- messageMap(shapeNode, n.name, sh_name)
+    _ <- messageMap(shapeNode, n.name, sh_description)
     _ <- severity(shapeNode, n.severity)
+    _ <- order(shapeNode,n.order)
+    _ <- group(shapeNode,n.group)
   } yield shapeNode
 
-  private def message(n: RDFNode, message: MessageMap): RDFSaver[Unit] =
-    sequence(message.getRDFNodes.map(addTriple(n,sh_message,_))
+  private def order(n: RDFNode, maybeValue: Option[DecimalLiteral]): RDFSaver[Unit] =
+    maybeValue match {
+      case None => ok(())
+      case Some(value) => addTriple(n,sh_order,value)
+    }
+
+  private def group(n: RDFNode, maybeValue: Option[RefNode]): RDFSaver[Unit] =
+    maybeValue match {
+      case None => ok(())
+      case Some(pg) => {
+        addTriple(n, sh_group, pg.id)
+      }
+    }
+
+  private def messageMap(n: RDFNode, message: MessageMap, pred: IRI): RDFSaver[Unit] =
+    sequence(message.getRDFNodes.map(addTriple(n,pred,_))
     ).map(_ => ())
 
   private def severity(n: RDFNode, severity: Option[Severity]): RDFSaver[Unit] =
@@ -117,7 +155,6 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
       case None => ok(())
       case Some(s) => addTriple(n,sh_severity,s.toIRI)
     }
-
 
   private def component(id: RDFNode)(c: Component): RDFSaver[Unit] = c match {
     case ClassComponent(v) => addTriple(id, sh_class, v)

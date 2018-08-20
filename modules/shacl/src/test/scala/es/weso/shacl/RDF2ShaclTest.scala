@@ -108,7 +108,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
       attempt match {
         case Left(e) => fail(s"Failed $e")
         case Right(shape) => {
-          shape.propertyShapes should contain only (ShapeRef(prop))
+          shape.propertyShapes should contain only (RefNode(prop))
         }
       }
 

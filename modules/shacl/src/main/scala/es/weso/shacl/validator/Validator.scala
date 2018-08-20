@@ -101,7 +101,7 @@ case class Validator(schema: Schema) extends MyLogging {
   def findNodesInClass(cls: RDFNode, rdf: RDFReader): List[RDFNode] =
     rdf.getSHACLInstances(cls).toList
 
-  private def nodeShapeRef(node: RDFNode, shapeRef: ShapeRef, attempt: Attempt): CheckTyping = for {
+  private def nodeShapeRef(node: RDFNode, shapeRef: RefNode, attempt: Attempt): CheckTyping = for {
     rdf <- getRDF
     shape <- getShapeRef(shapeRef, attempt, node)
     t <- nodeShape(node, shape)
@@ -118,7 +118,7 @@ case class Validator(schema: Schema) extends MyLogging {
   def nodeNodeShape(node: RDFNode, ns: NodeShape): CheckTyping = {
     logger.debug(s"Node $node - NodeShape ${ns.showId}")
     logger.debug(s"Node shape is deactivated? (${ns.deactivated})")
-    val attempt = Attempt(node, ShapeRef(ns.id), ns.message, getSeverity(ns), None)
+    val attempt = Attempt(node, RefNode(ns.id), ns.message, getSeverity(ns), None)
     for {
         t0 <- getTyping
         t <- runLocal(checkNodeShape(ns)(attempt)(node), _.addType(node, ns))
@@ -136,7 +136,7 @@ case class Validator(schema: Schema) extends MyLogging {
   def nodePropertyShape(node: RDFNode, ps: PropertyShape): CheckTyping = {
     logger.debug(s"Node $node - PropertyShape ${ps.showId}")
     val path = ps.path
-    val attempt = Attempt(node, ShapeRef(ps.id), ps.message, getSeverity(ps), Some(path))
+    val attempt = Attempt(node, RefNode(ps.id), ps.message, getSeverity(ps), Some(path))
     if (ps.deactivated) for {
       t <- addEvidence(attempt, s"Property shape ${ps.showId} is deactivated")
     } yield (t,true)
@@ -200,7 +200,7 @@ case class Validator(schema: Schema) extends MyLogging {
   private def checkPropertyShapePath(path: SHACLPath)
                                     (attempt: Attempt)
                                     (node: RDFNode)
-                                    (sref: ShapeRef): CheckTyping = {
+                                    (sref: RefNode): CheckTyping = {
     logger.info(s"checkPropertyShapePath $node $sref path: ${path.show}")
     for {
       ps <- getPropertyShapeRef(sref, attempt, node)
@@ -215,7 +215,7 @@ case class Validator(schema: Schema) extends MyLogging {
     } yield r
   }
 
-  private def checkPropertyShapes(shapeRefs: List[ShapeRef]): NodeChecker = attempt => node => {
+  private def checkPropertyShapes(shapeRefs: List[RefNode]): NodeChecker = attempt => node => {
     logger.debug(s"Check propertyShapes($node, ${shapeRefs.map(_.showId).mkString(",")})")
     for {
       pss <- getPropertyShapeRefs(shapeRefs, attempt, node)
@@ -272,8 +272,8 @@ case class Validator(schema: Schema) extends MyLogging {
     r <- combineResultSeq(ts)
   } yield r
 
-  private def propertyShape2PropertyChecker(attempt: Attempt, path: SHACLPath)
-                                           (psref: ShapeRef): CheckTyping = {
+/*  private def propertyShape2PropertyChecker(attempt: Attempt, path: SHACLPath)
+                                           (psref: RefNode): CheckTyping = {
     logger.debug(s"propertyShape2PropertyChecker. path: $path, propertyShape: $psref")
     val node = attempt.node
     for {
@@ -290,7 +290,7 @@ case class Validator(schema: Schema) extends MyLogging {
       r <- check
       _ <- debug(s"Result of propertyShape2PropertyChecker\n${showResult(r)}")
     } yield r
-  }
+  } */
 
   private def component2PropertyChecker(p: PropertyShape)(attempt: Attempt, path: SHACLPath)(c: Component): CheckTyping = {
     logger.debug(s"component2PropertyChecker. propertyShape: $p, path: $path, component: $c")
@@ -319,7 +319,7 @@ case class Validator(schema: Schema) extends MyLogging {
     } yield t
   }
 
-  private def nodeComponentChecker(sref: ShapeRef): NodeChecker = attempt => node => {
+  private def nodeComponentChecker(sref: RefNode): NodeChecker = attempt => node => {
     for {
       s <- getShapeRef(sref, attempt, node)
       typing <- getTyping
@@ -529,7 +529,7 @@ case class Validator(schema: Schema) extends MyLogging {
       } yield t
     }
 
-  private def and(srefs: Seq[ShapeRef]): NodeChecker = attempt => node => {
+  private def and(srefs: Seq[RefNode]): NodeChecker = attempt => node => {
     for {
       shapes <- getShapeRefs(srefs.toList, attempt, node)
       r <- checkAllWithTyping(shapes, (s: Shape) => nodeShape(node,s))
@@ -540,11 +540,11 @@ case class Validator(schema: Schema) extends MyLogging {
     t.getFailedValues(node).isEmpty
   } */
 
-  private def xone(sRefs: Seq[ShapeRef]): NodeChecker = attempt => node => {
+  private def xone(sRefs: Seq[RefNode]): NodeChecker = attempt => node => {
     for {
       t <- getTyping
       // shapes <- getShapeRefs(sRefs.toList, attempt, node)
-      r <- checkSomeFlagCount(sRefs.toStream, (s: ShapeRef) => nodeShapeRef(node,s,attempt),t)
+      r <- checkSomeFlagCount(sRefs.toStream, (s: RefNode) => nodeShapeRef(node,s,attempt),t)
       count = r._2
       t1 <- condition(count == 1,
         attempt,
@@ -558,7 +558,7 @@ case class Validator(schema: Schema) extends MyLogging {
   }
 
   private def qualifiedValueShape(
-    shape: ShapeRef,
+    shape: RefNode,
     p: PropertyShape,
     min: Option[Int],
     max: Option[Int],
@@ -586,11 +586,11 @@ case class Validator(schema: Schema) extends MyLogging {
   }
 
   private def filterConformSiblings(values: Seq[RDFNode], p: PropertyShape, attempt: Attempt): Check[Seq[RDFNode]] = {
-    val shapes = schema.siblingQualifiedShapes(ShapeRef(p.id))
+    val shapes = schema.siblingQualifiedShapes(RefNode(p.id))
     filterConformShapes(values, shapes, attempt)
   }
 
-  private def filterConformShapes(values: Seq[RDFNode], shapes: Seq[ShapeRef], attempt: Attempt): Check[Seq[RDFNode]] = {
+  private def filterConformShapes(values: Seq[RDFNode], shapes: Seq[RefNode], attempt: Attempt): Check[Seq[RDFNode]] = {
     logger.debug(s"FilterConformShapes(values=$values, shapes=$shapes)")
     def checkValuesShapes: Check[List[(RDFNode, Boolean)]] = {
       sequence(values.toList.map(value => conformsNodeShapes(value, shapes, attempt)))
@@ -605,7 +605,7 @@ case class Validator(schema: Schema) extends MyLogging {
   }
 
   private def conformsNodeShapes(node: RDFNode,
-                         shapes: Seq[ShapeRef],
+                         shapes: Seq[RefNode],
                          attempt: Attempt): Check[(RDFNode, Boolean)] = for {
     ls <- checkLs(shapes.toList.map(nodeShapeRef(node, _, attempt)))
   } yield (node, !ls.isEmpty)
@@ -617,13 +617,13 @@ case class Validator(schema: Schema) extends MyLogging {
     case (Some(min), Some(max)) => v >= min && v <= max
   }
 
-  private def or(sRefs: Seq[ShapeRef]): NodeChecker = attempt => node => {
+  private def or(sRefs: Seq[RefNode]): NodeChecker = attempt => node => {
     val last: CheckTyping = fail(s"None of the components of or pass")
-    def fn(sref: ShapeRef): CheckTyping = nodeShapeRef(node, sref, attempt)
+    def fn(sref: RefNode): CheckTyping = nodeShapeRef(node, sref, attempt)
     checkSomeFlag(sRefs.toStream,fn,last)
   }
 
-  private def not(sref: ShapeRef): NodeChecker = attempt => node => {
+  private def not(sref: RefNode): NodeChecker = attempt => node => {
     for {
       shape <- getShapeRef(sref, attempt, node)
       typing <- getTyping
@@ -747,13 +747,13 @@ case class Validator(schema: Schema) extends MyLogging {
     } yield t
   }
 
-  private def getShapeRefs(sRefs: List[ShapeRef], attempt: Attempt, node: RDFNode): Check[List[Shape]] =
+  private def getShapeRefs(sRefs: List[RefNode], attempt: Attempt, node: RDFNode): Check[List[Shape]] =
     sequence(sRefs.map(getShapeRef(_, attempt, node)))
 
-  private def getPropertyShapeRefs(srefs: List[ShapeRef], attempt: Attempt, node: RDFNode): Check[List[PropertyShape]] =
+  private def getPropertyShapeRefs(srefs: List[RefNode], attempt: Attempt, node: RDFNode): Check[List[PropertyShape]] =
     sequence(srefs.map(getPropertyShapeRef(_, attempt, node)))
 
-  private def getPropertyShapeRef(sref: ShapeRef, attempt: Attempt, node: RDFNode): Check[PropertyShape] = for {
+  private def getPropertyShapeRef(sref: RefNode, attempt: Attempt, node: RDFNode): Check[PropertyShape] = for {
     shape <- getShapeRef(sref, attempt, node)
     ps <- shape2PropertyShape(shape, attempt, node)
   } yield ps
@@ -785,7 +785,7 @@ case class Validator(schema: Schema) extends MyLogging {
     }
   }
 
-  private def getShapeRef(sref: ShapeRef, attempt: Attempt, node: RDFNode): Check[Shape] =
+  private def getShapeRef(sref: RefNode, attempt: Attempt, node: RDFNode): Check[Shape] =
     schema.shapesMap.get(sref) match {
       case Some(shape) => ok(shape)
       case None => err(notFoundShapeRef(node, attempt,

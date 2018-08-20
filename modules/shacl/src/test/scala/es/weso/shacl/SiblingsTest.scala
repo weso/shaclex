@@ -56,15 +56,15 @@ class SiblingsTest extends FunSpec
   describe("Parent") {
 
     it("should be able to find parent of a shape") {
-      val eitherParents: Either[String, List[ShapeRef]] = for {
+      val eitherParents: Either[String, List[RefNode]] = for {
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
-      } yield schema.parents(ShapeRef(psFemale))
+      } yield schema.parents(RefNode(psFemale))
 
       eitherParents match {
         case Right(ps) => {
           info(s"Parents found: $ps")
-          ps should contain only (ShapeRef(marriage))
+          ps should contain only (RefNode(marriage))
         }
         case Left(e) => fail(e)
       }
@@ -73,10 +73,10 @@ class SiblingsTest extends FunSpec
     describe("SiblingQualifiedValueShapes") {
       it("should be able to find siblings of a shape") {
 
-        val eitherShapes: Either[String, List[ShapeRef]] = for {
+        val eitherShapes: Either[String, List[RefNode]] = for {
           rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
           schema <- RDF2Shacl.getShacl(rdf)
-        } yield (schema.siblingQualifiedShapes(ShapeRef(psFemale)))
+        } yield (schema.siblingQualifiedShapes(RefNode(psFemale)))
 
         eitherShapes match {
           case Right(ss) => {

@@ -7,14 +7,17 @@ import es.weso.shacl.converter.Shacl2RDF
 import scala.util.{Either, Left, Right}
 import sext._
 
-case class Schema(
-                   pm: PrefixMap,
-                   shapesMap: Map[ShapeRef, Shape]) {
+case class Schema(pm: PrefixMap,
+                  imports: List[IRI],
+                  entailments: List[IRI],
+                  shapesMap: Map[RefNode, Shape],
+                  propertyGroups: Map[RefNode, PropertyGroup]
+                 ) {
 
   lazy val shapes: Seq[Shape] =
     shapesMap.toSeq.map(_._2)
 
-  lazy val shapeRefs: Seq[ShapeRef] =
+  lazy val shapeRefs: Seq[RefNode] =
     shapesMap.keys.toSeq
 
   /**
@@ -22,12 +25,12 @@ case class Schema(
     * @param node IRI that identifies a shape
     */
   def shape(node: RDFNode): Either[String, Shape] =
-    shapesMap.get(ShapeRef(node)) match {
+    shapesMap.get(RefNode(node)) match {
       case None => Left(s"Not found $node in Schema")
       case Some(shape) => Right(shape)
     }
 
-  private[shacl] def siblingQualifiedShapes(s: ShapeRef): List[ShapeRef] = {
+  private[shacl] def siblingQualifiedShapes(s: RefNode): List[RefNode] = {
     val parentShapes: List[Shape] =
       parents(s).
         map(shapesMap.get(_)).
@@ -39,14 +42,14 @@ case class Schema(
     collectQualifiedValueShapes(qualifiedPropertyShapes)
   }
 
-  private def collectQualifiedValueShapes(ls: List[ShapeRef]): List[ShapeRef] = {
-    val zero: List[ShapeRef] = List()
-    def comb(xs: List[ShapeRef], x: ShapeRef): List[ShapeRef] =
+  private def collectQualifiedValueShapes(ls: List[RefNode]): List[RefNode] = {
+    val zero: List[RefNode] = List()
+    def comb(xs: List[RefNode], x: RefNode): List[RefNode] =
       qualifiedShapes(x) ++ xs
     ls.foldLeft(zero)(comb)
   }
 
-  private def qualifiedShapes(p: ShapeRef): List[ShapeRef] = shapesMap.get(p) match {
+  private def qualifiedShapes(p: RefNode): List[RefNode] = shapesMap.get(p) match {
     case None => List()
     case Some(shape) =>
       shape.components.collect { case x: QualifiedValueShape => x.shape }.toList
@@ -54,15 +57,15 @@ case class Schema(
 
   /* Find shape x such that x sh:property p
    */
-  private[shacl] def parents(p: ShapeRef): List[ShapeRef] = {
+  private[shacl] def parents(p: RefNode): List[RefNode] = {
     shapesWithPropertyShape(this.shapeRefs, p)
   }
 
-  private def shapesWithPropertyShape(ls: Seq[ShapeRef], p: ShapeRef): List[ShapeRef] = {
+  private def shapesWithPropertyShape(ls: Seq[RefNode], p: RefNode): List[RefNode] = {
     ls.filter(hasPropertyShape(_, p)).toList
   }
 
-  private def hasPropertyShape(s: ShapeRef, p: ShapeRef): Boolean = {
+  private def hasPropertyShape(s: RefNode, p: RefNode): Boolean = {
     shapesMap.get(s) match {
       case None => false // TODO: Maybe raise an error
       case Some(shape) =>
@@ -88,8 +91,8 @@ case class Schema(
     * @return a list of pairs (n,s) where n is the IRI of a node
     * and s is the IRI of a shape
     */
-  def targetNodeDeclarations: Seq[(RDFNode, IRI)] = {
-    targetNodeShapes.collect { case (node, shape) if shape.id.isIRI => (node, shape.id.toIRI) }
+  def targetNodeDeclarations: Seq[(RDFNode, RDFNode)] = {
+    targetNodeShapes.map {case (node, shape) => (node, shape.id) }
   }
 
   def serialize(format: String = "TURTLE", builder: RDFBuilder): Either[String, String] = {
@@ -102,6 +105,7 @@ case class Schema(
       }
     }
   }
+
 }
 
 // Companion iriObjects
@@ -109,5 +113,9 @@ object Schema {
   val empty =
     Schema(
       pm = SHACLPrefixes.defaultPrefixMap,
-      shapesMap = Map[ShapeRef, Shape]())
+      imports = List(),
+      entailments = List(),
+      shapesMap = Map(),
+      propertyGroups = Map()
+    )
 }

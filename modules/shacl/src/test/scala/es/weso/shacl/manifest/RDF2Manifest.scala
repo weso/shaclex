@@ -255,7 +255,7 @@ object RDF2Manifest extends LazyLogging {
            format: String,
            base: Option[String],
            derefIncludes: Boolean
-          ): Either[String, (Manifest,RDFReader)] = {
+          ): Either[String, (Manifest,RDFBuilder)] = {
     for {
       cs <- getContents(fileName)
       rdf <- RDFAsJenaModel.fromChars(cs, format, None).map(_.normalizeBNodes)

@@ -30,5 +30,9 @@ trait RDFBuilder extends RDFReader {
 
   def empty: Rdf
 
+  def merge(other: RDFReader): Either[String, Rdf]
+
+  def extendImports(): Either[String, Rdf]
+
 }
 

@@ -64,7 +64,7 @@ trait RDFParser {
   /**
    * Returns the String associated with a predicate `p`
    * @param p predicate
-   * @return An RDFParser that returns the String associate with that predicate
+   * @return An RDFParser that returns the String associated with that predicate
    *
    */
   def stringFromPredicate(p: IRI): RDFParser[String] = { (n, rdf) =>
@@ -78,6 +78,23 @@ trait RDFParser {
   }
 
   /**
+    * Returns the Decimal literal associated with a predicate `p`
+    * @param p predicate
+    * @return An RDFParser that returns the decimal literal associated with that predicate
+    *
+    */
+  def decimalLiteralFromPredicate(p: IRI): RDFParser[DecimalLiteral] = { (n, rdf) =>
+    for {
+      obj <- objectFromPredicate(p)(n, rdf)
+      node <- obj match {
+        case d: DecimalLiteral => parseOk(d)
+        case _ => parseFail("Value of predicate " + p + " must be a decimal literal but it is: " + obj)
+      }
+    } yield node
+  }
+
+
+  /**
    *
    */
   def stringFromPredicateOptional(p: IRI): RDFParser[Option[String]] =
@@ -85,6 +102,9 @@ trait RDFParser {
 
   def objectFromPredicateOptional(p: IRI): RDFParser[Option[RDFNode]] =
     optional(objectFromPredicate(p))
+
+  def decimalLiteralFromPredicateOptional(p: IRI): RDFParser[Option[DecimalLiteral]] =
+    optional(decimalLiteralFromPredicate(p))
 
   /**
    * Returns a parser that obtains the type associated with the current node
@@ -233,7 +253,10 @@ trait RDFParser {
   def hasSomeRDFType(ts: Set[IRI]): RDFParser[Boolean] = { (n, rdf) =>
     for {
       declaredTypes <- objectsFromPredicate(rdf_type)(n, rdf)
-    } yield (declaredTypes.map(_.toIRI).diff(ts)).size > 0
+    } yield {
+      val iriTypes = declaredTypes.collect { case i: IRI => i}
+      iriTypes.diff(ts).size > 0
+    }
   }
 
   /**
@@ -589,7 +612,7 @@ trait RDFParser {
     else parseFail(s"Expected rdf_nil but got $n")
 
   def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = {
-    sequenceEither(ns.map(node2IRI(_)))
+    sequenceEither(ns.map(_.toIRI))
   }
 
   // Todo: Use "sequence" when I find why it gives a type error...
@@ -604,11 +627,6 @@ trait RDFParser {
         }
       }
     xs.foldLeft(zero)(next)
-  }
-
-  def node2IRI(node: RDFNode): Either[String, IRI] = node match {
-    case (i: IRI) => Right(i)
-    case _ => Left(s"$node is not an IRI\n")
   }
 
   /*  def fromEitherString[A](e: Either[String,A]): Try[A] =

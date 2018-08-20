@@ -74,7 +74,7 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
       val good2 = ex + "good2"
       val bad1 = ex + "bad1"
       val ps = Shape.emptyPropertyShape(PS, PredicatePath(p)).copy(components = List(MinCount(1)))
-      val psRefs = Seq(ShapeRef(PS))
+      val psRefs = Seq(RefNode(PS))
       val s = Shape.empty(S).copy(
         targets = Seq(TargetNode(x)),
         propertyShapes = psRefs)

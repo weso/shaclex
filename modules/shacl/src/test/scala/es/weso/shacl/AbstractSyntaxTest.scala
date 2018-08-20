@@ -13,12 +13,17 @@ class AbstractSyntaxTest extends FunSpec with Matchers {
         id = id,
         components = List(),
         targets = List(),
-        propertyShapes = List(ShapeRef(x)),
+        propertyShapes = List(RefNode(x)),
         false,
         List(),
         false,
         MessageMap.empty,
-        None
+        None,
+        name = MessageMap.empty,
+        description = MessageMap.empty,
+        order = None,
+        group = None,
+        sourceIRI = None
       )
 
       shape.id should be(id)

@@ -7,7 +7,7 @@ import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
-import es.weso.shacl.{MessageMap, Shape, ShapeRef}
+import es.weso.shacl.{MessageMap, Shape, RefNode}
 import es.weso.shacl.report.{Severity, ValidationResult}
 // import es.weso.shacl.validator.ShapeTyping._
 // import es.weso.typing.Typing
@@ -23,7 +23,7 @@ class SHACLCheckerTest extends FunSpec with Matchers with TryValues with OptionV
 
     def mkErr(str: String): ValidationResult =
       ValidationResult.basic("",StringLiteral(str),Attempt(StringLiteral(str),
-        ShapeRef(StringLiteral(str)),
+        RefNode(StringLiteral(str)),
         MessageMap.empty,
         Severity.defaultSeverity,None
       ),str)

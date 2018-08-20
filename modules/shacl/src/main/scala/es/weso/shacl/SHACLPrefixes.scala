@@ -34,8 +34,10 @@ object SHACLPrefixes {
   lazy val sh_description: IRI = sh + "description"
   lazy val sh_disjoint: IRI = sh + "disjoint"
   lazy val sh_equals: IRI = sh + "equals"
+  lazy val sh_entailment: IRI = sh + "entailment"
   lazy val sh_flags: IRI = sh + "flags"
   lazy val sh_focusNode: IRI = sh + "focusNode"
+  lazy val sh_group: IRI = sh + "group"
   lazy val sh_hasValue: IRI = sh + "hasValue"
   lazy val sh_ignoredProperties: IRI = sh + "ignoredProperties"
   lazy val sh_in: IRI = sh + "in"
@@ -51,11 +53,12 @@ object SHACLPrefixes {
   lazy val sh_minLength: IRI = sh + "minLength"
   lazy val sh_maxLength: IRI = sh + "maxLength"
   lazy val sh_message: IRI = sh + "message"
-  lazy val sh_nodeKind: IRI = sh + "nodeKind"
   lazy val sh_name: IRI = sh + "name"
+  lazy val sh_nodeKind: IRI = sh + "nodeKind"
   lazy val sh_node: IRI = sh + "node"
   lazy val sh_not: IRI = sh + "not"
   lazy val sh_or: IRI = sh + "or"
+  lazy val sh_order: IRI = sh + "order"
   lazy val sh_path: IRI = sh + "path"
   lazy val sh_pattern: IRI = sh + "pattern"
   lazy val sh_property: IRI = sh + "property"
@@ -67,6 +70,7 @@ object SHACLPrefixes {
   lazy val sh_resultPath: IRI = sh + "resultPath"
   lazy val sh_resultSeverity: IRI = sh + "resultSeverity"
   lazy val sh_resultMessage: IRI = sh + "resultMessage"
+  lazy val sh_shapesGraph: IRI = sh + "shapesGraph"
   lazy val sh_severity: IRI = sh + "severity"
   lazy val sh_sourceConstraintComponent: IRI = sh + "sourceConstraintComponent"
   lazy val sh_sourceShape: IRI = sh + "sourceShape"
@@ -79,11 +83,15 @@ object SHACLPrefixes {
   lazy val sh_uniqueLang: IRI = sh + "uniqueLang"
   lazy val sh_xone: IRI = sh + "xone"
 
+  lazy val owl_imports: IRI = owl + "imports"
+
   lazy val defaultPrefixMap = PrefixMap(
     Map(
       Prefix("sh") -> sh,
       Prefix("rdf") -> rdf,
       Prefix("xsd") -> xsd,
-      Prefix("rdfs") -> rdfs))
+      Prefix("rdfs") -> rdfs,
+      Prefix("owl") -> owl
+    ))
 
 }

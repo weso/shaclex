@@ -27,7 +27,7 @@ import org.apache.jena.sparql.path.Path
 import cats.implicits._
 import es.weso.rdf.dot.RDF2Dot
 
-case class RDFAsJenaModel(model: Model)
+case class RDFAsJenaModel(model: Model, sourceIRI: Option[IRI] = None)
   extends RDFReader
   with RDFBuilder
   with RDFReasoner {
@@ -331,6 +331,56 @@ case class RDFAsJenaModel(model: Model)
     NormalizaBNodes.normalizeBNodes(this,this.empty)
   }
 
+  /**
+  * Apply owl:imports closure to an RDF source
+    * @return new RDFReader
+    */
+  override def extendImports():Either[String, Rdf] = for {
+    imports <- getImports
+    newRdf <- extendImports(this,imports,List(IRI("")))
+  } yield newRdf
+
+  private lazy val owlImports = IRI("http://www.w3.org/2002/07/owl#imports")
+
+  private def getImports: Either[String, List[IRI]] =
+    EitherUtils.sequence(
+      triplesWithPredicate(owlImports).toList.map(_.obj.toIRI)
+    )
+
+  private def extendImports(rdf: Rdf,
+                            imports: List[IRI],
+                            visited: List[IRI]
+                           ): Either[String,Rdf] = {
+    imports match {
+      case Nil => Right(rdf)
+      case iri :: rest =>
+        if (visited contains iri)
+          extendImports(rdf,rest,visited)
+        else for {
+          newRdf <- RDFAsJenaModel.fromIRI(iri)
+          merged <- merge(newRdf)
+          restRdf <- extendImports(merged,rest,iri :: visited)
+        } yield restRdf
+    }
+  }
+
+  override def merge(other: RDFReader): Either[String,Rdf] = other match {
+    case jenaRdf: RDFAsJenaModel =>
+      Right(RDFAsJenaModel(this.model.add(jenaRdf.model)))
+    case _ => {
+      val zero: Either[String,Rdf] = Right(this)
+      def cmb(next: Either[String,Rdf], x: RDFTriple): Either[String,Rdf] = for {
+        rdf1 <- next
+        rdf2 <- rdf1.addTriple(x)
+      } yield rdf2
+      other.rdfTriples.foldLeft(zero)(cmb)
+    }
+  }
+
+  override def asRDFBuilder: Either[String, RDFBuilder] =
+    Right(this)
+
+  override def rdfReaderName: String = s"ApacheJena"
 }
 
 
@@ -344,6 +394,15 @@ object RDFAsJenaModel {
     RDFAsJenaModel(ModelFactory.createDefaultModel)
   }
 
+  def fromIRI(iri: IRI): Either[String,RDFAsJenaModel] = {
+    Try {
+      // We delegate RDF management to Jena (content-negotiation and so...)
+      RDFDataMgr.loadModel(iri.str)
+    }.toEither.
+      leftMap(e => s"Exception reading RDF from ${iri.show}: ${e.getMessage}").
+      map(model => RDFAsJenaModel(model))
+  }
+
   def fromURI(uri: String,
               format: String = "TURTLE",
               base: Option[String] = None
@@ -352,7 +411,7 @@ object RDFAsJenaModel {
     Try {
       val m = ModelFactory.createDefaultModel()
       RDFDataMgr.read(m, uri, baseURI, shortnameToLang(format))
-      RDFAsJenaModel(JenaUtils.relativizeModel(m))
+      RDFAsJenaModel(JenaUtils.relativizeModel(m), Some(IRI(uri)))
     }.fold(e => Left(s"Exception accessing uri $uri: ${e.getMessage}"),
       (Right(_))
     )
@@ -364,7 +423,7 @@ object RDFAsJenaModel {
       val m = ModelFactory.createDefaultModel()
       val is: InputStream = new FileInputStream(file)
       RDFDataMgr.read(m, is, baseURI, shortnameToLang(format))
-      RDFAsJenaModel(JenaUtils.relativizeModel(m))
+      RDFAsJenaModel(JenaUtils.relativizeModel(m), Some(IRI(file.toURI)))
     }.fold(e => Left(s"Exception parsing RDF from file ${file.getName}: ${e.getMessage}"),
            Right(_))
   }
@@ -383,6 +442,5 @@ object RDFAsJenaModel {
   def availableFormats: List[String] = {
     RDFLanguages.getRegisteredLanguages().asScala.map(_.getName).toList.distinct
   }
-
 
 }

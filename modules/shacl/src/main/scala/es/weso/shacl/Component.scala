@@ -60,22 +60,22 @@ case class LessThan(p: IRI) extends Component {
 case class LessThanOrEquals(p: IRI) extends Component {
   override val name: String = "lessThanOrEquals"
 }
-case class Or(shapes: List[ShapeRef]) extends Component {
+case class Or(shapes: List[RefNode]) extends Component {
   override val name: String = "or"
 }
-case class And(shapes: List[ShapeRef]) extends Component {
+case class And(shapes: List[RefNode]) extends Component {
   override val name: String = "and"
 }
-case class Not(shape: ShapeRef) extends Component {
+case class Not(shape: RefNode) extends Component {
   override val name: String = "not"
 }
-case class Xone(shapes: List[ShapeRef]) extends Component {
+case class Xone(shapes: List[RefNode]) extends Component {
   override val name: String = "xone"
 }
 case class Closed(isClosed: Boolean, ignoredProperties: List[IRI]) extends Component {
   override val name: String = "closed"
 }
-case class NodeComponent(shape: ShapeRef) extends Component {
+case class NodeComponent(shape: RefNode) extends Component {
   override val name: String = "node"
 }
 case class HasValue(value: Value) extends Component {
@@ -87,7 +87,7 @@ case class In(list: List[Value]) extends Component {
 
 // TODO: Change representation to include optional parent shape
 case class QualifiedValueShape(
-                                shape: ShapeRef,
+                                shape: RefNode,
                                 qualifiedMinCount: Option[Int],
                                 qualifiedMaxCount: Option[Int],
                                 qualifiedValueShapesDisjoint: Option[Boolean]) extends Component {

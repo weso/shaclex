@@ -7,7 +7,7 @@ import es.weso.rdf.path.SHACLPath
 import es.weso.rdf.triples.RDFTriple
 import io.circe.Json
 import org.eclipse.rdf4j.model.{IRI => IRI_RDF4j, BNode => _, Literal => _, _}
-import es.weso.rdf.nodes._
+import es.weso.rdf.nodes.{IRI, _}
 import org.eclipse.rdf4j.model.util.{ModelBuilder, Models}
 import org.eclipse.rdf4j.rio.RDFFormat._
 import org.eclipse.rdf4j.rio.{RDFFormat, Rio}
@@ -17,8 +17,10 @@ import scala.util._
 import scala.collection.JavaConverters._
 import RDF4jMapper._
 import cats.implicits._
+import es.weso.utils.EitherUtils
 
-case class RDFAsRDF4jModel(model: Model)
+case class RDFAsRDF4jModel(model: Model,
+                           sourceIRI: Option[IRI] = None)
   extends RDFReader
     with RDFBuilder
     with RDFReasoner {
@@ -233,6 +235,52 @@ case class RDFAsRDF4jModel(model: Model)
     case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
   }
 
+  override def merge(other: RDFReader): Either[String,Rdf] = other match {
+    // TODO: optimize merge using RDF4j merge...
+    // case rdf4j: RDFAsRDF4jModel =>
+    case _ => {
+      val zero: Either[String,Rdf] = Right(this)
+      def cmb(next: Either[String,Rdf], x: RDFTriple): Either[String,Rdf] = for {
+        rdf1 <- next
+        rdf2 <- rdf1.addTriple(x)
+      } yield rdf2
+      other.rdfTriples.foldLeft(zero)(cmb)
+    }
+  }
+
+  override def extendImports():Either[String, Rdf] = for {
+    imports <- getImports
+    newRdf <- extendImports(this,imports,List(IRI("")))
+  } yield newRdf
+
+  private lazy val owlImports = IRI("http://www.w3.org/2002/07/owl#imports")
+
+  private def getImports: Either[String, List[IRI]] =
+    EitherUtils.sequence(
+      triplesWithPredicate(owlImports).toList.map(_.obj).map(_.toIRI)
+    )
+
+  private def extendImports(rdf: Rdf,
+                            imports: List[IRI],
+                            visited: List[IRI]
+                           ): Either[String,Rdf] = {
+    imports match {
+      case Nil => Right(rdf)
+      case iri :: rest =>
+        if (visited contains iri)
+          extendImports(rdf,rest,visited)
+        else for {
+          newRdf <- RDFAsRDF4jModel.fromIRI(iri)
+          merged <- merge(newRdf)
+          restRdf <- extendImports(merged,rest,iri :: visited)
+        } yield restRdf
+    }
+  }
+
+  override def asRDFBuilder: Either[String, RDFBuilder] =
+    Right(this)
+
+  override def rdfReaderName: String = s"RDF4j"
 }
 
 
@@ -256,5 +304,8 @@ object RDFAsRDF4jModel {
     formats.map(_.getName)
   }
 
+  def fromIRI(iri: IRI): Either[String,RDFAsRDF4jModel] = {
+    Left(s"Not implemented get RDF4j from IRI: $iri")
+  }
 
 }

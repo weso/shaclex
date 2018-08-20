@@ -24,7 +24,10 @@ import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.jena.JenaMapper.jenaNode2RDFNode
 
 // TODO: Refactor to change String type by Url
-case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with LazyLogging {
+case class Endpoint(endpoint: String)
+  extends RDFReader
+     with RDFReasoner
+     with LazyLogging {
   type Rdf = Endpoint
 
   def availableParseFormats: List[String] = List()
@@ -95,12 +98,12 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with La
     model2triples(model)
   }
 
-  def triplesWithSubject(node: RDFNode): Set[RDFTriple] = {
-    logger.debug(s"Triples with subject ${node.show}")
-    if (node.isIRI) {
-      val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(node.toIRI)).execConstruct()
+  def triplesWithSubject(node: RDFNode): Set[RDFTriple] = node match {
+    case subj: IRI => {
+      val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(subj)).execConstruct()
       model2triples(model)
-    } else throw new Exception("triplesWithSubject: node " + node + " must be a IRI")
+    }
+    case _ => throw new Exception("triplesWithSubject: node " + node + " must be a IRI")
   }
 
   def triplesWithPredicate(p: IRI): Set[RDFTriple] = {
@@ -108,20 +111,20 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with La
     model2triples(model)
   }
 
-  def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
-    log.debug(s"Triples with object ${node}")
-    if (node.isIRI) {
-      val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithObject(node.toIRI)).execConstruct()
+  def triplesWithObject(node: RDFNode): Set[RDFTriple] = node match {
+    case obj: IRI => {
+      val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithObject(obj)).execConstruct()
       model2triples(model)
-    } else throw new Exception("triplesWithObject: node " + node + " must be a IRI")
+    }
+    case _ => throw new Exception("triplesWithObject: node " + node + " must be a IRI")
   }
 
-  def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = {
-    log.debug(s"Triples with predicate ${p} and object $o")
-    if (o.isIRI) {
-      val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithPredicateObject(p, o.toIRI)).execConstruct()
+  def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = o match {
+    case iri: IRI => {
+      val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithPredicateObject(p, iri)).execConstruct()
       model2triples(model)
-    } else throw new Exception("triplesWithPredicateObject: o " + o + " must be a IRI")
+    }
+    case _ => throw new Exception("triplesWithPredicateObject: o " + o + " must be a IRI")
   }
 
   def model2triples(model: Model): Set[RDFTriple] = {
@@ -229,6 +232,13 @@ case class Endpoint(endpoint: String) extends RDFReader with RDFReasoner with La
 
   override def isIsomorphicWith(other: RDFReader): Either[String,Boolean] =
     Left(s"Unimplemented isIsomorphicWith between endpoints")
+
+  override def sourceIRI = None
+
+  override def asRDFBuilder: Either[String,RDFBuilder] =
+    Left(s"Unimplemented isIsomorphicWith between endpoints")
+
+  override def rdfReaderName: String = s"Endpoint($endpoint)"
 
 }
 

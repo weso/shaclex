@@ -44,17 +44,17 @@ case class RDFFromWeb() extends RDFReader {
     throw new Exception("Cannot obtain triples from RDFFromWeb ")
   }
 
-  override def triplesWithSubject(node: RDFNode): Set[RDFTriple] = {
-    if (node.isIRI) {
-      val subj = node.toIRI
+  override def triplesWithSubject(node: RDFNode): Set[RDFTriple] =
+   node match {
+     case subj: IRI => {
       val derefModel = ModelFactory.createDefaultModel
       RDFDataMgr.read(derefModel, subj.str)
       val model = QueryExecutionFactory.create(queryTriplesWithSubject(subj), derefModel).execConstruct()
       val triples = model2triples(model)
       log.debug("triples with subject " + subj + " =\n" + triples)
       triples
-    } else
-      throw new Exception("triplesWithSubject: node " + node + " must be a IRI")
+    }
+    case _ => throw new Exception("triplesWithSubject: node " + node + " must be a IRI")
   }
 
   override def triplesWithPredicate(p: IRI): Set[RDFTriple] = {
@@ -64,26 +64,27 @@ case class RDFFromWeb() extends RDFReader {
     model2triples(model)
   }
 
-  override def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
-    if (node.isIRI) {
-      val obj = node.toIRI
+  override def triplesWithObject(node: RDFNode): Set[RDFTriple] =
+   node match {
+    case obj: IRI => {
       val derefModel = ModelFactory.createDefaultModel
       RDFDataMgr.read(derefModel, obj.str)
       val model = QueryExecutionFactory.create(queryTriplesWithObject(obj), derefModel).execConstruct()
       model2triples(model)
-    } else
+    }
+    case _ =>
       throw new Exception("triplesWithObject: node " + node + " must be a IRI")
   }
 
-  override def triplesWithPredicateObject(p: IRI, node: RDFNode): Set[RDFTriple] = {
-    if (node.isIRI) {
-      val obj = node.toIRI
+  override def triplesWithPredicateObject(p: IRI, node: RDFNode): Set[RDFTriple] =
+   node match {
+     case obj: IRI => {
       val derefModel = ModelFactory.createDefaultModel
       RDFDataMgr.read(derefModel, obj.str)
       val model = QueryExecutionFactory.create(queryTriplesWithPredicateObject(p, obj), derefModel).execConstruct()
       model2triples(model)
-    } else
-      throw new Exception("triplesWithObject: node " + node + " must be a IRI")
+    }
+     case _ => throw new Exception("triplesWithObject: node " + node + " must be a IRI")
   }
 
   override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
@@ -153,5 +154,12 @@ case class RDFFromWeb() extends RDFReader {
 
   override def isIsomorphicWith(other: RDFReader) = Left(s"Unimplemented isomorphic test in RDFFromWeb")
 
+
+  override def sourceIRI = None
+
+  override def asRDFBuilder: Either[String, RDFBuilder] =
+    Left(s"Cannot convert RDFFromWeb to RDFBuilder")
+
+  override def rdfReaderName: String = s"RDFFromWeb"
 
 }
