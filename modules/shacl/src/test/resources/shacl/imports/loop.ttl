@@ -6,13 +6,9 @@ prefix sh:     <http://www.w3.org/ns/shacl#>
 prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
 prefix owl:    <http://www.w3.org/2002/07/owl#>
 
-<> owl:imports <hasName.ttl> .
+# An infinite loop as it imports itself...
+<> owl:imports <loop.ttl> .
 
-:Person a sh:NodeShape ;
-  sh:property :hasName .
-
-:Person sh:targetNode :alice .
-:Person sh:targetNode :bob .
-
-:alice :name "Alice" .
-:bob :age 23 . # Has no name
+:hasName a sh:PropertyShape ;
+  sh:path :name ;
+  sh:minCount 1 .

@@ -6,7 +6,7 @@ prefix sh:     <http://www.w3.org/ns/shacl#>
 prefix xsd:    <http://www.w3.org/2001/XMLSchema#>
 prefix owl:    <http://www.w3.org/2002/07/owl#>
 
-<> owl:imports <hasName.ttl> .
+<> owl:imports <loop.ttl> .
 
 :Person a sh:NodeShape ;
   sh:property :hasName .
