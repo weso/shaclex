@@ -27,8 +27,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   val parsedPropertyGroups = collection.mutable.Map[RefNode, PropertyGroup]()
 
-  var sourceIRI: Option[IRI] = None
-
   def tryGetShacl(rdf: RDFBuilder,
                   resolveImports: Boolean): Try[Schema] =
     getShacl(rdf, resolveImports).fold(
@@ -37,7 +35,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def getShaclFromRDFReader(rdf: RDFReader): Either[String,Schema] = {
     val pm = rdf.getPrefixMap
-    sourceIRI = rdf.sourceIRI
     for {
       shapesMap <- shapesMap(rdf)
       imports <- parseImports(rdf)
@@ -162,7 +159,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       description = description,
       group = group,
       order = order,
-      sourceIRI = sourceIRI
+      sourceIRI = rdf.sourceIRI
     )
     val sref = RefNode(n)
     parsedShapes += (sref -> shape)
@@ -251,7 +248,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       description = description,
       order = order,
       group = group,
-      sourceIRI = sourceIRI
+      sourceIRI = rdf.sourceIRI
     )
 
     val sref = RefNode(n)
