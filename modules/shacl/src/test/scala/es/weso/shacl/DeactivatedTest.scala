@@ -1,10 +1,10 @@
 package es.weso.shacl
 
+
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 import org.scalatest._
-
 class DeactivatedTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
