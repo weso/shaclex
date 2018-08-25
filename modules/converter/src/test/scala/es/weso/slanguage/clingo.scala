@@ -20,6 +20,9 @@ object Clingo {
   final case class IntTerm(n: Int) extends SimpleTerm {
     override def show: String = n.toString
   }
+  final case class StringTerm(str: String) extends SimpleTerm {
+    override def show: String = "\"" ++ str ++ "\""
+  }
   final case class Var(name: String) extends SimpleTerm {
     require(!name.isEmpty, s"Variable($name) must not be empty")
     require(name.head.isUpper, s"Variable($name) must start by uppercase")
@@ -74,7 +77,7 @@ object Clingo {
   sealed trait Statement extends Product with Serializable {
     def show: String
   }
-  final case class Rule(head: Atom, body: List[Literal]) extends Statement {
+  final case class Rule(head: Literal, body: List[Literal]) extends Statement {
     override def show: String = s"${head.show}:-${showBody(body)}"
   }
   final case class Fact(head: Literal) extends Statement {
