@@ -1,7 +1,7 @@
 package es.weso.rdf.nodes
 
 case class StringLiteral(lexicalForm: String) extends Literal {
-  val dataType = RDFNode.StringDatatypeIRI
+  override val dataType = RDFNode.StringDatatypeIRI
 
   override def isLangLiteral = false
   override def hasLang(lang: Lang) = false

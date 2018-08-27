@@ -2,6 +2,7 @@ package es.weso.slanguage
 
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
+import es.weso.rdf.operations.Graph
 import es.weso.rdf.triples.RDFTriple
 import es.weso.slanguage.Clingo._
 
@@ -109,29 +110,61 @@ object Validation {
        else smap.notConform(node,shape)
       case _ => smap.notConform(node,shape)
     }
-    // case Not(s) => if (smap.)
+    case Not(s) => ???
+    case Ref(_) => ???
+    case QualifiedArc(pred, shape, card) => ???
    }
 
   case class CLConst(s: String)
 
-  def commonStatements: Program =
-    Program(List(
-      ShowDirective("hasShape", 2),
-      ShowDirective("arc", 3)
-    ))
+  def commonStatements: Program = {
+    val showHasShape = Seq(ShowDirective("hasShape", 2))
+    val debugShows = Seq(ShowDirective("arc", 3))
 
-  def ground(node: RDFNode, shape: SLang, rdf: RDFReader): Program = {
-    val rdfStatements = groundRDF(node,rdf)
-    val shapeStatements = groundShape(shape)
-    val common = commonStatements
-    Program(rdfStatements.statements ++ shapeStatements.statements ++ common.statements)
+    Program(
+        showHasShape ++
+        debugShows ++
+        slangStatements.statements
+      )
+  }
+
+  def slangStatements: Program = {
+    val s1 = hasShapeOrNot
+    Program(Seq(s1))
+  }
+
+  def hasShapeOrNot: Statement = {
+    val x: Var = Var("X")
+    val s: Var = Var("S")
+    val head: Head = Disj(
+      Pos(Function(Func("hasShape", x, s))),
+      Neg(Function(Func("hasShape", x, s)))
+    )
+    Rule(head, Pos(Function(Func("node", x))), Pos(Function(Func("shape", s))))
+  }
+
+  def ground(node: RDFNode,
+             label: Label,
+             rdf: RDFReader,
+             schema: SchemaS): Either[String,Program] = {
+    schema.getLabel(label) match {
+      case Some(shape) => {
+        val rdfStatements = groundRDF(node,rdf)
+        val shapeStatements = groundShape(shape)
+        val common = commonStatements
+        val all: Seq[Statement] = rdfStatements.statements ++ shapeStatements.statements ++ common.statements
+        Right(Program(all))
+      }
+      case None => Left(s"Shape with label $label not found in Schema")
+    }
   }
 
   def closure(node: RDFNode, rdf: RDFReader): List[RDFTriple] =
-    rdf.triplesWithSubject(node).toList ++ rdf.triplesWithObject(node).toList
+    rdf.triplesWithSubject(node).toList ++
+    rdf.triplesWithObject(node).toList
 
-  def node2Prolog(node: RDFNode): Term = node match {
-    case iri: IRI => StringTerm("<" ++ iri.str ++ ">")
+  def node2Term(node: RDFNode): Term = node match {
+    case iri: IRI => iri2Term(iri)
     case bNode: BNode => StringTerm("_:" ++ bNode.id )
     case l: StringLiteral => StringTerm(s"${l.getLexicalForm}")
     case l: IntegerLiteral => IntTerm(l.int)
@@ -139,34 +172,82 @@ object Validation {
     case l: RDFLiteral => StringTerm((s"${l.getLexicalForm}^^<${l.dataType.str}>"))
   }
 
-  def triple2Prolog(t: RDFTriple): Statement = {
+  def triple2Statement(t: RDFTriple): Statement = {
     Fact(Pos(Function(
       Func("arc",
-      List(node2Prolog(t.subj),node2Prolog(t.pred),node2Prolog(t.obj)))))
+      node2Term(t.subj), node2Term(t.pred), node2Term(t.obj))))
     )
   }
 
-  def groundRDF(node: RDFNode, rdf: RDFReader): Program = {
-    val triples = closure(node,rdf)
-    Program(triples.map(triple2Prolog(_)))
+  def node2Statement(node: RDFNode): Statement = node match {
+    case i: IRI => mkFact("iri", node2Term(node))
+    case b: BNode => mkFact("bNode", node2Term(node))
+    case l: RDFLiteral => mkFact("literal", node2Term(node),iri2Term(l.dataType))
   }
+
+  def pred2Statement(pred: IRI): Statement =
+    mkFact("pred", iri2Term(pred))
+
+  def iri2Term(i: IRI): Term = StringTerm("<" ++ i.str ++ ">")
+
+  def mkFact(name: String, terms: Term*): Statement =
+    Fact(Pos(Function(Func(name, terms: _*))))
+
+  def groundRDF(node: RDFNode, rdf: RDFReader): Program = {
+    val (nodes,triples) = Graph.traverseWithArcs(node,rdf)
+    val statementsNodes = nodes.map(node2Statement(_))
+    val statementsTriples = triples.map(triple2Statement(_))
+    val statementsPredicates = triples.map(_.pred).distinct.map(pred2Statement(_))
+    Program(
+      statementsNodes ++
+      statementsTriples ++
+      statementsPredicates
+    )
+  }
+
   def groundShape(shape: SLang): Program = shape match {
-    case STrue => Program(List(Fact(Pos(Function(Func("shape", List(Const("true"))))))))
+    case STrue => shape2Program(shape)
     case And(s1, s2) => {
-      val p1 = groundShape(s1)
-      val p2 = groundShape(s2)
-      Program(
-        List(
-          Rule(Pos(Function(Func("shape", List(Func("and",List(Var("S1"), Var("S2"))))))),
-            List(
-              Pos(Function(Func("shape", List(Var("S1"))))),
-              Pos(Function(Func("shape", List(Var("S2")))))
-            )
-          )) ++
-          p1.statements ++
-          p2.statements
+       Program(
+        shape2Program(shape).statements ++
+        groundShape(s1).statements ++
+        groundShape(s2).statements
       )
     }
+    case _: Ref => shape2Program(shape)
+    case _: Datatype => shape2Program(shape)
+    case IRIKind | BNodeKind => shape2Program(shape)
+    case Not(s) =>
+      Program(
+        shape2Program(shape).statements ++
+        groundShape(s).statements
+      )
+    case QualifiedArc(_, shape, _) =>
+      Program(
+        shape2Program(shape).statements ++
+        groundShape(shape).statements
+      )
   }
+
+  private def shape2Program(shape: SLang): Program =
+    Program(List(Fact(Pos(Function(Func("shape",shape2Term(shape)))))))
+
+  private def shape2Term(shape: SLang): Term = shape match {
+    case STrue => Const("true")
+    case And(s1,s2) => Func("and", shape2Term(s1), shape2Term(s2))
+    case BNodeKind => Const("bnodeKind")
+    case IRIKind => Const("iriKind")
+    case Datatype(iri) => Func("datatype", StringTerm(iri.str))
+    case Not(s) => Func("not",shape2Term(s))
+    case Ref(Label(lbl)) => Func("ref",StringTerm(lbl.str))
+    case QualifiedArc(pred, shape, card) =>
+      Func("qualifiedArc",StringTerm(pred.str), shape2Term(shape), card2Term(card))
+  }
+
+  def card2Term(card: Card): Term =
+    Func("card", IntTerm(card.min), card.max match {
+      case Star => Const("star")
+      case IntMax(n) => IntTerm(n)
+    })
 
 }

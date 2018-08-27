@@ -44,12 +44,20 @@ object RDFTriple {
   /**
    *  Constructor of RDFTriples from triples
    */
-  def apply(triple: (RDFNode, IRI, RDFNode)) = new RDFTriple(triple._1, triple._2, triple._3)
+  def apply(triple: (RDFNode, IRI, RDFNode)
+           ) = new RDFTriple(triple._1, triple._2, triple._3)
 
-  def apply(triple: (RDFNode, IRI, RDFNode), base: IRI) = new RDFTriple(
+  def apply(triple: (RDFNode, IRI, RDFNode),
+            base: IRI
+           ) = new RDFTriple(
     resolve(triple._1, base),
     base.resolve(triple._2),
     resolve(triple._3, base))
+
+  def apply(subj: RDFNode,
+            pred: IRI,
+            obj: RDFNode): RDFTriple =
+    RDFTriple((subj,pred,obj))
 
   def resolve(node: RDFNode, base: IRI): RDFNode = {
     node match {

@@ -31,12 +31,13 @@ object Clingo {
   final case object Undef extends SimpleTerm {
     override def show: String = "_"
   }
-  final case class Func(name: String, terms: List[Term]) extends Term {
+  final case class Func(name: String, terms: Term*) extends Term {
     require(!name.isEmpty, s"Function($name,...) must not be empty")
     require(name.head.isLower, s"Function($name,...) must start by a lowercase")
+    require(terms.length > 0, s"Function($name,...) must not have 0 arguments (it should be a constant in that case)")
     override def show: String = s"$name(${terms.map(_.show).mkString(",")})"
   }
-  final case class Tuple(terms: List[Term]) extends Term {
+  final case class Tuple(terms: Term*) extends Term {
     override def show: String = s"(${terms.map(_.show).mkString(",")}))"
   }
 
@@ -70,20 +71,20 @@ object Clingo {
     override def show: String = s"not ${a.show}"
   }
 
-  private def showBody(body: List[Literal]): String = {
+  private def showBody(body: Seq[Literal]): String = {
     body.map(_.show).mkString(",")
   }
 
   sealed trait Statement extends Product with Serializable {
     def show: String
   }
-  final case class Rule(head: Literal, body: List[Literal]) extends Statement {
+  final case class Rule(head: Head, body: Literal*) extends Statement {
     override def show: String = s"${head.show}:-${showBody(body)}"
   }
   final case class Fact(head: Literal) extends Statement {
     override def show: String = head.show
   }
-  final case class Constraint(body: List[Literal]) extends Statement {
+  final case class Constraint(body: Literal*) extends Statement {
     override def show: String = s":-${showBody(body)}"
   }
   final case class ShowDirective(name: String, args: Int) extends Statement {
@@ -91,7 +92,18 @@ object Clingo {
     override def show: String = s"#show ${name}/$args"
   }
 
-  case class Program(statements: List[Statement]) {
+  sealed trait Head extends Product with Serializable {
+    def show: String
+  }
+  final case class Lit(l: Literal) extends Head {
+    override def show: String = l.show
+  }
+  final case class Disj(ls: Literal*) extends Head {
+    require(ls.length > 1, s"Disjunction($ls), length of list must be > 1")
+    override def show: String = ls.map(_.show).mkString(" | ")
+  }
+
+  case class Program(statements: Seq[Statement]) {
     def show: String = {
       val zero = ""
       def comb(s: Statement, rest: String
@@ -99,4 +111,5 @@ object Clingo {
       statements.foldRight(zero)(comb)
     }
   }
+
 }

@@ -15,9 +15,9 @@ class ClingoTest extends FunSpec with Matchers with TryValues with OptionValues 
     val program: Program = Program(
         List(
           ShowDirective("hasShape", 2),
-          Fact(Pos(Function(Func("arc", List(Const("alice"), Const("knows"), Const("bob")))))),
-          Rule(Pos(Function(Func("hasShape", List(Var("X"), Const("user"))))),
-            List(Pos(Function(Func("arc", List(Var("X"), Const("knows"), Var("Y")))))))
+          Fact(Pos(Function(Func("arc", Const("alice"), Const("knows"), Const("bob"))))),
+          Rule(Lit(Pos(Function(Func("hasShape", Var("X"), Const("user"))))),
+            Pos(Function(Func("arc", Var("X"), Const("knows"), Var("Y")))))
         ))
 
      val str = program.show
@@ -28,17 +28,19 @@ class ClingoTest extends FunSpec with Matchers with TryValues with OptionValues 
 
     it(s"Should ground simple shape and simple RDF") {
       val strRDF =
-        """|<a> <b> <c> .
+        """|<alice> <name> "Alice" ;
+           |        <knows> <bob> .
           |
         """.stripMargin
-      val shape : SLang = And(STrue,STrue)
+
+      val schema: SchemaS = SchemaS(Map(Label(IRI("user")) -> And(STrue,STrue)))
       val r = for {
         rdf <- RDFAsJenaModel.fromChars(strRDF, "TURTLE", None)
-      } yield rdf
+        program <- Validation.ground(IRI("alice"),Label(IRI("user")), rdf, schema)
+      } yield (rdf,program)
       r.fold(e => fail(s"Error: $e"),values => {
-        val rdf = values
-        val program = Validation.ground(IRI("a"),shape, rdf)
-        val contents = program.show
+        val (rdf,prog) = values
+        val contents = prog.show
         writeContents("modules/converter/target/test.pl", contents)
         info(s"Contents written: $contents")
       }

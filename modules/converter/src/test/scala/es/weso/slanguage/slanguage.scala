@@ -1,6 +1,10 @@
 package es.weso.slanguage
 import es.weso.rdf.nodes._
 
+case class SchemaS(lblMap: Map[Label, SLang]) {
+  def getLabel(lbl: Label): Option[SLang] = lblMap.get(lbl)
+}
+
 sealed trait SLang extends Product with Serializable
 
 sealed trait Max                extends Product with Serializable
