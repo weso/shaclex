@@ -79,6 +79,16 @@ object Main extends App with LazyLogging {
           println(s"Trigger json: ${trigger.toJson.spaces2}")
         }
 
+        if (opts.clingoFile.isDefined || opts.showClingo()) {
+          val maybeStr = for {
+            str <- schema.toClingo(rdf, trigger.shapeMap)
+          } yield str
+          maybeStr.fold(e => println(s"Error converting to clingo: $e"), str => {
+            if (opts.showClingo()) { println(s"$str") }
+            if (opts.clingoFile.isDefined) FileUtils.writeFile(opts.clingoFile(), str)
+          })
+        }
+
         val result = schema.validate(rdf, trigger)
 
         if (opts.showLog()) {

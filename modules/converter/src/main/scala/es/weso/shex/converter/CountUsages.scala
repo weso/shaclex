@@ -32,10 +32,10 @@ object CountUsages {
       fold(err[ShapeExpr](s"Not found shape with label $lbl"))(ok(_))
   } yield se
 
-  private def isBNode(lbl: ShapeLabel): Boolean = lbl match {
+/*  private def isBNode(lbl: ShapeLabel): Boolean = lbl match {
     case _: BNodeLabel => true
     case _ => false
-  }
+  } */
 
   private def tripleExprBNodeLabels(schema: Schema): List[ShapeLabel] =
     schema.tripleExprMap.getOrElse(Map()).keys.toList // .filter(isBNode(_))

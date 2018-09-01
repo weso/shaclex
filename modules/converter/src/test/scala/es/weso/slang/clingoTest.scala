@@ -1,15 +1,18 @@
-package es.weso.slanguage
+package es.weso.slang
 
 
-import es.weso.slanguage.Clingo._
+import es.weso.slang.Clingo._
 import org.scalatest._
 import java.io._
 
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
+import es.weso.shapeMaps.ShapeMap
 
 
-class ClingoTest extends FunSpec with Matchers with TryValues with OptionValues {
+class ClingoTest extends FunSpec
+  with Matchers with SLang2Clingo {
+
   describe(s"ClingoTest") {
     it(s"Should show a program") {
     val program: Program = Program(
@@ -28,15 +31,20 @@ class ClingoTest extends FunSpec with Matchers with TryValues with OptionValues 
 
     it(s"Should ground simple shape and simple RDF") {
       val strRDF =
-        """|<alice> <name> "Alice" ;
-           |        <knows> <bob> .
-          |
+        """|<alice> <name> "A" ;
+           |        <knows> <alice> .
         """.stripMargin
 
-      val schema: SchemaS = SchemaS(Map(Label(IRI("user")) -> And(STrue,STrue)))
+      val schema: SchemaS = SchemaS(Map(
+        IRILabel(IRI("user")) ->
+          And(QualifiedArc(PredSet(Set(IRI("name"))), STrue,Card.one),
+              QualifiedArc(PredSet(Set(IRI("knows"))), STrue,Card.oneStar))
+      ))
+
       val r = for {
         rdf <- RDFAsJenaModel.fromChars(strRDF, "TURTLE", None)
-        program <- Validation.ground(IRI("alice"),Label(IRI("user")), rdf, schema)
+        smap <- ShapeMap.empty.add(IRI("alice"), es.weso.shapeMaps.IRILabel(IRI("user")))
+        program <- validate2Clingo(smap, rdf, schema)
       } yield (rdf,program)
       r.fold(e => fail(s"Error: $e"),values => {
         val (rdf,prog) = values

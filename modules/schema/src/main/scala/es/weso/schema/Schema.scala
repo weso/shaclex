@@ -1,6 +1,7 @@
 package es.weso.schema
 import es.weso.rdf._
 import es.weso.rdf.nodes._
+import es.weso.shapeMaps.ShapeMap
 import es.weso.utils.FileUtils
 
 import util._
@@ -65,5 +66,7 @@ abstract class Schema {
   def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String]
 
   def info: SchemaInfo
+
+  def toClingo(rdf: RDFReader, shapeMap: ShapeMap): Either[String,String]
 
 }

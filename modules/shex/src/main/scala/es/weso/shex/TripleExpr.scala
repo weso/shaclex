@@ -7,6 +7,8 @@ abstract sealed trait TripleExpr {
   def addId(label: ShapeLabel): TripleExpr
   def id: Option[ShapeLabel]
   def paths(schema: Schema): List[Path]
+  def predicates(schema:Schema): List[IRI] =
+    paths(schema).collect { case i: Direct => i.pred }
 }
 
 case class EachOf( id: Option[ShapeLabel],
@@ -20,7 +22,6 @@ case class EachOf( id: Option[ShapeLabel],
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   override def paths(schema: Schema): List[Path] = expressions.map(_.paths(schema)).flatten
-
 }
 
 object EachOf {
@@ -54,7 +55,6 @@ case class Inclusion(include: ShapeLabel) extends TripleExpr {
   override def paths(schema: Schema): List[Path] = {
     schema.getTripleExpr(include).map(_.paths(schema)).getOrElse(List())
   }
-
 }
 
 case class TripleConstraint(

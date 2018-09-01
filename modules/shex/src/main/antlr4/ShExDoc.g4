@@ -260,7 +260,8 @@ KW_VIRTUAL      	: V I R T U A L ;
 
 // terminals
 PASS				  : [ \t\r\n]+ -> skip;
-COMMENT				  : '#' ~[\r\n]* -> skip;
+COMMENT				  : ('#' ~[\r\n]*
+                      | '/*' (~[*] | '*' ('\\/' | ~[/]))* '*/') -> skip;
 
 CODE                  : '{' (~[%\\] | '\\' [%\\] | UCHAR)* '%' '}' ;
 VAR                   : VAR1 | VAR2 ;

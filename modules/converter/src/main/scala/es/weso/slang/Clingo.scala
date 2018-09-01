@@ -1,4 +1,4 @@
-package es.weso.slanguage
+package es.weso.slang
 
 object Clingo {
 
@@ -61,6 +61,11 @@ object Clingo {
     override def show: String = f.show
   }
 
+  final case class AtomVar(v: Var) extends Atom {
+    override def show: String = v.show
+  }
+
+
   sealed trait Literal extends Product with Serializable {
    def show: String
   }
@@ -71,6 +76,22 @@ object Clingo {
     override def show: String = s"not ${a.show}"
   }
 
+  final case class Count(condition: Condition, value: Var) extends Literal {
+    override def show: String = s"${value.show} = #count { ${condition.show} } "
+  }
+
+  final case class LessThanEqual(v1: SimpleTerm, v2: SimpleTerm) extends Literal {
+    override def show: String = s"${v1.show} <= ${v2.show}"
+  }
+
+  final case class LessThan(v1: SimpleTerm, v2: SimpleTerm) extends Literal {
+    override def show: String = s"${v1.show} < ${v2.show}"
+  }
+
+  final case class Condition(head: Literal, body: List[Literal]) {
+    def show: String = s"${head.show} : ${body.map(_.show).mkString(",")}"
+  }
+
   private def showBody(body: Seq[Literal]): String = {
     body.map(_.show).mkString(",")
   }
@@ -79,17 +100,17 @@ object Clingo {
     def show: String
   }
   final case class Rule(head: Head, body: Literal*) extends Statement {
-    override def show: String = s"${head.show}:-${showBody(body)}"
+    override def show: String = s"${head.show}:-${showBody(body)} ."
   }
   final case class Fact(head: Literal) extends Statement {
-    override def show: String = head.show
+    override def show: String = head.show + "."
   }
   final case class Constraint(body: Literal*) extends Statement {
-    override def show: String = s":-${showBody(body)}"
+    override def show: String = s":-${showBody(body)} ."
   }
   final case class ShowDirective(name: String, args: Int) extends Statement {
     require(args >= 0, s"ShowDirective($name,$args), args $args must be >= 0")
-    override def show: String = s"#show ${name}/$args"
+    override def show: String = s"#show ${name}/$args ."
   }
 
   sealed trait Head extends Product with Serializable {
@@ -103,11 +124,18 @@ object Clingo {
     override def show: String = ls.map(_.show).mkString(" | ")
   }
 
+  final case class PlainString(str: String) extends Statement {
+    def show: String = str
+  }
+
   case class Program(statements: Seq[Statement]) {
+    def append(other: Program): Program =
+      Program(statements ++ other.statements)
+
     def show: String = {
       val zero = ""
       def comb(s: Statement, rest: String
-              ): String = s"${s.show}.\n$rest"
+              ): String = s"${s.show}\n$rest"
       statements.foldRight(zero)(comb)
     }
   }

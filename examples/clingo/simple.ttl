@@ -1,0 +1,4 @@
+<alice> <name> "A"; 
+        <knows> <alice> .
+<bob> <name> "A", "B" .
+<carol> <name> "C" .

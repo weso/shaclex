@@ -12,10 +12,12 @@ import es.weso.shex.validator._
 import es.weso.shex._
 import es.weso.shex.converter.ShEx2Shacl
 import es.weso.shex.shexR._
+import es.weso.slang.{SLang2Clingo, ShEx2SLang}
 
 import scala.util._
 
-case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
+case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
+  with SLang2Clingo with ShEx2SLang {
   override def name = "ShEx"
 
   lazy val shExCFormat = "ShExC"
@@ -166,6 +168,14 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging {
     val wellFormed = reasons.isEmpty
     SchemaInfo(name, "Iterative", wellFormed, reasons)
   }
+
+  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap)
+    : Either[String, String] = for {
+    schemaS <- shex2SLang(schema)
+    // _ <- {println(s"SchemaS: $schemaS"); Right(())}
+    program <- validate2Clingo(shapeMap,rdf,schemaS)
+    // _ <- {println(s"Program: $program"); Right(())}
+  } yield program.show
 
 }
 

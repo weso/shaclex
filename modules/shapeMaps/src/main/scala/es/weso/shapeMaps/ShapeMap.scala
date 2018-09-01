@@ -18,6 +18,9 @@ abstract class ShapeMap {
   val nodesPrefixMap: PrefixMap
   val shapesPrefixMap: PrefixMap
 
+  def add(node: RDFNode, label: ShapeMapLabel): Either[String,ShapeMap] =
+    addAssociation(Association(RDFNodeSelector(node),label))
+
   def addAssociation(a: Association): Either[String, ShapeMap]
 
   def toJson: Json = {

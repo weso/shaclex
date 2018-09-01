@@ -159,10 +159,24 @@ class MainOpts(
     descrNo = "don't input show map",
     noshort = true)
 
+  val showClingo = toggle(
+    "showClingo",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "show validation as a Clingo file",
+    descrNo = "don't show validation as a Clingo file",
+    noshort = true)
+
+  val clingoFile = opt[String](
+    "clingoFile",
+    default = None,
+    descr = "save validation to Clingo file",
+    noshort = true)
+
   val outputFile = opt[String](
     "outFile",
     default = None,
-    descr = "save report a file",
+    descr = "save report to file",
     short = 'f')
 
   val outSchemaFormat = opt[String](

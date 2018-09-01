@@ -1,0 +1,267 @@
+  /*  def slangStatements: Program = {
+      Program(Seq(
+        hasShapeOrNot,
+        nodeIfSubject,
+        nodeIfObject,
+        predicateIfProperty,
+        hasShapeTrue,
+        hasShapeAnd,
+        hasShapeRef,
+        checkSchema,
+        countPropShape
+      ) ++ hasNoShapeAnd
+      )
+    } */
+
+  /*  def hasShapeOrNot: Statement = {
+      val x: Var = Var("X")
+      val s: Var = Var("S")
+      val head: Head = Disj(
+        Pos(Function(Func("hasShape", x, s))),
+        Neg(Function(Func("hasShape", x, s)))
+      )
+      Rule(head, Pos(Function(Func("node", x))), Pos(Function(Func("shape", s))))
+    }
+
+    def hasShapeTrue: Statement = {
+      val x: Var = Var("X")
+  //    val s: Var = Var("S")
+      val head: Head = Lit(Pos(Function(Func("hasShape",x,Const(trueConst)))))
+      Rule(head, Pos(Function(Func("node", x))))
+    }
+
+    def checkSchema: Statement = {
+      val x: Var = Var("X")
+      val label: Var = Var("Label")
+      val shape: Var = Var("Shape")
+      val head: Head = Lit(Pos(Function(Func("check",x,label))))
+      Rule(head,
+        Pos(Function(Func("schema", label, shape))),
+        Pos(Function(Func("hasShape", x, shape)))
+      )
+    }
+
+    def hasShapeAnd: Statement = {
+      val x: Var = Var("X")
+      val s1: Var = Var("S1")
+      val s2: Var = Var("S2")
+      val andS1S2 = Func("and", s1, s2)
+      val head: Head = Lit(Pos(Function(Func("hasShape",x,andS1S2))))
+      Rule(head,
+        Pos(Function(Func("node", x))),
+        Pos(Function(Func("shape", andS1S2))),
+        Pos(Function(Func("hasShape", x, s1))),
+        Pos(Function(Func("hasShape", x, s2)))
+      )
+    }
+
+    def hasNoShapeAnd: List[Statement] = {
+      val x: Var = Var("X")
+      val s1: Var = Var("S1")
+      val s2: Var = Var("S2")
+      val andS1S2 = Func("and",s1,s2)
+      List(
+        Constraint(
+         Pos(Function(Func("hasShape", x, andS1S2))),
+         Neg(Function(Func("hasShape", x, s1)))),
+        Constraint(
+          Pos(Function(Func("hasShape", x, andS1S2))),
+          Neg(Function(Func("hasShape", x, s2))))
+      )
+    }
+
+    def hasShapeRef: Statement = {
+      val x: Var = Var("X")
+      val lbl: Var = Var("Lbl")
+      val s: Var = Var("S")
+      val head: Head = Lit(Pos(Function(Func("hasShape",x,Func("ref", lbl)))))
+      Rule(head,
+        Pos(Function(Func("node", x))),
+        Pos(Function(Func("label", lbl))),
+        Pos(Function(Func("schema", lbl, s))),
+        Pos(Function(Func("shape", s))),
+        Pos(Function(Func("hasShape", x, s)))
+      )
+    }
+
+    def hasNoShapeRef: Statement = {
+      val x: Var = Var("X")
+      val lbl: Var = Var("Lbl")
+      val s: Var = Var("S")
+      val head: Head = Lit(Neg(Function(Func("hasShape",x,Func("ref", lbl)))))
+      Rule(head,
+        Pos(Function(Func("node", x))),
+        Pos(Function(Func("label", lbl))),
+        Pos(Function(Func("schema", lbl, s))),
+        Pos(Function(Func("shape", s))),
+        Neg(Function(Func("hasShape", x, s)))
+      )
+    }
+
+    private def maxCard2Term(value: Max): Term = value match {
+      case IntMax(n) => IntTerm(n)
+      case Star => Const("star")
+    }
+
+    private def groundQualifiedArc(qa: QualifiedArc): Statement = {
+      val s: Var = Var("S")
+      val count: Var = Var("Count")
+      val xTerm = Var("X")
+      val predTerm = iri2Term(qa.pred)
+      val minTerm = IntTerm(qa.card.min)
+      val maxLs: List[Literal] = List()
+      val head: Head =
+        Lit(Pos(Function(Func("hasShape",xTerm,Func("qualifiedArc",
+          predTerm,s,Func("card",minTerm, maxCard2Term(qa.card.max)))))))
+      val maxCondition: Seq[Literal] = qa.card.max match {
+        case Star => Seq()
+        case IntMax(n) => Seq(LessThanEqual(count, IntTerm(n)))
+      }
+      val body: Seq[Literal] = Seq(
+        Pos(Function(Func("node", xTerm))),
+        Pos(Function(Func("shape", s))),
+        Pos(Function(Func("countPropShape", xTerm, predTerm, s, count))),
+        LessThanEqual(minTerm, count)) ++ maxCondition
+      Rule(head, body:_*)
+    }
+
+    private def groundNotQualifiedArc(qa: QualifiedArc): List[Statement] = {
+      val s: Var = Var("S")
+      val count: Var = Var("Count")
+      val xTerm = Var("X")
+      val predTerm = iri2Term(qa.pred)
+      val minTerm = IntTerm(qa.card.min)
+      val maxLs: List[Literal] = List()
+      val c1: Statement = Constraint(
+        Pos(Function(Func("hasShape",xTerm,Func("qualifiedArc",
+          predTerm,s,Func("card",minTerm, Undef))))),
+        Pos(Function(Func("countPropShape", xTerm, predTerm, s, count))),
+        LessThan(minTerm, count))
+
+      List(c1) ++ (qa.card.max match {
+        case Star => List()
+        case IntMax(n) => {
+          List(Constraint(
+            Pos(Function(Func("hasShape",xTerm,Func("qualifiedArc",
+              predTerm,s,Func("card",minTerm,maxCard2Term(qa.card.max)))))),
+            Pos(Function(Func("countPropShape", xTerm, predTerm, s, count))),
+            LessThan(IntTerm(n), count)))
+        }
+      })
+    }*/
+
+  /*  def groundQualifiedArc(x: RDFNode, qa: QualifiedArc): Statement = {
+    val s: Var = Var("S")
+    val count: Var = Var("Count")
+    val xTerm = node2Term(x)
+    val predTerm = iri2Term(qa.pred)
+    val minTerm = IntTerm(qa.card.min)
+    val maxLs: List[Literal] = List()
+    val head: Head =
+      Lit(Pos(Function(Func("hasShape",xTerm,Func("qualifiedArc",
+        predTerm,s,Func("card",minTerm, maxCard2Term(qa.card.max)))))))
+    val maxCondition: Seq[Literal] = qa.card.max match {
+      case Star => Seq()
+      case IntMax(n) => Seq(LessThanEqual(count, IntTerm(n)))
+    }
+    val body: Seq[Literal] = Seq(
+      Pos(Function(Func("shape", s))),
+      Pos(Function(Func("countPropShape", xTerm, predTerm, s, count))),
+      LessThanEqual(minTerm, count)) ++ maxCondition
+    Rule(head, body:_*)
+  }
+
+  def groundNotQualifiedArc(x: RDFNode, qa: QualifiedArc): List[Statement] = {
+    val s: Var = Var("S")
+    val count: Var = Var("Count")
+    val xTerm = node2Term(x)
+    val predTerm = iri2Term(qa.pred)
+    val minTerm = IntTerm(qa.card.min)
+    val maxLs: List[Literal] = List()
+    val c1: Statement = Constraint(
+      Pos(Function(Func("hasShape",xTerm,Func("qualifiedArc",
+        predTerm,s,Func("card",minTerm, Undef))))),
+      Pos(Function(Func("countPropShape", xTerm, predTerm, s, count))),
+      LessThanEqual(minTerm, count))
+
+    List(c1) ++ (qa.card.max match {
+      case Star => List()
+      case IntMax(n) => {
+        List(Constraint(
+          Pos(Function(Func("hasShape",xTerm,Func("qualifiedArc",
+            predTerm,s,Func("card",minTerm,maxCard2Term(qa.card.max)))))),
+          Pos(Function(Func("countPropShape", xTerm, predTerm, s, count))),
+          LessThanEqual(IntTerm(n), count)))
+      }
+    })
+  }
+*/
+  /*  def countProperty: Statement = {
+      val x: Var = Var("X")
+      val pred: Var = Var("Pred")
+      val count: Var = Var("Count")
+      val v: Var = Var("V")
+      val head: Head = Lit(Pos(Function(Func("countProperty",x,pred,count))))
+      Rule(head,
+        Pos(Function(Func("node", x))),
+        Pos(Function(Func("pred", pred))),
+        Count(Condition(Pos(AtomVar(v)), List(
+          Pos(Function(Func("arc",x,pred,v)))
+        )),count)
+      )
+    } */
+
+  /*  def countPropShape: Statement = {
+      val x: Var = Var("X")
+      val pred: Var = Var("Pred")
+      val s: Var = Var("S")
+      val count: Var = Var("Count")
+      val v: Var = Var("V")
+      val head: Head = Lit(Pos(Function(Func("countPropShape",x,pred,s,count))))
+      Rule(head,
+        Pos(Function(Func("node", x))),
+        Pos(Function(Func("shape", s))),
+        Pos(Function(Func("pred", pred))),
+        Count(Condition(Pos(AtomVar(v)), List(
+          Pos(Function(Func("arc",x,pred,v))),
+          Pos(Function(Func("hasShape", v, s)))
+        )),count)
+      )
+    }
+
+    def countNoShapeProperty: Statement = {
+      val x: Var = Var("X")
+      val pred: Var = Var("Pred")
+      val s: Var = Var("S")
+      val count: Var = Var("Count")
+      val v: Var = Var("V")
+      val head: Head = Lit(Neg(Function(Func("countShapeProperty",x,pred,s,count))))
+      Rule(head,
+        Pos(Function(Func("node", x))),
+        Pos(Function(Func("shape", s))),
+        Pos(Function(Func("pred", pred))),
+        Count(Condition(Pos(AtomVar(v)), List(
+          Pos(Function(Func("arc",x,pred,v))),
+          Neg(Function(Func("hasShape", x, v)))
+        )),count)
+      )
+    }
+
+    def nodeIfSubject: Statement = {
+      val x: Var = Var("X")
+      val head: Head = Lit(Pos(Function(Func("node",x))))
+      Rule(head, Pos(Function(Func("arc", x, Undef, Undef))))
+    }
+
+    def nodeIfObject: Statement = {
+      val x: Var = Var("X")
+      val head: Head = Lit(Pos(Function(Func("node",x))))
+      Rule(head, Pos(Function(Func("arc", Undef, Undef, x))))
+    }
+
+    def predicateIfProperty: Statement = {
+      val x: Var = Var("X")
+      val head: Head = Lit(Pos(Function(Func("pred",x))))
+      Rule(head, Pos(Function(Func("arc", Undef, x, Undef))))
+    }
+  */

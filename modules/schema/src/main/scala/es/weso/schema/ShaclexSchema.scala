@@ -151,6 +151,10 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     // TODO: Check if shacl schemas are well formed
     SchemaInfo(name,"SHACLex", true, List())
   }
+
+  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap)
+  : Either[String, String] = Left(s"Not implemented yet")
+
 }
 
 object ShaclexSchema {

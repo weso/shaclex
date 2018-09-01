@@ -1,0 +1,2 @@
+<alice> <name> "A" .
+<bob> <name> "B" .

@@ -1,0 +1,7 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+<User> IRI {
+ <knows> @<User>*
+} AND {
+ <name> xsd:string
+}
