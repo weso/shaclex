@@ -3,9 +3,21 @@ import es.weso.rdf.nodes.RDFNode
 
 case class ShapesMap(map: Map[RDFNode, Value[SLang]]) {
 
+  def validated(node: RDFNode, shape: SLang): Boolean = {
+    println(s"Checking validated $node/$shape")
+    isConforming(node,shape) match {
+      case Conforms | NotConforms | Inconsistent => true
+      case Unknown => false
+    }
+  }
+
+  def isConforms(node: RDFNode, shape: SLang): Boolean = {
+    isConforming(node,shape) == Conforms
+  }
+
   def isOk(node: RDFNode, shape: SLang): Boolean =
     isConforming(node,shape) match {
-      case Conforms| Unknown => true
+      case Conforms | Unknown => true
       case NotConforms | Inconsistent => false
     }
 
@@ -14,6 +26,11 @@ case class ShapesMap(map: Map[RDFNode, Value[SLang]]) {
       case None => Unknown
       case Some(v) => v.isConforming(shape)
     }
+  }
+
+  def addVal(node: RDFNode, shape: SLang, v: Val): ShapesMap = map.get(node) match {
+    case None => ShapesMap(map.updated(node, Value(shape,v)))
+    case Some(value) => ShapesMap(map.updated(node, value.addValue(shape,v)))
   }
 
   def conform(node: RDFNode, shape: SLang): ShapesMap = map.get(node) match {
@@ -44,6 +61,13 @@ case class ShapesMap(map: Map[RDFNode, Value[SLang]]) {
     }
     other.map.foldLeft(zero)(comb)
   }
+
+  override def toString: String = {
+    map.map { case (node,values) => values.m.map { case (s,v) => showLine(node, s, v) } }.flatten.mkString("\n")
+  }
+
+  private def showLine(node: RDFNode, s: SLang, value: Val): String =
+    s"$node/$s: $value"
 }
 
 object ShapesMap {

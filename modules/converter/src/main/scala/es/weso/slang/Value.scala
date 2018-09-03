@@ -26,6 +26,7 @@ case class Value[A](m: Map[A,Val]) {
 }
 
 object Value {
+  def apply[A](x: A, v: Val): Value[A] = Value(Map(x -> v))
   def conform[A](x: A): Value[A] = Value(Map(x -> Conforms))
   def notConform[A](x:A): Value[A] = Value(Map(x -> NotConforms))
   def unknown[A](x: A): Value[A] = Value(Map(x -> Unknown))

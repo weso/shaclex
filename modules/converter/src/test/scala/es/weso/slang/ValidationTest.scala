@@ -23,7 +23,7 @@ class ValidationTest extends FunSpec
           """|
              |<User> {
              | <name> . ;
-             | <knows> @<User>
+             | <knows> .
              |}
           """.stripMargin, "ShEXC", None, RDFAsJenaModel.empty)
         slangSchema <- shex2SLang(schema)

@@ -276,7 +276,7 @@ trait SLang2Clingo {
     case Datatype(iri) => Func(DATATYPE, iri2Term(iri))
     case Not(s)        => Func(NO,shape2Term(s))
     case Ref(lbl) => Func(REF,label2Term(lbl))
-    case QualifiedArc(ps, shape, card) =>
+    case QualifiedArc(ps, shape, card) => 
       Func(QUALIFIEDARC,iri2Term(getPred(ps)), shape2Term(shape), IntTerm(card.min), max2Term(card.max))
   }
 
