@@ -93,8 +93,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
-  .dependsOn(schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs)
+  .aggregate(schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang)
+  .dependsOn(schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -111,8 +111,10 @@ lazy val schema = project
   .in(file("modules/schema"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(shex,
+  .dependsOn(
+    shex,
     shacl,
+    slang,
     shapeMaps,
     converter,
     srdfJena
@@ -128,6 +130,23 @@ lazy val depGraphs = project
       catsKernel,
       catsMacros,
       jgraphtCore
+    )
+  )
+
+lazy val slang = project
+  .in(file("modules/slang"))
+  .disablePlugins(RevolverPlugin)
+  .settings(commonSettings, publishSettings)
+  .dependsOn(srdf,
+    shex, shacl,
+    utils,
+    srdf4j % Test,
+    srdfJena % Test)
+  .settings(
+    libraryDependencies ++= Seq(
+      catsCore,
+      catsKernel,
+      catsMacros
     )
   )
 

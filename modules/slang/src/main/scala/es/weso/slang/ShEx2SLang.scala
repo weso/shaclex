@@ -85,7 +85,7 @@ trait ShEx2SLang {
       preds = eo.predicates(schema)
     } yield And(
       es.foldRight(SLang.strue)(And),
-      Not(QualifiedArc(NoPredSet(preds.toSet), SLang.strue, Card.oneStar))
+      Not(QualifiedArc(NoPreds(preds.toSet), SLang.strue, Card.oneStar))
     )
 
     case tc: TripleConstraint => for {
@@ -93,8 +93,8 @@ trait ShEx2SLang {
       card = cnvCard(tc.min,tc.max)
     } yield
       And(
-        QualifiedArc(PredSet(Set(tc.predicate)),s,card),
-        Not(QualifiedArc(PredSet(Set(tc.predicate)), Not(s), Card.oneStar))
+        QualifiedArc(Pred(tc.predicate),s,card),
+        Not(QualifiedArc(Pred(tc.predicate), Not(s), Card.oneStar))
       )
     case _ => Left(s"shex2slang (cnvTripleExpr): Unimplemented $te")
   }

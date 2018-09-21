@@ -18,7 +18,7 @@ class ValidateNDTest extends FunSpec
           """|<a> <x> "a", 1 .
             |
           """.stripMargin, "TURTLE")
-        schema = SchemaS(Map(IRILabel(IRI("User")) -> QualifiedArc(PredSet(Set(x)), SLang.string, Card(1,IntMax(1)))))
+        schema = SchemaS(Map(IRILabel(IRI("User")) -> QualifiedArc(Pred(x), SLang.string, Card(1,IntMax(1)))))
       } yield (rdf,schema,schema)
 
       r.fold(e => fail(s"Error: $e"), values => {

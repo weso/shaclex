@@ -37,8 +37,8 @@ class ClingoTest extends FunSpec
 
       val schema: SchemaS = SchemaS(Map(
         IRILabel(IRI("user")) ->
-          And(QualifiedArc(PredSet(Set(IRI("name"))), STrue,Card.one),
-              QualifiedArc(PredSet(Set(IRI("knows"))), STrue,Card.oneStar))
+          And(QualifiedArc(Pred(IRI("name")), STrue,Card.one),
+              QualifiedArc(Pred(IRI("knows")), STrue,Card.oneStar))
       ))
 
       val r = for {

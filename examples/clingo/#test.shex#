@@ -1,0 +1,6 @@
+prefix : <uno>
+prefix : <dos> 
+
+<p> {
+ :kiko @<P>
+}

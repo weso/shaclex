@@ -276,16 +276,14 @@ trait SLang2Clingo {
     case Datatype(iri) => Func(DATATYPE, iri2Term(iri))
     case Not(s)        => Func(NO,shape2Term(s))
     case Ref(lbl) => Func(REF,label2Term(lbl))
-    case QualifiedArc(ps, shape, card) => 
+    case QualifiedArc(ps, shape, card) =>
       Func(QUALIFIEDARC,iri2Term(getPred(ps)), shape2Term(shape), IntTerm(card.min), max2Term(card.max))
   }
 
-  private def getPred(spec: PredSpec): IRI = spec match {
-    case PredSet(iris) => iris.size match {
-      case 1 => iris.head
-      case _ => throw new Exception(s"Unsupported PredSet with more than one predicate yet")
-    }
-    case NoPredSet(_) => throw new Exception(s"Unsupported NoPredSet yet")
+  private def getPred(pp: PropPath): IRI = pp match {
+    case Pred(iri) => iri
+    case _ => 
+     throw new Exception(s"Unsupported $pp yet")
   }
 
   private def max2Term(max: Max): Term =

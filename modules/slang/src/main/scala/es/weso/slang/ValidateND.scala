@@ -86,12 +86,12 @@ object ValidateND {
                   case None => throw new Exception(s"Label $lbl not found in Schema")
                 }
               }
-              case QualifiedArc(predSpec, s, card) => {
-                println(s"QualifiedArc($predSpec,$s,$card)?")
+              case QualifiedArc(pp, s, card) => {
+                println(s"QualifiedArc($pp,$s,$card)?")
                 val neighbourhood = rdf.triplesWithSubject(node)
-                val predicates = predSpec match {
-                  case PredSet(ps)   => ps
-                  case NoPredSet(ps) => neighbourhood.map(_.pred).diff(ps)
+                val predicates = pp match {
+                  case Pred(p)   => Set(p)
+                  case NoPreds(ps) => neighbourhood.map(_.pred).diff(ps)
                 }
                 for {
                   count <- countArcsWithShape(predicates, rest, neighbourhood, s, rdf, schema)

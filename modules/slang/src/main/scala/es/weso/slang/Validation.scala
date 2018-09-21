@@ -59,8 +59,8 @@ object Validation {
         println(s"QualifiedArc($predSpec,$shape,$card)?")
         val neighbourhood = rdf.triplesWithSubject(node)
         val predicates = predSpec match {
-          case PredSet(ps)   => ps
-          case NoPredSet(ps) => neighbourhood.map(_.pred).diff(ps)
+          case Pred(p)   => Set(p)
+          case NoPreds(ps) => neighbourhood.map(_.pred).diff(ps)
         }
         for {
           count <- countArcsWithShape(predicates, neighbourhood, shape, rdf, schema)
