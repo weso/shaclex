@@ -469,7 +469,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       str <- visitString(ctx.string())
       dt <- visitDatatype(ctx.datatype())
       nl <- dt match {
-        case `xsd_integer` => ok(NumericInt(Integer.parseInt(str)))
+        case `xsd_integer` => ok(NumericInt(Integer.parseInt(str),str))
         case `xsd_double` => ok(NumericDecimal(str.toDouble,str))
         case `xsd_decimal` => ok(NumericDecimal(BigDecimal(str),str))
         case _ => err(s"Unsupported numericFacet of string $str with datatype $dt")
@@ -478,9 +478,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   private def literal2NumericLiteral(l: Literal): Builder[NumericLiteral] = l match {
-    case IntegerLiteral(n) => ok(NumericInt(n))
-    case DecimalLiteral(d) => ok(NumericDecimal(d, d.toString))
-    case DoubleLiteral(d) => ok(NumericDouble(d, d.toString))
+    case IntegerLiteral(n, repr) => ok(NumericInt(n,repr))
+    case DecimalLiteral(d, repr) => ok(NumericDecimal(d,repr))
+    case DoubleLiteral(d, repr) => ok(NumericDouble(d,repr))
     case _ => err(s"Cannot convert literal $l to numeric literal")
   }
 
@@ -621,14 +621,15 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitNumericLiteral(ctx: NumericLiteralContext): Builder[Literal] = {
     ctx match {
       case _ if (isDefined(ctx.INTEGER())) =>
-        ok(IntegerLiteral(Integer.parseInt(ctx.INTEGER().getText)))
+        val repr = ctx.INTEGER().getText
+        ok(IntegerLiteral(Integer.parseInt(repr), repr))
       case _ if (isDefined(ctx.DECIMAL())) => {
         val repr = ctx.DECIMAL().getText
-        ok(DecimalLiteral(BigDecimal(repr)))
+        ok(DecimalLiteral(BigDecimal(repr), repr))
       }
       case _ if (isDefined(ctx.DOUBLE())) => {
         val repr = ctx.DOUBLE().getText
-        ok(DoubleLiteral(repr.toDouble))
+        ok(DoubleLiteral(repr.toDouble, repr))
       }
       case _ => err("Unknown ctx in numericLiteral")
     }
@@ -762,7 +763,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     datatype match {
       case `xsd_integer` => for {
         n <- getInteger(lexicalForm)
-      } yield NumericInt(n)
+      } yield NumericInt(n, lexicalForm)
       case `xsd_decimal` => for {
         d <- getDecimal(lexicalForm)
       } yield NumericDecimal(d, lexicalForm)

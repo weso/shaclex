@@ -14,13 +14,13 @@ object Comparisons {
   case class Datetime(dt: Instant) extends PrimitiveLiteral
 
   sealed trait NumericLiteral
-  case class NumericInt(n: Int) extends NumericLiteral
+  case class NumericInt(n: Int, repr: String) extends NumericLiteral
   case class NumericDouble(n: Double, repr: String) extends NumericLiteral
   case class NumericDecimal(n: BigDecimal, repr: String) extends NumericLiteral
 
   private def str2NumericInt(str: String): Either[String, NumericInt] = try {
     val n: Int = Integer.parseInt(str)
-    Right(NumericInt(n))
+    Right(NumericInt(n, str))
   } catch {
     case _: NumberFormatException => Left(s"Cannot obtain numeric value from node $str")
   }
@@ -40,9 +40,9 @@ object Comparisons {
   }
 
   def numericValue(node: RDFNode): Either[String, NumericLiteral] = node match {
-    case IntegerLiteral(i) => Right(NumericInt(i))
-    case DoubleLiteral(d) => Right(NumericDouble(d,d.toString))
-    case DecimalLiteral(d) => Right(NumericDecimal(d,d.toString))
+    case IntegerLiteral(i, repr) => Right(NumericInt(i,repr))
+    case DoubleLiteral(d, repr) => Right(NumericDouble(d,repr))
+    case DecimalLiteral(d, repr) => Right(NumericDecimal(d,repr))
     case DatatypeLiteral(str, `xsd_byte`) => str2NumericInt(str)
     case DatatypeLiteral(str, `xsd_decimal`) => str2NumericDecimal(str)
     case DatatypeLiteral(str, `xsd_double`) => str2NumericDouble(str)
@@ -64,25 +64,25 @@ object Comparisons {
   }
 
   def lessThanOrEquals(nl1: NumericLiteral, nl2: NumericLiteral): Boolean = (nl1,nl2) match {
-    case (NumericInt(n1), NumericInt(n2)) => n1 <= n2
-    case (NumericInt(n1), NumericDouble(n2,_)) => n1 <= n2
-    case (NumericInt(n1), NumericDecimal(n2,_)) => n1 <= n2
-    case (NumericDouble(n1,_), NumericInt(n2)) => n1 <= n2
+    case (NumericInt(n1,_), NumericInt(n2,_)) => n1 <= n2
+    case (NumericInt(n1,_), NumericDouble(n2,_)) => n1 <= n2
+    case (NumericInt(n1,_), NumericDecimal(n2,_)) => n1 <= n2
+    case (NumericDouble(n1,_), NumericInt(n2,_)) => n1 <= n2
     case (NumericDouble(n1,_), NumericDouble(n2,_)) => n1 <= n2
     case (NumericDouble(n1,_), NumericDecimal(n2,_)) => n1 <= n2
-    case (NumericDecimal(n1,_), NumericInt(n2)) => n1 <= n2
+    case (NumericDecimal(n1,_), NumericInt(n2,_)) => n1 <= n2
     case (NumericDecimal(n1,_), NumericDouble(n2,_)) => n1 <= n2
     case (NumericDecimal(n1,_), NumericDecimal(n2,_)) => n1 <= n2
   }
 
   def lessThan(nl1: NumericLiteral, nl2: NumericLiteral): Boolean = (nl1,nl2) match {
-    case (NumericInt(n1), NumericInt(n2)) => n1 < n2
-    case (NumericInt(n1), NumericDouble(n2,_)) => n1 < n2
-    case (NumericInt(n1), NumericDecimal(n2,_)) => n1 < n2
-    case (NumericDouble(n1,_), NumericInt(n2)) => n1 < n2
+    case (NumericInt(n1,_), NumericInt(n2,_)) => n1 < n2
+    case (NumericInt(n1,_), NumericDouble(n2,_)) => n1 < n2
+    case (NumericInt(n1,_), NumericDecimal(n2,_)) => n1 < n2
+    case (NumericDouble(n1,_), NumericInt(n2,_)) => n1 < n2
     case (NumericDouble(n1,_), NumericDouble(n2,_)) => n1 < n2
     case (NumericDouble(n1,_), NumericDecimal(n2,_)) => n1 < n2
-    case (NumericDecimal(n1,_), NumericInt(n2)) => n1 < n2
+    case (NumericDecimal(n1,_), NumericInt(n2,_)) => n1 < n2
     case (NumericDecimal(n1,_), NumericDouble(n2,_)) => n1 < n2
     case (NumericDecimal(n1,_), NumericDecimal(n2,_)) => n1 < n2
   }

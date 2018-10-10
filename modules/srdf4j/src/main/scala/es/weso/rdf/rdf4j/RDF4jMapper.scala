@@ -72,9 +72,9 @@ object RDF4jMapper {
    case bnode: BNode => valueFactory.createBNode(bnode.id)
    case StringLiteral(str) => valueFactory.createLiteral(str)
    case BooleanLiteral(b) => valueFactory.createLiteral(b)
-   case IntegerLiteral(i) => valueFactory.createLiteral(i)
-   case DecimalLiteral(d) => valueFactory.createLiteral(d.bigDecimal)
-   case DoubleLiteral(d) => valueFactory.createLiteral(d)
+   case IntegerLiteral(i, repr) => valueFactory.createLiteral(repr)
+   case DecimalLiteral(d, repr) => valueFactory.createLiteral(repr)
+   case DoubleLiteral(d, repr) => valueFactory.createLiteral(repr)
    case DatatypeLiteral(l,d) => valueFactory.createLiteral(l,iri2Property((d)))
    case LangLiteral(l,Lang(lang)) => valueFactory.createLiteral(l,lang)
  }

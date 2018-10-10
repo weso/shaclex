@@ -143,7 +143,7 @@ object decoderShEx {
 
 
   implicit lazy val decodeNumericLiteral: Decoder[NumericLiteral] =
-    Decoder[Int].map(n => NumericInt(n)).or(
+    Decoder[Int].map(n => NumericInt(n, n.toString)).or(
       Decoder[Double].map(n => NumericDouble(n, n.toString)).or(
         Decoder[BigDecimal].map(n => NumericDecimal(n,n.toString))))
 
