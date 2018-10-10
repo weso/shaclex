@@ -1174,7 +1174,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       }
     } else {
       visitLiteral(ctx.literal()).map(v => v match {
-        case o: ObjectValue => o
+        case o: Literal => ObjectValue.literalValue(o)
         case _ => throw new Exception(s"Unknown value in annotation $v")
       })
     }
