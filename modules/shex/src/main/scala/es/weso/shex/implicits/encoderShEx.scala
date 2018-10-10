@@ -8,6 +8,7 @@ import showShEx._
 import es.weso.rdf._
 import es.weso.rdf.operations.Comparisons._
 import es.weso.utils.StrUtils._
+import es.weso.rdf.PREFIXES._
 
 object encoderShEx {
 
@@ -243,7 +244,10 @@ object encoderShEx {
         Json.fromFields(List(("value",Json.fromString(s))))
       }
       case DatatypeString(s, d) => {
-        Json.fromFields(List(("value", Json.fromString(s)),("type", d.asJson)))
+        if (d == xsd_string)
+          Json.fromFields(List(("value", Json.fromString(s))))
+        else
+          Json.fromFields(List(("value", Json.fromString(s)),("type", d.asJson)))
       }
       case LangString(s, l) => {
         val fields: List[(String, Json)] = List(
