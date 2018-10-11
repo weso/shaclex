@@ -16,7 +16,7 @@ class JenaMapperTest
   with Matchers {
 
   describe("Jena Mapper") {
-    it("Should compare one triple with 2 different bNodes") {
+/*    it("Should compare one triple with 2 different bNodes") {
       val ts = Set(RDFTriple(BNode("b" + 0), IRI("http://example.org#p"), BNode("b" + 1)))
       val s = """[] <http://example.org#p> [] ."""
       val empty = ModelFactory.createDefaultModel
@@ -49,7 +49,9 @@ class JenaMapperTest
       val s = """|@prefix : <http://example.org#> . 
               |_:a :p 1 .""".stripMargin
       val empty = ModelFactory.createDefaultModel
+      println(s"Ts: $ts")
       val model1 = RDFTriples2Model(ts, empty)
+      println(s"model1: $model1")
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -97,10 +99,10 @@ class JenaMapperTest
                          |""".stripMargin)
       shouldBeIsomorphic(m1, m2)
     }
-
+*/
   }
 
-  describe("wellTypedDatatype") {
+/*  describe("wellTypedDatatype") {
     it("Should check integer ok") {
       val node = IntegerLiteral(23)
       wellTypedDatatype(node, IRI("http://www.w3.org/2001/XMLSchema#integer")) match {
@@ -161,5 +163,14 @@ class JenaMapperTest
     }
 
   }
+*/
 
+  describe(s"Create RDFNode") {
+    it(s"Should create an integer literal") {
+      val one = IntegerLiteral(1)
+      val empty = ModelFactory.createDefaultModel
+      val node = createRDFNode(empty,one)
+      node.asLiteral.getInt should be(1)
+    }
+  }
 }

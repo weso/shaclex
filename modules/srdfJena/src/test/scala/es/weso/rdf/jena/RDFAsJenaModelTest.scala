@@ -55,9 +55,11 @@ class RDFAsJenaModelTest
     }
 
     it("should be able to parse RDF with relative URIs") {
+      println(s"Before creating model!!!")
       val emptyModel = ModelFactory.createDefaultModel
       val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
-      rdf.addTriples(Set(RDFTriple(
+      println(s"Current rdf: $rdf")
+      val rdf1 = rdf.addTriples(Set(RDFTriple(
         IRI("a"),
         IRI("b"),
         IntegerLiteral(1))
@@ -66,6 +68,7 @@ class RDFAsJenaModelTest
         """|<a> <b> 1 .
                    |""".stripMargin
       val m = ModelFactory.createDefaultModel
+      println(s"Model created: $m")
       RDFAsJenaModel.fromChars(str, "TURTLE", None) match {
         case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
         case Left(e) => fail(s"Error $e\n$str")

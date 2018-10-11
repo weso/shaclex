@@ -2,6 +2,9 @@ literal("A","<http://www.w3.org/2001/XMLSchema#string>").
 iri("<alice>").
 arc("<alice>","<name>","A").
 arc("<alice>","<knows>","<alice>").
+
+
+
 shape(no(datatype("<http://www.w3.org/2001/XMLSchema#string>"))).
 shape(qa("<name>",no(datatype("<http://www.w3.org/2001/XMLSchema#string>")),1,star)).
 shape(no(qa("<name>",no(datatype("<http://www.w3.org/2001/XMLSchema#string>")),1,star))).
@@ -23,6 +26,9 @@ shape(and(and(iri,and(and(qa("<knows>",ref("<User>"),0,star),no(qa("<knows>",no(
 schema("<User>",and(and(iri,and(and(qa("<knows>",ref("<User>"),0,star),no(qa("<knows>",no(ref("<User>")),1,star))),true)),and(and(qa("<name>",datatype("<http://www.w3.org/2001/XMLSchema#string>"),1,intMax(1)),no(qa("<name>",no(datatype("<http://www.w3.org/2001/XMLSchema#string>")),1,star))),true))).
 label("<User>").
 shapeMap("<alice>","<User>").
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 hasShape(X,qa(P,S,Min,star)):-
  shape(qa(P,S,Min,star)),
@@ -60,7 +66,24 @@ hasShape(X,and(S1,S2)):-
 result(X,Lbl) :- shapeMap(X,Lbl), schema(Lbl,S), hasShape(X,S).
 result(X,no(Lbl)):- shapeMap(X,Lbl), schema(Lbl,S), not hasShape(X,S) .
 
-         
+% Remove CWA on hasShape
+hasShape(X,S) | not hasShape(X,S):-node(X), shape(S) .
+
+% #show countPropShape/4 .
+countPropShape(X,P,S,T):-
+ node(X), pred(P), shape(S),
+ #count { V: arcWithShape(X,P,S,V) } = T .
+
+% #show arcWithShape/4 .
+arcWithShape(X,P,S,V):-arc(X,P,V),hasShape(V,S).
+
+node(X):-arc(X,_,_).
+node(X):-arc(_,_,X).
+pred(P):-arc(_,P,_).
+pred(P):-shape(qa(P,_,_,_)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          
 literal("A","<http://www.w3.org/2001/XMLSchema#string>").
 literal("B","<http://www.w3.org/2001/XMLSchema#string>").
 iri("<bob>").
@@ -87,7 +110,6 @@ shape(and(and(iri,and(and(qa("<knows>",ref("<User>"),0,star),no(qa("<knows>",no(
 schema("<User>",and(and(iri,and(and(qa("<knows>",ref("<User>"),0,star),no(qa("<knows>",no(ref("<User>")),1,star))),true)),and(and(qa("<name>",datatype("<http://www.w3.org/2001/XMLSchema#string>"),1,intMax(1)),no(qa("<name>",no(datatype("<http://www.w3.org/2001/XMLSchema#string>")),1,star))),true))).
 label("<User>").
 shapeMap("<bob>","<User>").
-
 hasShape(X,qa(P,S,Min,star)):-
  shape(qa(P,S,Min,star)),
  countPropShape(X,P,S,C), Min <= C .
@@ -118,6 +140,7 @@ hasShape(X,and(S1,S2)):-
  shape(and(S1,S2)), hasShape(X,S1), hasShape(X,S2) .
 :-hasShape(X,and(S1,_)), not hasShape(X,S1) .
 :-hasShape(X,and(_,S2)), not hasShape(X,S2) .
+      
 
 #show result/2 .
 result(X,Lbl) :- shapeMap(X,Lbl), schema(Lbl,S), hasShape(X,S).
@@ -128,20 +151,16 @@ hasShape(X,S) | not hasShape(X,S):-node(X), shape(S) .
 
 % #show countPropShape/4 .
 countPropShape(X,P,S,T):-
- node(X), propPath(P), shape(S),
- #count { V: routeWithShape(X,P,S,V) } = T .
+ node(X), pred(P), shape(S),
+ #count { V: arcWithShape(X,P,S,V) } = T .
 
-% #show routeWithShape/4 .
-routeWithShape(X,PP,S,V):-
-  propPath(PP), 
-  reach(X,P,V),
-  hasShape(V,S).
+% #show arcWithShape/4 .
+arcWithShape(X,P,S,V):-arc(X,P,V),hasShape(V,S).
 
 node(X):-arc(X,_,_).
 node(X):-arc(_,_,X).
 pred(P):-arc(_,P,_).
-
-propPath(P):-shape(qa(PP,_,_,_)).
+pred(P):-shape(qa(P,_,_,_)).
 
           
 literal("C","<http://www.w3.org/2001/XMLSchema#string>").

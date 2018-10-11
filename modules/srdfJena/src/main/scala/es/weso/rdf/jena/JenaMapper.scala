@@ -27,7 +27,10 @@ object JenaMapper {
     for (t <- triples) {
       val subj = createResource(m, t.subj)
       val pred = createProperty(m, t.pred)
+      println(s"Created $subj and $pred")
+      println(s"t.obj = ${t.obj.getClass.getCanonicalName}")
       val obj = createRDFNode(m, t.obj)
+      println(s"Created $obj")
       val stmt = m.createStatement(subj, pred, obj)
       m.add(stmt)
     }
@@ -150,15 +153,16 @@ object JenaMapper {
           case `xsdboolean` => m.createTypedLiteral(str, XSDDatatype.XSDboolean)
           case _ => m.createTypedLiteral(str, new BaseDatatype(i.str))
         }
-      case DecimalLiteral(d, repr) =>
-        m.createTypedLiteral(repr, XSDDatatype.XSDdecimal)
-      case IntegerLiteral(i, repr) =>
-        m.createTypedLiteral(repr, XSDDatatype.XSDinteger)
+      case l@DecimalLiteral(d, repr) =>
+        m.createTypedLiteral(l.lexicalForm, XSDDatatype.XSDdecimal)
+      case l@IntegerLiteral(i, repr) => {
+        m.createTypedLiteral(l.lexicalForm, XSDDatatype.XSDinteger)
+      }
       case LangLiteral(l, Lang(lang)) => m.createLiteral(l, lang)
       case BooleanLiteral(b) =>
         m.createTypedLiteral(b.toString, XSDDatatype.XSDboolean)
-      case DoubleLiteral(d: Double, repr) =>
-        m.createTypedLiteral(repr, XSDDatatype.XSDdouble)
+      case l@DoubleLiteral(d: Double, repr) =>
+        m.createTypedLiteral(l.lexicalForm, XSDDatatype.XSDdouble)
       case _ =>
         throw new Exception("Cannot create a resource from " + node)
     }
