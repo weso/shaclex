@@ -117,10 +117,10 @@ numericRange	: KW_MININCLUSIVE
 numericLength   : KW_TOTALDIGITS
 				| KW_FRACTIONDIGITS
 				;
-tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticActions variableDecl?
+tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticActions /* variableDecl? */
                  ;
-variableDecl    : KW_AS varName ;
-varName         : VAR ;
+/* variableDecl    : KW_AS varName ; */
+/* varName         : VAR ;*/
 expr            : expr binOp expr
                 | basicExpr
 				;
@@ -135,7 +135,7 @@ binOp           : '='  # equals
                 | '+'  # add
                 | '-'  # minus
                 ;
-basicExpr       : varName | literal | iri | blankNode ;
+basicExpr       : /* varName | */ literal | iri | blankNode ;
 senseFlags      : '!' '^'?
 				| '^' '!'?		// inverse not
 				;
@@ -228,45 +228,45 @@ restrictions    : KW_RESTRICTS shapeExprLabel+
 
 // Keywords
 KW_ABSTRACT         : A B S T R A C T ;
-KW_AND          	: A N D ;
 KW_AS 			    : A S ;
 KW_BASE 			: B A S E ;
-KW_BNODE        	: B N O D E ;
-KW_CLOSED       	: C L O S E D ;
-KW_EXTERNAL			: E X T E R N A L ;
 KW_EXTENDS          : E X T E N D S ;
-KW_EXTRA        	: E X T R A ;
-KW_FALSE        	: 'false' ;
-KW_FRACTIONDIGITS 	: F R A C T I O N D I G I T S ;
 KW_IMPORT       	: I M P O R T ;
-KW_IRI          	: I R I ;
-KW_LENGTH       	: L E N G T H ;
+KW_RESTRICTS        : R E S T R I C T S ;
+KW_EXTERNAL			: E X T E R N A L ;
+KW_PREFIX       	: P R E F I X ;
+KW_START        	: S T A R T ;
+KW_VIRTUAL      	: V I R T U A L ;
+KW_CLOSED       	: C L O S E D ;
+KW_EXTRA        	: E X T R A ;
 KW_LITERAL      	: L I T E R A L ;
-KW_MINLENGTH    	: M I N L E N G T H ;
-KW_MAXLENGTH    	: M A X L E N G T H ;
+KW_IRI          	: I R I ;
+KW_NONLITERAL   	: N O N L I T E R A L ;
+KW_BNODE        	: B N O D E ;
+KW_AND          	: A N D ;
+KW_OR           	: O R ;
 KW_MININCLUSIVE 	: M I N I N C L U S I V E ;
 KW_MINEXCLUSIVE 	: M I N E X C L U S I V E ;
 KW_MAXINCLUSIVE 	: M A X I N C L U S I V E ;
 KW_MAXEXCLUSIVE 	: M A X E X C L U S I V E ;
-KW_NONLITERAL   	: N O N L I T E R A L ;
-KW_OR           	: O R ;
-KW_PREFIX       	: P R E F I X ;
-KW_NOT				: N O T ;
-KW_RESTRICTS        : R E S T R I C T S ;
-KW_START        	: S T A R T ;
+KW_LENGTH       	: L E N G T H ;
+KW_MINLENGTH    	: M I N L E N G T H ;
+KW_MAXLENGTH    	: M A X L E N G T H ;
 KW_TOTALDIGITS  	: T O T A L D I G I T S ;
+KW_FRACTIONDIGITS 	: F R A C T I O N D I G I T S ;
+KW_NOT				: N O T ;
 KW_TRUE         	: 'true' ;
-KW_VIRTUAL      	: V I R T U A L ;
+KW_FALSE        	: 'false' ;
 
 // terminals
 PASS				  : [ \t\r\n]+ -> skip;
 COMMENT				  : ('#' ~[\r\n]*
-                      | '/*' (~[*] | '*' ('\\/' | ~[/]))* '*/') -> skip;
+ 					  | '/*' (~[*] | '*' ('\\/' | ~[/]))* '*/') -> skip;
 
 CODE                  : '{' (~[%\\] | '\\' [%\\] | UCHAR)* '%' '}' ;
-VAR                   : VAR1 | VAR2 ;
-VAR1                  : '$' VARNAME ;
-VAR2            	  : '?' VARNAME ;
+/* VAR                   : /* VAR1 | VAR2 ; */
+/*VAR1                  : '$' VARNAME ; */
+/* VAR2            	  : '?' VARNAME ; */
 RDF_TYPE              : 'a' ;
 IRIREF                : '<' (~[\u0000-\u0020=<>"{}|^`\\] | UCHAR)* '>' ; /* #x00=NULL #01-#x1F=control codes #x20=space */
 PNAME_NS			  : PN_PREFIX? ':' ;
@@ -296,6 +296,8 @@ fragment ECHAR                 : '\\' [tbnrf\\"'] ;
 fragment PN_CHARS_BASE 		   : [A-Z] | [a-z] | [\u00C0-\u00D6] | [\u00D8-\u00F6] | [\u00F8-\u02FF] | [\u0370-\u037D]
 					   		   | [\u037F-\u1FFF] | [\u200C-\u200D] | [\u2070-\u218F] | [\u2C00-\u2FEF] | [\u3001-\uD7FF]
 					           | [\uF900-\uFDCF] | [\uFDF0-\uFFFD]
+					           | [\u{10000}-\u{EFFFD}]
+					           // | [\uD800-\uDB7F] [\uDC00-\uDFFF]
 					   		   ;
 fragment PN_CHARS_U            : PN_CHARS_BASE | '_' ;
 fragment PN_CHARS              : PN_CHARS_U | '-' | [0-9] | [\u00B7] | [\u0300-\u036F] | [\u203F-\u2040] ;
@@ -307,9 +309,9 @@ fragment HEX                   : [0-9] | [A-F] | [a-f] ;
 fragment PN_LOCAL_ESC          : '\\' ('_' | '~' | '.' | '-' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ','
 					  		   | ';' | '=' | '/' | '?' | '#' | '@' | '%') ;
 
-VARNAME : ( PN_CHARS_U | DIGIT ) ( PN_CHARS_U | DIGIT | '\u00B7' | ('\u0300'..'\u036F') | ('\u203F'..'\u2040') )* ;
+/* VARNAME : ( PN_CHARS_U | DIGIT ) ( PN_CHARS_U | DIGIT | '\u00B7' | ('\u0300'..'\u036F') | ('\u203F'..'\u2040') )* ; */
 
-fragment DIGIT: '0'..'9' ;
+/* fragment DIGIT: '0'..'9' ; */
 fragment A:('a'|'A');
 fragment B:('b'|'B');
 fragment C:('c'|'C');

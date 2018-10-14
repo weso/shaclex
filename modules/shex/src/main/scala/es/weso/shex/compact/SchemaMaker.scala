@@ -976,9 +976,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   }
 
   override def visitBasicExpr(e: BasicExprContext): Builder[ValueExpr] = e match {
-    case _ if (isDefined(e.varName())) => {
-      ok(Var(VarName(e.varName().getText)))
-    }
+    // case _ if (isDefined(e.varName())) => {
+    //   ok(Var(VarName(e.varName().getText)))
+    // }
     case _ if (isDefined(e.literal())) => for {
       literal <- visitLiteral(e.literal())
     } yield Const(literal)
@@ -1005,9 +1005,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     case _ => err(s"Unknown tripelExprLabel")
   }
 
-  override def visitVariableDecl(ctx: VariableDeclContext):Builder[VarName] = {
-    ok(VarName(ctx.varName().getText))
-  }
+  // override def visitVariableDecl(ctx: VariableDeclContext):Builder[VarName] = {
+  //   ok(VarName(ctx.varName().getText))
+  // }
 
   override def visitTripleConstraint(
     ctx: TripleConstraintContext): Builder[TripleExpr] =
@@ -1016,7 +1016,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       predicate <- visitPredicate(ctx.predicate())
       shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
-      varDecl <- visitOpt(visitVariableDecl, ctx.variableDecl())
+      // varDecl <- visitOpt(visitVariableDecl, ctx.variableDecl())
       semActs <- visitSemanticActions(ctx.semanticActions())
       anns <- visitList(visitAnnotation, ctx.annotation())
     } yield {
@@ -1027,7 +1027,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           valueExpr = Some(shapeExpr),
           optMin = cardinality._1,
           optMax = cardinality._2,
-          optVariableDecl = varDecl,
+          // optVariableDecl = varDecl,
           annotations = if (anns.isEmpty) None
           else Some(anns),
           semActs =
