@@ -38,7 +38,7 @@ class CompareSchemasCompatTest extends FunSpec with JsonTest with Matchers with 
             decode[Schema](jsonStr) match {
               case Left(err) => fail(s"Error parsing $jsonFile: $err")
               case Right(expectedSchema) =>
-                if (Eq[Schema].eqv(schema, expectedSchema)) {
+                if (CompareSchemas.compareSchemas(schema, expectedSchema)) {
                   info("Jsons are equal")
                 } else {
                   fail(s"Json's are different. Parsed:\n${schema}\n-----Expected:\n${expectedSchema}")
