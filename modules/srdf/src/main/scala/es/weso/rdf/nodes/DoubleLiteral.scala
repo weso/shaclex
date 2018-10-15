@@ -1,8 +1,8 @@
 package es.weso.rdf.nodes
 
-case class DoubleLiteral(double: Double) extends Literal {
+case class DoubleLiteral(double: Double, repr: String = null) extends Literal {
   val dataType = RDFNode.DoubleDatatypeIRI
-  val lexicalForm = double.toString
+  val lexicalForm = if (repr == null) double.toString else repr
 
   override def isLangLiteral = false
   override def hasLang(lang: Lang) = false
@@ -14,16 +14,16 @@ case class DoubleLiteral(double: Double) extends Literal {
   override def getLexicalForm = lexicalForm
 
   def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
-    case IntegerLiteral(n) => Right(n == double)
-    case DoubleLiteral(d) => Right(d == double)
-    case DecimalLiteral(d) => Right(d == double)
+    case IntegerLiteral(n, _) => Right(n == double)
+    case DoubleLiteral(d, r) => Right(if (r == null) (d == double) else (r == repr))
+    case DecimalLiteral(d, _) => Right(d == double)
     case _ => Left(s"Type error comparing $this with $other")
   }
 
   def lessThan(other: RDFNode): Either[String,Boolean] = other match {
-    case IntegerLiteral(n) => Right(double < n)
-    case DecimalLiteral(d) => Right(double < d)
-    case DoubleLiteral(d) => Right(double < d)
+    case IntegerLiteral(n, _) => Right(double < n)
+    case DecimalLiteral(d, _) => Right(double < d)
+    case DoubleLiteral(d, _) => Right(double < d)
     case _ => Left(s"Type error comparing $this with $other")
   }
 }

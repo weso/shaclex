@@ -139,7 +139,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     order <- parseOrder(n,rdf)
     severity <- parseSeverity(n,rdf)
     ignoredNodes <- {
-      println(s"Parsing deactivated: $deactivated for node: $n") ;
       rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
     }
     ignoredIRIs <- nodes2iris(ignoredNodes)
@@ -229,7 +228,6 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     group <- parsePropertyGroup(n,rdf)
     order <- parseOrder(n,rdf)
     ignoredIRIs <- {
-      println(s"Parsing deactivated: $deactivated for node: $n")
       nodes2iris(ignoredNodes)
     }
   } yield {

@@ -150,15 +150,15 @@ object JenaMapper {
           case `xsdboolean` => m.createTypedLiteral(str, XSDDatatype.XSDboolean)
           case _ => m.createTypedLiteral(str, new BaseDatatype(i.str))
         }
-      case DecimalLiteral(d) =>
-        m.createTypedLiteral(d.toString(), XSDDatatype.XSDdecimal)
-      case IntegerLiteral(i) =>
-        m.createTypedLiteral(i.toString, XSDDatatype.XSDinteger)
+      case l@DecimalLiteral(d, repr) =>
+        m.createTypedLiteral(l.lexicalForm, XSDDatatype.XSDdecimal)
+      case l@IntegerLiteral(i, repr) =>
+        m.createTypedLiteral(l.lexicalForm, XSDDatatype.XSDinteger)
       case LangLiteral(l, Lang(lang)) => m.createLiteral(l, lang)
       case BooleanLiteral(b) =>
         m.createTypedLiteral(b.toString, XSDDatatype.XSDboolean)
-      case DoubleLiteral(d: Double) =>
-        m.createTypedLiteral(d.toString, XSDDatatype.XSDdouble)
+      case l@DoubleLiteral(d: Double, repr) =>
+        m.createTypedLiteral(l.lexicalForm, XSDDatatype.XSDdouble)
       case _ =>
         throw new Exception("Cannot create a resource from " + node)
     }

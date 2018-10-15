@@ -9,7 +9,7 @@ import org.scalatest._
 class ExprTest extends FunSpec with Matchers with EitherValues {
 
   describe(s"Parsing exprs") {
-    it("should parse a simple as") {
+    ignore("should parse a simple as") {
       val strSchema =
         """
           |prefix : <http://example.org/>

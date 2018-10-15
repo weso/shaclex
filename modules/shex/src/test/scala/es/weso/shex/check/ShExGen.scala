@@ -63,7 +63,13 @@ object ShExSpec extends Properties("ShEx") {
   lazy val rdfGen: Gen[RDFReader] = for {
     ts <- Gen.listOf(rdfTripleGen)
   } yield {
-    RDFAsJenaModel(JenaMapper.RDFTriples2Model(ts.toSet, JenaMapper.emptyModel))
+    try { RDFAsJenaModel(JenaMapper.RDFTriples2Model(ts.toSet, JenaMapper.emptyModel)) }
+    catch {
+      case e: NullPointerException => {
+        println(s"Null point exception: $ts")
+        RDFAsJenaModel.empty
+      }
+    }
   }
 
   property("RDFTriples") = forAll(rdfTripleGen) { (triple) =>
@@ -71,7 +77,12 @@ object ShExSpec extends Properties("ShEx") {
   }
 
   property("rdf statements contain always iris as subjects") = forAll(rdfGen) { (rdf: RDFReader) => {
-    rdf.serialize("TURTLE").isRight
+    val r = try { rdf.serialize("TURTLE") }
+    catch { case e: NullPointerException => {
+      println(s"Null point exception: $e")
+      Left(s"Error serializing $rdf: $e")
+    }}
+    r.isRight
    }
   }
 

@@ -137,9 +137,9 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield MaxExclusive(value)
 
   private def numericLiteral: RDFParser[NumericLiteral] = (n, rdf) => n match {
-    case IntegerLiteral(n) => parseOk(NumericInt(n))
-    case DoubleLiteral(d) => parseOk(NumericDouble(d, d.toString))
-    case DecimalLiteral(d) => parseOk(NumericDecimal(d, d.toString))
+    case IntegerLiteral(n,repr) => parseOk(NumericInt(n, repr))
+    case DoubleLiteral(d,repr) => parseOk(NumericDouble(d, repr))
+    case DecimalLiteral(d,repr) => parseOk(NumericDecimal(d, repr))
     case _ => parseFail(s"Expected numeric literal but found $n")
   }
 
@@ -360,7 +360,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   }
 
   private def max: RDFParser[Max] = (n, rdf) => n match {
-    case IntegerLiteral(n) => parseOk(IntMax(n))
+    case IntegerLiteral(n,_) => parseOk(IntMax(n))
     case StringLiteral("*") => parseOk(Star)
     case _ => parseFail(s"Unexpected node parsing max cardinality: $n")
   }

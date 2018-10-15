@@ -178,7 +178,7 @@ object CompactShow {
     }
 
   private def numericDoc(n: NumericLiteral): Doc = n match {
-    case NumericInt(n) => integerDoc(n.toString)
+    case NumericInt(_,str) => integerDoc(str)
     case NumericDouble(_,str) => doubleDoc(str)
     case NumericDecimal(_,str) => decimalDoc(str)
   }

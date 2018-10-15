@@ -839,9 +839,9 @@ case class Validator(schema: Schema) extends LazyLogging {
 
   private def disjointNode(n1: RDFNode, n2: RDFNode): Boolean = n1 != n2
   private def lessThanNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
-    case (IntegerLiteral(n1), IntegerLiteral(n2)) => n1 < n2
-    case (DecimalLiteral(n1), DecimalLiteral(n2)) => n1 < n2
-    case (DoubleLiteral(n1), DoubleLiteral(n2)) => n1 < n2
+    case (IntegerLiteral(n1,_), IntegerLiteral(n2,_)) => n1 < n2
+    case (DecimalLiteral(n1,_), DecimalLiteral(n2,_)) => n1 < n2
+    case (DoubleLiteral(n1,_), DoubleLiteral(n2,_)) => n1 < n2
     case (StringLiteral(n1), StringLiteral(n2)) => n1 < n2
     case (DatatypeLiteral(n1, d1), DatatypeLiteral(n2, d2)) => d1 == d2 && n1 < n2
     case (LangLiteral(n1, l1), LangLiteral(n2, l2)) => n1 < n2
@@ -850,9 +850,9 @@ case class Validator(schema: Schema) extends LazyLogging {
     case (_, _) => false
   }
   private def lessThanOrEqualNode(n1: RDFNode, n2: RDFNode): Boolean = (n1, n2) match {
-    case (IntegerLiteral(n1), IntegerLiteral(n2)) => n1 <= n2
-    case (DecimalLiteral(n1), DecimalLiteral(n2)) => n1 <= n2
-    case (DoubleLiteral(n1), DoubleLiteral(n2)) => n1 <= n2
+    case (IntegerLiteral(n1,_), IntegerLiteral(n2,_)) => n1 <= n2
+    case (DecimalLiteral(n1,_), DecimalLiteral(n2,_)) => n1 <= n2
+    case (DoubleLiteral(n1,_), DoubleLiteral(n2,_)) => n1 <= n2
     case (StringLiteral(n1), StringLiteral(n2)) => n1 <= n2
     case (DatatypeLiteral(n1, d1), DatatypeLiteral(n2, d2)) => d1 == d2 && n1 <= n2
     case (LangLiteral(n1, l1), LangLiteral(n2, l2)) => n1 <= n2

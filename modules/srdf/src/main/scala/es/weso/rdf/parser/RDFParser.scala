@@ -483,7 +483,7 @@ trait RDFParser {
   }
 
   def integer: RDFParser[Int] = (n, rdf) => n match {
-    case IntegerLiteral(n) => parseOk(n)
+    case IntegerLiteral(n,_) => parseOk(n)
     case _ => parseFail(s"Expected integer literal for node $n")
   }
 
