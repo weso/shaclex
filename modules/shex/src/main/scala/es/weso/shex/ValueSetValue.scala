@@ -25,11 +25,13 @@ object ObjectValue {
     DatatypeString(repr, xsd_decimal)
   def literalValue(l: Literal): ObjectValue =
     l match {
-      case DatatypeLiteral(lex, dt) => DatatypeString(lex, dt)
+      case DatatypeLiteral(lex, dt) =>
+        if (dt == `xsd_string`) StringValue(lex)
+        else DatatypeString(lex, dt)
       case IntegerLiteral(n, repr) => intValue(n,repr)
       case DecimalLiteral(d, repr) => decimalValue(d,repr)
       case DoubleLiteral(d, repr) => doubleValue(d,repr)
-      case StringLiteral(s) => DatatypeString(s, xsd_string)
+      case StringLiteral(s) => StringValue(s) // DatatypeString(s, xsd_string)
       case BooleanLiteral(b) => if (b) trueValue else falseValue
       case LangLiteral(lex, lang) => LangString(lex, lang)
     }

@@ -13,9 +13,9 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import es.weso.shex.implicits.encoderShEx._
 import scala.io._
 
-class CompareSchemasSingleCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
+class CompareSchemasSingleTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name          = "1dotLNex"
+  val name          = "1dotAnnot3"
   val conf: Config  = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 

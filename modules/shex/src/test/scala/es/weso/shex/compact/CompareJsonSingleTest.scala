@@ -17,7 +17,7 @@ import gnieh.diffson.circe._
 
 import scala.io._
 
-class CompareJsonSingleCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
+class CompareJsonSingleTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val name = "1dotRefSpaceLNex1"
   val conf: Config = ConfigFactory.load()

@@ -8,7 +8,7 @@ import es.weso.shex._
 import es.weso.rdf._
 import es.weso.json.DecoderUtils._
 import es.weso.rdf.operations.Comparisons._
-import es.weso.rdf.PREFIXES.rdf_langString
+import es.weso.rdf.PREFIXES.{rdf_langString, xsd_string}
 
 object decoderShEx {
 
@@ -272,6 +272,7 @@ object decoderShEx {
     } yield (optLang, optType) match {
       case (None, None) => StringValue(value)
       case (Some(lang), None) => LangString(value, Lang(lang))
+      case (None, Some(`xsd_string`)) => StringValue(value)
       case (None, Some(iri)) => DatatypeString(value, iri)
       case (Some(lang), Some(iri)) => if (iri == rdf_langString) {
         LangString(value, Lang(lang))
