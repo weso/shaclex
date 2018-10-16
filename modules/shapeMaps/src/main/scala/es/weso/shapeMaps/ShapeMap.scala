@@ -93,9 +93,11 @@ object ShapeMap {
     queryMap <- {
       Parser.parse(str, base, rdf.getPrefixMap, shapesPrefixMap)
     }
-    fixMap <- fixShapeMap(queryMap, rdf, rdf.getPrefixMap, shapesPrefixMap)
-  } yield ResultShapeMap(fixMap.shapeMap, rdf.getPrefixMap, shapesPrefixMap)
-
+    fixMap <- {
+      fixShapeMap(queryMap, rdf, rdf.getPrefixMap, shapesPrefixMap) }
+  } yield {
+    ResultShapeMap(fixMap.shapeMap, rdf.getPrefixMap, shapesPrefixMap)
+  }
   /**
    * Resolve triple patterns according to an RDF
    */
@@ -116,10 +118,12 @@ object ShapeMap {
       current: Either[String, FixedShapeMap]
     ): Either[String, FixedShapeMap] = for {
       fixed <- current
-      newShapeMap <- fixed.addAssociation(Association(RDFNodeSelector(node), a.shape))
+      newShapeMap <- fixed.addAssociation(Association(RDFNodeSelector(node), a.shape, a.info))
     } yield newShapeMap
 
-    def combine(a: Association, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = {
+    def combine(a: Association,
+                current: Either[String, FixedShapeMap]
+               ): Either[String, FixedShapeMap] = {
       for {
         nodes <- a.node.select(rdf)
         r <- nodes.foldRight(current)(addNode(a))

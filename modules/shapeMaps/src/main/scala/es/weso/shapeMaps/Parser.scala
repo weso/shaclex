@@ -34,8 +34,7 @@ object Parser extends LazyLogging {
     val s = removeBOM(str)
     val reader: JavaReader =
       new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    val r = parseSchemaReader(reader, base, nodesPrefixMap, shapesPrefixMap)
-    r
+    parseSchemaReader(reader, base, nodesPrefixMap, shapesPrefixMap)
   }
 
   def parseSchemaReader(

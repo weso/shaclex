@@ -7,14 +7,17 @@ import org.scalatest._
 
 class ResultShapeMapTest extends FunSpec with Matchers with TryValues with OptionValues {
 
-  describe("ResultShapeMaps") {
+/*  describe("ResultShapeMaps") {
     val rdfStr =
       """prefix : <http://example.org/>
         |:a :b :c .
       """.stripMargin
+
     compareResultMaps(":a@:S", ":a@:S", rdfStr, true)
     compareResultMaps(":a@:S", ":b@:S", rdfStr, false)
     compareResultMaps(":a@:S", ":a@:S,:b@:S", rdfStr, false)
+    compareResultMaps(":a@!:S", ":a@!:S", rdfStr, true)
+
   }
 
   def compareResultMaps(strMap1: String, strMap2: String, rdfStr: String, expectedEqual: Boolean): Unit = {
@@ -39,8 +42,33 @@ class ResultShapeMapTest extends FunSpec with Matchers with TryValues with Optio
         })
     }
   }
+*/
+  describe(s"Parse result shape map") {
+    it(s"Should parse result shape map") {
+      val rdfStr =
+        """|prefix : <http://example.org/>
+          |:x :p 1 .
+        """.stripMargin
 
-  describe(s"Get conformant shapes") {
+      val result = for {
+        rdf <- RDFAsJenaModel.fromChars(rdfStr,"TURTLE",None)
+        resultMap <- ShapeMap.parseResultMap(":x@!:S", None, rdf, rdf.getPrefixMap)
+      } yield (rdf,resultMap)
+
+      result match {
+        case Left(err) => fail(s"Error: $err")
+        case Right((rdf,result)) => {
+          val x = IRI("http://example.org/x")
+          val s = IRILabel(IRI("http://example.org/S"))
+          val r: ResultShapeMap = ResultShapeMap(Map(x -> Map(s -> Info(NonConformant, None, None))), rdf.getPrefixMap, rdf.getPrefixMap)
+          println(s"Result: $result\nr=$r")
+          result should be(r)
+        }
+      }
+    }
+  }
+
+/*  describe(s"Get conformant shapes") {
     val pm = PrefixMap.empty.addPrefix("",IRI("http://example.org/"))
     val x: RDFNode = IRI("http://example.org/x")
     val y: RDFNode = IRI("http://example.org/y")
@@ -82,5 +110,5 @@ class ResultShapeMapTest extends FunSpec with Matchers with TryValues with Optio
       rm.getInfo(z,t).status should be(NonConformant)
       rm.getInfo(z,u).status should be(Undefined)
     }
-  }
+  } */
 }
