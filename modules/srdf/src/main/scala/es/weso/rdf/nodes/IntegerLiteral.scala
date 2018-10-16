@@ -2,9 +2,9 @@ package es.weso.rdf.nodes
 
 // It should be better to inherit from DatatypeLiteral,
 // but case-to-case inheritance is prohibited in Scala
-case class IntegerLiteral(int: Int) extends Literal {
+case class IntegerLiteral(int: Int, repr: String = null) extends Literal {
   val dataType = RDFNode.IntegerDatatypeIRI
-  val lexicalForm = int.toString
+  val lexicalForm = if (repr == null) int.toString else repr
 
   override def isLangLiteral = false
   override def hasLang(lang: Lang) = false
@@ -15,14 +15,14 @@ case class IntegerLiteral(int: Int) extends Literal {
   override def getLexicalForm = lexicalForm
 
   def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
-    case IntegerLiteral(d) => Right(d == int)
+    case IntegerLiteral(d, r) => Right(if (r == null) (d == int) else (r == repr))
     case _ => Right(false)
   }
 
   def lessThan(other: RDFNode): Either[String,Boolean] = other match {
-    case IntegerLiteral(m) => Right(int < m)
-    case DecimalLiteral(d) => Right(int < d)
-    case DoubleLiteral(d) => Right(int < d)
+    case IntegerLiteral(m, _) => Right(int < m)
+    case DecimalLiteral(d, _) => Right(int < d)
+    case DoubleLiteral(d, _) => Right(int < d)
     case _ => Left(s"Type error comparing $this < $other which is not numeric")
   }
 }

@@ -245,7 +245,7 @@ object Shacl2ShEx {
    v match {
      case shacl.IRIValue(iri) => ok(shex.IRIValue(iri))
      case shacl.LiteralValue(lit) => lit match {
-//       case StringLiteral(str) => ok(shex.StringValue(str))
+       case StringLiteral(str) => ok(shex.StringValue(str))
        case DatatypeLiteral(str,dt) => ok(shex.DatatypeString(str,dt))
        case LangLiteral(str,lang) => ok(shex.LangString(str,lang))
        case _ => ok(shex.DatatypeString(lit.getLexicalForm,lit.dataType))

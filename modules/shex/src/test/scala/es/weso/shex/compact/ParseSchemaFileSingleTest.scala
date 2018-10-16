@@ -7,7 +7,7 @@ import es.weso.json.JsonTest
 import es.weso.utils.FileUtils
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 
-class ParseSchemaFileSingleCompatTest extends FunSpec with JsonTest with Matchers with EitherValues {
+class ParseSchemaFileSingleTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
   val name = "1focusLength-dot"
   val conf: Config = ConfigFactory.load()

@@ -73,6 +73,11 @@ object eqShEx extends LazyLogging {
         s1.semActs === s2.semActs
   }
 
+  implicit lazy val eqShapeRef: Eq[ShapeRef] = new Eq[ShapeRef] {
+    final def eqv(s1: ShapeRef, s2: ShapeRef): Boolean =
+      s1.reference === s2.reference
+  }
+
   implicit lazy val eqTripleExpr: Eq[TripleExpr] = new Eq[TripleExpr] {
     final def eqv(s1: TripleExpr, s2: TripleExpr): Boolean = (s1, s2) match {
       case (e1: EachOf, e2: EachOf) => e1 === e2
@@ -105,14 +110,13 @@ object eqShEx extends LazyLogging {
     final def eqv(s1: TripleConstraint, s2: TripleConstraint): Boolean = {
       // println(s"Comparing triple constraints $s1 and $s2")
       // println(s"Min/max (${s1.min}/${s1.max}) and (${s2.min}/${s2.max})")
-
-      s1.inverse === s2.inverse &&
-        s1.negated === s2.negated &&
-        s1.predicate === s2.predicate &&
-        s1.min === s2.min &&
-        s1.max === s2.max &&
-        s1.semActs === s2.semActs &&
-        s1.annotations === s2.annotations
+     s1.inverse === s2.inverse &&
+     s1.negated === s2.negated &&
+     s1.predicate === s2.predicate &&
+     s1.min === s2.min &&
+     s1.max === s2.max &&
+     s1.semActs === s2.semActs &&
+     s1.annotations === s2.annotations
     }
   }
 
@@ -133,7 +137,6 @@ object eqShEx extends LazyLogging {
   }
 
   implicit lazy val eqNodeConstraint: Eq[NodeConstraint] = new Eq[NodeConstraint] {
-
     final def eqv(n1: NodeConstraint, n2: NodeConstraint): Boolean = {
       // logger.info(s"Testing eq on nodeConstraints\n$n1\n$n2")
       n1.nodeKind === n2.nodeKind &&
@@ -153,6 +156,6 @@ object eqShEx extends LazyLogging {
         case (_,_) => false
       }
     }
-    }
-
   }
+
+}

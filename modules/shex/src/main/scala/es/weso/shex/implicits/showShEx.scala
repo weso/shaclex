@@ -156,7 +156,7 @@ object showShEx {
 
   implicit lazy val showNumericLiteral: Show[NumericLiteral] = new Show[NumericLiteral] {
     final def show(a: NumericLiteral): String = a match {
-      case NumericInt(n) => n.show
+      case NumericInt(n,repr) => repr
       case NumericDouble(n,repr) => repr
       case NumericDecimal(n,repr) => repr
     }

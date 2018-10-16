@@ -205,7 +205,7 @@ object encoderShEx {
   implicit lazy val encodeNumeric: Encoder[NumericLiteral] = new Encoder[NumericLiteral] {
     final def apply(a: NumericLiteral): Json = {
       a match {
-        case NumericInt(n) => Json.fromInt(n)
+        case NumericInt(n,_) => Json.fromInt(n)
         case NumericDouble(d,_) => Json.fromDoubleOrString(d)
         case NumericDecimal(d,_) => Json.fromBigDecimal(d)
       }
