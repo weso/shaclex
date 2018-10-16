@@ -1,14 +1,14 @@
 package es.weso.shapeMaps
 
-import java.io.{ ByteArrayInputStream, InputStreamReader, Reader => JavaReader }
+import java.io.{ByteArrayInputStream, InputStreamReader, Reader => JavaReader}
 import java.nio.charset.StandardCharsets
 
 import com.typesafe.scalalogging._
 import es.weso.rdf._
-import es.weso.shapeMaps.parser.{ ShapeMapLexer, ShapeMapParser }
+import es.weso.shapeMaps.parser.{NodeSelectorLexer, NodeSelectorParser}
 import org.antlr.v4.runtime._
 
-object Parser extends LazyLogging {
+object ParserNodeSelector extends LazyLogging {
 
   type Builder[A] = Either[String, A]
 
@@ -29,34 +29,32 @@ object Parser extends LazyLogging {
   def parse(
     str: String,
     base: Option[String],
-    nodesPrefixMap: PrefixMap,
-    shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
+    nodesPrefixMap: PrefixMap): Either[String, NodeSelector] = {
     val s = removeBOM(str)
     val reader: JavaReader =
       new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
-    val r = parseSchemaReader(reader, base, nodesPrefixMap, shapesPrefixMap)
+    val r = parseSchemaReader(reader, base, nodesPrefixMap)
     r
   }
 
   def parseSchemaReader(
     reader: JavaReader,
     base: Option[String],
-    nodesPrefixMap: PrefixMap,
-    shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
+    nodesPrefixMap: PrefixMap
+    ): Either[String, NodeSelector] = {
     val input: CharStream = CharStreams.fromReader(reader)
-    val lexer: ShapeMapLexer = new ShapeMapLexer(input)
+    val lexer: NodeSelectorLexer = new NodeSelectorLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
-    val parser: ShapeMapParser = new ShapeMapParser(tokens)
+    val parser: NodeSelectorParser = new NodeSelectorParser(tokens)
 
     val errorListener = new ParserErrorListener
     lexer.addErrorListener(errorListener)
     parser.addErrorListener(errorListener)
 
-    val maker = new ShapeMapsMaker(
+    val maker = new NodeSelectorMaker(
       base: Option[String],
-      nodesPrefixMap,
-      shapesPrefixMap)
-    val builder = maker.visit(parser.shapeMap()).asInstanceOf[Builder[QueryShapeMap]]
+      nodesPrefixMap)
+    val builder = maker.visit(parser.nodeSelector()).asInstanceOf[Builder[NodeSelector]]
     val errors = errorListener.getErrors
     if (errors.length > 0) {
       Left(errors.mkString("\n"))

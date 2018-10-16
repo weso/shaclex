@@ -107,6 +107,15 @@ lazy val shaclex = project
     parallelExecution in Test := false
   )
 
+lazy val schemaInfer = project
+  .in(file("modules/schemaInfer"))
+  .disablePlugins(RevolverPlugin)
+  .settings(commonSettings, publishSettings)
+  .dependsOn(
+    schema,
+    srdf
+  )
+
 lazy val schema = project
   .in(file("modules/schema"))
   .disablePlugins(RevolverPlugin)

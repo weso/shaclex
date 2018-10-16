@@ -120,61 +120,10 @@ object ShapeMap {
     } yield newShapeMap
 
     def combine(a: Association, current: Either[String, FixedShapeMap]): Either[String, FixedShapeMap] = {
-      a.node match {
-        case RDFNodeSelector(_) => for {
-          sm <- current
-          newSm <- sm.addAssociation(a)
-        } yield newSm
-        case TriplePattern(Focus, p, o) => o match {
-          case WildCard => {
-            val nodes = rdf.nodesWithPath(p).map(_._1)
-            nodes.foldRight(current)(addNode(a))
-          }
-          case NodePattern(obj) => {
-            val nodes = rdf.subjectsWithPath(p, obj)
-            nodes.foldRight(current)(addNode(a))
-          }
-          case Focus =>
-            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.node}")
-        }
-        case TriplePattern(s, p, Focus) => s match {
-          case WildCard => {
-            val nodes = rdf.nodesWithPath(p).map(_._2)
-            nodes.foldRight(current)(addNode(a))
-          }
-          case NodePattern(subj) => {
-            val nodes = rdf.objectsWithPath(subj, p)
-            nodes.foldRight(current)(addNode(a))
-          }
-          case Focus =>
-            Left(s"FixShapeMap: Inconsistent triple pattern in node selector with two Focus: ${a.node}")
-        }
-        case SparqlSelector(query) => {
-          val eitherResult = rdf.querySelect(query)
-          eitherResult match {
-            case Left(str) => Left(str)
-            case Right(result) => {
-              val zero: Either[String,List[RDFNode]] = Right(List())
-              def combine(current: Either[String,List[RDFNode]], next: Map[String,RDFNode]): Either[String,List[RDFNode]] = {
-                current match {
-                  case Left(msg) => Left(msg)
-                  case Right(nodes) => if (next.size == 1) {
-                    val resultNode = next.map(_._2).head
-                    Right(resultNode :: nodes)
-                  } else {
-                    Left(s"Result of query has more than one value: $next")
-                  }
-                }
-              }
-              result.foldLeft(zero)(combine) match {
-                case Left(msg) => Left(msg)
-                case Right(nodes) => nodes.foldRight(current)(addNode(a))
-              }
-            }
-          }
-        }
-        case _ => Left(s"FixShapeMap: Incorrect node selector ${a.node}")
-      }
+      for {
+        nodes <- a.node.select(rdf)
+        r <- nodes.foldRight(current)(addNode(a))
+      } yield r
     }
     shapeMap.associations.foldRight(empty)(combine)
   }

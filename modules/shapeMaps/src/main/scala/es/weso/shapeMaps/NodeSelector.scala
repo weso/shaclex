@@ -5,17 +5,64 @@ import es.weso.rdf.path.SHACLPath
 import io.circe._
 import io.circe.syntax._
 import es.weso.json.DecoderUtils._
+import es.weso.rdf.{PrefixMap, RDFReader}
 
-abstract class NodeSelector
-case class RDFNodeSelector(node: RDFNode) extends NodeSelector
+
+abstract class NodeSelector {
+  def select(rdf: RDFReader): Either[String,Set[RDFNode]]
+}
+case class RDFNodeSelector(node: RDFNode) extends NodeSelector {
+  override def select(rdf: RDFReader): Either[String,Set[RDFNode]] =
+    Right(Set(node))
+}
+
 case class TriplePattern(
   subjectPattern: Pattern,
   path: SHACLPath,
-  objectPattern: Pattern) extends NodeSelector
-case class SparqlSelector(query: String) extends NodeSelector
-case class GenericSelector(iri: IRI, param: String) extends NodeSelector
+  objectPattern: Pattern) extends NodeSelector {
+  override def select(rdf: RDFReader): Either[String,Set[RDFNode]] =
+    (subjectPattern, path, objectPattern) match {
+      case (Focus,p,WildCard) => Right(rdf.nodesWithPath(p).map(_._1))
+      case (Focus,p,NodePattern(obj)) => Right(rdf.subjectsWithPath(p,obj))
+      case (WildCard,p,Focus) => Right(rdf.nodesWithPath(p).map(_._2))
+      case (NodePattern(subj),p,Focus) =>  Right(rdf.objectsWithPath(subj, p))
+      case _ => Left(s"Strange triple pattern in node selector: $this")
+    }
+}
+
+case class SparqlSelector(query: String) extends NodeSelector {
+  override def select(rdf: RDFReader): Either[String,Set[RDFNode]] = {
+    rdf.querySelect(query) match {
+      case Left(str) => Left(str)
+      case Right(result) => {
+        val zero: Either[String,List[RDFNode]] = Right(List())
+        def combine(current: Either[String,List[RDFNode]], next: Map[String,RDFNode]): Either[String,List[RDFNode]] = {
+          current match {
+            case Left(msg) => Left(msg)
+            case Right(nodes) => if (next.size == 1) {
+              val resultNode = next.map(_._2).head
+              Right(resultNode :: nodes)
+            } else {
+              Left(s"Result of query has more than one value: $next")
+            }
+          }
+        }
+        result.foldLeft(zero)(combine).map(_.toSet)
+      }
+    }
+  }
+}
+
+case class GenericSelector(iri: IRI, param: String) extends NodeSelector {
+  override def select(rdf: RDFReader): Either[String, Set[RDFNode]] = {
+    Left(s"Not implemented GenericSelector($iri, $param)")
+  }
+}
 
 object NodeSelector {
+
+  def fromString(str: String, base: Option[String], pm: PrefixMap): Either[String,NodeSelector] =
+    ParserNodeSelector.parse(str, base, pm)
 
   implicit val encodeNodeSelector: Encoder[NodeSelector] = new Encoder[NodeSelector] {
     final def apply(nodeSelector: NodeSelector): Json = {
