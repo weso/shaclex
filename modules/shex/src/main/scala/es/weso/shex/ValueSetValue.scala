@@ -19,6 +19,8 @@ object ObjectValue {
   def falseValue: ObjectValue = DatatypeString("false", xsd_boolean)
   def intValue(n: Int, repr: String): ObjectValue =
     DatatypeString(repr, xsd_integer)
+  def intValue(n: Int): ObjectValue =
+    intValue(n, n.toString)
   def doubleValue(d: Double, repr: String): ObjectValue =
     DatatypeString(repr, xsd_double)
   def decimalValue(d: BigDecimal, repr: String): ObjectValue =

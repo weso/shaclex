@@ -202,15 +202,19 @@ object CompactShow {
   private def stringDoc(str: String): Doc =
     text("\"") :: text(escape(str)) :: text("\"")
 
+  private def objectValueDoc(pm: PrefixMap)(o: ObjectValue): Doc = o match {
+    case IRIValue(iri) => iriDoc(pm)(iri)
+    case StringValue(str) => stringDoc(str)
+    case d: DatatypeString => datatypeStringDoc(pm)(d)
+    case LangString(s, l) => stringDoc(s) :: str("@") :: str(l.lang)
+  }
+
   private def valueDoc(pm: PrefixMap)(v: ValueSetValue): Doc =
     v match {
-      case IRIValue(iri) => iriDoc(pm)(iri)
-      case StringValue(str) => stringDoc(str)
-      case d: DatatypeString => datatypeStringDoc(pm)(d)
-      case LangString(s, l) => stringDoc(s) :: str("@") :: str(l.lang)
+      case o: ObjectValue => objectValueDoc(pm)(o)
       case IRIStem(iri) => iriDoc(pm)(iri) :: str("~")
       case IRIStemRange(_, _) => str("TODO: StemRange")
-      case LanguageStem(s) => str(s"@$s")
+      case LanguageStem(s) => str(s"$s")
       case _ => str(s"Unimplemented show of $v")
     }
 
@@ -227,6 +231,8 @@ object CompactShow {
 
   private def integerDoc(s: String): Doc = text(s.toString)
 
+  private def intDoc(n: Integer): Doc = text(n.toString)
+
   private def decimalDoc(s: String): Doc = text(s.toString)
 
   private def doubleDoc(s: String): Doc = text(s.toString)
@@ -235,14 +241,13 @@ object CompactShow {
     if (closed) { keyword("CLOSED") } else empty
 
   private def shapeDoc(pm: PrefixMap)(s: Shape): Doc = {
-    idDoc(s.id, pm) :: space ::
-      optDocConst(s.virtual, keyword("VIRTUAL")) ::
-      maybeClosed(s.isClosed) ::
-      optDoc(s.extra, extraDoc(pm)) ::
-      optDoc(
+    optDocConst(s.virtual, keyword("VIRTUAL")) ::
+    maybeClosed(s.isClosed) ::
+    optDoc(s.extra, extraDoc(pm)) ::
+    optDoc(
         s.expression,
         (te: TripleExpr) =>
-          text("{") :: tripleExprDoc(pm)(te) :: text("}") :: newline) ::
+          text("{") :: newline :: tripleExprDoc(pm)(te) :: newline :: text("}") :: newline) ::
         optDoc(s.semActs, semActsDoc(pm))
   }
 
@@ -260,7 +265,7 @@ object CompactShow {
 
   private def eachOfDoc(pm: PrefixMap)(e: EachOf): Doc = {
     val kernel = if (Cardinality.isDefault(e.min, e.max)) {
-      listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";"))
+      listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";") :: newline )
     } else {
       openParen ::
         listDocIntersperse(e.expressions, tripleExprDoc(pm), keyword(";")) ::
@@ -290,16 +295,30 @@ object CompactShow {
       optDocConst(t.optNegated, str("!")) ::
       iriDoc(pm)(t.predicate) :: space ::
       optDoc(t.valueExpr, shapeExprDoc(pm)) ::
-      (if (Cardinality.isDefault(t.min, t.max)) none
-      else cardinalityDoc(t.optMin, t.optMax)) ::
+      cardinalityDoc(t.optMin, t.optMax) ::
       optDoc(t.semActs, semActsDoc(pm)) ::
       optDoc(t.annotations, annotationsDoc(pm))
 
   private def annotationsDoc(pm: PrefixMap)(as: List[Annotation]): Doc =
-    str(s"CompactShow/TODO: Annotations $as $pm")
+    listDocSep(as,annotationDoc(pm),space)
 
-  private def cardinalityDoc(min: Option[Int], max: Option[Max]): Doc =
-    str(s" {${min.getOrElse(1)},${max.getOrElse(IntMax(1)).show}}")
+  private def annotationDoc(pm: PrefixMap)(a: Annotation): Doc =
+    str(" //") :: space :: iriDoc(pm)(a.predicate) :: space :: objectValueDoc(pm)(a.obj)
+
+  private def cardinalityDoc(min: Option[Int], max: Option[Max]): Doc = (min,max) match {
+    case (Some(1),Some(IntMax(1))) => none
+    case (None, None) => none
+    case (None, Some(IntMax(1))) => none
+    case (None, Some(Star)) => str("+")
+    case (None, Some(IntMax(m))) => str("{1,") :: intDoc(m) :: str("}")
+    case (Some(0), Some(IntMax(1))) => str("?")
+    case (Some(0), Some(Star)) => str("*")
+    case (Some(1), Some(Star)) => str("+")
+    case (Some(m), Some(Star)) => str("{") :: intDoc(m) :: str(",*}")
+    case (Some(m), Some(IntMax(n))) => str("{") :: intDoc(m) :: str(",") :: intDoc(n) :: str("}")
+    case (Some(m), None) => str("{") :: intDoc(m) :: str(",1}")
+    case _ => str(s"Unknown cardinality!!!")
+  }
 
   private def exprDoc(pm: PrefixMap)(e: Expr): Doc =
     str(s"CompactShow/TODO: Expressions $e")
@@ -307,8 +326,13 @@ object CompactShow {
   private def listDocSep[A](
     xs: Seq[A],
     toDoc: A => Doc,
-    sep: Doc): Doc = xs.foldLeft(empty: Doc)(
-    (d: Doc, x: A) => d :: sep :: toDoc(x))
+    sep: Doc): Doc =
+    xs.length match {
+      case 0 => none
+      case 1 => toDoc(xs.head)
+      case _ => xs.foldLeft(empty: Doc)(
+        (d: Doc, x: A) => d :: sep :: toDoc(x))
+    }
 
   private def listDocIntersperse[A](
     s: Seq[A],
