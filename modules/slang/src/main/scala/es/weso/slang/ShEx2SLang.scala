@@ -32,19 +32,19 @@ trait ShEx2SLang {
   }
 
   private def cnvShapeExpr(se: ShapeExpr, schema: Schema): Either[String,SLang] = se match {
-    case ShapeAnd(_,ses) => for {
+    case ShapeAnd(_,ses, _, _) => for {
       ss <- sequence(ses.map(se => cnvShapeExpr(se,schema)))
     } yield ss.foldRight(SLang.strue)(And)
-    case ShapeOr(_,ses) => for {
+    case ShapeOr(_,ses,_,_) => for {
       ss <- sequence(ses.map(se => cnvShapeExpr(se,schema)))
     } yield ss.foldRight(SLang.sfalse)(SLang.or)
     case nk: NodeConstraint => for {
      s <- cnvNodeConstraint(nk)
     } yield s
-    case ShapeNot(_,s) => for {
+    case ShapeNot(_,s,_,_) => for {
       sn <- cnvShapeExpr(s,schema)
     } yield Not(sn)
-    case ShapeRef(ref) => for {
+    case ShapeRef(ref,_,_) => for {
       lbl <- cnvLabel(ref)
     } yield Ref(lbl)
     case s: Shape => cnvShape(s,schema)

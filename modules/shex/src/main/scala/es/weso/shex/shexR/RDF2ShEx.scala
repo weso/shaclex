@@ -65,7 +65,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   private def shapeOr: RDFParser[ShapeOr] = (n, rdf) => for {
     _ <- checkType(sx_ShapeOr)(n, rdf)
     shapeExprs <- arc(sx_shapeExprs, shapeExprList2Plus)(n, rdf)
-  } yield ShapeOr(mkId(n), shapeExprs)
+  } yield ShapeOr(mkId(n), shapeExprs,None,None)
 
   private def mkId(n: RDFNode): Option[ShapeLabel] = n match {
     case iri: IRI => Some(IRILabel(iri))
@@ -76,12 +76,12 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   private def shapeAnd: RDFParser[ShapeAnd] = (n, rdf) => for {
     _ <- checkType(sx_ShapeAnd)(n, rdf)
     shapeExprs <- arc(sx_shapeExprs, shapeExprList2Plus)(n, rdf)
-  } yield ShapeAnd(mkId(n), shapeExprs)
+  } yield ShapeAnd(mkId(n), shapeExprs,None,None)
 
   private def shapeNot: RDFParser[ShapeNot] = (n, rdf) => for {
     _ <- checkType(sx_ShapeNot)(n, rdf)
     shapeExpr <- arc(sx_shapeExpr, shapeExpr)(n, rdf)
-  } yield ShapeNot(mkId(n), shapeExpr)
+  } yield ShapeNot(mkId(n), shapeExpr,None,None)
 
   private def nodeConstraint: RDFParser[NodeConstraint] = (n, rdf) => for {
     _ <- checkType(sx_NodeConstraint)(n, rdf)
@@ -89,7 +89,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     datatype <- opt(sx_datatype, iri)(n, rdf)
     facets <- collect(xsFacets)(n, rdf)
     values <- opt(sx_values, valueSetValueList1Plus)(n, rdf)
-  } yield NodeConstraint(mkId(n), nk, datatype, facets, values)
+  } yield NodeConstraint(mkId(n), nk, datatype, facets, values,None,None)
 
   private def xsFacets: List[RDFParser[XsFacet]] = List(
     length,
@@ -170,7 +170,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
 
   private def shapeExternal: RDFParser[ShapeExternal] = (n, rdf) => for {
     _ <- checkType(sx_ShapeExternal)(n, rdf)
-  } yield ShapeExternal(mkId(n))
+  } yield ShapeExternal(mkId(n),None,None)
 
   private def semAct: RDFParser[SemAct] = (n, rdf) => for {
     _ <- checkType(sx_SemAct)(n, rdf)
@@ -297,8 +297,12 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
   } yield LiteralStemExclusion(literalStem)
 
 
-  private def languageTagExclusion: RDFParser[LanguageTagExclusion] = ???
-  private def languageStemExclusion: RDFParser[LanguageStemExclusion] = ???
+  private def languageTagExclusion: RDFParser[LanguageTagExclusion] = {
+    throw new Exception(s"Not implemented languageTagExclusion yet")
+  }
+  private def languageStemExclusion: RDFParser[LanguageStemExclusion] = {
+    throw new Exception(s"Not implemented languageStemExclusion yet")
+  }
 
   private def iriStemValueIRI: RDFParser[IRIStemRangeValue] = (n, rdf) => for {
     str <- anyUri(n, rdf)

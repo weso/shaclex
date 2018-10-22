@@ -89,7 +89,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitStartActions(ctx: StartActionsContext): Builder[Option[List[SemAct]]] = {
     if (isDefined(ctx)) {
       val r: List[Builder[SemAct]] =
-        ctx.codeDecl().asScala.map(visitCodeDecl(_)).toList
+        ctx.semanticAction().asScala.map(visitSemanticAction(_)).toList
       sequence(r).map(Some(_))
     } else ok(None)
   }
@@ -114,14 +114,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       ok(None)
   }
 
-  override def visitSemanticActions(ctx: SemanticActionsContext): Builder[List[SemAct]] =
+/*  override def visitSemanticActions(ctx: SemanticActionsContext): Builder[List[SemAct]] =
     for {
-      ls <- visitList(visitCodeDecl, ctx.codeDecl())
+      ls <- visitList(visitSemanticAction, ctx.semanticAction())
     } yield {
       ls
-    }
+    } */
 
-  override def visitCodeDecl(ctx: CodeDeclContext): Builder[SemAct] =
+  override def visitSemanticAction(ctx: SemanticActionContext): Builder[SemAct] =
     for {
       iri <- visitIri(ctx.iri())
       code <- optBuilder(ctx.CODE()).map(opt => opt.map(_.getText()))
@@ -160,7 +160,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   def obtainShapeExpr(ctx: ShapeExprDeclContext): Builder[ShapeExpr] =
     if (isDefined(ctx.KW_EXTERNAL())) {
       // TODO: What happens if there are semantic actions after External??
-      ok(ShapeExternal(None))
+      ok(ShapeExternal.empty)
     } else
       // TODO: Obtain stringFacet*
       visitShapeExpression(ctx.shapeExpression())
@@ -198,7 +198,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx: InlineShapeNotContext): Builder[ShapeExpr] = for {
     shapeAtom <- visitInlineShapeAtom(ctx.inlineShapeAtom())
   } yield if (isDefined(ctx.negation()))
-    ShapeNot(None, shapeAtom)
+    ShapeNot(None, shapeAtom,None,None)
   else
     shapeAtom
 
@@ -213,28 +213,29 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   private def mkShapeAnd(shapes: List[ShapeExpr], flatten: Boolean): ShapeExpr = {
    val zero = List[ShapeExpr]()
    def next(c: ShapeExpr, rs: List[ShapeExpr]): List[ShapeExpr] = c match {
-     case ShapeAnd(None,ss) => ss ++ rs
+     case sa: ShapeAnd => sa.shapeExprs ++ rs
      case _ => c :: rs
    }
    lazy val flattenShapes = shapes.foldRight(zero)(next)
-   mkShapeOp(if (flatten) flattenShapes else shapes, ShapeAnd)
+   mkShapeOp(if (flatten) flattenShapes else shapes, ShapeAnd.fromShapeExprs)
   }
 
   private def mkShapeOr(shapes: List[ShapeExpr], flatten: Boolean): ShapeExpr = {
     val zero = List[ShapeExpr]()
     def next(c: ShapeExpr, rs: List[ShapeExpr]): List[ShapeExpr] = c match {
-      case ShapeOr(None,ss) => ss ++ rs
+      case so: ShapeOr => so.shapeExprs ++ rs
       case _ => c :: rs
     }
     lazy val flattenShapes = shapes.foldRight(zero)(next)
-    mkShapeOp(if (flatten) flattenShapes else shapes,ShapeOr)
+    mkShapeOp(if (flatten) flattenShapes else shapes,ShapeOr.fromShapeExprs)
   }
 
 
   private def mkShapeOp(shapes: List[ShapeExpr],
-                        op: (Option[ShapeLabel], List[ShapeExpr]) => ShapeExpr): ShapeExpr = {
+                        op: List[ShapeExpr] => ShapeExpr
+                       ): ShapeExpr = {
     if (shapes.length == 1) shapes.head
-    else op(None, shapes)
+    else op(shapes)
   }
 
   override def visitShapeAnd(
@@ -258,7 +259,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx: ShapeNotContext): Builder[ShapeExpr] = for {
     shapeAtom <- visitShapeAtom(ctx.shapeAtom())
   } yield if (isDefined(ctx.negation()))
-    ShapeNot(None, shapeAtom)
+    ShapeNot(None, shapeAtom, None, None)
   else shapeAtom
 
   private def visitShapeAtom(ctx: ShapeAtomContext): Builder[ShapeExpr] = {
@@ -269,7 +270,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           sr <- visitOpt(visitShapeOrRef, s.shapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(None, List(nk, s))
+          case Some(s) => ShapeAnd(None, List(nk, s), None, None)
         }
 
       case s: ShapeAtomShapeOrRefContext =>
@@ -323,7 +324,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         } yield sr match {
           case None => nk
           case Some(s) => {
-            ShapeAnd(None, List(nk, s))
+            ShapeAnd(None, List(nk, s), None, None)
           }
         }
 
@@ -333,7 +334,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           nk <- visitOpt(visitNodeConstraint, s.nodeConstraint())
         } yield nk match {
           case None => sr
-          case Some(n) => ShapeAnd(None, List(sr, n))
+          case Some(n) => ShapeAnd(None, List(sr, n), None, None)
         }
 
       case s: InlineShapeAtomShapeExpressionContext =>
@@ -820,15 +821,15 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitShapeRef(ctx: ShapeRefContext): Builder[ShapeExpr] = ctx match {
     case _ if (isDefined(ctx.ATPNAME_NS())) => {
       val nameNS = ctx.ATPNAME_NS().getText().tail
-      resolve(nameNS).map(iri => ShapeRef(IRILabel(iri)))
+      resolve(nameNS).map(iri => ShapeRef(IRILabel(iri), None,None))
     }
     case _ if (isDefined(ctx.ATPNAME_LN())) => {
       val nameLN = ctx.ATPNAME_LN().getText().tail
-      resolve(nameLN).map(iri => ShapeRef(IRILabel(iri)))
+      resolve(nameLN).map(iri => ShapeRef(IRILabel(iri), None, None))
     }
     case _ if (isDefined(ctx.shapeExprLabel())) => for {
       lbl <- visitShapeExprLabel(ctx.shapeExprLabel())
-    } yield ShapeRef(lbl)
+    } yield ShapeRef(lbl,None,None)
   }
 
   override def visitShapeOrRef(ctx: ShapeOrRefContext): Builder[ShapeExpr] = ctx match {
@@ -852,13 +853,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitShapeDefinition(ctx: ShapeDefinitionContext): Builder[ShapeExpr] = {
     for {
-      qualifiers <- visitList(visitQualifier, ctx.qualifier())
-      optTripleExpr <- visitOpt(visitTripleExpression,ctx.tripleExpression())
-      semActs <- visitSemanticActions(ctx.semanticActions())
+      se <- visitInlineShapeDefinition(ctx.inlineShapeDefinition)
+      semActs <- visitList(visitSemanticAction,ctx.semanticAction())
       anns <- visitList(visitAnnotation, ctx.annotation())
-      // newTripleExpr <- addAnnotations(tripleExpr,anns)
-      shape <- makeShape(qualifiers, optTripleExpr, semActs,anns)
-    } yield shape
+    } yield se.addSemActs(semActs).addAnnotations(anns)
   }
 
   // TODO: Maybe remove the following method
@@ -897,7 +895,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       extra = extras,
       expression = tripleExpr,
       _extends = if (inheritList.isEmpty) None else Some(inheritList),
-      semActs = if (semActs.isEmpty) None else Some(semActs),
+      actions = if (semActs.isEmpty) None else Some(semActs),
       annotations = if (anns.isEmpty) None else Some(anns)
     )
     ok(shape)
@@ -1017,8 +1015,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       shapeExpr <- visitInlineShapeExpression(ctx.inlineShapeExpression())
       cardinality <- getCardinality(ctx.cardinality())
       // varDecl <- visitOpt(visitVariableDecl, ctx.variableDecl())
-      semActs <- visitSemanticActions(ctx.semanticActions())
       anns <- visitList(visitAnnotation, ctx.annotation())
+      semActs <- visitList(visitSemanticAction, ctx.semanticAction())
     } yield {
       TripleConstraint.
         emptyPred(predicate).copy(
@@ -1120,7 +1118,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       tripleExpr <- visitInnerTripleExpr(ctx.innerTripleExpr())
       cardinality <- getCardinality(ctx.cardinality())
       annotations <- visitList(visitAnnotation, ctx.annotation())
-      semActs <- visitSemanticActions(ctx.semanticActions())
+      semActs <- visitList(visitSemanticAction,ctx.semanticAction())
     } yield extendTripleExpr(tripleExpr, cardinality, annotations, semActs)
 
   def extendTripleExpr(

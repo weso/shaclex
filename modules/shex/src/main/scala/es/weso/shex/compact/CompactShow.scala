@@ -121,13 +121,13 @@ object CompactShow {
   private def shapeExprDoc(pm: PrefixMap)(se: ShapeExpr): Doc =
     se match {
       // TODO...review ids generation...
-      case ShapeOr(id, es) =>
+      case ShapeOr(id, es, actions, anns) =>
         idDoc(id, pm) :: space ::
           listDocIntersperse(es, shapeExprDoc(pm), keyword("OR"))
-      case ShapeAnd(id, es) =>
+      case ShapeAnd(id, es, actions, anns) =>
         idDoc(id, pm) :: space ::
           listDocIntersperse(es, shapeExprDoc(pm), keyword("AND"))
-      case ShapeNot(id, e) =>
+      case ShapeNot(id, e, acts, anns) =>
         idDoc(id, pm) :: space ::
           keyword("NOT") :: shapeExprDoc(pm)(e)
       case nc: NodeConstraint =>
@@ -136,9 +136,9 @@ object CompactShow {
       case s: Shape =>
         idDoc(s.id, pm) :: space ::
           shapeDoc(pm)(s)
-      case ShapeRef(r) =>
+      case ShapeRef(r, acts, anns) =>
         str("@") :: shapeLabelDoc(pm)(r)
-      case ShapeExternal(id) =>
+      case ShapeExternal(id, acts, anns) =>
         idDoc(id, pm) :: space ::
           str("EXTERNAL")
     }
@@ -248,7 +248,7 @@ object CompactShow {
         s.expression,
         (te: TripleExpr) =>
           text("{") :: newline :: tripleExprDoc(pm)(te) :: newline :: text("}") :: newline) ::
-        optDoc(s.semActs, semActsDoc(pm))
+        optDoc(s.actions, semActsDoc(pm))
   }
 
   private def extraDoc(pm: PrefixMap)(ls: List[IRI]): Doc =
