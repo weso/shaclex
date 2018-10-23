@@ -15,47 +15,30 @@ object Manifest {
   def empty: Manifest = Manifest(None, None, List(), List())
 }
 
-case class Entry(
-  node: RDFNode,
-  entryType: EntryType,
-  name: Option[String],
-  action: Option[ManifestAction],
-  result: Option[Result],
-  status: Status,
-  json: Option[IRI],
-  shex: Option[IRI],
-  ttl: Option[IRI],
-  specRef: Option[IRI]
-)
-
-object Entry {
-  def basic(node: RDFNode, status: Status, entryType: EntryType): Entry = Entry(node,entryType,None,None,None,status,None,None,None,None)
+abstract trait Entry {
+  def node: RDFNode
+  def entryType: IRI
+  def status: Status
+  def name: String
 }
 
+case class RepresentationTest(override val node: RDFNode,
+                              override val status: Status,
+                              override val name: String,
+                              json: IRI,
+                              shex: IRI,
+                              ttl: IRI) extends Entry {
+  override val entryType = sht_RepresentationTest
+}
 
-sealed trait EntryType {
-  def iri: IRI
-}
-final case object RepresentationTest extends EntryType {
-  override def iri = sht_RepresentationTest
-}
-final case object Validate extends EntryType {
-  override def iri = sht_Validate
-}
-final case object MatchNodeShape extends EntryType {
-  override def iri = sht_MatchNodeShape
-}
-final case object ValidationFailure extends EntryType {
-  override def iri = sht_ValidationFailure
-}
-final case object WellFormedSchema extends EntryType {
-  override def iri = sht_WellFormedSchema
-}
-final case object NonWellFormedSchema extends EntryType {
-  override def iri = sht_NonWellFormedSchema
-}
-final case object ConvertSchemaSyntax extends EntryType {
-  override def iri = sht_ConvertSchemaSyntax
+case class Validate(override val node: RDFNode,
+                    override val status: Status,
+                    override val name: String,
+                    action: ManifestAction,
+                    result: Result,
+                    specRef: Option[IRI]
+                   ) extends Entry {
+  override val entryType = sht_Validate
 }
 
 case class ManifestAction(

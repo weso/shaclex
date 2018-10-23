@@ -12,7 +12,6 @@ import es.weso.shex.implicits.eqShEx._
 import es.weso.utils.FileUtils._
 import io.circe.parser._
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-
 import scala.io._
 
 class CompareSchemasTest extends FunSpec with JsonTest with Matchers with EitherValues {
@@ -26,7 +25,7 @@ class CompareSchemasTest extends FunSpec with JsonTest with Matchers with Either
     getFilesFromFolderWithExt(schemasDir, "shex", ignoreFiles)
   }
 
-  describe("Parsing Schemas from ShEx") {
+  ignore("Parsing Schemas from ShEx") {
     for (file <- getCompactFiles(schemasFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString

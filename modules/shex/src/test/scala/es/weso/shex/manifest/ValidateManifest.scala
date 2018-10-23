@@ -15,7 +15,7 @@ import scala.util.{Either, Left, Right, Try}
 trait ValidateManifest extends FunSpec with Matchers with TryValues with OptionValues {
 
   def parseManifest(name: String,folder: String, parentFolder: String): Unit = {
-    describe(s"Should parse manifestTest $folder/$name") {
+    it(s"Should parse manifestTest $folder/$name") {
       println(s"ParseManifest: $name, folder: $folder, parentFolder: $parentFolder")
       val parentFolderURI = Try {Paths.get(parentFolder).normalize.toUri.toString }.getOrElse("")
       println(s"ParentFolderUri: $parentFolderURI")
@@ -44,33 +44,29 @@ trait ValidateManifest extends FunSpec with Matchers with TryValues with OptionV
     }
   }
 
-  def processEntry(e: Entry, name: String, manifestFolder: String): Unit = e.entryType match {
-    case RepresentationTest => {
+  def processEntry(e: Entry, name: String, manifestFolder: String): Unit = e match {
+    case r: RepresentationTest => {
       println(s"Entry: ${e}, name: $name")
       ()
     }
-    case Validate => {
-      e.action match {
-        case None => ()
-        case Some(a) => {
-          val r = for {
+    case v: Validate => {
+      val a = v.action
+      val r = for {
             strRdf            <- getContents("data", manifestFolder, a.data)
             strSchema         <- getContents("schema", manifestFolder, a.schema)
             strShapeMap       <- getContents("shapeMap", manifestFolder, a.shapeMap)
             strResultShapeMap <- getContents("resultShapeMap", manifestFolder, a.resultShapeMap)
           } yield {
             (strRdf, strSchema, strShapeMap, strResultShapeMap)
-          }
-          r.fold(
+       }
+      r.fold(
             e => info(s"Error: $e"),
             v => {
               val (strRdf, strSchema, strShapeMap, strResultShapeMap) = v
               shouldValidateWithShapeMap(strRdf, strSchema, strShapeMap, strResultShapeMap)
             }
           )
-        }
-      }
-    }
+       }
     case _ => fail(s"Unsupported entry type: ${e.entryType}")
   }
 

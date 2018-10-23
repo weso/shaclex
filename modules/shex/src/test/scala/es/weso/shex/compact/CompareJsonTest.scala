@@ -28,7 +28,8 @@ class CompareJsonTest extends FunSpec with JsonTest with Matchers with EitherVal
     getFilesFromFolderWithExt(schemasDir, "shex", ignoreFiles)
   }
 
-  describe("Parsing Schemas from ShEx") {
+  // We ignore this test because it is already executed in SchemasManifestTest which runs all the tests from the manifest file
+  ignore("Parsing Schemas from ShEx") {
     var failedNames = List[String]()
     for (file <- getCompactFiles(schemasFolder)) {
       it(s"Should read Schema from file ${file.getName}") {

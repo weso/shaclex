@@ -1189,41 +1189,37 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     te: TripleExpr,
     cardinality: Cardinality,
     anns: List[Annotation],
-    sActs: List[SemAct]): TripleExpr =
+    sActs: List[SemAct]): TripleExpr = {
     te match {
       case tc: TripleConstraint => tc.copy(
         optMin = cardinality._1,
         optMax = cardinality._2,
-        annotations =
-          if (anns.isEmpty) None
-          else Some(anns),
-        semActs =
-          if (sActs.isEmpty) None
-          else Some(sActs))
+        annotations = optListCombine(tc.annotations,anns),
+        semActs = optListCombine(tc.semActs,sActs))
       case eo: EachOf => eo.copy(
         optMin = cardinality._1,
         optMax = cardinality._2,
-        annotations =
-          if (anns.isEmpty) None
-          else Some(anns),
-        semActs =
-          if (sActs.isEmpty) None
-          else Some(sActs))
+        annotations = optListCombine(eo.annotations,anns),
+        semActs = optListCombine(eo.semActs,sActs))
       case so: OneOf => so.copy(
         optMin = cardinality._1,
         optMax = cardinality._2,
-        annotations =
-          if (anns.isEmpty) None
-          else Some(anns),
-        semActs =
-          if (sActs.isEmpty) None
-          else Some(sActs))
+        annotations = optListCombine(so.annotations,anns),
+        semActs = optListCombine(so.semActs,sActs))
       case i: Inclusion =>
         // TODO: Check how to extend include
         i
       case e: Expr =>
         // TODO: Check how to extend include
         e
+    }
+  }
+
+  def optListCombine[A](maybeAs: Option[List[A]], as: List[A]): Option[List[A]] =
+    maybeAs match {
+     case None => if (as.isEmpty) None
+                 else Some(as)
+     case Some(as1) => Some(as1 ++ as)
     }
 
   override def visitAnnotation(ctx: AnnotationContext): Builder[Annotation] = for {

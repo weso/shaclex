@@ -11,8 +11,7 @@ class RDF2ManifestSingleTest extends ValidateManifest {
   val shexFolderURI = Paths.get(shexFolder).normalize.toUri.toString
 
   describe("RDF2Manifest") {
-    parseManifest("manifest","basic",shexFolder)
+     parseManifest("manifest", "basic", shexFolder)
   }
-
 
 }
