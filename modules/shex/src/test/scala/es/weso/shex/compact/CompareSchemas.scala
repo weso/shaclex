@@ -45,13 +45,13 @@ object CompareSchemas {
 
   def compareShapeExprs(se1: ShapeExpr, se2: ShapeExpr): Boolean = {
     (se1, se2) match {
-      case (ShapeOr(id1, ss1), ShapeOr(id2, ss2))   => id1 == id2 && compareShapeExprLists(ss1, ss2)
-      case (ShapeAnd(id1, ss1), ShapeAnd(id2, ss2)) => id1 == id2 && compareShapeExprLists(ss1, ss2)
-      case (ShapeNot(id1, s1), ShapeNot(id2, s2))   => id1 == id2 && compareShapeExprs(s1, s2)
+      case (ShapeOr(id1, ss1,_,_), ShapeOr(id2, ss2,_,_))   => id1 == id2 && compareShapeExprLists(ss1, ss2)
+      case (ShapeAnd(id1, ss1,_,_), ShapeAnd(id2, ss2,_,_)) => id1 == id2 && compareShapeExprLists(ss1, ss2)
+      case (ShapeNot(id1, s1,_,_), ShapeNot(id2, s2,_,_))   => id1 == id2 && compareShapeExprs(s1, s2)
       case (n1: NodeConstraint, n2: NodeConstraint) => Eq[NodeConstraint].eqv(n1,n2)
       case (s1: Shape, s2: Shape)                   => compareShapes(s1, s2)
-      case (ShapeRef(i1), ShapeRef(i2))             => Eq[ShapeLabel].eqv(i1,i2)
-      case (ShapeExternal(id1), ShapeExternal(id2)) => id1 == id2
+      case (ShapeRef(i1,_,_), ShapeRef(i2,_,_))             => Eq[ShapeLabel].eqv(i1,i2)
+      case (ShapeExternal(id1,_,_), ShapeExternal(id2,_,_)) => id1 == id2
       case (_, _)                                   => false
     }
   }
@@ -64,7 +64,7 @@ object CompareSchemas {
         eqPrint(s1.isClosed,s2.isClosed) &&
         eqPrint(s1.expression, s2.expression) &&
         eqPrint(s1._extends, s2._extends) &&
-        eqPrint(s1.semActs, s2.semActs)
+        eqPrint(s1.actions, s2.actions)
     }
   }
 

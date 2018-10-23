@@ -4,6 +4,7 @@ import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.extend.Extend
 import es.weso.utils.EitherUtils._
+import es.weso.utils.OptionListUtils._
 
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
@@ -15,6 +16,8 @@ abstract sealed trait ShapeExpr {
   }
 
   def paths(schema: Schema): Either[String,List[Path]]
+  def addAnnotations(as: List[Annotation]): ShapeExpr
+  def addSemActs(as: List[SemAct]): ShapeExpr
 }
 
 object ShapeExpr {
@@ -23,24 +26,71 @@ object ShapeExpr {
   def fail: ShapeExpr = NodeConstraint.valueSet(List(), List())
 }
 
-case class ShapeOr(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
+case class ShapeOr(id: Option[ShapeLabel],
+                   shapeExprs: List[ShapeExpr],
+                   annotations: Option[List[Annotation]],
+                   actions: Option[List[SemAct]]
+                  ) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   override def paths(schema: Schema): Either[String,List[Path]] = sequence(shapeExprs.map(_.paths(schema))).map(_.flatten)
+
+  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): ShapeExpr = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
 }
 
-case class ShapeAnd(id: Option[ShapeLabel], shapeExprs: List[ShapeExpr]) extends ShapeExpr {
+object ShapeOr {
+  def fromShapeExprs(ses: List[ShapeExpr]): ShapeOr =
+    ShapeOr(None,ses,None,None)
+}
+
+case class ShapeAnd(id: Option[ShapeLabel],
+                    shapeExprs: List[ShapeExpr],
+                    annotations: Option[List[Annotation]],
+                    actions: Option[List[SemAct]]
+                   ) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   override def paths(schema: Schema): Either[String,List[Path]] = sequence(shapeExprs.map(_.paths(schema))).map(_.flatten)
 
+  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): ShapeExpr = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
 }
 
-case class ShapeNot(id: Option[ShapeLabel], shapeExpr: ShapeExpr) extends ShapeExpr {
+object ShapeAnd {
+  def fromShapeExprs(ses: List[ShapeExpr]): ShapeAnd =
+    ShapeAnd(None,ses,None,None)
+}
+
+case class ShapeNot(id: Option[ShapeLabel],
+                    shapeExpr: ShapeExpr,
+                    annotations: Option[List[Annotation]],
+                    actions: Option[List[SemAct]]
+                   ) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
-  override def paths(schema: Schema): Either[String,List[Path]] = shapeExpr.paths(schema)
+  override def paths(schema: Schema): Either[String,List[Path]] =
+    shapeExpr.paths(schema)
 
+  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): ShapeExpr = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
+}
+
+object ShapeNot {
+  def fromShapeExpr(se: ShapeExpr): ShapeNot =
+    ShapeNot(None,se,None,None)
 }
 
 case class NodeConstraint(
@@ -48,7 +98,9 @@ case class NodeConstraint(
                            nodeKind: Option[NodeKind],
                            datatype: Option[IRI],
                            xsFacets: List[XsFacet],
-                           values: Option[List[ValueSetValue]]
+                           values: Option[List[ValueSetValue]],
+                           annotations: Option[List[Annotation]],
+                           actions: Option[List[SemAct]]
                          ) extends ShapeExpr {
   override def addId(lbl: ShapeLabel) = {
     this.copy(id = Some(lbl))
@@ -56,6 +108,12 @@ case class NodeConstraint(
 
   override def paths(schema: Schema): Either[String,List[Path]] = Right(List())
 
+  override def addAnnotations(as: List[Annotation]): NodeConstraint = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): NodeConstraint = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
 }
 
 object NodeConstraint {
@@ -65,7 +123,10 @@ object NodeConstraint {
     nodeKind = None,
     datatype = None,
     xsFacets = List(),
-    values = None)
+    values = None,
+    annotations = None,
+    actions = None
+  )
 
   def nodeKind(nk: NodeKind, facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
@@ -78,19 +139,20 @@ object NodeConstraint {
       nodeKind = Some(nk),
       xsFacets = facets)
 
-  def datatype(
-                dt: IRI,
-                facets: List[XsFacet]): NodeConstraint =
+  def datatype(dt: IRI,
+               facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       datatype = Some(dt),
       xsFacets = facets)
 
-  def valueSet(
-                vs: List[ValueSetValue],
-                facets: List[XsFacet]): NodeConstraint =
+  def valueSet(vs: List[ValueSetValue],
+               facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       values = Some(vs),
       xsFacets = facets)
+
+  def xsFacets(facets: List[XsFacet]): NodeConstraint =
+    NodeConstraint.empty.copy(xsFacets = facets)
 }
 
 case class Shape(
@@ -100,8 +162,9 @@ case class Shape(
                   extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
                   expression: Option[TripleExpr],
                   _extends: Option[List[ShapeLabel]],
-                  semActs: Option[List[SemAct]],
-                  annotations: Option[List[Annotation]]) extends ShapeExpr with Extend {
+                  annotations: Option[List[Annotation]],
+                  actions: Option[List[SemAct]]
+                ) extends ShapeExpr with Extend {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
@@ -143,6 +206,12 @@ case class Shape(
     extendCheckingVisited(this, schema.getShape(_), extend, combine, expr)
   }
 
+  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): ShapeExpr = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
 }
 
 object Shape {
@@ -153,7 +222,7 @@ object Shape {
     extra = None,
     expression = None,
     _extends = None,
-    semActs = None,
+    actions = None,
     annotations = None
   )
 
@@ -168,7 +237,10 @@ object Shape {
   }
 }
 
-case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
+case class ShapeRef(reference: ShapeLabel,
+                    annotations: Option[List[Annotation]],
+                    actions: Option[List[SemAct]]
+                   ) extends ShapeExpr {
   def id = None
   def addId(lbl: ShapeLabel) = this
 
@@ -178,10 +250,30 @@ case class ShapeRef(reference: ShapeLabel) extends ShapeExpr {
       case Some(se) => se.paths(schema)
     }
 
+  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): ShapeExpr = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
 }
 
-case class ShapeExternal(id: Option[ShapeLabel]) extends ShapeExpr {
+case class ShapeExternal(id: Option[ShapeLabel],
+                         annotations: Option[List[Annotation]],
+                         actions: Option[List[SemAct]]
+                        ) extends ShapeExpr {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
   override def paths(schema: Schema): Either[String,List[Path]] = Right(List())
 
+  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
+    this.copy(annotations = maybeAddList(annotations, as))
+  }
+  override def addSemActs(as: List[SemAct]): ShapeExpr = {
+    this.copy(actions = maybeAddList(actions,as))
+  }
+
+}
+
+object ShapeExternal {
+  def empty: ShapeExternal = ShapeExternal(None,None,None)
 }

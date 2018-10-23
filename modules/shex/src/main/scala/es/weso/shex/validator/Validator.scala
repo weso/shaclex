@@ -176,12 +176,12 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
     s match {
-      case ShapeOr(_, ses) => checkOr(attempt, node, ses)
-      case ShapeAnd(_, ses) => checkAnd(attempt, node, ses)
-      case ShapeNot(_, s) => checkNot(attempt, node, s)
+      case so: ShapeOr => checkOr(attempt, node, so.shapeExprs)
+      case sa: ShapeAnd => checkAnd(attempt, node, sa.shapeExprs)
+      case sn: ShapeNot => checkNot(attempt, node, sn.shapeExpr)
       case nc: NodeConstraint => checkNodeConstraint(attempt, node, nc)
       case s: Shape => checkShape(attempt, node, s)
-      case ShapeRef(ref) => checkRef(attempt, node, ref)
+      case sr: ShapeRef => checkRef(attempt, node, sr.reference)
       case _: ShapeExternal => errStr(s"Not implemented ShapeExternal ${attempt.show}")
     }
   }
@@ -323,7 +323,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       typing <- {
         checkCandidates(attempt, bagChecker, cTable)(candidates)
       }
-      _ <- checkOptSemActs(s.semActs)
+      _ <- checkOptSemActs(s.actions)
     } yield {
       logger.debug(s"checkShape(attempt=${attempt.show},node=${node.show},shape=${s.show})=${typing.show}")
       typing

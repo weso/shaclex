@@ -39,37 +39,37 @@ case class RDF2Manifest(base: Option[IRI],
   def entries: RDFParser[Seq[Entry]] =
     parsePropertyList(mf_entries, entry)
 
-  def getEntryType(node: RDFNode): Either[String, EntryType] = {
-    node match {
-      case `sht_Validate` => Right(Validate)
-      case `sht_ValidationFailure` => Right(ValidationFailure)
-      case `sht_MatchNodeShape` => Right(MatchNodeShape)
-      case `sht_WellFormedSchema` => Right(WellFormedSchema)
-      case `sht_NonWellFormedSchema` => Right(NonWellFormedSchema)
-      case `sht_ConvertSchemaSyntax` => Right(ConvertSchemaSyntax)
-      case _ => Left("Unexpected entry type: " + node)
-    }
+  def representationTest: RDFParser[RepresentationTest] = { (n,rdf) =>
+    for {
+    name <- stringFromPredicate(mf_name)(n, rdf)
+    statusIri <- iriFromPredicate(mf_status)(n, rdf)
+    shex <- iriFromPredicate(sx_shex)(n, rdf)
+    ttl <- iriFromPredicate(sx_ttl)(n, rdf)
+    json <- iriFromPredicate(sx_json)(n, rdf)
+   } yield RepresentationTest(n,Status(statusIri),name,json,shex,ttl)
+  }
+
+  def validateTest: RDFParser[Validate] = { (n,rdf) =>
+    for {
+      name <- stringFromPredicate(mf_name)(n, rdf)
+      statusIri <- iriFromPredicate(mf_status)(n, rdf)
+      actionNode <- objectFromPredicate(mf_action)(n, rdf)
+      action <- action(actionNode, rdf)
+      resultNode <- objectFromPredicate(mf_result)(n, rdf)
+      result <- result(resultNode, rdf)
+      specRef <- optional(iriFromPredicate(sht_specRef))(n, rdf)
+    } yield Validate(n,Status(statusIri),name,action,result,specRef)
   }
 
   def entry: RDFParser[Entry] = { (n, rdf) =>
     for {
       entryTypeUri <- rdfType(n, rdf)
-      entryType <- getEntryType(entryTypeUri)
-      maybeName <- stringFromPredicateOptional(mf_name)(n, rdf)
-      actionNode <- objectFromPredicate(mf_action)(n, rdf)
-      action <- action(actionNode, rdf)
-      resultNode <- objectFromPredicate(mf_result)(n, rdf)
-      result <- result(resultNode, rdf)
-      statusIri <- iriFromPredicate(mf_status)(n, rdf)
-      specRef <- optional(iriFromPredicate(sht_specRef))(n, rdf)
-    } yield Entry(
-      node = n,
-      entryType = entryType,
-      name = maybeName,
-      action = action,
-      result = result,
-      status = Status(statusIri),
-      specRef = specRef)
+      entry <- entryTypeUri match {
+        case `sht_RepresentationTest` => representationTest(n,rdf)
+        case `sht_Validate` => validateTest(n,rdf)
+        case _ => parseFail(s"Unsupported entry type: $entryTypeUri")
+      }
+    } yield entry
   }
 
   def iriDataFormat2str(iri: IRI): Either[String, String] = {
@@ -101,7 +101,9 @@ case class RDF2Manifest(base: Option[IRI],
       triggerMode <- optional(iriFromPredicate(sht_triggerMode))(n, rdf)
       node <- optional(oneOfPredicates(Seq(sht_node, sht_focus)))(n, rdf)
       shape <- optional(iriFromPredicate(sht_shape))(n, rdf)
+      focus <- optional(iriFromPredicate(sht_focus))(n, rdf)
       shapeMap <- optional(iriFromPredicate(sht_shapeMap))(n, rdf)
+      resultShapeMap <- optional(iriFromPredicate(sht_resultShapeMap))(n, rdf)
     } yield ManifestAction(
       schema = schema,
       schemaFormat = schemaFormat,
@@ -111,7 +113,9 @@ case class RDF2Manifest(base: Option[IRI],
       schemaOutputFormat = schemaOutputFormat,
       node = node,
       shape = shape,
-      shapeMap = shapeMap
+      shapeMap = shapeMap,
+      focus = focus,
+      resultShapeMap = resultShapeMap
     )
   }
 

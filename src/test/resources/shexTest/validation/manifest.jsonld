@@ -179,7 +179,7 @@
           "trait": [
             "TriplePattern"
           ],
-          "comment": "PREFIX : <http://a.example/> <S1> { :p1 ., } on { <s1> <p1> <o1> }",
+          "comment": "<S1> { :p1 .; } on { <s1> <p1> <o1> }",
           "status": "mf:proposed"
         },
         {
@@ -217,16 +217,16 @@
           "status": "mf:proposed"
         },
         {
-          "@id": "#1dotNS2Comment_pass-noOthers",
+          "@id": "#1dotNS2SingleComment_pass-noOthers",
           "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1dotNS2Comment.shex",
+            "schema": "../schemas/1dotNS2SingleComment.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_Io1.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1dotNS2Comment_pass-noOthers",
+          "name": "1dotNS2SingleComment_pass-noOthers",
           "trait": [
             "TriplePattern"
           ],
@@ -234,16 +234,16 @@
           "status": "mf:proposed"
         },
         {
-          "@id": "#1dotLNexComment_pass-noOthers",
+          "@id": "#1dotLNexSingleComment_pass-noOthers",
           "@type": "sht:ValidationTest",
           "action": {
-            "schema": "../schemas/1dotLNexComment.shex",
+            "schema": "../schemas/1dotLNexSingleComment.shex",
             "shape": "http://a.example/S1",
             "data": "Is1_Ip1_Io1.ttl",
             "focus": "http://a.example/s1"
           },
           "extensionResults": [],
-          "name": "1dotLNexComment_pass-noOthers",
+          "name": "1dotLNexSingleComment_pass-noOthers",
           "trait": [
             "TriplePattern"
           ],
@@ -12359,6 +12359,204 @@
           "status": "mf:proposed"
         },
         {
+          "@id": "#1val1emptylanguageStem_passLAtfr",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStem.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStem_passLAtfr",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~] } on { <s1> <p1> 'septante'@fr }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStem_fail-literal",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStem.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_Lab.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStem_fail-literal",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~] } on { <s1> <p1> '' }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStem_fail-empty",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStem.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_L.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStem_fail-empty",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~] } on { <s1> <p1> '' }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStem_fail-integer",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStem.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_INT12345.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStem_fail-integer",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~] } on { <s1> <p1> 12345 }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguage3_passLAtfr",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguage3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguage3_passLAtfr",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguage3_failLAtfr-be",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguage3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr-be.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguage3_failLAtfr-be",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-be }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguage3_passLAtfr-be-fbcl",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguage3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr-be-fbcl.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguage3_passLAtfr-be-fbcl",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-be-fbcl }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguageStem3_LAtfr",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguageStem3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguageStem3_LAtfr",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguageStem3_failLAtfr-be",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguageStem3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr-be.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguageStem3_failLAtfr-be",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-be }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguageStem3_LAtfr-be-fbcl",
+          "@type": "sht:ValidationFailure",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguageStem3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfr-be-fbcl.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguageStem3_LAtfr-be-fbcl",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-be-fbcl }",
+          "status": "mf:proposed"
+        },
+        {
+          "@id": "#1val1emptylanguageStemMinuslanguageStem3_LAtfrc",
+          "@type": "sht:ValidationTest",
+          "action": {
+            "schema": "../schemas/1val1emptylanguageStemMinuslanguageStem3.shex",
+            "shape": "http://a.example/S1",
+            "data": "Is1_Ip1_LAtfrc.ttl",
+            "focus": "http://a.example/s1"
+          },
+          "extensionResults": [],
+          "name": "1val1emptylanguageStemMinuslanguageStem3_LAtfrc",
+          "trait": [
+            "Stem",
+            "ValueSet"
+          ],
+          "comment": "<S> { <p1> [@~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@frc }",
+          "status": "mf:proposed"
+        },
+        {
           "@id": "#1val1languageStem_passLAtfr",
           "@type": "sht:ValidationTest",
           "action": {
@@ -12481,7 +12679,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr }",
+          "comment": "<S> { <p1> [@fr~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr }",
           "status": "mf:proposed"
         },
         {
@@ -12499,7 +12697,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-FR }",
+          "comment": "<S> { <p1> [@fr~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-FR }",
           "status": "mf:proposed"
         },
         {
@@ -12535,7 +12733,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-be }",
+          "comment": "<S> { <p1> [@fr~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-be }",
           "status": "mf:proposed"
         },
         {
@@ -12571,7 +12769,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-cd }",
+          "comment": "<S> { <p1> [@fr~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-cd }",
           "status": "mf:proposed"
         },
         {
@@ -12589,7 +12787,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-ch }",
+          "comment": "<S> { <p1> [@fr~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-ch }",
           "status": "mf:proposed"
         },
         {
@@ -12607,7 +12805,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-be-fbcl }",
+          "comment": "<S> { <p1> [@fr~-@fr-be-@fr-cd-@fr-ch] } on { <s1> <p1> 'septante'@fr-be-fbcl }",
           "status": "mf:proposed"
         },
         {
@@ -12625,7 +12823,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr }",
           "status": "mf:proposed"
         },
         {
@@ -12643,7 +12841,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@frc }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@frc }",
           "status": "mf:proposed"
         },
         {
@@ -12661,7 +12859,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr-FR }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-FR }",
           "status": "mf:proposed"
         },
         {
@@ -12679,7 +12877,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr-be }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-be }",
           "status": "mf:proposed"
         },
         {
@@ -12697,7 +12895,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr-cd }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-cd }",
           "status": "mf:proposed"
         },
         {
@@ -12715,7 +12913,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr-ch }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-ch }",
           "status": "mf:proposed"
         },
         {
@@ -12733,7 +12931,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr-bel }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-bel }",
           "status": "mf:proposed"
         },
         {
@@ -12751,7 +12949,7 @@
             "Stem",
             "ValueSet"
           ],
-          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch] } on { <s1> <p1> 'septante'@fr-be-fbcl }",
+          "comment": "<S> { <p1> [@fr~-@fr-be~-@fr-cd~-@fr-ch~] } on { <s1> <p1> 'septante'@fr-be-fbcl }",
           "status": "mf:proposed"
         },
         {
@@ -12769,7 +12967,7 @@
             "EachOf-unvisited",
             "OneOf"
           ],
-          "comment": ":S1 {:p1 .|:p2 .,:p3 .} / { :s1 :p1 \"p1-0\" . }",
+          "comment": ":S1 {:p1 .|:p2 .; :p3 .} / { :s1 :p1 \"p1-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12787,7 +12985,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 {:p1 .|:p2 .,:p3 .} / { :s1 :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 {:p1 .|:p2 .; :p3 .} / { :s1 :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12805,7 +13003,7 @@
             "EachOf-unvisited",
             "OneOf"
           ],
-          "comment": ":S1 {:p1 .|:p2 .,:p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 {:p1 .|:p2 .; :p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12824,7 +13022,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 {:p1 .|:p2 .,:p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 {:p1 .|:p2 .; :p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12842,7 +13040,7 @@
             "EachOf-unvisited",
             "OneOf"
           ],
-          "comment": ":S1 {(:p1 .|(:p2 .,:p3 .))} / { :s1 :p1 \"p1-0\" . }",
+          "comment": ":S1 {(:p1 .|(:p2 .; :p3 .))} / { :s1 :p1 \"p1-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12860,7 +13058,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 {(:p1 .|(:p2 .,:p3 .))} / { :s1 :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 {(:p1 .|(:p2 .; :p3 .))} / { :s1 :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12878,7 +13076,7 @@
             "EachOf-unvisited",
             "OneOf"
           ],
-          "comment": ":S1 {(:p1 .|(:p2 .,:p3 .))} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 {(:p1 .|(:p2 .; :p3 .))} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12896,7 +13094,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 { ((:p1 .| :p2 .), :p3 .) } / { <x> :p1 \"p1-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 { ((:p1 .| :p2 .); :p3 .) } / { <x> :p1 \"p1-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12914,7 +13112,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 { ((:p1 .| :p2 .), :p3 .) } / { <x> :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 { ((:p1 .| :p2 .); :p3 .) } / { <x> :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12932,7 +13130,7 @@
             "EachOf-unvisited",
             "OneOf"
           ],
-          "comment": ":S1 { ((:p1 .| :p2 .), :p3 .) } / { <x> :p1 \"p1-0\" . }",
+          "comment": ":S1 { ((:p1 .| :p2 .); :p3 .) } / { <x> :p1 \"p1-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12950,7 +13148,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 { ((:p1 .| :p2 .), :p3 .) } / { <x> :p3 \"p3-0\" . }",
+          "comment": ":S1 { ((:p1 .| :p2 .); :p3 .) } / { <x> :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -12968,7 +13166,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 { ((:p1 .| :p2 .), :p3 .) } / { <x> :p1 \"p1-0\"; :p2 \"p2-0\" . }",
+          "comment": ":S1 { ((:p1 .| :p2 .); :p3 .) } / { <x> :p1 \"p1-0\"; :p2 \"p2-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -15657,7 +15855,7 @@
             "OneOf",
             "EachOf"
           ],
-          "comment": ":S1 EXTRA <p1> <p2> <p3> {:p1 .|:p2 .,:p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": ":S1 EXTRA <p1> <p2> <p3> {:p1 .|:p2 .; :p3 .} / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -15676,7 +15874,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "<S> EXTRA <p1> { <p0> . | <p1> [<o1>], <p2> .? } on { <s1> <p1> <o1> }",
+          "comment": "<S> EXTRA <p1> { <p0> . | <p1> [<o1>]; <p2> .? } on { <s1> <p1> <o1> }",
           "status": "mf:proposed"
         },
         {
@@ -15695,7 +15893,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "<S> EXTRA <p1> { <p0> . | <p1> [<o1>], <p2> .? } on { <s1> <p1> <o1>, <o2> }",
+          "comment": "<S> EXTRA <p1> { <p0> . | <p1> [<o1>]; <p2> .? } on { <s1> <p1> <o1>, <o2> }",
           "status": "mf:proposed"
         },
         {
@@ -15750,7 +15948,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "<S> EXTRA <p1> <p2> <p3> { <p1> [<o1>], <p2> [<o2>], <p3> [<o3>] } on { <s> <p1> <o1>; <p2> <o2>; <p3> <o3> }",
+          "comment": "<S> EXTRA <p1> <p2> <p3> { <p1> [<o1>]; <p2> [<o2>]; <p3> [<o3>] } on { <s> <p1> <o1>; <p2> <o2>; <p3> <o3> }",
           "status": "mf:proposed"
         },
         {
@@ -15769,7 +15967,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "<S> EXTRA <p1> EXTRA <p2> EXTRA <p3> { <p1> [<o1>], <p2> [<o2>], <p3> [<o3>] } on { <s> <p1> <o1>; <p2> <o2>; <p3> <o3> }",
+          "comment": "<S> EXTRA <p1> EXTRA <p2> EXTRA <p3> { <p1> [<o1>]; <p2> [<o2>]; <p3> [<o3>] } on { <s> <p1> <o1>; <p2> <o2>; <p3> <o3> }",
           "status": "mf:proposed"
         },
         {
@@ -15788,7 +15986,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "PREFIX ex: <http://a.example/> <S> EXTRA ex:p1 ex:p2 ex:p3 { <p1> [<o1>], <p2> [<o2>], <p3> [<o3>] } on { <s> <p1> <o1>; <p2> <o2>; <p3> <o3> }",
+          "comment": "PREFIX ex: <http://a.example/> <S> EXTRA ex:p1 ex:p2 ex:p3 { <p1> [<o1>]; <p2> [<o2>]; <p3> [<o3>] } on { <s> <p1> <o1>; <p2> <o2>; <p3> <o3> }",
           "status": "mf:proposed"
         },
         {
@@ -15807,7 +16005,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "<S> EXTRA <p1> <p2> <p3> { <p1> [<o1>], <p2> [<o2>], <p3> [<o3>] } on { <s> <p1> <o1>, <o1a>; <p2> <o2>, <o2a>; <p3> <o3>, <o3a> }",
+          "comment": "<S> EXTRA <p1> <p2> <p3> { <p1> [<o1>]; <p2> [<o2>]; <p3> [<o3>] } on { <s> <p1> <o1>, <o1a>; <p2> <o2>, <o2a>; <p3> <o3>, <o3a> }",
           "status": "mf:proposed"
         },
         {
@@ -15826,7 +16024,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "<S> EXTRA <p1> EXTRA <p2> EXTRA <p3> { <p1> [<o1>], <p2> [<o2>], <p3> [<o3>] } on { <s> <p1> <o1>, <o1a>; <p2> <o2>, <o2a>; <p3> <o3>, <o3a> }",
+          "comment": "<S> EXTRA <p1> EXTRA <p2> EXTRA <p3> { <p1> [<o1>]; <p2> [<o2>]; <p3> [<o3>] } on { <s> <p1> <o1>, <o1a>; <p2> <o2>, <o2a>; <p3> <o3>, <o3a> }",
           "status": "mf:proposed"
         },
         {
@@ -15845,7 +16043,7 @@
             "IriEquivalence",
             "EachOf"
           ],
-          "comment": "PREFIX ex: <http://a.example/> <S> EXTRA ex:p1 ex:p2 ex:p3 { <p1> [<o1>], <p2> [<o2>], <p3> [<o3>] } on { <s> <p1> <o1>, <o1a>; <p2> <o2>, <o2a>; <p3> <o3>, <o3a> }",
+          "comment": "PREFIX ex: <http://a.example/> <S> EXTRA ex:p1 ex:p2 ex:p3 { <p1> [<o1>]; <p2> [<o2>]; <p3> [<o3>] } on { <s> <p1> <o1>, <o1a>; <p2> <o2>, <o2a>; <p3> <o3>, <o3a> }",
           "status": "mf:proposed"
         },
         {
@@ -16007,7 +16205,7 @@
             "Include",
             "EachOf"
           ],
-          "comment": "<S1> { &<S2>, <p1> . } <S2> { <p2> . } on { <n1> <p1> \"X\" ; <p2> \"Y\" }",
+          "comment": "<S1> { &<S2>; <p1> . } <S2> { <p2> . } on { <n1> <p1> \"X\" ; <p2> \"Y\" }",
           "status": "mf:proposed"
         },
         {
@@ -16025,7 +16223,7 @@
             "Include",
             "EachOf"
           ],
-          "comment": "<S1> { <p1> ., &<S2> } <S2> { <p2> . } on { <n1> <p1> \"X\" ; <p2> \"Y\" }",
+          "comment": "<S1> { <p1> .; &<S2> } <S2> { <p2> . } on { <n1> <p1> \"X\" ; <p2> \"Y\" }",
           "status": "mf:proposed"
         },
         {
@@ -16538,7 +16736,7 @@
             "SemanticAction",
             "EachOf"
           ],
-          "comment": "<S1> { ( <p1> ., <p2> ., <p3> . ) %<Test/>{ print(\"group semAct\") %} } / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
+          "comment": "<S1> { ( <p1> .; <p2> .; <p3> . ) %<Test/>{ print(\"group semAct\") %} } / { :s1 :p1 \"p1-0\"; :p2 \"p2-0\"; :p3 \"p3-0\" . }",
           "status": "mf:proposed"
         },
         {
@@ -18188,7 +18386,7 @@
           "trait": [
             "EachOf"
           ],
-          "comment": "<S> { :a @<T1>*, (:a @<T2>+ | :b int), :b} <T1>{:b @<T3>} <T2>{:b @<T4>} <T3>{:c .} <T4>{:d .}",
+          "comment": "<S> { :a @<T1>*; (:a @<T2>+ | :b int); :b .} <T1>{:b @<T3>} <T2>{:b @<T4>} <T3>{:c .} <T4>{:d .}",
           "status": "mf:proposed"
         },
         {
@@ -18206,7 +18404,7 @@
             "Exhaustive",
             "EachOf"
           ],
-          "comment": "<S> { :a .*, (:a .+ | :a .), :a . } / { <x> :a 1, 3 }",
+          "comment": "<S> { :a .*; (:a .+ | :a .); :a . } / { <x> :a 1, 3 }",
           "status": "mf:proposed"
         },
         {
@@ -18224,7 +18422,7 @@
             "Greedy",
             "EachOf"
           ],
-          "comment": "<S> { :a .*, (:a .+ | :a .), :a . } / { <x> :a 1, 3 } Greedy",
+          "comment": "<S> { :a .*; (:a .+ | :a .); :a . } / { <x> :a 1, 3 } Greedy",
           "status": "mf:proposed"
         },
         {
@@ -18241,7 +18439,7 @@
           "trait": [
             "EachOf"
           ],
-          "comment": "<S> { :a [1], (:a [2]+ | :a [3]), :a [4]* } / { <x> :a 1, 3 }",
+          "comment": "<S> { :a [1]; (:a [2]+ | :a [3]); :a [4]* } / { <x> :a 1, 3 }",
           "status": "mf:proposed"
         },
         {
@@ -18258,7 +18456,7 @@
           "trait": [
             "EachOf"
           ],
-          "comment": "<S> { ( :a ., :b . )?, :c . } on { <x> :c 1 }",
+          "comment": "<S> { ( :a .; :b . )?; :c . } on { <x> :c 1 }",
           "status": "mf:proposed"
         },
         {
@@ -18275,7 +18473,7 @@
           "trait": [
             "EachOf"
           ],
-          "comment": "<S> { ( :a ., :b . ){2,5}, :c . }",
+          "comment": "<S> { ( :a .; :b . ){2,5}; :c . }",
           "status": "mf:proposed"
         },
         {
@@ -18309,7 +18507,7 @@
           "trait": [
             "EachOf"
           ],
-          "comment": "<S1> {:a @<P>*, :a @<T>} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
+          "comment": "<S1> {:a @<P>*; :a @<T>} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
           "status": "mf:proposed"
         },
         {
@@ -18327,7 +18525,7 @@
             "Greedy",
             "EachOf"
           ],
-          "comment": "<S1> {:a @<P>*, :a @<T>} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> } Greedy",
+          "comment": "<S1> {:a @<P>*; :a @<T>} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> } Greedy",
           "status": "mf:proposed"
         },
         {
@@ -18345,7 +18543,7 @@
             "Exhaustive",
             "EachOf"
           ],
-          "comment": "<S2> {:a @<P>, :a @<T>*} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
+          "comment": "<S2> {:a @<P>; :a @<T>*} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
           "status": "mf:proposed"
         },
         {
@@ -18363,7 +18561,7 @@
             "Greedy",
             "EachOf"
           ],
-          "comment": "<S2> {:a @<P>, :a @<T>*} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> } Greedy",
+          "comment": "<S2> {:a @<P>; :a @<T>*} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> } Greedy",
           "status": "mf:proposed"
         },
         {
@@ -18381,7 +18579,7 @@
             "Greedy",
             "EachOf"
           ],
-          "comment": "<S2> {:a @<T>*, :a @<P>} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
+          "comment": "<S2> {:a @<T>*; :a @<P>} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
           "status": "mf:proposed"
         },
         {
@@ -18398,7 +18596,7 @@
           "trait": [
             "EachOf"
           ],
-          "comment": "<S3> {:a @<P>*, :a @<T>*} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
+          "comment": "<S3> {:a @<P>*; :a @<T>*} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
           "status": "mf:proposed"
         },
         {
@@ -18416,7 +18614,7 @@
             "Exhaustive",
             "EachOf"
           ],
-          "comment": "<S4> {:a @<P>{2}, :a @<T>{2}} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
+          "comment": "<S4> {:a @<P>{2}; :a @<T>{2}} / { <n> :a <pt1>,  <pt2>,  <p>,  <t> }",
           "status": "mf:proposed"
         },
         {
@@ -18450,7 +18648,7 @@
           "trait": [
             "ErrorReport"
           ],
-          "comment": "<S> { <p1> ., <p2> . } on { <s1> <p1> <o1> }",
+          "comment": "<S> { <p1> .; <p2> . } on { <s1> <p1> <o1> }",
           "status": "mf:proposed"
         },
         {
@@ -18555,7 +18753,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I23 <S1> { <p1> ., <p2> @<S2>? } | <S2> { <p3> @<S3> } <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
+          "comment": "I23 <S1> { <p1> .; <p2> @<S2>? } | <S2> { <p3> @<S3> } <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
           "status": "mf:proposed",
           "result": "3circRefPlus1_pass-open.val"
         },
@@ -18573,7 +18771,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I23 <S1> { <p1> ., <p2> @<S2>? } | <S2> { <p3> @<S3> } <S3> { <p4> @<S1> } on { <n1> <p1> <n2> }",
+          "comment": "I23 <S1> { <p1> .; <p2> @<S2>? } | <S2> { <p3> @<S3> } <S3> { <p4> @<S1> } on { <n1> <p1> <n2> }",
           "status": "mf:proposed"
         },
         {
@@ -18590,7 +18788,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I2 <S1> { <p1> ., <p2> @<S2>? } | I3 <S2> { <p3> @<S3> } | <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
+          "comment": "I2 <S1> { <p1> .; <p2> @<S2>? } | I3 <S2> { <p3> @<S3> } | <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
           "status": "mf:proposed",
           "result": "3circRefPlus1_pass-open.val"
         },
@@ -18608,7 +18806,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I2 <S3> { <p4> @<S1> } | <S1> { <p1> ., <p2> @<S2>? } <S2> { <p3> @<S3> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
+          "comment": "I2 <S3> { <p4> @<S1> } | <S1> { <p1> .; <p2> @<S2>? } <S2> { <p3> @<S3> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
           "status": "mf:proposed",
           "result": "3circRefPlus1_pass-open.val"
         },
@@ -18626,7 +18824,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I1 <S1> { <p1> ., <p2> @<S2>? } <S2> { <p3> @<S3> } <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
+          "comment": "I1 <S1> { <p1> .; <p2> @<S2>? } <S2> { <p3> @<S3> } <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
           "status": "mf:proposed",
           "result": "3circRefPlus1_pass-open.val"
         },
@@ -18644,7 +18842,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I2 <S1> { <p1> ., <p2> @<S2>? } | I3 <S2> { <p3> @<S3> } | I1 <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
+          "comment": "I2 <S1> { <p1> .; <p2> @<S2>? } | I3 <S2> { <p3> @<S3> } | I1 <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
           "status": "mf:proposed",
           "result": "3circRefPlus1_pass-open.val"
         },
@@ -18662,7 +18860,7 @@
           "trait": [
             "Import"
           ],
-          "comment": "I2 I3 <S1> { <p1> ., <p2> @<S2>? } | I3 <S2> { <p3> @<S3> } | <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
+          "comment": "I2 I3 <S1> { <p1> .; <p2> @<S2>? } | I3 <S2> { <p3> @<S3> } | <S3> { <p4> @<S1> } on { <n1> <p1> \"X\" ; <p2> <n2> . <n2> <p3> <n3> . <n3> <p4> <n5> . <n5> <p1> \"X\" }",
           "status": "mf:proposed",
           "result": "3circRefPlus1_pass-open.val"
         },
@@ -18679,7 +18877,8 @@
           "name": "1valExprRef-IV1_fail-lit-short",
           "trait": [
             "ValueReference",
-            "LengthFacet"
+            "LengthFacet",
+            "Import"
           ],
           "comment": "<vc1> = LITERAL MINLENGTH 5 <S1> { <p1> <vc1> } on { <s1> <p1> \"abcd\" }",
           "status": "mf:proposed"
@@ -18697,7 +18896,8 @@
           "name": "1valExprRef-IV1_pass-lit-equal",
           "trait": [
             "ValueReference",
-            "LengthFacet"
+            "LengthFacet",
+            "Import"
           ],
           "comment": "<vc1> = LITERAL MINLENGTH 5 <S1> { <p1> <vc1> } on { <s1> <p1> \"abcde\" }",
           "status": "mf:proposed"
@@ -18715,7 +18915,8 @@
           "name": "1valExprRefbnode-IV1_fail-lit-short",
           "trait": [
             "ValueReference",
-            "LengthFacet"
+            "LengthFacet",
+            "Import"
           ],
           "comment": "_:vc1 = LITERAL MINLENGTH 5 <S1> { <p1> _:vc1 } on { <s1> <p1> \"abcd\" }",
           "status": "mf:proposed"
@@ -18733,7 +18934,8 @@
           "name": "1valExprRefbnode-IV1_pass-lit-equal",
           "trait": [
             "ValueReference",
-            "LengthFacet"
+            "LengthFacet",
+            "Import"
           ],
           "comment": "_:vc1 = LITERAL MINLENGTH 5 <S1> { <p1> _:vc1 } on { <s1> <p1> \"abcde\" }",
           "status": "mf:proposed"
@@ -18751,9 +18953,10 @@
           "name": "2EachInclude1-IS2_pass",
           "trait": [
             "Include",
-            "EachOf"
+            "EachOf",
+            "Import"
           ],
-          "comment": "I2 <S1> { &<S2>, <p1> . } on { <n1> <p1> \"X\" ; <p2> \"Y\" }",
+          "comment": "I2 <S1> { &<S2>; <p1> . } on { <n1> <p1> \"X\" ; <p2> \"Y\" }",
           "status": "mf:proposed"
         },
         {

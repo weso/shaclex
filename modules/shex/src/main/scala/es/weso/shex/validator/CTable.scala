@@ -29,7 +29,7 @@ object Table extends LazyLogging {
     private[validator] def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
       constraints.get(cref).map(ce => ce match {
         case Pos(se) => se
-        case Neg(se) => ShapeNot(None, se)
+        case Neg(se) => ShapeNot.fromShapeExpr(se)
       })
     }
 
@@ -82,7 +82,7 @@ object Table extends LazyLogging {
     private[validator] def extendWithExtras(pair: ResultPair, te: TripleExpr, extras: List[IRI]): ResultPair = {
       val zero: ResultPair = pair
       def combine(current: ResultPair, extra: IRI): ResultPair = {
-        val s: ShapeExpr = ShapeNot(None,ShapeOr(None,appearances(extra, te)))
+        val s: ShapeExpr = ShapeNot.fromShapeExpr(ShapeOr.fromShapeExprs(appearances(extra, te)))
         val (table,rbe) = current
         val (newTable,cref) = table.addConstraint(Direct(extra),Pos(s))
         val newRbe = And(rbe,Symbol(cref,0,Unbounded))

@@ -6,12 +6,13 @@ object ManifestPrefixes {
 
   lazy val mf = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
   lazy val qt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-query#")
-  lazy val sht = IRI("http://www.w3.org/ns/shacl-test#")
+  lazy val sht = IRI("http://www.w3.org/ns/shacl/test-suite#")
   lazy val dc = IRI("http://purl.org/dc/elements/1.1/")
   lazy val dawgt = IRI("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
   lazy val rdfs = IRI("http://www.w3.org/2000/01/rdf-schema#")
   lazy val rdf = IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
   lazy val sh = IRI("http://www.w3.org/ns/shacl#")
+  lazy val sx = IRI("https://shexspec.github.io/shexTest/ns#")
 
   lazy val mf_Manifest = mf.add("Manifest")
   lazy val mf_entries = mf.add("entries")
@@ -54,11 +55,16 @@ object ManifestPrefixes {
   lazy val sht_Valid = sht + "Valid"
   lazy val sht_NotValid = sht + "NotValid"
   lazy val sht_Validate = sht.add("Validate")
+  lazy val sht_RepresentationTest = sht.add("RepresentationTest")
   lazy val sht_ValidationTest = sht.add("ValidationTest")
   lazy val sht_ValidationFailure = sht.add("ValidationFailure")
   lazy val sht_shapeMap = sht + "shapeMap"
   lazy val sht_resultShapeMap = sht + "resultShapeMap"
   lazy val sht_ResultShapeMap = sht + "ResultShapeMap"
+
+  lazy val sx_shex = sx + "shex"
+  lazy val sx_json = sx + "json"
+  lazy val sx_ttl = sx + "ttl"
 
   lazy val sht_WellFormedSchema = sht.add("WellFormedSchema")
   lazy val sht_NonWellFormedSchema = sht.add("NonWellFormedSchema")

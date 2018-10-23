@@ -80,11 +80,11 @@ object Spec extends LazyLogging {
     logInfo(s"satisfies(${n.show},${se.show})?",1)
     val r = se match {
       case nc: NodeConstraint => satisfies2(n, nc)
-      case ShapeAnd(_,ses) => satisfyAll(ses.map(satisfies(n,_)))
-      case ShapeOr(_,ses) => satisfySome(ses.map(satisfies(n,_)))
-      case ShapeNot(_,se) => satisfyNot(satisfies(n,se))
-      case ShapeRef(lbl) => satisfyShapeRef(n,lbl)
-      case ShapeExternal(id) => unimplemented(s"ShapeExpternal($id)")
+      case ShapeAnd(_,ses,_,_) => satisfyAll(ses.map(satisfies(n,_)))
+      case ShapeOr(_,ses,_,_) => satisfySome(ses.map(satisfies(n,_)))
+      case ShapeNot(_,se,_,_) => satisfyNot(satisfies(n,se))
+      case ShapeRef(lbl,_,_) => satisfyShapeRef(n,lbl)
+      case ShapeExternal(id,_,_) => unimplemented(s"ShapeExpternal($id)")
       case s: Shape => satisfyShape(n,s)
     }
     for {

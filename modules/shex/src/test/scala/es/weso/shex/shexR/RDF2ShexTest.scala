@@ -181,7 +181,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
       val te: TripleExpr = TripleConstraint.valueExpr(p, nc).addId(tc)
       val se1: ShapeExpr = Shape.expr(te).addId(expr1)
       val se2: ShapeExpr = NodeConstraint.nodeKind(IRIKind, List()).addId(expr2)
-      val shape = ShapeAnd(Some(user), List(se1, se2))
+      val shape = ShapeAnd(Some(user), List(se1, se2),None,None)
 
       result match {
         case Right(schema) => schema.shapes should be(Some(List(shape)))

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* genManifest - tool to generate manifestTest.ttl for syntax and structure tests
+/* genManifest - tool to generate manifest.ttl for syntax and structure tests
  * install and run:
 
 git clone git@github.com:shexSpec/shexTest.git
@@ -14,7 +14,7 @@ cd negativeSyntax/
 // Parse arguments
 var args = process.argv.slice(2);
 if (args > 1 || args.indexOf("-help") !== -1 || args.indexOf("--help") !== -1) {
-  console.error('usage: genManifest TestClass > manifestTest.ttl');
+  console.error('usage: genManifest TestClass > manifest.ttl');
   process.exit(1);
 }
 
@@ -31,10 +31,10 @@ var basePath = "https://raw.githubusercontent.com/shexSpec/shexTest/master/";
 var dirPath = basePath + testDir + '/';
 
 // Output preamble
-console.log('@base <https://raw.githubusercontent.com/shexSpec/shexTest/master/' + testDir + '/manifestTest> .\n\
+console.log('@base <https://raw.githubusercontent.com/shexSpec/shexTest/master/' + testDir + '/manifest> .\n\
 @prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n\
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .\n\
-@prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifestTest#> .\n\
+@prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .\n\
 @prefix sht:    <http://www.w3.org/ns/shacl/test-suite#> .\n\
 @prefix sx:     <https://shexspec.github.io/shexTest/ns#> .\n\
 \n\

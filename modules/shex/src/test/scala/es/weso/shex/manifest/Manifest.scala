@@ -1,5 +1,7 @@
 package es.weso.shex.manifest
 
+import java.io.File
+
 import es.weso.rdf.nodes._
 import ManifestPrefixes._
 
@@ -13,35 +15,30 @@ object Manifest {
   def empty: Manifest = Manifest(None, None, List(), List())
 }
 
-case class Entry(
-  node: RDFNode,
-  entryType: EntryType,
-  name: Option[String],
-  action: ManifestAction,
-  result: Result,
-  status: Status,
-  specRef: Option[IRI])
+abstract trait Entry {
+  def node: RDFNode
+  def entryType: IRI
+  def status: Status
+  def name: String
+}
 
-sealed trait EntryType {
-  def iri: IRI
+case class RepresentationTest(override val node: RDFNode,
+                              override val status: Status,
+                              override val name: String,
+                              json: IRI,
+                              shex: IRI,
+                              ttl: IRI) extends Entry {
+  override val entryType = sht_RepresentationTest
 }
-final case object Validate extends EntryType {
-  override def iri = sht_Validate
-}
-final case object MatchNodeShape extends EntryType {
-  override def iri = sht_MatchNodeShape
-}
-final case object ValidationFailure extends EntryType {
-  override def iri = sht_ValidationFailure
-}
-final case object WellFormedSchema extends EntryType {
-  override def iri = sht_WellFormedSchema
-}
-final case object NonWellFormedSchema extends EntryType {
-  override def iri = sht_NonWellFormedSchema
-}
-final case object ConvertSchemaSyntax extends EntryType {
-  override def iri = sht_ConvertSchemaSyntax
+
+case class Validate(override val node: RDFNode,
+                    override val status: Status,
+                    override val name: String,
+                    action: ManifestAction,
+                    result: Result,
+                    specRef: Option[IRI]
+                   ) extends Entry {
+  override val entryType = sht_Validate
 }
 
 case class ManifestAction(
@@ -53,7 +50,9 @@ case class ManifestAction(
   triggerMode: Option[IRI],
   node: Option[IRI],
   shape: Option[IRI],
-  shapeMap: Option[IRI]
+  shapeMap: Option[IRI],
+  resultShapeMap: Option[IRI],
+  focus: Option[IRI],
   ) {
   def setSchema(iri: IRI): ManifestAction = {
     this.copy(schema = Some(iri))
@@ -76,7 +75,9 @@ object ManifestAction {
       triggerMode = None,
       node = None,
       shape = None,
-      shapeMap = None
+      shapeMap = None,
+      focus = None,
+      resultShapeMap = None
     )
   }
 }

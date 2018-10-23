@@ -25,20 +25,20 @@ object showShEx {
 
   implicit lazy val showShapeExpr: Show[ShapeExpr] = new Show[ShapeExpr] {
     final def show(a: ShapeExpr): String = a match {
-      case ShapeOr(id, shapes) => s"Or(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
-      case ShapeAnd(id, shapes) => s"And(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
-      case ShapeNot(id, shape) => s"Not(${optShow(id)}, ${shape.show})"
+      case ShapeOr(id, shapes,_,_) => s"Or(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
+      case ShapeAnd(id, shapes,_,_) => s"And(${optShow(id)}, ${shapes.map(_.show).mkString(",")})"
+      case ShapeNot(id, shape,_,_) => s"Not(${optShow(id)}, ${shape.show})"
       case s: Shape => s.show
       case nc: NodeConstraint => nc.show
-      case ShapeRef(r) => s"ShapeRef(${r.show})"
-      case ShapeExternal(id) => s"ShapeExternal(${optShow(id)}"
+      case ShapeRef(r,_,_) => s"ShapeRef(${r.show})"
+      case ShapeExternal(id,_,_) => s"ShapeExternal(${optShow(id)}"
     }
   }
 
   implicit lazy val showShape: Show[Shape] = new Show[Shape] {
     final def show(a: Shape): String = a match {
       case Shape(None,None,None,None,None,None,None,None) => "."
-      case _ => s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a._extends)}, ${optShow(a.semActs)})"
+      case _ => s"Shape(${optShow(a.id)}, ${optShow(a.virtual)}, ${optShow(a.closed)}, ${optShow(a.extra)}, ${optShow(a.expression)}, ${optShow(a._extends)}, ${optShow(a.actions)})"
     }
   }
 

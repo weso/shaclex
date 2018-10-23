@@ -114,7 +114,7 @@ object Shacl2ShEx {
           }
           case n if (n > 1) =>
            // addExpression(se, shex.EachOf(None,ps,None,None,None,None))
-          shex.ShapeAnd(None, ps)
+          shex.ShapeAnd(None, ps,None,None)
         }
       se2 <- addId(se1,id)
     } yield se2
@@ -176,7 +176,7 @@ object Shacl2ShEx {
     components <- cnvComponents(cs)
   } yield components length match {
     case 1 => Some(components.head)
-    case n if (n > 1) => Some(shex.ShapeAnd(None,components.reverse))
+    case n if (n > 1) => Some(shex.ShapeAnd(None,components.reverse, None,None))
     case 0 => None
   }
 
@@ -228,9 +228,9 @@ object Shacl2ShEx {
     case shacl.IRIKind => ok(shexIri)
     case shacl.BlankNodeKind => ok(shexBNode)
     case shacl.LiteralKind => ok(shexLiteral)
-    case shacl.BlankNodeOrIRI => ok(shex.ShapeOr(None,List(shexBNode,shexIri)))
-    case shacl.BlankNodeOrLiteral => ok(shex.ShapeOr(None,List(shexBNode,shexLiteral)))
-    case shacl.IRIOrLiteral => ok(shex.ShapeOr(None,List(shexIri,shexLiteral)))
+    case shacl.BlankNodeOrIRI => ok(shex.ShapeOr.fromShapeExprs(List(shexBNode,shexIri)))
+    case shacl.BlankNodeOrLiteral => ok(shex.ShapeOr.fromShapeExprs(List(shexBNode,shexLiteral)))
+    case shacl.IRIOrLiteral => ok(shex.ShapeOr.fromShapeExprs(List(shexIri,shexLiteral)))
   }
 
   private def cnvDatatype(dt: shacl.Datatype): Result[shex.ShapeExpr] = {

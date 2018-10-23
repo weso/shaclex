@@ -36,49 +36,63 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
   private def shapeExpr(e: ShapeExpr): RDFSaver[RDFNode] = e match {
 
-    case ShapeAnd(id, shapeExprs) => for {
-      node <- mkId(id)
+    case sa: ShapeAnd => for {
+      node <- mkId(sa.id)
       _ <- addTriple(node, rdf_type, sx_ShapeAnd)
-      _ <- addListContent(shapeExprs, node, sx_expressions, shapeExpr)
+      _ <- addListContent(sa.shapeExprs, node, sx_expressions, shapeExpr)
+      _ <- maybeAddListContent(sa.actions, node, sx_semActs, semAct)
+      _ <- maybeAddStarContent(sa.annotations, node, sx_annotation, annotation)
     } yield node
 
-    case ShapeOr(id, shapeExprs) => for {
-      node <- mkId(id)
+    case so: ShapeOr => for {
+      node <- mkId(so.id)
       _ <- addTriple(node, rdf_type, sx_ShapeOr)
-      _ <- addListContent(shapeExprs, node, sx_expressions, shapeExpr)
+      _ <- addListContent(so.shapeExprs, node, sx_expressions, shapeExpr)
+      _ <- maybeAddListContent(so.actions, node, sx_semActs, semAct)
+      _ <- maybeAddStarContent(so.annotations, node, sx_annotation, annotation)
     } yield node
 
-    case ShapeNot(id, se) => for {
-      node <- mkId(id)
+    case sn: ShapeNot => for {
+      node <- mkId(sn.id)
       _ <- addTriple(node, rdf_type, sx_ShapeNot)
-      _ <- addContent(se, node, sx_expression, shapeExpr)
+      _ <- addContent(sn.shapeExpr, node, sx_expression, shapeExpr)
+      _ <- maybeAddListContent(sn.actions, node, sx_semActs, semAct)
+      _ <- maybeAddStarContent(sn.annotations, node, sx_annotation, annotation)
     } yield node
 
-    case NodeConstraint(id, nk, dt, facets, values) => for {
-      shapeId <- mkId(id)
+    case nk: NodeConstraint => for {
+      shapeId <- mkId(nk.id)
       _ <- addTriple(shapeId, rdf_type, sx_NodeConstraint)
-      _ <- maybeAddContent(nk, shapeId, sx_nodeKind, nodeKind)
-      _ <- maybeAddContent(dt, shapeId, sx_datatype, iri)
-      _ <- facets.map(xsFacet(_, shapeId)).sequence
-      _ <- maybeAddListContent(values, shapeId, sx_values, valueSetValue)
+      _ <- maybeAddContent(nk.nodeKind, shapeId, sx_nodeKind, nodeKind)
+      _ <- maybeAddContent(nk.datatype, shapeId, sx_datatype, iri)
+      _ <- nk.xsFacets.map(xsFacet(_, shapeId)).sequence
+      _ <- maybeAddListContent(nk.values, shapeId, sx_values, valueSetValue)
+      _ <- maybeAddListContent(nk.actions, shapeId, sx_semActs, semAct)
+      _ <- maybeAddStarContent(nk.annotations, shapeId, sx_annotation, annotation)
     } yield shapeId
 
-    case Shape(id, virtual, closed, extra, expr, inherit, semActs,annotations) => for {
-      shapeId <- mkId(id)
+    case s: Shape => for {
+      shapeId <- mkId(s.id)
       _ <- addTriple(shapeId, rdf_type, sx_Shape)
-      _ <- maybeAddContent(closed, shapeId, sx_closed, rdfBoolean)
-      _ <- maybeAddStarContent(extra, shapeId, sx_extra, iri)
-      _ <- maybeAddContent(expr, shapeId, sx_expression, tripleExpr)
-      _ <- maybeAddListContent(semActs, shapeId, sx_semActs, semAct)
-      _ <- maybeAddStarContent(annotations, shapeId, sx_annotation, annotation)
+      _ <- maybeAddContent(s.closed, shapeId, sx_closed, rdfBoolean)
+      _ <- maybeAddStarContent(s.extra, shapeId, sx_extra, iri)
+      _ <- maybeAddContent(s.expression, shapeId, sx_expression, tripleExpr)
+      _ <- maybeAddListContent(s.actions, shapeId, sx_semActs, semAct)
+      _ <- maybeAddStarContent(s.annotations, shapeId, sx_annotation, annotation)
     } yield shapeId
 
-    case ShapeExternal(id) => for {
-      shapeId <- mkId(id)
+    case se: ShapeExternal => for {
+      shapeId <- mkId(se.id)
       _ <- addTriple(shapeId, rdf_type, sx_ShapeExternal)
+      _ <- maybeAddListContent(se.actions, shapeId, sx_semActs, semAct)
+      _ <- maybeAddStarContent(se.annotations, shapeId, sx_annotation, annotation)
     } yield shapeId
 
-    case ShapeRef(lbl) => label(lbl)
+    case sr: ShapeRef => for {
+      shapeId <- label(sr.reference)
+      _ <- maybeAddListContent(sr.actions, shapeId, sx_semActs, semAct)
+      _ <- maybeAddStarContent(sr.annotations, shapeId, sx_annotation, annotation)
+     } yield shapeId
   }
 
   private def xsFacet(facet: XsFacet, node: RDFNode): RDFSaver[Unit] = facet match {

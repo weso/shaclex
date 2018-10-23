@@ -121,13 +121,13 @@ object CompactShow {
   private def shapeExprDoc(pm: PrefixMap)(se: ShapeExpr): Doc =
     se match {
       // TODO...review ids generation...
-      case ShapeOr(id, es) =>
+      case ShapeOr(id, es, actions, anns) =>
         idDoc(id, pm) :: space ::
           listDocIntersperse(es, shapeExprDoc(pm), keyword("OR"))
-      case ShapeAnd(id, es) =>
+      case ShapeAnd(id, es, actions, anns) =>
         idDoc(id, pm) :: space ::
           listDocIntersperse(es, shapeExprDoc(pm), keyword("AND"))
-      case ShapeNot(id, e) =>
+      case ShapeNot(id, e, acts, anns) =>
         idDoc(id, pm) :: space ::
           keyword("NOT") :: shapeExprDoc(pm)(e)
       case nc: NodeConstraint =>
@@ -136,9 +136,9 @@ object CompactShow {
       case s: Shape =>
         idDoc(s.id, pm) :: space ::
           shapeDoc(pm)(s)
-      case ShapeRef(r) =>
+      case ShapeRef(r, acts, anns) =>
         str("@") :: shapeLabelDoc(pm)(r)
-      case ShapeExternal(id) =>
+      case ShapeExternal(id, acts, anns) =>
         idDoc(id, pm) :: space ::
           str("EXTERNAL")
     }
@@ -185,7 +185,7 @@ object CompactShow {
 
   private def valueSetDoc(pm: PrefixMap)(vs: List[ValueSetValue]): Doc =
     keyword("[") ::
-      listDocSep(vs, valueDoc(pm), space) ::
+      listDocSep(vs, valueSetValueDoc(pm), space) ::
       keyword("]")
 
   // TODO
@@ -209,13 +209,71 @@ object CompactShow {
     case LangString(s, l) => stringDoc(s) :: str("@") :: str(l.lang)
   }
 
-  private def valueDoc(pm: PrefixMap)(v: ValueSetValue): Doc =
+  private def valueSetValueDoc(pm: PrefixMap)(v: ValueSetValue): Doc =
     v match {
       case o: ObjectValue => objectValueDoc(pm)(o)
-      case IRIStem(iri) => iriDoc(pm)(iri) :: str("~")
-      case IRIStemRange(_, _) => str("TODO: StemRange")
-      case LanguageStem(s) => str(s"$s")
+      case s: IRIStem => iriStemDoc(pm)(s)
+      case s: LanguageStem => languageStemDoc(s)
+      case s: LiteralStem => literalStemDoc(s)
+      case IRIStemRange(stem,excls) =>
+        iriStemRangeValueDoc(stem,pm) :: space ::
+          optListDocSep(excls, iriExclusionDoc(pm),space)
+      case LanguageStemRange(stem,excls) =>
+        languageStemRangeValueDoc(stem,pm) :: space ::
+          optListDocSep(excls, languageExclusionDoc,space)
+      case LiteralStemRange(stem,excls) =>
+        literalStemRangeValueDoc(stem) :: space ::
+          optListDocSep(excls, literalExclusionDoc,space)
       case _ => str(s"Unimplemented show of $v")
+    }
+
+  private def iriStemDoc(pm: PrefixMap)(i: IRIStem): Doc =
+    iriDoc(pm)(i.stem) :: str("~")
+
+  private def languageStemDoc(ls: LanguageStem): Doc =
+    langDoc(ls.stem)
+
+  private def literalStemDoc(ls: LiteralStem): Doc =
+    stringDoc(ls.stem)
+
+  private def langDoc(lang: Lang): Doc = {
+    str("@") :: str(lang.lang)
+  }
+
+  private def iriExclusionDoc(pm: PrefixMap)(e: IRIExclusion): Doc =
+  e match {
+    case IRIRefExclusion(iri) => str("-") :: iriDoc(pm)(iri)
+    case IRIStemExclusion(iriStem) => str("-") :: iriStemDoc(pm)(iriStem)
+  }
+
+  private def languageExclusionDoc(e: LanguageExclusion): Doc =
+    e match {
+      case LanguageTagExclusion(lang) => str("-") :: langDoc(lang)
+      case LanguageStemExclusion(langStem) => str("-") :: languageStemDoc(langStem)
+    }
+
+  private def literalExclusionDoc(e: LiteralExclusion): Doc =
+    e match {
+      case LiteralStringExclusion(s) => str("-") :: str(s)
+      case LiteralStemExclusion(litStem) => str("-") :: literalStemDoc(litStem)
+    }
+
+  private def iriStemRangeValueDoc(stem: IRIStemRangeValue, pm: PrefixMap): Doc =
+  stem match {
+    case IRIStemWildcard() => str("*~")
+    case IRIStemValueIRI(iri) => iriDoc(pm)(iri) :: str("~")
+  }
+
+  private def languageStemRangeValueDoc(stem: LanguageStemRangeValue, pm: PrefixMap): Doc =
+    stem match {
+      case LanguageStemRangeWildcard() => str("@~")
+      case LanguageStemRangeLang(lang) => langDoc(lang) :: str("~")
+    }
+
+  private def literalStemRangeValueDoc(stem: LiteralStemRangeValue): Doc =
+    stem match {
+      case LiteralStemRangeWildcard() => str("*~")
+      case LiteralStemRangeString(s) => str(s) :: str("~")
     }
 
   private def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Doc =
@@ -248,7 +306,7 @@ object CompactShow {
         s.expression,
         (te: TripleExpr) =>
           text("{") :: newline :: tripleExprDoc(pm)(te) :: newline :: text("}") :: newline) ::
-        optDoc(s.semActs, semActsDoc(pm))
+        optDoc(s.actions, semActsDoc(pm))
   }
 
   private def extraDoc(pm: PrefixMap)(ls: List[IRI]): Doc =
@@ -322,6 +380,14 @@ object CompactShow {
 
   private def exprDoc(pm: PrefixMap)(e: Expr): Doc =
     str(s"CompactShow/TODO: Expressions $e")
+
+  private def optListDocSep[A](maybeLs: Option[List[A]],
+                               toDoc: A => Doc,
+                               sep: Doc
+                              ): Doc = {
+    def lsDoc(xs: List[A]): Doc = listDocSep(xs,toDoc,sep)
+    optDoc(maybeLs, lsDoc)
+  }
 
   private def listDocSep[A](
     xs: Seq[A],
