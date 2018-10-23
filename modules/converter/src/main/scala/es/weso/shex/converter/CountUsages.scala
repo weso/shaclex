@@ -61,21 +61,25 @@ object CountUsages {
 
   private def countUsagesLabelShapeExpr(lbl: ShapeLabel, se: ShapeExpr): Result[Int] =
     se match {
-      case ShapeAnd(_, ses) => sequence(ses.map(countUsagesLabelShapeExpr(lbl,_))).map(_.sum)
-      case ShapeOr(_,ses) => sequence(ses.map(countUsagesLabelShapeExpr(lbl,_))).map(_.sum)
-      case ShapeNot(_,se) => countUsagesLabelShapeExpr(lbl,se)
+      case sa: ShapeAnd => sequence(sa.shapeExprs.map(countUsagesLabelShapeExpr(lbl,_))).map(_.sum)
+      case so: ShapeOr => sequence(so.shapeExprs.map(countUsagesLabelShapeExpr(lbl,_))).map(_.sum)
+      case sn: ShapeNot => countUsagesLabelShapeExpr(lbl,sn.shapeExpr)
       case nk: NodeConstraint => ok(0)
       case s: Shape => s.expression.fold(ok(0))(countUsagesLabelTripleExpr(lbl,_))
-      case ShapeExternal(_) => ok(0)
-      case ShapeRef(lbl) => for {
-        visited <- getVisited
-        n <- if (visited contains lbl) ok(0)
-        else for {
-          _ <- addVisited(lbl)
+      case s: ShapeExternal => ok(0)
+      case sr: ShapeRef => {
+        val lbl = sr.reference
+        for {
+          visited <- getVisited
+          n <- if (visited contains lbl) ok(0)
+          else
+            for {
+          _     <- addVisited(lbl)
           shape <- getShape(lbl)
-          n <- countUsagesLabelShapeExpr(lbl,shape)
+          n     <- countUsagesLabelShapeExpr(lbl, shape)
+         } yield n
         } yield n
-      } yield n
+      }
     }
 
   private def countUsagesLabelTripleExpr(lbl: ShapeLabel, te: TripleExpr): Result[Int] =
