@@ -1,5 +1,7 @@
 package es.weso.shex.manifest
 
+import java.io.File
+
 import es.weso.rdf.nodes._
 import ManifestPrefixes._
 
@@ -17,13 +19,25 @@ case class Entry(
   node: RDFNode,
   entryType: EntryType,
   name: Option[String],
-  action: ManifestAction,
-  result: Result,
+  action: Option[ManifestAction],
+  result: Option[Result],
   status: Status,
-  specRef: Option[IRI])
+  json: Option[IRI],
+  shex: Option[IRI],
+  ttl: Option[IRI],
+  specRef: Option[IRI]
+)
+
+object Entry {
+  def basic(node: RDFNode, status: Status, entryType: EntryType): Entry = Entry(node,entryType,None,None,None,status,None,None,None,None)
+}
+
 
 sealed trait EntryType {
   def iri: IRI
+}
+final case object RepresentationTest extends EntryType {
+  override def iri = sht_RepresentationTest
 }
 final case object Validate extends EntryType {
   override def iri = sht_Validate
@@ -53,7 +67,9 @@ case class ManifestAction(
   triggerMode: Option[IRI],
   node: Option[IRI],
   shape: Option[IRI],
-  shapeMap: Option[IRI]
+  shapeMap: Option[IRI],
+  resultShapeMap: Option[IRI],
+  focus: Option[IRI],
   ) {
   def setSchema(iri: IRI): ManifestAction = {
     this.copy(schema = Some(iri))
@@ -76,7 +92,9 @@ object ManifestAction {
       triggerMode = None,
       node = None,
       shape = None,
-      shapeMap = None
+      shapeMap = None,
+      focus = None,
+      resultShapeMap = None
     )
   }
 }
