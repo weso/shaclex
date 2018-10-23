@@ -139,19 +139,20 @@ object NodeConstraint {
       nodeKind = Some(nk),
       xsFacets = facets)
 
-  def datatype(
-                dt: IRI,
-                facets: List[XsFacet]): NodeConstraint =
+  def datatype(dt: IRI,
+               facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       datatype = Some(dt),
       xsFacets = facets)
 
-  def valueSet(
-                vs: List[ValueSetValue],
-                facets: List[XsFacet]): NodeConstraint =
+  def valueSet(vs: List[ValueSetValue],
+               facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(
       values = Some(vs),
       xsFacets = facets)
+
+  def xsFacets(facets: List[XsFacet]): NodeConstraint =
+    NodeConstraint.empty.copy(xsFacets = facets)
 }
 
 case class Shape(

@@ -275,10 +275,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case s: ShapeAtomLitNodeConstraintContext => for {
        nc <- visitLitNodeConstraint(s.litNodeConstraint())
       } yield nc
-      case s: ShapeAtomShapeOrRefContext => for {
-        sr <- visitShapeOrRef(s.shapeOrRef())
-        nlc <- visitNonLitNodeConstraint(s.nonLitNodeConstraint())
-      } yield ShapeAnd(None, List(sr, nlc), None, None)
+      case s: ShapeAtomShapeOrRefContext => {
+//        println(s"ShapeAtomShapeOrRef...NonLitNC=${s.nonLitNodeConstraint()}")
+        for {
+          sr  <- visitShapeOrRef(s.shapeOrRef())
+          maybeNc <- visitOpt(visitNonLitNodeConstraint,s.nonLitNodeConstraint())
+        } yield maybeNc match {
+          case None => sr
+          case Some(nc) => ShapeAnd(None, List(sr, nc), None, None)
+        }
+      }
       case s: ShapeAtomShapeExpressionContext =>
         visitShapeExpression(s.shapeExpression())
       case _: ShapeAtomAnyContext =>
@@ -332,8 +338,13 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   def visitInlineNonLitNodeConstraint(ctx: InlineNonLitNodeConstraintContext): Builder[NodeConstraint] = {
     ctx match {
-      case s: LitNodeConstraintLiteralContext => ???
-      case s: LitNodeConstraintStringFacetContext => ???
+      case s: LitNodeConstraintLiteralContext => for {
+       nk <- visitNonLiteralKind(s.nonLiteralKind())
+       sfs <- visitList(visitStringFacet,s.stringFacet)
+      } yield NodeConstraint.nodeKind(nk,sfs)
+      case s: LitNodeConstraintStringFacetContext => for {
+       sfs <- visitList(visitStringFacet,s.stringFacet)
+      } yield NodeConstraint.xsFacets(sfs)
     }
   }
 
@@ -349,7 +360,11 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
             ShapeAnd(None, List(nk, s), None, None)
           }
         }
-
+      case s: InlineShapeAtomLitNodeConstraintContext => {
+        for {
+         se <- visitInlineLitNodeConstraint(s.inlineLitNodeConstraint())
+        } yield se
+      }
       case s: InlineShapeAtomShapeOrRefContext =>
         for {
           sr <- visitInlineShapeOrRef(s.inlineShapeOrRef())
@@ -364,6 +379,10 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
       case _: InlineShapeAtomAnyContext =>
         ok(ShapeExpr.any)
+      case _ => {
+        println(s"Unknown value for ctx: $ctx")
+        err(s"Unknown value for inlineShapeAtom ctx: $ctx")
+      }
     }
   }
 
@@ -418,18 +437,25 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-
-  override def visitLanguageRange(ctx: LanguageRangeContext): Builder[ValueSetValue] = {
-    for {
-      es <- visitList(visitLanguageExclusion, ctx.languageExclusion)
-    } yield {
-      // TODO Add language exclusion
-      val lang = getLanguage(ctx.LANGTAG().getText())
-      if (!isDefined(ctx.STEM_MARK())) {
-        Language(lang)
-      } else
-      if (es.isEmpty) LanguageStem(lang)
-      else LanguageStemRange(LanguageStemRangeLang(lang), Some(es))
+  def visitLanguageRange(ctx: LanguageRangeContext): Builder[ValueSetValue] = {
+    ctx match {
+      case s: LanguageRangeFullContext => {
+        val lang = getLanguage(s.LANGTAG().getText())
+        if (!isDefined(s.STEM_MARK())) {
+          ok(Language(lang))
+        } else
+        for {
+          les <- visitList(visitLanguageExclusion, s.languageExclusion())
+        } yield
+          if (les.isEmpty) LanguageStem(lang)
+          else
+            LanguageStemRange(LanguageStemRangeLang(lang), Some(les))
+      }
+      case s: LanguageRangeAtContext => for {
+        les <- visitList(visitLanguageExclusion, s.languageExclusion())
+      } yield // LanguageStemRange(LanguageStemRangeWildcard(), Some(les))
+         if (les.isEmpty) LanguageStem(Lang(""))
+         else LanguageStemRange(LanguageStemRangeLang(Lang("")),Some(les))
     }
   }
 
@@ -483,7 +509,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   }
 
-  private def getNumericLiteralOrNumericDatatype(ctx: NumericFacetContext): Builder[NumericLiteral] = ctx match {
+/*  private def getNumericLiteralOrNumericDatatype(ctx: NumericFacetContext): Builder[NumericLiteral] = ctx match {
     case _ if isDefined(ctx.numericLiteral()) => for {
       lit <- visitNumericLiteral(ctx.numericLiteral())
       nl <- literal2NumericLiteral(lit)
@@ -498,14 +524,14 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         case _ => err(s"Unsupported numericFacet of string $str with datatype $dt")
       }
     } yield nl
-  }
+  } */
 
-  private def literal2NumericLiteral(l: Literal): Builder[NumericLiteral] = l match {
+/*  private def literal2NumericLiteral(l: Literal): Builder[NumericLiteral] = l match {
     case IntegerLiteral(n, repr) => ok(NumericInt(n,repr))
     case DecimalLiteral(d, repr) => ok(NumericDecimal(d,repr))
     case DoubleLiteral(d, repr) => ok(NumericDouble(d,repr))
     case _ => err(s"Cannot convert literal $l to numeric literal")
-  }
+  } */
 
 /*   private def numericLiteral2ValueObject(nl: Literal): Builder[ValueSetValue] = {
     nl match {
@@ -754,7 +780,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     ctx match {
       case _ if isDefined(ctx.numericRange()) => for {
         nr <- visitNumericRange(ctx.numericRange())
-        v <- getNumericLiteralOrNumericDatatype(ctx)
+        v <- visitRawNumeric(ctx.rawNumeric()) // getNumericLiteralOrNumericDatatype(ctx)
         nf <- makeNumericFacet(nr, v)
       } yield nf
       case _ if isDefined(ctx.numericLength()) => for {
@@ -765,6 +791,22 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case _ => err("VisitNumericFacet. Unknown state for ctx")
     }
   }
+
+  override def visitRawNumeric(ctx: RawNumericContext): Builder[NumericLiteral] =
+    ctx match {
+      case _ if (isDefined(ctx.INTEGER())) =>
+        val repr = ctx.INTEGER().getText
+        ok(NumericInt(Integer.parseInt(repr), repr))
+      case _ if (isDefined(ctx.DECIMAL())) => {
+        val repr = ctx.DECIMAL().getText
+        ok(NumericDecimal(BigDecimal(repr), repr))
+      }
+      case _ if (isDefined(ctx.DOUBLE())) => {
+        val repr = ctx.DOUBLE().getText
+        ok(NumericDouble(repr.toDouble, repr))
+      }
+      case _ => err("Unknown ctx in numericLiteral")
+    }
 
   override def visitNumericRange(ctx: NumericRangeContext): Builder[NumericRange] = {
     ctx match {
@@ -926,15 +968,15 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitQualifier(ctx: QualifierContext): Builder[Qualifier] = {
     ctx match {
       case _ if (isDefined(ctx.KW_CLOSED())) => ok(Closed)
-      case _ if (isDefined(ctx.extensions())) =>
-        visitExtensions(ctx.extensions())
+      case _ if (isDefined(ctx.extension())) =>
+        visitExtension(ctx.extension())
       case _ if (isDefined(ctx.extraPropertySet())) =>
         visitExtraPropertySet(ctx.extraPropertySet())
     }
   }
 
-  override def visitExtensions(ctx: ExtensionsContext): Builder[Qualifier] = for {
-    sl <- visitList(visitShapeExprLabel, ctx.shapeExprLabel())
+  override def visitExtension(ctx: ExtensionContext): Builder[Qualifier] = for {
+    sl <- visitShapeExprLabel(ctx.shapeExprLabel())
   } yield Extends(sl)
 
   override def visitExtraPropertySet(ctx: ExtraPropertySetContext): Builder[Qualifier] = for {
@@ -1137,7 +1179,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   override def visitBracketedTripleExpr(ctx: BracketedTripleExprContext): Builder[TripleExpr] =
     for {
-      tripleExpr <- visitInnerTripleExpr(ctx.innerTripleExpr())
+      tripleExpr <- visitTripleExpression(ctx.tripleExpression())
       cardinality <- getCardinality(ctx.cardinality())
       annotations <- visitList(visitAnnotation, ctx.annotation())
       semActs <- visitList(visitSemanticAction,ctx.semanticAction())
@@ -1201,12 +1243,12 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
   } yield Annotation(pred, obj)
 
-  override def visitInnerTripleExpr(ctx: InnerTripleExprContext): Builder[TripleExpr] =
+/*  override def visitInnerTripleExpr(ctx: InnerTripleExprContext): Builder[TripleExpr] =
     ctx match {
       case _ if isDefined(ctx.multiElementGroup()) => visitMultiElementGroup(ctx.multiElementGroup())
       case _ if isDefined(ctx.multiElementOneOf()) => visitMultiElementOneOf(ctx.multiElementOneOf())
       case _ => err("visitInnerShape. Unknown alternative")
-    }
+    } */
 
   override def visitSingleElementGroup(
     ctx: SingleElementGroupContext): Builder[TripleExpr] = {
@@ -1307,7 +1349,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     }
     def getIncluded: List[ShapeLabel] = {
       this match {
-        case Extends(labels) => labels
+        case Extends(label) => List(label)
         case _ => List()
       }
     }
@@ -1315,7 +1357,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   case class Extra(iris: List[IRI]) extends Qualifier
 
-  case class Extends(labels: List[ShapeLabel]) extends Qualifier
+  case class Extends(label: ShapeLabel) extends Qualifier
 
   case object Closed extends Qualifier
 

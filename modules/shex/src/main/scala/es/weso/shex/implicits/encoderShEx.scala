@@ -93,18 +93,27 @@ object encoderShEx {
     final def apply(a: ShapeExpr): Json =
       a match {
         case ShapeOr(id, ses, _,_) =>
-          mkObjectTyped("ShapeOr", List(optField("id", id), field("shapeExprs", ses)))
+          mkObjectTyped("ShapeOr", List(optField("id", id),
+            field("shapeExprs", ses))
+          )
 
         case ShapeAnd(id, ses, _, _) =>
-          mkObjectTyped("ShapeAnd", List(optField("id", id), field("shapeExprs", ses)))
+          mkObjectTyped("ShapeAnd", List(optField("id", id),
+            field("shapeExprs", ses))
+          )
 
         case ShapeNot(id, se, _,_) =>
-          mkObjectTyped("ShapeNot", List(optField("id", id), field("shapeExpr", se)))
+          mkObjectTyped("ShapeNot", List(optField("id", id),
+            field("shapeExpr", se))
+          )
 
         case nc: NodeConstraint => nc.asJson
         case s: Shape => s.asJson
         case ShapeRef(r,_,_) => r.asJson
-        case ShapeExternal(id,_,_) => mkObjectTyped("ShapeExternal", List(optField("id", id)))
+        case ShapeExternal(id,_,_) =>
+          mkObjectTyped("ShapeExternal",
+            List(optField("id", id))
+          )
       }
   }
 
@@ -226,10 +235,17 @@ object encoderShEx {
       case ov: ObjectValue => ov.asJson
       case IRIStem(s) => mkObjectTyped("IriStem", List(field("stem", s)))
       case IRIStemRange(s, exclusions) =>
-        mkObjectTyped("IriStemRange", List(field("stem", s), optField("exclusions", exclusions)))
-      case LanguageStem(stem) => mkObjectTyped("LanguageStem", List(field("stem", stem)))
+        mkObjectTyped("IriStemRange",
+          List(field("stem", s),
+            optField("exclusions", exclusions)))
+      case LanguageStem(stem) => mkObjectTyped("LanguageStem",
+        List(field("stem", stem))
+      )
       case LanguageStemRange(stem,exclusions) =>
-        mkObjectTyped("LanguageStemRange", List(field("stem", stem), optField("exclusions", exclusions)))
+        mkObjectTyped("LanguageStemRange",
+          List(field("stem", stem),
+            optField("exclusions", exclusions))
+        )
       case LiteralStem(stem) => mkObjectTyped("LiteralStem", List(field("stem", stem)))
       case LiteralStemRange(stem,exclusions) => {
         mkObjectTyped("LiteralStemRange", List(field("stem", stem), optField("exclusions", exclusions)))

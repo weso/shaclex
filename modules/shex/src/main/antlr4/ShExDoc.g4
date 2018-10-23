@@ -94,14 +94,16 @@ nonLiteralKind  : KW_IRI
 				| KW_NONLITERAL
 				;
 xsFacet			: stringFacet
-				| numericFacet;
+				| numericFacet
+				;
 stringFacet     : stringLength INTEGER
 				| REGEXP REGEXP_FLAGS?
 				;
 stringLength	: KW_LENGTH
 				| KW_MINLENGTH
-				| KW_MAXLENGTH;
-numericFacet	: numericRange ( numericLiteral | string '^^' datatype )
+				| KW_MAXLENGTH
+				;
+numericFacet	: numericRange rawNumeric
 				| numericLength INTEGER
 				;
 numericRange	: KW_MININCLUSIVE
@@ -112,9 +114,14 @@ numericRange	: KW_MININCLUSIVE
 numericLength   : KW_TOTALDIGITS
 				| KW_FRACTIONDIGITS
 				;
+// rawNumeric is like numericLiteral but returns a JSON integer or float
+rawNumeric		: INTEGER
+				| DECIMAL
+				| DOUBLE
+				;
 shapeDefinition : inlineShapeDefinition annotation* semanticAction* ;
 inlineShapeDefinition : qualifier* '{' tripleExpression? '}' ;
-qualifier       : extensions | extraPropertySet | KW_CLOSED ;
+qualifier       : extension | extraPropertySet | KW_CLOSED ;
 extraPropertySet : KW_EXTRA predicate+ ;
 tripleExpression : oneOfTripleExpr ;
 oneOfTripleExpr     : groupTripleExpr
@@ -124,18 +131,17 @@ multiElementOneOf : groupTripleExpr ( '|' groupTripleExpr)+ ;
 groupTripleExpr      : singleElementGroup
 				| multiElementGroup
 				;
-innerTripleExpr      : multiElementGroup
+/*innerTripleExpr      : multiElementGroup
 				| multiElementOneOf
-				;
+				; */
 singleElementGroup : unaryTripleExpr ';'? ;
 multiElementGroup : unaryTripleExpr (';' unaryTripleExpr)+ ';'? ;
 unaryTripleExpr      : ('$' tripleExprLabel)? (tripleConstraint | bracketedTripleExpr )
 				| include
 				| expr
 				;
-bracketedTripleExpr  : '(' innerTripleExpr ')' cardinality? annotation* semanticAction* ;
-tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticAction* /* variableDecl? */
-                 ;
+bracketedTripleExpr  : '(' tripleExpression ')' cardinality? annotation* semanticAction* ;
+tripleConstraint : senseFlags? predicate inlineShapeExpression cardinality? annotation* semanticAction* /* variableDecl? */ ;
 cardinality     :  '*'         # starCardinality
 				| '+'          # plusCardinality
 				| '?'          # optionalCardinality
@@ -178,11 +184,13 @@ iriRange        : iri (STEM_MARK iriExclusion*)? ;
 iriExclusion    : '-' iri STEM_MARK? ;
 literalRange    : literal (STEM_MARK literalExclusion*)? ;
 literalExclusion : '-' literal STEM_MARK? ;
-languageRange   : LANGTAG (STEM_MARK languageExclusion*)? ;
+languageRange   : LANGTAG (STEM_MARK languageExclusion*)? # languageRangeFull
+                | '@' STEM_MARK languageExclusion*        # languageRangeAt
+                ;
 languageExclusion : '-' LANGTAG STEM_MARK? ;
 include			: '&' tripleExprLabel ;
 annotation      : '//' predicate (iri | literal) ;
-// semanticActions	: semanticAction* ;
+semanticAction	: '%' iri (CODE | '%') ;
 literal         : rdfLiteral
 				| numericLiteral
 				| booleanLiteral
@@ -193,10 +201,6 @@ predicate       : iri
 				;
 rdfType			: RDF_TYPE ;
 datatype        : iri ;
-// BNF: REPEAT_RANGE ::= '{' INTEGER (',' (INTEGER | '*')?)? '}'
-// repeatRange     : '{' INTEGER '}'							  # exactRange
-// 				| '{' INTEGER ',' (INTEGER | UNBOUNDED)? '}'  # minMaxRange
-// 				;
 shapeExprLabel  : iri
 				| blankNode
 				;
@@ -223,10 +227,9 @@ prefixedName    : PNAME_LN
 				| PNAME_NS
 				;
 blankNode       : BLANK_NODE_LABEL ;
-semanticAction	: '%' iri (CODE | '%') ;
 
-extensions      : KW_EXTENDS shapeExprLabel+
-                | '&' shapeExprLabel+
+extension      : KW_EXTENDS shapeExprLabel
+                | '&' shapeExprLabel
                 ;
 restrictions    : KW_RESTRICTS shapeExprLabel+
                 | '-' shapeExprLabel+

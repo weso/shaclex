@@ -19,7 +19,7 @@ import scala.io._
 
 class CompareJsonSingleTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
-  val name = "1dotRefSpaceLNex1"
+  val name = "1val1emptylanguageStemMinuslanguage3"
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 
