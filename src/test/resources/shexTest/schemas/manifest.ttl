@@ -11,12 +11,15 @@
     (
         <#0>
         <#1dot>
+    <#open1dotclose>
         <#1dot-base>
         <#1dotSemi>
         <#1dotLNex>
         <#1dotNS2>
-        <#1dotNS2Comment>
-        <#1dotLNexComment>
+        <#1dotNS2SingleComment>
+        <#1dotLNexSingleComment>
+        <#1dotNS2MultiComment>
+        <#1dotLNexMultiComment>
         <#1dotLNdefault>
         <#1dotNSdefault>
         <#1dotLNex-HYPHEN_MINUS>
@@ -33,6 +36,7 @@
         <#1card25>
         <#1card2Star>
         <#1cardOpt>
+    <#open1dotclosecardOpt>
         <#1cardPlus>
         <#1cardStar>
         <#1literalPlus>
@@ -210,6 +214,9 @@
         <#1val1dotMinuslanguage3>
         <#1val1dotMinuslanguageStem3>
         <#1val1language>
+        <#1val1emptylanguageStem>
+        <#1val1emptylanguageStemMinuslanguage3>
+        <#1val1emptylanguageStemMinuslanguageStem3>
         <#1val1languageStem>
         <#1val1languageStemMinuslanguage3>
         <#1val1languageStemMinuslanguageStem3>
@@ -225,6 +232,7 @@
         <#3groupdot>
         <#open3groupdotclose>
         <#1dotOne1dot>
+    <#openopen1dotOr1dotclose>
         <#1dotSemiOne1dotSemi>
         <#open1dotOne1dotclose>
         <#open1dotSemiOne1dotSemicloseSemi>
@@ -307,9 +315,11 @@
         <#1dotShapeAnnotSTRING_LITERAL1>
         <#open3groupdotcloseAnnot3>
         <#1dotCode1>
+    <#open1dotcloseCode1>
         <#1dotNoCode1>
         <#1inversedotCode1>
         <#1dotCode3>
+    <#openopen1dotcloseCode1closeCode3>
         <#1dotNoCode3>
         <#1dotCode3fail>
         <#1dotCodeWithEscapes1>
@@ -433,6 +443,14 @@
     sx:ttl <1dot.ttl> ;
     .
 
+<#open1dotclose> a sht:RepresentationTest ;
+    mf:name "open1dotclose" ;
+    mf:status mf:proposed ;
+    sx:shex <open1dotclose.shex> ;
+    sx:json <1dot.json> ;
+    sx:ttl <1dot.ttl> ;
+    .
+
 <#1dot-base> a sht:RepresentationTest ;
     mf:name "1dot-base" ;
     mf:status mf:proposed ;
@@ -465,20 +483,36 @@
     sx:ttl <1dotNS2.ttl> ;
     .
 
-<#1dotNS2Comment> a sht:RepresentationTest ;
-    mf:name "1dotNS2Comment" ;
+<#1dotNS2SingleComment> a sht:RepresentationTest ;
+    mf:name "1dotNS2SingleComment" ;
     mf:status mf:proposed ;
-    sx:shex <1dotNS2Comment.shex> ;
-    sx:json <1dotNS2Comment.json> ;
-    sx:ttl <1dotNS2Comment.ttl> ;
+    sx:shex <1dotNS2SingleComment.shex> ;
+    sx:json <1dotNS2SingleComment.json> ;
+    sx:ttl <1dotNS2SingleComment.ttl> ;
     .
 
-<#1dotLNexComment> a sht:RepresentationTest ;
-    mf:name "1dotLNexComment" ;
+<#1dotLNexSingleComment> a sht:RepresentationTest ;
+    mf:name "1dotLNexSingleComment" ;
     mf:status mf:proposed ;
-    sx:shex <1dotLNexComment.shex> ;
-    sx:json <1dotLNexComment.json> ;
-    sx:ttl <1dotLNexComment.ttl> ;
+    sx:shex <1dotLNexSingleComment.shex> ;
+    sx:json <1dotLNexSingleComment.json> ;
+    sx:ttl <1dotLNexSingleComment.ttl> ;
+    .
+
+<#1dotNS2MultiComment> a sht:RepresentationTest ;
+    mf:name "1dotNS2MultiComment" ;
+    mf:status mf:proposed ;
+    sx:shex <1dotNS2MultiComment.shex> ;
+    sx:json <1dotNS2MultiComment.json> ;
+    sx:ttl <1dotNS2MultiComment.ttl> ;
+    .
+
+<#1dotLNexMultiComment> a sht:RepresentationTest ;
+    mf:name "1dotLNexMultiComment" ;
+    mf:status mf:proposed ;
+    sx:shex <1dotLNexMultiComment.shex> ;
+    sx:json <1dotLNexMultiComment.json> ;
+    sx:ttl <1dotLNexMultiComment.ttl> ;
     .
 
 <#1dotLNdefault> a sht:RepresentationTest ;
@@ -621,6 +655,14 @@
     mf:name "1cardOpt" ;
     mf:status mf:proposed ;
     sx:shex <1cardOpt.shex> ;
+    sx:json <1cardOpt.json> ;
+    sx:ttl <1cardOpt.ttl> ;
+    .
+
+<#open1dotclosecardOpt> a sht:RepresentationTest ;
+    mf:name "open1dotclosecardOpt" ;
+    mf:status mf:proposed ;
+    sx:shex <open1dotclosecardOpt.shex> ;
     sx:json <1cardOpt.json> ;
     sx:ttl <1cardOpt.ttl> ;
     .
@@ -2099,6 +2141,30 @@
     sx:ttl <1val1language.ttl> ;
     .
 
+<#1val1emptylanguageStem> a sht:RepresentationTest ;
+    mf:name "1val1emptylanguageStem" ;
+    mf:status mf:proposed ;
+    sx:shex <1val1emptylanguageStem.shex> ;
+    sx:json <1val1emptylanguageStem.json> ;
+    sx:ttl <1val1emptylanguageStem.ttl> ;
+    .
+
+<#1val1emptylanguageStemMinuslanguage3> a sht:RepresentationTest ;
+    mf:name "1val1emptylanguageStemMinuslanguage3" ;
+    mf:status mf:proposed ;
+    sx:shex <1val1emptylanguageStemMinuslanguage3.shex> ;
+    sx:json <1val1emptylanguageStemMinuslanguage3.json> ;
+    sx:ttl <1val1emptylanguageStemMinuslanguage3.ttl> ;
+    .
+
+<#1val1emptylanguageStemMinuslanguageStem3> a sht:RepresentationTest ;
+    mf:name "1val1emptylanguageStemMinuslanguageStem3" ;
+    mf:status mf:proposed ;
+    sx:shex <1val1emptylanguageStemMinuslanguageStem3.shex> ;
+    sx:json <1val1emptylanguageStemMinuslanguageStem3.json> ;
+    sx:ttl <1val1emptylanguageStemMinuslanguageStem3.ttl> ;
+    .
+
 <#1val1languageStem> a sht:RepresentationTest ;
     mf:name "1val1languageStem" ;
     mf:status mf:proposed ;
@@ -2211,6 +2277,14 @@
     mf:name "1dotOne1dot" ;
     mf:status mf:proposed ;
     sx:shex <1dotOne1dot.shex> ;
+    sx:json <1dotOne1dot.json> ;
+    sx:ttl <1dotOne1dot.ttl> ;
+    .
+
+<#openopen1dotOr1dotclose> a sht:RepresentationTest ;
+    mf:name "openopen1dotOr1dotclose" ;
+    mf:status mf:proposed ;
+    sx:shex <openopen1dotOr1dotclose.shex> ;
     sx:json <1dotOne1dot.json> ;
     sx:ttl <1dotOne1dot.ttl> ;
     .
@@ -2967,6 +3041,14 @@
     sx:ttl <1dotCode1.ttl> ;
     .
 
+<#open1dotcloseCode1> a sht:RepresentationTest ;
+    mf:name "open1dotcloseCode1" ;
+    mf:status mf:proposed ;
+    sx:shex <open1dotcloseCode1.shex> ;
+    sx:json <1dotCode1.json> ;
+    sx:ttl <1dotCode1.ttl> ;
+    .
+
 <#1dotNoCode1> a sht:RepresentationTest ;
     mf:name "1dotNoCode1" ;
     mf:status mf:proposed ;
@@ -2987,6 +3069,14 @@
     mf:name "1dotCode3" ;
     mf:status mf:proposed ;
     sx:shex <1dotCode3.shex> ;
+    sx:json <1dotCode3.json> ;
+    sx:ttl <1dotCode3.ttl> ;
+    .
+
+<#openopen1dotcloseCode1closeCode3> a sht:RepresentationTest ;
+    mf:name "openopen1dotcloseCode1closeCode3" ;
+    mf:status mf:proposed ;
+    sx:shex <openopen1dotcloseCode1closeCode3.shex> ;
     sx:json <1dotCode3.json> ;
     sx:ttl <1dotCode3.ttl> ;
     .
@@ -3701,3 +3791,26 @@
     .
 
 # } imports
+
+# regexp template:
+
+# match:
+# <#\(.*?\)> a sht:RepresentationTest ;
+#     mf:name "\1" ;
+#     mf:status mf:proposed ;\(
+#     mf:sameSemanticsAs <#.*?> ;\)?\(
+#     sht:trait .*? ;\)?
+#     sx:shex <\(.*?\)\.shex> ;
+#     sx:json <\4\.json> ;
+#     sx:ttl <\4\.ttl> ;
+#     \.
+
+# emit:
+# <#\1> a sht:RepresentationTest ;
+#     mf:name "\1" ;
+#     mf:status mf:proposed ;\2\3
+#     sx:shex <\4.shex> ;
+#     sx:json <\4.json> ;
+#     sx:ttl <\4.ttl> ;
+#     .
+

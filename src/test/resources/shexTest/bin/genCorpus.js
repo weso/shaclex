@@ -16,7 +16,7 @@ var path = require("path");
 // Parse arguments
 var args = process.argv.slice(2);
 if (args > 1 || args.indexOf("-help") !== -1 || args.indexOf("--help") !== -1) {
-  console.error('usage: genJSON manifestTest.ttl [-o outfile] [-w|-e] > manifestTest.jsonld');
+  console.error('usage: genJSON manifest.ttl [-o outfile] [-w|-e] > manifest.jsonld');
   return process.exit(1);
 }
 var FROMDIR = null;

@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
-/* genJSON - tool to generate JSON-LD version of manifestTest.ttl
+/* genJSON - tool to generate JSON-LD version of manifest.ttl
  * install and run:
 
 git clone git@github.com:shexSpec/shexTest.git
 npm install
 cd validation/
-../bin/genJSON.js manifestTest.ttl -w
+../bin/genJSON.js manifest.ttl -w
 
 */
 
 // Parse arguments
 var args = process.argv.slice(2);
 if (args > 1 || args.indexOf("-help") !== -1 || args.indexOf("--help") !== -1) {
-  console.error('usage: genJSON manifestTest.ttl [-o outfile] [-w|-e] > manifestTest.jsonld');
+  console.error('usage: genJSON manifest.ttl [-o outfile] [-w|-e] > manifest.jsonld');
   return process.exit(1);
 }
 var OUTFILE = null;
@@ -41,7 +41,7 @@ var store = N3.Store();
 var P = {
   "rdf":  "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
   "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-  "mf":   "http://www.w3.org/2001/sw/DataAccess/tests/test-manifestTest#",
+  "mf":   "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
   "sht":  "http://www.w3.org/ns/shacl/test-suite#",
   "sx":   "https://shexspec.github.io/shexTest/ns#"
 };
@@ -49,7 +49,7 @@ var P = {
 var testDir = path.basename(path.dirname(path.resolve(args[0])));
 var basePath = "https://raw.githubusercontent.com/shexSpec/shexTest/master/";
 var dirPath = basePath + testDir + '/';
-var apparentBase = dirPath + "manifestTest";
+var apparentBase = dirPath + "manifest";
 
 parser.parse(
   "@base <" + apparentBase + "> .\n"+

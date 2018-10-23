@@ -46,7 +46,7 @@ notStartAction  : start | shapeExprDecl ;
 start           : KW_START '=' shapeExpression ;
 startActions	: semanticAction+ ;
 statement 		: directive | notStartAction ;
-shapeExprDecl   : KW_ABSTRACT? shapeExprLabel restrictions* (shapeExpression | KW_EXTERNAL) ;
+shapeExprDecl   : /* KW_ABSTRACT? */ shapeExprLabel /* restrictions* */ (shapeExpression | KW_EXTERNAL) ;
 shapeExpression : shapeOr ;
 inlineShapeExpression : inlineShapeOr ;
 shapeOr  		: shapeAnd (KW_OR shapeAnd)* ;
@@ -56,13 +56,15 @@ inlineShapeAnd  : inlineShapeNot (KW_AND inlineShapeNot)* ;
 shapeNot	    : negation? shapeAtom ;
 inlineShapeNot  : negation? inlineShapeAtom ;
 negation        : KW_NOT | '!' ;
-shapeAtom		: nodeConstraint shapeOrRef?    # shapeAtomNodeConstraint
-				| shapeOrRef                    # shapeAtomShapeOrRef
+shapeAtom		: nonLitNodeConstraint shapeOrRef?    # shapeAtomNonLitNodeConstraint
+                | litNodeConstraint             # shapeAtomLitNodeConstraint
+				| shapeOrRef nonLitNodeConstraint?    # shapeAtomShapeOrRef
 				| '(' shapeExpression ')'		# shapeAtomShapeExpression
 				| '.'							# shapeAtomAny			// no constraint
 				;
-inlineShapeAtom : nodeConstraint inlineShapeOrRef? # inlineShapeAtomNodeConstraint
-				| inlineShapeOrRef nodeConstraint? # inlineShapeAtomShapeOrRef
+inlineShapeAtom : inlineNonLitNodeConstraint inlineShapeOrRef? # inlineShapeAtomNonLitNodeConstraint
+                | inlineLitNodeConstraint             # inlineShapeAtomLitNodeConstraint
+				| inlineShapeOrRef inlineNonLitNodeConstraint? # inlineShapeAtomShapeOrRef
 				| '(' shapeExpression ')'		# inlineShapeAtomShapeExpression
 				| '.'							# inlineShapeAtomAny   // no constraint
 				;
@@ -76,12 +78,17 @@ shapeRef 		: ATPNAME_LN
 				| ATPNAME_NS
 				| '@' shapeExprLabel
 				;
-nodeConstraint  : KW_LITERAL xsFacet*			# nodeConstraintLiteral
+inlineLitNodeConstraint : KW_LITERAL xsFacet*	# nodeConstraintLiteral
 				| nonLiteralKind stringFacet*	# nodeConstraintNonLiteral
 				| datatype xsFacet*				# nodeConstraintDatatype
 				| valueSet xsFacet*				# nodeConstraintValueSet
-				| xsFacet+						# nodeConstraintFacet
+				| numericFacet+					# nodeConstraintNumericFacet
 				;
+litNodeConstraint : inlineLitNodeConstraint  annotation* semanticAction* ;
+inlineNonLitNodeConstraint  : nonLiteralKind stringFacet*	# litNodeConstraintLiteral
+                | stringFacet+                  # litNodeConstraintStringFacet
+				;
+nonLitNodeConstraint : inlineNonLitNodeConstraint  annotation* semanticAction* ;
 nonLiteralKind  : KW_IRI
 				| KW_BNODE
 				| KW_NONLITERAL
@@ -175,7 +182,7 @@ languageRange   : LANGTAG (STEM_MARK languageExclusion*)? ;
 languageExclusion : '-' LANGTAG STEM_MARK? ;
 include			: '&' tripleExprLabel ;
 annotation      : '//' predicate (iri | literal) ;
-semanticActions	: semanticAction* ;
+// semanticActions	: semanticAction* ;
 literal         : rdfLiteral
 				| numericLiteral
 				| booleanLiteral

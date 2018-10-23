@@ -8,6 +8,7 @@
 <> a mf:Manifest ;
     rdfs:comment "ShEx negative syntax tests" ;
     mf:entries (
+    <#directShapeExpression>
     <#1decimalMininclusiveroman-numeral>
     <#1dotAnnot_AIRIREF>
     <#1dotUnlabeledCode1>
@@ -76,6 +77,8 @@
     <#STRING_LITERAL_LONG2-ending-QUOTATION_MARK4>
     <#STRING_LITERAL_LONG2-unterminated>
     <#a>
+    <#Dot-Minus-emptylanguageStem>
+    <#emptylanguageStem-Minus-emptylanguageStem>
     <#base-no-uri>
     <#base-uri-dot>
     <#bnodedot>
@@ -83,12 +86,7 @@
     <#group-no-COMMA-separators>
     <#groupShapeConstr-trailing-OR>
     <#literal-0x123>
-    <#open1dotclose>
     <#open1dotcloseAnnot3>
-    <#open1dotcloseCode1>
-    <#open1dotclosecardOpt>
-    <#openopen1dotOr1dotclose>
-    <#openopen1dotcloseCode1closeCode2>
     <#predicate-ANON>
     <#predicate-BLANK_NODE_LABEL>
     <#predicate-literal>
@@ -111,6 +109,12 @@
     <#1val1literalStemMinusiri3>
     <#1val1literalStemMinuslanguage3>
   ) .
+
+<#directShapeExpression> a sht:NegativeSyntax ;
+  mf:name "directShapeExpression" ;
+  mf:status mf:proposed ;
+  sx:shex <directShapeExpression.shex> ;
+  .
 
 <#1decimalMininclusiveroman-numeral> a sht:NegativeSyntax ;
   mf:name "1decimalMininclusiveroman-numeral" ;
@@ -520,6 +524,18 @@
   sx:shex <a.shex> ;
   .
 
+<#Dot-Minus-emptylanguageStem> a sht:NegativeSyntax ;
+  mf:name "Dot-Minus-emptylanguageStem" ;
+  mf:status mf:proposed ;
+  sx:shex <Dot-Minus-emptylanguageStem.shex> ;
+  .
+
+<#emptylanguageStem-Minus-emptylanguageStem> a sht:NegativeSyntax ;
+  mf:name "emptylanguageStem-Minus-emptylanguageStem" ;
+  mf:status mf:proposed ;
+  sx:shex <emptylanguageStem-Minus-emptylanguageStem.shex> ;
+  .
+
 <#base-no-uri> a sht:NegativeSyntax ;
   mf:name "base-no-uri" ;
   mf:status mf:proposed ;
@@ -562,40 +578,10 @@
   sx:shex <literal-0x123.shex> ;
   .
 
-<#open1dotclose> a sht:NegativeSyntax ;
-  mf:name "open1dotclose" ;
-  mf:status mf:proposed ;
-  sx:shex <open1dotclose.shex> ;
-  .
-
 <#open1dotcloseAnnot3> a sht:NegativeSyntax ;
   mf:name "open1dotcloseAnnot3" ;
   mf:status mf:proposed ;
   sx:shex <open1dotcloseAnnot3.shex> ;
-  .
-
-<#open1dotcloseCode1> a sht:NegativeSyntax ;
-  mf:name "open1dotcloseCode1" ;
-  mf:status mf:proposed ;
-  sx:shex <open1dotcloseCode1.shex> ;
-  .
-
-<#open1dotclosecardOpt> a sht:NegativeSyntax ;
-  mf:name "open1dotclosecardOpt" ;
-  mf:status mf:proposed ;
-  sx:shex <open1dotclosecardOpt.shex> ;
-  .
-
-<#openopen1dotOr1dotclose> a sht:NegativeSyntax ;
-  mf:name "openopen1dotOr1dotclose" ;
-  mf:status mf:proposed ;
-  sx:shex <openopen1dotOr1dotclose.shex> ;
-  .
-
-<#openopen1dotcloseCode1closeCode2> a sht:NegativeSyntax ;
-  mf:name "openopen1dotcloseCode1closeCode2" ;
-  mf:status mf:proposed ;
-  sx:shex <openopen1dotcloseCode1closeCode2.shex> ;
   .
 
 <#predicate-ANON> a sht:NegativeSyntax ;

@@ -4,6 +4,7 @@ import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.extend.Extend
 import es.weso.utils.EitherUtils._
+import es.weso.utils.OptionListUtils._
 
 abstract sealed trait ShapeExpr {
   def id: Option[ShapeLabel]
@@ -35,10 +36,10 @@ case class ShapeOr(id: Option[ShapeLabel],
   override def paths(schema: Schema): Either[String,List[Path]] = sequence(shapeExprs.map(_.paths(schema))).map(_.flatten)
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+    this.copy(annotations = maybeAddList(annotations, as))
   }
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+    this.copy(actions = maybeAddList(actions,as))
   }
 }
 
@@ -57,10 +58,10 @@ case class ShapeAnd(id: Option[ShapeLabel],
   override def paths(schema: Schema): Either[String,List[Path]] = sequence(shapeExprs.map(_.paths(schema))).map(_.flatten)
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+    this.copy(annotations = maybeAddList(annotations, as))
   }
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+    this.copy(actions = maybeAddList(actions,as))
   }
 }
 
@@ -80,10 +81,10 @@ case class ShapeNot(id: Option[ShapeLabel],
     shapeExpr.paths(schema)
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+    this.copy(annotations = maybeAddList(annotations, as))
   }
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+    this.copy(actions = maybeAddList(actions,as))
   }
 }
 
@@ -107,11 +108,11 @@ case class NodeConstraint(
 
   override def paths(schema: Schema): Either[String,List[Path]] = Right(List())
 
-  override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+  override def addAnnotations(as: List[Annotation]): NodeConstraint = {
+    this.copy(annotations = maybeAddList(annotations, as))
   }
-  override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+  override def addSemActs(as: List[SemAct]): NodeConstraint = {
+    this.copy(actions = maybeAddList(actions,as))
   }
 }
 
@@ -160,8 +161,9 @@ case class Shape(
                   extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
                   expression: Option[TripleExpr],
                   _extends: Option[List[ShapeLabel]],
-                  actions: Option[List[SemAct]],
-                  annotations: Option[List[Annotation]]) extends ShapeExpr with Extend {
+                  annotations: Option[List[Annotation]],
+                  actions: Option[List[SemAct]]
+                ) extends ShapeExpr with Extend {
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
@@ -204,10 +206,10 @@ case class Shape(
   }
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+    this.copy(annotations = maybeAddList(annotations, as))
   }
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+    this.copy(actions = maybeAddList(actions,as))
   }
 }
 
@@ -248,10 +250,10 @@ case class ShapeRef(reference: ShapeLabel,
     }
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+    this.copy(annotations = maybeAddList(annotations, as))
   }
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+    this.copy(actions = maybeAddList(actions,as))
   }
 }
 
@@ -263,10 +265,10 @@ case class ShapeExternal(id: Option[ShapeLabel],
   override def paths(schema: Schema): Either[String,List[Path]] = Right(List())
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
-    this.copy(annotations = Some(annotations.getOrElse(List[Annotation]()) ++ as))
+    this.copy(annotations = maybeAddList(annotations, as))
   }
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
-    this.copy(actions = Some(actions.getOrElse(List[SemAct]()) ++ as))
+    this.copy(actions = maybeAddList(actions,as))
   }
 
 }

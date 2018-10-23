@@ -12,6 +12,13 @@
       "rdfs:comment": "ShEx negative syntax tests",
       "entries": [
         {
+          "@id": "#directShapeExpression",
+          "@type": "sht:NegativeSyntax",
+          "name": "directShapeExpression",
+          "status": "mf:proposed",
+          "shex": "directShapeExpression.shex"
+        },
+        {
           "@id": "#1decimalMininclusiveroman-numeral",
           "@type": "sht:NegativeSyntax",
           "name": "1decimalMininclusiveroman-numeral",
@@ -488,6 +495,20 @@
           "shex": "a.shex"
         },
         {
+          "@id": "#Dot-Minus-emptylanguageStem",
+          "@type": "sht:NegativeSyntax",
+          "name": "Dot-Minus-emptylanguageStem",
+          "status": "mf:proposed",
+          "shex": "Dot-Minus-emptylanguageStem.shex"
+        },
+        {
+          "@id": "#emptylanguageStem-Minus-emptylanguageStem",
+          "@type": "sht:NegativeSyntax",
+          "name": "emptylanguageStem-Minus-emptylanguageStem",
+          "status": "mf:proposed",
+          "shex": "emptylanguageStem-Minus-emptylanguageStem.shex"
+        },
+        {
           "@id": "#base-no-uri",
           "@type": "sht:NegativeSyntax",
           "name": "base-no-uri",
@@ -537,46 +558,11 @@
           "shex": "literal-0x123.shex"
         },
         {
-          "@id": "#open1dotclose",
-          "@type": "sht:NegativeSyntax",
-          "name": "open1dotclose",
-          "status": "mf:proposed",
-          "shex": "open1dotclose.shex"
-        },
-        {
           "@id": "#open1dotcloseAnnot3",
           "@type": "sht:NegativeSyntax",
           "name": "open1dotcloseAnnot3",
           "status": "mf:proposed",
           "shex": "open1dotcloseAnnot3.shex"
-        },
-        {
-          "@id": "#open1dotcloseCode1",
-          "@type": "sht:NegativeSyntax",
-          "name": "open1dotcloseCode1",
-          "status": "mf:proposed",
-          "shex": "open1dotcloseCode1.shex"
-        },
-        {
-          "@id": "#open1dotclosecardOpt",
-          "@type": "sht:NegativeSyntax",
-          "name": "open1dotclosecardOpt",
-          "status": "mf:proposed",
-          "shex": "open1dotclosecardOpt.shex"
-        },
-        {
-          "@id": "#openopen1dotOr1dotclose",
-          "@type": "sht:NegativeSyntax",
-          "name": "openopen1dotOr1dotclose",
-          "status": "mf:proposed",
-          "shex": "openopen1dotOr1dotclose.shex"
-        },
-        {
-          "@id": "#openopen1dotcloseCode1closeCode2",
-          "@type": "sht:NegativeSyntax",
-          "name": "openopen1dotcloseCode1closeCode2",
-          "status": "mf:proposed",
-          "shex": "openopen1dotcloseCode1closeCode2.shex"
         },
         {
           "@id": "#predicate-ANON",

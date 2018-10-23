@@ -1,9 +1,9 @@
 (function () {
-  if (location.search.substr(1) === "toy") { // some examples from validation/manifestTest.jsonld
+  if (location.search.substr(1) === "toy") { // some examples from validation/manifest.jsonld
     renderManifest(aFewTests(), "validation/");
   } else {
     $.ajaxSetup({ mimeType: "text/plain" }); // for persistent FF bug.
-    $.getJSON(location.search.substr(1) + "/manifestTest.jsonld").then(data => {
+    $.getJSON(location.search.substr(1) + "/manifest.jsonld").then(data => {
       renderManifest(data["@graph"][0].entries, location.search.substr(1) + "/");
     }).fail(e => {
       $("table thead").append(

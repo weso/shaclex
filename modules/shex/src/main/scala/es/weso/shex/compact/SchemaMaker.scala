@@ -264,29 +264,30 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   private def visitShapeAtom(ctx: ShapeAtomContext): Builder[ShapeExpr] = {
     ctx match {
-      case s: ShapeAtomNodeConstraintContext =>
+      case s: ShapeAtomNonLitNodeConstraintContext =>
         for {
-          nk <- visitNodeConstraint(s.nodeConstraint())
+          nk <- visitNonLitNodeConstraint(s.nonLitNodeConstraint())
           sr <- visitOpt(visitShapeOrRef, s.shapeOrRef())
         } yield sr match {
           case None => nk
-          case Some(s) => ShapeAnd(None, List(nk, s), None, None)
+          case Some(sa) => ShapeAnd(None, List(nk, sa), None, None)
         }
-
-      case s: ShapeAtomShapeOrRefContext =>
-        visitShapeOrRef(s.shapeOrRef())
-
+      case s: ShapeAtomLitNodeConstraintContext => for {
+       nc <- visitLitNodeConstraint(s.litNodeConstraint())
+      } yield nc
+      case s: ShapeAtomShapeOrRefContext => for {
+        sr <- visitShapeOrRef(s.shapeOrRef())
+        nlc <- visitNonLitNodeConstraint(s.nonLitNodeConstraint())
+      } yield ShapeAnd(None, List(sr, nlc), None, None)
       case s: ShapeAtomShapeExpressionContext =>
         visitShapeExpression(s.shapeExpression())
-
       case _: ShapeAtomAnyContext =>
         ok(ShapeExpr.any)
-
       case _ => err(s"Internal error visitShapeAtom: unknown ctx $ctx")
     }
   }
 
-  def visitNodeConstraint(ctx: NodeConstraintContext): Builder[NodeConstraint] = {
+  def visitInlineLitNodeConstraint(ctx: InlineLitNodeConstraintContext): Builder[NodeConstraint] = {
     ctx match {
       case s: NodeConstraintLiteralContext =>
         for {
@@ -308,18 +309,39 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           xsFacets <- visitList(visitXsFacet, c.xsFacet())
         } yield NodeConstraint.valueSet(vs, xsFacets)
 
-      case c: NodeConstraintFacetContext => for {
-        facets <- visitList(visitXsFacet, c.xsFacet)
+      case c: NodeConstraintNumericFacetContext => for {
+        facets <- visitList(visitNumericFacet, c.numericFacet)
       } yield NodeConstraint.empty.copy(
         xsFacets = facets)
     }
   }
 
+  override def visitLitNodeConstraint(ctx: LitNodeConstraintContext
+                                     ): Builder[NodeConstraint] = for {
+    nc <- visitInlineLitNodeConstraint(ctx.inlineLitNodeConstraint())
+    semActs <- visitList(visitSemanticAction,ctx.semanticAction())
+    anns <- visitList(visitAnnotation, ctx.annotation())
+  } yield nc.addSemActs(semActs).addAnnotations(anns)
+
+  override def visitNonLitNodeConstraint(ctx: NonLitNodeConstraintContext
+                                        ): Builder[NodeConstraint] = for {
+    nc <- visitInlineNonLitNodeConstraint(ctx.inlineNonLitNodeConstraint())
+    semActs <- visitList(visitSemanticAction,ctx.semanticAction())
+    anns <- visitList(visitAnnotation, ctx.annotation())
+  } yield nc.addSemActs(semActs).addAnnotations(anns)
+
+  def visitInlineNonLitNodeConstraint(ctx: InlineNonLitNodeConstraintContext): Builder[NodeConstraint] = {
+    ctx match {
+      case s: LitNodeConstraintLiteralContext => ???
+      case s: LitNodeConstraintStringFacetContext => ???
+    }
+  }
+
   def visitInlineShapeAtom(ctx: InlineShapeAtomContext): Builder[ShapeExpr] = {
     ctx match {
-      case s: InlineShapeAtomNodeConstraintContext =>
+      case s: InlineShapeAtomNonLitNodeConstraintContext =>
         for {
-          nk <- visitNodeConstraint(s.nodeConstraint())
+          nk <- visitInlineNonLitNodeConstraint(s.inlineNonLitNodeConstraint())
           sr <- visitOpt(visitInlineShapeOrRef, s.inlineShapeOrRef())
         } yield sr match {
           case None => nk
@@ -331,7 +353,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case s: InlineShapeAtomShapeOrRefContext =>
         for {
           sr <- visitInlineShapeOrRef(s.inlineShapeOrRef())
-          nk <- visitOpt(visitNodeConstraint, s.nodeConstraint())
+          nk <- visitOpt(visitInlineNonLitNodeConstraint, s.inlineNonLitNodeConstraint())
         } yield nk match {
           case None => sr
           case Some(n) => ShapeAnd(None, List(sr, n), None, None)

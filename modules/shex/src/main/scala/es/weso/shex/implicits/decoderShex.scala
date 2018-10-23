@@ -169,7 +169,7 @@ object decoderShEx {
       _extends <- optFieldDecode[List[ShapeLabel]](c, "extends")
       semActs <- optFieldDecode[List[SemAct]](c, "semActs")
       annotations <- optFieldDecode[List[Annotation]](c,"annotations")
-    } yield Shape(id, virtual, closed, extra, expression, _extends, semActs, annotations)
+    } yield Shape(id, virtual, closed, extra, expression, _extends, annotations, semActs)
   }
 
   implicit lazy val decodeTripleExpr: Decoder[TripleExpr] =
