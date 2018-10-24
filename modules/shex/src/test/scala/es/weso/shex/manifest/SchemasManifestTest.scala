@@ -4,7 +4,6 @@ import java.nio.file.Paths
 
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 import es.weso.shex.compact.CompareSchemas
 import io.circe.parser._
@@ -29,11 +28,9 @@ class SchemasManifestTest extends ValidateManifest {
           it(s"Should pass test ${e.name}") {
             e match {
               case r: RepresentationTest => {
-                val resolvedJsonIri = IRI(shexFolderURI).resolve(r.json).uri
-                val resolvedShExIri = IRI(shexFolderURI).resolve(r.shex).uri
-                // info(s"Entry: $r with json: ${resolvedJsonIri}")
-                val jsonStr   = Source.fromURI(resolvedJsonIri)("UTF-8").mkString
-                val schemaStr = Source.fromURI(resolvedShExIri)("UTF-8").mkString
+                val base = Paths.get(".").toUri
+                val schemaStr = Source.fromURI(base.resolve(r.shex.uri))("UTF-8").mkString
+                val jsonStr = Source.fromURI(base.resolve(r.json.uri))("UTF-8").mkString
                 Schema.fromString(schemaStr, "SHEXC", None, RDFAsJenaModel.empty) match {
                   case Right(schema) => {
                     decode[Schema](jsonStr) match {
