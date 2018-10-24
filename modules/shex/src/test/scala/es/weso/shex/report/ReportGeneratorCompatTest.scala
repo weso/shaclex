@@ -10,8 +10,10 @@ import es.weso.shex.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.parser.RDFParser
+import es.weso.shapeMaps.{FixedShapeMap, IRILabel, Info}
 import es.weso.shex.validator.Validator
 import es.weso.shex._
+
 import scala.io.Source
 
 class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
@@ -43,113 +45,113 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
   }
 
   def prepareReport(rdf: RDFReader): Report = {
-    var numTests = 0
-    var numPassed = 0
-    var numFailed = 0
-    var numErrors = 0
-
+    val base = Paths.get(".").toUri
     val report = Report.empty
+
+    // If the following variable is None, it runs all tests
+    // Otherwise, it runs only the test whose name is equal to the value of this variable
+    val nameIfSingle: Option[String] =
+      None
+      // Some("1literalStarPatternEnd_pass-bc")
+
     // Validation tests
     for (triple <- rdf.triplesWithType(sht_ValidationTest)) {
-      numTests += 1
       val node = triple.subj
       val nodeStr = node.getLexicalForm
       val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
-      val tryReport = for {
-        name <- stringFromPredicate(mf_name)(node, rdf)
-        action <- objectFromPredicate(mf_action)(node, rdf)
-        schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
-        str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str, "SHEXC", baseIRI,RDFAsJenaModel.empty)
-        dataIRI <- iriFromPredicate(sht_data)(action, rdf)
-        strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
-        data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-        focus <- iriFromPredicate(sht_focus)(action, rdf)
-        shape <- iriFromPredicate(sht_shape)(action, rdf)
-      } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
-      val testReport = tryReport match {
-        case Right(report) => if (report.isRight) {
-          numPassed += 1
-          SingleTestReport(
-            passed = true,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"${report.right.get.serialize("Compact")}")
-        } else {
-          numFailed += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"${report.left.get}")
-        }
-        case Left(e) => {
-          numErrors += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = node.getLexicalForm,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Error ${e}")
+      if (nameIfSingle == None || nameIfSingle.getOrElse("") === name) {
+        it(s"validationTest: $name") {
+          val tryReport = for {
+            name      <- stringFromPredicate(mf_name)(node, rdf)
+            action    <- objectFromPredicate(mf_action)(node, rdf)
+            schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
+            schemaStr = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
+            schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI, RDFAsJenaModel.empty)
+            dataIRI <- iriFromPredicate(sht_data)(action, rdf)
+            strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
+            data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
+            focus          <- iriFromPredicate(sht_focus)(action, rdf)
+            shape          <- iriFromPredicate(sht_shape)(action, rdf)
+            lbl = IRILabel(shape)
+            shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
+            resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
+            ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
+              Right(s"Focus $focus conforms to $shape")
+            else Left(s"Focus $focus does not conform to shape $shape\nResultMap:\n$resultShapeMap" ++
+              s"\nData: \n${strData}\nSchema: ${schemaStr}\n" ++
+              s"${resultShapeMap.getInfo(focus,lbl)}" ++
+              s"Schema: ${schema}"
+            )
+          } yield ok
+          val testReport = tryReport match {
+            case Right(msg) => {
+              SingleTestReport(passed = true,
+                               name = name,
+                               uriTest = nodeStr,
+                               testType = sht_ValidationTest.str,
+                               moreInfo = s"$msg")
+            }
+            case Left(e) => {
+              SingleTestReport(passed = false,
+                               name = name,
+                               uriTest = node.getLexicalForm,
+                               testType = sht_ValidationTest.str,
+                               moreInfo = s"Error:${e}")
+            }
+          }
+          report.addTestReport(testReport)
+          tryReport.fold(e => fail(s"Error: $e"), msg => info(s"$msg"))
         }
       }
-      report.addTestReport(testReport)
     }
 
     // Validation tests
     for (triple <- rdf.triplesWithType(sht_ValidationFailure)) {
-      numTests += 1
-      val node = triple.subj
+      val node    = triple.subj
       val nodeStr = node.getLexicalForm
-      val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
-      val tryReport = for {
-        name <- stringFromPredicate(mf_name)(node, rdf)
-        action <- objectFromPredicate(mf_action)(node, rdf)
-        schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
-        str = Source.fromURL(schemaIRI.getLexicalForm)("UTF-8").mkString
-        schema <- Schema.fromString(str, "SHEXC", baseIRI,RDFAsJenaModel.empty)
-        dataIRI <- iriFromPredicate(sht_data)(action, rdf)
-        strData = Source.fromURL(dataIRI.getLexicalForm)("UTF-8").mkString
-        data <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-        focus <- iriFromPredicate(sht_focus)(action, rdf)
-        shape <- iriFromPredicate(sht_shape)(action, rdf)
-      } yield Validator(schema).validateNodeShape(data, focus, shape.getLexicalForm)
-      val testReport = tryReport match {
-        case Right(report) => if (!report.isRight) {
-          numPassed += 1
-          SingleTestReport(
-            passed = true,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Failed as expected with error: ${report.left.get}")
-        } else {
-          numFailed += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Passed but it was expected to fail. Result: ${report.right.get.serialize("Compact")}")
+      val name    = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
+      if (nameIfSingle == None || nameIfSingle.getOrElse("") === name) {
+        it(s"ValidationFailureTest: $name") {
+        val tryReport = for {
+          name      <- stringFromPredicate(mf_name)(node, rdf)
+          action    <- objectFromPredicate(mf_action)(node, rdf)
+          schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
+          str = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
+          schema  <- Schema.fromString(str, "SHEXC", baseIRI, RDFAsJenaModel.empty)
+          dataIRI <- iriFromPredicate(sht_data)(action, rdf)
+          strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
+          data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
+          focus          <- iriFromPredicate(sht_focus)(action, rdf)
+          shape          <- iriFromPredicate(sht_shape)(action, rdf)
+          lbl = IRILabel(shape)
+          shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
+          resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
+          ok <- if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
+            Right(s"Focus $focus does not conforms to $shape as expected")
+          else
+            Left(s"Focus $focus does conform to shape $shape and should not\nResultMap:\n$resultShapeMap")
+        } yield ok
+        val testReport = tryReport match {
+          case Right(msg) => {
+              SingleTestReport(passed = true,
+                               name = name,
+                               uriTest = nodeStr,
+                               testType = sht_ValidationTest.str,
+                               moreInfo = s"Failed as expected with error: ${msg}")
+          }
+          case Left(e) => {
+            SingleTestReport(passed = false,
+                             name = name,
+                             uriTest = nodeStr,
+                             testType = sht_ValidationTest.str,
+                             moreInfo = s"Error ${e}")
+          }
         }
-        case Left(e) => {
-          numErrors += 1
-          SingleTestReport(
-            passed = false,
-            name = name,
-            uriTest = nodeStr,
-            testType = sht_ValidationTest.str,
-            moreInfo = s"Error ${e}")
-        }
+        report.addTestReport(testReport)
+        tryReport.fold(e => fail(s"Error: $e"), msg => info(s"$msg"))
       }
-      report.addTestReport(testReport)
+     }
     }
-    println(s"# tests $numTests")
-    println(s"# passed $numPassed")
-    println(s"# failed $numFailed")
-    println(s"# errors $numErrors")
     report
   }
 
