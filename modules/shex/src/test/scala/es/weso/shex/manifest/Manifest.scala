@@ -63,7 +63,7 @@ case class ValidationFailure(override val node: RDFNode,
 
 case class BasicAction(data: IRI,
     schema: IRI,
-    focus: Option[IRI],
+    focus: Option[RDFNode],
     shape: Option[IRI]
 )
 

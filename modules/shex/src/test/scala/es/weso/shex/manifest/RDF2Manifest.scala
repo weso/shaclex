@@ -86,7 +86,7 @@ case class RDF2Manifest(base: Option[IRI],
     for {
       schema <- iriFromPredicate(sht_schema)(n, rdf)
       data <- iriFromPredicate(sht_data)(n, rdf)
-      focus <- iriFromPredicateOptional(sht_focus)(n, rdf)
+      focus <- objectFromPredicateOptional(sht_focus)(n, rdf)
       shape <- iriFromPredicateOptional(sht_shape)(n, rdf)
     } yield BasicAction(data,schema,focus,shape)
   }
@@ -281,7 +281,7 @@ object RDF2Manifest extends LazyLogging {
           ): Either[String, Manifest] = {
     for {
       cs <- getContents(fileName)
-      rdf <- RDFAsJenaModel.fromChars(cs, format, None)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
       iriBase <- base match {
         case None => Right(None)
         case Some(str) => IRI.fromString(str).map(Some(_))

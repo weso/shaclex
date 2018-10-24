@@ -138,13 +138,13 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  def validatedPairs: RDFParser[Set[ValidPair]] =
+ /* def validatedPairs: RDFParser[Set[ValidPair]] =
     parsePropertyValues(sht_pair, parsePair)
 
   def parsePair: RDFParser[ValidPair] = (n, rdf) => for {
     node <- objectFromPredicate(sht_node)(n, rdf)
     shape <- objectFromPredicate(sht_shape)(n, rdf)
-  } yield ValidPair(node, shape)
+  } yield ValidPair(node, shape) */
 
   def validationReport: RDFParser[ValidationReport] = (n, rdf) =>
     parsePropertyValues(sh_result, violationError)(n, rdf).

@@ -9,12 +9,15 @@ import es.weso.shex._
 import es.weso.shex.compact.CompareSchemas
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
+import es.weso.shex.validator.Validator
 import io.circe.parser._
 import io.circe.syntax._
+import es.weso.shapeMaps._
+import es.weso.shapeMaps.IRILabel
 
 import scala.io._
 
-class ValidationManifestTest extends ValidateManifest {
+class ValidationManifestCompatTest extends ValidateManifest {
 
   val conf: Config = ConfigFactory.load()
   val shexFolder = conf.getString("validationFolder")
@@ -59,20 +62,79 @@ class ValidationManifestTest extends ValidateManifest {
                 }
               }
               case v: ValidationTest => {
-                val resolvedSchemaIRI = IRI(shexFolderURI).resolve(v.action.schema).uri
-                val resolvedDataIRI = IRI(shexFolderURI).resolve(v.action.data).uri
-                info(s"Error: ShExFolder: \n${shexFolderURI}\nresolved: ${resolvedSchemaIRI}\nSchema: ${v.action.schema}")
-/*                val schemaStr = Source.fromURI(resolvedSchemaIRI)("UTF-8").mkString
-                val dataStr = Source.fromURI(resolvedDataIRI)("UTF-8").mkString
-                val r = for {
+                val base = Paths.get(".").toUri
+                val schemaStr = Source.fromURI(base.resolve(v.action.schema.uri))("UTF-8").mkString
+                val dataStr = Source.fromURI(base.resolve(v.action.data.uri))("UTF-8").mkString
+                val validate = for {
                   schema <- Schema.fromString(schemaStr,"SHEXC",None, RDFAsJenaModel.empty)
                   data <- RDFAsJenaModel.fromChars(dataStr,"TURTLE",None)
-                } yield ()
-                r.fold(e => fail(s"Error: ShExFolder: \n${shexFolderURI}\nresolved: ${resolvedSchemaIRI} Schema: ${v.action.schema}\nError: $e"),
-                  pair => info(s"ValidationTest ${v.name} passed, shexFolder: ${shexFolderURI}, ${resolvedDataIRI}"))
-*/
+                  validation <- (v.action.focus,v.action.shape) match {
+                    case (None,None) => Left(s"No focus and no shape. ${v.name}")
+                    case (Some(focus),Some(shape)) => {
+                      val lbl = IRILabel(shape)
+                      val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
+                      for {
+                        r <- Validator(schema).validateShapeMap(data, shapeMap)
+                      } yield if (r.getConformantShapes(focus).contains(lbl))
+                        Right(s"Shape $shape is conformant for node $focus as expected")
+                      else
+                        Left(s"Shape $shape is not conformant for node $focus and should not\nResultShapeMap: $r")
+                    }
+                    case (Some(focus),None) => {
+                      val shapeMap = FixedShapeMap(Map(focus -> Map(Start -> Info())), data.getPrefixMap, schema.prefixMap)
+                      for {
+                        r <- Validator(schema).validateShapeMap(data, shapeMap)
+                      } yield if (r.getConformantShapes(focus).contains(Start))
+                        Right(s"Start is conformant for node $focus as expected")
+                      else
+                        Left(s"Start is non-conformant for node $focus and should not\nResultShapeMap: $r")
+                    }
+                    case (None,Some(shape)) => Left(s"Only shape. $shape, name: ${v.name}")
+                  }
+                  result <- validation
+                } yield result
+                validate.fold(e => fail(s"Error: ${v.name}: Error: $e"),
+                  resultMsg => {
+                    info(s"ValidationFailure ${v.name} passed")
+                  })
               }
-              case v: ValidationFailure => info(s"ValidationFailure: ${v.name}")
+              case v: ValidationFailure => {
+                val base = Paths.get(".").toUri
+                val schemaStr = Source.fromURI(base.resolve(v.action.schema.uri))("UTF-8").mkString
+                val dataStr = Source.fromURI(base.resolve(v.action.data.uri))("UTF-8").mkString
+                val validate: Either[String,String] = for {
+                  schema <- Schema.fromString(schemaStr,"SHEXC",None, RDFAsJenaModel.empty)
+                  data <- RDFAsJenaModel.fromChars(dataStr,"TURTLE",None)
+                  validation <- (v.action.focus,v.action.shape) match {
+                    case (None,None) => Left(s"No focus and no shape. ${v.name}")
+                    case (Some(focus),Some(shape)) => {
+                      val lbl = IRILabel(shape)
+                      val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
+                      for {
+                        r <- Validator(schema).validateShapeMap(data, shapeMap)
+                      } yield if (r.getNonConformantShapes(focus).contains(lbl))
+                        Right(s"Shape $shape is nonConformant for node $focus")
+                      else
+                        Left(s"Shape $shape is conformant for node $focus and should not\nResultShapeMap: $r")
+                    }
+                    case (Some(focus),None) => {
+                      val shapeMap = FixedShapeMap(Map(focus -> Map(Start -> Info())), data.getPrefixMap, schema.prefixMap)
+                      for {
+                        r <- Validator(schema).validateShapeMap(data, shapeMap)
+                      } yield if (r.getNonConformantShapes(focus).contains(Start))
+                        Right(s"Start is non-conformant for node $focus as expected")
+                      else
+                        Left(s"Start is conformant for node $focus and should not\nResultShapeMap: $r")
+                    }
+                    case (None,Some(shape)) => Left(s"Only shape. $shape, name: ${v.name}")
+                  }
+                 result <- validation
+                } yield result
+                validate.fold(e => fail(s"Error: ${v.name}: Error: $e"),
+                  resultMsg => {
+                    info(s"ValidationFailure ${v.name} passed")
+                  })
+              }
             }
           }
         }
