@@ -51,6 +51,7 @@ object ManifestPrefixes {
   lazy val sht_shape = sht.add("shape")
   lazy val sht_details = sht + "details"
   lazy val sht_pair = sht + "pair"
+  lazy val sht_trait = sht + "trait"
   lazy val sht_validatedPairs = sht + "validatedPairs"
   lazy val sht_Valid = sht + "Valid"
   lazy val sht_NotValid = sht + "NotValid"

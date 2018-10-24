@@ -41,6 +41,32 @@ case class Validate(override val node: RDFNode,
   override val entryType = sht_Validate
 }
 
+case class ValidationTest(override val node: RDFNode,
+                    override val status: Status,
+                    override val name: String,
+                    traits: List[IRI],
+                    comment: String,
+                    action: BasicAction
+                   ) extends Entry {
+  override val entryType = sht_ValidationTest
+}
+
+case class ValidationFailure(override val node: RDFNode,
+                          override val status: Status,
+                          override val name: String,
+                          traits: List[IRI],
+                          comment: String,
+                          action: BasicAction
+                         ) extends Entry {
+  override val entryType = sht_Validate
+}
+
+case class BasicAction(data: IRI,
+    schema: IRI,
+    focus: Option[IRI],
+    shape: Option[IRI]
+)
+
 case class ManifestAction(
   schema: Option[IRI],
   schemaFormat: Option[String],

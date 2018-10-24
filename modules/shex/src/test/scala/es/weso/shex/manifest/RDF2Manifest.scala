@@ -14,14 +14,14 @@ import scala.util._
 case class RDF2Manifest(base: Option[IRI],
                         derefIncludes: Boolean) extends RDFParser with LazyLogging {
 
-  def rdf2Manifest(rdf: RDFReader,
+  private def rdf2Manifest(rdf: RDFReader,
                    visited: List[RDFNode] = List()
                   ): Either[String, List[Manifest]] = {
     val candidates = subjectsWithType(mf_Manifest, rdf).toList
     parseNodes(candidates, manifest(List()))(rdf)
   }
 
-  def manifest(visited: List[IRI]): RDFParser[Manifest] = { (n, rdf) =>
+  private def manifest(visited: List[IRI]): RDFParser[Manifest] = { (n, rdf) =>
     for {
       maybeLabel <- stringFromPredicateOptional(rdfs_label)(n, rdf)
       maybeComment <- stringFromPredicateOptional(rdfs_comment)(n, rdf)
@@ -36,10 +36,10 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  def entries: RDFParser[Seq[Entry]] =
+  private def entries: RDFParser[Seq[Entry]] =
     parsePropertyList(mf_entries, entry)
 
-  def representationTest: RDFParser[RepresentationTest] = { (n,rdf) =>
+  private def representationTest: RDFParser[RepresentationTest] = { (n,rdf) =>
     for {
     name <- stringFromPredicate(mf_name)(n, rdf)
     statusIri <- iriFromPredicate(mf_status)(n, rdf)
@@ -49,7 +49,7 @@ case class RDF2Manifest(base: Option[IRI],
    } yield RepresentationTest(n,Status(statusIri),name,json,shex,ttl)
   }
 
-  def validateTest: RDFParser[Validate] = { (n,rdf) =>
+  private def validateTest: RDFParser[Validate] = { (n,rdf) =>
     for {
       name <- stringFromPredicate(mf_name)(n, rdf)
       statusIri <- iriFromPredicate(mf_status)(n, rdf)
@@ -61,25 +61,56 @@ case class RDF2Manifest(base: Option[IRI],
     } yield Validate(n,Status(statusIri),name,action,result,specRef)
   }
 
-  def entry: RDFParser[Entry] = { (n, rdf) =>
+  private def validationTest: RDFParser[ValidationTest] = { (n,rdf) =>
+    for {
+      name <- stringFromPredicate(mf_name)(n, rdf)
+      statusIri <- iriFromPredicate(mf_status)(n, rdf)
+      traits <- irisFromPredicate(sht_trait)(n, rdf)
+      comment <- stringFromPredicate(rdfs_comment)(n,rdf)
+      actionNode <- objectFromPredicate(mf_action)(n, rdf)
+      action <- basicAction(actionNode, rdf)
+    } yield ValidationTest(n,Status(statusIri),name,traits,comment,action)
+  }
+
+  private def validationFailure: RDFParser[ValidationFailure] = { (n,rdf) =>
+    for {
+      name <- stringFromPredicate(mf_name)(n, rdf)
+      statusIri <- iriFromPredicate(mf_status)(n, rdf)
+      traits <- irisFromPredicate(sht_trait)(n, rdf)
+      comment <- stringFromPredicate(rdfs_comment)(n,rdf)
+      actionNode <- objectFromPredicate(mf_action)(n, rdf)
+      action <- basicAction(actionNode, rdf)
+    } yield ValidationFailure(n,Status(statusIri),name,traits,comment,action)
+  }
+  private def basicAction: RDFParser[BasicAction] = { (n,rdf) =>
+    for {
+      schema <- iriFromPredicate(sht_schema)(n, rdf)
+      data <- iriFromPredicate(sht_data)(n, rdf)
+      focus <- iriFromPredicateOptional(sht_focus)(n, rdf)
+      shape <- iriFromPredicateOptional(sht_shape)(n, rdf)
+    } yield BasicAction(data,schema,focus,shape)
+  }
+  private def entry: RDFParser[Entry] = { (n, rdf) =>
     for {
       entryTypeUri <- rdfType(n, rdf)
       entry <- entryTypeUri match {
         case `sht_RepresentationTest` => representationTest(n,rdf)
         case `sht_Validate` => validateTest(n,rdf)
+        case `sht_ValidationTest`=> validationTest(n,rdf)
+        case `sht_ValidationFailure`=> validationFailure(n,rdf)
         case _ => parseFail(s"Unsupported entry type: $entryTypeUri")
       }
     } yield entry
   }
 
-  def iriDataFormat2str(iri: IRI): Either[String, String] = {
+  private def iriDataFormat2str(iri: IRI): Either[String, String] = {
     iri match {
       case `sht_TURTLE` => parseOk("TURTLE")
       case _ => parseFail("Unexpected schema format: " + iri)
     }
   }
 
-  def iriSchemaFormat2str(iri: IRI): Either[String, String] = {
+  private def iriSchemaFormat2str(iri: IRI): Either[String, String] = {
     iri match {
       case `sht_SHACLC` => parseOk("SHACLC")
       case `sht_TURTLE` => parseOk("TURTLE")
@@ -87,7 +118,7 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  def action: RDFParser[ManifestAction] = { (n, rdf) =>
+  private def action: RDFParser[ManifestAction] = { (n, rdf) =>
     for {
       data <- optional(iriFromPredicate(sht_data))(n, rdf)
       schema <- {
@@ -119,7 +150,7 @@ case class RDF2Manifest(base: Option[IRI],
     )
   }
 
-  def result: RDFParser[Result] = { (n, rdf) =>
+  private def result: RDFParser[Result] = { (n, rdf) =>
     {
       n match {
         case BooleanLiteral(b) => Right(BooleanResult(b))
@@ -132,7 +163,7 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  def compoundResult: RDFParser[Result] = (n, rdf) => {
+  private def compoundResult: RDFParser[Result] = (n, rdf) => {
     iriFromPredicate(rdf_type)(n, rdf) match {
       case Right(iri) => iri match {
         case `sht_ResultShapeMap` => for {
@@ -144,20 +175,20 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  def validatedPairs: RDFParser[Set[ValidPair]] =
+  private def validatedPairs: RDFParser[Set[ValidPair]] =
     parsePropertyValues(sht_pair, parsePair)
 
-  def parsePair: RDFParser[ValidPair] = (n, rdf) => for {
+  private def parsePair: RDFParser[ValidPair] = (n, rdf) => for {
     node <- objectFromPredicate(sht_node)(n, rdf)
     shape <- objectFromPredicate(sht_shape)(n, rdf)
   } yield ValidPair(node, shape)
 
-  def noType(n: RDFNode, rdf: RDFReader): Boolean = {
+  private def noType(n: RDFNode, rdf: RDFReader): Boolean = {
     val types = objectsFromPredicate(rdf_type)(n, rdf)
     types.getOrElse(Set()).isEmpty
   }
 
-  def includes(visited: List[RDFNode]):
+  private def includes(visited: List[RDFNode]):
      RDFParser[List[(RDFNode, Manifest)]] = { (n, rdf) => {
     if (derefIncludes) {
       for {
@@ -177,7 +208,7 @@ case class RDF2Manifest(base: Option[IRI],
   }
 
   /* TODO: The following code doesn't take into account possible loops */
-  def derefInclude(node: RDFNode,
+  private def derefInclude(node: RDFNode,
                    base: Option[IRI],
                    visited: List[RDFNode]): Either[String,(IRI,Manifest)] = node match {
     case iri: IRI => {
@@ -192,24 +223,24 @@ case class RDF2Manifest(base: Option[IRI],
     case _ => Left(s"Trying to deref an include from node $node which is not an IRI")
   }
 
-  def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n, rdf) => for {
+  private def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n, rdf) => for {
     value <- objectFromPredicate(pred)(n, rdf)
     result <- parser(value, rdf)
   } yield result
 
-  def parsePropertyValues[A](pred: IRI, parser: RDFParser[A]): RDFParser[Set[A]] = (n, rdf) => for {
+  private def parsePropertyValues[A](pred: IRI, parser: RDFParser[A]): RDFParser[Set[A]] = (n, rdf) => for {
     values <- objectsFromPredicate(pred)(n, rdf)
     results <- parseNodes(values.toList, parser)(rdf)
   } yield results.toSet
 
-  def parsePropertyList[A](
+  private def parsePropertyList[A](
     pred: IRI,
     parser: RDFParser[A]): RDFParser[List[A]] = (n, rdf) => for {
     ls <- rdfListForPredicateAllowingNone(pred)(n, rdf)
     vs <- parseNodes(ls, parser)(rdf)
   } yield vs
 
-  def mapOptional[A, B](optA: Option[A], fn: A => Either[String, B]): Either[String, Option[B]] = {
+  private def mapOptional[A, B](optA: Option[A], fn: A => Either[String, B]): Either[String, Option[B]] = {
     optA match {
       case None => parseOk(None)
       case Some(x) => {

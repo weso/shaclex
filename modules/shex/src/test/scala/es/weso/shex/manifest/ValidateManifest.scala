@@ -35,7 +35,7 @@ trait ValidateManifest extends FunSpec with Matchers with TryValues with OptionV
     println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
       println(s"Include: $includeNode")
-      val folder = "" // Try { Paths.get(includeNode.getLexicalForm).getParent.toString }.getOrElse("")
+      // val folder = "" // Try { Paths.get(includeNode.getLexicalForm).getParent.toString }.getOrElse("")
 //      println(s"Include folder: parent: ${folder.getParent.toString}, fileName: ${folder.getFileName.toString}")
 //      parseManifest(includeNode.getLexicalForm, folder, parentFolder)
     }
