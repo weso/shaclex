@@ -8,6 +8,7 @@ import es.weso.rdf.nodes._
 import es.weso.shapeMaps.{BNodeLabel, IRILabel => IRIMapLabel, _}
 import es.weso.shex.{ShapeLabel, ShExError}
 import io.circe.Json
+import es.weso.shex.shexR.PREFIXES.sx_start
 
 case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends LazyLogging {
 
@@ -49,6 +50,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends
   private def cnvShapeType(s: ShapeType): Either[String, ShapeMapLabel] = s.label match {
     case None => Left(s"Can't create Result shape map for a shape expression without label. ShapeExpr: ${s.shape}")
     case Some(lbl) => lbl.toRDFNode match {
+      case `sx_start` => Either.right(Start)
       case i: IRI => Either.right(IRIMapLabel(i))
       case b: BNode => Either.right(BNodeLabel(b))
       case _ => Left(s"Can't create Result shape map for a shape expression with label: $lbl")

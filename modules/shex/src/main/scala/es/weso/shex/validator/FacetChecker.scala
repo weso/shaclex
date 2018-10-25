@@ -80,22 +80,24 @@ case class FacetChecker(schema: Schema)
         r <- checkCond(d, attempt, msgErr(s"${node.show} does not match MaxExclusive($m) with $node"),
           s"${node.show} satisfies MaxExclusive($m)")
       } yield r
-      case FractionDigits(m) => {
-        val maybeFd = NodeInfo.fractionDigits(node)
-        maybeFd.fold(e => errStr(e),
+      case FractionDigits(m) => for {
+       rdf <- getRDF
+       maybeFd = NodeInfo.fractionDigits(node,rdf)
+       b <- maybeFd.fold(e => errStr(e),
           fd => checkCond(fd <= m, attempt,
             msgErr(s"${node.show} does not match FractionDigits($m) with $node and fraction digits = $fd"),
           s"${node.show} satisfies FractionDigits($m) with fraction digits = $fd")
         )
-      }
-      case TotalDigits(m) => {
-        val maybeTd = NodeInfo.totalDigits(node)
-        maybeTd.fold(e => errStr(e), td =>
+      } yield b
+      case TotalDigits(m) => for {
+        rdf <- getRDF
+        maybeTd = NodeInfo.totalDigits(node,rdf)
+        b <- maybeTd.fold(e => errStr(e), td =>
         checkCond(td <= m, attempt,
           msgErr(s"${node.show} does not match TotalDigits($m) with $node and totalDigits = $td"),
           s"${node.show} satisfies TotalDigits($m) with total digits = $td")
         )
-      }
+      } yield b
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")
         errStr(s"Not implemented checkFacet: $facet")

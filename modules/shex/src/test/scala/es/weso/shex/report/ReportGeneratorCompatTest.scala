@@ -10,13 +10,19 @@ import es.weso.shex.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.parser.RDFParser
-import es.weso.shapeMaps.{FixedShapeMap, IRILabel, Info}
+import es.weso.shapeMaps.{Start => StartMap, IRILabel => IRIMapLabel, _}
 import es.weso.shex.validator.Validator
 import es.weso.shex._
 
 import scala.io.Source
 
 class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
+
+  // If the following variable is None, it runs all tests
+  // Otherwise, it runs only the test whose name is equal to the value of this variable
+  val nameIfSingle: Option[String] =
+  // None
+  Some("0focusIRI_other")
 
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
@@ -48,11 +54,6 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
     val base = Paths.get(".").toUri
     val report = Report.empty
 
-    // If the following variable is None, it runs all tests
-    // Otherwise, it runs only the test whose name is equal to the value of this variable
-    val nameIfSingle: Option[String] =
-      // None
-      Some("1val1INTEGER_00")
 
     // Validation tests
     for (triple <- rdf.triplesWithType(sht_ValidationTest)) {
@@ -70,17 +71,18 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             dataIRI <- iriFromPredicate(sht_data)(action, rdf)
             strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-            focus          <- iriFromPredicate(sht_focus)(action, rdf)
-            shape          <- iriFromPredicate(sht_shape)(action, rdf)
-            lbl = IRILabel(shape)
+            focus          <- objectFromPredicate(sht_focus)(action, rdf)
+            maybeShape          <- iriFromPredicateOptional(sht_shape)(action, rdf)
+            lbl = maybeShape.fold(StartMap: ShapeMapLabel)(IRIMapLabel(_))
             shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
             resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
             ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
-              Right(s"Focus $focus conforms to $shape")
-            else Left(s"Focus $focus does not conform to shape $shape\nResultMap:\n$resultShapeMap" ++
+              Right(s"Focus $focus conforms to $lbl")
+            else Left(s"Focus $focus does not conform to shape $lbl\nResultMap:\n$resultShapeMap" ++
               s"\nData: \n${strData}\nSchema: ${schemaStr}\n" ++
-              s"${resultShapeMap.getInfo(focus,lbl)}" ++
-              s"Schema: ${schema}"
+              s"${resultShapeMap.getInfo(focus,lbl)}\n" ++
+              s"Schema: ${schema}\n" ++
+              s"Data: ${data}"
             )
           } yield ok
           val testReport = tryReport match {
@@ -121,15 +123,15 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
           dataIRI <- iriFromPredicate(sht_data)(action, rdf)
           strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-          focus          <- iriFromPredicate(sht_focus)(action, rdf)
-          shape          <- iriFromPredicate(sht_shape)(action, rdf)
-          lbl = IRILabel(shape)
+          focus          <- objectFromPredicate(sht_focus)(action, rdf)
+          maybeShape     <- iriFromPredicateOptional(sht_shape)(action, rdf)
+          lbl = maybeShape.fold(StartMap: ShapeMapLabel)(IRIMapLabel(_))
           shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
           resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
           ok <- if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
-            Right(s"Focus $focus does not conforms to $shape as expected")
+            Right(s"Focus $focus does not conforms to $lbl as expected")
           else
-            Left(s"Focus $focus does conform to shape $shape and should not\nResultMap:\n$resultShapeMap")
+            Left(s"Focus $focus does conform to shape $lbl and should not\nResultMap:\n$resultShapeMap")
         } yield ok
         val testReport = tryReport match {
           case Right(msg) => {

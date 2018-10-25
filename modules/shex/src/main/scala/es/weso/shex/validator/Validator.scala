@@ -11,13 +11,13 @@ import es.weso.collection.Bag
 import es.weso.rbe.interval.IntervalChecker
 import es.weso.rbe.{BagChecker, Empty, Rbe}
 import es.weso.rbe.BagChecker._
-import es.weso.utils.{MyLogging, SeqUtils}
+import es.weso.utils.SeqUtils
 import es.weso.shex.implicits.showShEx._
 import ShExError._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.validator.Table._
 import ShExChecker._
-import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, _}
+import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMapLabel, _}
 
 /**
  * ShEx validator
@@ -64,8 +64,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       toList.map(checkPair2nd))
   }
 
-  private[validator] def checkNodesShapes(fixedShapeMap: FixedShapeMap): CheckTyping = for {
-    ts <- checkAll(fixedShapeMap.shapeMap.map {
+  private[validator] def checkNodesShapes(fixedMap: FixedShapeMap): CheckTyping = for {
+    ts <- checkAll(fixedMap.shapeMap.map {
       case (node, shapesMap) => {
         checkNodeShapesMap(node, shapesMap)
       }
@@ -80,7 +80,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                                                ): CheckTyping =
     info.status match {
     case Conformant => label match {
-      case Start => checkNodeStart(node)
+      case StartMapLabel => {
+        checkNodeStart(node)
+      }
       case IRIMapLabel(iri) => checkNodeShapeName(node, iri.getLexicalForm)
       case BNodeMapLabel(b) => checkNodeShapeName(node, b.getLexicalForm)
     }
@@ -124,9 +126,12 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case None => errStr(s"checking node $node against start declaration of schema. No start declaration found")
       case Some(shape) => {
         logger.debug(s"nodeStart. Node: ${node.show}")
-        val shapeType = ShapeType(shape, None, schema)
+        val shapeType = ShapeType(shape, Some(Start), schema)
         val attempt = Attempt(NodeShape(node, shapeType), None)
-        checkNodeShapeExpr(attempt, node, shape)
+        runLocalSafeTyping(checkNodeShapeExpr(attempt, node, shape),_.addType(node,shapeType),
+          (err, t) => {
+            t.addNotEvidence(node, shapeType, err)
+          })
       }
     }
   }
@@ -144,10 +149,16 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   private[validator] def checkNodeLabelSafe(node: RDFNode, label: ShapeLabel, shape: ShapeExpr): CheckTyping = {
-    for {
+    val shapeType = ShapeType(shape, Some(label), schema)
+    val attempt = Attempt(NodeShape(node, shapeType), None)
+    runLocalSafeTyping(
+      checkNodeShapeExpr(attempt, node, shape),
+      _.addType(node, shapeType),
+      (err, t) => {
+        t.addNotEvidence(node, shapeType, err)
+      })
+/*    for {
       typing <- getTyping
-      shapeType = ShapeType(shape, Some(label), schema)
-      attempt = Attempt(NodeShape(node, shapeType), None)
       t <- {
         runLocalSafeTyping(
           checkNodeShapeExpr(attempt, node, shape),
@@ -156,7 +167,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
             t.addNotEvidence(node, shapeType, err)
           })
       }
-    } yield t
+    } yield t */
   }
 
   private[validator] def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {

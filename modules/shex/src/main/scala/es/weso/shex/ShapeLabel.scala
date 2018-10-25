@@ -1,5 +1,5 @@
 package es.weso.shex
-
+import es.weso.shex.shexR.PREFIXES.{sx_start}
 import es.weso.rdf.nodes.{BNode, IRI, RDFNode}
 
 abstract sealed trait ShapeLabel {
@@ -7,9 +7,11 @@ abstract sealed trait ShapeLabel {
   def toRDFNode: RDFNode = this match {
     case IRILabel(iri) => iri
     case BNodeLabel(bn) => bn
+    case Start => sx_start
   }
 }
 
+case object Start extends ShapeLabel
 case class IRILabel(iri: IRI) extends ShapeLabel
 case class BNodeLabel(bnode: BNode) extends ShapeLabel
 

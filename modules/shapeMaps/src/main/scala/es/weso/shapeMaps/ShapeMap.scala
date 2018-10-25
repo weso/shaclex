@@ -193,9 +193,8 @@ object ShapeMap {
           s"${a.node.show}@${if (a.info.status==NonConformant) "!" else ""}${a.shape.show}"
         }
       }
-
-      a.associations.map(_.show).mkString(",")
-
+      if (a.associations.isEmpty) s"<EmptyShowMap>"
+      else a.associations.map(_.show).mkString(",")
     }
   }
 

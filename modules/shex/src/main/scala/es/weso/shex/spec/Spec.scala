@@ -5,7 +5,15 @@ import cats.implicits._
 import es.weso.shex.implicits.showShEx._
 import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, Literal, RDFNode}
-import es.weso.shapeMaps.{BNodeLabel => BNodeShapeMapLabel, Conformant => ConformantStatus, IRILabel => IriShapeMapLabel, Info => ShapeMapInfo, NonConformant => NonConformantStatus, _}
+import es.weso.shapeMaps.{
+  BNodeLabel => BNodeShapeMapLabel,
+  Conformant => ConformantStatus,
+  IRILabel => IriShapeMapLabel,
+  Info => ShapeMapInfo,
+  NonConformant => NonConformantStatus,
+  Start => StartMapLabel,
+  _
+}
 import es.weso.shex._
 import Check._
 import com.typesafe.scalalogging.LazyLogging
@@ -330,7 +338,7 @@ object Spec extends LazyLogging {
   def getShapeFromShapeMapLabel(lbl: ShapeMapLabel): Check[ShapeExpr] = for {
     schema <- getSchema
     shape <- lbl match {
-      case Start => schema.start match {
+      case StartMapLabel => schema.start match {
         case None => err(s"Not found Start in schema")
         case Some(se) => pure(se)
       }
