@@ -81,16 +81,20 @@ case class FacetChecker(schema: Schema)
           s"${node.show} satisfies MaxExclusive($m)")
       } yield r
       case FractionDigits(m) => {
-        val fd = NodeInfo.fractionDigits(node)
-        checkCond(fd <= m, attempt,
-          msgErr(s"${node.show} does not match FractionDigits($m) with $node and fraction digits = $fd"),
+        val maybeFd = NodeInfo.fractionDigits(node)
+        maybeFd.fold(e => errStr(e),
+          fd => checkCond(fd <= m, attempt,
+            msgErr(s"${node.show} does not match FractionDigits($m) with $node and fraction digits = $fd"),
           s"${node.show} satisfies FractionDigits($m) with fraction digits = $fd")
+        )
       }
       case TotalDigits(m) => {
-        val td = NodeInfo.totalDigits(node)
+        val maybeTd = NodeInfo.totalDigits(node)
+        maybeTd.fold(e => errStr(e), td =>
         checkCond(td <= m, attempt,
           msgErr(s"${node.show} does not match TotalDigits($m) with $node and totalDigits = $td"),
           s"${node.show} satisfies TotalDigits($m) with total digits = $td")
+        )
       }
       case _ => {
         logger.error(s"Not implemented checkFacet: $facet")

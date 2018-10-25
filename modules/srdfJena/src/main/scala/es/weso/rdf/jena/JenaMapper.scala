@@ -105,11 +105,14 @@ object JenaMapper {
                 logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a double to create literal")
                 DatatypeLiteral(lit.getLexicalForm, datatype)
               }
-            case RDFNode.BooleanDatatypeIRI =>
-              Try(BooleanLiteral(lit.getLexicalForm.toBoolean)).getOrElse {
-                logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as boolean to create literal")
-                DatatypeLiteral(lit.getLexicalForm, datatype)
+            case RDFNode.BooleanDatatypeIRI => {
+              // Lexical form of boolean literals is lowercase true or false
+              lit.getLexicalForm match {
+                case "true" => BooleanLiteral(true)
+                case "false" => BooleanLiteral(false)
+                case _ => DatatypeLiteral(lit.getLexicalForm, datatype)
               }
+            }
             case RDFNode.LangStringDatatypeIRI => LangLiteral(lit.getLexicalForm, Lang(lit.getLanguage))
             case _ => DatatypeLiteral(lit.getLexicalForm, datatype)
           }
@@ -237,7 +240,6 @@ object JenaMapper {
           jenaLiteral.getDatatypeURI
         } match {
           case Success(iri) => {
-            // println(s"JenaMapper.welltypedDatatype, $node. Comparing $expectedDatatype with $iri")
             Right(iri == expectedDatatype.str)
           }
           case Failure(e) => Left(e.getMessage)

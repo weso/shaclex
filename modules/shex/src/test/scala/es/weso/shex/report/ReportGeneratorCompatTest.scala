@@ -51,8 +51,8 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
     // If the following variable is None, it runs all tests
     // Otherwise, it runs only the test whose name is equal to the value of this variable
     val nameIfSingle: Option[String] =
-      None
-      // Some("1literalStarPatternEnd_pass-bc")
+      // None
+      Some("1val1INTEGER_00")
 
     // Validation tests
     for (triple <- rdf.triplesWithType(sht_ValidationTest)) {
