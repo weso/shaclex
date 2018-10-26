@@ -22,7 +22,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
   // None
-  Some("0focusIRI_other")
+   Some("2RefS1-Icirc")
 
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
@@ -67,7 +67,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             action    <- objectFromPredicate(mf_action)(node, rdf)
             schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
             schemaStr = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
-            schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI, RDFAsJenaModel.empty)
+            schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI)
             dataIRI <- iriFromPredicate(sht_data)(action, rdf)
             strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
@@ -119,7 +119,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
           action    <- objectFromPredicate(mf_action)(node, rdf)
           schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
           str = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
-          schema  <- Schema.fromString(str, "SHEXC", baseIRI, RDFAsJenaModel.empty)
+          schema  <- Schema.fromString(str, "SHEXC", baseIRI)
           dataIRI <- iriFromPredicate(sht_data)(action, rdf)
           strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)

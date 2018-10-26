@@ -28,7 +28,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
   type NodeChecker = Attempt => RDFNode => CheckTyping
   type Neighs = List[Arc]
-  type Candidates = List[(Arc, Set[ConstraintRef])]
+  type Candidate = (Arc, Set[ConstraintRef])
+  type Candidates = List[Candidate]
   type NoCandidates = List[Arc]
   type Bag_ = Bag[ConstraintRef]
   type Rbe_ = Rbe[ConstraintRef]
@@ -420,12 +421,17 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     neighs: Neighs,
     table: CTable): Check[(Candidates, NoCandidates)] = {
     val candidates = table.neighs2Candidates(neighs)
-    if (candidates.isEmpty) {
-      errStr(s"No candidates match. Neighs: ${neighs.show}, Table: ${table.show}")
-    } else {
-      val (cs, rs) = candidates.partition { case (_, s) => !s.isEmpty }
-      ok((cs, rs.map { case (arc, _) => arc }))
-    }
+    val (cs, rs) = candidates.partition(matchable)
+    ok((cs, rs.map(getArc(_))))
+  }
+
+  private def getArc(c: Candidate): Arc = {
+    c._1
+  }
+
+  private def matchable(c: Candidate):Boolean = {
+    val (_,constraintSet) = c
+    !constraintSet.isEmpty
   }
 
   private[validator] def checkCandidates(

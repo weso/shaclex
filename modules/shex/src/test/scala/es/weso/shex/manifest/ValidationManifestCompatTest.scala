@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
-import es.weso.shex._
+import es.weso.shex.{IRILabel => ShExIRILabel, Start => ShExStart, _}
 import es.weso.shex.compact.CompareSchemas
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
@@ -13,7 +13,6 @@ import es.weso.shex.validator.Validator
 import io.circe.parser._
 import io.circe.syntax._
 import es.weso.shapeMaps._
-import es.weso.shapeMaps.IRILabel
 
 import scala.io._
 
@@ -37,7 +36,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
                 // info(s"Entry: $r with json: ${resolvedJsonIri}")
                 val jsonStr   = Source.fromURI(resolvedJsonIri)("UTF-8").mkString
                 val schemaStr = Source.fromURI(resolvedShExIri)("UTF-8").mkString
-                Schema.fromString(schemaStr, "SHEXC", None, RDFAsJenaModel.empty) match {
+                Schema.fromString(schemaStr, "SHEXC", None) match {
                   case Right(schema) => {
                     decode[Schema](jsonStr) match {
                       case Left(err) => fail(s"Error parsing Json ${r.json}: $err")
@@ -66,7 +65,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
                 val schemaStr = Source.fromURI(base.resolve(v.action.schema.uri))("UTF-8").mkString
                 val dataStr = Source.fromURI(base.resolve(v.action.data.uri))("UTF-8").mkString
                 val validate = for {
-                  schema <- Schema.fromString(schemaStr,"SHEXC",None, RDFAsJenaModel.empty)
+                  schema <- Schema.fromString(schemaStr,"SHEXC",None)
                   data <- RDFAsJenaModel.fromChars(dataStr,"TURTLE",None)
                   validation <- (v.action.focus,v.action.shape) match {
                     case (None,None) => Left(s"No focus and no shape. ${v.name}")
@@ -103,7 +102,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
                 val schemaStr = Source.fromURI(base.resolve(v.action.schema.uri))("UTF-8").mkString
                 val dataStr = Source.fromURI(base.resolve(v.action.data.uri))("UTF-8").mkString
                 val validate: Either[String,String] = for {
-                  schema <- Schema.fromString(schemaStr,"SHEXC",None, RDFAsJenaModel.empty)
+                  schema <- Schema.fromString(schemaStr,"SHEXC",None)
                   data <- RDFAsJenaModel.fromChars(dataStr,"TURTLE",None)
                   validation <- (v.action.focus,v.action.shape) match {
                     case (None,None) => Left(s"No focus and no shape. ${v.name}")

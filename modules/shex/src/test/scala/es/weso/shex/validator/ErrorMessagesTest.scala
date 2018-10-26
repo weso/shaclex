@@ -26,7 +26,7 @@ class ErrorMessagesTest extends FunSpec with Matchers with EitherValues {
       val s: ShapeMapLabel = IRILabel(IRI(s"http://example.org/S"))
       val eitherResult = for {
         rdf <- RDFAsJenaModel.fromChars(rdfStr,"TURTLE", None)
-        shex <- Schema.fromString(shexStr,"SHEXC",None,RDFAsJenaModel.empty)
+        shex <- Schema.fromString(shexStr,"SHEXC",None)
         shapeMap <- ShapeMap.fromCompact(smapStr, None, rdf.getPrefixMap, shex.prefixMap)
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)
         result <- Validator.validate(shex, fixedShapeMap, rdf)

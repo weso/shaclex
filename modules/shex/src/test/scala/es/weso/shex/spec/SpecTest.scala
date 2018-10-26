@@ -191,7 +191,7 @@ class SpecTest extends FunSpec with Matchers with EitherValues {
     it(s"Should validate RDF\n$strRDF\nSchema:\n$strSchema\nShapeMap:$strShapeMap\nExpected shape map: $strExpectedShapeMap") {
         val r = for {
           rdf <- RDFAsJenaModel.fromChars(strRDF, "Turtle", None)
-          schema <- Schema.fromString(strSchema, "ShExC", None, RDFAsJenaModel.empty)
+          schema <- Schema.fromString(strSchema, "ShExC", None)
           shapeMap <- ShapeMap.fromString(strShapeMap, "Compact", None, rdf.getPrefixMap, schema.prefixMap)
           fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, schema.prefixMap)
           shapeTyping <- Check.runCheck(Env(schema, TypingMap.empty, rdf), Spec.checkShapeMap(rdf, fixedShapeMap))

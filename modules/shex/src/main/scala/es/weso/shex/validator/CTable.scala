@@ -188,7 +188,7 @@ object Table extends LazyLogging {
         }
         cs.foldLeft(List[String]())(combine).mkString(",")
       }
-      s"""Constraints: ${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}""".stripMargin
+      s"""Constraints: ${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}\n---endTable\n""".stripMargin
     }
   }
 }

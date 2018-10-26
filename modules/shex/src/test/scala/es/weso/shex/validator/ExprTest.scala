@@ -21,7 +21,7 @@ class ExprTest extends FunSpec with Matchers with EitherValues {
         """.stripMargin
 
       val eitherResult = for {
-        schema <- Schema.fromString(strSchema, "ShExC", None, RDFAsJenaModel.empty)
+        schema <- Schema.fromString(strSchema, "ShExC", None)
       } yield schema
 
       eitherResult.fold(e => fail(s"Error: $e"), r => info(s"Parsed as $r"))
@@ -62,7 +62,7 @@ class ExprTest extends FunSpec with Matchers with EitherValues {
 
       val eitherResult = for {
         rdf <- RDFAsJenaModel.fromChars(strRdf,"TURTLE",None)
-        schema <- Schema.fromString(strSchema,"ShExC",None, RDFAsJenaModel.empty)
+        schema <- Schema.fromString(strSchema,"ShExC",None)
         shapeMap <- ShapeMap.fromString(strShapeMap,"Compact",None,rdf.getPrefixMap,schema.prefixMap)
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap,rdf,rdf.getPrefixMap,schema.prefixMap)
         expectedShapeMap <- ShapeMap.fromString(strExpectedShapeMap,"Compact", None, rdf.getPrefixMap,schema.prefixMap)

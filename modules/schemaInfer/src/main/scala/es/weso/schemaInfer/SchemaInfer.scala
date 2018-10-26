@@ -214,7 +214,7 @@ object SchemaInfer {
     val pm1 = addPrefix("xsd",xsd,pm,inferOptions, _.addXSDAlias,m,hasXSD)
     val pm2 = addPrefix("rdf",rdf,pm1,inferOptions, _.addRDFAlias,m,hasRDF)
     val pm3 = addPrefix("sx",sx,pm2,inferOptions, _.addSxAlias,m,hasStar)
-    Schema(Some(pm3), None, None, None, Some(List(shape)), None, List())
+    Schema(IRI(""),Some(pm3), None, None, None, Some(List(shape)), None, List())
   }
 
   private case class InferredValue(constraint: InferredNodeConstraint, number: Int)

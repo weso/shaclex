@@ -38,7 +38,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
     shapes <- star(sx_shapes, shapeExpr)(n, rdf)
     // TODO: import
   } yield {
-    Schema(Some(rdf.getPrefixMap()), None, startActions, start, ls2Option(shapes),None, List())
+    Schema(IRI(""),Some(rdf.getPrefixMap()), None, startActions, start, ls2Option(shapes),None, List())
   }
 
   /*  def cnvShapePairs(ps: List[(RDFNode,ShapeExpr)]): Try[Map[ShapeLabel,ShapeExpr]] = {

@@ -6,9 +6,11 @@ import es.weso.rdf.{PrefixMap, RDFBuilder, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
 
+import scala.io.Source
 import scala.util.{Either, Left, Right}
 
-case class Schema(prefixes: Option[PrefixMap],
+case class Schema(id: IRI,
+                  prefixes: Option[PrefixMap],
                   base: Option[IRI],
                   startActs: Option[List[SemAct]],
                   start: Option[ShapeExpr],
@@ -47,6 +49,31 @@ case class Schema(prefixes: Option[PrefixMap],
     }
   }
 
+  lazy val resolvedShapesMap: Either[String,Map[ShapeLabel,ShapeExpr]] = {
+    closureImports(imports, List(id), shapesMap)
+  }
+
+  private def closureImports(imports: List[IRI],
+                             visited: List[IRI],
+                             current: Map[ShapeLabel,ShapeExpr]
+                            ): Either[String, Map[ShapeLabel,ShapeExpr]] = imports match {
+    case Nil => Right(current)
+    case (i::is) => if (visited contains i) closureImports(is,visited,current)
+    else {
+      expand(i, current).fold(
+        e => Left(e),
+        newShapeMap => closureImports(is, i :: visited, newShapeMap))
+    }
+  }
+
+  private def expand(i: IRI, current: Map[ShapeLabel,ShapeExpr]): Either[String, Map[ShapeLabel,ShapeExpr]] = {
+    Schema.fromIRI(i).fold(e => Left(e),
+      schema => {
+        Right(schema.shapesMap ++ current)
+      }
+    )
+  }
+
   def qualify(node: RDFNode): String =
     prefixMap.qualify(node)
 
@@ -80,7 +107,12 @@ object Schema {
   def rdfDataFormats(rdfReader: RDFReader) = rdfReader.availableParseFormats.map(_.toUpperCase) //   RDFAsJenaModel.availableFormats.map(_.toUpperCase)
 
   def empty: Schema =
-    Schema(None, None, None, None, None, None, List())
+    Schema(IRI(""),None, None, None, None, None, None, List())
+
+  def fromIRI(i: IRI): Either[String, Schema] = {
+    val str = Source.fromURI(i.uri).mkString
+    fromString(str,"ShExC",None)
+  }
 
   /**
   * Reads a Schema from a char sequence
@@ -93,7 +125,7 @@ object Schema {
   def fromString(cs: CharSequence,
                  format: String,
                  base: Option[String],
-                 rdfReader: RDFReader
+                 maybeRDFReader: Option[RDFReader] = None
                 ): Either[String, Schema] = {
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
@@ -106,15 +138,17 @@ object Schema {
         import es.weso.shex.implicits.decoderShEx._
         decode[Schema](cs.toString).leftMap(_.getMessage)
       }
-      case _ if (rdfDataFormats(rdfReader).contains(formatUpperCase)) => for {
-        rdf <- rdfReader.fromString(cs, formatUpperCase, base)
-        schema <- RDF2ShEx.rdf2Schema(rdf)
-      } yield schema
-
-      case _ => Left(s"Not implemented ShEx parser for format $format")
+      case _ => maybeRDFReader match {
+        case None => Left(s"Not implemented ShEx parser for format $format and no rdfReader provided")
+        case Some(rdfReader) =>
+         if (rdfDataFormats(rdfReader).contains(formatUpperCase)) for {
+          rdf    <- rdfReader.fromString(cs, formatUpperCase, base)
+          schema <- RDF2ShEx.rdf2Schema(rdf)
+         } yield schema
+         else Left(s"Not implemented ShEx parser for format $format")
+       }
     }
   }
-
   def serialize(schema: Schema,
                 format: String,
                 rdfBuilder: RDFBuilder): Either[String,String] = {

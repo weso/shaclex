@@ -4,7 +4,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{BNode, IRI}
 import es.weso.rdf.triples.RDFTriple
 import org.scalatest._
-import es.weso.utils.NormalizaBNodes._
+import es.weso.utils.NormalizeBNodes._
 
 class NormalizeBNodesTest extends FunSpec with Matchers {
   describe(s"Parse RDF with blank nodes") {

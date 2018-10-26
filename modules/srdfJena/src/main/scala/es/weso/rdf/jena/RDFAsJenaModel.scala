@@ -9,14 +9,13 @@ import scala.util.Try
 import es.weso.rdf._
 import org.apache.jena.rdf.model.{Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
-import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.riot.{RDFDataMgr, RDFLanguages, RDFParser}
 import org.apache.jena.rdf.model.ModelFactory
-
+import org.apache.jena.riot.lang._
 import scala.util._
 import java.io._
 
 import org.apache.jena.riot.RDFLanguages._
-import org.apache.jena.riot.RDFLanguages
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.path.SHACLPath
 import es.weso.utils._
@@ -26,6 +25,9 @@ import org.apache.jena.query.{Query, QueryExecutionFactory, QuerySolutionMap, Re
 import org.apache.jena.sparql.path.Path
 import cats.implicits._
 import es.weso.rdf.dot.RDF2Dot
+import org.apache.jena.graph.Graph
+import org.apache.jena.riot.system.{StreamRDF, StreamRDFLib}
+import org.apache.jena.sparql.util.Context
 
 case class RDFAsJenaModel(model: Model, sourceIRI: Option[IRI] = None)
   extends RDFReader
@@ -41,17 +43,24 @@ case class RDFAsJenaModel(model: Model, sourceIRI: Option[IRI] = None)
 
   override def fromString(cs: CharSequence,
                           format: String,
-                          base: Option[String] = None): Either[String, Rdf] = {
+                          base: Option[String] = None): Either[String, Rdf] =
     Try {
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
       val baseURI = base.getOrElse("")
-      RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
+      // The following 4 statements are equivalent to :
+      // RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
+      val g: Graph = m.getGraph
+      val dest : StreamRDF = StreamRDFLib.graph(g)
+      val ctx : Context = null
+      RDFParser.create.source(str_reader).
+        base(baseURI).
+        labelToNode(LabelToNode.createUseLabelEncoded()).
+        lang(shortnameToLang(format)).context(ctx).parse(dest)
       RDFAsJenaModel(JenaUtils.relativizeModel(m))
     }.fold(e => Left(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs"),
       Right(_)
     )
-  }
 
   private def getRDFFormat(formatName: String): Either[String,String] = {
     val supportedFormats: List[String] =
@@ -327,8 +336,8 @@ case class RDFAsJenaModel(model: Model, sourceIRI: Option[IRI] = None)
     case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
   }
 
-  def normalizeBNodes: RDFBuilder  = {
-    NormalizaBNodes.normalizeBNodes(this,this.empty)
+  def normalizeBNodes: Rdf  = {
+    NormalizeBNodes.normalizeBNodes(this,this.empty)
   }
 
   /**
@@ -366,7 +375,7 @@ case class RDFAsJenaModel(model: Model, sourceIRI: Option[IRI] = None)
 
   override def merge(other: RDFReader): Either[String,Rdf] = other match {
     case jenaRdf: RDFAsJenaModel =>
-      Right(RDFAsJenaModel(this.model.add(jenaRdf.model)))
+      Right(RDFAsJenaModel(this.model.add(jenaRdf.normalizeBNodes.model)))
     case _ => {
       val zero: Either[String,Rdf] = Right(this)
       def cmb(next: Either[String,Rdf], x: RDFTriple): Either[String,Rdf] = for {
@@ -397,7 +406,17 @@ object RDFAsJenaModel {
   def fromIRI(iri: IRI): Either[String,RDFAsJenaModel] = {
     Try {
       // We delegate RDF management to Jena (content-negotiation and so...)
-      RDFDataMgr.loadModel(iri.str)
+      // RDFDataMgr.loadModel(iri.str)
+      val m = ModelFactory.createDefaultModel()
+      //      RDFDataMgr.read(m, uri, baseURI, shortnameToLang(format))
+      val g: Graph = m.getGraph
+      val dest : StreamRDF = StreamRDFLib.graph(g)
+      val ctx : Context = null
+      RDFParser.create.source(iri.str).
+        labelToNode(LabelToNode.createUseLabelEncoded()).
+        context(ctx).
+        parse(dest)
+      m
     }.toEither.
       leftMap(e => s"Exception reading RDF from ${iri.show}: ${e.getMessage}").
       map(model => RDFAsJenaModel(model))
@@ -410,7 +429,15 @@ object RDFAsJenaModel {
     val baseURI = base.getOrElse(FileUtils.currentFolderURL)
     Try {
       val m = ModelFactory.createDefaultModel()
-      RDFDataMgr.read(m, uri, baseURI, shortnameToLang(format))
+//      RDFDataMgr.read(m, uri, baseURI, shortnameToLang(format))
+      val g: Graph = m.getGraph
+      val dest : StreamRDF = StreamRDFLib.graph(g)
+      val ctx : Context = null
+      RDFParser.create.source(uri).
+        base(baseURI).
+        labelToNode(LabelToNode.createUseLabelEncoded()).
+        lang(shortnameToLang(format)).context(ctx).parse(dest)
+
       RDFAsJenaModel(JenaUtils.relativizeModel(m), Some(IRI(uri)))
     }.fold(e => Left(s"Exception accessing uri $uri: ${e.getMessage}"),
       (Right(_))
@@ -422,7 +449,15 @@ object RDFAsJenaModel {
     Try {
       val m = ModelFactory.createDefaultModel()
       val is: InputStream = new FileInputStream(file)
-      RDFDataMgr.read(m, is, baseURI, shortnameToLang(format))
+      // RDFDataMgr.read(m, is, baseURI, shortnameToLang(format))
+      val g: Graph = m.getGraph
+      val dest : StreamRDF = StreamRDFLib.graph(g)
+      val ctx : Context = null
+      RDFParser.create.source(is).
+        base(baseURI).
+        labelToNode(LabelToNode.createUseLabelEncoded()).
+        lang(shortnameToLang(format)).context(ctx).parse(dest)
+
       RDFAsJenaModel(JenaUtils.relativizeModel(m), Some(IRI(file.toURI)))
     }.fold(e => Left(s"Exception parsing RDF from file ${file.getName}: ${e.getMessage}"),
            Right(_))

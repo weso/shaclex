@@ -1,11 +1,9 @@
 package es.weso.rdf.jena
 
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.Matchers
 import org.scalatest.FunSpec
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.nodes._
-import es.weso.rdf.jena._
 import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
@@ -86,13 +84,12 @@ class RDFJenaSpec
                    |""".stripMargin
       val rdf = RDFAsJenaModel.empty.fromString(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
-      val b = IRI("http://example.org#b")
       val p = IRI("http://example.org#p")
       val typeC = IRI("http://example.org#C")
       val triples = rdf.triplesWithSubject(a)
 
       val t1 = RDFTriple(a, rdf_type, typeC)
-      val t2 = RDFTriple(a, p, IntegerLiteral(1))
+      val t2 = RDFTriple(a, p, IntegerLiteral(1,"1"))
       triples should be(Set(t1, t2))
     }
 
@@ -118,7 +115,7 @@ class RDFJenaSpec
       val rdf = RDFAsJenaModel.empty.fromString(str, "TURTLE").right.get
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
-      val value = IntegerLiteral(15)
+      val value = IntegerLiteral(15,"15")
       val triples = rdf.triplesWithSubject(a)
       val t1 = RDFTriple(a, age, value)
       triples should be(Set(t1))
@@ -219,7 +216,6 @@ class RDFJenaSpec
       val teacher1 = e + "teacher1"
       val teacher2 = e + "teacher2"
       val dog1 = e + "dog1"
-      val any = e + "any"
       val _Person = e + "Person"
       val _Teacher = e + "Teacher"
       val _UniversityTeacher = e + "UniversityTeacher"

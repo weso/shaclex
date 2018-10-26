@@ -131,13 +131,14 @@ trait RDFParser {
    *
    * @param p predicate
    */
-  def objectFromPredicate(p: IRI): RDFParser[RDFNode] = { (n, rdf) =>
+  def objectFromPredicate(p: IRI): RDFParser[RDFNode] = { (n, rdf) => {
     val ts = rdf.triplesWithSubjectPredicate(n, p)
     ts.size match {
       case 0 => parseFail("objectFromPredicate: Not found triples with subject " + n + " and predicate " + p)
       case 1 => parseOk(ts.head.obj)
       case _ => parseFail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
     }
+   }
   }
 
   /**

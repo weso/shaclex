@@ -10,7 +10,7 @@ class ParserTest extends FunSpec with JsonTest with Matchers with EitherValues {
   describe("ShEx Parser test") {
 
     shouldParse(s"<S> {}", None,
-      Schema(None,None,None,None,
+      Schema(IRI(""),None,None,None,None,
         Some(List(Shape(Some(IRILabel(IRI("S"))),None,Some(false),None,None,None,None,None))),None,List())
     )
 

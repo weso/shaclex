@@ -11,7 +11,7 @@ class GraphTest extends FunSpec with Matchers with TryValues {
   def ex: IRI = IRI("http://example.org/")
   def iri(s: String): IRI = ex + s
   def bnode(s: String): BNode = BNode(s)
-  def int(n: Int): IntegerLiteral = IntegerLiteral(n)
+  def int(n: Int): IntegerLiteral = IntegerLiteral(n,n.toString)
 
   describe("Graph Traverse") {
 

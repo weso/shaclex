@@ -31,10 +31,16 @@ class ImportsTest
       val r = for {
         rdf1 <- RDFAsJenaModel.fromIRI(rdfFolder + "/m1.ttl")
         rdf2 <- RDFAsJenaModel.fromIRI(rdfFolder + "/m2.ttl")
-        merged <- rdf1.merge(rdf2)
+        merged <- rdf1.merge(rdf2.normalizeBNodes)
         mergedFromFile <- RDFAsJenaModel.fromIRI(rdfFolder + "/merged.ttl")
         b <- merged.isIsomorphicWith(mergedFromFile)
-      } yield (merged,mergedFromFile,b)
+      } yield {
+        println(s"rdf1: ${rdf1.serialize("N-TRIPLES")}")
+        println(s"rdf2: ${rdf2.serialize("N-TRIPLES")}")
+        println(s"merged: ${merged.serialize("N-TRIPLES")}")
+        println(s"mergedExpected: ${mergedFromFile.serialize("N-TRIPLES")}")
+        (merged,mergedFromFile,b)
+      }
 
       r.fold(e => fail(s"Error: $e"), values => {
         val (_, _,b) = values

@@ -15,112 +15,112 @@ case class ValueChecker(schema: Schema)
     attempt: Attempt,
     node: RDFNode)(value: ValueSetValue): CheckTyping = {
     logger.debug(s"checkValue: $node $value")
+    valueChecker(node,value).fold(
+      e => checkCond(false,attempt,msgErr(e), ""),
+      msg => checkCond(true,attempt,msgErr(""), msg))
+  }
+
+  /** Checks if a node matchs a valueSet value
+    *
+    * @param node: RDF node
+    * @param value: ValueSetValue
+    * @return Left(msg) if node doesn't match, msg constains some explanation, Right(()) if it matches
+    */
+  private[validator] def valueChecker(node: RDFNode,
+                           value: ValueSetValue): Either[String, String] = {
     value match {
-      case IRIValue(iri) => node match {
-        case i: IRI =>
-          checkCond(iri == i, attempt,
-            msgErr(s"${node.show} != ${i.show}"),
-            s"${node.show} == ${i.show}")
-        case _ => errStr(s"${node.show} != ${iri.show}")
+      case IRIValue(iri) =>
+        node match {
+        case i: IRI => if (iri == i) Right(s"${iri.show} is equal to ${i.show}")
+          else Left(s"${iri.show} != ${i.show}")
+        case _ => Left(s"${node.show} != ${iri.show}")
       }
-      case StringValue(s) => node match {
-        case l: Literal => checkCond(s == l.getLexicalForm && l.dataType == xsd_string, attempt,
-          msgErr(s"${node.show} != ${l}"),
-          s"${node.show} == ${l}")
-        case _ => errStr(s"${node.show} != ${value}")
+      case StringValue(s) =>
+        node match {
+        case l: Literal => if(s == l.getLexicalForm && l.dataType == xsd_string)
+          Right(s"${node.show} == ${l}")
+        else
+          Left(s"${node.show} != ${l}")
+        case _ => Left(s"${node.show} != ${value}")
       }
       case DatatypeString(s, iri) => {
-        println(s"Check valueSet $value for $node")
         node match {
           case l: Literal =>
-            checkCond(s == l.getLexicalForm && iri == l.dataType,
-                      attempt,
-                      msgErr(s"${node.show} != ${l}"),
-                      s"${node.show} == ${l}")
-          case _ => errStr(s"${node.show} != ${value}")
+            if (s == l.getLexicalForm && iri == l.dataType) Right(s"${node.show} == ${l}")
+            else Left(s"${node.show} != ${l}")
+          case _ => Left(s"${node.show} != ${value}")
         }
       }
       case LangString(s, lang) => {
         node match {
           case LangLiteral(str, l) =>
-            checkCond(s == str && lang == l, attempt,
-              msgErr(s"${node.show} != ${value}"),
-              s"${node.show} == ${value}")
-          case _ => errStr(s"${node.show} != ${value}")
+            if (s == str && lang == l)
+              Right(s"${node.show} == ${value}")
+            else
+              Left(s"${node.show} != ${value}")
+          case _ => Left(s"${node.show} != ${value}")
         }
       }
-      case LanguageStem(stem) => {
-        node match {
-        case LangLiteral(x,lang) => {
-          checkCond(lang.lang.startsWith(stem.lang),
-                    attempt,
-                    msgErr(s"${node.show} lang($lang) does not match ${stem}"),
-                    s"${node.show} lang($lang) matches ${stem}")
-        }
-        case _ => errStr(s"${node.show} is not a language tagged literal")
-      }
-      }
-      case ls@LanguageStemRange(stem,excls) => {
-        node match {
-          case LangLiteral(x,lang) => {
-            checkCond(checkLangStemRange(lang, stem, excls),
-              attempt,
-              msgErr(s"${node.show} lang($lang) does not match ${ls}"),
-              s"${node.show} lang($lang) matches ${ls}")
+      case LanguageStem(stem) => node match {
+          case l: LangLiteral => {
+            if (checkLanguageStem(l.lang, stem)) Right(s"${node.show} lang(${l.lang}) matches ${stem}")
+            else Left(s"${node.show} lang(${l.lang}) does not match ${stem}")
           }
-          case _ => errStr(s"${node.show} is not a language tagged literal")
+          case _ => Left(s"${node.show} is not a language tagged literal")
         }
-      }
-      case Language(langTag) => {
-        node match {
-          case LangLiteral(x,Lang(lang)) => checkCond(langTag.lang === lang, attempt,
-            msgErr(s"${node.show} lang($lang) does not match ${langTag}"),
-            s"${node.show} lang($lang) matches ${langTag}")
-          case _ => errStr(s"${node.show} is not a language tagged literal")
+      case ls @ LanguageStemRange(stem, excls) => node match {
+          case LangLiteral(x, lang) => {
+            if (checkLangStemRange(lang, stem, excls))
+              Right(s"${node.show} lang($lang) matches ${ls}")
+            else
+              Left(s"${node.show} lang($lang) does not match ${ls}")
+          }
+          case _ => Left(s"${node.show} is not a language tagged literal")
         }
-      }
+      case Language(langTag) => node match {
+          case LangLiteral(x, Lang(lang)) =>
+            if (langTag.lang.equalsIgnoreCase(lang))
+              Right(s"${node.show} lang($lang) matches ${langTag}")
+            else Left(s"${node.show} lang($lang) does not match ${langTag}")
+          case _ => Left(s"${node.show} is not a language tagged literal")
+        }
       case IRIStem(stem) => node match {
         case i: IRI =>
-          checkCond(i.getLexicalForm.startsWith(stem.getLexicalForm), attempt,
-            msgErr(s"${node.show} does not match stem ${stem.show}"),
-            s"${node.show} matches with stem ${stem.show}")
-        case _ => errStr(s"${node.show} must be an IRI to match with IRI stem ${stem.show}")
+          if (i.getLexicalForm.startsWith(stem.getLexicalForm))
+            Right(s"${node.show} matches with stem ${stem.show}")
+          else
+            Left(s"${node.show} does not match stem ${stem.show}")
+        case _ => Left(s"${node.show} must be an IRI to match with IRI stem ${stem.show}")
       }
-      case is@IRIStemRange(stem, excls) => {
-        node match {
-          case i: IRI => {
-            checkCond(checkIRIStemRange(i, stem, excls),
-              attempt,
-              msgErr(s"${node.show} does not match IRI stem range $is"),
-              s"${node.show} matches IRI stem range $is")
-          }
-          case _ => errStr(s"${node.show} is not an IRI")
+      case is @ IRIStemRange(stem, excls) => node match {
+          case i: IRI => if (checkIRIStemRange(i, stem, excls))
+            Right(s"${node.show} matches IRI stem range $is")
+          else
+            Left(s"${node.show} does not match IRI stem range $is")
+          case _ => Left(s"${node.show} is not an IRI")
         }
-      }
       case LiteralStem(stem) => node match {
         case l: Literal =>
-          checkCond(l.getLexicalForm.startsWith(stem), attempt,
-            msgErr(s"${node.show} does not match stem ${stem.show}"),
-            s"${node.show} matches with stem ${stem.show}")
-        case _ => errStr(s"${node.show} must be a Literal to match with Literal stem ${stem.show}")
+          if (l.getLexicalForm.startsWith(stem))
+            Right(s"${node.show} matches with stem ${stem.show}")
+          else
+            Left(s"${node.show} does not match stem ${stem.show}")
+        case _ => Left(s"${node.show} must be a Literal to match with Literal stem ${stem.show}")
       }
-      case ls@LiteralStemRange(stem, excls) => {
-        node match {
+      case ls @ LiteralStemRange(stem, excls) => node match {
           case l: Literal => {
-            checkCond(checkLiteralStemRange(l, stem, excls),
-              attempt,
-              msgErr(s"${node.show} does not match Literal stem range $ls"),
-              s"${node.show} matches Literal stem range $ls")
+            if (checkLiteralStemRange(l, stem, excls)) Right(s"${node.show} matches Literal stem range $ls")
+            else Left(s"${node.show} does not match Literal stem range $ls")
           }
-          case _ => errStr(s"${node.show} is not a Literal")
+          case _ => Left(s"${node.show} is not a Literal")
         }
-      }
+   }
+  }
 
-/*      case _ => {
-        logger.error(s"Not implemented checkValue: $value")
-        errStr(s"Not implemented checkValue: $value")
-      } */
-    }
+  private def checkLanguageStem(l: Lang, stem: Lang): Boolean = {
+    val strL = l.lang.toLowerCase
+    val strStem = stem.lang.toLowerCase
+    strL === strStem || strL.startsWith(strStem + "-")
   }
 
   private def checkIRIStemRange(iri: IRI, stemRange: IRIStemRangeValue, excls: Option[List[IRIExclusion]]): Boolean = {
@@ -150,7 +150,7 @@ case class ValueChecker(schema: Schema)
   private def checkLangStemRange(lang: Lang, stemRange: LanguageStemRangeValue, excls: Option[List[LanguageExclusion]]): Boolean = {
     val cond1 = stemRange match {
       case LanguageStemRangeWildcard() => true
-      case LanguageStemRangeLang(stem) => lang.lang.startsWith(stem.lang)
+      case LanguageStemRangeLang(stem) => checkLanguageStem(lang, stem)
     }
     val cond2 = excls match {
       case None => true

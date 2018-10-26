@@ -3,7 +3,6 @@ import org.scalatest._
 import util._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
-import es.weso.rdf.parser._
 
 class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValues {
 
@@ -109,7 +108,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
             nodeLs <- objectFromPredicate(p)(n, rdf)
             ls <- rdfList(nodeLs, rdf)
           } yield (ls)
-          try1.right.value should be(List(IntegerLiteral(1), IntegerLiteral(2), IntegerLiteral(3)))
+          try1.right.value should be(List(IntegerLiteral(1,"1"), IntegerLiteral(2,"2"), IntegerLiteral(3,"3")))
         }
 
         it("rdfList empty") {
@@ -137,7 +136,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
           p = IRI("http://example.org/p")
           ls <- rdfListForPredicate(p)(n, rdf)
         } yield (ls)
-        try1.right.value should be(List(IntegerLiteral(1), IntegerLiteral(2), IntegerLiteral(3)))
+        try1.right.value should be(List(IntegerLiteral(1,"1"), IntegerLiteral(2,"2"), IntegerLiteral(3,"3")))
       }
     }
     describe("integerLiteralForPredicate") {
@@ -177,7 +176,6 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
           val cs =
             """|prefix : <http://example.org/>
                   |:x :p :y .""".stripMargin
-          val y = IRI("http://example.org/y")
           val q = IRI("http://example.org/q")
           val r = IRI("http://example.org/r")
           val try1 = for {

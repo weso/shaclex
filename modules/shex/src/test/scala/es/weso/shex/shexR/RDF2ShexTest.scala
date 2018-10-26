@@ -25,7 +25,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
       """.
           stripMargin
 
-      val expected = Schema(
+      val expected = Schema(IRI(""),
         None,
         None,
         None,

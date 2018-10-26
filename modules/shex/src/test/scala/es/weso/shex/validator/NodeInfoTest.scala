@@ -21,9 +21,9 @@ class NodeInfoTest extends FunSpec with Matchers with EitherValues {
       val d = DatatypeLiteral("3.123456",xsd_decimal)
       NodeInfo.totalDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(7))
     }
-    it("Should calculate total digits of true and return 0") {
+    it("Should calculate total digits of true and return error") {
       val d = BooleanLiteral(true)
-      NodeInfo.totalDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(0))
+      NodeInfo.totalDigits(d,rdf).fold(e => info(s"Failed as expected with error: $e"), n => fail(s"Should return an error instead of $n"))
     }
   }
   describe("fractionDigits") {
@@ -41,7 +41,7 @@ class NodeInfoTest extends FunSpec with Matchers with EitherValues {
     }
     it("Should calculate fraction digits of true and return 0") {
       val d = BooleanLiteral(true)
-      NodeInfo.fractionDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(0))
+      NodeInfo.fractionDigits(d,rdf).fold(e => info(s"Error as expected: $e"), n => fail(s"Should return error instead of $n"))
     }
   }
 }

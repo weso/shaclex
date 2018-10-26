@@ -90,18 +90,19 @@ object JenaMapper {
           val datatype = IRI(maybeDatatype)
           datatype match {
             case RDFNode.StringDatatypeIRI => StringLiteral(lit.getLexicalForm)
-            case RDFNode.IntegerDatatypeIRI =>
-              Try(IntegerLiteral(lit.getLexicalForm.toInt)).getOrElse {
+            case RDFNode.IntegerDatatypeIRI => {
+              Try(IntegerLiteral(lit.getLexicalForm.toInt, lit.getLexicalForm)).getOrElse {
                 logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as an integer to create literal")
                 DatatypeLiteral(lit.getLexicalForm, datatype)
               }
+            }
             case RDFNode.DecimalDatatypeIRI =>
-              Try(DecimalLiteral(lit.getLexicalForm.toDouble)).getOrElse {
+              Try(DecimalLiteral(lit.getLexicalForm.toDouble, lit.getLexicalForm)).getOrElse {
                 logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a decimal to create literal")
                 DatatypeLiteral(lit.getLexicalForm, datatype)
               }
             case RDFNode.DoubleDatatypeIRI =>
-              Try(DoubleLiteral(lit.getLexicalForm.toDouble)).getOrElse {
+              Try(DoubleLiteral(lit.getLexicalForm.toDouble,lit.getLexicalForm)).getOrElse {
                 logger.error(s"LexicalForm ${lit.getLexicalForm()} can't be parsed as a double to create literal")
                 DatatypeLiteral(lit.getLexicalForm, datatype)
               }
@@ -113,7 +114,10 @@ object JenaMapper {
                 case _ => DatatypeLiteral(lit.getLexicalForm, datatype)
               }
             }
-            case RDFNode.LangStringDatatypeIRI => LangLiteral(lit.getLexicalForm, Lang(lit.getLanguage))
+            case RDFNode.LangStringDatatypeIRI => {
+              // TODO: Check that the language tag conforms to BCP 47 (https://tools.ietf.org/html/bcp47#section-2.1)
+              LangLiteral(lit.getLexicalForm, Lang(lit.getLanguage))
+            }
             case _ => DatatypeLiteral(lit.getLexicalForm, datatype)
           }
         }

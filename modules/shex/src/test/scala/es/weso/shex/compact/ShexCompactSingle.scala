@@ -29,7 +29,7 @@ class ShexCompactSingle extends FunSpec with JsonTest with Matchers with EitherV
     for (file <- getCompactFiles(schemasFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
-        Schema.fromString(str, "SHEXC", None,RDFAsJenaModel.empty) match {
+        Schema.fromString(str, "SHEXC", None) match {
           case Right(schema) => {
             val (name, ext) = splitExtension(file.getName)
             // TODO: Check that parsed file equals schema file

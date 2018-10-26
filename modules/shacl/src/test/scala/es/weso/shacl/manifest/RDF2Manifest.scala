@@ -8,7 +8,7 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.utils.FileUtils._
 import ManifestPrefixes._
 import es.weso.utils.EitherUtils._
-import es.weso.utils.NormalizaBNodes
+import es.weso.utils.NormalizeBNodes
 
 import scala.util._
 

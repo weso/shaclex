@@ -31,7 +31,7 @@ class SchemasManifestTest extends ValidateManifest {
                 val base = Paths.get(".").toUri
                 val schemaStr = Source.fromURI(base.resolve(r.shex.uri))("UTF-8").mkString
                 val jsonStr = Source.fromURI(base.resolve(r.json.uri))("UTF-8").mkString
-                Schema.fromString(schemaStr, "SHEXC", None, RDFAsJenaModel.empty) match {
+                Schema.fromString(schemaStr, "SHEXC", None) match {
                   case Right(schema) => {
                     decode[Schema](jsonStr) match {
                       case Left(err) => fail(s"Error parsing Json ${r.json}: $err")

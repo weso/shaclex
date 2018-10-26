@@ -7,9 +7,9 @@ import es.weso.rdf.nodes.{BNode, IRI, Literal, RDFNode}
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.{RDFBuilder, RDFReader}
 
-object NormalizaBNodes {
+object NormalizeBNodes {
 
-  def normalizeBNodes(rdf: RDFReader, target: RDFBuilder): RDFBuilder = {
+  def normalizeBNodes[Rdf <: RDFBuilder](rdf: RDFReader, target: Rdf): Rdf = {
 
     type BNodeMap = Map[String,String]
     type Cnv[A] = StateT[Id,BNodeMap,A]
