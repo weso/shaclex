@@ -3,7 +3,6 @@ package es.weso.shex.compact
 import java.io.File
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.json.JsonTest
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.utils.FileUtils._
@@ -23,7 +22,7 @@ class CompareSchemasSingleTest extends FunSpec with JsonTest with Matchers with 
     val file: File = getFileFromFolderWithExt(schemasFolder, name, "shex")
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString
-      Schema.fromString(str, "SHEXC", None, RDFAsJenaModel.empty) match {
+      Schema.fromString(str) match {
         case Right(schema) => {
           val (name, ext) = splitExtension(file.getName)
           val jsonFile    = schemasFolder + "/" + name + ".json"

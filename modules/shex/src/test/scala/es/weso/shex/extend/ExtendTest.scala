@@ -1,5 +1,6 @@
 package es.weso.shex.extend
 
+import cats.syntax.either._
 import org.scalatest._
 
 
@@ -10,7 +11,8 @@ class ExtendTest extends FunSpec with Extend with Matchers with EitherValues {
   case class Shape(extend: Option[List[Label]], expr: Option[Expr]) {
     def flattenExpr(schema: Schema): Either[String,Option[Expr]] = {
       def combine(e1: Expr, e2: Expr): Expr = Expr(e1.es ++ e2.es)
-      extendCheckingVisited[Shape,Expr,Label](this, schema.get(_), _.extend, combine,_.expr)
+      def getEither(lbl: Label): Either[String,Shape] = schema.get(lbl).fold(Either.left[String,Shape](s"Not found"))(Either.right(_))
+      extendCheckingVisited[Shape,Expr,Label](this, getEither(_), _.extend, combine,_.expr)
     }
   }
 

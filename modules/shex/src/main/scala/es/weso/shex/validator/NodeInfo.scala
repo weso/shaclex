@@ -16,20 +16,23 @@ object NodeInfo {
   def totalDigits(node: RDFNode, rdf: RDFReader): Either[String,Int] = {
     node match {
       case l: Literal => l.dataType match {
-        case `xsd_decimal` | `xsd_integer` => {
-          val t = Try {
-            val context                       = new ValidationState
-            val decimalDV                     = new DecimalDV()
-            val typeDeclaration: XSSimpleType = SchemaDVFactory.getInstance.getBuiltInType("decimal")
-            val resultInfo                    = new ValidatedInfo
-            typeDeclaration.validate(node.getLexicalForm, context, resultInfo)
-            decimalDV.getTotalDigits(resultInfo.actualValue)
+        case `xsd_decimal` | `xsd_integer` => for {
+          b <-rdf.checkDatatype(node,l.dataType)
+          td <- {
+            val t = Try {
+              val context                       = new ValidationState
+              val decimalDV                     = new DecimalDV()
+              val typeDeclaration: XSSimpleType = SchemaDVFactory.getInstance.getBuiltInType("decimal")
+              val resultInfo                    = new ValidatedInfo
+              typeDeclaration.validate(node.getLexicalForm, context, resultInfo)
+              decimalDV.getTotalDigits(resultInfo.actualValue)
+            }
+            t match {
+              case Failure(e) => Left(s"Error calculating totalDigits of $node: ${e.getMessage}")
+              case Success(n) => Right(n)
+            }
           }
-          t match {
-            case Failure(e) => Left(s"Error calculating totalDigits of $node: ${e.getMessage}")
-            case Success(n) => Right(n)
-          }
-        }
+        } yield td
         case d => Left(s"TotalDigits can only be applied to xsd:decimal or derived datatypes, not to: $d")
       }
       case _ => Left(s"TotalDigits facet can not be applied to non literal node: $node")

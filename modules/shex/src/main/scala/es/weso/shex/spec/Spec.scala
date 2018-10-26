@@ -330,8 +330,8 @@ object Spec extends LazyLogging {
   def getShape(lbl: ShapeLabel): Check[ShapeExpr] = for {
     schema <- getSchema
     shape <- schema.getShape(lbl) match {
-      case None => err(s"Not found $lbl in schema")
-      case Some(se) => pure(se)
+      case Left(e) => err(e)
+      case Right(se) => pure(se)
     }
   } yield shape
 

@@ -17,10 +17,10 @@ class CompactShowTest extends FunSpec with Matchers with EitherValues {
   def shouldShowAndParse(shexStr: String): Unit = {
     it(s"Should show/parse $shexStr") {
     val result = for {
-      shExSchema <- Schema.fromString(shexStr, "ShExC", None, RDFAsJenaModel.empty)
+      shExSchema <- Schema.fromString(shexStr)
       serialized = CompactShow.showSchema(shExSchema)
       schemaFromSerialized <- Schema
-          .fromString(serialized, "ShExC", None, RDFAsJenaModel.empty)
+          .fromString(serialized)
           .leftMap(e => s"Error reading serialized schema: $e\nSerialized:\n$serialized")
       b <- shouldBeEqualSchemas(shExSchema, schemaFromSerialized)
     } yield b

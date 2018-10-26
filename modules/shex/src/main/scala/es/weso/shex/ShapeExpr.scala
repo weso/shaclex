@@ -244,11 +244,10 @@ case class ShapeRef(reference: ShapeLabel,
   def id = None
   def addId(lbl: ShapeLabel) = this
 
-  override def paths(schema: Schema): Either[String,List[Path]] =
-    schema.getShape(reference) match {
-      case None => Left(s"$reference not found in schema")
-      case Some(se) => se.paths(schema)
-    }
+  override def paths(schema: Schema): Either[String,List[Path]] = for {
+    se <- schema.getShape(reference)
+    ps <- se.paths(schema)
+  } yield ps
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
     this.copy(annotations = maybeAddList(annotations, as))

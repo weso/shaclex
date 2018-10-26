@@ -1,5 +1,8 @@
 package es.weso.shex
 
+import java.nio.file.{Files, Paths}
+
+import cats._
 import cats.implicits._
 import es.weso.depgraphs.DepGraph
 import es.weso.rdf.{PrefixMap, RDFBuilder, RDFReader}
@@ -7,7 +10,7 @@ import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
 
 import scala.io.Source
-import scala.util.{Either, Left, Right}
+import scala.util.{Either, Left, Right, Try}
 
 case class Schema(id: IRI,
                   prefixes: Option[PrefixMap],
@@ -40,7 +43,7 @@ case class Schema(id: IRI,
   def getTripleExprMap(): Map[ShapeLabel, TripleExpr] =
     tripleExprMap.getOrElse(Map())
 
-  lazy val shapesMap: Map[ShapeLabel,ShapeExpr] = {
+  lazy val localShapesMap: Map[ShapeLabel,ShapeExpr] = {
     shapes match {
       case None => Map()
       case Some(ls) => {
@@ -49,30 +52,25 @@ case class Schema(id: IRI,
     }
   }
 
-  lazy val resolvedShapesMap: Either[String,Map[ShapeLabel,ShapeExpr]] = {
-    closureImports(imports, List(id), shapesMap)
+  lazy val eitherResolvedShapesMap: Either[String,Map[ShapeLabel,ShapeExpr]] = {
+    closureImports(imports, List(id), localShapesMap)
   }
 
+  // TODO: make the following method tailrecursive
   private def closureImports(imports: List[IRI],
                              visited: List[IRI],
                              current: Map[ShapeLabel,ShapeExpr]
                             ): Either[String, Map[ShapeLabel,ShapeExpr]] = imports match {
     case Nil => Right(current)
     case (i::is) => if (visited contains i) closureImports(is,visited,current)
-    else {
-      expand(i, current).fold(
-        e => Left(e),
-        newShapeMap => closureImports(is, i :: visited, newShapeMap))
-    }
+    else for {
+      schema <- Schema.fromIRI(i)
+      sm <- closureImports(is ++ schema.imports, i :: visited, schema.localShapesMap ++ current)
+    } yield sm
   }
 
-  private def expand(i: IRI, current: Map[ShapeLabel,ShapeExpr]): Either[String, Map[ShapeLabel,ShapeExpr]] = {
-    Schema.fromIRI(i).fold(e => Left(e),
-      schema => {
-        Right(schema.shapesMap ++ current)
-      }
-    )
-  }
+  def addId(i: IRI): Schema = this.copy(id = i)
+
 
   def qualify(node: RDFNode): String =
     prefixMap.qualify(node)
@@ -80,14 +78,24 @@ case class Schema(id: IRI,
   def qualify(label: ShapeLabel): String =
     prefixMap.qualify(label.toRDFNode)
 
-  // TODO: Convert to Either[String,ShapeExpr]
-  def getShape(label: ShapeLabel): Option[ShapeExpr] =
-    shapesMap.get(label)
+  def getShape(label: ShapeLabel): Either[String,ShapeExpr] = for {
+    sm <- eitherResolvedShapesMap
+    se <- sm.get(label) match {
+      case None => Left(s"Not found $label in schema. Available labels: ${sm.keySet.mkString}")
+      case Some(se) => Right(se)
+    }
+  } yield se
 
-  lazy val shapeList = shapes.getOrElse(List())
+  lazy val localShapes: List[ShapeExpr] = shapes.getOrElse(List())
+
+  lazy val shapeList: List[ShapeExpr] = // shapes.getOrElse(List())
+   eitherResolvedShapesMap.fold(_ => localShapes,
+     sm => sm.values.toList)
 
   def labels: List[ShapeLabel] = {
-    shapeList.map(_.id).flatten
+    eitherResolvedShapesMap.fold(
+      e => localShapes.map(_.id).flatten,
+      sm => sm.keySet.toList)
   }
 
   def addTripleExprMap(te: Map[ShapeLabel,TripleExpr]): Schema =
@@ -110,8 +118,31 @@ object Schema {
     Schema(IRI(""),None, None, None, None, None, None, List())
 
   def fromIRI(i: IRI): Either[String, Schema] = {
-    val str = Source.fromURI(i.uri).mkString
-    fromString(str,"ShExC",None)
+    Try {
+      val uri = i.uri
+      if (uri.getScheme == "file") {
+        if (Files.exists(Paths.get(i.uri))) {
+            val str = Source.fromURI(uri).mkString
+            fromString(str, "ShExC", Some(i.str)).map(schema => schema.addId(i))
+        } else {
+          val iriShEx = i + ".shex"
+          if (Files.exists(Paths.get((iriShEx).uri))) {
+            val str = Source.fromURI(iriShEx.uri).mkString
+            fromString(str, "ShExC", Some(i.str)).map(schema => schema.addId(i))
+          } else {
+            val iriJson = i + ".json"
+            if (Files.exists(Paths.get((iriJson).uri))) {
+            val str = Source.fromURI(iriJson.uri).mkString
+            fromString(str, "JSON", Some(i.str)).map(schema => schema.addId(i))
+           }
+             else Left(s"File $i does not exist")
+        }}}
+      else {
+        val str = Source.fromURI(i.uri).mkString
+        fromString(str, "ShExC", Some(i.str)).map(schema => schema.addId(i))
+      }
+    }.fold(exc => Left(exc.getMessage), identity)
+
   }
 
   /**
@@ -123,8 +154,8 @@ object Schema {
     * @return either a Schema or a String message error
     */
   def fromString(cs: CharSequence,
-                 format: String,
-                 base: Option[String],
+                 format: String = "ShExC",
+                 base: Option[String] = None,
                  maybeRDFReader: Option[RDFReader] = None
                 ): Either[String, Schema] = {
     val formatUpperCase = format.toUpperCase

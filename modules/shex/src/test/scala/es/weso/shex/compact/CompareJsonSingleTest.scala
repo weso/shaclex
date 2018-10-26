@@ -27,7 +27,7 @@ class CompareJsonSingleTest extends FunSpec with JsonTest with Matchers with Eit
     val file: File = getFileFromFolderWithExt(schemasFolder, name, "shex")
     it(s"Should read Schema from file ${file.getName}") {
       val str = Source.fromFile(file)("UTF-8").mkString
-      Schema.fromString(str, "SHEXC", None,RDFAsJenaModel.empty) match {
+      Schema.fromString(str) match {
         case Right(schema) => {
           val (name, ext) = splitExtension(file.getName)
           val jsonFile = schemasFolder + "/" + name + ".json"

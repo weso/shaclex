@@ -1,16 +1,13 @@
 package es.weso.shex.manifest
 
 import java.nio.file.Paths
-
 import com.typesafe.config.{Config, ConfigFactory}
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex._
 import es.weso.shex.compact.CompareSchemas
 import io.circe.parser._
 import io.circe.syntax._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
-
 import scala.io._
 
 class SchemasManifestTest extends ValidateManifest {

@@ -19,7 +19,12 @@ class ValueCheckerTest extends ValueChecker(Schema.empty) with FunSpecLike with 
             LanguageTagExclusion(Lang("fr-cd")),
             LanguageTagExclusion(Lang("fr-ch")))))
       , true)
-
+    valueCheckerTest(LangLiteral("septante", Lang("frc")),
+      LanguageStemRange(LanguageStemRangeLang(Lang("")),
+        Some(List(LanguageStemExclusion(LanguageStem(Lang("fr-be"))),
+          LanguageStemExclusion(LanguageStem(Lang("fr-cd"))),
+          LanguageStemExclusion(LanguageStem(Lang("fr-ch"))))))
+      , true)
   }
 
   def valueCheckerTest(node: RDFNode, value: ValueSetValue, ok: Boolean): Unit = {

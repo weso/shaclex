@@ -28,8 +28,8 @@ class PathsTest extends FunSpec with Matchers with EitherValues {
     it(s"Should calculate paths of shape $shapeLabel and return $paths") {
       val shapeLbl = IRILabel(shapeLabel)
       val result = for {
-        schema <- Schema.fromString(strSchema, "ShExC", None, RDFAsJenaModel.empty)
-        shape <- schema.getShape(shapeLbl).map(Right(_)).getOrElse(Left(s"Not found $shapeLbl"))
+        schema <- Schema.fromString(strSchema)
+        shape <- schema.getShape(shapeLbl)
         paths <- shape.paths(schema)
       } yield paths
       result.fold(e => fail(s"Error: $e"),

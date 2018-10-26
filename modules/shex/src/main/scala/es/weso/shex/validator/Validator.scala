@@ -112,8 +112,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
 
   private[validator] def getShape(label: ShapeLabel): Check[ShapeExpr] =
     schema.getShape(label) match {
-      case None => errStr[ShapeExpr](s"Can't find shape ${label.show} is Schema:\n${schema.show}")
-      case Some(shape) => ok(shape)
+      case Left(e) => errStr[ShapeExpr](e)
+      case Right(shape) => ok(shape)
     }
 
   private[validator] def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
@@ -194,7 +194,16 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case nc: NodeConstraint => checkNodeConstraint(attempt, node, nc)
       case s: Shape => checkShape(attempt, node, s)
       case sr: ShapeRef => checkRef(attempt, node, sr.reference)
-      case _: ShapeExternal => errStr(s"Not implemented ShapeExternal ${attempt.show}")
+      case se: ShapeExternal => {
+        val ns = NodeShape(node, ShapeType(s,s.id,schema))
+        se.annotations match {
+          case None => addEvidence(ns, s"Node conforms to shape external ${s} without annotations")
+          case Some(as) => {
+            logger.info(s"ShapeExternal with annotations ignored")
+            addEvidence(ns, s"Node conforms to shape external ${s} with annotations $as")
+          }
+        }
+      }
     }
   }
 

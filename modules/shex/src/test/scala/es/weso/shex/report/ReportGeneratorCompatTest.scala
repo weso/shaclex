@@ -21,8 +21,8 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-  // None
-   Some("2RefS1-Icirc")
+   None
+   // Some("1literalTotaldigits_fail-malformedxsd_integer-1_2345")
 
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
@@ -66,8 +66,9 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             name      <- stringFromPredicate(mf_name)(node, rdf)
             action    <- objectFromPredicate(mf_action)(node, rdf)
             schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
-            schemaStr = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
-            schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI)
+            resolvedSchema = base.resolve(schemaIRI.uri)
+            schemaStr = Source.fromURI(resolvedSchema)("UTF-8").mkString
+            schema  <- Schema.fromString(schemaStr, "SHEXC", Some(resolvedSchema.toString))
             dataIRI <- iriFromPredicate(sht_data)(action, rdf)
             strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)

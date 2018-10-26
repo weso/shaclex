@@ -120,7 +120,9 @@ case class ValueChecker(schema: Schema)
   private def checkLanguageStem(l: Lang, stem: Lang): Boolean = {
     val strL = l.lang.toLowerCase
     val strStem = stem.lang.toLowerCase
+    if (strStem.isEmpty) true else {
     strL === strStem || strL.startsWith(strStem + "-")
+   }
   }
 
   private def checkIRIStemRange(iri: IRI, stemRange: IRIStemRangeValue, excls: Option[List[IRIExclusion]]): Boolean = {
