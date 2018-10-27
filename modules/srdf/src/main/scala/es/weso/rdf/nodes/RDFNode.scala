@@ -81,7 +81,9 @@ object RDFNode {
             Left(s"Error parsing as integer: $e")
         }
       }
-      case _ => Left(s"Error parsing String $s as RDFNode")
+      case other => IRI.fromString(other,None).fold(
+        e => Left(s"Error parsing String $other as RDFNode: $e"),
+        iri => Right(iri))
     }
   }
 

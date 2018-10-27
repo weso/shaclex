@@ -11,6 +11,23 @@ import scala.util.{ Failure, Success }
 
 class ShapeMapJsonTest extends FunSpec with Matchers with TryValues with OptionValues {
 
+  describe(s"Parse Json shapemaps") {
+    it("can parse Json example") {
+      val str =
+        """
+          |[
+          |  {"node":"http://inst.example/Issue1", "shape":"http://schema.example/IssueShape"},
+          |  {"node":"http://inst.example/Issue2", "shape":"http://schema.example/IssueShape"},
+          |  {"node":"http://inst.example/Issue3", "shape":"http://schema.example/IssueShape"}
+          |]
+        """.stripMargin
+      ShapeMap.fromJson(str).fold(
+        e => fail(s"Error parsing: $e"),
+        sm => { info(s"Parsed as: $sm")}
+      )
+    }
+  }
+
   describe("Json conversion from/to ShapeMaps") {
     val npm = PrefixMap.empty.addPrefix("", IRI("http://example.org/"))
     val spm = npm

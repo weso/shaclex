@@ -80,10 +80,16 @@ object NodeSelector {
     }
   }
 
-  implicit lazy val decodeRDFNodeSelector: Decoder[RDFNodeSelector] = Decoder.instance { c =>
-    c.as[String].flatMap(s => RDFNode.fromString(s).fold(
-      s => Left(DecodingFailure(s, Nil)),
-      node => Right(RDFNodeSelector(node))))
+  implicit lazy val decodeRDFNodeSelector: Decoder[RDFNodeSelector] = Decoder.instance { c => {
+    c.as[String].flatMap(s => {
+      RDFNode.fromString(s).fold(
+      s => {
+        println(s"RDF.fromString Error: $s")
+        Left(DecodingFailure(s, Nil))
+      } ,
+      node => Right(RDFNodeSelector(node)))
+    })
+    }
   }
 
   implicit lazy val decodeTriplePattern: Decoder[TriplePattern] = Decoder.instance { c =>

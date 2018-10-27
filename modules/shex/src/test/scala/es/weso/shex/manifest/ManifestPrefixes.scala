@@ -47,6 +47,7 @@ object ManifestPrefixes {
   lazy val sht_schema_output_format = sht.add("schema-output-format")
   lazy val sht_node = sht.add("node")
   lazy val sht_focus = sht.add("focus")
+  lazy val sht_map = sht.add("map")
   lazy val sht_triggerMode = sht.add("triggerMode")
   lazy val sht_shape = sht.add("shape")
   lazy val sht_details = sht + "details"

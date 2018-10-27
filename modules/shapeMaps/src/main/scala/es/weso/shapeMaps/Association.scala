@@ -49,14 +49,15 @@ object Association {
       }))
   }
 
-  implicit val decodeAssociation: Decoder[Association] = new Decoder[Association] {
-    final def apply(c: HCursor): Decoder.Result[Association] = for {
-      node <- c.downField("node").as[NodeSelector]
-      shape <- c.downField("shape").as[ShapeMapLabel]
-      status <- c.downField("status").as[Status]
-      reason <- optFieldDecode[String](c, "reason")
-      appInfo <- c.downField("appInfo").as[Json]
-    } yield Association(node, shape, Info(status, reason, Some(appInfo)))
+  implicit val decodeAssociation: Decoder[Association] = Decoder.instance { c => {
+    for {
+      node    <- c.downField("node").as[NodeSelector]
+      shape   <- c.downField("shape").as[ShapeMapLabel]
+      status  <- optFieldDecode[Status](c, "status")
+      reason  <- optFieldDecode[String](c, "reason")
+      appInfo <- optFieldDecode[Json](c, "appInfo")
+    } yield Association(node, shape, Info(status.getOrElse(Conformant), reason, appInfo))
+  }
   }
 
 }

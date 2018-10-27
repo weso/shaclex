@@ -21,8 +21,8 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-   // None
-    Some("recursion_example")
+    None
+   // Some("recursion_example")
 
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
@@ -72,20 +72,46 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             dataIRI <- iriFromPredicate(sht_data)(action, rdf)
             strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-            focus          <- objectFromPredicate(sht_focus)(action, rdf)
+            maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, rdf)
+            maybeMap  <- iriFromPredicateOptional(sht_map)(action,rdf)
             maybeShape          <- iriFromPredicateOptional(sht_shape)(action, rdf)
             lbl = maybeShape.fold(StartMap: ShapeMapLabel)(IRIMapLabel(_))
-            shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
-            resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
-            ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
-              Right(s"Focus $focus conforms to $lbl")
-            else Left(s"Focus $focus does not conform to shape $lbl\nResultMap:\n$resultShapeMap" ++
-              s"\nData: \n${strData}\nSchema: ${schemaStr}\n" ++
-              s"${resultShapeMap.getInfo(focus,lbl)}\n" ++
-              s"Schema: ${schema}\n" ++
-              s"Data: ${data}"
-            )
+            ok <- maybeFocus match {
+              case Some(focus) => {
+                val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
+                for {
+                  resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
+                  ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
+                        Right(s"Focus $focus conforms to $lbl")
+                else Left(s"Focus $focus does not conform to shape $lbl\nResultMap:\n$resultShapeMap" ++
+                  s"\nData: \n${strData}\nSchema: ${schemaStr}\n" ++
+                  s"${resultShapeMap.getInfo(focus,lbl)}\n" ++
+                  s"Schema: ${schema}\n" ++
+                  s"Data: ${data}"
+                )
+              } yield ok
+              }
+              case None => maybeMap match {
+                case Some(smapIRI) => {
+                  val resolvedSmap = base.resolve(smapIRI.uri)
+                  val smapStr = Source.fromURI(resolvedSmap).mkString
+                  val r: Either[String,String] = ShapeMap.fromJson(smapStr).fold(
+                    e => {
+                      Left(s"Error parsing smap as Json: $e\nsmapStr: \n$smapStr\nsmapIRI: $smapIRI")
+                    },
+                    sm => for {
+                      fixedMap <- ShapeMap.fixShapeMap(sm,rdf,rdf.getPrefixMap(),schema.prefixMap)
+                      resultShapeMap <- Validator(schema).validateShapeMap(data, fixedMap)
+                      } yield s"Pending check resultShapeMap: $resultShapeMap")
+                  r
+                }
+                case None => {
+                  Left(s"No focus and no map!")
+                }
+              }
+            }
           } yield ok
+
           val testReport = tryReport match {
             case Right(msg) => {
               SingleTestReport(passed = true,
