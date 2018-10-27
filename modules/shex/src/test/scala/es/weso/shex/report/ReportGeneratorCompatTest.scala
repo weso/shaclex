@@ -21,8 +21,8 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-   None
-   // Some("1literalTotaldigits_fail-malformedxsd_integer-1_2345")
+   // None
+    Some("recursion_example")
 
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))

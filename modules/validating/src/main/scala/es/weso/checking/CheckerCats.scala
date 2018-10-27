@@ -261,7 +261,7 @@ abstract class CheckerCats extends Checker {
     sequence(xs)  // Question: Is this stack safe?
 
   def sequence[A](xs: List[Check[A]]): Check[List[A]] =
-    xs.sequence  // Question: Is this stack safe?
+    xs.sequence[Check,A]  // Question: Is this stack safe?
 
 
   def checkPair1st[A, B](p: (Check[A], B)): Check[(A, B)] = for {

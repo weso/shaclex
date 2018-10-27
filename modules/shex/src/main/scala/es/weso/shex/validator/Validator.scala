@@ -18,6 +18,7 @@ import es.weso.rdf.PREFIXES._
 import es.weso.shex.validator.Table._
 import ShExChecker._
 import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMapLabel, _}
+import Function.tupled
 
 /**
  * ShEx validator
@@ -52,7 +53,6 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   } yield t
 
   private[validator] def checkShapeMap(shapeMap: FixedShapeMap): CheckTyping = {
-    logger.debug(s"Checking shapeMap ${shapeMap}")
     for {
       rdf <- getRDF
       t <- checkNodesShapes(shapeMap)
@@ -66,11 +66,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   private[validator] def checkNodesShapes(fixedMap: FixedShapeMap): CheckTyping = for {
-    ts <- checkAll(fixedMap.shapeMap.map {
-      case (node, shapesMap) => {
-        checkNodeShapesMap(node, shapesMap)
-      }
-    }.toList)
+    ts <- checkAll(fixedMap.shapeMap.toList.map(tupled(checkNodeShapesMap)))
     t <- combineTypings(ts)
   } yield t
 
@@ -91,14 +87,18 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     case Undefined => errStr(s"checkNodeShapeMapLabel: Not implemented undefined status yet. Node: $node, label: $label")
   }
 
-  private[validator] def checkNodeShapesMap(node: RDFNode, shapesMap: Map[ShapeMapLabel, Info]): CheckTyping = for {
-    ts <- checkAll(shapesMap.map {
-      case (label, info) => {
-        checkNodeShapeMapLabel(node, label, info)
-      }
-    }.toList)
-    t <- combineTypings(ts)
-  } yield t
+  private[validator] def checkNodeShapesMap(node: RDFNode,
+                                            shapesMap: Map[ShapeMapLabel, Info]
+                                           ): CheckTyping = {
+  for {
+      ts <- checkAll(shapesMap.map {
+        case (label, info) => {
+          checkNodeShapeMapLabel(node, label, info)
+        }
+      }.toList)
+      t <- combineTypings(ts)
+    } yield t
+  }
 
   private[validator] def mkShapeLabel(n: RDFNode): Check[ShapeLabel] = {
     n match {
@@ -117,7 +117,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
 
   private[validator] def checkNodeShapeName(node: RDFNode, shapeName: String): CheckTyping = {
-    cond(getShapeLabel(shapeName), (shapeLabel: ShapeLabel) => checkNodeLabel(node, shapeLabel), err => for {
+    cond(getShapeLabel(shapeName),
+      (shapeLabel: ShapeLabel) => checkNodeLabel(node, shapeLabel),
+      err => for {
       t <- getTyping
     } yield t.addNotEvidence(node, ShapeType(ShapeExpr.fail, Some(IRILabel(IRI(shapeName))), schema), err))
   }
@@ -149,16 +151,18 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
   }
 
-  private[validator] def checkNodeLabelSafe(node: RDFNode, label: ShapeLabel, shape: ShapeExpr): CheckTyping = {
+  private[validator] def checkNodeLabelSafe(node: RDFNode,
+                                            label: ShapeLabel,
+                                            shape: ShapeExpr): CheckTyping = {
     val shapeType = ShapeType(shape, Some(label), schema)
     val attempt = Attempt(NodeShape(node, shapeType), None)
-    runLocalSafeTyping(
+    /* runLocalSafeTyping(
       checkNodeShapeExpr(attempt, node, shape),
       _.addType(node, shapeType),
       (err, t) => {
         t.addNotEvidence(node, shapeType, err)
-      })
-/*    for {
+      }) */
+    for {
       typing <- getTyping
       t <- {
         runLocalSafeTyping(
@@ -168,10 +172,13 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
             t.addNotEvidence(node, shapeType, err)
           })
       }
-    } yield t */
+    } yield {
+      t
+    }
   }
 
   private[validator] def checkNodeLabel(node: RDFNode, label: ShapeLabel): CheckTyping = {
+
     def addNot(typing: ShapeTyping)(err: ShExError): CheckTyping = {
       val shapeType = ShapeType(ShapeExpr.fail, Some(label), schema)
       ok(typing.addNotEvidence(node, shapeType, err))
@@ -186,7 +193,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     } yield newTyping
   }
 
-  private[validator] def checkNodeShapeExpr(attempt: Attempt, node: RDFNode, s: ShapeExpr): CheckTyping = {
+  private[validator] def checkNodeShapeExpr(attempt: Attempt,
+                                            node: RDFNode,
+                                            s: ShapeExpr): CheckTyping = {
     s match {
       case so: ShapeOr => checkOr(attempt, node, so.shapeExprs)
       case sa: ShapeAnd => checkAnd(attempt, node, sa.shapeExprs)
@@ -324,17 +333,16 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     }
     else
     for {
+      typing <- getTyping
       paths <- fromEither(s.paths(schema).leftMap(msgErr(_)))
       neighs <- getNeighPaths(node, paths)
       extendedExpr <- fromEither(s.extendExpression(schema).leftMap(msgErr(_)))
       tableRbe <- {
-        logger.info(s"checkShape of $node with shape ${s.id}. Neighs: $neighs for paths: ${s.paths(schema)}")
         mkTable(extendedExpr, s.extra.getOrElse(List()))
       }
       (cTable, rbe) = tableRbe
       bagChecker = IntervalChecker(rbe)
       csRest <- {
-//        println(s"Table: $cTable\nrbe: $rbe")
         calculateCandidates(neighs, cTable)
       }
       (candidates, rest) = csRest
@@ -478,15 +486,23 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                                            )(cl: CandidateLine): CheckTyping = {
     val bag = cl.mkBag
     bagChecker.check(bag, false).fold(
-      e => errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(bagChecker.rbe)}\nTable:${table.show}\nErr: $e"),
-      _ => {
+      e => {
+        errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(
+          bagChecker.rbe)}\nTable:${table.show}\nErr: $e")
+      },
+      bag => {
         val nodeShapes = cl.nodeShapes(table)
         val checkNodeShapes: List[CheckTyping] =
-          nodeShapes.map { case (node, shapeExpr) => checkNodeShapeExpr(attempt, node, shapeExpr) }
+          nodeShapes.map {
+            case (node, shapeExpr) => checkNodeShapeExpr(attempt, node, shapeExpr)
+          }
         for {
+          typing <- getTyping
           ts <- checkAll(checkNodeShapes)
-          t <- combineTypings(ts)
-        } yield t
+          t <- combineTypings(typing :: ts)
+        } yield {
+          t
+        }
       }
     )
   }

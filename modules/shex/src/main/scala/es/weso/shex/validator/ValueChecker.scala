@@ -179,6 +179,6 @@ case class ValueChecker(schema: Schema)
   private def checkLanguageExclusion(lang: Lang, exclusion: LanguageExclusion): Boolean =
     exclusion match {
       case LanguageTagExclusion(stem) => lang.lang != stem.lang
-      case LanguageStemExclusion(langStem) => !lang.lang.startsWith(langStem.stem.lang)
+      case LanguageStemExclusion(langStem) => !checkLanguageStem(lang,langStem.stem)
     }
 }

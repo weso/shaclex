@@ -33,8 +33,9 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends
   def getTypingResult(node: RDFNode, label: ShapeLabel): Option[TypingResult[ShExError, String]] =
     t.getMap.get(node).map(_.toList.filter(_._1.label == Some(label)).map(_._2).head)
 
-  def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping =
+  def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping = {
     this.copy(t = t.addType(node, shapeType))
+  }
 
   def addEvidence(node: RDFNode, shapeType: ShapeType, evidence: String): ShapeTyping =
     this.copy(t = t.addEvidence(node, shapeType, evidence))

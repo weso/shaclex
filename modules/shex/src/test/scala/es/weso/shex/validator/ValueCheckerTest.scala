@@ -1,6 +1,5 @@
 package es.weso.shex.validator
 
-import es.weso.rdf.jena._
 import es.weso.rdf.nodes._
 import es.weso.shex._
 import org.scalatest._
@@ -21,6 +20,12 @@ class ValueCheckerTest extends ValueChecker(Schema.empty) with FunSpecLike with 
       , true)
     valueCheckerTest(LangLiteral("septante", Lang("frc")),
       LanguageStemRange(LanguageStemRangeLang(Lang("")),
+        Some(List(LanguageStemExclusion(LanguageStem(Lang("fr-be"))),
+          LanguageStemExclusion(LanguageStem(Lang("fr-cd"))),
+          LanguageStemExclusion(LanguageStem(Lang("fr-ch"))))))
+      , true)
+    valueCheckerTest(LangLiteral("septante", Lang("fr-bel")),
+      LanguageStemRange(LanguageStemRangeLang(Lang("fr")),
         Some(List(LanguageStemExclusion(LanguageStem(Lang("fr-be"))),
           LanguageStemExclusion(LanguageStem(Lang("fr-cd"))),
           LanguageStemExclusion(LanguageStem(Lang("fr-ch"))))))
