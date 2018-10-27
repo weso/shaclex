@@ -60,6 +60,7 @@ object ManifestPrefixes {
   lazy val sht_RepresentationTest = sht.add("RepresentationTest")
   lazy val sht_ValidationTest = sht.add("ValidationTest")
   lazy val sht_ValidationFailure = sht.add("ValidationFailure")
+  lazy val sht_Greedy = sht.add("Greedy")
   lazy val sht_shapeMap = sht + "shapeMap"
   lazy val sht_resultShapeMap = sht + "resultShapeMap"
   lazy val sht_ResultShapeMap = sht + "ResultShapeMap"

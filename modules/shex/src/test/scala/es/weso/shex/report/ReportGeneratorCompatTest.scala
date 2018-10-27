@@ -10,13 +10,26 @@ import es.weso.shex.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.parser.RDFParser
-import es.weso.shapeMaps.{Start => StartMap, IRILabel => IRIMapLabel, _}
+import es.weso.shapeMaps.{IRILabel => IRIMapLabel, Start => StartMap, _}
 import es.weso.shex.validator.Validator
 import es.weso.shex._
 
+import scala.collection.mutable
 import scala.io.Source
 
+case class Counter() {
+  private val msgs: collection.mutable.Buffer[String] = mutable.Buffer()
+  def add(msg: String): Unit = {
+    msgs += msg
+  }
+
+  override def toString(): String = {
+    msgs.mkString("\n") ++ s"\nTotal: ${msgs.size}"
+  }
+}
+
 class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
+  val counter = Counter()
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
@@ -65,6 +78,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
           val tryReport = for {
             name      <- stringFromPredicate(mf_name)(node, rdf)
             action    <- objectFromPredicate(mf_action)(node, rdf)
+            traits     <- objectsFromPredicate(sht_trait)(node,rdf)
             schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
             resolvedSchema = base.resolve(schemaIRI.uri)
             schemaStr = Source.fromURI(resolvedSchema)("UTF-8").mkString
@@ -76,7 +90,11 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             maybeMap  <- iriFromPredicateOptional(sht_map)(action,rdf)
             maybeShape          <- iriFromPredicateOptional(sht_shape)(action, rdf)
             lbl = maybeShape.fold(StartMap: ShapeMapLabel)(IRIMapLabel(_))
-            ok <- maybeFocus match {
+            ok <- if (traits contains sht_Greedy) {
+              counter.add(s"Greedy: $name")
+              Right(s"Greedy")
+            }
+            else maybeFocus match {
               case Some(focus) => {
                 val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
                 for {
@@ -102,7 +120,10 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
                     sm => for {
                       fixedMap <- ShapeMap.fixShapeMap(sm,rdf,rdf.getPrefixMap(),schema.prefixMap)
                       resultShapeMap <- Validator(schema).validateShapeMap(data, fixedMap)
-                      } yield s"Pending check resultShapeMap: $resultShapeMap")
+                      } yield {
+                      counter.add(s"Skipped test: $name. Reason: Requires comparison of shape maps (not supported yet)")
+                      s"Pending check resultShapeMap: $resultShapeMap" }
+                  )
                   r
                 }
                 case None => {
@@ -144,6 +165,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
         val tryReport = for {
           name      <- stringFromPredicate(mf_name)(node, rdf)
           action    <- objectFromPredicate(mf_action)(node, rdf)
+          traits     <- objectsFromPredicate(sht_trait)(node,rdf)
           schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
           str = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
           schema  <- Schema.fromString(str, "SHEXC", baseIRI)
@@ -155,7 +177,11 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
           lbl = maybeShape.fold(StartMap: ShapeMapLabel)(IRIMapLabel(_))
           shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
           resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
-          ok <- if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
+          ok <- if (traits contains sht_Greedy) {
+            counter.add(s"Greedy: $name")
+            Right(s"Greedy")
+          } else
+            if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
             Right(s"Focus $focus does not conforms to $lbl as expected")
           else
             Left(s"Focus $focus does conform to shape $lbl and should not\nResultMap:\n$resultShapeMap")
@@ -180,6 +206,10 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
         tryReport.fold(e => fail(s"Error: $e"), msg => info(s"$msg"))
       }
      }
+    }
+
+    it(s"Inform counter") {
+      info(s"Counter:\n${counter.toString}")
     }
     report
   }
