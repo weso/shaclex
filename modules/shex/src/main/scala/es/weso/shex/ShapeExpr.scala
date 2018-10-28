@@ -190,12 +190,19 @@ case class Shape(
     case _ => None
   }
 
+  /**
+  * Return the paths that are mentioned in a shape
+    * @param schema Schema to which the shape belongs, it is needed to resolve references to other shapes
+    * @return List of paths or error in case the shape is not well defined (may have bad references)
+    */
   def paths(schema: Schema): Either[String,List[Path]] = {
     def getPath(s: ShapeExpr): Option[List[Path]] = s match {
       case s: Shape => Some(s.expression.map(_.paths(schema)).getOrElse(List()))
       case _ => Some(List())
     }
-    def combinePaths(p1: List[Path], p2: List[Path]): List[Path] = p1 ++ p2
+    def combinePaths(p1: List[Path],
+                     p2: List[Path]
+                    ): List[Path] = p1 ++ p2
     extendCheckingVisited(this, schema.getShape(_), extend, combinePaths, getPath).map(_.getOrElse(List()))
   }
 

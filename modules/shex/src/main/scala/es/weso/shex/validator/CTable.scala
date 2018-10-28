@@ -26,10 +26,10 @@ object Table extends LazyLogging {
     private[validator] def addPath(p: Path, n: ConstraintRef): PathsMap =
       paths.updated(p, paths.get(p).getOrElse(Set()) + n)
 
-    private[validator] def getShapeExpr(cref: ConstraintRef): Option[ShapeExpr] = {
+    private[validator] def getConstraint(cref: ConstraintRef): Option[(ShapeExpr, Option[List[SemAct]])] = {
       constraints.get(cref).map(ce => ce match {
-        case Pos(se) => se
-        case Neg(se) => ShapeNot.fromShapeExpr(se)
+        case Pos(se,sas) => (se,sas)
+        case Neg(se,sas) => (ShapeNot.fromShapeExpr(se),sas)
       })
     }
 
@@ -84,7 +84,7 @@ object Table extends LazyLogging {
       def combine(current: ResultPair, extra: IRI): ResultPair = {
         val s: ShapeExpr = ShapeNot.fromShapeExpr(ShapeOr.fromShapeExprs(appearances(extra, te)))
         val (table,rbe) = current
-        val (newTable,cref) = table.addConstraint(Direct(extra),Pos(s))
+        val (newTable,cref) = table.addConstraint(Direct(extra),Pos(s,None))
         val newRbe = And(rbe,Symbol(cref,0,Unbounded))
         (newTable,newRbe)
       }
@@ -100,8 +100,10 @@ object Table extends LazyLogging {
       } yield extendWithExtras(pair, te, extras)
     }
 
+    // TODO: this method should be tailrec
     private def mkTableAux(te: TripleExpr, current: CTable, teMap: TripleExprMap): Either[String,ResultPair] = {
       te match {
+        // TODO: Check if we should add semActs
         case e: EachOf => {
           val zero: Either[String,ResultPair] = Right((current, Empty))
           def comb(rest: Either[String,ResultPair], currentTe: TripleExpr): Either[String,ResultPair] = for {
@@ -147,12 +149,12 @@ object Table extends LazyLogging {
         case tc: TripleConstraint => {
           val valueExpr: CheckExpr = if (tc.negated) {
             tc.valueExpr match {
-              case Some(se) => Neg(se)
-              case None => Neg(ShapeExpr.any)
+              case Some(se) => Neg(se,tc.semActs)
+              case None => Neg(ShapeExpr.any,tc.semActs)
             }
           } else tc.valueExpr match {
-            case Some(se) => Pos(se)
-            case None => Pos(ShapeExpr.any)
+            case Some(se) => Pos(se, tc.semActs)
+            case None => Pos(ShapeExpr.any,tc.semActs)
           }
           val (newTable, cref) = current.addConstraint(tc.path, valueExpr)
           val posSymbol = Symbol(cref, tc.min, max2IntOrUnbounded(tc.max))

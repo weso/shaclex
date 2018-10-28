@@ -5,7 +5,6 @@ import java.io.File
 
 import scala.io._
 import es.weso.json._
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.utils.FileUtils._
 import es.weso.shex._
 

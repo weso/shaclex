@@ -1,7 +1,6 @@
 package es.weso.shex
 
 import es.weso.depgraphs.{DepGraph, Neg, Pos, PosNeg}
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
 import org.scalatest._
 

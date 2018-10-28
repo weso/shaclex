@@ -463,6 +463,10 @@ object RDFAsJenaModel {
            Right(_))
   }
 
+  def fromString(str: String, format: String, base: Option[String] = None): Either[String,RDFAsJenaModel] = {
+    fromChars(str, format, base)
+  }
+
   def fromChars(cs: CharSequence, format: String, base: Option[String] = None): Either[String,RDFAsJenaModel] = {
     RDFAsJenaModel.empty.fromString(cs, format, base)
   }

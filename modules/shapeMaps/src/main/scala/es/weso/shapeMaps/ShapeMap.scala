@@ -183,7 +183,7 @@ object ShapeMap {
       implicit val showShapeMapLabel: Show[ShapeMapLabel] = new Show[ShapeMapLabel] {
         final def show(label: ShapeMapLabel): String = label match {
           case IRILabel(iri) => a.shapesPrefixMap.qualify(iri)
-          case BNodeLabel(bn) => bn.getLexicalForm
+          case BNodeLabel(bn) => "_:" ++ bn.getLexicalForm
           case Start => "Start"
         }
       }

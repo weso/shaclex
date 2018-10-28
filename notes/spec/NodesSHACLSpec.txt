@@ -1,0 +1,6 @@
+# Notes about the spec
+
+## Values of sh:in and sh:hasValue
+
+- `sh:in` has as parameter a list of values and it says that those values cannot be blank nodes
+- `sh:hasValue` has a value type that can be any thing (also a blank node)

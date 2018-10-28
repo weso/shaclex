@@ -1,11 +1,8 @@
 package es.weso.shex.spec
 
-import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
-import es.weso.rdf.triples.RDFTriple
-import es.weso.shapeMaps.{Conformant => SMConformant, _}
-import es.weso.shex.validator.Arc
+import es.weso.shapeMaps._
 import es.weso.shex.{IRILabel => ShExIriLabel, _}
 import org.scalatest._
 

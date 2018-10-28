@@ -175,13 +175,13 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  private def validatedPairs: RDFParser[Set[ValidPair]] =
+/*  private def validatedPairs: RDFParser[Set[ValidPair]] =
     parsePropertyValues(sht_pair, parsePair)
 
   private def parsePair: RDFParser[ValidPair] = (n, rdf) => for {
     node <- objectFromPredicate(sht_node)(n, rdf)
     shape <- objectFromPredicate(sht_shape)(n, rdf)
-  } yield ValidPair(node, shape)
+  } yield ValidPair(node, shape) */
 
   private def noType(n: RDFNode, rdf: RDFReader): Boolean = {
     val types = objectsFromPredicate(rdf_type)(n, rdf)
@@ -223,7 +223,7 @@ case class RDF2Manifest(base: Option[IRI],
     case _ => Left(s"Trying to deref an include from node $node which is not an IRI")
   }
 
-  private def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n, rdf) => for {
+/*  private def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] = (n, rdf) => for {
     value <- objectFromPredicate(pred)(n, rdf)
     result <- parser(value, rdf)
   } yield result
@@ -231,7 +231,7 @@ case class RDF2Manifest(base: Option[IRI],
   private def parsePropertyValues[A](pred: IRI, parser: RDFParser[A]): RDFParser[Set[A]] = (n, rdf) => for {
     values <- objectsFromPredicate(pred)(n, rdf)
     results <- parseNodes(values.toList, parser)(rdf)
-  } yield results.toSet
+  } yield results.toSet */
 
   private def parsePropertyList[A](
     pred: IRI,

@@ -9,34 +9,25 @@ import org.scalatest.Matchers
 import es.weso.shex.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.rdf.nodes.{BNode, IRI}
 import es.weso.rdf.parser.RDFParser
-import es.weso.shapeMaps.{IRILabel => IRIMapLabel, Start => StartMap, _}
+import es.weso.shapeMaps.{IRILabel => IRIMapLabel, Start => StartMap, BNodeLabel => BNodeMapLabel,_}
 import es.weso.shex.validator.Validator
 import es.weso.shex._
 
 import scala.collection.mutable
 import scala.io.Source
 
-case class Counter() {
-  private val msgs: collection.mutable.Buffer[String] = mutable.Buffer()
-  def add(msg: String): Unit = {
-    msgs += msg
-  }
-
-  override def toString(): String = {
-    msgs.mkString("\n") ++ s"\nTotal: ${msgs.size}"
-  }
-}
 
 class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
-  val counter = Counter()
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-    None
-   // Some("recursion_example")
+    // None
+    Some("node_kind_example")
 
+  val counter = Counter()
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
   val outFile = conf.getString("EarlReportFile")
@@ -88,8 +79,15 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
             maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, rdf)
             maybeMap  <- iriFromPredicateOptional(sht_map)(action,rdf)
-            maybeShape          <- iriFromPredicateOptional(sht_shape)(action, rdf)
-            lbl = maybeShape.fold(StartMap: ShapeMapLabel)(IRIMapLabel(_))
+            maybeShape <- objectFromPredicateOptional(sht_shape)(action, rdf)
+            lbl = maybeShape match {
+              case None           => StartMap: ShapeMapLabel
+              case Some(i: IRI)   => IRIMapLabel(i)
+              case Some(b: BNode) => BNodeMapLabel(b)
+              case Some(other) => {
+                IRIMapLabel(IRI(s"UnknownLabel"))
+              }
+            }
             ok <- if (traits contains sht_Greedy) {
               counter.add(s"Greedy: $name")
               Right(s"Greedy")
@@ -167,8 +165,8 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
           action    <- objectFromPredicate(mf_action)(node, rdf)
           traits     <- objectsFromPredicate(sht_trait)(node,rdf)
           schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
-          str = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
-          schema  <- Schema.fromString(str, "SHEXC", baseIRI)
+          schemaStr = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
+          schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI)
           dataIRI <- iriFromPredicate(sht_data)(action, rdf)
           strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
@@ -184,7 +182,12 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
             Right(s"Focus $focus does not conforms to $lbl as expected")
           else
-            Left(s"Focus $focus does conform to shape $lbl and should not\nResultMap:\n$resultShapeMap")
+            Left(s"Focus $focus does conform to shape $lbl and should not\nResultMap:\n$resultShapeMap" ++
+              s"\nData: \n${strData}\nSchema: ${schemaStr}\n" ++
+              s"${resultShapeMap.getInfo(focus,lbl)}\n" ++
+              s"Schema: ${schema}\n" ++
+              s"Data: ${data}"
+            )
         } yield ok
         val testReport = tryReport match {
           case Right(msg) => {
@@ -214,4 +217,15 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
     report
   }
 
+}
+
+case class Counter() {
+  private val msgs: collection.mutable.Buffer[String] = mutable.Buffer()
+  def add(msg: String): Unit = {
+    msgs += msg
+  }
+
+  override def toString(): String = {
+    msgs.mkString("\n") ++ s"\nTotal: ${msgs.size}"
+  }
 }

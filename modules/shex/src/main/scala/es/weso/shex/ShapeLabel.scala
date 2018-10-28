@@ -21,4 +21,10 @@ object ShapeLabel {
     case bn: BNode => Right(BNodeLabel(bn))
     case _ => Left(s"Cannot convert $node to ShapeLabel")
   }
+
+  def fromString(str: String): Either[String,ShapeLabel] = for {
+    node <- RDFNode.fromString(str)
+    label <- fromRDFNode(node)
+  } yield label
+
 }

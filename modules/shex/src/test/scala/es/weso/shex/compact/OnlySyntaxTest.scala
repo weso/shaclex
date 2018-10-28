@@ -4,11 +4,9 @@ import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.json.JsonTest
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex._
 import es.weso.utils.FileUtils._
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-
 import scala.io._
 
 class OnlySyntaxTest extends FunSpec with JsonTest with Matchers with EitherValues {
