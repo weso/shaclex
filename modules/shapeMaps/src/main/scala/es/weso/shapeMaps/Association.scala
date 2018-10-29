@@ -5,7 +5,6 @@ import io.circe.syntax._
 import NodeSelector._
 import ShapeMapLabel._
 import es.weso.json.DecoderUtils._
-import es.weso.rdf.nodes.{ BNode, IRI, RDFNode }
 
 case class Association(node: NodeSelector, shape: ShapeMapLabel, info: Info = Info()) {
 
@@ -39,15 +38,6 @@ object Association {
     })
   }
 
-  implicit val decodeShapeMapLabel: Decoder[ShapeMapLabel] = Decoder.instance { c =>
-    c.as[String].flatMap(s => RDFNode.fromString(s).fold(
-      s => Left(DecodingFailure(s, Nil)),
-      node => node match {
-        case iri: IRI => Right(IRILabel(iri))
-        case bnode: BNode => Right(BNodeLabel(bnode))
-        case _ => Left(DecodingFailure(s"Cannot parse shapeMapLabel $node", Nil))
-      }))
-  }
 
   implicit val decodeAssociation: Decoder[Association] = Decoder.instance { c => {
     for {

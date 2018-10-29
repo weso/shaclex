@@ -15,7 +15,7 @@ import es.weso.utils.EitherUtils._
 trait ShEx2SLang {
 
  def shex2SLang(schema: Schema): Either[String,SchemaS] = for {
-   keyValues <- sequence(schema.shapesMap.toList.map(cnvlabelShape(schema)))
+   keyValues <- sequence(schema.localShapesMap.toList.map(cnvlabelShape(schema)))
  } yield SchemaS(keyValues.toMap)
 
   private def cnvlabelShape(schema: Schema)(pair: (ShapeLabel, ShapeExpr)): Either[String, (Label,SLang)] = {
@@ -29,6 +29,7 @@ trait ShEx2SLang {
   private def cnvLabel(lbl: ShapeLabel): Either[String,Label] = lbl match {
     case ShExBNodeLabel(bnode) => Right(slang.BNodeLabel(bnode))
     case ShExIRILabel(iri) => Right(slang.IRILabel(iri))
+    case Start => Left(s"Unimplemented conversion of Start to SLang")
   }
 
   private def cnvShapeExpr(se: ShapeExpr, schema: Schema): Either[String,SLang] = se match {

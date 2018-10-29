@@ -8,7 +8,7 @@ import Parser._
 import es.weso.rdf.path._
 import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext, _}
 import es.weso.shapeMaps.parser._
-import es.weso.utils.FileUtils
+import es.weso.utils.{EitherUtils, FileUtils}
 import io.circe.Json
 
 import scala.collection.JavaConverters._
@@ -17,11 +17,11 @@ import scala.collection.JavaConverters._
  * Visits the AST and builds the corresponding ShapeMaps classes
  */
 class ShapeMapsMaker(
-  base: Option[String],
+  base: Option[IRI],
   nodesPrefixMap: PrefixMap,
   shapesPrefixMap: PrefixMap = PrefixMap.empty) extends ShapeMapBaseVisitor[Any] with LazyLogging {
 
-  val baseIRI = IRI(base.getOrElse(FileUtils.currentFolderURL))
+  val baseIRI = base.getOrElse(IRI(FileUtils.currentFolderURL))
 
   override def visitShapeMap(ctx: ShapeMapContext): Builder[QueryShapeMap] = for {
     associations <- visitList(visitPair, ctx.pair)
@@ -138,7 +138,7 @@ class ShapeMapsMaker(
     for {
       alts <- {
         val r: List[Builder[SHACLPath]] = ctx.pathSequence().asScala.map(visitPathSequence(_)).toList
-        r.sequence
+        EitherUtils.sequence(r) // .sequence
       }
     } yield if (alts.length == 1) alts.head
     else AlternativePath(alts)
@@ -147,7 +147,7 @@ class ShapeMapsMaker(
     for {
       seqs <- {
         val r: List[Builder[SHACLPath]] = ctx.pathEltOrInverse().asScala.map(visitPathEltOrInverse(_)).toList
-        r.sequence
+        EitherUtils.sequence(r) //
       }
     } yield if (seqs.length == 1) seqs.head
     else SequencePath(seqs)
@@ -362,7 +362,7 @@ class ShapeMapsMaker(
   def visitList[A, B](
     visitFn: A => Builder[B],
     ls: java.util.List[A]): Builder[List[B]] = {
-    ls.asScala.toList.map(visitFn(_)).sequence
+    EitherUtils.sequence(ls.asScala.toList.map(visitFn(_)))
   }
 
   def visitOpt[A, B](

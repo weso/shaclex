@@ -57,11 +57,11 @@ case class Result(
 
   def toJson: Json = {
 
-    implicit val encodeIRI: Encoder[IRI] = new Encoder[IRI] {
+/*    implicit val encodeIRI: Encoder[IRI] = new Encoder[IRI] {
       final def apply(iri: IRI): Json = {
         Json.fromString(iri.getLexicalForm)
       }
-    }
+    } */
 
     implicit val encodePrefixMap: Encoder[PrefixMap] = new Encoder[PrefixMap] {
       final def apply(prefixMap: PrefixMap): Json = {
@@ -71,7 +71,8 @@ case class Result(
         Json.fromJsonObject(JsonObject.fromMap(newMap))
       }
     }
-    implicit val encodeShapeMap: Encoder[ResultShapeMap] = new Encoder[ResultShapeMap] {
+
+/*    implicit val encodeShapeMap: Encoder[ResultShapeMap] = new Encoder[ResultShapeMap] {
       final def apply(a: ResultShapeMap): Json = {
         def node2String(n: RDFNode): String = a.nodesPrefixMap.qualify(n)
         def shapeMapLabel2String(s: ShapeMapLabel): String = s match {
@@ -86,7 +87,7 @@ case class Result(
 
         Json.fromJsonObject(JsonObject.fromMap(cnvMap(a.resultMap, node2String, result2Json)))
       }
-    }
+    } */
 
     implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
       final def apply(a: Result): Json = {

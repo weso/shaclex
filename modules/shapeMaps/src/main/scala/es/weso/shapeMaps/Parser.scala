@@ -1,11 +1,12 @@
 package es.weso.shapeMaps
 
-import java.io.{ ByteArrayInputStream, InputStreamReader, Reader => JavaReader }
+import java.io.{ByteArrayInputStream, InputStreamReader, Reader => JavaReader}
 import java.nio.charset.StandardCharsets
 
 import com.typesafe.scalalogging._
 import es.weso.rdf._
-import es.weso.shapeMaps.parser.{ ShapeMapLexer, ShapeMapParser }
+import es.weso.rdf.nodes.IRI
+import es.weso.shapeMaps.parser.{ShapeMapLexer, ShapeMapParser}
 import org.antlr.v4.runtime._
 
 object Parser extends LazyLogging {
@@ -28,7 +29,7 @@ object Parser extends LazyLogging {
 
   def parse(
     str: String,
-    base: Option[String],
+    base: Option[IRI],
     nodesPrefixMap: PrefixMap,
     shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
     val s = removeBOM(str)
@@ -39,7 +40,7 @@ object Parser extends LazyLogging {
 
   def parseSchemaReader(
     reader: JavaReader,
-    base: Option[String],
+    base: Option[IRI],
     nodesPrefixMap: PrefixMap,
     shapesPrefixMap: PrefixMap): Either[String, QueryShapeMap] = {
     val input: CharStream = CharStreams.fromReader(reader)
@@ -51,10 +52,7 @@ object Parser extends LazyLogging {
     lexer.addErrorListener(errorListener)
     parser.addErrorListener(errorListener)
 
-    val maker = new ShapeMapsMaker(
-      base: Option[String],
-      nodesPrefixMap,
-      shapesPrefixMap)
+    val maker = new ShapeMapsMaker(base,nodesPrefixMap,shapesPrefixMap)
     val builder = maker.visit(parser.shapeMap()).asInstanceOf[Builder[QueryShapeMap]]
     val errors = errorListener.getErrors
     if (errors.length > 0) {

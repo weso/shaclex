@@ -255,6 +255,7 @@ object ShEx2Shacl {
   private def getShapeExprId(se: shex.ShapeExpr): Result[RefNode] = se.id match {
     case Some(shex.IRILabel(iri)) => ok(RefNode(iri))
     case Some(shex.BNodeLabel(bnode)) => ok(RefNode(bnode))
+    case Some(shex.Start) => err(s"Unimplemented getShapeExprId of Start yet")
     case None => for {
      shapeExprsMap <- getShapeExprsMap
      id <- shapeExprsMap.get(se) match {
@@ -271,6 +272,7 @@ object ShEx2Shacl {
   private def getTripleExprId(te: shex.TripleExpr): Result[RefNode] = te.id match {
     case Some(shex.IRILabel(iri)) => ok(RefNode(iri))
     case Some(shex.BNodeLabel(bnode)) => ok(RefNode(bnode))
+    case Some(shex.Start) => err(s"Unimplemented getTripleExprId of Start")
     case None => for {
       tripleExprsMap <- getTripleExprsMap
       id <- tripleExprsMap.get(te) match {

@@ -2,12 +2,10 @@ package es.weso.shex.spec
 
 import Check._
 import cats._
-import cats.data.EitherT
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shapeMaps.{IRILabel, ShapeMapLabel}
 import es.weso.shex.Schema
-import es.weso.typing.Typing
 import org.scalatest._
 
 class CheckTest extends FunSpec with Matchers with EitherValues {
@@ -177,11 +175,11 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
     it(s"Should satisfyFirst on infinite") {
       val ls = Stream.from(1)
       def even(n: Int): Check[Boolean] = {
-        println(s"Checking $n")
+        // println(s"Checking $n")
         if (n < 0) err(s"Negative")
         else {
           val b = n % 2 == 0
-          println(s"Returning $b")
+          // println(s"Returning $b")
           pure(b)
         }
       }

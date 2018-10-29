@@ -1,7 +1,7 @@
 package es.weso.shapeMaps
 
-import es.weso.rdf.nodes.{ BNode, IRI }
-import io.circe.{ Encoder, Json }
+import es.weso.rdf.nodes.{BNode, IRI, RDFNode}
+import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import cats._
 import cats.implicits._
 
@@ -38,6 +38,16 @@ object ShapeMapLabel {
       case BNodeLabel(bn) => bn.show
       case Start => "start"
     }
+  }
+
+  implicit val decodeShapeMapLabel: Decoder[ShapeMapLabel] = Decoder.instance { c =>
+    c.as[String].flatMap(s => RDFNode.fromString(s).fold(
+      s => Left(DecodingFailure(s, Nil)),
+      node => node match {
+        case iri: IRI => Right(IRILabel(iri))
+        case bnode: BNode => Right(BNodeLabel(bnode))
+        case _ => Left(DecodingFailure(s"Cannot parse shapeMapLabel $node", Nil))
+      }))
   }
 
 }

@@ -46,26 +46,29 @@ case class ValidationTest(override val node: RDFNode,
                     override val name: String,
                     traits: List[IRI],
                     comment: String,
-                    action: BasicAction
+                    action: BasicAction,
+                    maybeResult: Option[IRI]
                    ) extends Entry {
   override val entryType = sht_ValidationTest
 }
 
 case class ValidationFailure(override val node: RDFNode,
-                          override val status: Status,
-                          override val name: String,
-                          traits: List[IRI],
-                          comment: String,
-                          action: BasicAction
-                         ) extends Entry {
+                             override val status: Status,
+                             override val name: String,
+                             traits: List[IRI],
+                             comment: String,
+                             action: BasicAction,
+                             maybeResult: Option[IRI]
+                            ) extends Entry {
   override val entryType = sht_Validate
 }
 
 case class BasicAction(data: IRI,
-    schema: IRI,
-    focus: Option[RDFNode],
-    shape: Option[IRI]
-)
+                       schema: IRI,
+                       focus: Option[RDFNode],
+                       shape: Option[IRI],
+                       maybeMapIRI: Option[IRI]
+                      )
 
 case class ManifestAction(
   schema: Option[IRI],
@@ -120,12 +123,12 @@ sealed trait Result {
   val isValid: Boolean
 
   def resultShapeMap: Option[IRI] = this match {
-    case ResultShapeMap(iri) => Some(iri)
+    case ResultShapeMapIRI(iri) => Some(iri)
     case _ => None
   }
 }
 
-final case class ResultShapeMap(iri: IRI) extends Result {
+final case class ResultShapeMapIRI(iri: IRI) extends Result {
   override val isValid = false
 }
 
@@ -133,8 +136,7 @@ case class ValidPair(
   node: RDFNode,
   shape: RDFNode)
 
-final case class BooleanResult(
-  value: Boolean) extends Result {
+final case class BooleanResult(value: Boolean) extends Result {
   override val isValid = value
 }
 

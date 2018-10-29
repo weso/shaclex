@@ -28,8 +28,7 @@ object CountUsages {
   private def sequence[A](ls: List[Result[A]]): Result[List[A]] = ls.sequence[Result,A]
   private def getShape(lbl: ShapeLabel): Result[ShapeExpr] = for {
     schema <- getSchema
-    se <- schema.getShape(lbl).
-      fold(err[ShapeExpr](s"Not found shape with label $lbl"))(ok(_))
+    se <- schema.getShape(lbl).fold(e => err[ShapeExpr](e), ok(_))
   } yield se
 
 /*  private def isBNode(lbl: ShapeLabel): Boolean = lbl match {

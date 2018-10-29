@@ -1,8 +1,6 @@
 package es.weso.shex.converter
 
 import es.weso.shex._
-import cats._
-import cats.implicits._
 
 trait ShExSimplifier {
   def inlineInclusions(schema: Schema): Either[String,Schema] = {

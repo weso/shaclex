@@ -110,7 +110,7 @@ class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
       shaclRDF       <- RDFAsJenaModel.fromChars(strSHACL, "TURTLE", None)
       shacl          <- RDF2Shacl.getShacl(shaclRDF)
       shexConverted  <- Shacl2ShEx.shacl2ShEx(shacl).leftMap(e => s"Error in conversion: $e")
-      expectedSchema <- shex.Schema.fromString(expected, "ShExC", None, emptyRdf)
+      expectedSchema <- shex.Schema.fromString(expected, "ShExC")
     } yield (shexConverted, expectedSchema, shacl)
     r.fold(
         e => fail(s"Error: $e"),

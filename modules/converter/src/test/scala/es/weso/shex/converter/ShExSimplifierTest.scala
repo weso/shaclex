@@ -1,10 +1,7 @@
 package es.weso.shex.converter
 
 import cats._
-import cats.data._
-import cats.implicits._
 import es.weso._
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.implicits.eqShEx._
 import es.weso.shex.Schema
 import org.scalatest._
@@ -29,9 +26,9 @@ class ShExSimplifierTest extends FunSpec
                    ): Unit = {
    it(s"Should simplify $shexStr and obtain $strExpected") {
    val r = for {
-     schema <- shex.Schema.fromString(shexStr,"SHEXC",None, RDFAsJenaModel.empty)
+     schema <- shex.Schema.fromString(shexStr,"SHEXC")
      simplified <- inlineInclusions(schema)
-     expected <- shex.Schema.fromString(strExpected,"SHEXC",None, RDFAsJenaModel.empty)
+     expected <- shex.Schema.fromString(strExpected,"SHEXC")
 
    } yield (schema,simplified, expected)
 

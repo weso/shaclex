@@ -44,7 +44,7 @@ object ShapeMap {
 
   def fromURI(uri: String,
               format: String,
-              base: Option[String],
+              base: Option[IRI],
               nodesPrefixMap: PrefixMap,
               shapesPrefixMap: PrefixMap): Either[String, ShapeMap] = {
    val t = Try {
@@ -60,7 +60,7 @@ object ShapeMap {
   }
   def fromString(str: String,
                  format: String,
-                 base: Option[String] = None,
+                 base: Option[IRI] = None,
                  nodesPrefixMap: PrefixMap = PrefixMap.empty,
                  shapesPrefixMap: PrefixMap = PrefixMap.empty
                 ): Either[String,ShapeMap] =
@@ -74,7 +74,7 @@ object ShapeMap {
 
   def fromCompact(
     str: String,
-    base: Option[String] = None,
+    base: Option[IRI] = None,
     nodesPrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ShapeMap] = {
     if (str.isEmpty) Right(ShapeMap.empty)
@@ -87,7 +87,7 @@ object ShapeMap {
 
   def parseResultMap(
     str: String,
-    base: Option[String],
+    base: Option[IRI],
     rdf: RDFReader,
     shapesPrefixMap: PrefixMap = PrefixMap.empty): Either[String, ResultShapeMap] = for {
     queryMap <- {

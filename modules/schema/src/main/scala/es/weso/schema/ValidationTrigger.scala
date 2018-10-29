@@ -4,6 +4,7 @@ import es.weso.rdf.nodes._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.shapeMaps._
+import es.weso.utils.EitherUtils
 import io.circe._
 import io.circe.JsonObject._
 
@@ -51,13 +52,13 @@ object ValidationTrigger extends LazyLogging {
   lazy val targetDeclarations: ValidationTrigger = TargetDeclarations
 
   def cnvShapes(ss: List[String], pm: PrefixMap): Either[String, Set[String]] = {
-    ss.map(removeLTGT(_, pm).map(_.str)).sequence.map(_.toSet)
+    EitherUtils.sequence(ss.map(removeLTGT(_, pm).map(_.str))).map(_.toSet)
   }
 
   def findTrigger(
     name: String,
     shapeMapStr: String,
-    base: Option[String],
+    optBase: Option[String],
     optNode: Option[String],
     optShape: Option[String],
     nodePrefixMap: PrefixMap,
@@ -67,6 +68,10 @@ object ValidationTrigger extends LazyLogging {
       case "TARGETDECLS" => Right(TargetDeclarations)
       case "SHAPEMAP" =>
         for {
+          base <- optBase match {
+            case None => Right(None)
+            case Some(baseStr) => IRI.fromString(baseStr).map(Some(_))
+          }
           shapeMap <- ShapeMap.fromCompact(shapeMapStr, base, nodePrefixMap, shapePrefixMap)
         } yield ShapeMapTrigger(shapeMap)
       case "NODESHAPE" => (optNode, optShape) match {

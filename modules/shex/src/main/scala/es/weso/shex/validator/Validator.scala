@@ -320,9 +320,9 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   }
 
   private[validator] def checkShape(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
-    println(s"CheckNodeShape $node\nShape: $s\n---\n")
+    // println(s"CheckNodeShape $node\nShape: $s\n---\n")
     if (s.isEmpty) {
-      println(s"Shape is empty")
+      // println(s"Shape is empty")
       addEvidence(attempt.nodeShape,s"Node $node matched empty shape")
     }
     else
@@ -341,20 +341,20 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       }
       (candidates, rest) = csRest
       _ <- {
-        println(s"Rests: $rest\nCandidates: $candidates\nNeighs: $neighs\nClosed: ${s.isClosed}")
+        // println(s"Rests: $rest\nCandidates: $candidates\nNeighs: $neighs\nClosed: ${s.isClosed}")
         checkRests(rest, s.extraPaths, s.isClosed, ignoredPathsClosed)
       }
       _ <- { if (s.isClosed) {checkNoStrangeProperties(node, paths)} else ok(())      }
       typing <- {
-        println(s"Before checkCandidates: $candidates\nTable:$cTable\n(end Table)\n")
+        // println(s"Before checkCandidates: $candidates\nTable:$cTable\n(end Table)\n")
         checkCandidates(attempt, bagChecker, cTable)(candidates)
       }
       _ <- {
-        println(s"checkOptSemActs: ${s.actions}")
+        // println(s"checkOptSemActs: ${s.actions}")
         checkOptSemActs(node,s.actions)
       }
     } yield {
-      println(s"End of checkShape(attempt=${attempt.show},node=${node.show},shape=${s.show})=${typing.show}")
+      // println(s"End of checkShape(attempt=${attempt.show},node=${node.show},shape=${s.show})=${typing.show}")
       typing
     }
   }
@@ -370,7 +370,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     maybeActs match {
       case None => ok(())
       case Some(as) => {
-        println(s"SemActs: $as")
+        // println(s"SemActs: $as")
         checkListSemActs(node,as)
       }
   }
@@ -389,11 +389,11 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   } yield ()
 
   private[validator] def runAction(name: IRI, code: Option[String], node: RDFNode, rdf: RDFReader): Check[Unit] = {
-    println(s"Semantic action: $name/$code")
+    // println(s"Semantic action: $name/$code")
     for {
       _ <- name match {
         case TestSemanticAction.`iri` => {
-          println(s"Running semantic action: $code")
+          // println(s"Running semantic action: $code")
           TestSemanticAction.runAction(code.getOrElse(""), node, rdf).fold(e => errStr(e), _ => ok(()))
         }
         case _ => {
@@ -508,8 +508,8 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                                             bagChecker: BagChecker_,
                                             table: CTable
                                            )(cl: CandidateLine): CheckTyping = {
-    println(s"checkCandidateLine: ${cl}")
-    println(s"Table: $table")
+    // println(s"checkCandidateLine: ${cl}")
+    // println(s"Table: $table")
     val bag = cl.mkBag
     bagChecker.check(bag, false).fold(
       e => {
@@ -517,13 +517,13 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
           bagChecker.rbe)}\nTable:${table.show}\nErr: $e")
       },
       bag => {
-        println(s"Matches RBE...")
+        // println(s"Matches RBE...")
         val nodeConstraints = cl.nodeConstraints(table)
         val checkNodeConstraints: List[CheckTyping] =
           nodeConstraints.map {
             case (node, pair) => {
               val (shapeExpr, maybeSemActs) = pair
-              println(s"Checking $node with $shapeExpr")
+              // println(s"Checking $node with $shapeExpr")
               for {
               t <- checkNodeShapeExpr(attempt, node, shapeExpr)
               _ <- checkOptSemActs(node,maybeSemActs)

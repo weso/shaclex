@@ -70,8 +70,8 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
   }
 
   private def compareSchemas(s1: Schema, s2: Schema): Either[String,Boolean] = {
-    if (s1.shapesMap.keys != s2.shapesMap.keys) {
-      Left(s"Different labels. labels1 = ${s1.shapesMap.keys}\nlabels2 = ${s2.shapesMap.keys}")
+    if (s1.localShapesMap.keys != s2.localShapesMap.keys) {
+      Left(s"Different labels. labels1 = ${s1.localShapesMap.keys}\nlabels2 = ${s2.localShapesMap.keys}")
     } else {
       val zero: Either[String,Boolean] = Right(true)
       def compareLabelSE(e: Either[String,Boolean], pair: (ShapeLabel,ShapeExpr)): Either[String,Boolean] = for {
@@ -79,8 +79,8 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
        x <- {
          val (lbl,se1) = pair
          s2.getShape(lbl) match {
-           case None => Left(s"Not found label $lbl in second schema")
-           case Some(se2) => (se1,se2) match {
+           case Left(e) => Left(e)
+           case Right(se2) => (se1,se2) match {
              case (sh1: Shape, sh2: Shape) => (sh1.expression, sh2.expression) match {
                case (Some(eo1: EachOf), Some(eo2: EachOf)) => compareEachOfs(eo1,eo2)
                case (Some(tc1: TripleConstraint), Some(tc2: TripleConstraint)) => compareTripleConstraints(tc1,tc2)
@@ -91,7 +91,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          }
        }
       } yield b
-      s1.shapesMap.foldLeft(zero)(compareLabelSE)
+      s1.localShapesMap.foldLeft(zero)(compareLabelSE)
     }
   }
 

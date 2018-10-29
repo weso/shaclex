@@ -186,7 +186,7 @@ object ShExSchema {
     cs: CharSequence,
     format: String,
     base: Option[String]): Either[String, ShExSchema] = {
-    Schema_.fromString(cs, format, base, RDFAsJenaModel.empty).map(p => ShExSchema(p))
+    Schema_.fromString(cs, format, base, Some(RDFAsJenaModel.empty)).map(p => ShExSchema(p))
   }
 
 }

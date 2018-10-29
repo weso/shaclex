@@ -33,7 +33,7 @@ class CountUsagesTest extends FunSpec with Matchers with EitherValues {
                 ): Unit = {
    it(s"Should count usages $shexStr and obtain $mapExpected") {
    val r = for {
-     schema <- shex.Schema.fromString(shexStr,"SHEXC",None, RDFAsJenaModel.empty)
+     schema <- shex.Schema.fromString(shexStr,"SHEXC")
      result <- CountUsages.countUsages(schema)
    } yield (schema,result)
 

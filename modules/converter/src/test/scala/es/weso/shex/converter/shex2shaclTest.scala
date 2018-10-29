@@ -98,7 +98,7 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
                               ignored: Boolean = false): Unit = {
     def comp(): Unit = {
       val result: Either[String,Boolean] = for {
-        schema <- shex.Schema.fromString(shexStr,"SHEXC",None, RDFAsJenaModel.empty)
+        schema <- shex.Schema.fromString(shexStr,"SHEXC")
         shaclSchema <- ShEx2Shacl.shex2Shacl(schema,None).
           leftMap(e => s"Error converting schema: $e\n$schema")
         rdfShacl = (new Shacl2RDF {}).toRDF(shaclSchema, RDFAsJenaModel.empty)

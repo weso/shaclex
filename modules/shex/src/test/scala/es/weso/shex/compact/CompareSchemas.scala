@@ -1,24 +1,14 @@
 package es.weso.shex.compact
 import cats._
 import cats.implicits._
-import com.typesafe.config.{Config, ConfigFactory}
-import es.weso.json.JsonTest
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex._
-import es.weso.shex.implicits.decoderShEx._
-import es.weso.utils.FileUtils._
-import io.circe.parser._
-import io.circe.syntax._
-import org.scalatest.{EitherValues, FunSpec, Matchers}
-import es.weso.shex.implicits.encoderShEx._
-import scala.io._
 import es.weso.shex.implicits.eqShEx._
 
 object CompareSchemas {
   type ShapeMap = Map[ShapeLabel, ShapeExpr]
   // Compare schemas ignoring namespaces or other minor differences like None vs Some(false)
   def compareSchemas(s1: Schema, s2: Schema): Boolean = {
-    compareShapesMaps(s1.shapesMap, s2.shapesMap)
+    compareShapesMaps(s1.localShapesMap, s2.localShapesMap)
   }
 
   def compareShapesMaps(s1: ShapeMap, s2: ShapeMap): Boolean = {

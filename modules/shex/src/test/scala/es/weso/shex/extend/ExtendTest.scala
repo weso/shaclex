@@ -40,7 +40,7 @@ class ExtendTest extends FunSpec with Extend with Matchers with EitherValues {
       val s: Shape                           = Shape(Some(List("r")), Some(Expr(List("x"))))
       val t: Shape                           = Shape(None, Some(Expr(List("y"))))
       val schema: Schema                         = Map("s" -> s, "t" -> t)
-      val expected: Either[String, Option[Expr]] = Left(s"Not found shape with label r in schema")
+      val expected: Either[String, Option[Expr]] = Left(s"Not found")
       shouldFlattenExpr("S extends R which doesn't exist (error)", s, schema, expected)
     }
     {

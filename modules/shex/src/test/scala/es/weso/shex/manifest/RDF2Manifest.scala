@@ -69,7 +69,8 @@ case class RDF2Manifest(base: Option[IRI],
       comment <- stringFromPredicate(rdfs_comment)(n,rdf)
       actionNode <- objectFromPredicate(mf_action)(n, rdf)
       action <- basicAction(actionNode, rdf)
-    } yield ValidationTest(n,Status(statusIri),name,traits,comment,action)
+      maybeResult <- iriFromPredicateOptional(mf_result)(n,rdf)
+    } yield ValidationTest(n,Status(statusIri),name,traits,comment,action,maybeResult)
   }
 
   private def validationFailure: RDFParser[ValidationFailure] = { (n,rdf) =>
@@ -80,16 +81,20 @@ case class RDF2Manifest(base: Option[IRI],
       comment <- stringFromPredicate(rdfs_comment)(n,rdf)
       actionNode <- objectFromPredicate(mf_action)(n, rdf)
       action <- basicAction(actionNode, rdf)
-    } yield ValidationFailure(n,Status(statusIri),name,traits,comment,action)
+      maybeResult <- iriFromPredicateOptional(mf_result)(n,rdf)
+    } yield ValidationFailure(n,Status(statusIri),name,traits,comment,action,maybeResult)
   }
+
   private def basicAction: RDFParser[BasicAction] = { (n,rdf) =>
     for {
       schema <- iriFromPredicate(sht_schema)(n, rdf)
       data <- iriFromPredicate(sht_data)(n, rdf)
       focus <- objectFromPredicateOptional(sht_focus)(n, rdf)
       shape <- iriFromPredicateOptional(sht_shape)(n, rdf)
-    } yield BasicAction(data,schema,focus,shape)
+      maybeMap <- iriFromPredicateOptional(sht_map)(n,rdf)
+    } yield BasicAction(data,schema,focus,shape,maybeMap)
   }
+
   private def entry: RDFParser[Entry] = { (n, rdf) =>
     for {
       entryTypeUri <- rdfType(n, rdf)
@@ -168,7 +173,7 @@ case class RDF2Manifest(base: Option[IRI],
       case Right(iri) => iri match {
         case `sht_ResultShapeMap` => for {
           iri <- iriFromPredicate(`sht_resultShapeMap`)(n, rdf)
-        } yield ResultShapeMap(iri)
+        } yield ResultShapeMapIRI(iri)
         case _ => parseFail(s"Unsupporte type of compound result: $iri")
       }
       case Left(e) => parseFail(s"compoundResult. Wrong rdf:type of node: $n: $e")
