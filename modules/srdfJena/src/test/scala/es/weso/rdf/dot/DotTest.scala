@@ -7,8 +7,9 @@ class DotTest extends FunSpec with Matchers {
 
   describe("Dot") {
     it("Should generate from example") {
-      RDFAsJenaModel.fromChars(
-        """|prefix : <http://example.org/>
+      RDFAsJenaModel
+        .fromChars(
+          """|prefix : <http://example.org/>
            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
            |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
            |
@@ -19,17 +20,23 @@ class DotTest extends FunSpec with Matchers {
            |:z :c "1984"^^<xsd:year> .
            |_:1 :a :z .
            |:z :a :x .
-        """.stripMargin, "TURTLE", None).fold(e => fail(s"Error: $e"),
-        rdf => {
-          val dot = RDF2Dot.rdf2dot(rdf)
-          println(s"Size of triples: ${rdf.rdfTriples().size}")
-          println(s"Dot generated: $dot")
-          dot.edges.size should be(13)
-        }
-      )
+        """.stripMargin,
+          "TURTLE",
+          None
+        )
+        .fold(
+          e => fail(s"Error: $e"),
+          rdf => {
+            println(s"RDF model: ${rdf.model}")
+            println(s"RDF parsed: ${rdf.rdfTriples().size}")
+            val dot = RDF2Dot.rdf2dot(rdf)
+            println(s"Size of triples: ${rdf.rdfTriples().size}")
+            println(s"Dot generated: $dot")
+            dot.edges.size should be(13)
+          }
+        )
     }
-
-    it("Should generate from RDF with 2 overlapping prefixes") {
+    /*    it("Should generate from RDF with 2 overlapping prefixes") {
       RDFAsJenaModel.fromChars(
         """|prefix e: <http://example.org/>
            |prefix ep: <http://example.org/p/>
@@ -58,5 +65,6 @@ class DotTest extends FunSpec with Matchers {
       }
     )
   }
-
+*/
+  }
 }

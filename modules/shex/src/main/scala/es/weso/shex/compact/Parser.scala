@@ -89,7 +89,7 @@ object Parser extends LazyLogging {
     _ <- updateState(s => s.copy(tripleExprMap = s.tripleExprMap + (label -> te)))
   } yield (te.addId(label))
 
-  def parseSchema(str: String, base: Option[String]): Either[String, Schema] = {
+  def parseSchema(str: String, base: Option[IRI]): Either[String, Schema] = {
     val UTF8_BOM = "\uFEFF"
     val s =
       if (str.startsWith(UTF8_BOM)) {
@@ -102,12 +102,14 @@ object Parser extends LazyLogging {
     parseSchemaReader(reader, base)
   }
 
-  def parseSchemaFromFile(fileName: String, base: Option[String]): Either[String, Schema] = for {
+  def parseSchemaFromFile(fileName: String, base: Option[IRI]): Either[String, Schema] = for {
     reader <- FileUtils.getStream(fileName)
     schema <- parseSchemaReader(reader, base)
   } yield schema
 
-  def parseSchemaReader(reader: JavaReader, base: Option[String]): Either[String, Schema] = {
+  def parseSchemaReader(reader: JavaReader,
+                        base: Option[IRI]
+                       ): Either[String, Schema] = {
     val input: CharStream = CharStreams.fromReader(reader)
     val lexer: ShExDocLexer = new ShExDocLexer(input)
     val tokens: CommonTokenStream = new CommonTokenStream(lexer)
@@ -130,13 +132,13 @@ object Parser extends LazyLogging {
   }
 
   def run[A](c: Builder[A],
-             base: Option[String]
+             base: Option[IRI]
             ): (BuilderState, Either[String, A]) = c.value.run(initialState(base)).value
 
-  def initialState(base: Option[String]) =
+  def initialState(base: Option[IRI]) =
     BuilderState(
       PrefixMap.empty,
-      base.map(IRI(_)),
+      base,
       None,
       ListMap(),
       Map())

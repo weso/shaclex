@@ -20,7 +20,7 @@ class JenaMapperTest
       val ts = Set(RDFTriple(BNode("b" + 0), IRI("http://example.org#p"), BNode("b" + 1)))
       val s = """[] <http://example.org#p> [] ."""
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -29,7 +29,7 @@ class JenaMapperTest
       val ts = Set(RDFTriple(BNode("b" + 0), IRI("http://example.org#p"), BNode("b" + 0)))
       val s = """_:a <http://example.org#p> _:a ."""
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -39,7 +39,7 @@ class JenaMapperTest
       val s = """|@prefix : <http://example.org#> . 
               |_:a :p _:a .""".stripMargin
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -49,7 +49,7 @@ class JenaMapperTest
       val s = """|@prefix : <http://example.org#> . 
               |_:a :p 1 .""".stripMargin
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -59,7 +59,7 @@ class JenaMapperTest
       val s = """|@prefix : <http://example.org#> . 
               |_:a :p 1.2 .""".stripMargin
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -69,7 +69,7 @@ class JenaMapperTest
       val s = """|@prefix : <http://example.org#> . 
               |_:a :p true .""".stripMargin
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -80,7 +80,7 @@ class JenaMapperTest
       val s = """|@prefix : <http://example.org#> . 
               |_:a :p 1.2e3 .""".stripMargin
       val empty = ModelFactory.createDefaultModel
-      val model1 = RDFTriples2Model(ts, empty)
+      val model1 = RDFTriples2Model(ts, empty,None)
       val model2 = str2model(s)
       shouldBeIsomorphic(model1, model2)
     }
@@ -91,7 +91,7 @@ class JenaMapperTest
         RDFTriple(BNode("b" + 0), IRI("http://example.org#p"), IntegerLiteral(4)),
         RDFTriple(BNode("b" + 0), IRI("http://example.org#p"), LangLiteral("pepe", Lang("es"))))
       val empty = ModelFactory.createDefaultModel
-      val m1 = RDFTriples2Model(ts, empty)
+      val m1 = RDFTriples2Model(ts, empty,None)
       val m2 = str2model("""|@prefix : <http://example.org#> .
                          |_:0 <http://example.org#p> _:0, 4, "pepe"@es .
                          |""".stripMargin)

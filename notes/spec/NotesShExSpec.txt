@@ -21,15 +21,6 @@ Total tests that pass: 1071/1088, 13 validation tests fail
   open3Onedotclosecard23_pass-p1p2p3
   PTstar-greedy-rewrite
 
-- 1 external shape fails (I don't understand why the test should fail)
-  shapeExtern_fail
-  shapeExternRef_fail
-
-- Tests with semantic actions that require me to improve semActs implementation
-  startCode1fail_abort (My implementation of semantic actions is partial yet)
-  startCode3fail_abort
-  startCode1startReffail_abort
-
 - Tests with REGEXP (need time to review them more carefully)
   1literalPattern_with_REGEXP_escapes_pass_bare
   1literalPattern_with_REGEXP_escapes_pass

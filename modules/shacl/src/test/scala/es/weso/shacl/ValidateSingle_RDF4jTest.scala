@@ -31,7 +31,7 @@ class ValidateSingle_RDF4jTest extends FunSpec with Matchers with TryValues with
 
   def validate(name: String, str: String): Unit = {
     val attempt = for {
-      rdf <- RDFAsRDF4jModel.fromChars(str, "TURTLE", Some("http://example.org/"))
+      rdf <- RDFAsRDF4jModel.fromChars(str, "TURTLE", Some(IRI("http://example.org/")))
       schema <- RDF2Shacl.getShacl(rdf)
       result <- Validator.validate(schema, rdf)
     } yield result

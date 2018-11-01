@@ -314,10 +314,9 @@ class ShapeMapsMaker(
     val iriRef = "^<(.*)>$".r
     d match {
       case iriRef(i) => {
-        // TODO: Check base declaration
         base match {
           case None => IRI(i)
-          case Some(b) => b + i
+          case Some(b) => b.resolve(IRI(i))
         }
       }
     }

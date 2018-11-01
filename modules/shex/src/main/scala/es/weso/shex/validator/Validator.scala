@@ -25,7 +25,9 @@ import Function.tupled
 /**
  * ShEx validator
  */
-case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogging {
+case class Validator(schema: Schema,
+                     externalResolver: ExternalResolver = NoAction
+                    ) extends ShowValidator(schema) with LazyLogging {
 
   type ShapeChecker = ShapeExpr => CheckTyping
   type NodeShapeChecker = (RDFNode, Shape) => CheckTyping
@@ -91,6 +93,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
                                             shapesMap: Map[ShapeMapLabel, Info]
                                            ): CheckTyping = {
   for {
+//      _ <- checkOptSemActs(node,schema.startActs)
       ts <- checkAll(shapesMap.map {
         case (label, info) => {
           checkNodeShapeMapLabel(node, label, info)
@@ -153,7 +156,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       typing <- getTyping
       t <- {
         runLocalSafeTyping(
-          checkNodeShapeExpr(attempt, node, shape),
+          bind(
+            checkOptSemActs(node,schema.startActs),
+            checkNodeShapeExpr(attempt, node, shape)
+          ),
           _.addType(node, shapeType),
           (err, t) => {
             t.addNotEvidence(node, shapeType, err)
@@ -194,14 +200,16 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       case s: Shape => checkShape(attempt, node, s)
       case sr: ShapeRef => checkRef(attempt, node, sr.reference)
       case se: ShapeExternal => {
-        val ns = NodeShape(node, ShapeType(s,s.id,schema))
-        se.annotations match {
-          case None => addEvidence(ns, s"Node conforms to shape external ${s} without annotations")
-          case Some(as) => {
-            logger.info(s"ShapeExternal with annotations ignored")
-            addEvidence(ns, s"Node conforms to shape external ${s} with annotations $as")
+        for {
+          externalShape <- se.id match {
+            case None        =>
+              errStr(s"No label in external shape")
+            case Some(label) =>
+              fromEitherString(externalResolver.getShapeExpr(label, se.annotations))
           }
-        }
+          newAttempt = Attempt(NodeShape(node,ShapeType(externalShape,se.id,schema)),attempt.path)
+          t <- checkNodeShapeExpr(newAttempt,node,externalShape)
+        } yield t
       }
     }
   }
@@ -330,6 +338,10 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
       typing <- getTyping
       paths <- fromEither(s.paths(schema).leftMap(msgErr(_)))
       neighs <- getNeighPaths(node, paths)
+      rdf <- getRDF
+      _ <- { println(s"N-Triples of RDF\n${rdf.serialize("N-TRIPLES").getOrElse("")}"); ok(()) }
+      _ <- { println(s"node: $node"); ok(()) }
+      _ <- { println(s"neighs: $paths"); ok(()) }
       extendedExpr <- fromEither(s.extendExpression(schema).leftMap(msgErr(_)))
       tableRbe <- {
         mkTable(extendedExpr, s.extra.getOrElse(List()))
@@ -369,15 +381,12 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
   private[validator] def checkOptSemActs(node: RDFNode, maybeActs: Option[List[SemAct]]): Check[Unit] =
     maybeActs match {
       case None => ok(())
-      case Some(as) => {
-        // println(s"SemActs: $as")
-        checkListSemActs(node,as)
-      }
+      case Some(as) => checkSemActs(node,as)
   }
 
-  private[validator] def checkListSemActs(node: RDFNode,
-                                          as: List[SemAct]
-                                         ): Check[Unit] = for {
+  private[validator] def checkSemActs(node: RDFNode,
+                                      as: List[SemAct]
+                                     ): Check[Unit] = for {
     _ <- checkAll(as.map(checkSemAct(node,_)))
   } yield ()
 
@@ -557,6 +566,7 @@ case class Validator(schema: Schema) extends ShowValidator(schema) with LazyLogg
     val outgoingPredicates = paths.collect { case Direct(p) => p }
     val outgoing: List[Arc] = rdf.triplesWithSubjectPredicates(node, outgoingPredicates).
       map(t => Arc(Direct(t.pred), t.obj)).toList
+    println(s"Outgoing of $paths: $outgoing")
     val incoming: List[Arc] = rdf.triplesWithObject(node).
       map(t => Arc(Inverse(t.pred), t.subj)).toList
     val neighs = outgoing ++ incoming

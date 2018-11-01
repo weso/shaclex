@@ -130,7 +130,7 @@ object FileUtils {
   }
 
   lazy val currentFolderURL: String =
-    // Paths.get("/").normalize.toUri.toURL.toExternalForm
-    ""
+    Paths.get(".").normalize.toUri.toURL.toExternalForm
+//    ""
 
 }

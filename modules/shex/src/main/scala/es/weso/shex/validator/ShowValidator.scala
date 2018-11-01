@@ -27,6 +27,7 @@ class ShowValidator(schema: Schema) {
       lbl match {
         case IRILabel(iri) => Show[RDFNode].show(iri)
         case BNodeLabel(bnode) => Show[RDFNode].show(bnode)
+        case Start => "Start"
       }
     }
   }

@@ -286,7 +286,7 @@ object RDF2Manifest extends LazyLogging {
           ): Either[String, Manifest] = {
     for {
       cs <- getContents(fileName)
-      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, base.map(IRI(_)))
       iriBase <- base match {
         case None => Right(None)
         case Some(str) => IRI.fromString(str).map(Some(_))

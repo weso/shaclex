@@ -29,7 +29,7 @@ trait RDFReader {
     */
   def fromString(cs: CharSequence,
                  format: String = "TURTLE",
-                 base: Option[String] = None): Either[String,Rdf]
+                 base: Option[IRI] = None): Either[String,Rdf]
 
   /**
    * convert a RDF graph to a String

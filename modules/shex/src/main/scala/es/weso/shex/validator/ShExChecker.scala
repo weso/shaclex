@@ -26,6 +26,9 @@ object ShExChecker extends CheckerCats {
   def errStr[A](msg: String): Check[A] =
     err[A](ShExError.msgErr(msg))
 
+  def fromEitherString[A](e: Either[String,A]): Check[A] =
+    fromEither(e.leftMap(ShExError.msgErr(_)))
+
   def checkCond(
                  condition: Boolean,
                  attempt: Attempt,
@@ -59,6 +62,11 @@ object ShExChecker extends CheckerCats {
     def liftedF(c: Context): Context = Context.updateTyping(c,f)
     runLocal(c, liftedF)
   }
+
+  def bind[A,Other](c1: Check[Other], c2: Check[A]): Check[A] = c1 >> c2 /* for {
+    _ <- c1
+    v <- c2
+  } yield v */
 
   def runLocalSafeTyping[A](c: Check[A],
                             f: ShapeTyping => ShapeTyping,

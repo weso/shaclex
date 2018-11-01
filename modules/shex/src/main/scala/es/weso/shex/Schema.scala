@@ -122,23 +122,23 @@ object Schema {
       if (uri.getScheme == "file") {
         if (Files.exists(Paths.get(i.uri))) {
             val str = Source.fromURI(uri).mkString
-            fromString(str, "ShExC", Some(i.str)).map(schema => schema.addId(i))
+            fromString(str, "ShExC", Some(i)).map(schema => schema.addId(i))
         } else {
           val iriShEx = i + ".shex"
           if (Files.exists(Paths.get((iriShEx).uri))) {
             val str = Source.fromURI(iriShEx.uri).mkString
-            fromString(str, "ShExC", Some(i.str)).map(schema => schema.addId(i))
+            fromString(str, "ShExC", Some(i)).map(schema => schema.addId(i))
           } else {
             val iriJson = i + ".json"
             if (Files.exists(Paths.get((iriJson).uri))) {
             val str = Source.fromURI(iriJson.uri).mkString
-            fromString(str, "JSON", Some(i.str)).map(schema => schema.addId(i))
+            fromString(str, "JSON", Some(i)).map(schema => schema.addId(i))
            }
              else Left(s"File $i does not exist")
         }}}
       else {
         val str = Source.fromURI(i.uri).mkString
-        fromString(str, "ShExC", Some(i.str)).map(schema => schema.addId(i))
+        fromString(str, "ShExC", Some(i)).map(schema => schema.addId(i))
       }
     }.fold(exc => Left(exc.getMessage), identity)
 
@@ -154,9 +154,10 @@ object Schema {
     */
   def fromString(cs: CharSequence,
                  format: String = "ShExC",
-                 base: Option[String] = None,
+                 base: Option[IRI] = None,
                  maybeRDFReader: Option[RDFReader] = None
                 ): Either[String, Schema] = {
+    println(s"Schema.fromString with baseIRI = $base")
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {

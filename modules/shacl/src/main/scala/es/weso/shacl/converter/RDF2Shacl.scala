@@ -10,9 +10,6 @@ import es.weso.shacl.SHACLPrefixes._
 import es.weso.shacl._
 import es.weso.shacl.report._
 import es.weso.utils.EitherUtils
-import cats._
-import cats.data._
-import cats.implicits._
 
 import scala.util.{Failure, Success, Try}
 

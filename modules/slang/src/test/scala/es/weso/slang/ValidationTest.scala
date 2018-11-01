@@ -18,21 +18,21 @@ class ValidationTest extends FunSpec
           """|<a> <name> "a" ;
              | <knows> <a> .
             |
-          """.stripMargin, "TURTLE")
+          """.stripMargin, "TURTLE",Some(IRI("http://example.org/")))
         schema <- Schema.fromString(
           """|
              |<User> {
              | <name> . ;
              | <knows> .
              |}
-          """.stripMargin, "ShEXC")
+          """.stripMargin, "ShEXC",Some(IRI("http://example.org/")))
         slangSchema <- shex2SLang(schema)
       } yield (rdf,schema,slangSchema)
 
       r.fold(e => fail(s"Error: $e"), values => {
         val (rdf,schema,slangSchema) = values
-        val node = IRI("a")
-        val shape: SLang  = Ref(IRILabel(IRI("User")))
+        val node = IRI("http://example.org/a")
+        val shape: SLang  = Ref(IRILabel(IRI("http://example.org/User")))
         val result = Validation.runValidation(node, shape, rdf, slangSchema)
         info(s"SLang schema: $slangSchema")
         info(s"Result: ${result.map(node)}")

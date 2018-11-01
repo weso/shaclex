@@ -32,7 +32,7 @@ case class RDFFromWeb() extends RDFReader {
     PrefixMap(Map())
   }
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String,Rdf] = {
+  override def fromString(cs: CharSequence, format: String, base: Option[IRI]): Either[String,Rdf] = {
     Left("Cannot parse RDFFromWeb ")
   }
 

@@ -24,7 +24,7 @@ class ParserTest extends FunSpec with JsonTest with Matchers with EitherValues {
 
     def shouldParse(str:String, base: Option[String], expected: Schema): Unit = {
       it(s"Should parse $str and obtain $expected") {
-        Parser.parseSchema(str, base) match {
+        Parser.parseSchema(str, base.map(IRI(_))) match {
           case Left(e) => fail(s"Failed to parse with error: $e")
           case Right(parsedSchema) => {
             info(s"Parsed as $parsedSchema")

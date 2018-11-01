@@ -153,7 +153,7 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
       }
     }
 
-    describe("anyOf") {
+  /*  describe("anyOf") {
       it("anyOf when some one is ok") {
         val cs = """|prefix : <http://example.org/>
                     |:x :p :y .""".stripMargin
@@ -320,6 +320,6 @@ class RDFParserTest extends FunSpec with Matchers with RDFParser with EitherValu
           case Right(values) => fail(s"Fails because it obtained values $values but should have failed")
         }
       }
-    }
+    } */
   }
 }

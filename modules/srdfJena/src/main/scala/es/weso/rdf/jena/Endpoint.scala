@@ -21,7 +21,7 @@ import io.circe.parser.parse
 import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.jena.JenaMapper.jenaNode2RDFNode
+import es.weso.rdf.jena.JenaMapper._
 
 // TODO: Refactor to change String type by Url
 case class Endpoint(endpoint: String)
@@ -40,7 +40,9 @@ case class Endpoint(endpoint: String)
 
   val log = LoggerFactory.getLogger("Endpoint")
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Endpoint] = {
+  override def fromString(cs: CharSequence,
+                          format: String,
+                          base: Option[IRI]): Either[String, Endpoint] = {
     throw new Exception("Cannot parse into an endpoint. endpoint = " + endpoint)
   }
 
@@ -185,7 +187,7 @@ case class Endpoint(endpoint: String)
           val ls: List[Map[String, RDFNode]] = result.asScala.toList.map(qs => {
             val qsm = new QuerySolutionMap()
             qsm.addAll(qs)
-            qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNode(node))
+            qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNodeUnsafe(node))
           })
           ls
         }

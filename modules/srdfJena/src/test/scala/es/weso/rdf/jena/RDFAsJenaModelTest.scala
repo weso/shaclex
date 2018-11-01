@@ -33,28 +33,32 @@ class RDFAsJenaModelTest
     // println(s"ShaclFolder file...${shaclFolderURI}")
 
     it("should be able to parse RDF with relative URIs and base") {
-      val emptyModel = ModelFactory.createDefaultModel
-      val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
+      //val emptyModel = ModelFactory.createDefaultModel
+      // val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
       val map: Map[Prefix, IRI] = Map(Prefix("") -> IRI("http://example.org#"))
       val pm: PrefixMap = PrefixMap(map)
-      rdf.addPrefixMap(pm)
-      rdf.addTriples(Set(RDFTriple(
-        IRI("http://example.org#a"),
-        IRI("http://example.org#b"),
-        IRI("c"))))
-
       val str =
         """|@prefix : <http://example.org#> .
                    |:a :b <c> .
                    |""".stripMargin
-      RDFAsJenaModel.fromChars(str, "TURTLE", None) match {
-        case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
-        case Left(e) => fail(s"Error $e\n$str")
-      }
-
+      val r = for {
+       expected <- RDFAsJenaModel.empty.addPrefixMap(pm).
+         addBase(IRI("http://example.org/base/")).
+         addTriples(Set(RDFTriple(
+           IRI("http://example.org#a"),
+           IRI("http://example.org#b"),
+           IRI("c")))
+         )
+       rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", Some(IRI("http://example.org/base/")))
+      } yield (expected,rdf)
+      r.fold(e => fail(s"Error: $e"),
+        values => {
+          val (expected,rdf) = values
+          shouldBeIsomorphic(expected.model, rdf.model)
+        })
     }
 
-    it("should be able to parse RDF with relative URIs") {
+/*    it("should be able to parse RDF with relative URIs") {
       val emptyModel = ModelFactory.createDefaultModel
       val rdf: RDFAsJenaModel = RDFAsJenaModel(emptyModel)
       rdf.addTriples(Set(RDFTriple(
@@ -70,7 +74,7 @@ class RDFAsJenaModelTest
         case Right(m2) => shouldBeIsomorphic(rdf.model, m2.model)
         case Left(e) => fail(s"Error $e\n$str")
       }
-    }
+    } */
   }
 }
 

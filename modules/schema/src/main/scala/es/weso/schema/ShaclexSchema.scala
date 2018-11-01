@@ -98,7 +98,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
     for {
-      rdf <- RDFAsJenaModel.fromChars(cs, format, base)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, base.map(IRI(_)))
       schema <- RDF2Shacl.getShacl(rdf, true)
     } yield ShaclexSchema(schema)
   }

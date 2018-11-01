@@ -19,7 +19,7 @@ case class IRI(uri: URI) extends RDFNode {
   }
 
   override def toString = {
-    "<" + uri.toString + ">"
+    "<" + uri.parseServerAuthority.toString + ">"
   }
 
   implicit def minOrd = new Ordering[IRI] {
@@ -33,6 +33,7 @@ case class IRI(uri: URI) extends RDFNode {
   /**
    * Resolve an IRI against this IRI (which is taken as the base)
    * Currently, we employ java.net.URI algorithm to resolve
+   * It seems that the algorithm is wrong with file:// removing the two slashes
    */
   def resolve(iri: IRI): IRI = {
     IRI(uri.resolve(iri.uri))
@@ -59,6 +60,9 @@ case class IRI(uri: URI) extends RDFNode {
 }
 
 object IRI {
+
+/*  def apply(uri: URI): IRI =
+    IRI(uri) */
 
   /**
    * Unsafe can raise an exception if the URI is not well formed

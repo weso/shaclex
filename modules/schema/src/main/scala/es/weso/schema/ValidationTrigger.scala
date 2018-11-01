@@ -1,7 +1,6 @@
 package es.weso.schema
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.shapeMaps._
 import es.weso.utils.EitherUtils

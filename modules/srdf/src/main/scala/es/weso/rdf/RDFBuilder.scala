@@ -10,7 +10,7 @@ trait RDFBuilder extends RDFReader {
 
   def addPrefixMap(pm: PrefixMap): Rdf
 
-  def addPrefix(alias: String, iri: String): Rdf
+  def addPrefix(alias: String, iri: IRI): Rdf
 
   def createBNode: (RDFNode, Rdf)
 

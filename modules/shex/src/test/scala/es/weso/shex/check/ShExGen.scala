@@ -63,7 +63,7 @@ object ShExSpec extends Properties("ShEx") {
   lazy val rdfGen: Gen[RDFReader] = for {
     ts <- Gen.listOf(rdfTripleGen)
   } yield {
-    try { RDFAsJenaModel(JenaMapper.RDFTriples2Model(ts.toSet, JenaMapper.emptyModel)) }
+    try { RDFAsJenaModel(JenaMapper.RDFTriples2Model(ts.toSet, JenaMapper.emptyModel,None)) }
     catch {
       case e: NullPointerException => {
         println(s"Null point exception: $ts")

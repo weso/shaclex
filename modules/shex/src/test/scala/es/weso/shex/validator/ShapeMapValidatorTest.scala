@@ -249,6 +249,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
         fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)
         result <- Validator.validate(shex, fixedShapeMap, rdf)
         expectedShapeMap <- ShapeMap.parseResultMap(expected, None, rdf, shex.prefixMap)
+        _ <- { println(s"Expected shapeMap: $expectedShapeMap"); Right(())}
         compare <- result.compareWith(expectedShapeMap)
       } yield compare
       validate match {

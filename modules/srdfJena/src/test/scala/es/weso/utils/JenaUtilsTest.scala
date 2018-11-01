@@ -72,15 +72,15 @@ class JenaUtilsTest extends FunSpec with Matchers {
       JenaUtils.parseFromString(rdfStr) match {
         case Right(model) => {
           val ex = IRI("http://example.org/")
-          val px = JenaMapper.path2JenaPath(PredicatePath(ex + "x"), model)
-          val py = JenaMapper.path2JenaPath(PredicatePath(ex + "y"), model)
-          val pc = JenaMapper.path2JenaPath(PredicatePath(ex + "c"), model)
+          val px = JenaMapper.path2JenaPath(PredicatePath(ex + "x"), model,None)
+          val py = JenaMapper.path2JenaPath(PredicatePath(ex + "y"), model,None)
+          val pc = JenaMapper.path2JenaPath(PredicatePath(ex + "c"), model,None)
           val bx = JenaUtils.getNodesFromPath(px, model).head._1
           val by = JenaUtils.getNodesFromPath(py, model).head._1
 
-          val a = JenaMapper.rdfNode2JenaNode(ex+"A",model)
-          val b = JenaMapper.rdfNode2JenaNode(ex+"B",model)
-          val z = JenaMapper.rdfNode2JenaNode(ex+"z",model)
+          val a = JenaMapper.rdfNode2JenaNode(ex+"A",model,None)
+          val b = JenaMapper.rdfNode2JenaNode(ex+"B",model,None)
+          val z = JenaMapper.rdfNode2JenaNode(ex+"z",model,None)
           val bc = JenaUtils.getNodesFromPath(pc, model).head._1
 
           JenaUtils.hasClass(bx,a,model) should be(true)

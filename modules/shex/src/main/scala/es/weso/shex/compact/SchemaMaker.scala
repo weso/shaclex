@@ -662,7 +662,9 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         base match {
           case None => IRI(i)
           case Some(b) => {
-            IRI(b.uri.resolve(IRI(i).uri))
+            val r = IRI(b.uri.resolve(IRI(i).uri))
+            println(s"extractIRIfromIRIREF($d, base $base: $r")
+            r
           }
         }
       }

@@ -43,8 +43,8 @@ trait RDFSaver {
   def addPrefixMap(pm: PrefixMap): RDFSaver[Unit] =
     State.modify(_.addPrefixMap(pm))
 
-  def addPrefix(alias: String, value: String): RDFSaver[Unit] =
-    State.modify(_.addPrefix(alias, value))
+/*  def addPrefix(alias: String, value: IRI): RDFSaver[Unit] =
+    State.modify(_.addPrefix(alias, value)) */
 
   def createBNode(): RDFSaver[RDFNode] = for {
     rdf <- State.get[RDFBuilder]
@@ -132,7 +132,7 @@ trait RDFSaver {
   def iri(i: IRI): RDFSaver[RDFNode] = ok(i)
 
   def addPrefix(alias: String, iri: IRI): RDFSaver[Unit] = {
-    State.modify(_.addPrefix(alias, iri.str))
+    State.modify(_.addPrefix(alias, iri))
   }
 
   def saveAsRDFList[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = for {
@@ -172,6 +172,6 @@ trait RDFSaver {
     }
 
   def sequence[A](ls: List[RDFSaver[A]]): RDFSaver[List[A]] =
-    ls.sequence
+    ls.sequence[RDFSaver,A]
 }
 

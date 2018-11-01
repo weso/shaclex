@@ -32,9 +32,9 @@ case class RDFAsRDF4jModel(model: Model,
 
   override def fromString(cs: CharSequence,
                           format: String,
-                          base: Option[String] = None): Either[String, Rdf] = {
+                          base: Option[IRI] = None): Either[String, Rdf] = {
       // val builder = new ModelBuilder()
-      val baseURI = base.getOrElse("")
+      val baseURI = base.map(_.str).getOrElse("")
       for {
         format <- getRDFFormat(format)
         model <- Try {
@@ -185,8 +185,8 @@ case class RDFAsRDF4jModel(model: Model,
     (BNode(newBNode.getID), this)
   }
 
-  override def addPrefix(alias: String, iri: String): Rdf = {
-    model.setNamespace(alias,iri)
+  override def addPrefix(alias: String, iri: IRI): Rdf = {
+    model.setNamespace(alias,iri.str)
     this
   }
 
@@ -295,7 +295,7 @@ object RDFAsRDF4jModel {
     RDFAsRDF4jModel(builder.build)
   }
 
-  def fromChars(cs: CharSequence, format: String, base: Option[String] = None): Either[String,RDFAsRDF4jModel] = {
+  def fromChars(cs: CharSequence, format: String, base: Option[IRI] = None): Either[String,RDFAsRDF4jModel] = {
     RDFAsRDF4jModel.empty.fromString(cs, format, base)
   }
 

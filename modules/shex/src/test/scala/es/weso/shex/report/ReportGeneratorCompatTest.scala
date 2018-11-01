@@ -12,27 +12,31 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{BNode, IRI}
 import es.weso.rdf.parser.RDFParser
 import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMap, _}
-import es.weso.shex.validator.Validator
+import es.weso.shex.validator.{ExternalIRIResolver, Validator}
 import es.weso.shex._
 import es.weso.shex.manifest.JsonResult
 import io.circe.syntax._
+
 import scala.collection.mutable
 import scala.io.Source
 
+
+// TODO: Remove duplication between ValidationTest and ValidationFailureTest
 
 class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-    None
-    // Some("node_kind_example")
+     // None
+    Some("1dot-relative_pass-short-shape")
 
   val counter = Counter()
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
   val outFile = conf.getString("EarlReportFile")
-  val baseIRI: Option[String] = Some(Paths.get(manifestFile.getCanonicalPath()).normalize().toUri.toString)
+  val baseIRI: Option[IRI] = Some(IRI(Paths.get(manifestFile.getCanonicalPath()).normalize().toUri))
+  println(s"BaseIRI: $baseIRI")
 
   describe("Generate W3c EARL report") {
     RDFAsJenaModel.fromFile(manifestFile, "TURTLE", baseIRI) match {
@@ -55,33 +59,35 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
     }
   }
 
-  def prepareReport(rdf: RDFReader): Report = {
+  def prepareReport(manifestRdf: RDFReader): Report = {
     val base = Paths.get(".").toUri
     val report = Report.empty
 
 
     // Validation tests
-    for (triple <- rdf.triplesWithType(sht_ValidationTest)) {
+    for (triple <- manifestRdf.triplesWithType(sht_ValidationTest)) {
       val node = triple.subj
       val nodeStr = node.getLexicalForm
-      val name = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
+      val name = manifestRdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
       if (nameIfSingle == None || nameIfSingle.getOrElse("") === name) {
         it(s"validationTest: $name") {
           val tryReport = for {
-            name      <- stringFromPredicate(mf_name)(node, rdf)
-            action    <- objectFromPredicate(mf_action)(node, rdf)
-            traits     <- objectsFromPredicate(sht_trait)(node,rdf)
-            maybeResult  <- iriFromPredicateOptional(mf_result)(node,rdf)
-            schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
+            name      <- stringFromPredicate(mf_name)(node, manifestRdf)
+            action    <- objectFromPredicate(mf_action)(node, manifestRdf)
+            traits     <- objectsFromPredicate(sht_trait)(node, manifestRdf)
+            maybeResult  <- iriFromPredicateOptional(mf_result)(node, manifestRdf)
+            schemaIRI <- iriFromPredicate(sht_schema)(action, manifestRdf)
             resolvedSchema = base.resolve(schemaIRI.uri)
             schemaStr = Source.fromURI(resolvedSchema)("UTF-8").mkString
-            schema  <- Schema.fromString(schemaStr, "SHEXC", Some(resolvedSchema.toString))
-            dataIRI <- iriFromPredicate(sht_data)(action, rdf)
+            schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI) // Some(resolvedSchema.toString))
+            dataIRI <- iriFromPredicate(sht_data)(action, manifestRdf)
             strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-            maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, rdf)
-            maybeMap  <- iriFromPredicateOptional(sht_map)(action,rdf)
-            maybeShape <- objectFromPredicateOptional(sht_shape)(action, rdf)
+            maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, manifestRdf)
+            maybeMap  <- iriFromPredicateOptional(sht_map)(action, manifestRdf)
+            maybeShape <- objectFromPredicateOptional(sht_shape)(action, manifestRdf)
+            shapeExterns <- iriFromPredicateOptional(sht_shapeExterns)(action, manifestRdf)
+            shapeExternsResolved = shapeExterns.map(iri => IRI(base.resolve(iri.uri)))
             lbl = maybeShape match {
               case None           => StartMap: ShapeMapLabel
               case Some(i: IRI)   => IRIMapLabel(i)
@@ -98,7 +104,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
               case Some(focus) => {
                 val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
                 for {
-                  resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
+                  resultShapeMap <- Validator(schema, ExternalIRIResolver(shapeExternsResolved)).validateShapeMap(data, shapeMap)
                   ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
                         Right(s"Focus $focus conforms to $lbl")
                 else Left(s"Focus $focus does not conform to shape $lbl\nResultMap:\n$resultShapeMap" ++
@@ -117,7 +123,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
                   val smapStr = Source.fromURI(resolvedSmap).mkString
                   val r: Either[String,String] = for {
                     sm <- ShapeMap.fromJson(smapStr)
-                    fixedShapeMap <- ShapeMap.fixShapeMap(sm,rdf,rdf.getPrefixMap(),schema.prefixMap)
+                    fixedShapeMap <- ShapeMap.fixShapeMap(sm, manifestRdf, manifestRdf.getPrefixMap(),schema.prefixMap)
                     resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
                     jsonResult <- JsonResult.fromJsonString(resultMapStr)
                     result <- if (jsonResult.compare(resultShapeMap)) Right(s"Json results match resultShapeMap")
@@ -155,26 +161,28 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
     }
 
     // Validation tests
-    for (triple <- rdf.triplesWithType(sht_ValidationFailure)) {
+    for (triple <- manifestRdf.triplesWithType(sht_ValidationFailure)) {
       val node    = triple.subj
       val nodeStr = node.getLexicalForm
-      val name    = rdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
+      val name = manifestRdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
       if (nameIfSingle == None || nameIfSingle.getOrElse("") === name) {
         it(s"ValidationFailureTest: $name") {
         val tryReport = for {
-          name      <- stringFromPredicate(mf_name)(node, rdf)
-          traits     <- objectsFromPredicate(sht_trait)(node,rdf)
-          maybeResult  <- iriFromPredicateOptional(mf_result)(node,rdf)
-          action    <- objectFromPredicate(mf_action)(node, rdf)
-          schemaIRI <- iriFromPredicate(sht_schema)(action, rdf)
+          name      <- stringFromPredicate(mf_name)(node, manifestRdf)
+          traits     <- objectsFromPredicate(sht_trait)(node, manifestRdf)
+          maybeResult  <- iriFromPredicateOptional(mf_result)(node, manifestRdf)
+          action    <- objectFromPredicate(mf_action)(node, manifestRdf)
+          schemaIRI <- iriFromPredicate(sht_schema)(action, manifestRdf)
           schemaStr = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
           schema  <- Schema.fromString(schemaStr, "SHEXC", baseIRI)
-          dataIRI <- iriFromPredicate(sht_data)(action, rdf)
+          dataIRI <- iriFromPredicate(sht_data)(action, manifestRdf)
           strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
-          maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, rdf)
-          maybeMap  <- iriFromPredicateOptional(sht_map)(action,rdf)
-          maybeShape     <- objectFromPredicateOptional(sht_shape)(action, rdf)
+          maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, manifestRdf)
+          maybeMap  <- iriFromPredicateOptional(sht_map)(action, manifestRdf)
+          maybeShape     <- objectFromPredicateOptional(sht_shape)(action, manifestRdf)
+          shapeExterns <- iriFromPredicateOptional(sht_shapeExterns)(action, manifestRdf)
+          shapeExternsResolved = shapeExterns.map(iri => IRI(base.resolve(iri.uri)))
           lbl = maybeShape match {
             case None           => StartMap: ShapeMapLabel
             case Some(i: IRI)   => IRIMapLabel(i)
@@ -190,7 +198,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             case Some(focus) => {
               val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
               for {
-                resultShapeMap <- Validator(schema).validateShapeMap(data, shapeMap)
+                resultShapeMap <- Validator(schema,ExternalIRIResolver(shapeExternsResolved)).validateShapeMap(data, shapeMap)
                 ok <- if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
                        Right(s"Focus $focus does not conforms to $lbl as expected")
                 else
@@ -210,7 +218,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
                 val resultMapStr = Source.fromURI(resolvedResultMap).mkString
                 val r: Either[String,String] = for {
                  sm <- ShapeMap.fromJson(smapStr)
-                 fixedShapeMap <- ShapeMap.fixShapeMap(sm,rdf,rdf.getPrefixMap(),schema.prefixMap)
+                 fixedShapeMap <- ShapeMap.fixShapeMap(sm, manifestRdf,manifestRdf.getPrefixMap(),schema.prefixMap)
                  resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
                  jsonResult <- JsonResult.fromJsonString(resultMapStr)
                  result <- if (jsonResult.compare(resultShapeMap)) Right(s"Json results match resultShapeMap")

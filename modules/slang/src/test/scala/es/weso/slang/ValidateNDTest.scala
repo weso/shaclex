@@ -10,14 +10,13 @@ class ValidateNDTest extends FunSpec
 
   describe(s"SLang validation") {
     it(s"Should validate simple example") {
-      val node = IRI("a")
-      val x = IRI("x")
+      val node = IRI("http://example.org/a")
+      val x = IRI("http://example.org/x")
       val shape: SLang  = Ref(IRILabel(IRI("User")))
       val r = for {
         rdf <- RDFAsJenaModel.fromChars(
           """|<a> <x> "a", 1 .
-            |
-          """.stripMargin, "TURTLE")
+          """.stripMargin, "TURTLE", Some(IRI("http://example.org/")))
         schema = SchemaS(Map(IRILabel(IRI("User")) -> QualifiedArc(Pred(x), SLang.string, Card(1,IntMax(1)))))
       } yield (rdf,schema,schema)
 

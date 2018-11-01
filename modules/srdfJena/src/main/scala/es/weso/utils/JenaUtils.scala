@@ -461,6 +461,7 @@ object JenaUtils {
 
   def relativizeStr(str: String): String = {
     val s = baseURI.relativize(new URI(str)).toString
+//    println(s"Relativize($str)=$s")
     s
   }
 

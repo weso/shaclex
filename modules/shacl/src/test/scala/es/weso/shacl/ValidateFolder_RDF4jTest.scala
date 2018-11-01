@@ -3,6 +3,7 @@ package es.weso.shacl
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
+import es.weso.rdf.nodes.IRI
 import es.weso.rdf.rdf4j.RDFAsRDF4jModel
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
@@ -38,7 +39,7 @@ class ValidateFolder_RDF4jTest extends FunSpec with Matchers with TryValues with
 
   def validate(name: String, str: String): Unit = {
     val attempt = for {
-      rdf <- RDFAsRDF4jModel.fromChars(str, "TURTLE", Some("http://example.org/"))
+      rdf <- RDFAsRDF4jModel.fromChars(str, "TURTLE", Some(IRI("http://example.org/")))
       schema <- RDF2Shacl.getShacl(rdf)
       result <- Validator.validate(schema, rdf)
     } yield result

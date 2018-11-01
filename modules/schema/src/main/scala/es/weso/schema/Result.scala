@@ -8,7 +8,6 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import es.weso.shapeMaps._
-import es.weso.utils.MapUtils._
 
 case class Result(
   isValid: Boolean,

@@ -10,6 +10,7 @@ import es.weso.shex.compact.Parser._
 import es.weso.shex.compact.CompactShow._
 import es.weso.shex.implicits.eqShEx._
 import cats._
+import es.weso.rdf.nodes.IRI
 
 class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
 
@@ -33,7 +34,7 @@ class CompactSyntaxLocalTest extends FunSpec with Matchers with EitherValues {
   }
 
     def checkParse(str: String, base: Option[String]) = {
-      parseSchema(str, base) match {
+      parseSchema(str, base.map(IRI(_))) match {
         case Left(e) => fail(s"Parsing error: $e\n-------String:\n$str")
         case Right(schema) => info(s"Parsed as schema:\n$schema")
       }
