@@ -8,8 +8,6 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.utils.FileUtils._
 import ManifestPrefixes._
 import es.weso.utils.EitherUtils._
-import es.weso.utils.NormalizeBNodes
-
 import scala.util._
 
 case class RDF2Manifest(base: Option[IRI],
@@ -263,7 +261,6 @@ object RDF2Manifest extends LazyLogging {
         case Some(str) => IRI.fromString(str).map(Some(_))
       }
       rdf <- RDFAsJenaModel.fromChars(cs, format, iriBase).map(_.normalizeBNodes)
-      _ <- { println(s"Triples with predicate sht_dataGraph: ${rdf.triplesWithPredicate(sht_dataGraph)}"); Right(())}
       manifest <- fromRDF(rdf, iriBase, derefIncludes)
     } yield (manifest,rdf)
   }

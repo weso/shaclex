@@ -61,13 +61,6 @@ case class RDFAsJenaModel(model: Model,
         base(baseURI.str).
         labelToNode(LabelToNode.createUseLabelEncoded()).
         lang(shortnameToLang(format)).context(ctx).parse(dest)
-
-      println(s"RDFAsJenaModel.................")
-      for (s <- m.listObjectsOfProperty(m.createProperty("http://www.w3.org/ns/shacl-test#dataGraph")).toList.asScala) {
-        println(s"Statement: ${s}")
-      }
-      println(s".................")
-      // RDFAsJenaModel(JenaUtils.relativizeModel(m,base.map(_.uri)))
       RDFAsJenaModel(m, base)
     }.fold(e => Left(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs"),
       Right(_)

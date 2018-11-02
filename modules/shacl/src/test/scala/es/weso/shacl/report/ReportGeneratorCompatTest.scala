@@ -43,48 +43,45 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
     val earlModel = report.generateEARL
     earlModel.write(new FileOutputStream(outFile), "TURTLE")
    }
-   it(s"Shows counters") {
+   describe("Show counters") {
+     it(s"Shows counters") {
       info(s"#tests=$numTests, #passed=$numPassed, #failed=$numFailed, #errors=$numErrors")
+     }
    }
   }
 
-  def describeManifest(name: RDFNode, parentFolder: Path): Unit = {
-    val fileName = parentFolder.resolve(name.getLexicalForm).toString
+  def describeManifest(name: RDFNode, parentFolder: Path): Unit = name match {
+    case iri: IRI => {
+      val fileName = Paths.get(parentFolder.toUri.resolve(iri.uri)).toString
       RDF2Manifest.read(fileName, "TURTLE", Some(fileName), false) match {
         case Left(e) => {
-          it(s"Fails to read $fileName") {
             fail(s"Error reading manifestTest file:$e")
-          }
         }
         case Right(pair) => {
           val (m, rdfReader) = pair
-          val newParent = parentFolder.resolve(name.getLexicalForm).getParent
-          info(s"Manifest file read ${m.entries.length} entries and ${m.includes.length} includes. New parent: $newParent")
+          val newParent      = Paths.get(parentFolder.toUri.resolve(iri.uri))
           processManifest(m, name.getLexicalForm, newParent, rdfReader)
         }
       }
+    }
+    case _ => println(s"describeManifest: Unsupported non-IRI node $name")
   }
   def processManifest(m: Manifest, name: String, parentFolder: Path, rdfManifest: RDFBuilder): Unit = {
-    // println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
       describeManifest(includeNode, parentFolder)
     }
     for (e <- m.entries)
-      processEntry(e,name,parentFolder, rdfManifest)
+      processEntry(e, name, parentFolder, rdfManifest)
   }
 
   def processEntry(e: manifest.Entry, name: String, parentFolder: Path, rdfManifest: RDFBuilder): Unit = {
-    println(s"Should check entry ${e.node.getLexicalForm} with $parentFolder")
-    getSchemaRdf(e.action, name, parentFolder,rdfManifest) match {
+    getSchemaRdf(e.action, name, parentFolder, rdfManifest) match {
         case Left(f) => {
           fail(s"Error processing Entry: $e \n $f")
         }
         case Right((schema, rdf)) => {
-          val relativePath = shaclFolderPath.getParent.relativize(parentFolder)
-          val testUri = (new java.net.URI("urn:x-shacl-test:/" + relativePath + "/" + e.node.getLexicalForm)).toString
-          println(s"Absolute: $shaclFolderPath, parent: $parentFolder, Relative: $relativePath Name: $name Node: ${e.node.getLexicalForm}")
-          println(s"TestURI: $testUri")
-          validate(schema, rdf, e.result,testUri)
+          val testUri = (new java.net.URI("urn:x-shacl-test:/" + parentFolder.getFileName + "/" + e.node.getLexicalForm)).toString
+          validate(schema, rdf, e.result, testUri)
         }
       }
   }
@@ -93,22 +90,26 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
                    fileName: String,
                    parentFolder: Path,
                    manifestRdf: RDFBuilder
-                  ): Either[String, (Schema,RDFReader)] = for {
-    pair  <- getSchema(a,fileName,parentFolder,manifestRdf)
-    (schema,schemaRdf) = pair
-    dataRdf <- getData(a,fileName,parentFolder,manifestRdf,schemaRdf)
-  } yield (schema, dataRdf)
+                  ): Either[String, (Schema,RDFReader)] = {
+   for {
+    pair <- getSchema(a, fileName, parentFolder, manifestRdf)
+    (schema, schemaRdf) = pair
+    dataRdf <- getData(a, fileName, parentFolder, manifestRdf, schemaRdf)
+   } yield {
+     (schema, dataRdf)
+   }
+ }
 
   def getData(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader, schemaRdf: RDFReader): Either[String, RDFReader] =
   {
     a.data match {
-      case None                                              => Right(RDFAsJenaModel.empty)
+      case None => Right(RDFAsJenaModel.empty)
       case Some(iri) if iri.isEmpty => Right(manifestRdf)
       case Some(iri) => {
-        val dataFileName = parentFolder.resolve(iri.getLexicalForm)
+        val dataFileName = Paths.get(parentFolder.toUri.resolve(iri.uri)).toFile
         val dataFormat  = a.dataFormat.getOrElse(Shacl.defaultFormat)
         for {
-          rdf <- RDFAsJenaModel.fromFile(dataFileName.toFile, dataFormat).map(_.normalizeBNodes)
+          rdf <- RDFAsJenaModel.fromFile(dataFileName, dataFormat).map(_.normalizeBNodes)
         } yield rdf
       }
     }
@@ -119,7 +120,6 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
                 parentFolder: Path,
                 manifestRdf: RDFBuilder
                ): Either[String, (Schema, RDFReader)] = {
-    val parentIri = absoluteIri // absoluteIri.resolve(IRI(parentFolder))
     a.schema match {
       case None => {
         info(s"No data in manifestAction $a")
@@ -129,10 +129,10 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
         schema <- RDF2Shacl.getShacl(manifestRdf)
       } yield (schema, manifestRdf)
       case Some(iri) => {
-        val schemaFile = parentFolder.resolve(iri.getLexicalForm)
+        val schemaFile = Paths.get(parentFolder.toUri.resolve(iri.uri)).toFile
         val schemaFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
         for {
-          schemaRdf <- RDFAsJenaModel.fromFile(schemaFile.toFile, schemaFormat).map(_.normalizeBNodes)
+          schemaRdf <- RDFAsJenaModel.fromFile(schemaFile, schemaFormat).map(_.normalizeBNodes)
           schema <- {
             RDF2Shacl.getShacl(schemaRdf)
           }
@@ -165,7 +165,6 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
               if (typing._1.getFailedValues(node).map(_.id) contains (shape)) {
                 numNodeShapesPassed += 1
                 } else {
-                println(s">>> Error . $name | Node: $node, shape: $shape\nTyping:\n$typing\n<<<\n")
                 isOk = false
               }
             })
