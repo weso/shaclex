@@ -28,8 +28,16 @@ case class Schema(id: IRI,
     case Some(xs) => Some(x :: xs)
   }
 
-  def getTripleExpr(lbl: ShapeLabel): Option[TripleExpr] =
-    tripleExprMap.map(_.get(lbl)).getOrElse(None)
+  def getTripleExpr(lbl: ShapeLabel): Either[String,TripleExpr] = for {
+   maybeTem <- eitherResolvedTripleExprMap
+   te <- maybeTem match {
+     case None => Left(s"Not found $lbl because there is no tripleExpr map")
+     case Some(tem) => tem.get(lbl) match {
+       case None => Left(s"Not found label $lbl in tripleExprMap. Available labels: ${tem.keySet.mkString(",")}")
+       case Some(te) => Right(te)
+     }
+   }
+  } yield te
 
   def resolveShapeLabel(l: ShapeLabel): Either[String, IRI] = l match {
     case IRILabel(iri) => Right(iri)
@@ -40,7 +48,13 @@ case class Schema(id: IRI,
     prefixes.getOrElse(PrefixMap.empty)
 
   def getTripleExprMap(): Map[ShapeLabel, TripleExpr] =
-    tripleExprMap.getOrElse(Map())
+    eitherResolvedTripleExprMap match {
+      case Right(tem) => tem.getOrElse(Map())
+      case Left(e) => {
+        println(s"Error: $e")
+        Map()
+      }
+  }
 
   lazy val localShapesMap: Map[ShapeLabel,ShapeExpr] = {
     shapes match {
@@ -51,20 +65,44 @@ case class Schema(id: IRI,
     }
   }
 
+  lazy val eitherMapsImported: Either[String,MapsToImport] = {
+    closureImports(imports, List(id), MapsToImport(localShapesMap,tripleExprMap))
+  }
+
   lazy val eitherResolvedShapesMap: Either[String,Map[ShapeLabel,ShapeExpr]] = {
-    closureImports(imports, List(id), localShapesMap)
+    eitherMapsImported.map(_.shapesExpr)
+  }
+
+  lazy val eitherResolvedTripleExprMap: Either[String,Option[Map[ShapeLabel,TripleExpr]]] = {
+    eitherMapsImported.map(_.maybeTripleExprs)
+  }
+
+
+  case class MapsToImport(shapesExpr: Map[ShapeLabel,ShapeExpr], maybeTripleExprs: Option[Map[ShapeLabel,TripleExpr]]) {
+    def merge(schema: Schema): MapsToImport = {
+      this.copy(
+        shapesExpr = schema.localShapesMap ++ shapesExpr,
+        maybeTripleExprs = schema.tripleExprMap match {
+          case None => maybeTripleExprs
+          case Some(otherTripleExprsMap) => maybeTripleExprs match {
+            case None => Some(otherTripleExprsMap)
+            case Some(tripleExprsMap) => Some(otherTripleExprsMap ++ tripleExprsMap)
+          }
+       }
+      )
+    }
   }
 
   // TODO: make the following method tailrecursive
   private def closureImports(imports: List[IRI],
                              visited: List[IRI],
-                             current: Map[ShapeLabel,ShapeExpr]
-                            ): Either[String, Map[ShapeLabel,ShapeExpr]] = imports match {
+                             current: MapsToImport
+                            ): Either[String, MapsToImport] = imports match {
     case Nil => Right(current)
     case (i::is) => if (visited contains i) closureImports(is,visited,current)
     else for {
       schema <- Schema.fromIRI(i)
-      sm <- closureImports(is ++ schema.imports, i :: visited, schema.localShapesMap ++ current)
+      sm <- closureImports(is ++ schema.imports, i :: visited, current.merge(schema))
     } yield sm
   }
 
@@ -134,7 +172,10 @@ object Schema {
             val str = Source.fromURI(iriJson.uri).mkString
             fromString(str, "JSON", Some(i)).map(schema => schema.addId(i))
            }
-             else Left(s"File $i does not exist")
+           else {
+            println(s"File $i does not exist")
+            Left(s"File $i does not exist")
+           }
         }}}
       else {
         val str = Source.fromURI(i.uri).mkString
@@ -157,7 +198,6 @@ object Schema {
                  base: Option[IRI] = None,
                  maybeRDFReader: Option[RDFReader] = None
                 ): Either[String, Schema] = {
-    println(s"Schema.fromString with baseIRI = $base")
     val formatUpperCase = format.toUpperCase
     formatUpperCase match {
       case "SHEXC" => {

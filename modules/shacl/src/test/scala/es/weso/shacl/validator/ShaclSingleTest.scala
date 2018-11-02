@@ -20,11 +20,13 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
   val shaclFolder = conf.getString("shaclCore") + "/node"
   val name = "minInclusive-003.ttl"
   val fileName = shaclFolder + "/" + name
-  val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
+  val shaclFolderURI = Paths.get(fileName).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
+
   val failed = mutable.ArrayStack[String]()
 
   describe(s"Validate from manifest file $fileName") {
+    println(s"SHACLFolderURI=$shaclFolderURI")
     RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), true) match {
       case Left(e) => {
         it(s"Fails to read $fileName") {
@@ -51,6 +53,7 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
   }
 
   def processEntry(e: manifest.Entry, name: String, parentFolder: String): Unit = {
+    println(s"processEntry: $name\nEntry: ${e}\n---")
     it(s"Should check entry ${e.node.getLexicalForm} with $parentFolder") {
       getSchemaRdf(e.action, name, parentFolder) match {
         case Left(f) => {
@@ -63,9 +66,10 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
   }
 
   def getSchemaRdf(a: ManifestAction, fileName: String, parentFolder: String): Either[String, (Schema, RDFReader)] = {
-    info(s"Manifest action $a, fileName $fileName, parent: $parentFolder")
+    println(s"GetSchema RDF...fileName: $fileName\nAbsoluteIRI: $absoluteIri")
+    // info(s"Manifest action $a, fileName $fileName, parent: $parentFolder")
     val parentIri = absoluteIri.resolve(IRI(fileName))
-    //println(s"Resolved parent: $parentIri")
+    println(s"parentIri: $parentIri\na.data=${a.data}")
 
     val dataFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
     (a.data,a.schema) match {

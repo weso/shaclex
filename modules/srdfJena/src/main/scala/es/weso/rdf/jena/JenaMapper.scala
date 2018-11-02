@@ -111,11 +111,9 @@ object JenaMapper {
       Right(b)
     }
     case _ if r.isURIResource => {
-      println(s"Resource: ${r.asResource}")
       Right(IRI(r.asResource.getURI))
     }
     case lit: JenaLiteral => {
-      println(s"statement2TripleUnsafe - litDatatype: ${extendNS(lit.getDatatype.getURI)} Literal: $lit")
       extendNS(lit.getDatatype.getURI) match {
         case None | Some(RDFNode.`StringDatatypeIRI`) =>
           Right(StringLiteral(lit.getLexicalForm))
@@ -144,7 +142,6 @@ object JenaMapper {
               Right(LangLiteral(lit.getLexicalForm, Lang(lit.getLanguage)))
             }
        case Some(datatype) => {
-              println(s"DatatypeLiteral!!!")
               Right(DatatypeLiteral(lit.getLexicalForm, datatype))
             }
           }

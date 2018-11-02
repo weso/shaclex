@@ -21,12 +21,13 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
   val shaclFolderPath = Paths.get(shaclFolder)
   val shaclFolderURI = Paths.get(shaclFolder).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
-  describeManifest(IRI(name), shaclFolderPath)
+  describeManifest(absoluteIri.resolve(IRI(name)), shaclFolderPath)
 
-  def describeManifest(name: RDFNode, parentFolder: Path): Unit = {
+  def describeManifest(name: IRI, parentFolder: Path): Unit = {
     describe(s"Validate from manifest file $name with parent: $parentFolder (lexicalForm: ${name.getLexicalForm}") {
-      val fileName = parentFolder.resolve(name.getLexicalForm).toString
-      RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), false) match {
+      val fileNameIRI = name
+      val fileName = Paths.get(fileNameIRI.uri).toString // parentFolder.resolve(name.getLexicalForm).toString
+      RDF2Manifest.read(fileName, "TURTLE", Some(fileNameIRI.str), true) match {
         case Left(e) => {
           it(s"Fails to read $fileName") {
             fail(s"Error reading manifestTest file:$e")
@@ -42,9 +43,14 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     }
   }
   def processManifest(m: Manifest, name: String, parentFolder: Path, rdfManifest: RDFBuilder): Unit = {
-    // println(s"processManifest with ${name} and parent folder $parentFolder")
+    println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
-      describeManifest(includeNode, parentFolder)
+      println(s"Includes: includeNode: ${includeNode} ParentFolder: $parentFolder")
+      includeNode match {
+        case i: IRI => describeManifest(i, parentFolder)
+        case _ => fail(s"Include node is not an IRI: $includeNode")
+      }
+
     }
     for (e <- m.entries)
       processEntry(e,name,parentFolder, rdfManifest)
@@ -69,16 +75,21 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
     dataRdf <- getData(a,fileName,parentFolder,manifestRdf,schemaRdf)
   } yield (schema, dataRdf)
 
-  def getData(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFReader, schemaRdf: RDFReader): Either[String, RDFReader] =
-    {
+  def getData(a: ManifestAction,
+              fileName: String,
+              parentFolder: Path,
+              manifestRdf: RDFReader,
+              schemaRdf: RDFReader
+             ): Either[String, RDFReader] = {
+    println(s"####\nGet data: ${a.data}")
      a.data match {
-     case None                                              => Right(RDFAsJenaModel.empty)
+     case None   => Right(RDFAsJenaModel.empty)
      case Some(iri) if iri.isEmpty => Right(manifestRdf)
      case Some(iri) => {
-      val dataFileName = parentFolder.resolve(iri.getLexicalForm)
+      // val dataFileName = parentFolder.resolve(iri.getLexicalForm)
       val dataFormat  = a.dataFormat.getOrElse(Shacl.defaultFormat)
       for {
-        rdf <- RDFAsJenaModel.fromFile(dataFileName.toFile, dataFormat).map(_.normalizeBNodes)
+        rdf <- RDFAsJenaModel.fromFile(Paths.get(fileName).toFile, dataFormat).map(_.normalizeBNodes)
       } yield rdf
      }
     }
@@ -96,10 +107,10 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
         schema <- RDF2Shacl.getShacl(manifestRdf)
         } yield (schema, manifestRdf)
       case Some(iri) => {
-        val schemaFile = parentFolder.resolve(iri.getLexicalForm)
+//        val schemaFile = parentFolder.resolve(iri.getLexicalForm)
         val schemaFormat = a.dataFormat.getOrElse(Shacl.defaultFormat)
         for {
-          schemaRdf <- RDFAsJenaModel.fromFile(schemaFile.toFile, schemaFormat).map(_.normalizeBNodes)
+          schemaRdf <- RDFAsJenaModel.fromFile(Paths.get(fileName).toFile, schemaFormat).map(_.normalizeBNodes)
           schema <- {
             RDF2Shacl.getShacl(schemaRdf)
           }

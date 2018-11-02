@@ -339,9 +339,9 @@ case class Validator(schema: Schema,
       paths <- fromEither(s.paths(schema).leftMap(msgErr(_)))
       neighs <- getNeighPaths(node, paths)
       rdf <- getRDF
-      _ <- { println(s"N-Triples of RDF\n${rdf.serialize("N-TRIPLES").getOrElse("")}"); ok(()) }
-      _ <- { println(s"node: $node"); ok(()) }
-      _ <- { println(s"neighs: $paths"); ok(()) }
+      // _ <- { println(s"N-Triples of RDF\n${rdf.serialize("N-TRIPLES").getOrElse("")}"); ok(()) }
+      // _ <- { println(s"node: $node"); ok(()) }
+      // _ <- { println(s"neighs: $paths"); ok(()) }
       extendedExpr <- fromEither(s.extendExpression(schema).leftMap(msgErr(_)))
       tableRbe <- {
         mkTable(extendedExpr, s.extra.getOrElse(List()))
@@ -448,12 +448,15 @@ case class Validator(schema: Schema,
   }
 
   private[validator] def mkTable(maybeTe: Option[TripleExpr],
-                                 extra: List[IRI]): Check[(CTable, Rbe_)] = {
+                                 extra: List[IRI]
+                                ): Check[(CTable, Rbe_)] = {
     maybeTe match {
       case None => ok((CTable.empty, Empty))
-      case Some(te) => CTable.mkTable(te,extra, schema.tripleExprMap.getOrElse(Map())).fold(
-        str => errStr(str),
-        pair => ok(pair)
+      case Some(te) => fromEitherString(
+        for {
+         tem <- schema.eitherResolvedTripleExprMap
+         pair <- CTable.mkTable(te,extra,tem.getOrElse(Map()))
+        } yield pair
       )
     }
   }
@@ -566,7 +569,6 @@ case class Validator(schema: Schema,
     val outgoingPredicates = paths.collect { case Direct(p) => p }
     val outgoing: List[Arc] = rdf.triplesWithSubjectPredicates(node, outgoingPredicates).
       map(t => Arc(Direct(t.pred), t.obj)).toList
-    println(s"Outgoing of $paths: $outgoing")
     val incoming: List[Arc] = rdf.triplesWithObject(node).
       map(t => Arc(Inverse(t.pred), t.subj)).toList
     val neighs = outgoing ++ incoming

@@ -38,7 +38,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
   val report = Report.empty
 
   describe(s"Generate EARL") {
-   it(s"Should write report to $outFile") {
+   describe(s"Should write report to $outFile") {
     describeManifest(IRI(name), shaclFolderPath)
     val earlModel = report.generateEARL
     earlModel.write(new FileOutputStream(outFile), "TURTLE")
@@ -50,7 +50,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
 
   def describeManifest(name: RDFNode, parentFolder: Path): Unit = {
     val fileName = parentFolder.resolve(name.getLexicalForm).toString
-      RDF2Manifest.read(fileName, "TURTLE", Some(shaclFolderURI), false) match {
+      RDF2Manifest.read(fileName, "TURTLE", Some(fileName), false) match {
         case Left(e) => {
           it(s"Fails to read $fileName") {
             fail(s"Error reading manifestTest file:$e")

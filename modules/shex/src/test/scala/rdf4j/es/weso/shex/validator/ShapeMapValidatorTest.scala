@@ -67,7 +67,7 @@ class ShapeMapValidator_RDF4jTest extends FunSpec with Matchers with EitherValue
     shouldValidateWithShapeMap(rdfStr, shexStr, ":b@:T", ":a@:S,:b@:T")
   }
 
-  describe("Regular expressions") {
+  ignore("Regular expressions") {
     val shexStr =
       """
         |prefix : <http://example.org/>

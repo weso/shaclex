@@ -19,12 +19,13 @@ class RDF2ManifestTest extends FunSpec
     parseManifest("personexample","core/complex")
     parseManifest("manifest", "core/complex")
     parseManifest("manifest", "core")
+    parseManifest("manifest", "core/validation-reports")
   }
 
   def parseManifest(name: String,folder: String): Unit = {
     it(s"Should parse manifestTest $folder/$name") {
       val fileName = s"$shaclFolder/$folder/$name.ttl"
-      RDF2Manifest.read(fileName, "TURTLE", Some(s"$shaclFolderURI$folder/"), true) match {
+      RDF2Manifest.read(fileName, "TURTLE", Some(fileName), true) match {
         case Left(e) =>
           fail(s"Error reading $fileName\n$e")
         case Right(pair) =>

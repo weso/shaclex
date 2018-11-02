@@ -191,7 +191,7 @@ case class RDF2Manifest(base: Option[IRI],
     case iri: IRI => if (derefIncludes) {
       val iriResolved = base.fold(iri)(base => base.resolve(iri))
       for {
-        rdf <- RDFAsJenaModel.fromURI(iriResolved.getLexicalForm,"TURTLE",None)
+        rdf <- RDFAsJenaModel.fromURI(iriResolved.getLexicalForm,"TURTLE",Some(iriResolved))
         mfs <- RDF2Manifest(Some(iriResolved), true).rdf2Manifest(rdf, iri +: visited)
         manifest <- if (mfs.size == 1) Right(mfs.head)
                     else Left(s"More than one manifests found: ${mfs} at iri $iri")
@@ -258,12 +258,13 @@ object RDF2Manifest extends LazyLogging {
           ): Either[String, (Manifest,RDFBuilder)] = {
     for {
       cs <- getContents(fileName)
-      rdf <- RDFAsJenaModel.fromChars(cs, format, None).map(_.normalizeBNodes)
       iriBase <- base match {
         case None => Right(None)
         case Some(str) => IRI.fromString(str).map(Some(_))
       }
-      manifest <- fromRDF(rdf,iriBase, derefIncludes)
+      rdf <- RDFAsJenaModel.fromChars(cs, format, iriBase).map(_.normalizeBNodes)
+      _ <- { println(s"Triples with predicate sht_dataGraph: ${rdf.triplesWithPredicate(sht_dataGraph)}"); Right(())}
+      manifest <- fromRDF(rdf, iriBase, derefIncludes)
     } yield (manifest,rdf)
   }
 

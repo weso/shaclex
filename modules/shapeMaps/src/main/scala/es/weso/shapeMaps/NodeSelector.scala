@@ -84,7 +84,6 @@ object NodeSelector {
     c.as[String].flatMap(s => {
       RDFNode.fromString(s).fold(
       s => {
-        println(s"RDF.fromString Error: $s")
         Left(DecodingFailure(s, Nil))
       } ,
       node => Right(RDFNodeSelector(node)))

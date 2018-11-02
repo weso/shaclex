@@ -4,6 +4,7 @@ import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
 import es.weso.rdf.jena.Endpoint
+import es.weso.rdf.nodes.IRI
 
 import scala.io.Source
 // import es.weso.server._
@@ -163,9 +164,9 @@ object Main extends App with LazyLogging {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base.map(IRI(_)))
         } else {
-          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), base)
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), base.map(IRI(_)))
         }
       } yield {
         if (opts.inference.isDefined) {

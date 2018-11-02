@@ -457,39 +457,36 @@ object JenaUtils {
     }
   }
 
-  private val baseURI = IRIResolver.chooseBaseURI.toURI
-
-  def relativizeStr(str: String): String = {
-    val s = baseURI.relativize(new URI(str)).toString
-//    println(s"Relativize($str)=$s")
-    s
+  def relativizeStr(str: String, base: Option[URI]): String = {
+    val baseURI = base.getOrElse(IRIResolver.chooseBaseURI.toURI)
+    baseURI.relativize(new URI(str)).toString
   }
 
-  def relativizeNode(m: Model, n: RDFNode): RDFNode = {
+  def relativizeNode(m: Model, n: RDFNode, base: Option[URI]): RDFNode = {
     n match {
-      case _ if n.isResource => relativizeResource(m, n.asResource())
+      case _ if n.isResource => relativizeResource(m, n.asResource(),base)
       case _ => n
     }
   }
 
-  def relativizeResource(m: Model, r: Resource): Resource = {
+  def relativizeResource(m: Model, r: Resource, base: Option[URI]): Resource = {
     r match {
-      case _ if r.isURIResource => m.createResource(relativizeStr(r.getURI))
+      case _ if r.isURIResource => m.createResource(relativizeStr(r.getURI, base))
       case _ => r
     }
   }
 
-  def relativizeProperty(m: Model, r: Property): Property = {
-    m.createProperty(relativizeStr(r.getURI()))
+  def relativizeProperty(m: Model, r: Property, base: Option[URI]): Property = {
+    m.createProperty(relativizeStr(r.getURI(),base))
   }
 
-  def relativizeModel(m: Model):Model = {
+  def relativizeModel(m: Model, base: Option[URI]):Model = {
     val r: Model = ModelFactory.createDefaultModel()
     r.setNsPrefixes(m.getNsPrefixMap)
     for (s <- m.listStatements().asScala) {
-      val subj = relativizeResource(m, s.getSubject)
-      val prop = relativizeProperty(r, s.getPredicate)
-      val obj = relativizeNode(m, s.getObject)
+      val subj = relativizeResource(m, s.getSubject, base)
+      val prop = relativizeProperty(r, s.getPredicate,base)
+      val obj = relativizeNode(m, s.getObject,base)
       r.add(subj,prop,obj)
     }
     r

@@ -9,14 +9,11 @@ import scala.util.Try
 import es.weso.rdf._
 import org.apache.jena.rdf.model.{Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
-import org.apache.jena.riot.{RDFDataMgr, RDFLanguages, RDFParser}
+import org.apache.jena.riot._
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.lang._
-
 import scala.util._
 import java.io._
-import java.nio.file.Paths
-
 import org.apache.jena.riot.RDFLanguages._
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.path.SHACLPath
@@ -54,7 +51,7 @@ case class RDFAsJenaModel(model: Model,
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
       val baseURI = base.getOrElse(IRI(""))
-      println(s"RDFAsJenaModel: $baseURI")
+
       // The following 4 statements are equivalent to :
       // RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       val g: Graph = m.getGraph
@@ -64,7 +61,13 @@ case class RDFAsJenaModel(model: Model,
         base(baseURI.str).
         labelToNode(LabelToNode.createUseLabelEncoded()).
         lang(shortnameToLang(format)).context(ctx).parse(dest)
-      // RDFAsJenaModel(JenaUtils.relativizeModel(m))
+
+      println(s"RDFAsJenaModel.................")
+      for (s <- m.listObjectsOfProperty(m.createProperty("http://www.w3.org/ns/shacl-test#dataGraph")).toList.asScala) {
+        println(s"Statement: ${s}")
+      }
+      println(s".................")
+      // RDFAsJenaModel(JenaUtils.relativizeModel(m,base.map(_.uri)))
       RDFAsJenaModel(m, base)
     }.fold(e => Left(s"Exception: ${e.getMessage}\nBase:$base, format: $format\n$cs"),
       Right(_)
@@ -205,16 +208,14 @@ case class RDFAsJenaModel(model: Model,
     model.listStatements().asScala.map(st => statement2tripleUnsafe(st)).toSet
   }
 
-  private def statement2triple(st: Statement): Either[String,RDFTriple] = for {
+/*  private def statement2triple(st: Statement): Either[String,RDFTriple] = for {
    subj <-JenaMapper.jenaNode2RDFNode(st.getSubject)
    obj <- JenaMapper.jenaNode2RDFNode(st.getObject)
-   } yield RDFTriple(subj,property2iri(st.getPredicate),obj)
+   } yield RDFTriple(subj,property2iri(st.getPredicate),obj) */
 
   private def statement2tripleUnsafe(st: Statement): RDFTriple = {
-    println(s"statement2TripleUnsafe: $st")
     val subj = JenaMapper.jenaNode2RDFNodeUnsafe(st.getSubject)
     val obj = JenaMapper.jenaNode2RDFNodeUnsafe(st.getObject)
-    println(s"statement2TripleUnsafe: subj: $subj, obj: $obj")
     RDFTriple(subj,property2iri(st.getPredicate),obj)
   }
 
@@ -245,7 +246,6 @@ case class RDFAsJenaModel(model: Model,
   // private def removeLastColon(str: String): String = str.init
 
   override def addTriples(triples: Set[RDFTriple]): Either[String,Rdf] = {
-    println(s"Adding triples $triples, base=$base")
     Try {
       val newModel = JenaMapper.RDFTriples2Model(triples, model,base)
       val m = model.add(newModel)
@@ -461,7 +461,6 @@ object RDFAsJenaModel {
         base(baseURI.str).
         labelToNode(LabelToNode.createUseLabelEncoded()).
         lang(shortnameToLang(format)).context(ctx).parse(dest)
-
       // RDFAsJenaModel(JenaUtils.relativizeModel(m), Some(IRI(uri)))
       RDFAsJenaModel(m, base, Some(IRI(uri)))
     }.fold(e => Left(s"Exception accessing uri $uri: ${e.getMessage}"),
@@ -496,7 +495,6 @@ object RDFAsJenaModel {
   }
 
   def fromChars(cs: CharSequence, format: String, base: Option[IRI] = None): Either[String,RDFAsJenaModel] = {
-    println(s"RDF.fromChars with base: $base")
     RDFAsJenaModel.empty.fromString(cs, format, base)
   }
 

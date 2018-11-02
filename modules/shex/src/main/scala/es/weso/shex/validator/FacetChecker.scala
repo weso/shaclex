@@ -1,7 +1,6 @@
 package es.weso.shex.validator
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.PREFIXES._
 import es.weso.rdf.nodes._
 import es.weso.rdf.operations.Comparisons._
 import es.weso.shex.ShExError._
