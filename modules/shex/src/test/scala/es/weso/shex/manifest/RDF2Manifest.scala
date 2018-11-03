@@ -54,7 +54,7 @@ case class RDF2Manifest(base: Option[IRI],
       name <- stringFromPredicate(mf_name)(n, rdf)
       statusIri <- iriFromPredicate(mf_status)(n, rdf)
       actionNode <- objectFromPredicate(mf_action)(n, rdf)
-      action <- action(actionNode, rdf)
+      action <- parseManifestAction(actionNode, rdf)
       resultNode <- objectFromPredicate(mf_result)(n, rdf)
       result <- result(resultNode, rdf)
       specRef <- optional(iriFromPredicate(sht_specRef))(n, rdf)
@@ -68,7 +68,7 @@ case class RDF2Manifest(base: Option[IRI],
       traits <- irisFromPredicate(sht_trait)(n, rdf)
       comment <- stringFromPredicate(rdfs_comment)(n,rdf)
       actionNode <- objectFromPredicate(mf_action)(n, rdf)
-      action <- basicAction(actionNode, rdf)
+      action <- parseAction(actionNode, rdf)
       maybeResult <- iriFromPredicateOptional(mf_result)(n,rdf)
     } yield ValidationTest(n,Status(statusIri),name,traits,comment,action,maybeResult)
   }
@@ -80,19 +80,36 @@ case class RDF2Manifest(base: Option[IRI],
       traits <- irisFromPredicate(sht_trait)(n, rdf)
       comment <- stringFromPredicate(rdfs_comment)(n,rdf)
       actionNode <- objectFromPredicate(mf_action)(n, rdf)
-      action <- basicAction(actionNode, rdf)
+      action <- parseAction(actionNode, rdf)
       maybeResult <- iriFromPredicateOptional(mf_result)(n,rdf)
     } yield ValidationFailure(n,Status(statusIri),name,traits,comment,action,maybeResult)
   }
 
-  private def basicAction: RDFParser[BasicAction] = { (n,rdf) =>
+  private def parseAction: RDFParser[Action] = { (n,rdf) => for {
+    maybeFocus <- objectFromPredicateOptional(sht_focus)(n, rdf)
+    action <- maybeFocus match {
+      case Some(focus) => focusAction(focus)(n,rdf)
+      case None => mapResultAction(n,rdf)
+    }
+   } yield action
+  }
+
+  private def mapResultAction: RDFParser[MapResultAction] = { (n,rdf) =>
+    for {
+      data <- iriFromPredicate(sht_data)(n, rdf)
+      schema <- iriFromPredicate(sht_schema)(n, rdf)
+      shapeMap <- iriFromPredicate(sht_map)(n, rdf)
+    } yield MapResultAction(data,schema,shapeMap)
+  }
+
+  private def focusAction(focus: RDFNode): RDFParser[FocusAction] = { (n,rdf) =>
     for {
       schema <- iriFromPredicate(sht_schema)(n, rdf)
       data <- iriFromPredicate(sht_data)(n, rdf)
-      focus <- objectFromPredicateOptional(sht_focus)(n, rdf)
-      shape <- iriFromPredicateOptional(sht_shape)(n, rdf)
-      maybeMap <- iriFromPredicateOptional(sht_map)(n,rdf)
-    } yield BasicAction(data,schema,focus,shape,maybeMap)
+      shape <- objectFromPredicateOptional(sht_shape)(n, rdf)
+//      maybeMap <- iriFromPredicateOptional(sht_map)(n,rdf)
+      shapeExterns <- iriFromPredicateOptional(sht_shapeExterns)(n, rdf)
+    } yield FocusAction(data,schema,focus,shape,shapeExterns)
   }
 
   private def entry: RDFParser[Entry] = { (n, rdf) =>
@@ -123,7 +140,7 @@ case class RDF2Manifest(base: Option[IRI],
     }
   }
 
-  private def action: RDFParser[ManifestAction] = { (n, rdf) =>
+  private def parseManifestAction: RDFParser[ManifestAction] = { (n, rdf) =>
     for {
       data <- optional(iriFromPredicate(sht_data))(n, rdf)
       schema <- {

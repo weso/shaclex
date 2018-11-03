@@ -1,7 +1,5 @@
 package es.weso.shex.manifest
 
-import java.io.File
-
 import es.weso.rdf.nodes._
 import ManifestPrefixes._
 
@@ -41,34 +39,50 @@ case class Validate(override val node: RDFNode,
   override val entryType = sht_Validate
 }
 
+abstract class ValidOrFailureTest(override val node: RDFNode,
+                              override val status: Status,
+                              override val name: String,
+                              val traits: List[IRI],
+                              val comment: String,
+                              val action: Action,
+                              val maybeResult: Option[IRI],
+                              val entryType : IRI
+                              ) extends Entry {
+}
+
 case class ValidationTest(override val node: RDFNode,
                     override val status: Status,
                     override val name: String,
-                    traits: List[IRI],
-                    comment: String,
-                    action: BasicAction,
-                    maybeResult: Option[IRI]
-                   ) extends Entry {
-  override val entryType = sht_ValidationTest
+                    override val traits: List[IRI],
+                    override val comment: String,
+                    override val action: Action,
+                    override val maybeResult: Option[IRI]
+                   ) extends
+  ValidOrFailureTest(node,status,name,traits,comment,action,maybeResult, sht_ValidationTest) {
 }
 
 case class ValidationFailure(override val node: RDFNode,
                              override val status: Status,
                              override val name: String,
-                             traits: List[IRI],
-                             comment: String,
-                             action: BasicAction,
-                             maybeResult: Option[IRI]
-                            ) extends Entry {
-  override val entryType = sht_Validate
+                             override val traits: List[IRI],
+                             override val comment: String,
+                             override val action: Action,
+                             override val maybeResult: Option[IRI]
+                            ) extends ValidOrFailureTest(node,status,name,traits,comment,action,maybeResult,sht_Validate) {
 }
 
-case class BasicAction(data: IRI,
+sealed trait Action
+case class FocusAction(data: IRI,
                        schema: IRI,
-                       focus: Option[RDFNode],
-                       shape: Option[IRI],
-                       maybeMapIRI: Option[IRI]
-                      )
+                       focus: RDFNode,
+                       shape: Option[RDFNode],
+                       shapeExterns: Option[IRI]
+                      ) extends Action
+
+case class MapResultAction(data: IRI,
+                           schema: IRI,
+                           shapeMap: IRI
+                          ) extends Action
 
 case class ManifestAction(
   schema: Option[IRI],
@@ -82,7 +96,7 @@ case class ManifestAction(
   shapeMap: Option[IRI],
   resultShapeMap: Option[IRI],
   focus: Option[IRI],
-  ) {
+  ) extends Action {
   def setSchema(iri: IRI): ManifestAction = {
     this.copy(schema = Some(iri))
   }

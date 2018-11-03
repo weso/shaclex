@@ -37,13 +37,13 @@ case class Report(
     val foaf = "http://xmlns.com/foaf/0.1/"
     val doap = "http://usefulinc.com/ns/doap#"
     val shaclexURL = "https://github.com/labra/shaclex/"
-    val turtleURL = "http://www.w3.org/TR/turtle/"
+    val shexURL = "http://shex.io/shex-semantics/"
     val rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     val earl = "http://www.w3.org/ns/earl#"
     val dc = "http://purl.org/dc/terms/"
     val rdfs = "http://www.w3.org/2000/01/rdf-schema#"
     // val xsd = "http://www.w3.org/2001/XMLSchema#"
-    val turtleTests = "http://www.w3.org/2013/TurtleTests/manifestTest.ttl#"
+    val shexTests = "https://github.com/shexSpec/shexTest#"
 
     model.setNsPrefix("doap", doap)
     model.setNsPrefix("rdf", rdf)
@@ -51,7 +51,7 @@ case class Report(
     model.setNsPrefix("foaf", foaf)
     model.setNsPrefix("earl", earl)
     model.setNsPrefix("dc", dc)
-    model.setNsPrefix("ttlTests", turtleTests)
+    model.setNsPrefix("ttlTests", shexTests)
 
     val rdf_type = model.createProperty(rdf + "type")
 
@@ -118,7 +118,7 @@ case class Report(
     model.add(shaclex, rdf_type, earlTestSubject)
     model.add(shaclex, doap_name, "shaclex")
     model.add(shaclex, doap_homePage, shaclexURL)
-    model.add(shaclex, doap_implements, turtleURL)
+    model.add(shaclex, doap_implements, shexURL)
     model.add(shaclex, doap_developer, labra)
     model.add(shaclex, doap_maintainer, labra)
     model.add(shaclex, doap_documenter, labra)
@@ -142,7 +142,7 @@ case class Report(
       val t = model.createResource()
       val result = model.createResource()
       model.add(t, rdf_type, earlAssertion)
-      model.add(t, earl_test, model.createResource(turtleTests + r.uriTest))
+      model.add(t, earl_test, model.createResource(shexTests + r.uriTest))
       model.add(t, foaf_name, r.name)
       model.add(t, earl_assertedBy, labra)
       model.add(t, earl_mode, earl_automatic)

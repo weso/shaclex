@@ -23,7 +23,7 @@ import scala.io.Source
 
 // TODO: Remove duplication between ValidationTest and ValidationFailureTest
 
-class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
+class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
@@ -99,8 +99,7 @@ class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
             ok <- if (traits contains sht_Greedy) {
               counter.add(s"Greedy: $name")
               Right(s"Greedy")
-            }
-            else maybeFocus match {
+            } else maybeFocus match {
               case Some(focus) => {
                 val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
                 for {
