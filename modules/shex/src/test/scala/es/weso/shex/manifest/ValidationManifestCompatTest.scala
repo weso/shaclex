@@ -35,7 +35,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
 
   println(s"ValidationManifest")
 
-  describe("ValidationManifest") {
+  describe("ValidationManifest compatTest") {
     val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI), false)
     r.fold(e => println(s"Error reading manifest: $e"),
       mf => {

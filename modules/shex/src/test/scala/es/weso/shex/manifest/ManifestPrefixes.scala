@@ -57,6 +57,8 @@ object ManifestPrefixes {
   lazy val sht_Valid = sht + "Valid"
   lazy val sht_NotValid = sht + "NotValid"
   lazy val sht_Validate = sht.add("Validate")
+  lazy val sht_NegativeSyntax = sht.add("NegativeSyntax")
+  lazy val sht_NegativeStructure = sht.add("NegativeStructure")
   lazy val sht_RepresentationTest = sht.add("RepresentationTest")
   lazy val sht_ValidationTest = sht.add("ValidationTest")
   lazy val sht_ValidationFailure = sht.add("ValidationFailure")

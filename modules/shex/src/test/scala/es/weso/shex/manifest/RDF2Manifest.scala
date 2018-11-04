@@ -49,6 +49,22 @@ case class RDF2Manifest(base: Option[IRI],
    } yield RepresentationTest(n,Status(statusIri),name,json,shex,ttl)
   }
 
+  private def negativeSyntax: RDFParser[NegativeSyntax] = { (n,rdf) =>
+    for {
+      name <- stringFromPredicate(mf_name)(n, rdf)
+      statusIri <- iriFromPredicate(mf_status)(n, rdf)
+      shex <- iriFromPredicate(sx_shex)(n, rdf)
+    } yield NegativeSyntax(n,Status(statusIri),name,shex)
+  }
+
+  private def negativeStructure: RDFParser[NegativeStructure] = { (n,rdf) =>
+    for {
+      name <- stringFromPredicate(mf_name)(n, rdf)
+      statusIri <- iriFromPredicate(mf_status)(n, rdf)
+      shex <- iriFromPredicate(sx_shex)(n, rdf)
+    } yield NegativeStructure(n,Status(statusIri),name,shex)
+  }
+
   private def validateTest: RDFParser[Validate] = { (n,rdf) =>
     for {
       name <- stringFromPredicate(mf_name)(n, rdf)
@@ -117,6 +133,8 @@ case class RDF2Manifest(base: Option[IRI],
       entryTypeUri <- rdfType(n, rdf)
       entry <- entryTypeUri match {
         case `sht_RepresentationTest` => representationTest(n,rdf)
+        case `sht_NegativeSyntax` => negativeSyntax(n,rdf)
+        case `sht_NegativeStructure` => negativeStructure(n,rdf)
         case `sht_Validate` => validateTest(n,rdf)
         case `sht_ValidationTest`=> validationTest(n,rdf)
         case `sht_ValidationFailure`=> validationFailure(n,rdf)

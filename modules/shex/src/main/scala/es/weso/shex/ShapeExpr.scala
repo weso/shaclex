@@ -18,6 +18,8 @@ abstract sealed trait ShapeExpr {
   def paths(schema: Schema): Either[String,List[Path]]
   def addAnnotations(as: List[Annotation]): ShapeExpr
   def addSemActs(as: List[SemAct]): ShapeExpr
+  def getShapeRefs(schema: Schema): List[ShapeLabel]
+
 }
 
 object ShapeExpr {
@@ -41,6 +43,8 @@ case class ShapeOr(id: Option[ShapeLabel],
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
     this.copy(actions = maybeAddList(actions,as))
   }
+
+  override def getShapeRefs(schema: Schema) = shapeExprs.map(_.getShapeRefs(schema)).flatten
 }
 
 object ShapeOr {
@@ -63,6 +67,7 @@ case class ShapeAnd(id: Option[ShapeLabel],
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
     this.copy(actions = maybeAddList(actions,as))
   }
+  override def getShapeRefs(schema: Schema) = shapeExprs.map(_.getShapeRefs(schema)).flatten
 }
 
 object ShapeAnd {
@@ -86,6 +91,7 @@ case class ShapeNot(id: Option[ShapeLabel],
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
     this.copy(actions = maybeAddList(actions,as))
   }
+  override def getShapeRefs (schema: Schema)= shapeExpr.getShapeRefs(schema)
 }
 
 object ShapeNot {
@@ -114,6 +120,9 @@ case class NodeConstraint(
   override def addSemActs(as: List[SemAct]): NodeConstraint = {
     this.copy(actions = maybeAddList(actions,as))
   }
+
+  override def getShapeRefs(s:Schema) = List()
+
 }
 
 object NodeConstraint {
@@ -153,6 +162,8 @@ object NodeConstraint {
 
   def xsFacets(facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(xsFacets = facets)
+
+
 }
 
 case class Shape(
@@ -219,6 +230,8 @@ case class Shape(
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
     this.copy(actions = maybeAddList(actions,as))
   }
+
+  override def getShapeRefs(schema: Schema) = expression.map(_.getShapeRefs(schema)).getOrElse(List())
 }
 
 object Shape {
@@ -262,6 +275,7 @@ case class ShapeRef(reference: ShapeLabel,
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
     this.copy(actions = maybeAddList(actions,as))
   }
+  override def getShapeRefs(s: Schema) = List(reference)
 }
 
 case class ShapeExternal(id: Option[ShapeLabel],
@@ -277,7 +291,7 @@ case class ShapeExternal(id: Option[ShapeLabel],
   override def addSemActs(as: List[SemAct]): ShapeExpr = {
     this.copy(actions = maybeAddList(actions,as))
   }
-
+  override def getShapeRefs (schema: Schema) =  List()
 }
 
 object ShapeExternal {

@@ -160,11 +160,12 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
 
   override def info: SchemaInfo = {
 
-    val reasons: List[String] = schema.negCycles.fold(e => List(e), ns => {
-      if (ns.isEmpty) List()
+    val reasons: List[String] = schema.negCycles.fold(
+      e => List(e),
+      ns => if (ns.isEmpty) List()
       else
         List(s"Negative cycles found: [${ns.map(s => s.map(_.toString).mkString(",")).mkString(",")}]")
-    })
+    )
     val wellFormed = reasons.isEmpty
     SchemaInfo(name, "Iterative", wellFormed, reasons)
   }

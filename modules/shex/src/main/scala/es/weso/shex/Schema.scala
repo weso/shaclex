@@ -7,6 +7,7 @@ import es.weso.depgraphs.DepGraph
 import es.weso.rdf.{PrefixMap, RDFBuilder, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
+import es.weso.utils.EitherUtils
 
 import scala.io.Source
 import scala.util.{Either, Left, Right, Try}
@@ -143,6 +144,39 @@ case class Schema(id: IRI,
 
   def depGraph: Either[String, DepGraph[ShapeLabel]] =
     Dependencies.depGraph(this)
+
+  lazy val listNegCycles: List[String] = negCycles.fold(
+    e => List(e),
+    ns => if (ns.isEmpty) List()
+    else
+      List(s"Negative cycles found: [${ns.map(s => s.map(_.toString).mkString(",")).mkString(",")}]")
+  )
+
+  private def checkShapeLabel(lbl: ShapeLabel): Either[String, Unit] = for {
+   se <- getShape(lbl)
+   refs <- EitherUtils.sequence(se.getShapeRefs(this).map(getShape(_)))
+  } yield {
+    println(s"Label: $lbl, refs: ${se.getShapeRefs(this).mkString(",")}")
+    println(s"References: ${refs.mkString(",")}")
+    ()
+  }
+
+  private lazy val checkBadShapeLabels: Either[String,Unit] = for {
+    shapesMap <- eitherResolvedShapesMap
+    _ <- { println(s"shapesMap: $shapesMap"); Right(())}
+    _ <- EitherUtils.sequence(shapesMap.keySet.toList.map(lbl => checkShapeLabel(lbl)))
+  } yield (())
+
+
+  private lazy val checkNegCycles: Either[String, Unit] =
+    if (listNegCycles.isEmpty) Right(())
+    else
+      Left(s"Negative cycles: \n{${listNegCycles.mkString("\n")}")
+
+  lazy val wellFormed: Either[String,Unit] = for {
+    _ <- checkNegCycles
+    _ <- checkBadShapeLabels
+  } yield (())
 
 }
 

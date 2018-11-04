@@ -11,7 +11,6 @@ import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
 import es.weso.shex.values._
 import es.weso.utils.StrUtils._
 import es.weso.rdf.operations.Comparisons._
-
 import scala.collection.JavaConverters._
 
 /**
@@ -613,7 +612,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
   override def visitIri(ctx: IriContext): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
-    } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+      iri <- extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+    } yield iri
     else for {
       prefixedName <- visitPrefixedName(ctx.prefixedName())
       iri <- resolve(prefixedName)
@@ -654,26 +654,30 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
         shapeOrRef <- visitShapeOrRef(ctx.shapeOrRef())
       } yield shapeOrRef */
 
-  def extractIRIfromIRIREF(d: String, base: Option[IRI]): IRI = {
+  def extractIRIfromIRIREF(d: String, base: Option[IRI]): Builder[IRI] = {
     val str = unescapeIRI(d)
     val iriRef = "^<(.*)>$".r
     str match {
-      case iriRef(i) => {
+      case iriRef(i) => IRI.fromString(i,base).fold(
+        str => err(str),
+        i => {
         base match {
-          case None => IRI(i)
+          case None => ok(i)
           case Some(b) => {
             if (b.uri.toASCIIString.startsWith("file:///")) {
               // For some reason, when resolving a file:///foo iri, the system returns file:/foo
               // The following code keeps the file:/// part
-             IRI(b.uri.resolve(IRI(i).uri).toASCIIString.replaceFirst("file:/","file:///"))
+             ok(IRI(b.uri.resolve(i.uri).toASCIIString.replaceFirst("file:/","file:///")))
             } else {
-              IRI(b.uri.resolve(IRI(i).uri))
+              ok(IRI(b.uri.resolve(i.uri)))
             }
           }
         }
-      }
+      })
     }
   }
+
+
   override def visitNumericLiteral(ctx: NumericLiteralContext): Builder[Literal] = {
     ctx match {
       case _ if (isDefined(ctx.INTEGER())) =>
@@ -1051,8 +1055,8 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     case _ if (isDefined(e.literal())) => for {
       literal <- visitLiteral(e.literal())
     } yield Const(literal)
-    case _ if (isDefined(e.iri())) => throw new Exception("Not implemented iris yet in visitBasicExpr")
-    case _ if (isDefined(e.blankNode())) => throw new Exception("Not implemented blankNode yet in visitBasicExpr")
+    case _ if (isDefined(e.iri())) => err("Not implemented iris yet in visitBasicExpr")
+    case _ if (isDefined(e.blankNode())) => err("Not implemented blankNode yet in visitBasicExpr")
   }
   private def visitBinOp(b: BinOpContext): Builder[BinOp] = b match {
     case _: EqualsContext => ok(Equals)
@@ -1326,21 +1330,25 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
     iri <- visitIri(ctx.iri())
   } yield iri
 
-  // TODO: Resolve base taking into account previous base declarations ?
   override def visitBaseDecl(ctx: BaseDeclContext): Builder[IRI] = {
-    val baseIri = extractIRIfromIRIREF(ctx.IRIREF().getText, None)
     for {
+     previousBase <- getBase
+     baseIri <- extractIRIfromIRIREF(ctx.IRIREF().getText, previousBase)
       _ <- addBase(baseIri)
     } yield baseIri
   }
 
   override def visitPrefixDecl(ctx: PrefixDeclContext): Builder[(Prefix, IRI)] = {
+    if (ctx.PNAME_NS() == null) err(s"Invalid prefix declaration")
+    else {
+//    println(s"visitPrefixDecl: ${ctx.PNAME_NS()}")
+//    println(s"visitPrefixDecl pnameNs.getText: ${ctx.PNAME_NS().getText}")
     val prefix = Prefix(ctx.PNAME_NS().getText.init)
-    // TODO Resolve prefix declarations taking into account base?
-    val iri = extractIRIfromIRIREF(ctx.IRIREF().getText, None)
     for {
-      _ <- addPrefix(prefix, iri)
+      iri <- extractIRIfromIRIREF(ctx.IRIREF().getText, None)
+      _   <- addPrefix(prefix, iri)
     } yield (prefix, iri)
+    }
   }
 
   sealed trait Qualifier {

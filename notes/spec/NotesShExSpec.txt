@@ -10,28 +10,16 @@ sbt> compat:testOnly es.weso.shex.report.ReportGeneratorCompatTest
 
 ```
 
-Results (29/Oct/2018)
+Results (3/nov/2018): 
+- All validation tests pass (1088)
+- All schemas tests pass (401)
+- Negative syntax tests: 96/100 tests pass
+  Tests that are ignored:
+   - directShapeExpression: It seems there is no file?
+   - 1iriLength2. It seems it should not allow two lengths declared
+   - 1literalLength2. Same as previous one
+   - 1unknowndatatypeMaxInclusive. Seems that MAXINCLUSIVE should be applied only to numerical datatypes?
+- Negative structure tests:
 
-Total tests that pass: 1071/1088, 13 validation tests fail
-
-- 5 Greedy tests fail. I think those tests could be removed
-  PTstar-greedy-fail
-  nPlus1-greedy_fail
-  PstarT-greedy
-  open3Onedotclosecard23_pass-p1p2p3
-  PTstar-greedy-rewrite
-
-- Tests with REGEXP (need time to review them more carefully)
-  1literalPattern_with_REGEXP_escapes_pass_bare
-  1literalPattern_with_REGEXP_escapes_pass
-  1literalPattern_with_REGEXP_escapes_escaped_pass
-  1literalPattern_with_REGEXP_escapes_bare_pass
-  1literalPattern_with_REGEXP_escapes_bare_pass_escapes
-
-- Tests that need to import also TripleExpr references
-  2EachInclude1-IS2_pass
-
-- Test with relative shape ?
-  1dot-relative_pass-short-shape
-
+   
 

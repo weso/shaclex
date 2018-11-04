@@ -34,8 +34,11 @@ object Parser extends LazyLogging {
     v
   }
 
+  def fromEither[A](e: Either[String,A]): Builder[A] =
+    e.fold(str => err(str), ok(_))
+
   def sequence[A](bs: List[Builder[A]]): Builder[List[A]] =
-    bs.sequence
+    bs.sequence[Builder,A]
 
   def getPrefixMap: Builder[PrefixMap] =
     getState.map(_.prefixMap)

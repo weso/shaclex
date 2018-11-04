@@ -9,6 +9,7 @@ abstract sealed trait TripleExpr {
   def paths(schema: Schema): List[Path]
   def predicates(schema:Schema): List[IRI] =
     paths(schema).collect { case i: Direct => i.pred }
+  def getShapeRefs(schema: Schema): List[ShapeLabel]
 }
 
 case class EachOf( id: Option[ShapeLabel],
@@ -22,6 +23,7 @@ case class EachOf( id: Option[ShapeLabel],
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   override def paths(schema: Schema): List[Path] = expressions.map(_.paths(schema)).flatten
+  override def getShapeRefs (schema: Schema) = expressions.map(_.getShapeRefs(schema)).flatten
 }
 
 object EachOf {
@@ -41,6 +43,7 @@ case class OneOf(
   override def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   override def paths(schema:Schema): List[Path] = expressions.map(_.paths(schema)).flatten
+  override def getShapeRefs (schema: Schema) = expressions.map(_.getShapeRefs(schema)).flatten
 }
 
 object OneOf {
@@ -55,6 +58,8 @@ case class Inclusion(include: ShapeLabel) extends TripleExpr {
   override def paths(schema: Schema): List[Path] = {
     schema.getTripleExpr(include).map(_.paths(schema)).getOrElse(List())
   }
+  override def getShapeRefs(schema: Schema) =
+    schema.getTripleExpr(include).map(_.getShapeRefs(schema)).getOrElse(List())
 }
 
 case class TripleConstraint(
@@ -84,6 +89,7 @@ case class TripleConstraint(
     optMax = optMax.map(_.decreaseCard)
   )
 
+  override def getShapeRefs(schema: Schema) = valueExpr.map(_.getShapeRefs(schema)).getOrElse(List())
 }
 
 /**
@@ -96,6 +102,7 @@ case class Expr(id: Option[ShapeLabel],
                ) extends TripleExpr {
   def addId(label: ShapeLabel) = this.copy(id = Some(label))
   override def paths(schema: Schema): List[Path] = List()
+  override def getShapeRefs(schema: Schema) = List()
 }
 
 object TripleConstraint {
@@ -108,5 +115,6 @@ object TripleConstraint {
 
   def datatype(pred: IRI, iri: IRI, facets: List[XsFacet]): TripleConstraint =
     emptyPred(pred).copy(valueExpr = Some(NodeConstraint.datatype(iri, facets)))
+
 }
 

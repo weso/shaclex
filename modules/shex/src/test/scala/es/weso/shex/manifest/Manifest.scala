@@ -68,7 +68,24 @@ case class ValidationFailure(override val node: RDFNode,
                              override val comment: String,
                              override val action: Action,
                              override val maybeResult: Option[IRI]
-                            ) extends ValidOrFailureTest(node,status,name,traits,comment,action,maybeResult,sht_Validate) {
+                            ) extends
+  ValidOrFailureTest(node,status,name,traits,comment,action,maybeResult,sht_Validate) {
+}
+
+case class NegativeSyntax(override val node: RDFNode,
+                          override val status: Status,
+                          override val name: String,
+                          shex: IRI
+                         ) extends Entry {
+  override val entryType = sht_NegativeSyntax
+}
+
+case class NegativeStructure(override val node: RDFNode,
+                          override val status: Status,
+                          override val name: String,
+                          shex: IRI
+                         ) extends Entry {
+  override val entryType = sht_NegativeStructure
 }
 
 sealed trait Action
