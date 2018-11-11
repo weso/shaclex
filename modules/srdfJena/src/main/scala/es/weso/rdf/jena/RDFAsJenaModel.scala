@@ -27,6 +27,7 @@ import es.weso.rdf.dot.RDF2Dot
 import org.apache.jena.graph.Graph
 import org.apache.jena.riot.system.{StreamRDF, StreamRDFLib}
 import org.apache.jena.sparql.util.Context
+import es.weso.utils.EitherUtils._
 
 case class RDFAsJenaModel(model: Model,
                           base: Option[IRI] = None,
@@ -109,102 +110,90 @@ case class RDFAsJenaModel(model: Model,
     model2triples(model)
   }
 
-  override def triplesWithSubject(node: RDFNode): Set[RDFTriple] = {
-    val maybeResource = rdfNode2Resource(node, model,base)
-    val empty: Set[RDFTriple] = Set()
-    maybeResource.fold(empty) {
-      case resource =>
-        val statements: Set[Statement] = triplesSubject(resource, model)
-        toRDFTriples(statements)
-    }
-  }
+  override def triplesWithSubject(node: RDFNode): Either[String, Set[RDFTriple]] = for {
+    resource <- rdfNode2Resource(node, model, base)
+    statements <- triplesSubject(resource, model)
+    ts         <- toRDFTriples(statements)
+   } yield ts
 
   override def triplesWithSubjectPredicate(node: RDFNode,
-                                           p: IRI): Set[RDFTriple] = {
-    val maybeResource = rdfNode2Resource(node, model,base)
-    val empty: Set[RDFTriple] = Set()
-    maybeResource.fold(empty) {
-      case resource =>
-        val statements: Set[Statement] = triplesSubjectPredicate(resource, p, model,base)
-        toRDFTriples(statements)
-    }
-  }
+                                           p: IRI): Either[String, Set[RDFTriple]] = for {
+    r <- rdfNode2Resource(node, model,base)
+    ss <- triplesSubjectPredicate(r, p, model, base)
+    ts <- toRDFTriples(ss)
+  } yield ts
 
 
   /**
     * return the SHACL instances of a node `cls`
     * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
     */
-  override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    val cJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model, base)
-    JenaUtils.getSHACLInstances(cJena, model).map(n => JenaMapper.jenaNode2RDFNodeUnsafe(n))
+  override def getSHACLInstances(c: RDFNode): Either[String, Seq[RDFNode]] = for {
+    is <- JenaUtils.getSHACLInstances(JenaMapper.rdfNode2JenaNode(c, model, base), model)
+    ns <- sequence(is.toList.map(n => JenaMapper.jenaNode2RDFNode(n)))
+  } yield ns
+
+  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String, Boolean] = {
+    val nJena = JenaMapper.rdfNode2JenaNode(n, model, base)
+    val cJena = JenaMapper.rdfNode2JenaNode(c, model, base)
+    JenaUtils.hasClass(nJena, cJena, model).asRight[String]
   }
 
-  override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    val nJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(n, model, base)
-    val cJena: JenaRDFNode = JenaMapper.rdfNode2JenaNode(c, model, base)
-    JenaUtils.hasClass(nJena, cJena, model)
-  }
+  override def nodesWithPath(path: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]] = for {
+    jenaPath <- JenaMapper.path2JenaPath(path, model, base)
+  } yield
+    JenaUtils.getNodesFromPath(jenaPath, model).
+    map(p => (JenaMapper.jenaNode2RDFNodeUnsafe(p._1), JenaMapper.jenaNode2RDFNodeUnsafe(p._2))).toSet
 
-  override def nodesWithPath(path: SHACLPath): Set[(RDFNode, RDFNode)] = {
-    val jenaPath: Path = JenaMapper.path2JenaPath(path, model, base)
-    val pairs = JenaUtils.getNodesFromPath(jenaPath, model).
-      map(p => (JenaMapper.jenaNode2RDFNodeUnsafe(p._1), JenaMapper.jenaNode2RDFNodeUnsafe(p._2)))
-    pairs.toSet
-  }
-
-  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String, Set[RDFNode]] = {
     val jenaNode: JenaRDFNode = JenaMapper.rdfNode2JenaNode(subj, model, base)
-    val jenaPath: Path = JenaMapper.path2JenaPath(path, model, base)
-    val nodes = JenaUtils.objectsFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNodeUnsafe(n))
-    nodes.toSet
+    for {
+      jenaPath <- JenaMapper.path2JenaPath(path, model, base)
+      nodes <- sequence(
+        JenaUtils.objectsFromPath(jenaNode, jenaPath, model).toList.map(n => JenaMapper.jenaNode2RDFNode(n)))
+    } yield nodes.toSet
   }
 
-  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Set[RDFNode] = {
+  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Either[String, Set[RDFNode]] = {
     val jenaNode: JenaRDFNode = JenaMapper.rdfNode2JenaNode(obj, model, base)
-    val jenaPath: Path = JenaMapper.path2JenaPath(path, model, base)
-    val nodes = EitherUtils.sequence(JenaUtils.subjectsFromPath(jenaNode, jenaPath, model).map(n => JenaMapper.jenaNode2RDFNode(n)).toList)
-    nodes.map(_.toSet).getOrElse(Set())
+    for {
+    jenaPath <- JenaMapper.path2JenaPath(path, model, base)
+    nodes <- sequence(JenaUtils.subjectsFromPath(jenaNode, jenaPath, model).toList.map(n => JenaMapper.jenaNode2RDFNode(n)))
+    } yield nodes.toSet
   }
 
-  private def toRDFTriples(ls: Set[Statement]): Set[RDFTriple] = {
-    ls.map(st => statement2tripleUnsafe(st))
+  private def toRDFTriples(ls: Set[Statement]): Either[String, Set[RDFTriple]] = {
+    EitherUtils.sequence(ls.toList.map(st => statement2triple(st))).map(_.toSet)
   }
 
-  override def triplesWithPredicate(node: IRI): Set[RDFTriple] = {
-    val pred = rdfNode2Property(node, model, base)
-    val statements: Set[Statement] = triplesPredicate(pred, model)
-    toRDFTriples(statements)
-  }
+  override def triplesWithPredicate(node: IRI): Either[String, Set[RDFTriple]] =
+  for {
+    pred <- rdfNode2Property(node, model, base)
+    ss <- triplesPredicate(pred, model)
+    ts <- toRDFTriples(ss)
+  } yield ts
 
-  override def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
-    val obj = rdfNode2Resource(node, model,base)
-    val empty: Set[RDFTriple] = Set()
-    obj.fold(empty) { o => {
-      val statements: Set[Statement] = triplesObject(o, model)
-      toRDFTriples(statements)
-     }
-    }
-  }
+  override def triplesWithObject(node: RDFNode): Either[String, Set[RDFTriple]] = for {
+    r <- rdfNode2Resource(node, model,base)
+    ss <- triplesObject(r, model)
+    ts <- toRDFTriples(ss)
+  } yield ts
 
-  override def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = {
-    val pred = rdfNode2Property(p, model, base)
-    val maybeObj = rdfNode2Resource(o, model, base)
-    val empty: Set[RDFTriple] = Set()
-    maybeObj.fold(empty) { obj =>
-      val statements: Set[Statement] = triplesPredicateObject(pred, obj, model)
-      toRDFTriples(statements)
-    }
-  }
+  override def triplesWithPredicateObject(p: IRI, o: RDFNode): Either[String, Set[RDFTriple]] = for {
+    pred <- rdfNode2Property(p, model, base)
+    obj <- rdfNode2Resource(o, model, base)
+    ss <- triplesPredicateObject(pred, obj, model)
+    ts <- toRDFTriples(ss)
+  } yield ts
 
   private def model2triples(model: Model): Set[RDFTriple] = {
     model.listStatements().asScala.map(st => statement2tripleUnsafe(st)).toSet
   }
 
-/*  private def statement2triple(st: Statement): Either[String,RDFTriple] = for {
+  private def statement2triple(st: Statement): Either[String,RDFTriple] = for {
    subj <-JenaMapper.jenaNode2RDFNode(st.getSubject)
    obj <- JenaMapper.jenaNode2RDFNode(st.getObject)
-   } yield RDFTriple(subj,property2iri(st.getPredicate),obj) */
+  } yield RDFTriple(subj,property2iri(st.getPredicate),obj)
 
   private def statement2tripleUnsafe(st: Statement): RDFTriple = {
     val subj = JenaMapper.jenaNode2RDFNodeUnsafe(st.getSubject)
@@ -368,10 +357,10 @@ case class RDFAsJenaModel(model: Model,
 
   private lazy val owlImports = IRI("http://www.w3.org/2002/07/owl#imports")
 
-  private def getImports: Either[String, List[IRI]] =
-    EitherUtils.sequence(
-      triplesWithPredicate(owlImports).toList.map(_.obj.toIRI)
-    )
+  private def getImports: Either[String, List[IRI]] = for {
+   ts <- triplesWithPredicate(owlImports)
+   os <- sequence(ts.map(_.obj.toIRI).toList)
+  } yield os
 
   private def extendImports(rdf: Rdf,
                             imports: List[IRI],

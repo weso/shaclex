@@ -100,12 +100,12 @@ case class Endpoint(endpoint: String)
     model2triples(model)
   }
 
-  def triplesWithSubject(node: RDFNode): Set[RDFTriple] = node match {
-    case subj: IRI => {
+  def triplesWithSubject(node: RDFNode): Either[String,Set[RDFTriple]] = node match {
+    case subj: IRI => Try {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(subj)).execConstruct()
       model2triples(model)
-    }
-    case _ => throw new Exception("triplesWithSubject: node " + node + " must be a IRI")
+    }.fold(e => Left(e.getMessage), Right(_))
+    case _ => Left("triplesWithSubject: node " + node + " must be a IRI")
   }
 
   def triplesWithPredicate(p: IRI): Set[RDFTriple] = {

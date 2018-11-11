@@ -28,8 +28,8 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-    None
-    // Some("1literalPattern_with_REGEXP_escapes_bare_pass_escapes")
+    // None
+    Some("1dot")
 
   val counter = Counter()
   val conf: Config = ConfigFactory.load()

@@ -1,8 +1,6 @@
 package es.weso.rdf.operations
 import es.weso.rdf.nodes._
 import es.weso.rdf._
-import cats._
-import cats.data._
 import cats.implicits._
 import es.weso.rdf.triples.RDFTriple
 
@@ -15,31 +13,38 @@ object Graph {
     * @param rdf RDFReader
     * @return list of visited nodes
     */
-  def traverse(node: RDFNode, rdf: RDFReader): List[RDFNode] = {
-    def outgoing(node: RDFNode): List[RDFNode] =
-      rdf.triplesWithSubject(node).map(_.obj).toList
+  def traverse(node: RDFNode, rdf: RDFReader): Either[String,List[RDFNode]] = {
+    def outgoing(node: RDFNode): Either[String, List[RDFNode]] = for {
+     ts <- rdf.triplesWithSubject(node)
+    } yield ts.toList.map(_.obj)
 
     def outgoingNotVisited(node: RDFNode,
                            visited: List[RDFNode]
-                          ): List[RDFNode] =
-      outgoing(node).filter(x => x != node && !visited.contains(x))
+                          ): Either[String, List[RDFNode]] = for {
+      os <- outgoing(node)
+    } yield os.filter(x => x != node && !visited.contains(x))
 
-    @annotation.tailrec
+    // @annotation.tailrec
+    // TODO: Refactor to be tailrec again
     def loop(stack: List[RDFNode],
              visited: List[RDFNode]
-            ): List[RDFNode] = stack match {
-      case Nil => visited
-      case head :: tail => {
-        loop(outgoingNotVisited(head, visited) ++ tail, head :: visited)
-      }
+            ): Either[String,List[RDFNode]] = stack match {
+      case Nil => Right(visited)
+      case head :: tail => for {
+        onv <- outgoingNotVisited(head, visited)
+        rs <- loop(onv ++ tail, head :: visited)
+      } yield rs
     }
     loop(List(node),List())
   }
 
-  def traverseWithArcs(node: RDFNode, rdf: RDFReader): (List[RDFNode], List[RDFTriple]) = {
-    val nodes = traverse(node,rdf)
-    val triples = nodes.map(rdf.triplesWithSubject(_)).flatten
-    (nodes, triples)
-  }
+  // The following declarations avoid IntelliJ wrong positive
+  type ES[A] = Either[String,A]
+  def sequenceU[A](xs: List[Either[String,A]]): Either[String,List[A]] = xs.sequence[ES,A]
+
+  def traverseWithArcs(node: RDFNode, rdf: RDFReader): Either[String, (List[RDFNode], List[RDFTriple])] = for {
+    nodes <- traverse(node,rdf)
+    triples <- sequenceU(nodes.map(rdf.triplesWithSubject(_))).map(_.flatten)
+  } yield (nodes, triples)
 
 }

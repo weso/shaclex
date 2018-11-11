@@ -8,7 +8,6 @@
 <> a mf:Manifest ;
     rdfs:comment "ShEx negative syntax tests" ;
     mf:entries (
-    <#directShapeExpression>
     <#1decimalMininclusiveroman-numeral>
     <#1dotAnnot_AIRIREF>
     <#1dotUnlabeledCode1>
@@ -109,12 +108,6 @@
     <#1val1literalStemMinusiri3>
     <#1val1literalStemMinuslanguage3>
   ) .
-
-<#directShapeExpression> a sht:NegativeSyntax ;
-  mf:name "directShapeExpression" ;
-  mf:status mf:proposed ;
-  sx:shex <directShapeExpression.shex> ;
-  .
 
 <#1decimalMininclusiveroman-numeral> a sht:NegativeSyntax ;
   mf:name "1decimalMininclusiveroman-numeral" ;

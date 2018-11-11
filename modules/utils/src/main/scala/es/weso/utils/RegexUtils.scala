@@ -2,10 +2,12 @@ package es.weso.utils
 import com.sun.org.apache.xerces.internal.impl.xpath.regex._
 
 case class RegEx(pattern: String, maybeFlags: Option[String]) {
-  val cleanPattern = pattern // cleanBackslashes(pattern)
+  val cleanPattern = cleanBackslashes(pattern)
 
   def cleanBackslashes(str: String): String = {
-    str.replaceAllLiterally("\\\\", "\\")
+    val s = str.replaceAllLiterally("\\\\d", "\\d")
+    println(s"Clean pattern str: $str=$s")
+    s
   }
   def matches(str: String): Either[String, Boolean] = {
     // println(s"Pattern: $pattern\ncleanPattern: $cleanPattern")

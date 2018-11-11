@@ -14,7 +14,7 @@ class ShExJsonTest extends FunSpec with JsonTest with Matchers with EitherValues
   val conf: Config = ConfigFactory.load()
   val schemasFolder = conf.getString("schemasFolder")
 
-  val ignoreFiles = List("coverage")
+  val ignoreFiles = List("coverage", "representationTests")
 
   def getJsonFiles(schemasDir: String): List[File] = {
     getFilesFromFolderWithExt(schemasDir, "json", ignoreFiles)

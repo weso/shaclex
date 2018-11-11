@@ -25,6 +25,8 @@ import org.apache.jena.sparql.path.Path
 import org.apache.jena.util.{FileUtils => FileJenaUtils}
 
 import scala.annotation.tailrec
+import scala.util.Try
+import cats.syntax.either._
 
 object JenaUtils {
 
@@ -200,7 +202,7 @@ object JenaUtils {
   /**
    * Given a class `cls`, obtains all nodes such as `node rdf:type/rdfs:subClassOf* cls`
    */
-  def getSHACLInstances(cls: RDFNode, model: Model): Seq[RDFNode] = {
+  def getSHACLInstances(cls: RDFNode, model: Model): Either[String, Seq[RDFNode]] = for {
     /*
     val pss: ParameterizedSparqlString = new ParameterizedSparqlString()
     pss.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
@@ -209,9 +211,9 @@ object JenaUtils {
     pss.setParam("c", cls)
     val result = QueryExecutionFactory.create(pss.asQuery, model).execSelect
     result.asScala.toSeq.map(qs => qs.get("n")) */
-    (getDirectInstances(cls,model) ++
-     getAllSubClasses(cls,model).map(c => getDirectInstances(c,model)).flatten).toSeq
-  }
+    is <- getDirectInstances(cls,model)
+    subClss <- EitherUtils.sequence(getAllSubClasses(cls,model).toList.map(c => getDirectInstances(c,model))).map(_.flatten.toSeq)
+  } yield subClss
 
   /**
    * Checks is a `node rdf:type/rdfs:subClassOf* cls`
@@ -235,11 +237,15 @@ object JenaUtils {
     } else Set()
   }
 
-  def getDirectInstances(n: RDFNode, model: Model): Set[RDFNode] = {
+  def getDirectInstances(n: RDFNode, model: Model): Either[String, Set[Resource]] = Try {
       val rdfType = model.getProperty(rdfTypeUrl)
       val selector = new SimpleSelector(any, rdfType, n)
-      model.listStatements(selector).asScala.map(_.getSubject).toSet
-  }
+      val s: Set[Resource] = model.listStatements(selector).asScala.map(_.getSubject).toSet
+      s
+  }.fold(
+    e => Left(s"getDirectInstances: ${e.getMessage}"),
+    (s: Set[Resource]) => s.asRight[String]
+  )
 
   def getSuperClasses(c: RDFNode, model: Model): Set[RDFNode] = {
     if (c.isResource) {

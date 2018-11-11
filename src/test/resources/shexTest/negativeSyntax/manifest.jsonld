@@ -12,13 +12,6 @@
       "rdfs:comment": "ShEx negative syntax tests",
       "entries": [
         {
-          "@id": "#directShapeExpression",
-          "@type": "sht:NegativeSyntax",
-          "name": "directShapeExpression",
-          "status": "mf:proposed",
-          "shex": "directShapeExpression.shex"
-        },
-        {
           "@id": "#1decimalMininclusiveroman-numeral",
           "@type": "sht:NegativeSyntax",
           "name": "1decimalMininclusiveroman-numeral",

@@ -5,8 +5,7 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
 import io.circe.Json
-
-import scala.util.Either
+import cats.implicits._
 
 /**
  * RDFReader can get read RDF data from several sources
@@ -15,6 +14,7 @@ import scala.util.Either
 trait RDFReader {
 
   type Rdf <: RDFReader
+  type ES[A] = Either[String,A]  // This is only needed to keep IntelliJ happy
 
   def availableParseFormats: List[String]
 
@@ -73,20 +73,21 @@ trait RDFReader {
   /**
    * Set of RDFTriples that contain a node as subject
    * @param n node
+   * @return A set of triples or a String with an error message
    */
-  def triplesWithSubject(n: RDFNode): Set[RDFTriple]
+  def triplesWithSubject(n: RDFNode): Either[String, Set[RDFTriple]]
 
   /**
    * Set of RDFTriples that relate two nodes by a predicate
    * @param p predicate
    */
-  def triplesWithPredicate(p: IRI): Set[RDFTriple]
+  def triplesWithPredicate(p: IRI): Either[String, Set[RDFTriple]]
 
   /**
    * Set of RDFTriples that contain a node as object
    * @param n node
    */
-  def triplesWithObject(n: RDFNode): Set[RDFTriple]
+  def triplesWithObject(n: RDFNode): Either[String, Set[RDFTriple]]
 
 
   /**
@@ -94,28 +95,28 @@ trait RDFReader {
    * @param p predicate
    * @param o object
    */
-  def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple]
+  def triplesWithPredicateObject(p: IRI, o: RDFNode): Either[String, Set[RDFTriple]]
 
   /**
    * Set of RDFTriples that relate two nodes by a SHACL path
    * @param p path
    */
-  def nodesWithPath(p: SHACLPath): Set[(RDFNode, RDFNode)]
+  def nodesWithPath(p: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]]
 
   /**
    * Set of RDFTriples that relate a node with some object by a path
    * @param p path
    * @param o object
    */
-  def subjectsWithPath(p: SHACLPath, o: RDFNode): Set[RDFNode]
+  def subjectsWithPath(p: SHACLPath, o: RDFNode): Either[String, Set[RDFNode]]
 
   /**
    * return the values associated with a node by a path
    * The path is defined as in SHACL paths which are a simplified version of SPARQL paths
    */
-  def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode]
+  def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String, Set[RDFNode]]
 
-  def triplesWithType(expectedType: IRI): Set[RDFTriple] = {
+  def triplesWithType(expectedType: IRI): Either[String, Set[RDFTriple]] = {
     triplesWithPredicateObject(rdf_type, expectedType)
   }
 
@@ -123,14 +124,14 @@ trait RDFReader {
    * Set of RDFTriples that contain a node as subject and a given Predicate
    * @param s
    */
-  def triplesWithSubjectPredicate(s: RDFNode, p: IRI): Set[RDFTriple] = {
+  def triplesWithSubjectPredicate(s: RDFNode, p: IRI): Either[String, Set[RDFTriple]] = for {
     // This is the default implementation which is not optimized
     // Implementations of RDFReader could override this implementation by a more efficient one
-    triplesWithSubject(s).filter(t => t.hasPredicate(p))
-  }
+    ts <- triplesWithSubject(s)
+  } yield ts.filter(_.hasPredicate(p))
 
-  def hasPredicateWithSubject(n: RDFNode, p: IRI): Boolean = {
-    triplesWithSubjectPredicate(n, p).size > 0
+  def hasPredicateWithSubject(n: RDFNode, p: IRI): Either[String, Boolean] = {
+    triplesWithSubjectPredicate(n, p)map(_.size > 0)
   }
 
   /**
@@ -138,8 +139,10 @@ trait RDFReader {
     * @param o object
     * @param ps list of predicates
     */
-  def triplesWithPredicatesObject(ps: List[IRI], o: RDFNode): Set[RDFTriple] = {
-    ps.map(p => triplesWithPredicateObject(p,o)).flatten.toSet
+  def triplesWithPredicatesObject(ps: List[IRI], o: RDFNode): Either[String, Set[RDFTriple]] = {
+    ps.map(triplesWithPredicateObject(_,o)).
+    sequence[ES,Set[RDFTriple]].
+    map(_.flatten.toSet)
   }
 
   /**
@@ -147,8 +150,8 @@ trait RDFReader {
     * @param n node
     * @param ps list of predicates
     */
-  def triplesWithSubjectPredicates(n: RDFNode, ps: List[IRI]): Set[RDFTriple] = {
-    ps.map(p => triplesWithSubjectPredicate(n,p)).flatten.toSet
+  def triplesWithSubjectPredicates(n: RDFNode, ps: List[IRI]): Either[String, Set[RDFTriple]] = {
+    ps.map(p => triplesWithSubjectPredicate(n,p)).sequence[ES,Set[RDFTriple]].map(_.flatten.toSet)
   }
 
   /**
@@ -159,16 +162,16 @@ trait RDFReader {
   /**
    * `true` if `node rdf:type/rdfs:subClassOf* cls`
    */
-  def hasSHACLClass(node: RDFNode, cls: RDFNode): Boolean
+  def hasSHACLClass(node: RDFNode, cls: RDFNode): Either[String, Boolean]
 
   /**
    * return the SHACL instances of a node `cls`
    * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
    */
-  def getSHACLInstances(cls: RDFNode): Seq[RDFNode]
+  def getSHACLInstances(cls: RDFNode): Either[String, Seq[RDFNode]]
 
-  def getTypes(node: RDFNode): Set[RDFNode] = {
-    triplesWithSubjectPredicate(node, rdf_type).map(_.obj)
+  def getTypes(node: RDFNode): Either[String,Set[RDFNode]] = {
+    triplesWithSubjectPredicate(node, rdf_type).map(_.map(_.obj))
   }
 
   /**

@@ -68,7 +68,7 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
   }
 
   // TODO: The following test fails...does the spec allows \d in regexes?
-  ignore("Regular expressions") {
+  describe("Regular expressions") {
     val shexStr =
       """
         |prefix : <http://example.org/>
