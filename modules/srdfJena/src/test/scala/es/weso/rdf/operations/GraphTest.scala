@@ -1,12 +1,12 @@
 package es.weso.rdf.operations
 
-import cats.implicits._
+import cats.syntax.show._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
 import es.weso.rdf.triples.RDFTriple
 import org.scalatest._
 
-class GraphTest extends FunSpec with Matchers with TryValues {
+class GraphTest extends FunSpec with Matchers with EitherValues {
 
   def ex: IRI = IRI("http://example.org/")
   def iri(s: String): IRI = ex + s
@@ -56,6 +56,7 @@ class GraphTest extends FunSpec with Matchers with TryValues {
       """.stripMargin,
       List(iri("x"), iri("y"), iri("z"), iri("t"))
     )
+
     shouldTraverse(
       iri("x"),
       """|prefix : <http://example.org/>
@@ -68,14 +69,15 @@ class GraphTest extends FunSpec with Matchers with TryValues {
     )
 
     def shouldTraverse(node: RDFNode, str: String, expected: List[RDFNode]): Unit = {
-      it(s"shouldTraverse(${node.show} in graph ${str}) and return $expected") {
+      it(s"shouldTraverse(${node.show} in graph\n${str}\n and return\n$expected") {
         val r = for {
           rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
-        } yield rdf.normalizeBNodes
-       r.fold(e => fail(s"Error: $e"), rdf => {
-         val ls = Graph.traverse(node,rdf)
-         ls should contain theSameElementsAs(expected)
-       })
+          rdfn = rdf.normalizeBNodes
+          traversed <- Graph.traverse(node, rdfn)
+        } yield traversed
+        r.fold(e => fail(s"Error: $e"), t => {
+          t should contain theSameElementsAs (expected)
+        })
       }
     }
   }
@@ -103,7 +105,7 @@ class GraphTest extends FunSpec with Matchers with TryValues {
         } yield rdf.normalizeBNodes
         r.fold(e => fail(s"Error: $e"), rdf => {
           val pair = Graph.traverseWithArcs(node,rdf)
-          val (ls,triples) = pair
+          val (ls,triples) = pair.right.value
           val (lsExpected, triplesExpected) = expected
           ls should contain theSameElementsAs(lsExpected)
           triples should contain theSameElementsAs(triplesExpected)

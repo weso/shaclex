@@ -1,28 +1,10 @@
 package es.weso.rdf.jena
 
-import java.io.{ByteArrayInputStream, InputStream, StringReader}
-import java.nio.charset.StandardCharsets
-
-import com.typesafe.config.{Config, ConfigFactory}
-import java.nio.file.Paths
-
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.Matchers
 import org.scalatest.FunSpec
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.nodes._
-import es.weso.rdf.jena._
-import org.apache.jena.rdf.model.ModelFactory
 import es.weso.rdf._
-import es.weso.rdf.PREFIXES._
-import org.apache.jena.graph.Graph
-import org.apache.jena.riot._
-import org.apache.jena.riot.RDFLanguages.shortnameToLang
-import org.apache.jena.riot.system.{IRIResolver, RiotLib, StreamRDFLib}
-import org.apache.jena.sparql.core.{DatasetGraph, DatasetGraphFactory}
-import org.apache.jena.sparql.graph.GraphFactory
-
-import util._
 
 class RDFAsJenaModelTest
   extends FunSpec

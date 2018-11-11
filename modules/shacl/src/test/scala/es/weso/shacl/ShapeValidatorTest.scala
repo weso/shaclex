@@ -3,10 +3,7 @@ package es.weso.shacl
 import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf._
-
 import util._
-import es.weso.shacl.showShacl._
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 

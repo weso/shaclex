@@ -17,13 +17,14 @@ class RDFParserBNodesTest extends FunSpec with Matchers with RDFParser with Eith
         } yield (rdf)
         eitherValue.fold(e => fail(s"Parse error: $e"), value => {
         val rdf = value
-        val os = rdf.triplesWithSubject(BNode("x")).map(_.obj).headOption.fold(fail(s"No triples with subject _:x"))(
-          node => node should be(BNode("y"))
-        )
-        info(s"${rdf.triplesWithSubject(BNode("x"))}")
-        info(s"\nStatements with :p:\n ${rdf.triplesWithPredicate(IRI("http://example.org/p"))}")
-        info(s"\nParsed:\n${rdf.serialize("N-TRIPLES").getOrElse("")}")
-        })
+        rdf.triplesWithSubject(BNode("x")).right.value.map(_.obj).headOption.fold(
+          fail(s"No triples with subject _:x"))(
+          node => {
+            node should be(BNode("y"))
+            info(s"${rdf.triplesWithSubject(BNode("x"))}")
+            info(s"\nStatements with :p:\n ${rdf.triplesWithPredicate(IRI("http://example.org/p"))}")
+            info(s"\nParsed:\n${rdf.serialize("N-TRIPLES").getOrElse("")}")
+          })})
       }
   }
 }

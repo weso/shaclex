@@ -1,7 +1,6 @@
 package es.weso.rdf.jena
 
-import org.scalatest.Matchers
-import org.scalatest.FunSpec
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import es.weso.rdf.triples.RDFTriple
 import es.weso.rdf.nodes._
 import org.apache.jena.rdf.model.ModelFactory
@@ -9,9 +8,7 @@ import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
 
 class RDFJenaSpec
-  extends FunSpec
-  with JenaBased
-  with Matchers {
+  extends FunSpec with JenaBased with Matchers with EitherValues {
   describe("Adding triples") {
     it("should be able to add a single triple with IRIs") {
       val emptyModel = ModelFactory.createDefaultModel
@@ -69,7 +66,7 @@ class RDFJenaSpec
                    |""".stripMargin
       val rdf = RDFAsJenaModel.empty.fromString(str, "TURTLE").right.get
       val typeC = IRI("http://example.org#C")
-      val triples = rdf.triplesWithType(typeC)
+      val triples = rdf.triplesWithType(typeC).right.value
       val a = IRI("http://example.org#a")
       val b = IRI("http://example.org#b")
       val t1 = RDFTriple(a, rdf_type, typeC)
@@ -82,11 +79,11 @@ class RDFJenaSpec
                    |:a a :C ; :p 1 .
                    |:b a :C, :D .
                    |""".stripMargin
-      val rdf = RDFAsJenaModel.empty.fromString(str, "TURTLE").right.get
+      val rdf = RDFAsJenaModel.empty.fromString(str, "TURTLE").right.value
       val a = IRI("http://example.org#a")
       val p = IRI("http://example.org#p")
       val typeC = IRI("http://example.org#C")
-      val triples = rdf.triplesWithSubject(a)
+      val triples = rdf.triplesWithSubject(a).right.value
 
       val t1 = RDFTriple(a, rdf_type, typeC)
       val t2 = RDFTriple(a, p, IntegerLiteral(1,"1"))
@@ -102,7 +99,7 @@ class RDFJenaSpec
       val a = IRI("http://example.org#a")
       val date = IRI("http://example.org#date")
       val value = DatatypeLiteral("25/10/2015", IRI("http://www.w3.org/2001/XMLSchema#date"))
-      val triples = rdf.triplesWithSubject(a)
+      val triples = rdf.triplesWithSubject(a).right.value
       val t1 = RDFTriple(a, date, value)
       triples should be(Set(t1))
     }
@@ -116,7 +113,7 @@ class RDFJenaSpec
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
       val value = IntegerLiteral(15,"15")
-      val triples = rdf.triplesWithSubject(a)
+      val triples = rdf.triplesWithSubject(a).right.value
       val t1 = RDFTriple(a, age, value)
       triples should be(Set(t1))
     }
@@ -130,7 +127,7 @@ class RDFJenaSpec
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
       val value = DatatypeLiteral("15", IRI("http://example.org#xxx"))
-      val triples = rdf.triplesWithSubject(a)
+      val triples = rdf.triplesWithSubject(a).right.value
       val t1 = RDFTriple(a, age, value)
       triples should be(Set(t1))
     }
@@ -144,7 +141,7 @@ class RDFJenaSpec
       val a = IRI("http://example.org#a")
       val age = IRI("http://example.org#age")
       val value = LangLiteral("hi", Lang("en"))
-      val triples = rdf.triplesWithSubject(a)
+      val triples = rdf.triplesWithSubject(a).right.value
       val t1 = RDFTriple(a, age, value)
       triples should be(Set(t1))
     }
@@ -176,25 +173,25 @@ class RDFJenaSpec
       val _Dog = e + "Dog"
       val _Any = e + "Any"
 
-      model.hasSHACLClass(person1, _Person) should be(true)
-      model.hasSHACLClass(person1, _Teacher) should be(false)
-      model.hasSHACLClass(person1, _UniversityTeacher) should be(false)
-      model.hasSHACLClass(person1, _Dog) should be(false)
-      model.hasSHACLClass(teacher1, _Person) should be(true)
-      model.hasSHACLClass(teacher1, _Teacher) should be(true)
-      model.hasSHACLClass(teacher1, _UniversityTeacher) should be(false)
-      model.hasSHACLClass(teacher1, _Dog) should be(false)
-      model.hasSHACLClass(teacher2, _Person) should be(true)
-      model.hasSHACLClass(teacher2, _Teacher) should be(true)
-      model.hasSHACLClass(teacher2, _UniversityTeacher) should be(true)
-      model.hasSHACLClass(teacher2, _Dog) should be(false)
-      model.hasSHACLClass(dog1, _Person) should be(false)
-      model.hasSHACLClass(dog1, _Teacher) should be(false)
-      model.hasSHACLClass(dog1, _UniversityTeacher) should be(false)
-      model.hasSHACLClass(dog1, _Dog) should be(true)
-      model.hasSHACLClass(any, _Dog) should be(false)
-      model.hasSHACLClass(any, _Any) should be(false)
-      model.hasSHACLClass(dog1, _Any) should be(false)
+      model.hasSHACLClass(person1, _Person).right.value should be(true)
+      model.hasSHACLClass(person1, _Teacher).right.value should be(false)
+      model.hasSHACLClass(person1, _UniversityTeacher).right.value should be(false)
+      model.hasSHACLClass(person1, _Dog).right.value should be(false)
+      model.hasSHACLClass(teacher1, _Person).right.value should be(true)
+      model.hasSHACLClass(teacher1, _Teacher).right.value should be(true)
+      model.hasSHACLClass(teacher1, _UniversityTeacher).right.value should be(false)
+      model.hasSHACLClass(teacher1, _Dog).right.value should be(false)
+      model.hasSHACLClass(teacher2, _Person).right.value should be(true)
+      model.hasSHACLClass(teacher2, _Teacher).right.value should be(true)
+      model.hasSHACLClass(teacher2, _UniversityTeacher).right.value should be(true)
+      model.hasSHACLClass(teacher2, _Dog).right.value should be(false)
+      model.hasSHACLClass(dog1, _Person).right.value should be(false)
+      model.hasSHACLClass(dog1, _Teacher).right.value should be(false)
+      model.hasSHACLClass(dog1, _UniversityTeacher).right.value should be(false)
+      model.hasSHACLClass(dog1, _Dog).right.value should be(true)
+      model.hasSHACLClass(any, _Dog).right.value should be(false)
+      model.hasSHACLClass(any, _Any).right.value should be(false)
+      model.hasSHACLClass(dog1, _Any).right.value should be(false)
     }
   }
 
@@ -222,11 +219,11 @@ class RDFJenaSpec
       val _Dog = e + "Dog"
       val _Any = e + "Any"
 
-      model.getSHACLInstances(_Person) should contain only (person1, teacher1, teacher2)
-      model.getSHACLInstances(_Teacher) should contain only (teacher1, teacher2)
-      model.getSHACLInstances(_UniversityTeacher) should contain only (teacher2)
-      model.getSHACLInstances(_Dog) should contain only (dog1)
-      model.getSHACLInstances(_Any) shouldBe empty
+      model.getSHACLInstances(_Person).right.value should contain only (person1, teacher1, teacher2)
+      model.getSHACLInstances(_Teacher).right.value should contain only (teacher1, teacher2)
+      model.getSHACLInstances(_UniversityTeacher).right.value should contain only (teacher2)
+      model.getSHACLInstances(_Dog).right.value should contain only (dog1)
+      model.getSHACLInstances(_Any).right.value shouldBe empty
     }
   }
 

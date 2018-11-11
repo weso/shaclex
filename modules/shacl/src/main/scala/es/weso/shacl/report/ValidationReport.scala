@@ -4,7 +4,7 @@ import es.weso.rdf.RDFBuilder
 import es.weso.rdf.saver.RDFSaver
 
 case class ValidationReport(conforms: Boolean,
-                            results: Seq[ValidationResult],
+                            results: Seq[AbstractResult],
                             shapesGraphWellFormed: Boolean
                            ) extends RDFSaver {
 
@@ -15,7 +15,7 @@ case class ValidationReport(conforms: Boolean,
 }
 
 object ValidationReport {
-  def fromError(e: ValidationResult): ValidationReport = {
+  def fromError(e: AbstractResult): ValidationReport = {
     ValidationReport(conforms = false, results = Seq(e), true)
   }
 }

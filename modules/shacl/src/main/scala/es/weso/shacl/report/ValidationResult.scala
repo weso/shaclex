@@ -28,6 +28,7 @@ case class ValidationResult(focusNode: RDFNode,
   override def toString = s"Violation error on $focusNode: ${message.mkString(",")}"
 }
 
+case class MsgError(msg: String) extends AbstractResult
 
 object ValidationResult {
 

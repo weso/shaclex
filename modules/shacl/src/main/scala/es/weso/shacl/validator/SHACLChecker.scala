@@ -5,14 +5,14 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.checking.CheckerCats
-import es.weso.shacl.report.ValidationResult
+import es.weso.shacl.report.AbstractResult
 // import es.weso.utils.MyLogging
 
 object SHACLChecker extends CheckerCats with LazyLogging {
 
   type Config = RDFReader
   type Env = ShapeTyping
-  type Err = ValidationResult
+  type Err = AbstractResult
   type Log = List[Evidence]
   implicit val logMonoid: Monoid[Log] = new Monoid[Log] {
     def combine(l1: Log, l2: Log): Log = l1 ++ l2

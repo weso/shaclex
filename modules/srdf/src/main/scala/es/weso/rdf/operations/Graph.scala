@@ -14,6 +14,8 @@ object Graph {
     * @return list of visited nodes
     */
   def traverse(node: RDFNode, rdf: RDFReader): Either[String,List[RDFNode]] = {
+    // println(s"Traversing from $node\nRDF:\n${rdf.serialize("TURTLE").getOrElse("")}")
+
     def outgoing(node: RDFNode): Either[String, List[RDFNode]] = for {
      ts <- rdf.triplesWithSubject(node)
     } yield ts.toList.map(_.obj)

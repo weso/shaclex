@@ -1,7 +1,7 @@
 package es.weso.shacl
 import cats._
 import es.weso.rdf.nodes._
-import es.weso.shacl.report.ValidationResult
+import es.weso.shacl.report.{AbstractResult, MsgError, ValidationResult}
 
 object showShacl {
 
@@ -11,10 +11,12 @@ object showShacl {
     }
   }
 
-  implicit def showError = new Show[ValidationResult] {
-    def show(ve: ValidationResult): String = {
-      s"Violation Error(${ve.sourceConstraintComponent}). Node(${ve.focusNode}) ${ve.message.mkString(",")}"
-    }
+  implicit def showError = new Show[AbstractResult] {
+    def show(ve: AbstractResult): String =
+     ve match {
+      case vr: ValidationResult => s"Violation Error(${vr.sourceConstraintComponent}). Node(${vr.focusNode}) ${vr.message.mkString(",")}"
+      case m: MsgError => s"Error: ${m.msg}"
+     }
   }
 
   implicit def showRDFNode = new Show[RDFNode] {

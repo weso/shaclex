@@ -401,14 +401,6 @@ trait RDFParser {
     }
   }
 
-  // TODO: Move the following methods to some utils place
-  /* def subjectsWithType(t: RDFNode, rdf: RDFReader): Set[RDFNode] = {
-    subjectsFromTriples(rdf.triplesWithPredicateObject(rdf_type, t))
-  } */
-
-  /* def subjectsWithProperty(pred: IRI, rdf: RDFReader): Set[RDFNode] = {
-    subjectsFromTriples(rdf.triplesWithPredicate(pred))
-  } */
 
   def subjectsFromTriples(triples: Set[RDFTriple]): Set[RDFNode] = {
     triples.map { case RDFTriple(s, _, _) => s }

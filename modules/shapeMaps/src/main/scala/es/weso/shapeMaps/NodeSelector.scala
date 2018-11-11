@@ -22,10 +22,10 @@ case class TriplePattern(
   objectPattern: Pattern) extends NodeSelector {
   override def select(rdf: RDFReader): Either[String,Set[RDFNode]] =
     (subjectPattern, path, objectPattern) match {
-      case (Focus,p,WildCard) => Right(rdf.nodesWithPath(p).map(_._1))
-      case (Focus,p,NodePattern(obj)) => Right(rdf.subjectsWithPath(p,obj))
-      case (WildCard,p,Focus) => Right(rdf.nodesWithPath(p).map(_._2))
-      case (NodePattern(subj),p,Focus) =>  Right(rdf.objectsWithPath(subj, p))
+      case (Focus,p,WildCard) => rdf.nodesWithPath(p).map(_.map(_._1))
+      case (Focus,p,NodePattern(obj)) => rdf.subjectsWithPath(p,obj)
+      case (WildCard,p,Focus) => rdf.nodesWithPath(p).map(_.map(_._2))
+      case (NodePattern(subj),p,Focus) =>  rdf.objectsWithPath(subj, p)
       case _ => Left(s"Strange triple pattern in node selector: $this")
     }
 }

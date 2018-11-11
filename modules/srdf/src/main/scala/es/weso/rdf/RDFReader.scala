@@ -213,5 +213,14 @@ trait RDFReader {
   def asRDFBuilder: Either[String, RDFBuilder]
 
   def rdfReaderName: String
+
+  def subjectsWithType(t: RDFNode): Either[String, Set[RDFNode]] = {
+    triplesWithPredicateObject(rdf_type, t).map(_.map(_.subj))
+  }
+
+  def subjectsWithProperty(pred: IRI): Either[String, Set[RDFNode]] = {
+    triplesWithPredicate(pred).map(_.map(_.subj))
+  }
+
 }
 

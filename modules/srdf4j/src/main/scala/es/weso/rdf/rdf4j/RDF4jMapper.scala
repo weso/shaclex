@@ -2,11 +2,10 @@ package es.weso.rdf.rdf4j
 
 import es.weso.rdf.nodes._
 import es.weso.rdf.triples._
-
 import scala.collection.JavaConverters._
 import org.eclipse.rdf4j.model.{BNode => BNode_RDF4j, IRI => IRI_RDF4j, Literal => Literal_RDF4j, _}
 import org.eclipse.rdf4j.model.impl.{SimpleValueFactory, BooleanLiteral => BooleanLiteral_RDF4j, DecimalLiteral => DecimalLiteral_RDF4j, IntegerLiteral => IntegerLiteral_RDF4j}
-import cats.implicits._
+import es.weso.utils.EitherUtils
 import org.eclipse.rdf4j.model.util.ModelBuilder
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema
 
@@ -101,8 +100,10 @@ object RDF4jMapper {
     model.filter(null, iri, obj).asScala.toSet
   }
 
+  type ES[A] = Either[String,A]
+
   private[rdf4j] def rdfTriples2Model(triples: Set[RDFTriple]): Either[String, Model] = for {
-    ss <- triples.map(rdfTriple2Statement(_)).toList.sequence
+    ss <- EitherUtils.sequence(triples.map(rdfTriple2Statement(_)).toList)
   } yield {
     val builder: ModelBuilder = new ModelBuilder
     ss.foreach(s => builder.add(s.getSubject, s.getPredicate, s.getObject))

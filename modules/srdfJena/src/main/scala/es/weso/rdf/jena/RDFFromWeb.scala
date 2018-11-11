@@ -44,7 +44,7 @@ case class RDFFromWeb() extends RDFReader {
     throw new Exception("Cannot obtain triples from RDFFromWeb ")
   }
 
-  override def triplesWithSubject(node: RDFNode): Set[RDFTriple] =
+  override def triplesWithSubject(node: RDFNode): Either[String, Set[RDFTriple]] =
    node match {
      case subj: IRI => {
       val derefModel = ModelFactory.createDefaultModel
@@ -52,59 +52,59 @@ case class RDFFromWeb() extends RDFReader {
       val model = QueryExecutionFactory.create(queryTriplesWithSubject(subj), derefModel).execConstruct()
       val triples = model2triples(model)
       log.debug("triples with subject " + subj + " =\n" + triples)
-      triples
+      Right(triples)
     }
-    case _ => throw new Exception("triplesWithSubject: node " + node + " must be a IRI")
+    case _ => Left("triplesWithSubject: node " + node + " must be a IRI")
   }
 
-  override def triplesWithPredicate(p: IRI): Set[RDFTriple] = {
+  override def triplesWithPredicate(p: IRI): Either[String,Set[RDFTriple]] = {
     val derefModel = ModelFactory.createDefaultModel
     RDFDataMgr.read(derefModel, p.str)
     val model = QueryExecutionFactory.create(queryTriplesWithPredicate(p), derefModel).execConstruct()
-    model2triples(model)
+    Right(model2triples(model))
   }
 
-  override def triplesWithObject(node: RDFNode): Set[RDFTriple] =
+  override def triplesWithObject(node: RDFNode): Either[String,Set[RDFTriple]] =
    node match {
     case obj: IRI => {
       val derefModel = ModelFactory.createDefaultModel
       RDFDataMgr.read(derefModel, obj.str)
       val model = QueryExecutionFactory.create(queryTriplesWithObject(obj), derefModel).execConstruct()
-      model2triples(model)
+      Right(model2triples(model))
     }
     case _ =>
-      throw new Exception("triplesWithObject: node " + node + " must be a IRI")
+      Left("triplesWithObject: node " + node + " must be a IRI")
   }
 
-  override def triplesWithPredicateObject(p: IRI, node: RDFNode): Set[RDFTriple] =
+  override def triplesWithPredicateObject(p: IRI, node: RDFNode): Either[String,Set[RDFTriple]] =
    node match {
      case obj: IRI => {
       val derefModel = ModelFactory.createDefaultModel
       RDFDataMgr.read(derefModel, obj.str)
       val model = QueryExecutionFactory.create(queryTriplesWithPredicateObject(p, obj), derefModel).execConstruct()
-      model2triples(model)
+      Right(model2triples(model))
     }
-     case _ => throw new Exception("triplesWithObject: node " + node + " must be a IRI")
+     case _ => Left("triplesWithObject: node " + node + " must be a IRI")
   }
 
-  override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    throw new Exception(s"Undefined getSHACLInstances at RDFFromWeb. Node $c")
+  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] = {
+    Left(s"Undefined getSHACLInstances at RDFFromWeb. Node $c")
   }
 
-  override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    throw new Exception(s"Undefined hasSHACL at RDFFromWeb. Node: $n Class: $c")
+  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String,Boolean] = {
+    Left(s"hasSHACLClass: Not implemented at RDFFromWeb. Node: $n Class: $c")
   }
 
-  override def nodesWithPath(p: SHACLPath): Set[(RDFNode, RDFNode)] = {
-    throw new Exception(s"Undefined nodesWithPath at RDFFromWeb. Path: $p")
+  override def nodesWithPath(p: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]] = {
+    Left(s"nodesWithPath: Undefined at RDFFromWeb. Path: $p")
   }
 
-  override def subjectsWithPath(p: SHACLPath, o: RDFNode): Set[RDFNode] = {
-    throw new Exception(s"Undefined subjectsWithPath at RDFFromWeb. Path: $p")
+  override def subjectsWithPath(p: SHACLPath, o: RDFNode): Either[String,Set[RDFNode]] = {
+    Left(s"Undefined subjectsWithPath at RDFFromWeb. Path: $p")
   }
 
-  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
-    throw new Exception(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String,Set[RDFNode]] = {
+    Left(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
   }
 
   override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =

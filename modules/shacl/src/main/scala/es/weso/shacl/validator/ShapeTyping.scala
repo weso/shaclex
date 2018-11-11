@@ -3,14 +3,14 @@ import cats._
 import cats.implicits._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shacl.Shape
-import es.weso.shacl.report.{ValidationReport, ValidationResult}
+import es.weso.shacl.report._
 import es.weso.typing._
 
-case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
+case class ShapeTyping(t: Typing[RDFNode, Shape, AbstractResult, String]) {
 
   def getNodes: Seq[RDFNode] = t.getKeys
 
-  def getMap : Map[RDFNode, Map[Shape, TypingResult[ValidationResult, String]]] =
+  def getMap : Map[RDFNode, Map[Shape, TypingResult[AbstractResult, String]]] =
     t.getMap
 
   def hasType(node: RDFNode, shape: Shape): Boolean =
@@ -22,7 +22,7 @@ case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
   def addEvidence(node: RDFNode, shape: Shape, msg: String): ShapeTyping =
     ShapeTyping(t.addEvidence(node, shape, msg))
 
-  def addNotEvidence(node: RDFNode, shape: Shape, e: ValidationResult): ShapeTyping =
+  def addNotEvidence(node: RDFNode, shape: Shape, e: AbstractResult): ShapeTyping =
     ShapeTyping(t.addNotEvidence(node,shape,e))
 
   def getFailedValues(node: RDFNode): Set[Shape] =
@@ -35,7 +35,7 @@ case class ShapeTyping(t: Typing[RDFNode, Shape, ValidationResult, String]) {
     ValidationReport(
       conforms = t.allOk,
       results = {
-        val rs: Seq[(RDFNode, Shape, TypingResult[ValidationResult, String])] =
+        val rs: Seq[(RDFNode, Shape, TypingResult[AbstractResult, String])] =
           t.getMap.toSeq.map {
             case (node,valueMap) => valueMap.toSeq.map {
               case (shape, result) => (node, shape, result)
@@ -69,7 +69,7 @@ object ShapeTyping {
       sb.toString
     }
 
-    private def showTypingResult(tr: TypingResult[ValidationResult, String]): String =
+    private def showTypingResult(tr: TypingResult[AbstractResult, String]): String =
       if (tr.isOK) "Valid"
       else "Not valid"
   }

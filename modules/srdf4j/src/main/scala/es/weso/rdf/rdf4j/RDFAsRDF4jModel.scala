@@ -18,6 +18,7 @@ import scala.collection.JavaConverters._
 import RDF4jMapper._
 import cats.implicits._
 import es.weso.utils.EitherUtils
+import cats.syntax.either._
 
 case class RDFAsRDF4jModel(model: Model,
                            sourceIRI: Option[IRI] = None)
@@ -88,67 +89,65 @@ case class RDFAsRDF4jModel(model: Model,
     model.asScala.toSet.map(statement2RDFTriple(_))
   }
 
-  override def triplesWithSubject(node: RDFNode): Set[RDFTriple] = {
-    val maybeResource = rdfNode2Resource(node).toOption
-    val empty: Set[RDFTriple] = Set()
-    maybeResource.fold(empty) {
-      case resource =>
-        val statements: Set[Statement] = triplesSubject(resource, model)
-        statements2RDFTriples(statements)
+  override def triplesWithSubject(node: RDFNode): Either[String,Set[RDFTriple]] =
+    for {
+    resource <- rdfNode2Resource(node)
+    } yield {
+     val statements: Set[Statement] = triplesSubject(resource, model)
+     statements2RDFTriples(statements)
     }
-  }
 
   /**
     * return the SHACL instances of a node `cls`
     * A node `node` is a shacl instance of `cls` if `node rdf:type/rdfs:subClassOf* cls`
     */
-  override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    RDF4jUtils.getSHACLInstances(c,model)
+  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] = {
+    Right(RDF4jUtils.getSHACLInstances(c,model))
   }
 
-  override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    RDF4jUtils.getSHACLInstances(c,model) contains(n)
+  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String,Boolean] = {
+    Right(RDF4jUtils.getSHACLInstances(c,model) contains(n))
   }
 
-  override def nodesWithPath(path: SHACLPath): Set[(RDFNode, RDFNode)] = {
+  override def nodesWithPath(path: SHACLPath): Either[String,Set[(RDFNode, RDFNode)]] = {
     /*
     val jenaPath: Path = JenaMapper.path2JenaPath(path, model)
     val pairs = JenaUtils.getNodesFromPath(jenaPath, model).
       map(p => (JenaMapper.jenaNode2RDFNode(p._1), JenaMapper.jenaNode2RDFNode(p._2)))
     pairs.toSet */
-    ???
+    Left(s"nodesWithPath: not implemented yet")
   }
 
-  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
-    RDF4jUtils.objectsWithPath(subj,path,model).toSet
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String,Set[RDFNode]] = {
+    Right(RDF4jUtils.objectsWithPath(subj,path,model).toSet)
   }
 
-  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Set[RDFNode] = {
-    RDF4jUtils.subjectsWithPath(obj,path,model).toSet
+  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Either[String,Set[RDFNode]] = {
+    Right(RDF4jUtils.subjectsWithPath(obj,path,model).toSet)
   }
 
-  override def triplesWithPredicate(iri: IRI): Set[RDFTriple] = {
+  override def triplesWithPredicate(iri: IRI): Either[String,Set[RDFTriple]] = {
     val pred = iri2Property(iri)
-    statements2RDFTriples(triplesPredicate(pred, model))
+    Right(statements2RDFTriples(triplesPredicate(pred, model)))
   }
 
-  override def triplesWithObject(node: RDFNode): Set[RDFTriple] = {
+  override def triplesWithObject(node: RDFNode): Either[String,Set[RDFTriple]] = {
     val obj = rdfNode2Resource(node).toOption
     // val empty: Set[RDFTriple] = Set()
-    obj.fold(emptySet) { o => {
+    Right(obj.fold(emptySet) { o => {
       statements2RDFTriples(triplesObject(o, model))
     }
-   }
+   })
   }
 
   private lazy val emptySet: Set[RDFTriple] = Set()
 
-  override def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = {
+  override def triplesWithPredicateObject(p: IRI, o: RDFNode): Either[String,Set[RDFTriple]] = {
     val prop = iri2Property(p)
     val maybeObj = rdfNode2Resource(o).toOption
-    maybeObj.fold(emptySet) { obj =>
+    Right(maybeObj.fold(emptySet) { obj =>
       statements2RDFTriples(triplesPredicateObject(prop,obj, model))
-    }
+    })
   }
 
   override def getPrefixMap: PrefixMap = {
@@ -166,7 +165,7 @@ case class RDFAsRDF4jModel(model: Model,
   }
 
   override def addTriples(triples: Set[RDFTriple]): Either[String,Rdf]  = for {
-    statements <- triples.map(rdfTriple2Statement(_)).toList.sequence
+    statements <- EitherUtils.sequence(triples.map(rdfTriple2Statement(_)).toList)
   } yield {
     // val xs: List[Statement] = statements
     model.addAll(statements.asJava)
@@ -256,9 +255,10 @@ case class RDFAsRDF4jModel(model: Model,
   private lazy val owlImports = IRI("http://www.w3.org/2002/07/owl#imports")
 
   private def getImports: Either[String, List[IRI]] =
-    EitherUtils.sequence(
-      triplesWithPredicate(owlImports).toList.map(_.obj).map(_.toIRI)
-    )
+    for {
+      ts <- triplesWithPredicate(owlImports)
+      is <- EitherUtils.sequence(ts.map(_.obj).map(_.toIRI).toList)
+    } yield is
 
   private def extendImports(rdf: Rdf,
                             imports: List[IRI],

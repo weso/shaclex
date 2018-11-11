@@ -202,8 +202,9 @@ object JenaUtils {
   /**
    * Given a class `cls`, obtains all nodes such as `node rdf:type/rdfs:subClassOf* cls`
    */
-  def getSHACLInstances(cls: RDFNode, model: Model): Either[String, Seq[RDFNode]] = for {
-    /*
+  def getSHACLInstances(cls: RDFNode, model: Model): Either[String, Seq[RDFNode]] = {
+    for {
+      /*
     val pss: ParameterizedSparqlString = new ParameterizedSparqlString()
     pss.setNsPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
     pss.setNsPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
@@ -211,9 +212,12 @@ object JenaUtils {
     pss.setParam("c", cls)
     val result = QueryExecutionFactory.create(pss.asQuery, model).execSelect
     result.asScala.toSeq.map(qs => qs.get("n")) */
-    is <- getDirectInstances(cls,model)
-    subClss <- EitherUtils.sequence(getAllSubClasses(cls,model).toList.map(c => getDirectInstances(c,model))).map(_.flatten.toSeq)
-  } yield subClss
+      is <- getDirectInstances(cls, model)
+      subClss <- EitherUtils
+        .sequence(getAllSubClasses(cls, model).toList.map(c => getDirectInstances(c, model)))
+        .map(_.flatten.toSeq)
+    } yield is.toSeq ++ subClss
+  }
 
   /**
    * Checks is a `node rdf:type/rdfs:subClassOf* cls`

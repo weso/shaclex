@@ -6,7 +6,7 @@ import es.weso.rdf.path.PredicatePath
 import org.apache.jena.sparql.path.{P_Link, P_OneOrMoreN}
 import org.scalatest._
 
-class JenaUtilsTest extends FunSpec with Matchers {
+class JenaUtilsTest extends FunSpec with Matchers with EitherValues {
 
   describe("hasClass") {
     it("check hasClass") {
@@ -69,31 +69,24 @@ class JenaUtilsTest extends FunSpec with Matchers {
             |:z a :B .
             |_:C :c 1 .
          """.stripMargin
-      JenaUtils.parseFromString(rdfStr) match {
-        case Right(model) => {
-          val ex = IRI("http://example.org/")
-          val px = JenaMapper.path2JenaPath(PredicatePath(ex + "x"), model,None)
-          val py = JenaMapper.path2JenaPath(PredicatePath(ex + "y"), model,None)
-          val pc = JenaMapper.path2JenaPath(PredicatePath(ex + "c"), model,None)
-          val bx = JenaUtils.getNodesFromPath(px, model).head._1
-          val by = JenaUtils.getNodesFromPath(py, model).head._1
-
-          val a = JenaMapper.rdfNode2JenaNode(ex+"A",model,None)
-          val b = JenaMapper.rdfNode2JenaNode(ex+"B",model,None)
-          val z = JenaMapper.rdfNode2JenaNode(ex+"z",model,None)
-          val bc = JenaUtils.getNodesFromPath(pc, model).head._1
-
-          JenaUtils.hasClass(bx,a,model) should be(true)
-          JenaUtils.hasClass(bx,b,model) should be(true)
-          JenaUtils.hasClass(by,a,model) should be(false)
-          JenaUtils.hasClass(by,b,model) should be(true)
-          JenaUtils.hasClass(bx,bc,model) should be(true)
-          JenaUtils.hasClass(by,bc,model) should be(true)
-          JenaUtils.hasClass(z,bc,model) should be(false)
-        }
-        case Left(str) => fail(str)
-      }
-
+      val model = JenaUtils.parseFromString(rdfStr).right.value
+      val ex = IRI.fromString("http://example.org/").right.value
+      val px = JenaMapper.path2JenaPath(PredicatePath(ex + "x"), model, None).right.value
+      val py = JenaMapper.path2JenaPath(PredicatePath(ex + "y"), model, None).right.value
+      val pc = JenaMapper.path2JenaPath(PredicatePath(ex + "c"), model, None).right.value
+      val bx = JenaUtils.getNodesFromPath(px, model).head._1
+      val by = JenaUtils.getNodesFromPath(py, model).head._1
+      val a = JenaMapper.rdfNode2JenaNode(ex+"A", model, None)
+      val b = JenaMapper.rdfNode2JenaNode(ex+"B", model, None)
+      val z = JenaMapper.rdfNode2JenaNode(ex+"z", model, None)
+      val bc = JenaUtils.getNodesFromPath(pc, model).head._1
+      JenaUtils.hasClass(bx,a,model) should be(true)
+      JenaUtils.hasClass(bx,b,model) should be(true)
+      JenaUtils.hasClass(by,a,model) should be(false)
+      JenaUtils.hasClass(by,b,model) should be(true)
+      JenaUtils.hasClass(bx,bc,model) should be(true)
+      JenaUtils.hasClass(by,bc,model) should be(true)
+      JenaUtils.hasClass(z,bc,model) should be(false)
     }
   }
 
@@ -110,26 +103,22 @@ class JenaUtilsTest extends FunSpec with Matchers {
                        |:UniversityTeacher rdfs:subClassOf :Teacher .
                        |:dog1 a :Dog .""".stripMargin
 
-      JenaUtils.parseFromString(rdfStr) match {
-        case Right(model) => {
-          val person1 = model.createResource(ex + "person1")
-          val teacher1 = model.createResource(ex + "teacher1")
-          val teacher2 = model.createResource(ex + "teacher2")
-          val dog1 = model.createResource(ex + "dog1")
-          val _Person = model.createResource(ex + "Person")
-          val _Teacher = model.createResource(ex + "Teacher")
-          val _UniversityTeacher = model.createResource(ex + "UniversityTeacher")
-          val _Dog = model.createResource(ex + "Dog")
-          val _Any = model.createResource(ex +"Any")
+      val model = JenaUtils.parseFromString(rdfStr).right.value
+      val person1 = model.createResource(ex + "person1")
+      val teacher1 = model.createResource(ex + "teacher1")
+      val teacher2 = model.createResource(ex + "teacher2")
+      val dog1 = model.createResource(ex + "dog1")
+      val _Person = model.createResource(ex + "Person")
+      val _Teacher = model.createResource(ex + "Teacher")
+      val _UniversityTeacher = model.createResource(ex + "UniversityTeacher")
+      val _Dog = model.createResource(ex + "Dog")
+      val _Any = model.createResource(ex +"Any")
 
-          JenaUtils.getSHACLInstances(_Person, model) should contain only (person1, teacher1, teacher2)
-          JenaUtils.getSHACLInstances(_Teacher, model) should contain only (teacher1, teacher2)
-          JenaUtils.getSHACLInstances(_UniversityTeacher, model) should contain only (teacher2)
-          JenaUtils.getSHACLInstances(_Dog, model) should contain only (dog1)
-          JenaUtils.getSHACLInstances(_Any, model) shouldBe empty
-        }
-        case Left(msg) => fail(msg)
-      }
+      JenaUtils.getSHACLInstances(_Person, model).right.value should contain only (person1, teacher1, teacher2)
+      JenaUtils.getSHACLInstances(_Teacher, model).right.value should contain only (teacher1, teacher2)
+      JenaUtils.getSHACLInstances(_UniversityTeacher, model).right.value should contain only (teacher2)
+      JenaUtils.getSHACLInstances(_Dog, model).right.value should contain only (dog1)
+      JenaUtils.getSHACLInstances(_Any, model).right.value shouldBe empty
     }
   }
 

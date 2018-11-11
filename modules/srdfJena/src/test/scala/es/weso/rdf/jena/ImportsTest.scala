@@ -4,12 +4,9 @@ import java.nio.file.Paths
 
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.nodes._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 
-class ImportsTest
-  extends FunSpec
-  with JenaBased
-  with Matchers {
+class ImportsTest extends FunSpec with JenaBased with Matchers with EitherValues {
 
   val conf: Config = ConfigFactory.load()
   val rdfFolderStr = conf.getString("rdfFolder")
@@ -59,7 +56,7 @@ class ImportsTest
         val (_,extended) = values
         val x = IRI("http://example.org/x")
         val p = IRI("http://example.org/p")
-        extended.triplesWithSubjectPredicate(x,p).size should be(2)
+        extended.triplesWithSubjectPredicate(x,p).right.value.size should be(2)
 //        info(s"Extended: ${extended.serialize("Turtle")}")
       })
     }

@@ -71,24 +71,24 @@ case class Endpoint(endpoint: String)
     resultSet.asScala.map(qs => IRI(qs.get("y").asResource.getURI)).toSet
   }
 
-  override def getSHACLInstances(c: RDFNode): Seq[RDFNode] = {
-    throw new Exception(s"Undefined getSHACLInstances at Endpoint. Node $c")
+  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] = {
+    Left(s"getSHACLInstances: Not implemented at Endpoint, node $c")
   }
 
-  override def hasSHACLClass(n: RDFNode, c: RDFNode): Boolean = {
-    throw new Exception(s"Undefined hasSHACL at Endpoint. Node: $n Class: $c")
+  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String, Boolean] = {
+    Left(s"hasSHACLClass: Not implemented at Endpoint. Node: $n Class: $c")
   }
 
-  override def nodesWithPath(p: SHACLPath): Set[(RDFNode, RDFNode)] = {
-    throw new Exception(s"Undefined nodesWithPath at RDFFromWeb. Path: $p")
+  override def nodesWithPath(p: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]] = {
+    Left(s"Undefined nodesWithPath at RDFFromWeb. Path: $p")
   }
 
-  override def subjectsWithPath(p: SHACLPath, o: RDFNode): Set[RDFNode] = {
-    throw new Exception(s"Undefined subjectsWithPath at RDFFromWeb. Path: $p")
+  override def subjectsWithPath(p: SHACLPath, o: RDFNode): Either[String, Set[RDFNode]] = {
+    Left(s"Undefined subjectsWithPath at RDFFromWeb. Path: $p")
   }
 
-  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Set[RDFNode] = {
-    throw new Exception(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String,Set[RDFNode]] = {
+    Left(s"Undefined objectsWithPath at RDFFromWeb. Path: $path")
   }
 
   override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
@@ -108,25 +108,26 @@ case class Endpoint(endpoint: String)
     case _ => Left("triplesWithSubject: node " + node + " must be a IRI")
   }
 
-  def triplesWithPredicate(p: IRI): Set[RDFTriple] = {
+  def triplesWithPredicate(p: IRI): Either[String,Set[RDFTriple]] = {
     val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithPredicate(p)).execConstruct()
-    model2triples(model)
+    Right(model2triples(model))
   }
 
-  def triplesWithObject(node: RDFNode): Set[RDFTriple] = node match {
+  def triplesWithObject(node: RDFNode): Either[String,Set[RDFTriple]] = node match {
     case obj: IRI => {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithObject(obj)).execConstruct()
-      model2triples(model)
+      Right(model2triples(model))
     }
-    case _ => throw new Exception("triplesWithObject: node " + node + " must be a IRI")
+    case _ => Left("triplesWithObject: node " + node + " must be a IRI")
   }
 
-  def triplesWithPredicateObject(p: IRI, o: RDFNode): Set[RDFTriple] = o match {
+  def triplesWithPredicateObject(p: IRI, o: RDFNode): Either[String, Set[RDFTriple]] =
+    o match {
     case iri: IRI => {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithPredicateObject(p, iri)).execConstruct()
-      model2triples(model)
+      Right(model2triples(model))
     }
-    case _ => throw new Exception("triplesWithPredicateObject: o " + o + " must be a IRI")
+    case _ => Left("triplesWithPredicateObject: o " + o + " must be a IRI")
   }
 
   def model2triples(model: Model): Set[RDFTriple] = {
@@ -150,7 +151,7 @@ case class Endpoint(endpoint: String)
     if (r.isAnon) {
       BNode(r.asNode.getBlankNodeId.getLabelString)
     } else if (r.isURIResource) {
-      IRI(r.asResource.getURI())
+      IRI(r.asResource().getURI())
     } else if (r.isLiteral) {
       val lit = r.asLiteral
       if (lit.getDatatypeURI() == null) {

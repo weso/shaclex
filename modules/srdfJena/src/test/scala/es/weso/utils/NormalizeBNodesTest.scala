@@ -6,7 +6,7 @@ import es.weso.rdf.triples.RDFTriple
 import org.scalatest._
 import es.weso.utils.NormalizeBNodes._
 
-class NormalizeBNodesTest extends FunSpec with Matchers {
+class NormalizeBNodesTest extends FunSpec with Matchers with EitherValues {
   describe(s"Parse RDF with blank nodes") {
     it(s"Should show RDF") {
       val str =
@@ -19,26 +19,20 @@ class NormalizeBNodesTest extends FunSpec with Matchers {
         """.stripMargin
 
       def iri(x: String) = IRI(s"http://e.com/" + x)
+      val rdf1 = RDFAsJenaModel.fromChars(str,"TURTLE",None).right.value
+      val n1 = normalizeBNodes(rdf1, RDFAsJenaModel.empty)
 
-      val r = for {
-        rdf1 <- RDFAsJenaModel.fromChars(str,"TURTLE",None)
-        s1 <- rdf1.serialize("N-TRIPLES")
-        n1 = normalizeBNodes(rdf1, RDFAsJenaModel.empty)
-        rdf3 <- RDFAsJenaModel.fromChars(str,"TURTLE", None)
-        n2 = normalizeBNodes(rdf3,RDFAsJenaModel.empty)
-      } yield (n1,n2)
-      r.fold(e=> fail(s"Error: $e"), v => {
-        val (rdf1,rdf2) = v
-        val ss1 = rdf1.triplesWithSubject(BNode("0"))
-        val ss2 = rdf2.triplesWithSubject(BNode("0"))
-        val expected = List(
+      val rdf2 = RDFAsJenaModel.fromChars(str,"TURTLE", None).right.value
+      val n2 = normalizeBNodes(rdf2,RDFAsJenaModel.empty)
+      val ss1 = n1.triplesWithSubject(BNode("0")).right.value
+      val ss2 = n2.triplesWithSubject(BNode("0")).right.value
+      val expected = List(
           RDFTriple(BNode("0"), iri("r"), iri("y")),
           RDFTriple(BNode("0"), iri("q"), iri("x")),
           RDFTriple(BNode("0"), iri("t"), BNode("1"))
-        )
-        ss1 should contain theSameElementsAs expected
-        ss2 should contain theSameElementsAs expected
-      })
+      )
+      ss1 should contain theSameElementsAs expected
+      ss2 should contain theSameElementsAs expected
     }
   }
 

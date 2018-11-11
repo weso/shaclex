@@ -1,9 +1,6 @@
 package es.weso.rdftriple.jenaMapper
 import org.scalatest.FunSpec
 import org.apache.jena.rdf.model.ModelFactory
-import java.io.ByteArrayInputStream
-import org.apache.jena.rdf.model.Model
-import java.io.InputStream
 import org.scalatest.Matchers
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.JenaMapper._

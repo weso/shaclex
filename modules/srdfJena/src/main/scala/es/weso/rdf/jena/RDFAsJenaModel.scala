@@ -21,7 +21,6 @@ import es.weso.utils._
 import io.circe.Json
 import io.circe.parser.parse
 import org.apache.jena.query.{Query, QueryExecutionFactory, QuerySolutionMap, ResultSetFormatter}
-import org.apache.jena.sparql.path.Path
 import cats.implicits._
 import es.weso.rdf.dot.RDF2Dot
 import org.apache.jena.graph.Graph
@@ -110,11 +109,15 @@ case class RDFAsJenaModel(model: Model,
     model2triples(model)
   }
 
-  override def triplesWithSubject(node: RDFNode): Either[String, Set[RDFTriple]] = for {
-    resource <- rdfNode2Resource(node, model, base)
-    statements <- triplesSubject(resource, model)
-    ts         <- toRDFTriples(statements)
-   } yield ts
+  override def triplesWithSubject(node: RDFNode): Either[String, Set[RDFTriple]] = node match {
+    case _: Literal => Right(Set())
+    case _ =>
+      for {
+        resource   <- rdfNode2Resource(node, model, base)
+        statements <- triplesSubject(resource, model)
+        ts         <- toRDFTriples(statements)
+      } yield ts
+  }
 
   override def triplesWithSubjectPredicate(node: RDFNode,
                                            p: IRI): Either[String, Set[RDFTriple]] = for {

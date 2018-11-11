@@ -9,8 +9,7 @@ import es.weso.rdf.path._
 import es.weso.shacl.SHACLPrefixes._
 import es.weso.shacl._
 import es.weso.shacl.report._
-import es.weso.utils.EitherUtils
-
+import es.weso.utils.EitherUtils._
 import scala.util.{Failure, Success, Try}
 
 object RDF2Shacl extends RDFParser with LazyLogging {
@@ -60,29 +59,34 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   private def parseEntailments(rdf: RDFReader): Either[String, List[IRI]] =
-    EitherUtils.sequence(
-      rdf.triplesWithPredicate(sh_entailment).map(_.obj).toList.map(_.toIRI)
-    )
+      for {
+        ts <- rdf.triplesWithPredicate(sh_entailment)
+        iris <- sequence(ts.map(_.obj).toList.map(_.toIRI))
+      } yield iris
 
   private def parseImports(rdf: RDFReader): Either[String, List[IRI]] =
-    EitherUtils.sequence(
-      rdf.triplesWithPredicate(owl_imports).map(_.obj).toList.map(_.toIRI)
-    )
+    for {
+     ts <- rdf.triplesWithPredicate(owl_imports)
+     os <- sequence(ts.map(_.obj).toList.map(_.toIRI))
+    } yield os
 
   type ShapesMap = Map[RefNode, Shape]
 
   def shapesMap(rdf: RDFReader): Either[String, ShapesMap] = {
     parsedShapes.clear()
     parsedPropertyGroups.clear()
-    val nodeShapes = subjectsWithType(sh_NodeShape, rdf)
-    val propertyShapes = subjectsWithType(sh_PropertyShape, rdf)
-    val shapes = subjectsWithType(sh_Shape, rdf)
-    val objectsPropertyShapes = subjectsWithProperty(sh_property, rdf)
-    val allShapes: Set[RDFNode] = nodeShapes ++ propertyShapes ++ shapes ++ objectsPropertyShapes
-
-    pendingNodes = allShapes.toList
-    parseShapes(rdf)
-  }
+    for {
+      nodeShapes <- rdf.subjectsWithType(sh_NodeShape)
+      propertyShapes <- rdf.subjectsWithType(sh_PropertyShape)
+      shapes <- rdf.subjectsWithType(sh_Shape)
+      objectsPropertyShapes <- rdf.subjectsWithProperty(sh_property)
+      sm <-{
+        val allShapes = nodeShapes ++ propertyShapes ++ shapes ++ objectsPropertyShapes
+        pendingNodes = allShapes.toList
+        parseShapes(rdf)
+      }
+    } yield sm
+   }
 
   def parseShapes(rdf: RDFReader): Either[String, ShapesMap] = {
     pendingNodes.size match {
@@ -272,14 +276,16 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       vs <- sequenceEither(ns.toList.map(mkTargetClass))
     } yield vs
 
-  def implicitTargetClass: RDFParser[Seq[Target]] = (n, rdf) => {
-    val shapeTypes = rdf.triplesWithSubjectPredicate(n, rdf_type).map(_.obj)
-    val rdfs_Class = rdfs + "Class"
-    if (shapeTypes.contains(rdfs_Class))
+  def implicitTargetClass: RDFParser[Seq[Target]] = (n, rdf) =>
+    for {
+     ts <- rdf.triplesWithSubjectPredicate(n, rdf_type)
+     shapeTypes = ts.map(_.obj)
+     rdfs_Class = rdfs + "Class"
+     r <- if (shapeTypes.contains(rdfs_Class))
       mkTargetClass(n).map(Seq(_))
     else
       Right(Seq())
-  }
+   } yield r
 
   def targetSubjectsOf: RDFParser[Seq[Target]] = (n, rdf) => {
     for {
@@ -295,9 +301,11 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     } yield vs
   }
 
-  def mkTargetNode(n: RDFNode): Either[String, TargetNode] = parseOk(TargetNode(n))
+  def mkTargetNode(n: RDFNode): Either[String, TargetNode] =
+    parseOk(TargetNode(n))
 
-  def mkTargetClass(n: RDFNode): Either[String, TargetClass] = parseOk(TargetClass(n))
+  def mkTargetClass(n: RDFNode): Either[String, TargetClass] =
+    parseOk(TargetClass(n))
 
   def mkTargetSubjectsOf(n: RDFNode): Either[String, TargetSubjectsOf] = n match {
     case i: IRI => parseOk(TargetSubjectsOf(i))
@@ -309,10 +317,10 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     case _ => parseFail(s"targetObjectsOf requires an IRI. Obtained $n")
   }
 
-  def isPropertyShape(node: RDFNode, rdf: RDFReader): Boolean = {
+/*  def isPropertyShape(node: RDFNode, rdf: RDFReader): Boolean = {
     rdf.getTypes(node).contains(sh_PropertyShape) ||
       !rdf.triplesWithSubjectPredicate(node, sh_path).isEmpty
-  }
+  } */
 
   /*  def nodeShapes: RDFParser[Seq[NodeShape]] = (n, rdf) => {
    val id = if (n.isIRI) Some(n.toIRI) else None
