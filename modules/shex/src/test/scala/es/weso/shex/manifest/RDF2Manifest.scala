@@ -16,10 +16,10 @@ case class RDF2Manifest(base: Option[IRI],
 
   private def rdf2Manifest(rdf: RDFReader,
                    visited: List[RDFNode] = List()
-                  ): Either[String, List[Manifest]] = {
-    val candidates = subjectsWithType(mf_Manifest, rdf).toList
-    parseNodes(candidates, manifest(List()))(rdf)
-  }
+                  ): Either[String, List[Manifest]] = for {
+    candidates <- rdf.subjectsWithType(mf_Manifest)
+    nodes <- parseNodes(candidates.toList, manifest(List()))(rdf)
+  } yield nodes
 
   private def manifest(visited: List[IRI]): RDFParser[Manifest] = { (n, rdf) =>
     for {
@@ -301,14 +301,17 @@ case class RDF2Manifest(base: Option[IRI],
    * Override this method to provide more info
    */
   override def objectFromPredicate(p: IRI): RDFParser[RDFNode] = { (n, rdf) =>
-    val ts = rdf.triplesWithSubjectPredicate(n, p)
-    ts.size match {
-      case 0 => parseFail(s"objectFromPredicate: Not found triples with subject $n and predicate $p \nRDF: ${rdf.serialize("TURTLE")}")
-      case 1 => parseOk(ts.head.obj)
-      case _ => parseFail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
-    }
+    for {
+      ts <- rdf.triplesWithSubjectPredicate(n, p)
+      r <- ts.size match {
+        case 0 =>
+          parseFail(
+            s"objectFromPredicate: Not found triples with subject $n and predicate $p \nRDF: ${rdf.serialize("TURTLE")}")
+        case 1 => parseOk(ts.head.obj)
+        case _ => parseFail("objectFromPredicate: More than one value from predicate " + p + " on node " + n)
+      }
+    } yield r
   }
-
 
 }
 

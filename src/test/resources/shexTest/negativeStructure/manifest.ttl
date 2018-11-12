@@ -15,6 +15,13 @@
     <#includeNonSimpleShape>
     <#includeExpressionNotFound>
     <#1ShapeProductionCollision>
+    <#Cycle1Negation1>
+    <#Cycle1Negation2>
+    <#Cycle1Negation3>
+    <#TwoNegation>
+    <#TwoNegation2>
+    <#Cycle2Negation>
+    <#Cycle2Extra>
 ) .
 
 <#1MissingRef> a sht:NegativeStructure ;
@@ -57,5 +64,47 @@
   mf:name "1ShapeProductionCollision" ;
   mf:status mf:proposed ;
   sx:shex <1ShapeProductionCollision.shex> ;
+  .
+
+<#Cycle1Negation1> a sht:NegativeStructure ;
+  mf:name "Cycle1Negation1" ;
+  mf:status mf:proposed ;
+  sx:shex <Cycle1Negation1.shex> ;
+  .
+
+<#Cycle1Negation2> a sht:NegativeStructure ;
+  mf:name "Cycle1Negation2" ;
+  mf:status mf:proposed ;
+  sx:shex <Cycle1Negation2.shex> ;
+  .
+
+<#Cycle1Negation3> a sht:NegativeStructure ;
+  mf:name "Cycle1Negation3" ;
+  mf:status mf:proposed ;
+  sx:shex <Cycle1Negation3.shex> ;
+  .
+
+<#TwoNegation> a sht:NegativeStructure ;
+  mf:name "TwoNegation" ;
+  mf:status mf:proposed ;
+  sx:shex <TwoNegation.shex> ;
+  .
+
+<#TwoNegation2> a sht:NegativeStructure ;
+  mf:name "TwoNegation2" ;
+  mf:status mf:proposed ;
+  sx:shex <TwoNegation2.shex> ;
+  .
+
+<#Cycle2Negation> a sht:NegativeStructure ;
+  mf:name "Cycle2Negation" ;
+  mf:status mf:proposed ;
+  sx:shex <Cycle2Negation.shex> ;
+  .
+
+<#Cycle2Extra> a sht:NegativeStructure ;
+  mf:name "Cycle2Extra" ;
+  mf:status mf:proposed ;
+  sx:shex <Cycle2Extra.shex> ;
   .
 

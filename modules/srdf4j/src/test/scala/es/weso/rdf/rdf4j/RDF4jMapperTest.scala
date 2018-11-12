@@ -20,7 +20,7 @@ class RDF4jMapperTest extends FunSpec with Matchers with EitherValues with Optio
       result.fold(
         e => fail(s"Error building model for triples $ts: $e"),
         r => {
-          r.triplesWithSubject(IRI("http://example.org/x")) should contain theSameElementsAs(List(t1,t2))
+          r.triplesWithSubject(IRI("http://example.org/x")).right.value should contain theSameElementsAs(List(t1,t2))
        })
     }
   }

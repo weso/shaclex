@@ -5,6 +5,7 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.SHACLPrefixes.owl_imports
+import es.weso.shacl.report.{AbstractResult, MsgError}
 import es.weso.shacl.{Schema => ShaclSchema, _}
 // import es.weso.shacl._
 import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
@@ -36,10 +37,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     cnvResult(r, rdf, builder)
   }
 
-  def cnvResult(
-                 r: CheckResult[ValidationResult, (ShapeTyping,Boolean), List[Evidence]],
-                 rdf: RDFReader,
-                 builder: RDFBuilder
+  def cnvResult(r: CheckResult[AbstractResult, (ShapeTyping,Boolean), List[Evidence]],
+                rdf: RDFReader,
+                builder: RDFBuilder
                ): Result = {
     val vr: ValidationReport =
       r.result.fold(e => ValidationReport.fromError(e), r =>
@@ -61,7 +61,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       t._1.getMap.mapValues(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
   }
 
-  private def cnvMapShapeResult(m: Map[Shape, TypingResult[ValidationResult, String]]): Map[ShapeMapLabel, Info] = {
+  private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
 
     MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
   }
@@ -74,7 +74,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     }
   }
 
-  private def cnvTypingResult(t: TypingResult[ValidationResult, String]): Info = {
+  private def cnvTypingResult(t: TypingResult[AbstractResult, String]): Info = {
     import showShacl._
     import TypingResult.showTypingResult
     Info(
@@ -84,12 +84,16 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     )
   }
 
-  private def cnvViolationError(v: ValidationResult): ErrorInfo = {
+  private def cnvViolationError(v: AbstractResult): ErrorInfo = {
     val pm = schema.pm
-    ErrorInfo(
-      pm.qualify(v.sourceConstraintComponent) +
-        " FocusNode: " + schema.pm.qualify(v.focusNode) + " " +
-        v.message.mkString(","))
+    v match {
+      case ar: MsgError => ErrorInfo(s"Error: $ar")
+      case vr: ValidationResult =>
+        ErrorInfo(
+          pm.qualify(vr.sourceConstraintComponent) +
+            " FocusNode: " + schema.pm.qualify(vr.focusNode) + " " +
+            vr.message.mkString(","))
+    }
   }
 
   /*def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {
@@ -103,11 +107,15 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     } yield ShaclexSchema(schema)
   }
 
-  override def fromRDF(rdf: RDFReader): Either[String, Schema] = rdf.asRDFBuilder match {
-    case Left(_) => rdf.triplesWithPredicate(owl_imports).size match {
-      case 0 => RDF2Shacl.getShaclFromRDFReader(rdf).map(ShaclexSchema(_))
-      case _ => Left(s"Nor supported owl:imports for this kind of RDF model")
-    }
+  override def fromRDF(rdf: RDFReader): Either[String, Schema] =
+    rdf.asRDFBuilder match {
+    case Left(_) => for {
+      ts <- rdf.triplesWithPredicate(owl_imports)
+      schema <- ts.size match {
+        case 0 => RDF2Shacl.getShaclFromRDFReader(rdf).map(ShaclexSchema(_))
+        case _ => Left(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
+      }
+    } yield schema
     case Right(rdfBuilder) =>
       for {
         schemaShacl <- RDF2Shacl.getShacl(rdfBuilder, true)

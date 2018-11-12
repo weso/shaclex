@@ -139,18 +139,25 @@ case class Schema(id: IRI,
   def addTripleExprMap(te: Map[ShapeLabel,TripleExpr]): Schema =
     this.copy(tripleExprMap = Some(te))
 
-  def negCycles: Either[String, Set[Set[ShapeLabel]]] =
+  def oddNegCycles: Either[String,Set[Set[(ShapeLabel,ShapeLabel)]]] =
+    Dependencies.oddNegCycles(this)
+
+  def negCycles: Either[String, Set[Set[(ShapeLabel,ShapeLabel)]]] =
     Dependencies.negCycles(this)
 
   def depGraph: Either[String, DepGraph[ShapeLabel]] =
     Dependencies.depGraph(this)
 
-  lazy val listNegCycles: List[String] = negCycles.fold(
+  def showCycles(str: Either[String,Set[Set[(ShapeLabel,ShapeLabel)]]]): String = str match {
+    case Left(e) => e
+    case Right(ss) => ss.map(s => s.map(_.toString).mkString(",")).mkString("\n")
+  }
+/*  lazy val listNegCycles: List[String] = negCycles.fold(
     e => List(e),
     ns => if (ns.isEmpty) List()
     else
       List(s"Negative cycles found: [${ns.map(s => s.map(_.toString).mkString(",")).mkString(",")}]")
-  )
+  ) */
 
   private def checkShapeLabel(lbl: ShapeLabel): Either[String, Unit] = for {
    se <- getShape(lbl)
@@ -168,14 +175,19 @@ case class Schema(id: IRI,
   } yield (())
 
 
-  private lazy val checkNegCycles: Either[String, Unit] =
-    if (listNegCycles.isEmpty) Right(())
-    else
-      Left(s"Negative cycles: \n{${listNegCycles.mkString("\n")}")
+  private lazy val checkOddNegCycles: Either[String, Unit] = {
+    // println(s"NegCycles: $oddNegCycles")
+    oddNegCycles match {
+      case Left(e) => Left(e)
+      case Right(cs) => if (cs.isEmpty) Right(())
+      else
+        Left(s"Negative cycles: ${showCycles(oddNegCycles)}")
+    }
+  }
 
   lazy val wellFormed: Either[String,Unit] = for {
-    _ <- checkNegCycles
-    _ <- checkBadShapeLabels
+    _ <- checkOddNegCycles
+   // _ <- checkBadShapeLabels
   } yield (())
 
 }

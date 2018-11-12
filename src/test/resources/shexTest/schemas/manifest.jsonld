@@ -3432,6 +3432,90 @@
           "ttl": "1dotANDopen1dotAND1dotclose.ttl"
         },
         {
+          "@id": "#CycleNoNegation_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "CycleNoNegation_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "CycleNoNegation.shex",
+          "json": "CycleNoNegation.json",
+          "ttl": "CycleNoNegation.ttl"
+        },
+        {
+          "@id": "#NoNegation_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "NoNegation_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "NoNegation.shex",
+          "json": "NoNegation.json",
+          "ttl": "NoNegation.ttl"
+        },
+        {
+          "@id": "#NoNegation2_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "NoNegation2_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "NoNegation2.shex",
+          "json": "NoNegation2.json",
+          "ttl": "NoNegation2.ttl"
+        },
+        {
+          "@id": "#OneNegation_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "OneNegation_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "OneNegation.shex",
+          "json": "OneNegation.json",
+          "ttl": "OneNegation.ttl"
+        },
+        {
+          "@id": "#TwoNegation_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "TwoNegation_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "TwoNegation.shex",
+          "json": "TwoNegation.json",
+          "ttl": "TwoNegation.ttl"
+        },
+        {
+          "@id": "#Cycle2NoNegation_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "Cycle2NoNegation_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "Cycle2NoNegation.shex",
+          "json": "Cycle2NoNegation.json",
+          "ttl": "Cycle2NoNegation.ttl"
+        },
+        {
+          "@id": "#Cycle2Extra_pass",
+          "@type": "sht:RepresentationTest",
+          "name": "Cycle2Extra_pass",
+          "trait": [
+            "Cycle"
+          ],
+          "status": "mf:proposed",
+          "shex": "Cycle2Extra.shex",
+          "json": "Cycle2Extra.json",
+          "ttl": "Cycle2Extra.ttl"
+        },
+        {
           "@id": "#1dotIMPORT1dot",
           "@type": "sht:RepresentationTest",
           "name": "1dotIMPORT1dot",

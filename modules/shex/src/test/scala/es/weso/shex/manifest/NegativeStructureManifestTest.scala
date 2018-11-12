@@ -12,8 +12,8 @@ class NegativeStructureManifestTest extends ValidateManifest {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-  //  Some("1focusMissingRefdot")
-    None
+    Some("Cycle2Extra")
+   // None
 
   val ignored: Map[String,String] = Map(
     "includeSimpleShape" -> "Non checked shape includes yet",

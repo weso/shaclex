@@ -5,7 +5,7 @@ import cats.data._
 import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.RDFNode
-import es.weso.shapeMaps.{FixedShapeMap, ResultShapeMap, ShapeMapLabel}
+import es.weso.shapeMaps._
 import es.weso.shex._
 import es.weso.typing.Typing
 
@@ -58,6 +58,8 @@ object BtValidator {
   def ok[A](x: A): Check[A] = x.pure[Check]
   def err[A](e: ShExErr): Check[A] = EitherT.leftT[ReaderEnv,A](e)
   def unimplemented[A](msg: String): Check[A] = err(Unimplemented(msg))
+  def fromEither[A](e: Either[String,A]): Check[A] =
+    EitherT.fromEither(e.leftMap(StringErr(_)))
 
   def checkNodeTripleExpr(node: RDFNode, te: TripleExpr): Check[(ShapeTyping,VarTable)] =
     te match {
@@ -71,7 +73,7 @@ object BtValidator {
     if (tc.direct) {
       for {
         rdf <- getRDF
-        triples = rdf.triplesWithSubjectPredicate(node, tc.predicate)
+        triples <- fromEither(rdf.triplesWithSubjectPredicate(node, tc.predicate))
         typing <- getTyping
         table <- getVarTable
       } yield {

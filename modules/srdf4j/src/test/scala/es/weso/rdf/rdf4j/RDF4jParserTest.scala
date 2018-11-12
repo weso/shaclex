@@ -2,7 +2,6 @@ package es.weso.rdf.rdf4j
 
 import es.weso.rdf.{Prefix, PrefixMap}
 import es.weso.rdf.nodes._
-import es.weso.rdf.parser._
 import org.scalatest._
 
 import scala.util._
@@ -68,7 +67,7 @@ class RDF4jParserTest extends FunSpec with Matchers with EitherValues with Optio
       mayberdf match {
         case Left(str) => fail(s"Error parsing: $str")
         case Right(rdf) => {
-          val ts = rdf.triplesWithSubject(IRI("http://example.org/x"))
+          val ts = rdf.triplesWithSubject(IRI("http://example.org/x")).right.value
           ts.size should be(1)
         }
       }

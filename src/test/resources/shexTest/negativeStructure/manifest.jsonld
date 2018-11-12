@@ -59,6 +59,55 @@
           "name": "1ShapeProductionCollision",
           "status": "mf:proposed",
           "shex": "1ShapeProductionCollision.shex"
+        },
+        {
+          "@id": "#Cycle1Negation1",
+          "@type": "sht:NegativeStructure",
+          "name": "Cycle1Negation1",
+          "status": "mf:proposed",
+          "shex": "Cycle1Negation1.shex"
+        },
+        {
+          "@id": "#Cycle1Negation2",
+          "@type": "sht:NegativeStructure",
+          "name": "Cycle1Negation2",
+          "status": "mf:proposed",
+          "shex": "Cycle1Negation2.shex"
+        },
+        {
+          "@id": "#Cycle1Negation3",
+          "@type": "sht:NegativeStructure",
+          "name": "Cycle1Negation3",
+          "status": "mf:proposed",
+          "shex": "Cycle1Negation3.shex"
+        },
+        {
+          "@id": "#TwoNegation",
+          "@type": "sht:NegativeStructure",
+          "name": "TwoNegation",
+          "status": "mf:proposed",
+          "shex": "TwoNegation.shex"
+        },
+        {
+          "@id": "#TwoNegation2",
+          "@type": "sht:NegativeStructure",
+          "name": "TwoNegation2",
+          "status": "mf:proposed",
+          "shex": "TwoNegation2.shex"
+        },
+        {
+          "@id": "#Cycle2Negation",
+          "@type": "sht:NegativeStructure",
+          "name": "Cycle2Negation",
+          "status": "mf:proposed",
+          "shex": "Cycle2Negation.shex"
+        },
+        {
+          "@id": "#Cycle2Extra",
+          "@type": "sht:NegativeStructure",
+          "name": "Cycle2Extra",
+          "status": "mf:proposed",
+          "shex": "Cycle2Extra.shex"
         }
       ]
     }

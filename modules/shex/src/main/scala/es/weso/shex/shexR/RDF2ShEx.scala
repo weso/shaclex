@@ -14,12 +14,10 @@ import es.weso.rdf.nodes._
  */
 trait RDF2ShEx extends RDFParser with LazyLogging {
 
-  def getSchema(rdf: RDFReader): Either[String, Schema] = {
-    val schemaNodes = rdf.triplesWithPredicateObject(rdf_type, sx_Schema).map(_.subj).toList
-    val trySchemas: Either[String, List[Schema]] = parseNodes(schemaNodes, schema)(rdf)
-    trySchemas match {
-      case Left(e) => Left(s"Error parsing RDF as Schema: $e\nRDF: ${rdf.serialize("TURTLE")}")
-      case Right(schemas) => schemas.length match {
+  def getSchema(rdf: RDFReader): Either[String, Schema] = for {
+    schemaNodes <- rdf.triplesWithPredicateObject(rdf_type, sx_Schema) // .map(_.subj).toList
+    schemas <- parseNodes(schemaNodes.toList.map(_.subj), schema)(rdf)
+    r <- schemas.length match {
         case 0 => Right(Schema.empty)
         case 1 => Right(schemas.head)
         case _ => {
@@ -27,8 +25,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
           Right(schemas.head)
         }
       }
-    }
-  }
+  } yield r
 
   private def schema: RDFParser[Schema] = (n, rdf) => for {
     _ <- checkType(sx_Schema)(n, rdf)

@@ -1,6 +1,7 @@
 package es.weso.shex.manifest
 
 import java.nio.file.Paths
+
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.shex._
 import es.weso.shex.compact.CompareSchemas
@@ -8,50 +9,49 @@ import io.circe.parser._
 import io.circe.syntax._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
-import scala.io._
+import Utils._
+import es.weso.utils.UriUtils._
+import cats.syntax.either._
 
 class SchemasManifestTest extends ValidateManifest {
+
+  val nameIfSingle: Option[String] =
+     None
+     // Some("TwoNegation_pass")
 
   val conf: Config = ConfigFactory.load()
   val shexFolder = conf.getString("schemasFolder")
 //  val shexFolder = conf.getString("shexLocalFolder")
-  val shexFolderURI = Paths.get(shexFolder).normalize.toUri.toString
+  val shexFolderURI = Paths.get(shexFolder).normalize.toUri
 
   describe("RDF2ManifestLocal") {
-    val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI), false)
+    val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI.toString), false)
     r.fold(e => fail(s"Error reading manifest: $e"),
       mf => {
         for (e <- mf.entries) {
-          it(s"Should pass test ${e.name}") {
-            e match {
-              case r: RepresentationTest => {
-                val base = Paths.get(".").toUri
-                val schemaStr = Source.fromURI(base.resolve(r.shex.uri))("UTF-8").mkString
-                val jsonStr = Source.fromURI(base.resolve(r.json.uri))("UTF-8").mkString
-                Schema.fromString(schemaStr, "SHEXC", None) match {
-                  case Right(schema) => {
-                    decode[Schema](jsonStr) match {
-                      case Left(err) => fail(s"Error parsing Json ${r.json}: $err")
-                      case Right(expectedSchema) =>
-                        if (CompareSchemas.compareSchemas(schema, expectedSchema)) {
-                          parse(jsonStr) match {
-                            case Left(err) => fail(s"Schemas are equal but error parsing Json $jsonStr")
-                            case Right(json) => {
-                              if (json.equals(schema.asJson)) {
-                                info("Schemas and Json representations are equal")
-                              } else {
-                                fail(s"Json's are different\nSchema:${schema}\nJson generated: ${schema.asJson.spaces2}\nExpected: ${json.spaces2}")
-                              }
-                            }
-                         }
-                        } else {
-                          fail(s"Schemas are different. Parsed:\n${schema}\n-----Expected:\n${expectedSchema}")
-                        }
-                    }
-                  }
-                  case Left(e) => fail(s"Error parsing Schema: ${r.shex}: $e")
+          if (nameIfSingle == None || nameIfSingle.getOrElse("") === e.name) {
+            it(s"Should pass test ${e.name}") {
+              e match {
+                case r: RepresentationTest => {
+                  val base      = Paths.get(".").toUri
+                  val schemaUri = mkLocal(r.shex, schemasBase, shexFolderURI)
+                  val jsonUri   = mkLocal(r.json, schemasBase, shexFolderURI)
+                  val either: Either[String, String] = for {
+                    schemaStr      <- derefUri(schemaUri)
+                    jsonStr        <- derefUri(jsonUri)
+                    schema         <- Schema.fromString(schemaStr, "SHEXC", None)
+                    _              <- schema.wellFormed
+                    expectedSchema <- decode[Schema](jsonStr).leftMap(_.getMessage)
+                    _ <- if (CompareSchemas.compareSchemas(schema, expectedSchema)) Right(())
+                    else Left(s"Schemas are different. Parsed:\n${schema}\n-----Expected:\n${expectedSchema}")
+                    json <- parse(jsonStr).leftMap(e => s"Error parsing Expected JSON schema: ${e.getMessage}")
+                    check <- if (json.equals(schema.asJson)) Right(s"Schemas are equal")
+                    else
+                      Left(
+                        s"Json's are different\nSchema:${schema}\nJson generated: ${schema.asJson.spaces2}\nExpected: ${json.spaces2}")
+                  } yield check
+                  either.fold(e => fail(s"Error: $e"), msg => info(msg))
                 }
-                info(s"Contents: $jsonStr")
               }
             }
           }
@@ -60,5 +60,6 @@ class SchemasManifestTest extends ValidateManifest {
       }
     )
    }
+
 
 }

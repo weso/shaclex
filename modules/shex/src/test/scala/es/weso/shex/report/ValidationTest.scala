@@ -1,11 +1,9 @@
 package es.weso.shex.report
 
-import org.scalatest.FunSpec
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import com.typesafe.config._
 import java.io._
 import java.nio.file.Paths
-
-import org.scalatest.Matchers
 import es.weso.shex.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -16,14 +14,14 @@ import es.weso.shex.validator.{ExternalIRIResolver, Validator}
 import es.weso.shex._
 import es.weso.shex.manifest.JsonResult
 import io.circe.syntax._
-
+import es.weso.utils.UriUtils._
 import scala.collection.mutable
 import scala.io.Source
 
 
 // TODO: Remove duplication between ValidationTest and ValidationFailureTest
 
-class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser {
+class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser with EitherValues {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
@@ -64,10 +62,11 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser {
 
 
     // Validation tests
-    for (triple <- manifestRdf.triplesWithType(sht_ValidationTest)) {
+    for (triple <- manifestRdf.triplesWithType(sht_ValidationTest).right.value) {
       val node = triple.subj
       val nodeStr = node.getLexicalForm
-      val name = manifestRdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
+      val triples = manifestRdf.triplesWithSubjectPredicate(node, mf_name).right.value
+      val name = triples.map(_.obj).head.getLexicalForm
       if (nameIfSingle == None || nameIfSingle.getOrElse("") === name) {
         it(s"validationTest: $name") {
           val tryReport = for {
@@ -77,11 +76,11 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser {
             maybeResult  <- iriFromPredicateOptional(mf_result)(node, manifestRdf)
             schemaIRI <- iriFromPredicate(sht_schema)(action, manifestRdf)
             resolvedSchema = base.resolve(schemaIRI.uri)
-            schemaStr = Source.fromURI(resolvedSchema)("UTF-8").mkString
+            schemaStr <- derefUri(resolvedSchema)
             schema  <- Schema.fromString(schemaStr, "SHEXC", Some(schemaIRI)) // Some(resolvedSchema.toString))
 //            _ <- { println(s"BaseIRI: $baseIRI\n$schemaIRI"); Right(())}
             dataIRI <- iriFromPredicate(sht_data)(action, manifestRdf)
-            strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
+            strData <- derefUri(base.resolve(dataIRI.uri))
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
             maybeFocus <- objectFromPredicateOptional(sht_focus)(action, manifestRdf)
             maybeMap  <- iriFromPredicateOptional(sht_map)(action, manifestRdf)
@@ -160,10 +159,11 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser {
     }
 
     // Validation tests
-    for (triple <- manifestRdf.triplesWithType(sht_ValidationFailure)) {
+    for (triple <- manifestRdf.triplesWithType(sht_ValidationFailure).right.value) {
       val node    = triple.subj
       val nodeStr = node.getLexicalForm
-      val name = manifestRdf.triplesWithSubjectPredicate(node, mf_name).map(_.obj).head.getLexicalForm
+      val triples = manifestRdf.triplesWithSubjectPredicate(node, mf_name).right.value
+      val name = triples.map(_.obj).head.getLexicalForm
       if (nameIfSingle == None || nameIfSingle.getOrElse("") === name) {
         it(s"ValidationFailureTest: $name") {
         val tryReport = for {

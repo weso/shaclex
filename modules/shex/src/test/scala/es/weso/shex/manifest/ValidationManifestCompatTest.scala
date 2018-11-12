@@ -1,8 +1,8 @@
 package es.weso.shex.manifest
 
 import java.net.URI
+import es.weso.utils.UriUtils._
 import java.nio.file.Paths
-
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -17,26 +17,26 @@ import io.circe.parser._
 import io.circe.syntax._
 import es.weso.shapeMaps._
 import es.weso.shex.manifest.ManifestPrefixes._
-
 import scala.io._
+import es.weso.shex.manifest.Utils._
 
 class ValidationManifestCompatTest extends ValidateManifest {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-//    Some("bnode1dot_fail-missing")
-    None
+    // Some("recursion_example")
+     None
 
   val conf: Config = ConfigFactory.load()
   val shexFolder = conf.getString("validationFolder")
 //  val shexFolder = conf.getString("shexLocalFolder")
-  val shexFolderURI = Paths.get(shexFolder).normalize.toUri.toString
+  val shexFolderURI = Paths.get(shexFolder).normalize.toUri
 
   println(s"ValidationManifest")
 
   describe("ValidationManifest compatTest") {
-    val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI), false)
+    val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI.toString), false)
     r.fold(e => println(s"Error reading manifest: $e"),
       mf => {
         println(s"Manifest read with ${mf.entries.length} entries")
@@ -45,11 +45,11 @@ class ValidationManifestCompatTest extends ValidateManifest {
             it(s"Should pass test ${e.name}") {
               e match {
                 case r: RepresentationTest => {
-                  val resolvedJsonIri = IRI(shexFolderURI).resolve(r.json).uri
-                  val resolvedShExIri = IRI(shexFolderURI).resolve(r.shex).uri
+                  val resolvedJson = mkLocal(r.json,schemasBase,shexFolderURI)// IRI(shexFolderURI).resolve(r.json).uri
+                  val resolvedShEx = mkLocal(r.shex,schemasBase,shexFolderURI)// IRI(shexFolderURI).resolve(r.shex).uri
                   // info(s"Entry: $r with json: ${resolvedJsonIri}")
-                  val jsonStr   = Source.fromURI(resolvedJsonIri)("UTF-8").mkString
-                  val schemaStr = Source.fromURI(resolvedShExIri)("UTF-8").mkString
+                  val jsonStr   = Source.fromURI(resolvedJson)("UTF-8").mkString
+                  val schemaStr = Source.fromURI(resolvedShEx)("UTF-8").mkString
                   Schema.fromString(schemaStr, "SHEXC", None) match {
                     case Right(schema) => {
                       decode[Schema](jsonStr) match {
@@ -109,9 +109,11 @@ class ValidationManifestCompatTest extends ValidateManifest {
                           shouldValidate: Boolean
                          ): Either[String, String] = {
     val focus = fa.focus
-    val schemaStr = Source.fromURI(base.resolve(fa.schema.uri))("UTF-8").mkString
-    val dataStr   = Source.fromURI(base.resolve(fa.data.uri))("UTF-8").mkString
+    val schemaUri = mkLocal(fa.schema,schemasBase,shexFolderURI)
+    val dataUri = mkLocal(fa.data,schemasBase,shexFolderURI)
     for {
+      schemaStr <- derefUri(schemaUri)
+      dataStr <- derefUri(dataUri)
       schema <- Schema.fromString(schemaStr, "SHEXC", Some(fa.schema))
       data   <- RDFAsJenaModel.fromChars(dataStr, "TURTLE", Some(fa.data))
       lbl = fa.shape match {
@@ -156,16 +158,18 @@ class ValidationManifestCompatTest extends ValidateManifest {
     v.maybeResult match {
       case None => Left(s"No result specified")
       case Some(resultIRI) => {
-        val schemaStr         = Source.fromURI(base.resolve(mr.schema.uri))("UTF-8").mkString
-        val resolvedSmap      = base.resolve(mr.shapeMap.uri)
-        val resolvedResultMap = base.resolve(resultIRI.uri)
-        val resultMapStr      = Source.fromURI(resolvedResultMap).mkString
-        val smapStr           = Source.fromURI(resolvedSmap).mkString
+        val schemaUri         = mkLocal(mr.schema, validationBase, shexFolderURI)
+        val shapeMapUri       = mkLocal(mr.shapeMap, validationBase, shexFolderURI)
+        val resultMapUri      = mkLocal(resultIRI, validationBase, shexFolderURI)
         val r: Either[String, String] = for {
+          schemaStr      <- derefUri(schemaUri)
+          resultMapStr  <- derefUri(resultMapUri)
+          smapStr       <- derefUri(shapeMapUri)
           sm            <- ShapeMap.fromJson(smapStr)
           schema        <- Schema.fromString(schemaStr, "SHEXC", None)
           fixedShapeMap <- ShapeMap.fixShapeMap(sm, RDFAsJenaModel.empty, PrefixMap.empty, PrefixMap.empty)
-          strData = Source.fromURI(base.resolve(mr.data.uri))("UTF-8").mkString
+          dataUri = mkLocal(mr.data,schemasBase,shexFolderURI)
+          strData        <- derefUri(dataUri)
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", None)
           resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
           jsonResult     <- JsonResult.fromJsonString(resultMapStr)

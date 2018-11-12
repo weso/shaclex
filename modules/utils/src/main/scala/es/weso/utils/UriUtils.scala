@@ -1,5 +1,7 @@
 package es.weso.utils
 
+import java.net.URI
+
 import scala.io.Source
 import scala.util.Try
 import cats.implicits._
@@ -10,8 +12,8 @@ object UriUtils {
     * @param uri
     * @return Contents
     */
-  def derefUri(uri: String): Either[String,String] = {
-    Either.fromTry(Try(Source.fromURL(uri).mkString)).leftMap(_.getMessage)
+  def derefUri(uri: URI): Either[String,String] = {
+    Either.fromTry(Try(Source.fromURI(uri).mkString)).leftMap(e => s"derefUri($uri): Error: ${e.getMessage}")
   }
 
 }

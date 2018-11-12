@@ -300,9 +300,11 @@ object Spec extends LazyLogging {
 
   def neighs(n: RDFNode): Check[Set[Arc]] = for {
     rdf <- getRDF
+    outTriples <- fromEither(rdf.triplesWithSubject(n))
+    outArcs = outTriples.map(t => Arc(Direct(t.pred),t.obj))
+    inTriples <- fromEither(rdf.triplesWithObject(n))
+    inArcs = inTriples.map(t => Arc(Inverse(t.pred),t.obj))
   } yield {
-    val outArcs = rdf.triplesWithSubject(n).map(t => Arc(Direct(t.pred),t.obj))
-    val inArcs = rdf.triplesWithObject(n).map(t => Arc(Inverse(t.pred),t.obj))
     val allArcs = outArcs ++ inArcs
     logInfo(s"neighs($n): ${allArcs.map(_.show).mkString(",")}",0)
     allArcs

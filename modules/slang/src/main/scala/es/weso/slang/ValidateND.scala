@@ -2,11 +2,9 @@ package es.weso.slang
 
 import cats._
 import cats.data._
-import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
 import es.weso.rdf.triples.RDFTriple
-import es.weso.slang.ValidateND.cond
 
 
 // Validation with Answer-sets
@@ -14,18 +12,25 @@ import es.weso.slang.ValidateND.cond
 object ValidateND {
 
   type State = ShapesMap
-  type Validation[A] = StateT[Id,State,A]
-  def ok[A](x: A): Validation[A] = StateT.pure(x)
-  def getShapesMap: Validation[ShapesMap] = StateT.get[Id,ShapesMap]
+  type SV[A] = StateT[Id,State,A]
+  type Validation[A] = EitherT[SV,String,A]
+
+  def ok[A](x: A): Validation[A] = EitherT.pure(x)
+  def getShapesMap: Validation[ShapesMap] =
+    EitherT.liftF(StateT.get[Id,ShapesMap])
+
   def updateShapesMap(fn: ShapesMap => ShapesMap): Validation[Unit] = {
-    StateT.modify(fn)
+    EitherT.liftF(StateT.modify(fn))
   }
+
+  def fromEither[A](e: Either[String,A]): Validation[A] =
+    EitherT.fromEither(e)
 
   case class Pair(node: RDFNode, shape: SLang)
 
-  def runValidation(node: RDFNode, shape: SLang, rdf: RDFReader, schema: SchemaS): ShapesMap = {
-    val (sm,v) = validate(List(Pair(node, shape)), rdf, schema).run(ShapesMap.empty)
-    sm
+  def runValidation(node: RDFNode, shape: SLang, rdf: RDFReader, schema: SchemaS): Either[String, ShapesMap] = {
+    val (sm,v) = validate(List(Pair(node, shape)), rdf, schema).value.run(ShapesMap.empty)
+    v.fold(e => Left(e), _ => Right(sm))
   }
 
   def validate(pending: List[Pair], rdf: RDFReader, schema: SchemaS): Validation[Unit] = {
@@ -88,12 +93,12 @@ object ValidateND {
               }
               case QualifiedArc(pp, s, card) => {
                 println(s"QualifiedArc($pp,$s,$card)?")
-                val neighbourhood = rdf.triplesWithSubject(node)
-                val predicates = pp match {
-                  case Pred(p)   => Set(p)
-                  case NoPreds(ps) => neighbourhood.map(_.pred).diff(ps)
-                }
                 for {
+                  neighbourhood <- fromEither(rdf.triplesWithSubject(node))
+                  predicates = pp match {
+                    case Pred(p)   => Set(p)
+                    case NoPreds(ps) => neighbourhood.map(_.pred).diff(ps)
+                  }
                   count <- countArcsWithShape(predicates, rest, neighbourhood, s, rdf, schema)
                   _ <- { println(s"After countArcs: count= $count, card=$card, ${card.satisfies(count)}"); ok(()) }
                   _     <- cond(card.satisfies(count), node, shape)

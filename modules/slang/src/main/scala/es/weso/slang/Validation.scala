@@ -7,22 +7,28 @@ import cats._
 import cats.data._
 import cats.implicits._
 
-
 // Naïve implementation of SLang validation
 
 object Validation {
 
   type State = ShapesMap
-  type Validation[A] = StateT[Id,State,A]
-  def ok[A](x: A): Validation[A] = StateT.pure(x)
-  def getShapesMap: Validation[ShapesMap] = StateT.get[Id,ShapesMap]
+  type SV[A] = StateT[Id,State,A]
+  type Validation[A] = EitherT[SV,String,A]
+
+  def ok[A](x: A): Validation[A] = EitherT.pure(x)
+  def getShapesMap: Validation[ShapesMap] =
+    EitherT.liftF(StateT.get[Id,ShapesMap])
+
   def updateShapesMap(fn: ShapesMap => ShapesMap): Validation[Unit] = {
-    StateT.modify(fn)
+    EitherT.liftF(StateT.modify(fn))
   }
 
-  def runValidation(node: RDFNode, shape: SLang, rdf: RDFReader, schema: SchemaS): ShapesMap = {
-    val (sm,v) = validate(node, shape, rdf, schema).run(ShapesMap.empty)
-    sm
+  def fromEither[A](e: Either[String,A]): Validation[A] =
+    EitherT.fromEither(e)
+
+  def runValidation(node: RDFNode, shape: SLang, rdf: RDFReader, schema: SchemaS): Either[String,ShapesMap] = {
+    val (sm,v) = validate(node, shape, rdf, schema).value.run(ShapesMap.empty)
+    v.fold(Left(_), _ => Right(sm))
   }
 
 
@@ -55,14 +61,14 @@ object Validation {
           case None        => throw new Exception(s"Label $lbl not found in Schema")
         }
       }
-      case QualifiedArc(predSpec, shape, card) => {
-        println(s"QualifiedArc($predSpec,$shape,$card)?")
-        val neighbourhood = rdf.triplesWithSubject(node)
-        val predicates = predSpec match {
-          case Pred(p)   => Set(p)
-          case NoPreds(ps) => neighbourhood.map(_.pred).diff(ps)
-        }
+      case QualifiedArc(pp, shape, card) => {
+        println(s"QualifiedArc($pp,$shape,$card)?")
         for {
+          neighbourhood <- fromEither(rdf.triplesWithSubject(node))
+          predicates = pp match {
+            case Pred(p)   => Set(p)
+            case NoPreds(ps) => neighbourhood.map(_.pred).diff(ps)
+          }
           count <- countArcsWithShape(predicates, neighbourhood, shape, rdf, schema)
           r <- cond(card.satisfies(count), node, shape)
         } yield r

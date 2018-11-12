@@ -22,7 +22,37 @@ trait DepGraph[Node] {
     !negCycles.isEmpty
   }
 
-  def negCycles: Set[Set[Node]]
+  def negCycles: Set[Set[(Node,Node)]]
+
+  def oddNegCycles: Set[Set[(Node,Node)]] = {
+    val nc = negCycles
+  //  println(s"Neg cycles: $nc")
+    nc.filter(countNegLinks(_) % 2 == 1)
+  }
+
+  def countNegLinks(nodes: Set[(Node,Node)]
+                   ): Int = nodes.size match {
+    case 0 => 0
+    case _ => {
+      val negs = nodes.map{
+        case (n1,n2) => (n1,n2,haveNegativeLink(n1, n2))
+      }.filter(_._3 == true)
+      val n = negs.size
+//      println(s"#NegLinks of $nodes=$n\nnegs=${negs}")
+      n
+    }
+  }
+
+  def edgeBetween(node1: Node, node2: Node): Option[PosNeg]
+
+  private def haveNegativeLink(node1: Node, node2: Node): Boolean = {
+    edgeBetween(node1,node2) match {
+      case Some(Neg) => true
+      case Some(Pos) => false
+      case Some(Both) => true
+      case None => false
+    }
+  }
 
   def showEdges(showNode: Node => String = (x => x.toString)): String
 

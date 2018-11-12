@@ -398,6 +398,15 @@
         <#open1dotAND1dotcloseAND1dot>
         <#1dotANDopen1dotAND1dotclose>
 
+        # cycles
+        <#CycleNoNegation_pass>
+        <#NoNegation_pass>
+        <#NoNegation2_pass>
+        <#OneNegation_pass>
+        <#TwoNegation_pass>
+        <#Cycle2NoNegation_pass>
+        <#Cycle2Extra_pass>
+
         # imports
         <#1dotIMPORT1dot>
         <#2RefS1-IS2>
@@ -3553,6 +3562,73 @@
     sx:json <1dotANDopen1dotAND1dotclose.json> ;
     sx:ttl <1dotANDopen1dotAND1dotclose.ttl> ;
     .
+
+# cycles {
+
+<#CycleNoNegation_pass> a sht:RepresentationTest ;
+    mf:name "CycleNoNegation_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <CycleNoNegation.shex> ;
+    sx:json <CycleNoNegation.json> ;
+    sx:ttl <CycleNoNegation.ttl> ;
+    .
+
+<#NoNegation_pass> a sht:RepresentationTest ;
+    mf:name "NoNegation_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <NoNegation.shex> ;
+    sx:json <NoNegation.json> ;
+    sx:ttl <NoNegation.ttl> ;
+    .
+
+<#NoNegation2_pass> a sht:RepresentationTest ;
+    mf:name "NoNegation2_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <NoNegation2.shex> ;
+    sx:json <NoNegation2.json> ;
+    sx:ttl <NoNegation2.ttl> ;
+    .
+
+<#OneNegation_pass> a sht:RepresentationTest ;
+    mf:name "OneNegation_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <OneNegation.shex> ;
+    sx:json <OneNegation.json> ;
+    sx:ttl <OneNegation.ttl> ;
+    .
+
+<#TwoNegation_pass> a sht:RepresentationTest ;
+    mf:name "TwoNegation_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <TwoNegation.shex> ;
+    sx:json <TwoNegation.json> ;
+    sx:ttl <TwoNegation.ttl> ;
+    .
+
+<#Cycle2NoNegation_pass> a sht:RepresentationTest ;
+    mf:name "Cycle2NoNegation_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <Cycle2NoNegation.shex> ;
+    sx:json <Cycle2NoNegation.json> ;
+    sx:ttl <Cycle2NoNegation.ttl> ;
+    .
+
+<#Cycle2Extra_pass> a sht:RepresentationTest ;
+    mf:name "Cycle2Extra_pass" ;
+    mf:status mf:proposed ;
+    sht:trait sht:Cycle ;
+    sx:shex <Cycle2Extra.shex> ;
+    sx:json <Cycle2Extra.json> ;
+    sx:ttl <Cycle2Extra.ttl> ;
+    .
+
+# } cycles
 
 # imports {
 

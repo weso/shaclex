@@ -6,7 +6,7 @@ import es.weso.shex.Schema
 import org.scalatest._
 
 class ValidateNDTest extends FunSpec
-  with Matchers with SLang2Clingo with ShEx2SLang {
+  with Matchers with SLang2Clingo with ShEx2SLang with EitherValues {
 
   describe(s"SLang validation") {
     it(s"Should validate simple example") {
@@ -22,7 +22,7 @@ class ValidateNDTest extends FunSpec
 
       r.fold(e => fail(s"Error: $e"), values => {
         val (rdf,schema,slangSchema) = values
-        val result = ValidateND.runValidation(node, shape, rdf, slangSchema)
+        val result = ValidateND.runValidation(node, shape, rdf, slangSchema).right.value
         info(s"SLang schema: $slangSchema")
         info(s"Result for $node:\n${result.map(node).m.map(pair => { s"${pair._1}: ${pair._2}"}).mkString("\n")}")
         result.isConforming(node, shape) should be(Conforms)
@@ -50,7 +50,7 @@ class ValidateNDTest extends FunSpec
         val (rdf,schema,slangSchema) = values
         val node = IRI("a")
         val shape: SLang  = Ref(IRILabel(IRI("User")))
-        val result = ValidateND.runValidation(node, shape, rdf, slangSchema)
+        val result = ValidateND.runValidation(node, shape, rdf, slangSchema).right.value
         info(s"SLang schema: $slangSchema")
         info(s"Result for $node:\n${result.map(node).m.map(pair => { s"${pair._1}: ${pair._2}"}).mkString("\n")}")
         result.isConforming(node, shape) should be(Conforms)

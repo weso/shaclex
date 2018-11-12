@@ -8,7 +8,7 @@ class DepGraphTest
   with EitherValues {
 
   describe("A Graph") {
-
+/*
     it("should be able to create empty graph") {
       val emptyGraph = DepGraph.empty[String]
       emptyGraph.nodes should contain theSameElementsAs Set()
@@ -41,10 +41,16 @@ class DepGraphTest
         addNegEdge("a", "c").
         addPosEdge("b", "d").
         addPosEdge("d", "a")
-
-      println(s"graph: $g")
       g.containsNegCycle should be(false)
     }
+
+    it("Should be able to add pos and neg edges between the same nodes") {
+      val g = DepGraph.empty[String].
+        addPosEdge("a", "a").
+        addNegEdge("a", "a")
+      g.containsNegCycle should be(true)
+    }
+
 
     it("Should calculate neg cycles") {
       val g = DepGraph.empty[String].
@@ -58,6 +64,25 @@ class DepGraphTest
       cycle should contain theSameElementsAs Set("a", "b", "d")
       g.containsNegCycle should be(true)
     }
+*/
+    it("Should count negCycles with 2") {
+      val g = DepGraph.empty[String].
+        addNegEdge("s", "t").
+        addNegEdge("t", "u").
+        addPosEdge("u","s")
+        g.containsNegCycle should be(true)
+        g.countNegLinks(Set(("s","t"),("t","u"),("u","s"))) should be(2)
+    }
+
+    it("Should count negCycles with 3") {
+      val g = DepGraph.empty[String].
+        addNegEdge("s", "t").
+        addNegEdge("t", "u").
+        addNegEdge("u","s")
+      g.containsNegCycle should be(true)
+      g.countNegLinks(Set(("s","t"),("t","u"),("u","s"))) should be(3)
+    }
+
   }
 
 }

@@ -1,19 +1,18 @@
 package es.weso.depgraphs
 
-import org.jgrapht.DirectedGraph
-import org.jgrapht.graph.DefaultDirectedGraph
-import org.jgrapht.graph.DirectedSubgraph
+import org.jgrapht.Graph
+import org.jgrapht.graph._
+import org.jgrapht.alg._
 
-import org.jgrapht.alg.KosarajuStrongConnectivityInspector
-import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm
 import collection.JavaConverters._
 import cats.implicits._
+import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm
 
 case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
 
   case class Edge(source: Node, posNeg: PosNeg, target: Node)
 
-  val graph: DirectedGraph[Node, Edge] =
+  val graph: Graph[Node, Edge] =
     new DefaultDirectedGraph[Node, Edge](classOf[Edge])
 
   /**
@@ -56,8 +55,25 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     this
   }
 
+  private def removeEdge(node1: Node, node2:Node): Unit = {
+    graph.removeEdge(node1,node2)
+  }
+
   override def addEdge(node1: Node, posNeg: PosNeg, node2: Node): DepGraph[Node] = {
-    addEdge(node1, node2, Edge(node1, posNeg, node2))
+    checkVertex(node1)
+    checkVertex(node2)
+    this.edgeBetween(node1,node2) match {
+      case Some(pn) => {
+        removeEdge(node1,node2)
+        addEdge(node1, node2, Edge(node1, pn.combine(posNeg), node2))
+      }
+      case None => addEdge(node1, node2, Edge(node1, posNeg, node2))
+    }
+  }
+
+  override def edgeBetween(node1: Node, node2: Node): Option[PosNeg] = {
+    val outEdges = graph.edgesOf(node1).asScala.toSet
+    outEdges.collect{ case e: Edge if e.target == node2 => e.posNeg }.headOption
   }
 
   override def outEdges(node: Node): Either[String, Set[(PosNeg, Node)]] = {
@@ -69,26 +85,35 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     }
   }
 
-  private def containsNegEdge(g: DirectedSubgraph[Node, Edge]): Boolean = {
-    g.edgeSet.asScala.exists(e => e.posNeg == Neg)
+  private def containsNegEdge(g: Graph[Node, Edge]): Boolean = {
+    g.edgeSet.asScala.exists(e => e.posNeg == Neg || e.posNeg == Both)
   }
 
-  override def negCycles: Set[Set[Node]] = {
+  override def negCycles: Set[Set[(Node,Node)]] = {
     val scAlg: StrongConnectivityAlgorithm[Node, Edge] =
       new KosarajuStrongConnectivityInspector(graph)
     val sccSubgraphs =
-      scAlg.stronglyConnectedSubgraphs().asScala.toSet
-    sccSubgraphs.filter(containsNegEdge(_)).map(getNodes(_))
+      scAlg.getStronglyConnectedComponents.asScala.toSet  // stronglyConnectedSubgraphs().asScala.toSet
+    sccSubgraphs.filter(containsNegEdge(_)).map(getEdges(_))
   }
 
-  private def getNodes(g: DirectedSubgraph[Node, Edge]): Set[Node] = {
-    g.vertexSet.asScala.toSet
+  private def getEdges(g: Graph[Node, Edge]): Set[(Node,Node)] = {
+    val es = g.edgeSet.asScala.toSet
+    // println(s"getEdges($g)=$es")
+    es.map(e => (e.source,e.target))
+  }
+
+  private def getNodes(g: Graph[Node, Edge]): Set[Node] = {
+    val ns = g.vertexSet.asScala.toSet
+    // println(s"getNodes($g)=$ns")
+    ns
   }
 
   def showPosNeg(pn: PosNeg): String = {
     pn match {
       case Pos => "-(+)->"
       case Neg => "-(-)->"
+      case Both => "-(-/+)->"
     }
   }
 
@@ -99,6 +124,8 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     }
     str.toString
   }
+
+  type ES[A] = Either[String,A]
 
   override def isomorphicWith(other: DepGraph[Node]): Either[String, Unit] = {
     val nodes1 = this.nodes
@@ -115,7 +142,7 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
           }
         }
       }).toList
-      rs.sequence.map(_ => ())
+      rs.sequence[ES,Unit].map(_ => ())
     } else
       Left(s"Set of nodes is different. Nodes1 = $nodes1, nodes2 = $nodes2")
   }

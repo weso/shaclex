@@ -9,7 +9,7 @@ import es.weso.shapeMaps.{
  _
 }
 import es.weso.slang.Clingo._
-
+import cats.syntax.either._
 import scala.annotation.tailrec
 
 object ClingoNames {
@@ -178,22 +178,18 @@ trait SLang2Clingo {
   private def ground(node: RDFNode,
              label: Label,
              rdf: RDFReader,
-             schema: SchemaS): Either[String,Program] = {
-    schema.getLabel(label) match {
-      case Some(shape) => {
-        val rdfStatements = groundRDF(node,rdf)
-        val shapeStatements = groundShape(shape)
-        val schemaStatements = groundSchema(schema)
-        val shapeMapStatements = groundShapeMap(node,label)
-        val all: Seq[Statement] =
-          rdfStatements.statements ++
-            shapeStatements ++
-            schemaStatements ++
-            shapeMapStatements
-        Right(Program(all))
-      }
-      case None => Left(s"Shape with label $label not found in Schema")
-    }
+             schema: SchemaS): Either[String,Program] =
+    for {
+     shape <- schema.getLabel(label).fold(
+       s"Label $label not found in Schema. Available labels: ${schema.availableLabels.mkString(",")}".asLeft[SLang]
+     )(Right(_))
+     rdfStatements <- groundRDF(node,rdf)
+     shapeStatements = groundShape(shape)
+     schemaStatements = groundSchema(schema)
+     shapeMapStatements = groundShapeMap(node,label)
+    } yield {
+    val all = rdfStatements.statements ++ shapeStatements ++ schemaStatements ++ shapeMapStatements
+    Program(all)
   }
 
 /*  private  def closure(node: RDFNode, rdf: RDFReader): List[RDFTriple] =
@@ -211,15 +207,14 @@ trait SLang2Clingo {
     case l: RDFLiteral => mkFact(LITERAL, node2Term(node),iri2Term(l.dataType))
   }
 
-  private def groundRDF(node: RDFNode, rdf: RDFReader): Program = {
-    val (nodes,triples) = Graph.traverseWithArcs(node,rdf)
+  private def groundRDF(node: RDFNode, rdf: RDFReader): Either[String, Program] = for {
+    nodesTriples <- Graph.traverseWithArcs(node,rdf)
+  } yield {
+    val (nodes,triples) = nodesTriples
     val statementsNodes = nodes.map(node2Statement(_))
     val statementsTriples = triples.map(triple2Statement(_))
     // val statementsPredicates = triples.map(_.pred).distinct.map(pred2Statement(_))
-    Program(
-      statementsNodes ++
-        statementsTriples
-    )
+    Program(statementsNodes ++ statementsTriples)
   }
 
   private def groundShapeMap(node: RDFNode, label: Label): List[Statement] = {

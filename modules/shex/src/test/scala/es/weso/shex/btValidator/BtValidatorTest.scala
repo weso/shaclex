@@ -26,7 +26,8 @@ class BtValidatorTest extends FunSpec with Matchers with EitherValues {
       val rdf = RDFAsJenaModel.empty.addTriple(RDFTriple(x,rdf_type,y)).getOrElse(RDFAsJenaModel.empty)
       val c:Check[Set[RDFNode]] = for {
         rdf <- getRDF
-      } yield rdf.getTypes(x)
+        ts <- fromEither(rdf.getTypes(x))
+      } yield ts
       runCheck(rdf,Schema.empty,c).fold(e => fail(s"Error"),
         ns => ns should contain theSameElementsAs (List(y))
       )

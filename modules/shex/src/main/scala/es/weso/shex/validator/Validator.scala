@@ -63,11 +63,13 @@ case class Validator(schema: Schema,
     } yield t
   }
 
-  private[validator] def getTargetNodeDeclarations(rdf: RDFReader): Check[List[(RDFNode, ShapeLabel)]] = {
-    checkAll(rdf.triplesWithPredicate(sh_targetNode).
+  private[validator] def getTargetNodeDeclarations(rdf: RDFReader): Check[List[(RDFNode, ShapeLabel)]] =
+    for {
+    ts <- fromEitherString(rdf.triplesWithPredicate(sh_targetNode))
+    r <- checkAll(ts.
       map(t => (t.obj, mkShapeLabel(t.subj))).
       toList.map(checkPair2nd))
-  }
+  } yield r
 
   private[validator] def checkNodesShapes(fixedMap: FixedShapeMap): CheckTyping = for {
     ts <- checkAll(fixedMap.shapeMap.toList.map(tupled(checkNodeShapesMap)))
@@ -552,34 +554,38 @@ case class Validator(schema: Schema,
     )
   }
 
-  private[validator] def getNeighs(node: RDFNode): Check[Neighs] = for {
+  private[validator] def getNeighs(node: RDFNode): Check[Neighs] =
+  for {
     rdf <- getRDF
+    outTriples <- fromEitherString(rdf.triplesWithSubject(node))
+    outgoing = outTriples.map(t => Arc(Direct(t.pred), t.obj)).toList
+    inTriples <- fromEitherString(rdf.triplesWithObject(node))
+    incoming = inTriples.map(t => Arc(Inverse(t.pred), t.subj)).toList
   } yield {
-    val outgoing: List[Arc] = rdf.triplesWithSubject(node).
-      map(t => Arc(Direct(t.pred), t.obj)).toList
-    val incoming: List[Arc] = rdf.triplesWithObject(node).
-      map(t => Arc(Inverse(t.pred), t.subj)).toList
     val neighs = outgoing ++ incoming
     neighs
   }
 
-  private[validator] def getNeighPaths(node: RDFNode, paths: List[Path]): Check[Neighs] = for {
-    rdf <- getRDF
-  } yield {
+  private[validator] def getNeighPaths(node: RDFNode, paths: List[Path]): Check[Neighs] = {
     val outgoingPredicates = paths.collect { case Direct(p) => p }
-    val outgoing: List[Arc] = rdf.triplesWithSubjectPredicates(node, outgoingPredicates).
-      map(t => Arc(Direct(t.pred), t.obj)).toList
-    val incoming: List[Arc] = rdf.triplesWithObject(node).
-      map(t => Arc(Inverse(t.pred), t.subj)).toList
-    val neighs = outgoing ++ incoming
-    neighs
+    for {
+      rdf        <- getRDF
+      outTriples <- fromEitherString(rdf.triplesWithSubjectPredicates(node, outgoingPredicates))
+      outgoing = outTriples.map(t => Arc(Direct(t.pred), t.obj)).toList
+      inTriples <- fromEitherString(rdf.triplesWithObject(node))
+      incoming = inTriples.map(t => Arc(Inverse(t.pred), t.subj)).toList
+    } yield {
+      val neighs = outgoing ++ incoming
+      neighs
+    }
   }
 
   private[validator] def getNotAllowedPredicates(node: RDFNode, paths: List[Path]): Check[Set[IRI]] = for {
     rdf <- getRDF
+    ts <- fromEitherString(rdf.triplesWithSubject(node))
   } yield {
     val allowedPreds = paths.collect { case Direct(p) => p }
-    rdf.triplesWithSubject(node).collect {
+    ts.collect {
       case s if !(allowedPreds contains s.pred) => s.pred
     }
   }

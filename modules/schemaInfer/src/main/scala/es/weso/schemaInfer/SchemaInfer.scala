@@ -34,24 +34,29 @@ object SchemaInfer {
             options: InferOptions = InferOptions.defaultOptions
            ): Either[String, Schema] = for {
     nodes <- selector.select(rdf)
+    neighbours <- getNeighbourhoods(nodes, rdf)
     schema <- mkSchema(
-      getNeighbourhoods(nodes, rdf).mapValues(collapse(options)),
+      neighbours.mapValues(collapse(options)),
       engine, shapeLabel, rdf.getPrefixMap(),
       options
     )
   } yield schema
 
+  type NeighMap = Map[IRI, Set[RDFNode]]
+  type EitherNeighMap = Either[String,NeighMap]
+
   private def getNeighbourhoods(nodes: Set[RDFNode],
                         rdf: RDFReader
-                       ): Map[IRI, Set[RDFNode]] = {
-    val zero: Map[IRI, Set[RDFNode]] = Map()
-    def combine(rest: Map[IRI, Set[RDFNode]],
+                       ): EitherNeighMap = {
+    val zero: EitherNeighMap = Right(Map())
+    def combine(rest: EitherNeighMap,
                 node: RDFNode
-               ): Map[IRI, Set[RDFNode]] = {
-     rdf.triplesWithSubject(node).map(
+               ): EitherNeighMap = for {
+     ts <- rdf.triplesWithSubject(node)
+    } yield ts.map(
        triple => (triple.pred, triple.obj)
      ).groupBy(_._1).map { case (k,v) => (k, v.map(_._2))}
-    }
+
     nodes.foldLeft(zero)(combine)
   }
 
