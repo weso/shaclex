@@ -17,17 +17,25 @@ object SchemaInfer {
   val wikibase = IRI("http://wikiba.se/ontology#")
   val schemaIri = IRI("http://schema.org/")
   val propIri   = IRI("http://www.wikidata.org/prop/")
+  val wdt = IRI("http://www.wikidata.org/prop/direct/")
+  val skos = IRI("http://www.w3.org/2004/02/skos/core#")
   val `wikibase:directClaim` = wikibase + "directClaim"
   val prov = IRI("http://www.w3.org/ns/prov#")
   val `prov:wasDerivedFrom` = prov + "wasDerivedFrom"
 
-  type NeighMap = Map[IRI, Set[RDFNode]]
-  type EitherNeighMap = Either[String,NeighMap]
-  type InferredShape = Map[IRI,InferredValue]
-  type InferredSchema = Map[IRI, InferredShape]
+  private type NeighMap = Map[IRI, Set[RDFNode]]
+  private type EitherNeighMap = Either[String,NeighMap]
+  private type InferredShape = Map[IRI,InferredValue]
+  private type InferredSchema = Map[IRI, InferredShape]
 
   type ES[A] = Either[String,A]
   val totalNumber = sx + "totalNumber"
+
+  case class FollowOn(check: IRI => Boolean, pred: IRI, labelGenerator: IRI => IRI)
+
+  def checkWDProp(iri: IRI): Boolean = false
+  def wdPropGen(iri: IRI): IRI = iri
+  val followOnReference: FollowOn(checkWDProp _, `prov:wasDerivedFrom`, wdPropGen _)
 
   case class InferOptions(
    inferTypePlainNode: Boolean,
@@ -37,8 +45,11 @@ object SchemaInfer {
    addRDFSAlias: Boolean,
    addWDPropAlias: Boolean,
    addSchemaAlias: Boolean,
+   addSkosAlias: Boolean,
+   addWikibaseAlias: Boolean,
+   addWDDirect: Boolean,
    addLabelLang: Option[Lang],
-   followOnPreds: List[(IRI, IRI)]
+   followOnLs: List[FollowOn]
   )
   object InferOptions {
     val defaultOptions =
@@ -50,8 +61,11 @@ object SchemaInfer {
         addRDFSAlias = true,
         addWDPropAlias = true,
         addSchemaAlias = true,
+        addWDDirect = true,
+        addSkosAlias = true,
+        addWikibaseAlias = true,
         addLabelLang = Some(Lang("en")),
-        followOnPreds = List((`prov:wasDerivedFrom`, IRI("references")))
+        followOnLs = List(followOnReference)
       )
   }
 
@@ -59,7 +73,7 @@ object SchemaInfer {
                   selector: NodeSelector,
                   engine: String,
                   shapeLabel: IRI,
-                  options: InferOptions
+                  options: InferOptions = InferOptions.defaultOptions
                  ): Either[String,Schema] = for {
     nodes <- selector.select(rdf)
     neighMap <- getNeighbourhoods(nodes, rdf)
@@ -72,11 +86,11 @@ object SchemaInfer {
     )
   } yield schema
 
-  def inferShapes(rdf: RDFReader,
+  private def inferShapes(rdf: RDFReader,
                   neighMap: NeighMap,
                   engine: String,
                   shapeLabel: IRI,
-                  options: InferOptions = InferOptions.defaultOptions
+                  options: InferOptions
            ): Either[String, InferredSchema] =
     Right(Map(shapeLabel -> neighMap.mapValues(collapse(options))))
 
@@ -190,6 +204,9 @@ object SchemaInfer {
 
   private def hasWDProp(c: InferredValue) =  true
   private def hasSchema(c: InferredValue) =  true
+  private def hasWikibase(c: InferredValue) =  true
+  private def hasWDDirect(c: InferredValue) = true
+  private def hasSkos(c: InferredValue) = true
 
 
   private def hasRDF(c: InferredValue): Boolean = c.constraint match {
@@ -199,21 +216,24 @@ object SchemaInfer {
   private def hasStar(c: InferredValue): Boolean =
     c.number > 1
 
-  private def containsDecl(m: Map[IRI,InferredShape],
+  private def containsDeclSchema(m: InferredSchema,
                            check: InferredValue => Boolean,
                            name: String): Boolean = {
-   // TODO: repair this one:
-    //   !m.values.filter(check).isEmpty
-    true
+    !m.values.filter(containsDeclShape(check,name)).isEmpty
+  }
+
+  private def containsDeclShape(check: InferredValue => Boolean,
+                                  name: String)(m: InferredShape): Boolean = {
+    !m.values.filter(check).isEmpty
   }
 
   private def addPrefix(alias: String,
                         iri: IRI,
                         options: InferOptions,
                         checkOptions: InferOptions => Boolean,
-                        m: Map[IRI,InferredShape],
+                        m: InferredSchema,
                         check: InferredValue => Boolean)(pm: PrefixMap): PrefixMap = {
-    if (containsDecl(m, check, alias)) {
+    if (containsDeclSchema(m, check, alias)) {
       if (checkOptions(options) && !pm.contains(alias)) pm.addPrefix(alias,iri)
       else pm
     }
@@ -331,13 +351,16 @@ object SchemaInfer {
   } yield {
     val pm =
       addPrefix("schema",schemaIri,inferOptions, _.addSchemaAlias,m,hasSchema)(
+      addPrefix("skos",skos,inferOptions, _.addSkosAlias,m,hasSkos)(
+      addPrefix("wikibase",wikibase,inferOptions, _.addWikibaseAlias,m,hasWikibase)(
+      addPrefix("wdt",wdt,inferOptions, _.addWDDirect,m,hasWDDirect)(
       addPrefix("wdp",propIri,inferOptions, _.addWDPropAlias,m,hasWDProp)(
       addPrefix("xsd",xsd,inferOptions, _.addXSDAlias,m,hasXSD)(
       addPrefix("rdf",rdf,inferOptions, _.addRDFAlias,m,hasRDF)(
       addPrefix("sx",sx,inferOptions, _.addSxAlias,m,hasStar)(
       addPrefix("rdfs",rdfs,inferOptions,_.addRDFSAlias,m,_ => true)(
         rdfReader.getPrefixMap
-      ))))))
+      )))))))))
 
     ShExSchema(Schema(IRI(""),Some(pm), None, None, None, Some(es), None, List()))
   }
