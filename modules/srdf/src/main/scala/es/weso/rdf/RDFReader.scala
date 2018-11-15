@@ -15,6 +15,8 @@ trait RDFReader {
 
   type Rdf <: RDFReader
   type ES[A] = Either[String,A]  // This is only needed to keep IntelliJ happy
+  val id: String
+
 
   def availableParseFormats: List[String]
 

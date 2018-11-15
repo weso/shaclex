@@ -16,8 +16,6 @@ import es.weso.shex.manifest.JsonResult
 import io.circe.syntax._
 import es.weso.utils.UriUtils._
 import scala.collection.mutable
-import scala.io.Source
-
 
 // TODO: Remove duplication between ValidationTest and ValidationFailureTest
 
@@ -26,14 +24,14 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser wi
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-    // None
-    Some("1dot")
+    None
+    // Some("open3Onedotclosecard23_pass-p1p2")
 
   val counter = Counter()
   val conf: Config = ConfigFactory.load()
   val manifestFile = new File(conf.getString("manifestFile"))
   val outFile = conf.getString("EarlReportFile")
-  val baseIRI: Option[IRI] = Some(IRI(Paths.get(manifestFile.getCanonicalPath()).normalize().toUri))
+  val baseIRI: Option[IRI] = Some(IRI("https://raw.githubusercontent.com/shexSpec/shexTest/master/validation/manifest"))
 
   describe("Generate W3c EARL report") {
     RDFAsJenaModel.fromFile(manifestFile, "TURTLE", baseIRI) match {
@@ -80,7 +78,7 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser wi
             schema  <- Schema.fromString(schemaStr, "SHEXC", Some(schemaIRI)) // Some(resolvedSchema.toString))
 //            _ <- { println(s"BaseIRI: $baseIRI\n$schemaIRI"); Right(())}
             dataIRI <- iriFromPredicate(sht_data)(action, manifestRdf)
-            strData <- derefUri(base.resolve(dataIRI.uri))
+            strData <- derefUri(dataIRI.uri)
             data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
             maybeFocus <- objectFromPredicateOptional(sht_focus)(action, manifestRdf)
             maybeMap  <- iriFromPredicateOptional(sht_map)(action, manifestRdf)
@@ -115,11 +113,9 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser wi
               }
               case None => (maybeMap,maybeResult) match {
                 case (Some(smapIRI), Some(resultIRI)) => {
-                  val resolvedSmap = base.resolve(smapIRI.uri)
-                  val resolvedResultMap = base.resolve(resultIRI.uri)
-                  val resultMapStr = Source.fromURI(resolvedResultMap).mkString
-                  val smapStr = Source.fromURI(resolvedSmap).mkString
                   val r: Either[String,String] = for {
+                    smapStr <- derefUri(smapIRI.uri)
+                    resultMapStr <- derefUri(resultIRI.uri)
                     sm <- ShapeMap.fromJson(smapStr)
                     fixedShapeMap <- ShapeMap.fixShapeMap(sm, manifestRdf, manifestRdf.getPrefixMap(),schema.prefixMap)
                     resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
@@ -172,10 +168,10 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser wi
           maybeResult  <- iriFromPredicateOptional(mf_result)(node, manifestRdf)
           action    <- objectFromPredicate(mf_action)(node, manifestRdf)
           schemaIRI <- iriFromPredicate(sht_schema)(action, manifestRdf)
-          schemaStr = Source.fromURI(base.resolve(schemaIRI.uri))("UTF-8").mkString
+          schemaStr <- derefUri(schemaIRI.uri)
           schema  <- Schema.fromString(schemaStr, "SHEXC", Some(schemaIRI))
           dataIRI <- iriFromPredicate(sht_data)(action, manifestRdf)
-          strData = Source.fromURI(base.resolve(dataIRI.uri))("UTF-8").mkString
+          strData <- derefUri(dataIRI.uri)
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", baseIRI)
           maybeFocus          <- objectFromPredicateOptional(sht_focus)(action, manifestRdf)
           maybeMap  <- iriFromPredicateOptional(sht_map)(action, manifestRdf)
@@ -211,11 +207,9 @@ class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser wi
              }
             case None => (maybeMap,maybeResult)  match {
               case (Some(smapIRI), Some(resultIRI)) => {
-                val resolvedSmap = base.resolve(smapIRI.uri)
-                val smapStr = Source.fromURI(resolvedSmap).mkString
-                val resolvedResultMap = base.resolve(resultIRI.uri)
-                val resultMapStr = Source.fromURI(resolvedResultMap).mkString
                 val r: Either[String,String] = for {
+                 smapStr <- derefUri(smapIRI.uri)
+                 resultMapStr <- derefUri(resultIRI.uri)
                  sm <- ShapeMap.fromJson(smapStr)
                  fixedShapeMap <- ShapeMap.fixShapeMap(sm, manifestRdf,manifestRdf.getPrefixMap(),schema.prefixMap)
                  resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)

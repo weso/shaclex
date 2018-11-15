@@ -84,7 +84,7 @@ class NodeSelectorMaker(
     for {
       alts <- {
         val r: List[Builder[SHACLPath]] = ctx.pathSequence().asScala.map(visitPathSequence(_)).toList
-        r.sequence
+        r.sequence[Builder,SHACLPath]
       }
     } yield if (alts.length == 1) alts.head
     else AlternativePath(alts)
@@ -93,7 +93,7 @@ class NodeSelectorMaker(
     for {
       seqs <- {
         val r: List[Builder[SHACLPath]] = ctx.pathEltOrInverse().asScala.map(visitPathEltOrInverse(_)).toList
-        r.sequence
+        r.sequence[Builder,SHACLPath]
       }
     } yield if (seqs.length == 1) seqs.head
     else SequencePath(seqs)
@@ -200,7 +200,8 @@ class NodeSelectorMaker(
   private def visitNodeIri(ctx: NodeIriContext, prefixMap: PrefixMap): Builder[IRI] =
     if (isDefined(ctx.IRIREF())) for {
       base <- getBase
-    } yield extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+      iri <- extractIRIfromIRIREF(ctx.IRIREF().getText, base)
+    } yield iri
     else for {
       prefixedName <- visitPrefixedName(ctx.prefixedName())
       iri <- resolve(prefixedName, prefixMap)
@@ -240,16 +241,13 @@ class NodeSelectorMaker(
         shapeOrRef <- visitShapeOrRef(ctx.shapeOrRef())
       } yield shapeOrRef */
 
-  def extractIRIfromIRIREF(d: String, base: Option[IRI]): IRI = {
+  def extractIRIfromIRIREF(d: String, base: Option[IRI]): Builder[IRI] = {
     val iriRef = "^<(.*)>$".r
     d match {
       case iriRef(i) => {
-        // TODO: Check base declaration
-        base match {
-          case None => IRI(i)
-          case Some(b) => b + i
-        }
+        IRI.fromString(i,base)
       }
+      case s => err(s"IRIREF $s does not match <...>")
     }
   }
 
@@ -292,7 +290,7 @@ class NodeSelectorMaker(
   def visitList[A, B](
     visitFn: A => Builder[B],
     ls: java.util.List[A]): Builder[List[B]] = {
-    ls.asScala.toList.map(visitFn(_)).sequence
+    ls.asScala.toList.map(visitFn(_)).sequence[Builder,B]
   }
 
   def visitOpt[A, B](

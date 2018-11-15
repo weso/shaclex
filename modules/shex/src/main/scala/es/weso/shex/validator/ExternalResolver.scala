@@ -9,11 +9,11 @@ sealed abstract class ExternalResolver {
 }
 
 // TODO: Should we have a list of IRIs instead of a single one?
-case class ExternalIRIResolver(iri: Option[IRI]) extends ExternalResolver {
+case class ExternalIRIResolver(maybeIri: Option[IRI]) extends ExternalResolver {
 
-  lazy val eitherSchema: Either[String,Schema] = iri match {
+  lazy val eitherSchema: Either[String,Schema] = maybeIri match {
     case None => Left(s"No IRI provided for ExternalIRI resolver")
-    case Some(iri) => Schema.fromIRI(iri)
+    case Some(iri) => Schema.fromIRI(iri,maybeIri)
   }
 
   override def getShapeExpr(label: ShapeLabel,

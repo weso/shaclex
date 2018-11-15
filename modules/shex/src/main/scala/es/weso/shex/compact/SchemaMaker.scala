@@ -674,6 +674,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
           }
         }
       })
+      case s => err(s"IRIREF: $s does not match <...>")
     }
   }
 

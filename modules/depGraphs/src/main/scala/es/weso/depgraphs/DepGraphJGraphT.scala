@@ -103,11 +103,11 @@ case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
     es.map(e => (e.source,e.target))
   }
 
-  private def getNodes(g: Graph[Node, Edge]): Set[Node] = {
+/*  private def getNodes(g: Graph[Node, Edge]): Set[Node] = {
     val ns = g.vertexSet.asScala.toSet
     // println(s"getNodes($g)=$ns")
     ns
-  }
+  } */
 
   def showPosNeg(pn: PosNeg): String = {
     pn match {

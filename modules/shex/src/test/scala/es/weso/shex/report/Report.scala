@@ -142,7 +142,7 @@ case class Report(
       val t = model.createResource()
       val result = model.createResource()
       model.add(t, rdf_type, earlAssertion)
-      model.add(t, earl_test, model.createResource(shexTests + r.uriTest))
+      model.add(t, earl_test, model.createResource(r.uriTest))
       model.add(t, foaf_name, r.name)
       model.add(t, earl_assertedBy, labra)
       model.add(t, earl_mode, earl_automatic)

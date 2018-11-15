@@ -26,6 +26,8 @@ case class RDFAsRDF4jModel(model: Model,
     with RDFBuilder
     with RDFReasoner {
 
+  val id = s"RDFAsRDF4jModel($sourceIRI)"
+
   type Rdf = RDFAsRDF4jModel
 
   override def availableParseFormats: List[String] = RDFAsRDF4jModel.availableFormats

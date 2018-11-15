@@ -23,12 +23,15 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.jena.JenaMapper._
 
-// TODO: Refactor to change String type by Url
-case class Endpoint(endpoint: String)
+// TODO: Refactor to change String type by IRI
+case class Endpoint(endpointIRI: IRI)
   extends RDFReader
      with RDFReasoner
      with LazyLogging {
   type Rdf = Endpoint
+
+  val endpoint = endpointIRI.str
+  val id = s"Endpoint($endpoint)"
 
   def availableParseFormats: List[String] = List()
   def availableSerializeFormats: List[String] = List()
@@ -104,7 +107,7 @@ case class Endpoint(endpoint: String)
     case subj: IRI => Try {
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(subj)).execConstruct()
       model2triples(model)
-    }.fold(e => Left(e.getMessage), Right(_))
+    }.fold(e => Left(s"Error accessing endpoint ${endpoint} to obtain triples with subject $node: ${e.getMessage}"), Right(_))
     case _ => Left("triplesWithSubject: node " + node + " must be a IRI")
   }
 
@@ -246,8 +249,7 @@ case class Endpoint(endpoint: String)
 }
 
 object Endpoint {
-  def fromString(url: String): Either[String,Endpoint] = {
-     // TODO: Check that str is a Url
-    Right(Endpoint(url))
+  def fromString(str: String): Either[String,Endpoint] = {
+    IRI.fromString(str).map(Endpoint(_))
   }
 }

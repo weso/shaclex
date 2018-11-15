@@ -40,7 +40,7 @@ object PREFIXES {
   lazy val rdf_rest = rdf.add("rest")
   lazy val rdf_langString = rdf.add("langString")
 
-  lazy val rdfs_label = rdfs.add("subClassOf")
+  lazy val rdfs_label = rdfs.add("label")
   lazy val rdfs_subClassOf = rdfs.add("subClassOf")
 
   lazy val sh_alternativePath: IRI = sh + "alternativePath"

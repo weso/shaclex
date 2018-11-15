@@ -90,6 +90,7 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
     pm.keySet.map(_.str).toList
   }
 
+
 }
 
 object PrefixMap {
@@ -104,5 +105,10 @@ object PrefixMap {
   def qualify(node: RDFNode, pm: PrefixMap): String =
     pm.qualify(node)
 
+  def fromMap(pm: Map[String,IRI]): PrefixMap = {
+    def cmb(pm: PrefixMap, current: (String,IRI)): PrefixMap =
+      addPrefix(current._1,current._2)(pm)
+    pm.foldLeft(empty)(cmb)
+  }
 }
 

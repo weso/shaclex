@@ -63,14 +63,12 @@ class MainOpts(
     noshort = true
   )
 
-
   val dataFormat = opt[String](
     "dataFormat",
     default = Some(defaultDataFormat),
     descr = s"Data format. Default ($defaultDataFormat). Possible values = ${showLs(dataFormats)}",
     validate = isMemberOf(dataFormats),
     noshort = true)
-
 
   val endpoint = opt[String](
     "endpoint",
@@ -252,7 +250,37 @@ class MainOpts(
     required = false,
     descr = "Apply some inference before. Available values: RDFS")
 
-/*  val server = toggle(
+  val shapeInfer = toggle("shapeInfer",
+    prefix="no-",
+    default = Some(false),
+    descrYes = "infer Shape from Data",
+    descrNo = "don't infer Shape from Data"
+    )
+
+  val shapeInferNode = opt[String]("shapeInferNode",
+    default = None,
+    required = false,
+    descr = "Node selector for shapeInfer option"
+  )
+
+  val shapeInferLabel = opt[String]("shapeInferLabel",
+    default = Some("Shape"),
+    required = false,
+    descr = "Shape label for shapeInfer option"
+  )
+
+  val shapeInferEngine = opt[String]("shapeInferEngine",
+    default = Some("ShEx"),
+    required = false,
+    descr = "Engine for shapeInfer option"
+  )
+
+  val shapeInferFormat = opt[String]("shapeInferFormat",
+    default = Some("ShExC"),
+    required = false,
+    descr = "Format for shapeInfer option"
+  )
+  /*  val server = toggle(
     "server",
     prefix = "no-",
     default = Some(false),
@@ -260,8 +288,7 @@ class MainOpts(
     descrNo = "command line mode",
     noshort = true)  */
 
-  val time = toggle(
-    "time",
+  val time = toggle("time",
     prefix = "no-",
     default = Some(false),
     descrYes = "show time",

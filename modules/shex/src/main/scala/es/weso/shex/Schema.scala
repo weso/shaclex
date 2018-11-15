@@ -8,7 +8,7 @@ import es.weso.rdf.{PrefixMap, RDFBuilder, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
 import es.weso.utils.EitherUtils
-
+import es.weso.utils.UriUtils._
 import scala.io.Source
 import scala.util.{Either, Left, Right, Try}
 
@@ -102,7 +102,7 @@ case class Schema(id: IRI,
     case Nil => Right(current)
     case (i::is) => if (visited contains i) closureImports(is,visited,current)
     else for {
-      schema <- Schema.fromIRI(i)
+      schema <- Schema.fromIRI(i,base)
       sm <- closureImports(is ++ schema.imports, i :: visited, current.merge(schema))
     } yield sm
   }
@@ -200,7 +200,8 @@ object Schema {
   def empty: Schema =
     Schema(IRI(""),None, None, None, None, None, None, List())
 
-  def fromIRI(i: IRI): Either[String, Schema] = {
+  def fromIRI(i: IRI, base: Option[IRI]): Either[String, Schema] = {
+    println(s"fromIRI: $i")
     Try {
       val uri = i.uri
       if (uri.getScheme == "file") {
@@ -223,12 +224,28 @@ object Schema {
             Left(s"File $i does not exist")
            }
         }}}
-      else {
-        val str = Source.fromURI(i.uri).mkString
-        fromString(str, "ShExC", Some(i)).map(schema => schema.addId(i))
-      }
-    }.fold(exc => Left(exc.getMessage), identity)
+      else
+       for {
+         schema <- getSchemaWithExts(i, List(("","ShExC"),("shex","ShExC"), ("json", "JSON")),base)
+       } yield schema.addId(i)
+    }.fold(exc => Left(s"Error obtaining schema from IRI($i):${exc.getMessage}"), identity)
+  }
 
+  private def getSchemaWithExts(iri: IRI, exts: List[(String,String)], base: Option[IRI] ): Either[String, Schema] = exts match {
+    case (e :: es) => getSchemaExt(iri,e,base) orElse getSchemaWithExts(iri,es,base)
+    case Nil => Left(s"Can not obtain schema from iri: $iri")
+  }
+
+  private def getSchemaExt(iri: IRI, pair: (String,String), base: Option[IRI]): Either[String,Schema] = {
+   val (ext,format) = pair
+   val uri = if (ext == "") iri.uri
+   else (iri + "." + ext).uri
+   val r = for {
+    str <- derefUri(uri)
+    schema <- Schema.fromString(str,format,base,None)
+   } yield schema
+   println(s"getSchemaExt($iri,$pair): $r")
+   r
   }
 
   /**

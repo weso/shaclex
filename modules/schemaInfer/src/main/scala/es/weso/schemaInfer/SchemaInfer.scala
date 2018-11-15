@@ -6,44 +6,82 @@ import es.weso.schema.{Schema, ShExSchema, ShaclexSchema}
 import es.weso.schema.Schemas._
 import es.weso.shapeMaps.NodeSelector
 import es.weso.shex._
+import cats.implicits._
+import es.weso.rdf.triples.RDFTriple
 
 object SchemaInfer {
 
   // Namespace for annotations
   val sx = IRI("http://weso.es/ns/shex/")
+  val wikidataId = "Endpoint(https://query.wikidata.org/sparql)"
+  val wikibase = IRI("http://wikiba.se/ontology#")
+  val schemaIri = IRI("http://schema.org/")
+  val propIri   = IRI("http://www.wikidata.org/prop/")
+  val `wikibase:directClaim` = wikibase + "directClaim"
+  val prov = IRI("http://www.w3.org/ns/prov#")
+  val `prov:wasDerivedFrom` = prov + "wasDerivedFrom"
+
+  type NeighMap = Map[IRI, Set[RDFNode]]
+  type EitherNeighMap = Either[String,NeighMap]
+  type InferredShape = Map[IRI,InferredValue]
+  type InferredSchema = Map[IRI, InferredShape]
+
+  type ES[A] = Either[String,A]
+  val totalNumber = sx + "totalNumber"
 
   case class InferOptions(
    inferTypePlainNode: Boolean,
    addXSDAlias: Boolean,
    addRDFAlias: Boolean,
-   addSxAlias: Boolean
+   addSxAlias: Boolean,
+   addRDFSAlias: Boolean,
+   addWDPropAlias: Boolean,
+   addSchemaAlias: Boolean,
+   addLabelLang: Option[Lang],
+   followOnPreds: List[(IRI, IRI)]
   )
   object InferOptions {
     val defaultOptions =
-      InferOptions(inferTypePlainNode = true,
+      InferOptions(
+        inferTypePlainNode = true,
         addXSDAlias = true,
         addRDFAlias = true,
-        addSxAlias = true
+        addSxAlias = true,
+        addRDFSAlias = true,
+        addWDPropAlias = true,
+        addSchemaAlias = true,
+        addLabelLang = Some(Lang("en")),
+        followOnPreds = List((`prov:wasDerivedFrom`, IRI("references")))
       )
   }
 
-  def infer(rdf: RDFReader,
-            selector: NodeSelector,
-            engine: String,
-            shapeLabel: IRI,
-            options: InferOptions = InferOptions.defaultOptions
-           ): Either[String, Schema] = for {
+  def inferSchema(rdf: RDFReader,
+                  selector: NodeSelector,
+                  engine: String,
+                  shapeLabel: IRI,
+                  options: InferOptions
+                 ): Either[String,Schema] = for {
     nodes <- selector.select(rdf)
-    neighbours <- getNeighbourhoods(nodes, rdf)
+    neighMap <- getNeighbourhoods(nodes, rdf)
+    inferredSchema <- inferShapes(rdf,neighMap,engine,shapeLabel,options)
     schema <- mkSchema(
-      neighbours.mapValues(collapse(options)),
-      engine, shapeLabel, rdf.getPrefixMap(),
+      inferredSchema,
+      engine, shapeLabel,
+      rdf,
       options
     )
   } yield schema
 
-  type NeighMap = Map[IRI, Set[RDFNode]]
-  type EitherNeighMap = Either[String,NeighMap]
+  def inferShapes(rdf: RDFReader,
+                  neighMap: NeighMap,
+                  engine: String,
+                  shapeLabel: IRI,
+                  options: InferOptions = InferOptions.defaultOptions
+           ): Either[String, InferredSchema] =
+    Right(Map(shapeLabel -> neighMap.mapValues(collapse(options))))
+
+//  def mkSchema(m: Map[IRI,InferredSchema], engine: String): Either[String,Schema] = ???
+
 
   private def getNeighbourhoods(nodes: Set[RDFNode],
                         rdf: RDFReader
@@ -56,7 +94,6 @@ object SchemaInfer {
     } yield ts.map(
        triple => (triple.pred, triple.obj)
      ).groupBy(_._1).map { case (k,v) => (k, v.map(_._2))}
-
     nodes.foldLeft(zero)(combine)
   }
 
@@ -150,6 +187,11 @@ object SchemaInfer {
       else false
     case _ => false
   }
+
+  private def hasWDProp(c: InferredValue) =  true
+  private def hasSchema(c: InferredValue) =  true
+
+
   private def hasRDF(c: InferredValue): Boolean = c.constraint match {
     case InferredLangString => true
     case _ => false
@@ -157,18 +199,20 @@ object SchemaInfer {
   private def hasStar(c: InferredValue): Boolean =
     c.number > 1
 
-  private def containsDecl(m: Map[IRI,InferredValue],
+  private def containsDecl(m: Map[IRI,InferredShape],
                            check: InferredValue => Boolean,
                            name: String): Boolean = {
-    !m.values.filter(check).isEmpty
+   // TODO: repair this one:
+    //   !m.values.filter(check).isEmpty
+    true
   }
+
   private def addPrefix(alias: String,
                         iri: IRI,
-                        pm: PrefixMap,
                         options: InferOptions,
                         checkOptions: InferOptions => Boolean,
-                        m: Map[IRI,InferredValue],
-                        check: InferredValue => Boolean): PrefixMap = {
+                        m: Map[IRI,InferredShape],
+                        check: InferredValue => Boolean)(pm: PrefixMap): PrefixMap = {
     if (containsDecl(m, check, alias)) {
       if (checkOptions(options) && !pm.contains(alias)) pm.addPrefix(alias,iri)
       else pm
@@ -176,53 +220,130 @@ object SchemaInfer {
     else pm
   }
 
-  private def mkSchema(m: Map[IRI,InferredValue],
+  private def mkSchema(m: InferredSchema,
                  engine: String,
                  label: IRI,
-                 pm: PrefixMap,
+                 rdf: RDFReader,
                  inferOptions: InferOptions
                 ): Either[String,Schema] =
    lookupSchema(engine) match {
-    case Right(_: ShExSchema) => Right(ShExSchema(mkShExSchema(m,label,pm,inferOptions)))
+    case Right(_: ShExSchema) => mkShExSchema(m, label, rdf, inferOptions)
     case Right(_: ShaclexSchema) => Left(s"Not implemented yet")
     case Left(e) => Left(s"Not found engine $engine, Error: $e")
     case l => Left(s"Not found schema $engine. Found: $l")
   }
 
-  private def strPredicate(tc: TripleConstraint): String = tc.predicate.getLexicalForm
-
-  private def mkShExSchema(m: Map[IRI,InferredValue],
-                   label: IRI,
-                   pm: PrefixMap,
-                   inferOptions: InferOptions
-                  ): es.weso.shex.Schema = {
-    val shapeLabel = IRILabel(label)
-    val es : List[TripleExpr] = m.map { case (iri, c) => {
-      val totalNumber = sx + "totalNumber"
-      val as: Option[List[Annotation]] = if (c.number > 1) Some(List(
-        Annotation(totalNumber, ObjectValue.intValue(c.number)))
-      ) else None
-      TripleConstraint(None,None,None,iri,
-        Some(mkShExConstraint(c.constraint, inferOptions)),
-        Some(mkMinCardinality(c.number)),
-        Some(mkMaxCardinality(c.number)), None, None, as
-      )
+//   private def strPredicate(tc: TripleConstraint): String = tc.predicate.getLexicalForm
+  private def getLabel(iri: IRI,
+                       rdf: RDFReader,
+                       maybeLang: Option[Lang]
+                      ): Either[String, Option[Literal]] = for {
+   labels <-
+     if (rdf.id == wikidataId) for {
+       sourceTriples <- rdf.triplesWithPredicateObject(`wikibase:directClaim`, iri)
+       sourceIRIs = sourceTriples.map(_.subj)
+//       _ <- { println(s"sourceIRIs for $iri: $sourceIRIs"); Right(()) }
+       labels <- sourceIRIs.map(rdf.triplesWithSubjectPredicate(_,rdfs_label)).toList.sequence[ES,Set[RDFTriple]]
+//       _ <- { println(s"All labels for $iri: $labels"); Right(()) }
+     } yield labels.flatten.map(_.obj)
+     else {
+      rdf.triplesWithSubjectPredicate(iri, rdfs_label).map(_.obj)
+     }
+  } yield {
+    val okLabels = labels.collect {
+      case l: Literal if hasLang(l,maybeLang) => l
     }
-    }.toList.sortBy(strPredicate)
+//    println(s"OKLabels for $iri: $okLabels")
+    okLabels.headOption
+  }
+
+  private def hasLang(s: Literal, maybeLang: Option[Lang]): Boolean = {
+    val b = maybeLang match {
+      case None       => false
+      case Some(lang) => s match {
+        case l: LangLiteral => lang.matchLanguage(l.lang)
+        case other => {
+          // println(s"Other type for literal: ${other.getClass.getCanonicalName}")
+          false
+        }
+      }
+    }
+//    println(s"Checking hasLang($s,$maybeLang): $b")
+    b
+  }
+
+  private def mkTripleExpr(iri: IRI,
+                           c: InferredValue,
+                           rdf: RDFReader,
+                           inferOptions: InferOptions
+                          ): Either[String, TripleExpr] = for {
+   label <- getLabel(iri, rdf, inferOptions.addLabelLang)
+    // _ <- { println(s"Selected label for $iri: $label") ; Right(()) }
+  } yield {
+    val labelAnnotation: Option[Annotation] =
+      label.map(lbl => Annotation(rdfs_label, ObjectValue.literalValue(lbl)))
+    val totalNumberAnnotation: Option[Annotation] =
+      if (c.number > 1) Some(Annotation(totalNumber, ObjectValue.intValue(c.number))) else None
+    val as = {
+      val ls = List(labelAnnotation, totalNumberAnnotation).collect{ case Some(a) => a }
+      if (ls.isEmpty) None
+      else Some(ls)
+    }
+
+    TripleConstraint(None,
+                     None,
+                     None,
+                     iri,
+                     Some(mkShExConstraint(c.constraint, inferOptions)),
+                     Some(mkMinCardinality(c.number)),
+                     Some(mkMaxCardinality(c.number)),
+                     None,
+                     None,
+                     as)
+  }
+
+  private def mkShExShape(m: InferredShape,
+                          label: IRI,
+                          rdfReader: RDFReader,
+                          inferOptions: InferOptions
+                         ): Either[String, ShapeExpr]  = for {
+    es <- m.map {
+      case (iri, c) => mkTripleExpr(iri,c,rdfReader,inferOptions)
+    }.toList.sequence[ES,TripleExpr]
+  } yield {
+    val shapeLabel = IRILabel(label)
     val expr: Option[TripleExpr] = es.length match {
       case 0 => None
       case 1 => Some(es.head)
       case _ => Some(EachOf(None, es, None, None, None, None))
     }
-    val shape = Shape(Some(shapeLabel),None,None,None,expr,None,None,None)
-
-    val pm1 = addPrefix("xsd",xsd,pm,inferOptions, _.addXSDAlias,m,hasXSD)
-    val pm2 = addPrefix("rdf",rdf,pm1,inferOptions, _.addRDFAlias,m,hasRDF)
-    val pm3 = addPrefix("sx",sx,pm2,inferOptions, _.addSxAlias,m,hasStar)
-    Schema(IRI(""),Some(pm3), None, None, None, Some(List(shape)), None, List())
+    Shape(Some(shapeLabel),None,None,None,expr,None,None,None)
   }
 
-  private case class InferredValue(constraint: InferredNodeConstraint, number: Int)
+  private def mkShExSchema(m: InferredSchema,
+                   label: IRI,
+                   rdfReader: RDFReader,
+                   inferOptions: InferOptions
+                  ): Either[String, ShExSchema]  = for {
+    es <- m.map {
+      case (iri, is) => mkShExShape(is,iri,rdfReader,inferOptions)
+    }.toList.sequence[ES,ShapeExpr]
+  } yield {
+    val pm =
+      addPrefix("schema",schemaIri,inferOptions, _.addSchemaAlias,m,hasSchema)(
+      addPrefix("wdp",propIri,inferOptions, _.addWDPropAlias,m,hasWDProp)(
+      addPrefix("xsd",xsd,inferOptions, _.addXSDAlias,m,hasXSD)(
+      addPrefix("rdf",rdf,inferOptions, _.addRDFAlias,m,hasRDF)(
+      addPrefix("sx",sx,inferOptions, _.addSxAlias,m,hasStar)(
+      addPrefix("rdfs",rdfs,inferOptions,_.addRDFSAlias,m,_ => true)(
+        rdfReader.getPrefixMap
+      ))))))
+
+    ShExSchema(Schema(IRI(""),Some(pm), None, None, None, Some(es), None, List()))
+  }
+
+  private case class InferredValue(constraint: InferredNodeConstraint,
+                                   number: Int)
 
   private sealed abstract trait InferredNodeConstraint
   private case class PlainNode(node: RDFNode) extends InferredNodeConstraint

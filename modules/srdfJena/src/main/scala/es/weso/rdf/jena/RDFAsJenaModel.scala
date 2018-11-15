@@ -36,6 +36,8 @@ case class RDFAsJenaModel(model: Model,
   with RDFBuilder
   with RDFReasoner {
 
+  val id = s"RDFAsJenaModel($sourceIRI)"
+
   type Rdf = RDFAsJenaModel
 
   val log = LoggerFactory.getLogger("RDFAsJenaModel")

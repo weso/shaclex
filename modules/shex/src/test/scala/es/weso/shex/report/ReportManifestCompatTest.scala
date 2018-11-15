@@ -30,7 +30,7 @@ import cats.syntax.either._
 class ReportManifestCompatTest extends FunSpec with Matchers with RDFParser {
 
   val nameIfSingle: Option[String] =
-  //    Some("bnode1dot_fail-missing")
+    // Some("1iriLength2")
     None
 
   val conf: Config = ConfigFactory.load()

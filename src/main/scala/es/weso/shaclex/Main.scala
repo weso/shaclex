@@ -3,8 +3,11 @@ package es.weso.shaclex
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
+import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.Endpoint
 import es.weso.rdf.nodes.IRI
+import es.weso.schemaInfer.SchemaInfer
+import es.weso.shapeMaps.NodeSelector
 
 import scala.io.Source
 // import es.weso.server._
@@ -25,7 +28,7 @@ object Main extends App with LazyLogging {
       }
     }
 
-  def run(args: Array[String]): Unit = {
+  private def run(args: Array[String]): Unit = {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
 
@@ -38,6 +41,10 @@ object Main extends App with LazyLogging {
     val startTime = System.nanoTime()
 
     val base = Some(FileUtils.currentFolderURL)
+
+    if (opts.shapeInfer.isDefined) {
+      shapeInfer(opts,baseFolder)
+    }
 
     val validateOptions: Either[String, (RDFReader, Schema, ValidationTrigger)] = for {
       rdf <- getRDFReader(opts, baseFolder)
@@ -79,6 +86,8 @@ object Main extends App with LazyLogging {
           println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat())}")
           println(s"Trigger json: ${trigger.toJson.spaces2}")
         }
+
+
 
         if (opts.clingoFile.isDefined || opts.showClingo()) {
           val maybeStr = for {
@@ -128,7 +137,7 @@ object Main extends App with LazyLogging {
 
   }
 
-  def printTime(msg: String, opts: MainOpts, nanos: Long): Unit = {
+  private def printTime(msg: String, opts: MainOpts, nanos: Long): Unit = {
     if (opts.time()) {
       val time = Duration(nanos, NANOSECONDS).toMillis
       println(f"$msg%s, $time%10d")
@@ -148,7 +157,7 @@ object Main extends App with LazyLogging {
     }
   }
 
-  def getShapeMapStr(opts: MainOpts): Either[String, String] = {
+  private def getShapeMapStr(opts: MainOpts): Either[String, String] = {
     if (opts.shapeMap.isDefined) {
       // val shapeMapFormat = opts.shapeMapFormat.toOption.getOrElse("COMPACT")
       for {
@@ -158,7 +167,14 @@ object Main extends App with LazyLogging {
     } else Right("")
   }
 
-  def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
+  private def getNodeSelector(opts:MainOpts, pm: PrefixMap): Either[String, NodeSelector] = {
+    if (opts.shapeInferNode.isDefined) {
+      NodeSelector.fromString(opts.shapeInferNode(),None,pm)
+    } else
+      Left(s"schemaInfer option requires also schemaInferNode to specify a node selector")
+  }
+
+  private def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
     val base = Some(FileUtils.currentFolderURL)
     if (opts.data.isDefined || opts.dataUrl.isDefined) {
       for {
@@ -180,14 +196,14 @@ object Main extends App with LazyLogging {
         } else rdf
       }
     } else if (opts.endpoint.isDefined) {
-      Right(Endpoint(opts.endpoint()))
+      Endpoint.fromString(opts.endpoint())
     } else {
       logger.info("RDF Data option not specified")
       Right(RDFAsJenaModel.empty)
     }
   }
 
-  def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Either[String, Schema] = {
+  private def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Either[String, Schema] = {
     val base = Some(FileUtils.currentFolderURL)
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
@@ -201,6 +217,22 @@ object Main extends App with LazyLogging {
       Schemas.fromRDF(rdf, opts.engine())
     }
 
+  }
+
+
+  private def shapeInfer(opts: MainOpts, baseFolder: Path): Unit = {
+    val dataOptions = for {
+     rdf <- getRDFReader(opts, baseFolder)
+     nodeSelector <- getNodeSelector(opts,rdf.getPrefixMap())
+     shapeLabel = opts.shapeInferLabel()
+     shapeLabelIri <- IRI.fromString(shapeLabel,None)
+     schema <- SchemaInfer.infer(rdf, nodeSelector, opts.shapeInferEngine(), shapeLabelIri)
+     str <- schema.serialize(opts.shapeInferFormat())
+    } yield (rdf,schema,str)
+    dataOptions.fold(e => println(s"shapeInfer: Error $e"), values => {
+      val (rdf,schema,str) = values
+      println(s"Shape infered: $str")
+    })
   }
 }
 

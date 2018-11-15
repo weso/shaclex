@@ -34,6 +34,7 @@ object ParserNodeSelector extends LazyLogging {
     val reader: JavaReader =
       new InputStreamReader(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))
     val r = parseSchemaReader(reader, base, nodesPrefixMap)
+    println(s"NodeSelector:parse: $r, base: $base")
     r
   }
 

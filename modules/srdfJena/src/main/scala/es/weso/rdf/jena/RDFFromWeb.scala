@@ -22,6 +22,7 @@ import org.apache.jena.rdf.model.{RDFNode => JenaRDFNode}
 case class RDFFromWeb() extends RDFReader {
   type Rdf = RDFFromWeb
 
+  val id = "RDFFromWeb"
   val log = LoggerFactory.getLogger("RDFFromWeb")
 
   def availableParseFormats: List[String] = List()
