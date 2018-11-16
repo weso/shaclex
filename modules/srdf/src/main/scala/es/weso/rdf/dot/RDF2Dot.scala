@@ -21,7 +21,7 @@ object RDF2Dot {
   } yield Edge(n1,n2,e._1, e._2)
 
   def predicate2href(pred: IRI, pm: PrefixMap): Converter[(Label, HRef)] = pred match {
-    case `rdf_type` => ok(("a", pred.str))
+    case `rdf:type` => ok(("a", pred.str))
     case _ => ok((pm.qualify(pred), pred.str))
   }
 

@@ -132,7 +132,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
-      val nc = NodeConstraint.datatype(xsd_string, List()).addId(v)
+      val nc = NodeConstraint.datatype(`xsd:string`, List()).addId(v)
       val tc = TripleConstraint.valueExpr(p, nc).addId(expr)
       val shape = Shape.expr(tc).addId(user)
 
@@ -177,7 +177,7 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
         schema <- RDF2ShEx.rdf2Schema(rdf)
       } yield schema
 
-      val nc = NodeConstraint.datatype(xsd_string, List()).addId(v)
+      val nc = NodeConstraint.datatype(`xsd:string`, List()).addId(v)
       val te: TripleExpr = TripleConstraint.valueExpr(p, nc).addId(tc)
       val se1: ShapeExpr = Shape.expr(te).addId(expr1)
       val se2: ShapeExpr = NodeConstraint.nodeKind(IRIKind, List()).addId(expr2)

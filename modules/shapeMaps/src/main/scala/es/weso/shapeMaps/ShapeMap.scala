@@ -159,7 +159,7 @@ object ShapeMap {
 
       implicit val showPath: Show[SHACLPath] = new Show[SHACLPath] {
         final def show(path: SHACLPath): String = path match {
-          case PredicatePath(`rdf_type`) => "a"
+          case PredicatePath(`rdf:type`) => "a"
           case PredicatePath(iri) => a.nodesPrefixMap.qualify(iri)
           case InversePath(path) => s"^${show(path)}"
           case SequencePath(paths) => paths.map(show(_)).mkString("/")

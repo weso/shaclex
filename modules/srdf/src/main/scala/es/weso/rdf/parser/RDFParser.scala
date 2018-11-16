@@ -112,7 +112,7 @@ trait RDFParser {
    */
   def rdfType: RDFParser[RDFNode] = { (n, rdf) =>
     for {
-      t <- objectFromPredicate(rdf_type)(n, rdf)
+      t <- objectFromPredicate(`rdf:type`)(n, rdf)
     } yield t
   }
 
@@ -121,7 +121,7 @@ trait RDFParser {
    * with the current node
    */
   def rdfTypes: RDFParser[Set[RDFNode]] =
-    objectsFromPredicate(rdf_type)
+    objectsFromPredicate(`rdf:type`)
 
   /**
    * RDFParser that retrieves the object associated with current node for a given predicate
@@ -159,10 +159,10 @@ trait RDFParser {
    */
   def rdfList: RDFParser[List[RDFNode]] = { (n, rdf) =>
     n match {
-      case `rdf_nil` => parseOk(List())
+      case `rdf:nil` => parseOk(List())
       case _ => for {
-          elem <- objectFromPredicate(rdf_first)(n, rdf)
-          next <- objectFromPredicate(rdf_rest)(n, rdf)
+          elem <- objectFromPredicate(`rdf:first`)(n, rdf)
+          next <- objectFromPredicate(`rdf:rest`)(n, rdf)
           ls <- rdfList(next, rdf) // TODO: Possible infinite loop if one of the nodes makes a loop
         } yield (elem :: ls)
       }
@@ -235,7 +235,7 @@ trait RDFParser {
    */
   def hasNoRDFType(t: IRI): RDFParser[Boolean] = { (n, rdf) =>
     for {
-      declaredTypes <- objectsFromPredicate(rdf_type)(n, rdf)
+      declaredTypes <- objectsFromPredicate(`rdf:type`)(n, rdf)
     } yield !declaredTypes.contains(t)
   }
 
@@ -246,7 +246,7 @@ trait RDFParser {
    */
   def hasRDFType(t: IRI): RDFParser[Boolean] = { (n, rdf) =>
     for {
-      declaredTypes <- objectsFromPredicate(rdf_type)(n, rdf)
+      declaredTypes <- objectsFromPredicate(`rdf:type`)(n, rdf)
     } yield declaredTypes.contains(t)
   }
 
@@ -257,7 +257,7 @@ trait RDFParser {
    */
   def hasSomeRDFType(ts: Set[IRI]): RDFParser[Boolean] = { (n, rdf) =>
     for {
-      declaredTypes <- objectsFromPredicate(rdf_type)(n, rdf)
+      declaredTypes <- objectsFromPredicate(`rdf:type`)(n, rdf)
     } yield {
       val iriTypes = declaredTypes.collect { case i: IRI => i}
       iriTypes.diff(ts).size > 0
@@ -465,8 +465,8 @@ trait RDFParser {
   def boolean: RDFParser[Boolean] = (n, rdf) => n match {
     case BooleanLiteral.trueLiteral => parseOk(true)
     case BooleanLiteral.falseLiteral => parseOk(false)
-    case DatatypeLiteral("true", `xsd_boolean`) => parseOk(true)
-    case DatatypeLiteral("false", `xsd_boolean`) => parseOk(false)
+    case DatatypeLiteral("true", `xsd:boolean`) => parseOk(true)
+    case DatatypeLiteral("false", `xsd:boolean`) => parseOk(false)
     case _ => parseFail(s"Expected boolean literal. Found $n")
   }
 
@@ -549,7 +549,7 @@ trait RDFParser {
   }
 
   def checkType(expected: RDFNode): RDFParser[Boolean] = (n, rdf) => for {
-    obtained <- objectFromPredicate(rdf_type)(n, rdf)
+    obtained <- objectFromPredicate(`rdf:type`)(n, rdf)
     v <- if (obtained == expected) Right(true)
     else
       parseFail(s"Type of node $n must be $expected but obtained $obtained")
@@ -572,8 +572,8 @@ trait RDFParser {
    * Parses a list of values. The list must contain at least two values
    */
   def list2Plus[A](p: RDFParser[A]): RDFParser[List[A]] = (n, rdf) => for {
-    first <- arc(rdf_first, p)(n, rdf)
-    restNode <- objectFromPredicate(rdf_rest)(n, rdf)
+    first <- arc(`rdf:first`, p)(n, rdf)
+    restNode <- objectFromPredicate(`rdf:rest`)(n, rdf)
     rest <- list1Plus(p)(restNode, rdf)
   } yield first :: rest
 
@@ -583,8 +583,8 @@ trait RDFParser {
   def list1Plus[A](p: RDFParser[A]): RDFParser[List[A]] = list1PlusAux(p, List())
 
   def list1PlusAux[A](p: RDFParser[A], visited: List[RDFNode]): RDFParser[List[A]] = (n, rdf) => for {
-    first <- arc(rdf_first, p)(n, rdf)
-    restNode <- objectFromPredicate(rdf_rest)(n, rdf)
+    first <- arc(`rdf:first`, p)(n, rdf)
+    restNode <- objectFromPredicate(`rdf:rest`)(n, rdf)
     rest <- parseRest(visited, restNode, p)(n, rdf)
   } yield first :: rest
 
@@ -592,14 +592,14 @@ trait RDFParser {
     visited: List[RDFNode],
     restNode: RDFNode,
     parser: RDFParser[A]): RDFParser[List[A]] = (n, rdf) =>
-    if (restNode == rdf_nil) parseOk(List[A]())
+    if (restNode == `rdf:nil`) parseOk(List[A]())
     else if (visited contains restNode)
       parseFail(s"Parsing list with recursive nodes. visitedNodes: $visited, node: $restNode")
     else
       list1PlusAux(parser, restNode :: visited)(restNode, rdf)
 
   def rdfNil[A]: RDFParser[List[A]] = (n, rdf) =>
-    if (n == rdf_nil) Right(List())
+    if (n == `rdf:nil`) Right(List())
     else parseFail(s"Expected rdf_nil but got $n")
 
   def nodes2iris(ns: List[RDFNode]): Either[String, List[IRI]] = {

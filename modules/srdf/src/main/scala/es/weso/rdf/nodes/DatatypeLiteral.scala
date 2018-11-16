@@ -17,8 +17,8 @@ case class DatatypeLiteral(lexicalForm: String, dataType: IRI) extends Literal {
   }
 
   override def lessThan(other: RDFNode): Either[String,Boolean] = this.dataType match {
-    case `xsd_dateTime` => other match {
-      case DatatypeLiteral(otherDate, `xsd_dateTime`) => lessThanXSDDateTimes(lexicalForm,otherDate)
+    case `xsd:dateTime` => other match {
+      case DatatypeLiteral(otherDate, `xsd:dateTime`) => lessThanXSDDateTimes(lexicalForm,otherDate)
       case _ => Left(s"Type error comaring $this with $other which is not xsd:dateTime")
     }
     case _ => Right(lexicalForm < other.getLexicalForm)

@@ -8,7 +8,7 @@ import es.weso.shex._
 import es.weso.rdf._
 import es.weso.json.DecoderUtils._
 import es.weso.rdf.operations.Comparisons._
-import es.weso.rdf.PREFIXES.{rdf_langString, xsd_string}
+import es.weso.rdf.PREFIXES.{`rdf:langString`, `xsd:string`}
 
 object decoderShEx {
 
@@ -272,12 +272,12 @@ object decoderShEx {
     } yield (optLang, optType) match {
       case (None, None) => StringValue(value)
       case (Some(lang), None) => LangString(value, Lang(lang))
-      case (None, Some(`xsd_string`)) => StringValue(value)
+      case (None, Some(`xsd:string`)) => StringValue(value)
       case (None, Some(iri)) => DatatypeString(value, iri)
-      case (Some(lang), Some(iri)) => if (iri == rdf_langString) {
+      case (Some(lang), Some(iri)) => if (iri == `rdf:langString`) {
         LangString(value, Lang(lang))
       } else {
-        throw new Exception(s"Unsupported language tagged literal $value^^$lang with datatype $iri != $rdf_langString")
+        throw new Exception(s"Unsupported language tagged literal $value^^$lang with datatype $iri != ${`rdf:langString`}")
       }
     }
   }

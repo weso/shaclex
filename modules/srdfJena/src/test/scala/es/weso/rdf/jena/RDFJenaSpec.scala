@@ -69,8 +69,8 @@ class RDFJenaSpec
       val triples = rdf.triplesWithType(typeC).right.value
       val a = IRI("http://example.org#a")
       val b = IRI("http://example.org#b")
-      val t1 = RDFTriple(a, rdf_type, typeC)
-      val t2 = RDFTriple(b, rdf_type, typeC)
+      val t1 = RDFTriple(a, `rdf:type`, typeC)
+      val t2 = RDFTriple(b, `rdf:type`, typeC)
       triples should be(Set(t1, t2))
     }
 
@@ -85,7 +85,7 @@ class RDFJenaSpec
       val typeC = IRI("http://example.org#C")
       val triples = rdf.triplesWithSubject(a).right.value
 
-      val t1 = RDFTriple(a, rdf_type, typeC)
+      val t1 = RDFTriple(a, `rdf:type`, typeC)
       val t2 = RDFTriple(a, p, IntegerLiteral(1,"1"))
       triples should be(Set(t1, t2))
     }

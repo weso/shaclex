@@ -14,11 +14,11 @@ class NodeInfoTest extends FunSpec with Matchers with EitherValues {
       NodeInfo.totalDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(3))
     }
     it("Should calculate total digits of 3.14 as datatype literal") {
-      val d = DatatypeLiteral("3.14",xsd_decimal)
+      val d = DatatypeLiteral("3.14", `xsd:decimal`)
       NodeInfo.totalDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(3))
     }
     it("Should calculate total digits of 3.123456 as datatype literal") {
-      val d = DatatypeLiteral("3.123456",xsd_decimal)
+      val d = DatatypeLiteral("3.123456", `xsd:decimal`)
       NodeInfo.totalDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(7))
     }
     it("Should calculate total digits of true and return error") {
@@ -32,11 +32,11 @@ class NodeInfoTest extends FunSpec with Matchers with EitherValues {
       NodeInfo.fractionDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(2))
     }
     it("Should calculate fraction digits of 3.14 as datatype literal") {
-      val d = DatatypeLiteral("3.14",xsd_decimal)
+      val d = DatatypeLiteral("3.14", `xsd:decimal`)
       NodeInfo.fractionDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(2))
     }
     it("Should calculate fraction digits of 3.123456 as datatype literal") {
-      val d = DatatypeLiteral("3.123456",xsd_decimal)
+      val d = DatatypeLiteral("3.123456", `xsd:decimal`)
       NodeInfo.fractionDigits(d,rdf).fold(e => fail(s"Error: $e"), n => n should be(6))
     }
     it("Should calculate fraction digits of true and return 0") {

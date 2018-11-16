@@ -51,7 +51,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
 
   private def labels(node: RDFNode, labels: Set[RDFNode]): RDFSaver[Unit] =
     sequence(
-      labels.toList.map(lbl => addTriple(node,rdfs_label,lbl))
+      labels.toList.map(lbl => addTriple(node,`rdfs:label`,lbl))
     ).map(_ => ())
 
   private def shapeRef(shape: RefNode): RDFSaver[RDFNode] = ok(shape.id)
@@ -98,7 +98,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
 
   private def propertyShape(ps: PropertyShape): RDFSaver[RDFNode] = for {
     shapeNode <- makeShapeId(ps.id)
-    _ <- addTriple(shapeNode, rdf_type, sh_PropertyShape)
+    _ <- addTriple(shapeNode, `rdf:type`, `sh:PropertyShape`)
     _ <- targets(shapeNode, ps.targets)
     _ <- propertyShapes(shapeNode, ps.propertyShapes)
     _ <- closed(shapeNode, ps.closed)
@@ -117,7 +117,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
 
   private def nodeShape(n: NodeShape): RDFSaver[RDFNode] = for {
     shapeNode <- makeShapeId(n.id)
-    _ <- addTriple(shapeNode, rdf_type, sh_NodeShape)
+    _ <- addTriple(shapeNode, `rdf:type`, `sh:NodeShape`)
     _ <- targets(shapeNode, n.targets)
     _ <- propertyShapes(shapeNode, n.propertyShapes)
     _ <- closed(shapeNode, n.closed)
@@ -173,7 +173,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
         case Some(f) => addTriple(id, sh_flags, StringLiteral(f))
         case None => State.pure(())
       })
-    case UniqueLang(b) => addTriple(id, sh_uniqueLang, BooleanLiteral(b))
+    case UniqueLang(b) => addTriple(id, `sh:uniqueLang`, BooleanLiteral(b))
     case LanguageIn(langs) => for {
       ls <- saveToRDFList(langs, (lang: String) => State.pure(StringLiteral(lang)))
       _ <- addTriple(id, sh_languageIn, ls)
@@ -192,7 +192,7 @@ class Shacl2RDF extends RDFSaver with LazyLogging {
     } yield ()
     case Xone(shapes) => for {
       ls <- saveToRDFList(shapes, shapeRef)
-      _ <- addTriple(id, sh_xone, ls)
+      _ <- addTriple(id, `sh:xone`, ls)
     } yield ()
     case QualifiedValueShape(s, min, max, disjoint) => for {
       nodeShape <- shapeRef(s)

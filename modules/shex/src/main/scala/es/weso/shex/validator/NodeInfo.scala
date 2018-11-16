@@ -16,21 +16,21 @@ object NodeInfo {
   def totalDigits(node: RDFNode, rdf: RDFReader): Either[String,Int] = {
     node match {
       case l: Literal => l.dataType match {
-        case `xsd_decimal` |
+        case `xsd:decimal` |
              // Here we include also the derived types from xsd:decimal according to https://www.w3.org/TR/xmlschema-2/#decimal
-             `xsd_integer` |
-             `xsd_nonPositiveInteger` |
-             `xsd_negativeInteger` |
-             `xsd_nonNegativeInteger` |
-             `xsd_long` |
-             `xsd_unsignedLong` |
-             `xsd_positiveInteger` |
-             `xsd_unsignedInt` |
-             `xsd_unsignedShort` |
-             `xsd_unsignedByte` |
-             `xsd_int` |
-             `xsd_short` |
-             `xsd_byte` => for {
+             `xsd:integer` |
+             `xsd:nonPositiveInteger` |
+             `xsd:negativeInteger` |
+             `xsd:nonNegativeInteger` |
+             `xsd:long` |
+             `xsd:unsignedLong` |
+             `xsd:positiveInteger` |
+             `xsd:unsignedInt` |
+             `xsd:unsignedShort` |
+             `xsd:unsignedByte` |
+             `xsd:int` |
+             `xsd:short` |
+             `xsd:byte` => for {
           b <-rdf.checkDatatype(node,l.dataType)
           td <- {
             val t = Try {
@@ -59,7 +59,7 @@ object NodeInfo {
     node match {
       case l: Literal =>
         l.dataType match {
-          case `xsd_decimal` | `xsd_integer` => {
+          case `xsd:decimal` | `xsd:integer` => {
             rdf.checkDatatype(node,l.dataType).fold(
               e => Left(s"Node $node has wrong datatype"),
               _ => { val t = Try {

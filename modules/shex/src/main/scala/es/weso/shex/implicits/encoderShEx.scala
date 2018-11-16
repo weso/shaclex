@@ -261,7 +261,7 @@ object encoderShEx {
         Json.fromFields(List(("value",Json.fromString(s))))
       }
       case DatatypeString(s, d) => {
-        if (d == xsd_string)
+        if (d == `xsd:string`)
           Json.fromFields(List(("value", Json.fromString(s))))
         else
           Json.fromFields(List(("value", Json.fromString(s)),("type", d.asJson)))

@@ -23,13 +23,13 @@ trait RDFSaver {
   }
 
   def saveToRDFList[A](ls: List[A], f: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = ls match {
-    case Nil => State.pure(rdf_nil)
+    case Nil => State.pure(`rdf:nil`)
     case x :: xs => for {
       nodeX <- f(x)
       bNode <- createBNode
-      _ <- addTriple(bNode, rdf_first, nodeX)
+      _ <- addTriple(bNode, `rdf:first`, nodeX)
       rest <- saveToRDFList(xs, f)
-      _ <- addTriple(bNode, rdf_rest, rest)
+      _ <- addTriple(bNode, `rdf:rest`, rest)
     } yield bNode
   }
 
@@ -57,22 +57,22 @@ trait RDFSaver {
     case InversePath(p) => for {
       node <- createBNode
       pathNode <- makePath(p)
-      _ <- addTriple(node, sh_inversePath, pathNode)
+      _ <- addTriple(node, `sh:inversePath`, pathNode)
     } yield node
     case ZeroOrOnePath(p) => for {
       node <- createBNode
       pathNode <- makePath(p)
-      _ <- addTriple(node, sh_zeroOrOnePath, pathNode)
+      _ <- addTriple(node, `sh:zeroOrOnePath`, pathNode)
     } yield node
     case ZeroOrMorePath(p) => for {
       node <- createBNode
       pathNode <- makePath(p)
-      _ <- addTriple(node, sh_zeroOrMorePath, pathNode)
+      _ <- addTriple(node, `sh:zeroOrMorePath`, pathNode)
     } yield node
     case OneOrMorePath(p) => for {
       node <- createBNode
       pathNode <- makePath(p)
-      _ <- addTriple(node, sh_oneOrMorePath, pathNode)
+      _ <- addTriple(node, `sh:oneOrMorePath`, pathNode)
     } yield node
     case SequencePath(ps) => for {
       list <- saveToRDFList(ps.toList,makePath)
@@ -80,7 +80,7 @@ trait RDFSaver {
     case AlternativePath(ps) => for {
       node <- createBNode
       list <- saveToRDFList(ps.toList,makePath)
-      _ <- addTriple(node,sh_alternativePath,list)
+      _ <- addTriple(node,`sh:alternativePath`,list)
     } yield node
     case _ => throw new Exception(s"Unimplemented conversion of path: $path")
   }
@@ -141,11 +141,11 @@ trait RDFSaver {
   } yield ls
 
   def mkRDFList(ls: List[RDFNode]): RDFSaver[RDFNode] = ls match {
-    case Nil => ok(rdf_nil)
+    case Nil => ok(`rdf:nil`)
     case x :: xs => for {
       node <- createBNode()
-      _ <- addTriple(node, rdf_first, x)
-      _ <- addContent(xs, node, rdf_rest, mkRDFList)
+      _ <- addTriple(node, `rdf:first`, x)
+      _ <- addContent(xs, node, `rdf:rest`, mkRDFList)
     } yield node
   }
 

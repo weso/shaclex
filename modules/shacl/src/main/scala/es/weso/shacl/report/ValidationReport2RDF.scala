@@ -18,7 +18,7 @@ class ValidationReport2RDF extends RDFSaver with LazyLogging {
   private def validationReport(vr: ValidationReport): RDFSaver[Unit] = for {
     _ <- addPrefix("sh", sh)
     node <- createBNode
-    _ <- addTriple(node, rdf_type, sh_ValidationReport)
+    _ <- addTriple(node, `rdf:type`, `sh:ValidationReport`)
     _ <- addTriple(node, sh_conforms, BooleanLiteral(vr.conforms))
     _ <- results(node, vr.results)
   } yield ()
@@ -31,7 +31,7 @@ class ValidationReport2RDF extends RDFSaver with LazyLogging {
       for {
         node <- createBNode()
         _    <- addTriple(id, sh_result, node)
-        _    <- addTriple(node, rdf_type, sh_ValidationResult)
+        _    <- addTriple(node, `rdf:type`, `sh:ValidationResult`)
         _    <- addTriple(node, sh_resultSeverity, vr.resultSeverity.toIRI)
         _    <- addTriple(node, sh_focusNode, vr.focusNode)
         _    <- addTriple(node, sh_sourceConstraintComponent, vr.sourceConstraintComponent)

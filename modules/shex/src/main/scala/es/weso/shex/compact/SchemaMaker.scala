@@ -838,16 +838,16 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
 
   def makeNumericLiteral(lexicalForm: String, datatype: IRI): Builder[NumericLiteral] = {
     datatype match {
-      case `xsd_integer` => for {
+      case `xsd:integer` => for {
         n <- getInteger(lexicalForm)
       } yield NumericInt(n, lexicalForm)
-      case `xsd_decimal` => for {
+      case `xsd:decimal` => for {
         d <- getDecimal(lexicalForm)
       } yield NumericDecimal(d, lexicalForm)
-      case `xsd_double` => for {
+      case `xsd:double` => for {
         d <- getDouble(lexicalForm)
       } yield NumericDouble(d, lexicalForm)
-      case `xsd_float` => for { // TODO: Check if floats and doubles are equivalent
+      case `xsd:float` => for { // TODO: Check if floats and doubles are equivalent
         d <- getDouble(lexicalForm)
       } yield NumericDouble(d,lexicalForm)
       case _ => err(s"Numeric Literal '$lexicalForm' applied to unknown datatype $datatype ")
@@ -1179,7 +1179,7 @@ class SchemaMaker extends ShExDocBaseVisitor[Any] with LazyLogging {
       case _ if (isDefined(ctx.iri())) =>
         visitIri(ctx.iri())
       case _ if (isDefined(ctx.rdfType())) =>
-        ok(rdf_type)
+        ok(`rdf:type`)
     }
   }
 

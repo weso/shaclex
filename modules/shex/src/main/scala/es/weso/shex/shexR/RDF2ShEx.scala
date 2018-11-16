@@ -15,7 +15,7 @@ import es.weso.rdf.nodes._
 trait RDF2ShEx extends RDFParser with LazyLogging {
 
   def getSchema(rdf: RDFReader): Either[String, Schema] = for {
-    schemaNodes <- rdf.triplesWithPredicateObject(rdf_type, sx_Schema) // .map(_.subj).toList
+    schemaNodes <- rdf.triplesWithPredicateObject(`rdf:type`, sx_Schema) // .map(_.subj).toList
     schemas <- parseNodes(schemaNodes.toList.map(_.subj), schema)(rdf)
     r <- schemas.length match {
         case 0 => Right(Schema.empty)
@@ -321,7 +321,7 @@ trait RDF2ShEx extends RDFParser with LazyLogging {
       firstOf(objectValue, stem) */
 
   private def anyUri: RDFParser[String] = (n, rdf) => n match {
-    case DatatypeLiteral(str, iri) if iri == xsd_anyUri => parseOk(str)
+    case DatatypeLiteral(str, iri) if iri == `xsd:anyUri` => parseOk(str)
     case _ => parseFail(s"Expected typed literal with datatype xsd:anyUri. Obtained: $n")
   }
 

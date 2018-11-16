@@ -68,7 +68,7 @@ object RDF4jUtils {
     repo.initialize
     val con = repo.getConnection
     con.add(model)
-    val path: SHACLPath = SequencePath(Seq(PredicatePath(rdf_type), ZeroOrMorePath(PredicatePath(rdfs_subClassOf))))
+    val path: SHACLPath = SequencePath(Seq(PredicatePath(`rdf:type`), ZeroOrMorePath(PredicatePath(`rdfs:subClassOf`))))
     val queryStr =
       s"""|SELECT ?x {
           |?x ${path.show} ${cls.show}

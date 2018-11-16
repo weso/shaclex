@@ -76,9 +76,9 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     parsedShapes.clear()
     parsedPropertyGroups.clear()
     for {
-      nodeShapes <- rdf.subjectsWithType(sh_NodeShape)
-      propertyShapes <- rdf.subjectsWithType(sh_PropertyShape)
-      shapes <- rdf.subjectsWithType(sh_Shape)
+      nodeShapes <- rdf.subjectsWithType(`sh:NodeShape`)
+      propertyShapes <- rdf.subjectsWithType(`sh:PropertyShape`)
+      shapes <- rdf.subjectsWithType(`sh:Shape`)
       objectsPropertyShapes <- rdf.subjectsWithProperty(sh_property)
       sm <-{
         val allShapes = nodeShapes ++ propertyShapes ++ shapes ++ objectsPropertyShapes
@@ -127,7 +127,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def nodeShape: RDFParser[RefNode] = (n, rdf) => for {
     types <- rdfTypes(n, rdf)
-    _ <- failIf(types.contains(sh_PropertyShape), "Node shapes must not have rdf:type sh:PropertyShape")(n, rdf)
+    _ <- failIf(types.contains(`sh:PropertyShape`), "Node shapes must not have rdf:type sh:PropertyShape")(n, rdf)
     targets <- targets(n, rdf)
     propertyShapes <- propertyShapes(n, rdf)
     components <- components(n, rdf)
@@ -175,7 +175,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
         parsedPropertyGroups.get(ref) match {
         case Some(pg) => Right(Some(ref))
         case None => for {
-         labels <- objectsFromPredicate(rdfs_label)(n,rdf)
+         labels <- objectsFromPredicate(`rdfs:label`)(n,rdf)
          order <- parseOrder(n,rdf)
         } yield {
           val pg = PropertyGroup(order,labels)
@@ -194,9 +194,9 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   private def parseSeverity: RDFParser[Option[Severity]] = (n,rdf) => for {
     maybeIri <- iriFromPredicateOptional(sh_severity)(n,rdf)
   } yield maybeIri match {
-      case Some(`sh_Violation`) => Some(ViolationSeverity)
-      case Some(`sh_Warning`) => Some(WarningSeverity)
-      case Some(`sh_Info`) => Some(InfoSeverity)
+      case Some(`sh:Violation`) => Some(ViolationSeverity)
+      case Some(`sh:Warning`) => Some(WarningSeverity)
+      case Some(`sh:Info`) => Some(InfoSeverity)
       case Some(iri) => Some(GenericSeverity(iri))
       case None => None
   }
@@ -213,7 +213,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def propertyShape: RDFParser[RefNode] = (n, rdf) => for {
     types <- rdfTypes(n, rdf)
-    _ <- failIf(types.contains(sh_NodeShape), "Property shapes must not have rdf:type sh:NodeShape")(n, rdf)
+    _ <- failIf(types.contains(`sh:NodeShape`), "Property shapes must not have rdf:type sh:NodeShape")(n, rdf)
     targets <- targets(n, rdf)
     nodePath <- objectFromPredicate(sh_path)(n, rdf)
     path <- parsePath(nodePath, rdf)
@@ -278,7 +278,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def implicitTargetClass: RDFParser[Seq[Target]] = (n, rdf) =>
     for {
-     ts <- rdf.triplesWithSubjectPredicate(n, rdf_type)
+     ts <- rdf.triplesWithSubjectPredicate(n, `rdf:type`)
      shapeTypes = ts.map(_.obj)
      rdfs_Class = rdfs + "Class"
      r <- if (shapeTypes.contains(rdfs_Class))
@@ -369,27 +369,27 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   def inversePath: RDFParser[SHACLPath] = (n, rdf) => for {
-    pathNode <- objectFromPredicate(sh_inversePath)(n, rdf)
+    pathNode <- objectFromPredicate(`sh:inversePath`)(n, rdf)
     path <- parsePath(pathNode, rdf)
   } yield InversePath(path)
 
   def oneOrMorePath: RDFParser[SHACLPath] = (n, rdf) => for {
-    pathNode <- objectFromPredicate(sh_oneOrMorePath)(n, rdf)
+    pathNode <- objectFromPredicate(`sh:oneOrMorePath`)(n, rdf)
     path <- parsePath(pathNode, rdf)
   } yield OneOrMorePath(path)
 
   def zeroOrMorePath: RDFParser[SHACLPath] = (n, rdf) => for {
-    pathNode <- objectFromPredicate(sh_zeroOrMorePath)(n, rdf)
+    pathNode <- objectFromPredicate(`sh:zeroOrMorePath`)(n, rdf)
     path <- parsePath(pathNode, rdf)
   } yield ZeroOrMorePath(path)
 
   def zeroOrOnePath: RDFParser[SHACLPath] = (n, rdf) => for {
-    pathNode <- objectFromPredicate(sh_zeroOrOnePath)(n, rdf)
+    pathNode <- objectFromPredicate(`sh:zeroOrOnePath`)(n, rdf)
     path <- parsePath(pathNode, rdf)
   } yield ZeroOrOnePath(path)
 
   def alternativePath: RDFParser[SHACLPath] = (n, rdf) => for {
-    pathNode <- objectFromPredicate(sh_alternativePath)(n, rdf)
+    pathNode <- objectFromPredicate(`sh:alternativePath`)(n, rdf)
     pathNodes <- rdfList(pathNode, rdf)
     paths <- group(parsePath, pathNodes)(n, rdf)
   } yield AlternativePath(paths)
@@ -455,7 +455,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   } yield LanguageIn(ls)
 
   private def uniqueLang: RDFParser[UniqueLang] = (n, rdf) => for {
-    b <- booleanFromPredicate(sh_uniqueLang)(n, rdf)
+    b <- booleanFromPredicate(`sh:uniqueLang`)(n, rdf)
   } yield UniqueLang(b)
 
   private def equals = parsePredicateComparison(sh_equals, Equals)
@@ -481,7 +481,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   } yield And(shapes)
 
   def xone: RDFParser[Xone] = (n, rdf) => for {
-    nodes <- rdfListForPredicate(sh_xone)(n, rdf)
+    nodes <- rdfListForPredicate(`sh:xone`)(n, rdf)
     shapes <- mapRDFParser(nodes, shapeRefConst)(n, rdf)
   } yield Xone(shapes)
 
@@ -571,12 +571,12 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       case 1 => {
         os.head match {
           case nk: IRI => nk match {
-            case `sh_IRI` => parseOk(NodeKind(IRIKind))
-            case `sh_BlankNode` => parseOk(NodeKind(BlankNodeKind))
-            case `sh_Literal` => parseOk(NodeKind(LiteralKind))
-            case `sh_BlankNodeOrLiteral` => parseOk(NodeKind(BlankNodeOrLiteral))
-            case `sh_BlankNodeOrIRI` => parseOk(NodeKind(BlankNodeOrIRI))
-            case `sh_IRIOrLiteral` => parseOk(NodeKind(IRIOrLiteral))
+            case `sh:IRI` => parseOk(NodeKind(IRIKind))
+            case `sh:BlankNode` => parseOk(NodeKind(BlankNodeKind))
+            case `sh:Literal` => parseOk(NodeKind(LiteralKind))
+            case `sh:BlankNodeOrLiteral` => parseOk(NodeKind(BlankNodeOrLiteral))
+            case `sh:BlankNodeOrIRI` => parseOk(NodeKind(BlankNodeOrIRI))
+            case `sh:IRIOrLiteral` => parseOk(NodeKind(IRIOrLiteral))
             case x => {
               logger.error(s"incorrect value of nodeKind property $x")
               parseFail(s"incorrect value of nodeKind property $x")

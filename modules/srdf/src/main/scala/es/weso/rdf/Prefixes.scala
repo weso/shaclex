@@ -13,41 +13,41 @@ object PREFIXES {
   lazy val rdfs = IRI("http://www.w3.org/2000/01/rdf-schema#")
   lazy val sh = IRI("http://www.w3.org/ns/shacl#")
 
-  lazy val xsd_string = xsd.add("string")
-  lazy val xsd_byte = xsd.add("byte")
-  lazy val xsd_dateTime = xsd.add("dateTime")
-  lazy val xsd_decimal = xsd.add("decimal")
-  lazy val xsd_double = xsd.add("double")
-  lazy val xsd_int = xsd.add("int")
-  lazy val xsd_integer = xsd.add("integer")
-  lazy val xsd_long = xsd.add("long")
-  lazy val xsd_positiveInteger = xsd.add("positiveInteger")
-  lazy val xsd_negativeInteger = xsd.add("negativeInteger")
-  lazy val xsd_nonNegativeInteger = xsd.add("nonNegativeInteger")
-  lazy val xsd_nonPositiveInteger = xsd.add("nonPositiveInteger")
-  lazy val xsd_short = xsd.add("short")
-  lazy val xsd_unsignedLong = xsd.add("unsignedLong")
-  lazy val xsd_unsignedInt = xsd.add("unsignedInt")
-  lazy val xsd_unsignedShort = xsd.add("unsignedShort")
-  lazy val xsd_unsignedByte = xsd.add("unsignedByte")
-  lazy val xsd_float = xsd.add("float")
-  lazy val xsd_anyUri = xsd.add("anyUri")
-  lazy val xsd_boolean = xsd.add("boolean")
+  lazy val `xsd:string`: IRI = xsd.add("string")
+  lazy val `xsd:byte`: IRI = xsd.add("byte")
+  lazy val `xsd:dateTime`: IRI = xsd.add("dateTime")
+  lazy val `xsd:decimal`: IRI = xsd.add("decimal")
+  lazy val `xsd:double`: IRI = xsd.add("double")
+  lazy val `xsd:int`: IRI = xsd.add("int")
+  lazy val `xsd:integer`: IRI = xsd.add("integer")
+  lazy val `xsd:long`: IRI = xsd.add("long")
+  lazy val `xsd:positiveInteger`: IRI = xsd.add("positiveInteger")
+  lazy val `xsd:negativeInteger`: IRI = xsd.add("negativeInteger")
+  lazy val `xsd:nonNegativeInteger`: IRI = xsd.add("nonNegativeInteger")
+  lazy val `xsd:nonPositiveInteger`: IRI = xsd.add("nonPositiveInteger")
+  lazy val `xsd:short`: IRI = xsd.add("short")
+  lazy val `xsd:unsignedLong`: IRI = xsd.add("unsignedLong")
+  lazy val `xsd:unsignedInt`: IRI = xsd.add("unsignedInt")
+  lazy val `xsd:unsignedShort`: IRI = xsd.add("unsignedShort")
+  lazy val `xsd:unsignedByte`: IRI = xsd.add("unsignedByte")
+  lazy val `xsd:float`: IRI = xsd.add("float")
+  lazy val `xsd:anyUri`: IRI = xsd.add("anyUri")
+  lazy val `xsd:boolean`: IRI = xsd.add("boolean")
 
-  lazy val rdf_type = rdf.add("type")
-  lazy val rdf_nil = rdf.add("nil")
-  lazy val rdf_first = rdf.add("first")
-  lazy val rdf_rest = rdf.add("rest")
-  lazy val rdf_langString = rdf.add("langString")
+  lazy val `rdf:type`: IRI = rdf.add("type")
+  lazy val `rdf:nil`: IRI = rdf.add("nil")
+  lazy val `rdf:first`: IRI = rdf.add("first")
+  lazy val `rdf:rest`: IRI = rdf.add("rest")
+  lazy val `rdf:langString`: IRI = rdf.add("langString")
 
-  lazy val rdfs_label = rdfs.add("label")
-  lazy val rdfs_subClassOf = rdfs.add("subClassOf")
+  lazy val `rdfs:label`: IRI = rdfs.add("label")
+  lazy val `rdfs:subClassOf`: IRI = rdfs.add("subClassOf")
 
-  lazy val sh_alternativePath: IRI = sh + "alternativePath"
-  lazy val sh_inversePath: IRI = sh + "inversePath"
-  lazy val sh_oneOrMorePath: IRI = sh + "oneOrMorePath"
-  lazy val sh_zeroOrMorePath: IRI = sh + "zeroOrMorePath"
-  lazy val sh_zeroOrOnePath: IRI = sh + "zeroOrOnePath"
+  lazy val `sh:alternativePath`: IRI = sh + "alternativePath"
+  lazy val `sh:inversePath`: IRI = sh + "inversePath"
+  lazy val `sh:oneOrMorePath`: IRI = sh + "oneOrMorePath"
+  lazy val `sh:zeroOrMorePath`: IRI = sh + "zeroOrMorePath"
+  lazy val `sh:zeroOrOnePath`: IRI = sh + "zeroOrOnePath"
 
   val basicMap: Map[String, IRI] =
     Map(

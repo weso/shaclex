@@ -7,20 +7,20 @@ sealed trait NodeKindType {
   def id: IRI
 }
 case object IRIKind extends NodeKindType {
-  override def id = sh_IRI
+  override def id = `sh:IRI`
 }
 case object LiteralKind extends NodeKindType {
-  override def id = sh_Literal
+  override def id = `sh:Literal`
 }
 case object BlankNodeKind extends NodeKindType {
-  override def id = sh_BlankNode
+  override def id = `sh:BlankNode`
 }
 case object BlankNodeOrIRI extends NodeKindType {
-  override def id = sh_BlankNodeOrIRI
+  override def id = `sh:BlankNodeOrIRI`
 }
 case object BlankNodeOrLiteral extends NodeKindType {
-  override def id = sh_BlankNodeOrLiteral
+  override def id = `sh:BlankNodeOrLiteral`
 }
 case object IRIOrLiteral extends NodeKindType {
-  override def id = sh_IRIOrLiteral
+  override def id = `sh:IRIOrLiteral`
 }

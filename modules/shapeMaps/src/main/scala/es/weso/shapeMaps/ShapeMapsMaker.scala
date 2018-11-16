@@ -104,7 +104,7 @@ class ShapeMapsMaker(
     case _ if isDefined(ctx.nodeIri()) => for {
       iri <- visitNodeIri(ctx.nodeIri(), nodesPrefixMap)
     } yield iri
-    case _ if isDefined(ctx.rdfType()) => ok(rdf_type)
+    case _ if isDefined(ctx.rdfType()) => ok(`rdf:type`)
   }
 
   override def visitObjectTerm(ctx: ObjectTermContext): Builder[RDFNode] = ctx match {
@@ -174,7 +174,7 @@ class ShapeMapsMaker(
 
   override def visitPathPrimary(ctx: PathPrimaryContext): Builder[SHACLPath] = ctx match {
     case _ if isDefined(ctx.nodeIri()) => visitNodeIri(ctx.nodeIri(), nodesPrefixMap).map(PredicatePath(_))
-    case _ if isDefined(ctx.rdfType()) => ok(PredicatePath(rdf_type))
+    case _ if isDefined(ctx.rdfType()) => ok(PredicatePath(`rdf:type`))
   }
 
 

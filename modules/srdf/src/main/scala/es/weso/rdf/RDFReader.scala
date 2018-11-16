@@ -119,7 +119,7 @@ trait RDFReader {
   def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String, Set[RDFNode]]
 
   def triplesWithType(expectedType: IRI): Either[String, Set[RDFTriple]] = {
-    triplesWithPredicateObject(rdf_type, expectedType)
+    triplesWithPredicateObject(`rdf:type`, expectedType)
   }
 
   /**
@@ -173,7 +173,7 @@ trait RDFReader {
   def getSHACLInstances(cls: RDFNode): Either[String, Seq[RDFNode]]
 
   def getTypes(node: RDFNode): Either[String,Set[RDFNode]] = {
-    triplesWithSubjectPredicate(node, rdf_type).map(_.map(_.obj))
+    triplesWithSubjectPredicate(node, `rdf:type`).map(_.map(_.obj))
   }
 
   /**
@@ -217,7 +217,7 @@ trait RDFReader {
   def rdfReaderName: String
 
   def subjectsWithType(t: RDFNode): Either[String, Set[RDFNode]] = {
-    triplesWithPredicateObject(rdf_type, t).map(_.map(_.subj))
+    triplesWithPredicateObject(`rdf:type`, t).map(_.map(_.subj))
   }
 
   def subjectsWithProperty(pred: IRI): Either[String, Set[RDFNode]] = {

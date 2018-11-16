@@ -7,13 +7,13 @@ sealed abstract class Severity {
   def toIRI: IRI
 }
 case object ViolationSeverity extends Severity {
-  override def toIRI: IRI = sh_Violation
+  override def toIRI: IRI = `sh:Violation`
 }
 case object WarningSeverity extends Severity {
-  override def toIRI: IRI = sh_Warning
+  override def toIRI: IRI = `sh:Warning`
 }
 case object InfoSeverity extends Severity {
-  override def toIRI: IRI = sh_Info
+  override def toIRI: IRI = `sh:Info`
 }
 case class GenericSeverity(iri: IRI) extends Severity {
   override def toIRI: IRI = iri

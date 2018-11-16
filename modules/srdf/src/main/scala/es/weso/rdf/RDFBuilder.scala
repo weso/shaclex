@@ -23,7 +23,7 @@ trait RDFBuilder extends RDFReader {
   }
 
   def addType(node: RDFNode, typeNode: RDFNode): Either[String,Rdf] = {
-    addTriple(RDFTriple(node, rdf_type, typeNode))
+    addTriple(RDFTriple(node, `rdf:type`, typeNode))
   }
 
   def rmTriple(triple: RDFTriple): Either[String,Rdf]

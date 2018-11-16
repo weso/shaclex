@@ -47,7 +47,7 @@ object SLang {
   def or(s1: SLang, s2: SLang): SLang = Not(And(Not(s1), Not(s2)))
   def and(s1: SLang, s2: SLang): SLang = And(s1,s2)
   def sfalse(s1: SLang): SLang        = Not(STrue)
-  def string: SLang = Datatype(xsd_string)
+  def string: SLang = Datatype(`xsd:string`)
 
   def iri(str: String): IRI = IRI(str)
   def zeroStar: Card        = Card(0, Star)

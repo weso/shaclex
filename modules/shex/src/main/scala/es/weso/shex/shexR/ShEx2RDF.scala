@@ -27,7 +27,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     for {
       node <- makeId(id)
       _ <- addPrefixMap(s.prefixMap)
-      _ <- addTriple(node, rdf_type, sx_Schema)
+      _ <- addTriple(node, `rdf:type`, sx_Schema)
       _ <- maybeAddListContent(s.startActs, node, sx_startActs, semAct)
       _ <- maybeAddContent(s.start, node, sx_start, shapeExpr)
       _ <- maybeAddStarContent(s.shapes, node, sx_shapes, shapeExpr)
@@ -38,7 +38,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
     case sa: ShapeAnd => for {
       node <- mkId(sa.id)
-      _ <- addTriple(node, rdf_type, sx_ShapeAnd)
+      _ <- addTriple(node, `rdf:type`, sx_ShapeAnd)
       _ <- addListContent(sa.shapeExprs, node, sx_expressions, shapeExpr)
       _ <- maybeAddListContent(sa.actions, node, sx_semActs, semAct)
       _ <- maybeAddStarContent(sa.annotations, node, sx_annotation, annotation)
@@ -46,7 +46,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
     case so: ShapeOr => for {
       node <- mkId(so.id)
-      _ <- addTriple(node, rdf_type, sx_ShapeOr)
+      _ <- addTriple(node, `rdf:type`, sx_ShapeOr)
       _ <- addListContent(so.shapeExprs, node, sx_expressions, shapeExpr)
       _ <- maybeAddListContent(so.actions, node, sx_semActs, semAct)
       _ <- maybeAddStarContent(so.annotations, node, sx_annotation, annotation)
@@ -54,7 +54,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
     case sn: ShapeNot => for {
       node <- mkId(sn.id)
-      _ <- addTriple(node, rdf_type, sx_ShapeNot)
+      _ <- addTriple(node, `rdf:type`, sx_ShapeNot)
       _ <- addContent(sn.shapeExpr, node, sx_expression, shapeExpr)
       _ <- maybeAddListContent(sn.actions, node, sx_semActs, semAct)
       _ <- maybeAddStarContent(sn.annotations, node, sx_annotation, annotation)
@@ -62,7 +62,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
     case nk: NodeConstraint => for {
       shapeId <- mkId(nk.id)
-      _ <- addTriple(shapeId, rdf_type, sx_NodeConstraint)
+      _ <- addTriple(shapeId, `rdf:type`, sx_NodeConstraint)
       _ <- maybeAddContent(nk.nodeKind, shapeId, sx_nodeKind, nodeKind)
       _ <- maybeAddContent(nk.datatype, shapeId, sx_datatype, iri)
       _ <- nk.xsFacets.map(xsFacet(_, shapeId)).sequence
@@ -73,7 +73,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
     case s: Shape => for {
       shapeId <- mkId(s.id)
-      _ <- addTriple(shapeId, rdf_type, sx_Shape)
+      _ <- addTriple(shapeId, `rdf:type`, sx_Shape)
       _ <- maybeAddContent(s.closed, shapeId, sx_closed, rdfBoolean)
       _ <- maybeAddStarContent(s.extra, shapeId, sx_extra, iri)
       _ <- maybeAddContent(s.expression, shapeId, sx_expression, tripleExpr)
@@ -83,7 +83,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
     case se: ShapeExternal => for {
       shapeId <- mkId(se.id)
-      _ <- addTriple(shapeId, rdf_type, sx_ShapeExternal)
+      _ <- addTriple(shapeId, `rdf:type`, sx_ShapeExternal)
       _ <- maybeAddListContent(se.actions, shapeId, sx_semActs, semAct)
       _ <- maybeAddStarContent(se.annotations, shapeId, sx_annotation, annotation)
     } yield shapeId
@@ -148,40 +148,40 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
   private def iriStem(x: IRIStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_IriStem)
-    _ <- addTriple(node, sx_stem, DatatypeLiteral(x.stem.str, xsd_anyUri))
+    _ <- addTriple(node, `rdf:type`, sx_IriStem)
+    _ <- addTriple(node, sx_stem, DatatypeLiteral(x.stem.str, `xsd:anyUri`))
   } yield node
 
   private def languageStem(x: LanguageStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_LanguageStem)
+    _ <- addTriple(node, `rdf:type`, sx_LanguageStem)
     _ <- addTriple(node, sx_stem, StringLiteral(x.stem.lang))
   } yield node
 
   private def literalStem(x: LiteralStem): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_LiteralStem)
+    _ <- addTriple(node, `rdf:type`, sx_LiteralStem)
     _ <- addTriple(node, sx_stem, StringLiteral(x.stem))
   } yield node
 
   private def iriStemRange(range: IRIStemRange): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_IriStemRange)
+    _ <- addTriple(node, `rdf:type`, sx_IriStemRange)
     _ <- addContent(range.stem, node, sx_stem, iriStemRangeValue)
     _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, iriExclusion)
   } yield node
 
   private def iriStemRangeValue(x: IRIStemRangeValue): RDFSaver[RDFNode] = x match {
-    case IRIStemValueIRI(iri) => ok(DatatypeLiteral(iri.str, xsd_anyUri))
+    case IRIStemValueIRI(iri) => ok(DatatypeLiteral(iri.str, `xsd:anyUri`))
     case IRIStemWildcard() => for {
       node <- createBNode()
-      _ <- addTriple(node, rdf_type, sx_Wildcard)
+      _ <- addTriple(node, `rdf:type`, sx_Wildcard)
     } yield node
   }
 
   private def literalStemRange(range: LiteralStemRange): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_LiteralStemRange)
+    _ <- addTriple(node, `rdf:type`, sx_LiteralStemRange)
     _ <- addContent(range.stem, node, sx_stem, literalStemRangeValue)
     _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, literalExclusion)
   } yield node
@@ -190,13 +190,13 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case LiteralStemRangeString(str) => ok(StringLiteral(str))
     case LiteralStemRangeWildcard() => for {
       node <- createBNode()
-      _ <- addTriple(node, rdf_type, sx_Wildcard)
+      _ <- addTriple(node, `rdf:type`, sx_Wildcard)
     } yield node
   }
 
   private def languageStemRange(range: LanguageStemRange): RDFSaver[RDFNode] = for {
     node <- createBNode()
-    _ <- addTriple(node, rdf_type, sx_LanguageStemRange)
+    _ <- addTriple(node, `rdf:type`, sx_LanguageStemRange)
     _ <- addContent(range.stem, node, sx_stem, languageStemRangeValue)
     _ <- maybeAddStarContent(range.exclusions, node, sx_exclusion, languageExclusion)
   } yield node
@@ -205,7 +205,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case LanguageStemRangeLang(Lang(lang)) => ok(StringLiteral(lang))
     case LanguageStemRangeWildcard() => for {
       node <- createBNode()
-      _ <- addTriple(node, rdf_type, sx_Wildcard)
+      _ <- addTriple(node, `rdf:type`, sx_Wildcard)
     } yield node
   }
 
@@ -213,7 +213,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     // TODO: Variable declaration
     case TripleConstraint(id, inverse, negated, pred, valueExpr, min, max, _, semActs, annotations) => for {
       teId <- mkId(id)
-      _ <- addTriple(teId, rdf_type, sx_TripleConstraint)
+      _ <- addTriple(teId, `rdf:type`, sx_TripleConstraint)
       _ <- maybeAddContent(inverse, teId, sx_inverse, rdfBoolean)
       _ <- maybeAddContent(negated, teId, sx_negated, rdfBoolean)
       _ <- addTriple(teId, sx_predicate, pred)
@@ -225,7 +225,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield teId
     case EachOf(id, exprs, min, max, semActs, annotations) => for {
       node <- mkId(id)
-      _ <- addTriple(node, rdf_type, sx_EachOf)
+      _ <- addTriple(node, `rdf:type`, sx_EachOf)
       _ <- addListContent(exprs, node, sx_expressions, tripleExpr)
       _ <- maybeAddContent(min, node, sx_min, rdfInt)
       _ <- maybeAddContent(max, node, sx_max, rdfMax)
@@ -234,7 +234,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
     case OneOf(id, exprs, min, max, semActs, annotations) => for {
       node <- mkId(id)
-      _ <- addTriple(node, rdf_type, sx_OneOf)
+      _ <- addTriple(node, `rdf:type`, sx_OneOf)
       _ <- addListContent(exprs, node, sx_expressions, tripleExpr)
       _ <- maybeAddContent(min, node, sx_min, rdfInt)
       _ <- maybeAddContent(max, node, sx_max, rdfMax)
@@ -246,7 +246,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
   private def semAct(x: SemAct): RDFSaver[RDFNode] = for {
     id <- createBNode()
-    _ <- addTriple(id, rdf_type, sx_SemAct)
+    _ <- addTriple(id, `rdf:type`, sx_SemAct)
     _ <- addTriple(id, sx_name, x.name)
     _ <- maybeAddContent(x.code, id, sx_code, rdfString)
   } yield id
@@ -258,7 +258,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
 
   private def annotation(x: Annotation): RDFSaver[RDFNode] = for {
     id <- createBNode()
-    _ <- addTriple(id, rdf_type, sx_Annotation)
+    _ <- addTriple(id, `rdf:type`, sx_Annotation)
     _ <- addTriple(id, sx_predicate, x.predicate)
     _ <- addContent(x.obj, id, sx_object, objectValue)
   } yield id

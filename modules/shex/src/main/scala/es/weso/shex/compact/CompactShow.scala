@@ -278,10 +278,10 @@ object CompactShow {
 
   private def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Doc =
     dt.iri match {
-      case `xsd_boolean` => booleanDoc(dt.s)
-      case `xsd_integer` => integerDoc(dt.s)
-      case `xsd_decimal` => decimalDoc(dt.s)
-      case `xsd_double` => doubleDoc(dt.s)
+      case `xsd:boolean` => booleanDoc(dt.s)
+      case `xsd:integer` => integerDoc(dt.s)
+      case `xsd:decimal` => decimalDoc(dt.s)
+      case `xsd:double` => doubleDoc(dt.s)
       case _ => stringDoc(dt.s) :: str("^^") :: iriDoc(pm)(dt.iri)
     }
 

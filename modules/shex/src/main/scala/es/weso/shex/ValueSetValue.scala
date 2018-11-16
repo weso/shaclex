@@ -15,20 +15,20 @@ case class DatatypeString(s: String, iri: IRI) extends ObjectLiteral
 case class LangString(s: String, lang: Lang) extends ObjectLiteral
 
 object ObjectValue {
-  def trueValue: ObjectValue = DatatypeString("true", xsd_boolean)
-  def falseValue: ObjectValue = DatatypeString("false", xsd_boolean)
+  def trueValue: ObjectValue = DatatypeString("true", `xsd:boolean`)
+  def falseValue: ObjectValue = DatatypeString("false", `xsd:boolean`)
   def intValue(n: Int, repr: String): ObjectValue =
-    DatatypeString(repr, xsd_integer)
+    DatatypeString(repr, `xsd:integer`)
   def intValue(n: Int): ObjectValue =
     intValue(n, n.toString)
   def doubleValue(d: Double, repr: String): ObjectValue =
-    DatatypeString(repr, xsd_double)
+    DatatypeString(repr, `xsd:double`)
   def decimalValue(d: BigDecimal, repr: String): ObjectValue =
-    DatatypeString(repr, xsd_decimal)
+    DatatypeString(repr, `xsd:decimal`)
   def literalValue(l: Literal): ObjectValue =
     l match {
       case DatatypeLiteral(lex, dt) =>
-        if (dt == `xsd_string`) StringValue(lex)
+        if (dt == `xsd:string`) StringValue(lex)
         else DatatypeString(lex, dt)
       case IntegerLiteral(n, repr) => intValue(n,repr)
       case DecimalLiteral(d, repr) => decimalValue(d,repr)

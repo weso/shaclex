@@ -37,7 +37,7 @@ case class ValueChecker(schema: Schema)
       }
       case StringValue(s) =>
         node match {
-        case l: Literal => if(s == l.getLexicalForm && l.dataType == xsd_string)
+        case l: Literal => if(s == l.getLexicalForm && l.dataType == `xsd:string`)
           Right(s"${node.show} == ${l}")
         else
           Left(s"${node.show} != ${l}")
