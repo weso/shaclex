@@ -1,6 +1,6 @@
 package es.weso.schemaInfer
 
-private sealed abstract class InferredNodesValue {
+sealed abstract class InferredNodesValue {
   def collapse(other: InferredNodesValue): InferredNodesValue
   def freqs: List[Int]
   def number = freqs.max

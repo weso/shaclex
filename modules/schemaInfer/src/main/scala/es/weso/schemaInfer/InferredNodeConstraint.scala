@@ -1,8 +1,10 @@
 package es.weso.schemaInfer
 import es.weso.rdf.PREFIXES.`xsd:string`
+import es.weso.rdf.PREFIXES.`rdf:langString`
 import es.weso.rdf.nodes._
 
 sealed abstract trait InferredNodeConstraint {
+
   def collapse(other: InferredNodeConstraint): InferredNodeConstraint
   def collapseNode(node: RDFNode): InferredNodeConstraint =
     this match {
@@ -47,6 +49,13 @@ sealed abstract trait InferredNodeConstraint {
           case _              => InferredNone
         }
       case InferredNone => InferredNone
+      case Ref(lbl) => node match {
+        case iri: IRI => Ref(lbl)
+        case _ => {
+          println(s"Inferred ref($lbl) collapse with $node => None")
+          InferredNone
+        }
+      }
     }
 
   def collectKind(n1: RDFNode, n2: RDFNode): InferredNodeConstraint = (n1, n2) match {
@@ -64,35 +73,74 @@ sealed abstract trait InferredNodeConstraint {
       }
     case (_, _) => InferredNone
   }
+
+  /**
+    * IRI employed by node constraint
+    * @return
+    */
+  def getIRI: Option[IRI]
+
 }
 case class PlainNode(node: RDFNode) extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other.collapseNode(node)
+  override def getIRI = node match {
+    case iri: IRI => Some(iri)
+    case DatatypeLiteral(_,dt) => Some(dt)
+    case _ => None
+  }
+}
+case class Ref(lbl: IRI) extends InferredNodeConstraint {
+  override def collapse(other: InferredNodeConstraint) = {
+    other match {
+      case Ref(otherLbl) => if (lbl == otherLbl) Ref(lbl)
+      else {
+        println(s"Inferred references with different labels")
+        InferredNone
+      }
+      case InferredIRI => {
+        Ref(lbl)
+      }
+      case _ => {
+        println(s"Inferred references label $lbl and other node $other")
+        InferredNone
+      }
+    }
+  }
+  override def getIRI = None
 }
 case object InferredIRI extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case InferredIRI => InferredIRI
     case _ => InferredNone
   }
+  override def getIRI = None
 }
+
 case object InferredBlankNode extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case InferredBlankNode => InferredBlankNode
     case _ => InferredNone
   }
+  override def getIRI = None
 }
+
 case object InferredLiteral extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case InferredLiteral | InferredString | InferredLangString | _:InferredLang | _:InferredDatatype=> InferredLiteral
     case _ => InferredNone
   }
+  override def getIRI = None
 }
+
 case object InferredString extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case InferredString => InferredString
     case InferredLiteral | InferredLangString | _:InferredLang | _:InferredDatatype=> InferredLiteral
     case _ => InferredNone
   }
+  override def getIRI = None
 }
+
 case class InferredLang(lang: Lang) extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case l : InferredLang =>
@@ -102,13 +150,18 @@ case class InferredLang(lang: Lang) extends InferredNodeConstraint {
     case InferredLiteral | _:InferredDatatype=> InferredLiteral
     case _ => InferredNone
   }
+
+  override def getIRI = None
 }
+
 case object InferredLangString extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case _ : InferredLang | InferredLangString => InferredLangString
     case InferredString | InferredLiteral | _:InferredDatatype=> InferredLiteral
     case _ => InferredNone
   }
+
+  override def getIRI = Some(`rdf:langString`)
 }
 
 case class InferredDatatype(dt: IRI) extends InferredNodeConstraint {
@@ -118,9 +171,11 @@ case class InferredDatatype(dt: IRI) extends InferredNodeConstraint {
     case InferredString | InferredLiteral | _:InferredDatatype | InferredLangString | _: InferredLang => InferredLiteral
     case _ => InferredNone
   }
+  override def getIRI = Some(dt)
 }
 
 case object InferredNone extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = InferredNone
+  override def getIRI = None
 }
 

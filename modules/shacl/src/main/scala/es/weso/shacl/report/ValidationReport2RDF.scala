@@ -19,7 +19,7 @@ class ValidationReport2RDF extends RDFSaver with LazyLogging {
     _ <- addPrefix("sh", sh)
     node <- createBNode
     _ <- addTriple(node, `rdf:type`, `sh:ValidationReport`)
-    _ <- addTriple(node, sh_conforms, BooleanLiteral(vr.conforms))
+    _ <- addTriple(node, `sh:conforms`, BooleanLiteral(vr.conforms))
     _ <- results(node, vr.results)
   } yield ()
 
@@ -30,32 +30,32 @@ class ValidationReport2RDF extends RDFSaver with LazyLogging {
     case vr: ValidationResult =>
       for {
         node <- createBNode()
-        _    <- addTriple(id, sh_result, node)
+        _    <- addTriple(id, `sh:result`, node)
         _    <- addTriple(node, `rdf:type`, `sh:ValidationResult`)
-        _    <- addTriple(node, sh_resultSeverity, vr.resultSeverity.toIRI)
-        _    <- addTriple(node, sh_focusNode, vr.focusNode)
-        _    <- addTriple(node, sh_sourceConstraintComponent, vr.sourceConstraintComponent)
-        _    <- addTriple(node, sh_sourceShape, vr.sourceShape.id)
-        _    <- addTripleObjects(node, sh_value, vr.values.toList)
-        _    <- addTripleObjects(node, sh_resultMessage, vr.messageMap.getRDFNodes)
+        _    <- addTriple(node, `sh:resultSeverity`, vr.resultSeverity.toIRI)
+        _    <- addTriple(node, `sh:focusNode`, vr.focusNode)
+        _    <- addTriple(node, `sh:sourceConstraintComponent`, vr.sourceConstraintComponent)
+        _    <- addTriple(node, `sh:sourceShape`, vr.sourceShape.id)
+        _    <- addTripleObjects(node, `sh:value`, vr.values.toList)
+        _    <- addTripleObjects(node, `sh:resultMessage`, vr.messageMap.getRDFNodes)
         _    <- saveList(vr.message.toList, message(node))
         _ <- vr.focusPath match {
           case None => ok(())
           case Some(path) =>
             for {
               path <- makePath(path)
-              _    <- addTriple(node, sh_resultPath, path)
+              _    <- addTriple(node, `sh:resultPath`, path)
             } yield ()
         }
       } yield ()
     case mr: MsgError => for {
      node <- createBNode()
-     _ <- addTriple(node,sh_resultMessage, StringLiteral(mr.msg))
+     _ <- addTriple(node, `sh:resultMessage`, StringLiteral(mr.msg))
     } yield ()
   }
 
   private def message(node: RDFNode)(msg: LiteralValue): RDFSaver[Unit] = for {
-    _ <- addTriple(node,sh_message,msg.literal)
+    _ <- addTriple(node, `sh:message`,msg.literal)
   } yield ()
 
 }

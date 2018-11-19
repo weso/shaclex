@@ -12,6 +12,26 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
   describe(s"Schema Infer") {
 
     checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix p: <http://www.wikidata.org/prop>
+                        |prefix pr: <http://www.wikidata.org/prop/reference>
+                        |prefix prov: <http://www.w3.org/ns/prov#>
+                        |:x :p 1, "Hi" ;
+                        |   :q "Hi" ;
+                        |   :r :xs .
+                        |:xs prov:wasDerivedFrom :r .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |<S> {
+         | :p Literal     {1,*};
+         |  :q xsd:string ;
+         |  :r IRI
+         |}
+      """.stripMargin, ":x", "S"
+    )
+
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
                         |:x :p 1, "Hi" ;
                         |   :q "Hi" ;
                         |   :r :x .
@@ -47,7 +67,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
        rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE")
        schemaExpected <- Schemas.fromString(expectedStr,"ShExC","ShEx")
        nodeSelector <- NodeSelector.fromString(nodeSelectorStr, None,rdf.getPrefixMap)
-       schema <- SchemaInfer.infer(rdf, nodeSelector, "ShEx", IRI("S"))
+       schema <- SchemaInfer.runInferSchema(rdf, nodeSelector, "ShEx", IRI("S"))
       } yield (rdf, schemaExpected, nodeSelector, schema)
       result.fold(
         e => fail(s"Error: $e"),

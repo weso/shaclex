@@ -2,7 +2,7 @@ package es.weso.schemaInfer
 import cats._
 import cats.data._
 import cats.implicits._
-import es.weso.rdf.{PrefixMap, RDFReader}
+import es.weso.rdf.{Prefix, PrefixMap, RDFReader}
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.schema.{Schema, ShExSchema, ShaclexSchema}
@@ -20,10 +20,44 @@ object SchemaInfer {
   val wikidataId = "Endpoint(https://query.wikidata.org/sparql)"
   val wikibase = IRI("http://wikiba.se/ontology#")
   val schemaIri = IRI("http://schema.org/")
-  val propIri   = IRI("http://www.wikidata.org/prop/")
-  val wdt = IRI("http://www.wikidata.org/prop/direct/")
+  val wikidata = IRI("http://www.wikidata.org/")
+  val propIri   = wikidata + "prop/"
+  val wdt = wikidata + "prop/direct/"
+  val propRef = wikidata + "prop/reference/"
+  val propRefValue = wikidata + "prop/reference/value/"
   val skos = IRI("http://www.w3.org/2004/02/skos/core#")
+  val wdRef = IRI("http://www.wikidata.org/reference/")
   val `wikibase:directClaim` = wikibase + "directClaim"
+
+  case class PrefixDecl(alias: String, IRI: IRI)
+  val possiblePrefixes = PrefixMap(Map(
+    Prefix("cc") -> IRI("http://creativecommons.org/ns#"),
+    Prefix("dct") -> IRI("http://purl.org/dc/terms/"),
+    Prefix("owl") -> IRI("http://www.w3.org/2002/07/owl#"),
+    Prefix("pq") -> IRI("http://www.wikidata.org/prop/qualifier/"),
+    Prefix("pqv") -> IRI("http://www.wikidata.org/prop/qualifier/value/"),
+    Prefix("pqvn") -> IRI("http://www.wikidata.org/prop/qualifier/value-normalized/"),
+    Prefix("pr") -> propRef,
+    Prefix("prn") -> IRI("http://www.wikidata.org/prop/reference/value-normalized/"),
+    Prefix("prv") -> propRefValue,
+    Prefix("prov") -> prov,
+    Prefix("ps") -> IRI("http://www.wikidata.org/prop/statement/"),
+    Prefix("psv") -> IRI("http://www.wikidata.org/prop/statement/value/"),
+    Prefix("psvn") -> IRI("http://www.wikidata.org/prop/statement/value-normalized/"),
+    Prefix("rdf") -> rdf,
+    Prefix("rdfs") -> rdfs,
+    Prefix("schema") -> schemaIri,
+    Prefix("skos") -> skos,
+    Prefix("sx") -> sx,
+    Prefix("wdno") -> IRI("http://www.wikidata.org/prop/novalue/"),
+    Prefix("wdt") -> wdt,
+    Prefix("wdtn") -> IRI("http://www.wikidata.org/prop/direct-normalized/"),
+    Prefix("wdp") -> propIri,
+    Prefix("wdref") -> wdRef,
+    Prefix("wikibase") -> wikibase,
+    Prefix("wdata") -> IRI("http://www.wikidata.org/wiki/Special:EntityData/"),
+    Prefix("xsd") -> xsd
+  ))
 
   private type NeighMap = Map[IRI, Set[RDFNode]]
   private type EitherNeighMap = Either[String,NeighMap]
@@ -31,10 +65,19 @@ object SchemaInfer {
   private type InferredShape = Map[IRI, InferredNodesValue]
   private type InferredSchema = Map[IRI, InferredShape]
 
-  private case class State(schema: InferredSchema) {
+  private case class State(schema: InferredSchema, prefixMap: PrefixMap) {
     def updateSchema(fn: InferredSchema => InferredSchema): State =
       this.copy(schema = fn(schema))
+
+    def addPrefixMap(pm: PrefixMap): State = this.copy(prefixMap = this.prefixMap.merge(pm))
+
+    def addPrefixDecl(p: Prefix, iri: IRI): State = this.copy(prefixMap = prefixMap.addPrefix(p,iri))
   }
+
+  private object State {
+    def initial: State = State(Map(),PrefixMap.empty.addPrefix(Prefix("sx"), sx))
+  }
+
   private case class Config(options: InferOptions, rdf: RDFReader)
 
   private type Err = String
@@ -44,15 +87,32 @@ object SchemaInfer {
   private type ES[A] = Either[String,A]
 
   private def ok[A](x:A): Comp[A] = EitherT.pure(x)
+
   private def getState: Comp[State] = EitherT.liftF(StateT.get)
+
   private def getSchema: Comp[InferredSchema] = getState.map(_.schema)
-  private def updateSchema(fn: InferredSchema => InferredSchema): Comp[Unit] =
-    EitherT.liftF(StateT.modify(_.updateSchema(fn)))
+
+  private def getPrefixMap: Comp[PrefixMap] = getState.map(_.prefixMap)
+
+  private def updateState(fn: State => State): Comp[Unit] =
+    EitherT.liftF(StateT.modify(fn))
+
   private def setState(s: State): Comp[Unit] = EitherT.liftF(StateT.set(s))
+
+  private def updateSchema(fn: InferredSchema => InferredSchema): Comp[Unit] =
+    updateState(_.updateSchema(fn))
+
+  private def addPrefixDecl(prefix: Prefix, iri: IRI): Comp[Unit] =
+    updateState(_.addPrefixDecl(prefix,iri))
+
   private def err[A](msg:String): Comp[A] = EitherT.leftT[S,A](msg)
+
   private def sequence[A](ls: List[Comp[A]]): Comp[List[A]] = ls.sequence[Comp,A]
-  private def runWithState[A](c: Comp[A], initial: State, config: Config): Either[String,A] =
-    c.value.run(initial).run(config)._2
+
+  private def runWithState[A](c: Comp[A], initial: State, config: Config): Either[String,A] = {
+    val (_,x) = c.value.run(initial).run(config)
+    x
+  }
 
   private def getConfig: Comp[Config] = EitherT.liftF(StateT.liftF(ReaderT.ask))
   private def getRDF:Comp[RDFReader] = getConfig.map(_.rdf)
@@ -78,41 +138,31 @@ object SchemaInfer {
     shape2.foldLeft(zero)(cmb)
   }
 
-  private def collapseValues(iv1: InferredNodeValue, iv2: InferredNodeValue): InferredNodeValue = {
-   ???
-  }
-
-
+  type InferredRow = (IRI,InferredNodesValue)
+  type SortFunction = PrefixMap => (InferredRow,InferredRow) => Boolean
 
   case class InferOptions(
    inferTypePlainNode: Boolean,
-   addXSDAlias: Boolean,
-   addRDFAlias: Boolean,
-   addSxAlias: Boolean,
-   addRDFSAlias: Boolean,
-   addWDPropAlias: Boolean,
-   addSchemaAlias: Boolean,
-   addSkosAlias: Boolean,
-   addWikibaseAlias: Boolean,
-   addWDDirect: Boolean,
    addLabelLang: Option[Lang],
-   followOnLs: List[FollowOn]
+   possiblePrefixMap: PrefixMap,
+   followOnLs: List[FollowOn],
+   sortFunction: SortFunction
   )
   object InferOptions {
+
+    def orderByIRI: SortFunction = pm => (pair1,pair2) => {
+      val (iri1,_) = pair1
+      val (iri2,_) = pair2
+      pm.qualify(iri1) < pm.qualify(iri2)
+    }
+
     val defaultOptions =
       InferOptions(
         inferTypePlainNode = true,
-        addXSDAlias = true,
-        addRDFAlias = true,
-        addSxAlias = true,
-        addRDFSAlias = true,
-        addWDPropAlias = true,
-        addSchemaAlias = true,
-        addWDDirect = true,
-        addSkosAlias = true,
-        addWikibaseAlias = true,
         addLabelLang = Some(Lang("en")),
-        followOnLs = List(followOnReference)
+        possiblePrefixMap = possiblePrefixes,
+        followOnLs = List(followOnReference, followOnWasDerivedFrom),
+        sortFunction = orderByIRI
       )
   }
 
@@ -120,12 +170,13 @@ object SchemaInfer {
                      selector: NodeSelector,
                      engine: String,
                      shapeLabel: IRI,
-                     opts: InferOptions = InferOptions.defaultOptions): Either[String, Schema] =
+                     opts: InferOptions = InferOptions.defaultOptions
+                    ): Either[String, Schema] = {
     runWithState(inferSchema(selector, engine, shapeLabel),
-      State(Map()),
-      Config(opts,rdfReader)
+                 State.initial.addPrefixMap(rdfReader.getPrefixMap),
+                 Config(opts, rdfReader)
     )
-
+  }
 
   private def inferSchema(selector: NodeSelector,
                   engine: String,
@@ -133,8 +184,9 @@ object SchemaInfer {
                  ): Comp[Schema] = for {
     rdfReader <- getRDF
     nodes <- fromES(selector.select(rdfReader))
-    neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_)))
-    _ <- sequence(neighMaps.map(n => inferShape(shapeLabel,n)))
+//    neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_)))
+//    _ <- sequence(neighMaps.map(n => inferShape(shapeLabel,n)))
+    _ <- inferShapeFromNodes(nodes, shapeLabel)
     schema <- mkSchema(engine, shapeLabel)
   } yield schema
 
@@ -160,32 +212,76 @@ object SchemaInfer {
 
   private def inferShape(shapeLabel: IRI, neighMap: NeighMap): Comp[InferredShape] = for {
    rows <- sequence(neighMap.map{
-     case (iri, nodes) => (iri, inferValue(iri, nodes))
+     case (iri, nodes) => (iri, inferValue(shapeLabel, iri, nodes))
    }.toList.map(mkRow))
    shape = rows.toMap
    _ <- addShape(shapeLabel, shape)
   } yield shape
 
-  private def inferValue(iri: IRI, nodes: Set[RDFNode]): Comp[InferredNodesValue] = {
+  private def inferValue(shapeLabel: IRI,
+                         iri: IRI,
+                         nodes: Set[RDFNode]
+                        ): Comp[InferredNodesValue] = {
     for {
       opts <- getOptions
-      _ <- sequence(opts.followOnLs.map(fo => followOn(fo,iri,nodes)))
-      iv <- collapse(nodes)
+      maybeLs <- sequence(opts.followOnLs.map(fo => followOn(fo,shapeLabel,iri,nodes)))
+//      _ <- { println(s"Result of followOn: $maybeLs"); ok(())}
+      maybeFollowOn <- existsSome(maybeLs)
+      iv <- maybeFollowOn match {
+        case None      => collapse(nodes)
+        case Some(lbl) => ok(InferredNodeValue(Ref(lbl),1))
+      }
+      _ <- checkPrefix(iri, iv)
     } yield SingleNodesValue(iv)
   }
 
-  private def followOn(fo: FollowOn, iri: IRI, nodes: Set[RDFNode]): Comp[Unit] = {
-    if (fo.check(iri)) {
-      println(s"Checking followOn $iri")
+  private def existsSome[A](ls: List[Option[A]]): Comp[Option[A]] = {
+    val es = ls.collect { case Some(x) => x }
+    es.length match {
+      case 1 => ok(Some(es.head))
+      case 0 => ok(None)
+      case _ => {
+//        println(s"More than one followOn predicate: $es ")
+        ok(Some(es.head))
+      }
+    }
+  }
+
+  private def checkPrefix(iri: IRI,iv: InferredNodeValue): Comp[Unit] = for {
+    _ <- checkPrefixIRI(iri)
+    _ <- checkPrefixIv(iv)
+  } yield (())
+
+  private def checkPrefixIRI(iri: IRI): Comp[Unit] = for {
+    options <- getOptions
+    _ <- options.possiblePrefixMap.getPrefixLocalName(iri).fold(
+      _ => ok(()),
+      { case (prefix, iri, localName) => addPrefixDecl(prefix,iri) }
+    )
+  } yield (())
+
+  private def checkPrefixIv(iv: InferredNodeValue): Comp[Unit] =
+    iv.getIRI match {
+      case None => ok(())
+      case Some(iri) => checkPrefixIRI(iri)
+  }
+
+  private def inferShapeFromNodes(nodes: Set[RDFNode], shapeLabel: IRI): Comp[Unit] = for {
+    neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_)))
+    _ <- sequence(neighMaps.map(n => inferShape(shapeLabel,n)))
+  } yield (())
+
+  private def followOn(fo: FollowOn, shapeLabel: IRI, iri: IRI, nodes: Set[RDFNode]): Comp[Option[IRI]] = {
+    fo.check(shapeLabel,iri).fold(e => {
+      // println(s"$e");
+      ok(None)
+    }, newLabel => {
+      // println(s"Matches $iri with $prop")
       for {
        rdf <- getRDF
-       ts <- fromES(nodes.toList.map(node =>
-         rdf.triplesWithSubjectPredicate(node,fo.pred).
-           map(_.toList)
-       ).sequence[ES,List[RDFTriple]].map(_.flatten))
-       _ <- { println(s"Triples from followOn: $ts"); ok(()) }
-      } yield ()
-    } else ok(())
+       _ <- inferShapeFromNodes(nodes, newLabel)
+      } yield (Some(newLabel))
+    })
   }
 
   private def getNeighbourhoods(nodes: Set[RDFNode],
@@ -242,25 +338,6 @@ object SchemaInfer {
                    node: RDFNode
                   ): InferredNodeConstraint = nk.collapseNode(node)
 
-  private def hasXSD(c: InferredNodesValue): Boolean = c.constraint match {
-    case InferredString => true
-    case InferredDatatype(dt) =>
-      if (dt.getLexicalForm.startsWith(xsd.str)) true
-      else false
-    case _ => false
-  }
-
-  private def hasWDProp(c: InferredNodesValue) =  true
-  private def hasSchema(c: InferredNodesValue) =  true
-  private def hasWikibase(c: InferredNodesValue) =  true
-  private def hasWDDirect(c: InferredNodesValue) = true
-  private def hasSkos(c: InferredNodesValue) = true
-
-
-  private def hasRDF(c: InferredNodesValue): Boolean = c.constraint match {
-    case InferredLangString => true
-    case _ => false
-  }
   private def hasStar(c: InferredNodesValue): Boolean =
     c.number > 1
 
@@ -305,9 +382,7 @@ object SchemaInfer {
      if (rdf.id == wikidataId) for {
        sourceTriples <- rdf.triplesWithPredicateObject(`wikibase:directClaim`, iri)
        sourceIRIs = sourceTriples.map(_.subj)
-//       _ <- { println(s"sourceIRIs for $iri: $sourceIRIs"); Right(()) }
        labels <- sourceIRIs.map(rdf.triplesWithSubjectPredicate(_,`rdfs:label`)).toList.sequence[ES,Set[RDFTriple]]
-//       _ <- { println(s"All labels for $iri: $labels"); Right(()) }
      } yield labels.flatten.map(_.obj)
      else {
       rdf.triplesWithSubjectPredicate(iri, `rdfs:label`).map(_.obj)
@@ -316,7 +391,6 @@ object SchemaInfer {
     val okLabels = labels.collect {
       case l: Literal if hasLang(l,maybeLang) => l
     }
-//    println(s"OKLabels for $iri: $okLabels")
     okLabels.headOption
   }
 
@@ -370,9 +444,9 @@ object SchemaInfer {
                           rdfReader: RDFReader,
                           inferOptions: InferOptions
                          ): Either[String, ShapeExpr]  = for {
-    es <- m.map {
+    es <- m.toList.sortWith(inferOptions.sortFunction(inferOptions.possiblePrefixMap)).map {
       case (iri, c) => mkTripleExpr(iri,c,rdfReader,inferOptions)
-    }.toList.sequence[ES,TripleExpr]
+    }.sequence[ES,TripleExpr]
   } yield {
     val shapeLabel = IRILabel(label)
     val expr: Option[TripleExpr] = es.length match {
@@ -390,19 +464,22 @@ object SchemaInfer {
     es <- fromES(schema.map {
       case (iri, is) => mkShExShape(is,iri,rdfReader,opts)
     }.toList.sequence[ES,ShapeExpr])
+    pm <- getPrefixMap
   } yield {
-    val pm =
+/*    val pm =
       addPrefix("schema",schemaIri,opts, _.addSchemaAlias,schema,hasSchema)(
       addPrefix("skos",skos,opts, _.addSkosAlias,schema,hasSkos)(
       addPrefix("wikibase",wikibase,opts, _.addWikibaseAlias,schema,hasWikibase)(
       addPrefix("wdt",wdt,opts, _.addWDDirect,schema,hasWDDirect)(
       addPrefix("wdp",propIri,opts, _.addWDPropAlias,schema,hasWDProp)(
+      addPrefix("pr",propRef,opts, _.addPropRef,schema,hasPropRef)(
+      addPrefix("prv",propRefValue,opts, _.addPropRefValue,schema,hasPropRefValue)(
       addPrefix("xsd",xsd,opts, _.addXSDAlias,schema,hasXSD)(
       addPrefix("rdf",rdf,opts, _.addRDFAlias,schema,hasRDF)(
       addPrefix("sx",sx,opts, _.addSxAlias,schema,hasStar)(
       addPrefix("rdfs",rdfs,opts,_.addRDFSAlias,schema,_ => true)(
         rdfReader.getPrefixMap
-      )))))))))
+      ))))))))))) */
 
     ShExSchema(Schema(IRI(""),Some(pm), None, None, None, Some(es), None, List()))
   }
@@ -410,7 +487,7 @@ object SchemaInfer {
 
 
 
-  private def mkShExConstraint(c: InferredNodeConstraint, options: InferOptions): NodeConstraint = c match {
+  private def mkShExConstraint(c: InferredNodeConstraint, options: InferOptions): ShapeExpr = c match {
     case PlainNode(node) => node match {
       case iri: IRI =>
         NodeConstraint.valueSet(List(IRIValue(iri)),List())
@@ -433,6 +510,10 @@ object SchemaInfer {
     case InferredLangString => NodeConstraint.datatype(`rdf:langString`, List())
     case InferredDatatype(dt) => NodeConstraint.datatype(dt, List())
     case InferredNone => NodeConstraint.empty
+    case Ref(lbl) => {
+      // println(s"Ref($lbl")
+      ShapeRef(IRILabel(lbl),None,None)
+    }
   }
 
   private def mkMinCardinality(n: Integer): Integer =

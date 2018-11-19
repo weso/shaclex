@@ -60,13 +60,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   private def parseEntailments(rdf: RDFReader): Either[String, List[IRI]] =
       for {
-        ts <- rdf.triplesWithPredicate(sh_entailment)
+        ts <- rdf.triplesWithPredicate(`sh:entailment`)
         iris <- sequence(ts.map(_.obj).toList.map(_.toIRI))
       } yield iris
 
   private def parseImports(rdf: RDFReader): Either[String, List[IRI]] =
     for {
-     ts <- rdf.triplesWithPredicate(owl_imports)
+     ts <- rdf.triplesWithPredicate(`owl:imports`)
      os <- sequence(ts.map(_.obj).toList.map(_.toIRI))
     } yield os
 
@@ -79,7 +79,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       nodeShapes <- rdf.subjectsWithType(`sh:NodeShape`)
       propertyShapes <- rdf.subjectsWithType(`sh:PropertyShape`)
       shapes <- rdf.subjectsWithType(`sh:Shape`)
-      objectsPropertyShapes <- rdf.subjectsWithProperty(sh_property)
+      objectsPropertyShapes <- rdf.subjectsWithProperty(`sh:property`)
       sm <-{
         val allShapes = nodeShapes ++ propertyShapes ++ shapes ++ objectsPropertyShapes
         pendingNodes = allShapes.toList
@@ -131,8 +131,8 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     targets <- targets(n, rdf)
     propertyShapes <- propertyShapes(n, rdf)
     components <- components(n, rdf)
-    closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
-    deactivated <- booleanFromPredicateOptional(sh_deactivated)(n,rdf)
+    closed <- booleanFromPredicateOptional(`sh:closed`)(n, rdf)
+    deactivated <- booleanFromPredicateOptional(`sh:deactivated`)(n,rdf)
     message <- parseMessage(n, rdf)
     name <- parseMessage(n,rdf)
     description <- parseMessage(n,rdf)
@@ -140,10 +140,10 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     order <- parseOrder(n,rdf)
     severity <- parseSeverity(n,rdf)
     ignoredNodes <- {
-      rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
+      rdfListForPredicateOptional(`sh:ignoredProperties`)(n, rdf)
     }
     ignoredIRIs <- nodes2iris(ignoredNodes)
-    classes <- objectsFromPredicate(sh_class)(n,rdf)
+    classes <- objectsFromPredicate(`sh:class`)(n,rdf)
   } yield {
     val shape: Shape = NodeShape(
       id = n,
@@ -167,7 +167,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   private def parsePropertyGroup: RDFParser[Option[RefNode]] = (n,rdf) => for {
-    maybeGroup <- objectFromPredicateOptional(sh_group)(n,rdf)
+    maybeGroup <- objectFromPredicateOptional(`sh:group`)(n,rdf)
     group <- maybeGroup match {
       case None => Right(None)
       case Some(groupNode) => {
@@ -188,11 +188,11 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   } yield group
 
   private def parseOrder: RDFParser[Option[DecimalLiteral]] = (n,rdf) => for {
-    maybeOrder <- decimalLiteralFromPredicateOptional(sh_order)(n,rdf)
+    maybeOrder <- decimalLiteralFromPredicateOptional(`sh:order`)(n,rdf)
   } yield maybeOrder
 
   private def parseSeverity: RDFParser[Option[Severity]] = (n,rdf) => for {
-    maybeIri <- iriFromPredicateOptional(sh_severity)(n,rdf)
+    maybeIri <- iriFromPredicateOptional(`sh:severity`)(n,rdf)
   } yield maybeIri match {
       case Some(`sh:Violation`) => Some(ViolationSeverity)
       case Some(`sh:Warning`) => Some(WarningSeverity)
@@ -202,7 +202,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   private def parseMessage: RDFParser[MessageMap] = (n,rdf) => for {
-    nodes <- objectsFromPredicate(sh_message)(n,rdf)
+    nodes <- objectsFromPredicate(`sh:message`)(n,rdf)
     map <- cnvMessages(nodes)(n,rdf)
   } yield map
 
@@ -215,13 +215,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     types <- rdfTypes(n, rdf)
     _ <- failIf(types.contains(`sh:NodeShape`), "Property shapes must not have rdf:type sh:NodeShape")(n, rdf)
     targets <- targets(n, rdf)
-    nodePath <- objectFromPredicate(sh_path)(n, rdf)
+    nodePath <- objectFromPredicate(`sh:path`)(n, rdf)
     path <- parsePath(nodePath, rdf)
     propertyShapes <- propertyShapes(n, rdf)
     components <- components(n, rdf)
-    closed <- booleanFromPredicateOptional(sh_closed)(n, rdf)
-    ignoredNodes <- rdfListForPredicateOptional(sh_ignoredProperties)(n, rdf)
-    deactivated <- booleanFromPredicateOptional(sh_deactivated)(n, rdf)
+    closed <- booleanFromPredicateOptional(`sh:closed`)(n, rdf)
+    ignoredNodes <- rdfListForPredicateOptional(`sh:ignoredProperties`)(n, rdf)
+    deactivated <- booleanFromPredicateOptional(`sh:deactivated`)(n, rdf)
     message <- parseMessage(n, rdf)
     severity <- parseSeverity(n,rdf)
     name <- parseMessage(n,rdf)
@@ -265,14 +265,14 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def targetNodes: RDFParser[Seq[Target]] = (n, rdf) => {
     for {
-      ns <- objectsFromPredicate(sh_targetNode)(n, rdf)
+      ns <- objectsFromPredicate(`sh:targetNode`)(n, rdf)
       vs <- sequenceEither(ns.toList.map(mkTargetNode))
     } yield vs
   }
 
   def targetClasses: RDFParser[Seq[Target]] = (n, rdf) =>
     for {
-      ns <- objectsFromPredicate(sh_targetClass)(n, rdf)
+      ns <- objectsFromPredicate(`sh:targetClass`)(n, rdf)
       vs <- sequenceEither(ns.toList.map(mkTargetClass))
     } yield vs
 
@@ -289,14 +289,14 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def targetSubjectsOf: RDFParser[Seq[Target]] = (n, rdf) => {
     for {
-      ns <- objectsFromPredicate(sh_targetSubjectsOf)(n, rdf)
+      ns <- objectsFromPredicate(`sh:targetSubjectsOf`)(n, rdf)
       vs <- sequenceEither(ns.toList.map(mkTargetSubjectsOf))
     } yield vs
   }
 
   def targetObjectsOf: RDFParser[Seq[Target]] = (n, rdf) => {
     for {
-      ns <- objectsFromPredicate(sh_targetObjectsOf)(n, rdf)
+      ns <- objectsFromPredicate(`sh:targetObjectsOf`)(n, rdf)
       vs <- sequenceEither(ns.toList.map(mkTargetObjectsOf))
     } yield vs
   }
@@ -331,7 +331,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def propertyShapes: RDFParser[Seq[RefNode]] = (n, rdf) => {
     for {
-      ps <- objectsFromPredicate(sh_property)(n, rdf)
+      ps <- objectsFromPredicate(`sh:property`)(n, rdf)
       vs <- sequenceEither(ps.toList.map(p => propertyShapeRef(p, rdf)))
     } yield vs
   }
@@ -421,33 +421,33 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def classComponent: RDFParser[List[ClassComponent]] = (n,rdf) => for {
     cs <- {
-      parsePredicateList(sh_class, ClassComponent)(n,rdf)
+      parsePredicateList(`sh:class`, ClassComponent)(n,rdf)
     }
   } yield {
     cs
   }
 
-  private def datatype: RDFParser[List[Datatype]] = parsePredicateIRIList(sh_datatype, Datatype)
+  private def datatype: RDFParser[List[Datatype]] = parsePredicateIRIList(`sh:datatype`, Datatype)
 
-  private def minInclusive : RDFParser[List[MinInclusive]] = parsePredicateLiteralList(sh_minInclusive, MinInclusive)
+  private def minInclusive : RDFParser[List[MinInclusive]] = parsePredicateLiteralList(`sh:minInclusive`, MinInclusive)
 
-  private def maxInclusive : RDFParser[List[MaxInclusive]] = parsePredicateLiteralList(sh_maxInclusive, MaxInclusive)
+  private def maxInclusive : RDFParser[List[MaxInclusive]] = parsePredicateLiteralList(`sh:maxInclusive`, MaxInclusive)
 
-  private def minExclusive : RDFParser[List[MinExclusive]] = parsePredicateLiteralList(sh_minExclusive, MinExclusive)
+  private def minExclusive : RDFParser[List[MinExclusive]] = parsePredicateLiteralList(`sh:minExclusive`, MinExclusive)
 
-  private def maxExclusive:  RDFParser[List[MaxExclusive]] = parsePredicateLiteralList(sh_maxExclusive, MaxExclusive)
+  private def maxExclusive:  RDFParser[List[MaxExclusive]] = parsePredicateLiteralList(`sh:maxExclusive`, MaxExclusive)
 
-  private def minLength: RDFParser[List[MinLength]] = parsePredicateIntList(sh_minLength, MinLength)
+  private def minLength: RDFParser[List[MinLength]] = parsePredicateIntList(`sh:minLength`, MinLength)
 
-  private def maxLength : RDFParser[List[MaxLength]] = parsePredicateIntList(sh_maxLength, MaxLength)
+  private def maxLength : RDFParser[List[MaxLength]] = parsePredicateIntList(`sh:maxLength`, MaxLength)
 
   private def pattern: RDFParser[Pattern] = (n, rdf) => for {
-    pat <- stringFromPredicate(sh_pattern)(n, rdf)
-    flags <- stringFromPredicateOptional(sh_flags)(n, rdf)
+    pat <- stringFromPredicate(`sh:pattern`)(n, rdf)
+    flags <- stringFromPredicateOptional(`sh:flags`)(n, rdf)
   } yield Pattern(pat, flags)
 
   private def languageIn: RDFParser[LanguageIn] = (n, rdf) => for {
-    rs <- rdfListForPredicate(sh_languageIn)(n, rdf)
+    rs <- rdfListForPredicate(`sh:languageIn`)(n, rdf)
     ls <- sequenceEither(rs.map(n => n match {
       case StringLiteral(str) => parseOk(str)
       case _ => parseFail(s"Expected to be a string literal but got $n")
@@ -458,25 +458,25 @@ object RDF2Shacl extends RDFParser with LazyLogging {
     b <- booleanFromPredicate(`sh:uniqueLang`)(n, rdf)
   } yield UniqueLang(b)
 
-  private def equals = parsePredicateComparison(sh_equals, Equals)
+  private def equals = parsePredicateComparison(`sh:equals`, Equals)
 
-  private def disjoint = parsePredicateComparison(sh_disjoint, Disjoint)
+  private def disjoint = parsePredicateComparison(`sh:disjoint`, Disjoint)
 
-  def lessThan = parsePredicateComparison(sh_lessThan, LessThan)
+  def lessThan = parsePredicateComparison(`sh:lessThan`, LessThan)
 
-  def lessThanOrEquals = parsePredicateComparison(sh_lessThanOrEquals, LessThanOrEquals)
+  def lessThanOrEquals = parsePredicateComparison(`sh:lessThanOrEquals`, LessThanOrEquals)
 
   def parsePredicateComparison(pred: IRI, mkComp: IRI => Component): RDFParser[Component] = (n, rdf) => for {
     p <- iriFromPredicate(pred)(n, rdf)
   } yield mkComp(p)
 
   def or: RDFParser[Or] = (n, rdf) => for {
-    shapeNodes <- rdfListForPredicate(sh_or)(n, rdf)
+    shapeNodes <- rdfListForPredicate(`sh:or`)(n, rdf)
     shapes <- mapRDFParser(shapeNodes.toList, shapeRefConst)(n, rdf)
   } yield Or(shapes)
 
   def and: RDFParser[And] = (n, rdf) => for {
-    nodes <- rdfListForPredicate(sh_and)(n, rdf)
+    nodes <- rdfListForPredicate(`sh:and`)(n, rdf)
     shapes <- mapRDFParser(nodes, shapeRefConst)(n, rdf)
   } yield And(shapes)
 
@@ -487,13 +487,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   // TODO: Check if this must take into account that not is optional...
   def not: RDFParser[Not] = (n, rdf) => for {
-    shapeNode <- objectFromPredicate(sh_not)(n, rdf)
+    shapeNode <- objectFromPredicate(`sh:not`)(n, rdf)
     sref <- shapeRef(shapeNode, rdf)
   } yield Not(sref)
 
   def nodeComponent: RDFParser[NodeComponent] = (n, rdf) => {
     for {
-      nodeShape <- objectFromPredicate(sh_node)(n, rdf)
+      nodeShape <- objectFromPredicate(`sh:node`)(n, rdf)
       sref <- shapeRef(nodeShape, rdf)
     } yield {
       NodeComponent(sref)
@@ -501,11 +501,11 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   }
 
   def qualifiedValueShape: RDFParser[QualifiedValueShape] = (n, rdf) => for {
-    obj <- objectFromPredicate(sh_qualifiedValueShape)(n, rdf)
+    obj <- objectFromPredicate(`sh:qualifiedValueShape`)(n, rdf)
     sref <- shapeRef(obj, rdf)
-    min <- optional(integerLiteralForPredicate(sh_qualifiedMinCount))(n, rdf)
-    max <- optional(integerLiteralForPredicate(sh_qualifiedMaxCount))(n, rdf)
-    disjoint <- booleanFromPredicateOptional(sh_qualifiedValueShapesDisjoint)(n, rdf)
+    min <- optional(integerLiteralForPredicate(`sh:qualifiedMinCount`))(n, rdf)
+    max <- optional(integerLiteralForPredicate(`sh:qualifiedMaxCount`))(n, rdf)
+    disjoint <- booleanFromPredicateOptional(`sh:qualifiedValueShapesDisjoint`)(n, rdf)
   } yield QualifiedValueShape(sref, min, max, disjoint)
 
   def shapeRef: RDFParser[RefNode] = (n, rdf) => {
@@ -516,13 +516,13 @@ object RDF2Shacl extends RDFParser with LazyLogging {
   def shapeRefConst(sref: RDFNode): RDFParser[RefNode] = (_, rdf) =>
     shapeRef(sref, rdf)
 
-  def minCount : RDFParser[List[MinCount]] = parsePredicateIntList(sh_minCount, MinCount)
-  def maxCount : RDFParser[List[MaxCount]] = parsePredicateIntList(sh_maxCount, MaxCount)
+  def minCount : RDFParser[List[MinCount]] = parsePredicateIntList(`sh:minCount`, MinCount)
+  def maxCount : RDFParser[List[MaxCount]] = parsePredicateIntList(`sh:maxCount`, MaxCount)
 
   def hasValue: RDFParser[Component] = (n, rdf) => {
     logger.debug(s"Parsing hasValue on $n")
     for {
-      o <- objectFromPredicate(sh_hasValue)(n, rdf)
+      o <- objectFromPredicate(`sh:hasValue`)(n, rdf)
       v <- {
         logger.debug(s"Object of hasValue $n = $o")
         node2Value(o)
@@ -535,7 +535,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def in: RDFParser[Component] = (n, rdf) => {
     for {
-      ns <- rdfListForPredicate(sh_in)(n, rdf)
+      ns <- rdfListForPredicate(`sh:in`)(n, rdf)
       vs <- convert2Values(ns.map(node2Value(_)))
     } yield In(vs)
   }
@@ -558,7 +558,7 @@ object RDF2Shacl extends RDFParser with LazyLogging {
 
   def nodeKind: RDFParser[List[Component]] = (n, rdf) => {
     for {
-      os <- objectsFromPredicate(sh_nodeKind)(n, rdf)
+      os <- objectsFromPredicate(`sh:nodeKind`)(n, rdf)
       nk <- parseNodeKind(os)
     } yield {
       List(nk)

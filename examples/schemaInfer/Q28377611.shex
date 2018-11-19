@@ -1,0 +1,117 @@
+prefix schema: <http://schema.org/>
+prefix psv: <http://www.wikidata.org/prop/statement/value/>
+prefix wdp: <http://www.wikidata.org/prop/>
+prefix sx: <http://weso.es/ns/shex/>
+prefix pq: <http://www.wikidata.org/prop/qualifier/>
+prefix prv: <http://www.wikidata.org/prop/reference/value/>
+prefix wdt: <http://www.wikidata.org/prop/direct/>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix pr: <http://www.wikidata.org/prop/reference/>
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix wikibase: <http://wikiba.se/ontology#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix ps: <http://www.wikidata.org/prop/statement/>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
+prefix prov: <http://www.w3.org/ns/prov#>
+
+<P2249Prop> {
+prov:wasDerivedFrom @<P2249PropRef>; 
+ps:P2249  xsd:string; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<P703Prop> {
+prov:wasDerivedFrom @<P703PropRef>; 
+ps:P703  IRI ; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<P703PropRef> {
+pr:P2249  xsd:string; 
+pr:P248  IRI ; 
+pr:P813  xsd:dateTime; 
+prv:P813  IRI 
+}
+
+<P156Prop> {
+ps:P156  IRI ; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<P1813Prop> {
+ps:P1813  [ @en] ; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<P31PropRef> {
+pr:P2249  xsd:string; 
+pr:P248  IRI ; 
+pr:P813  xsd:dateTime; 
+prv:P813  IRI 
+}
+
+<P155Prop> {
+ps:P155  IRI ; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<P2249PropRef> {
+pr:P2249  xsd:string; 
+pr:P248  IRI ; 
+pr:P813  xsd:dateTime; 
+prv:P813  IRI 
+}
+
+<P2043PropRef> {
+pr:P577  xsd:dateTime; 
+pr:P813  xsd:dateTime; 
+pr:P854  IRI ; 
+prv:P577  IRI ; 
+prv:P813  IRI 
+}
+
+<P31Prop> {
+prov:wasDerivedFrom @<P31PropRef>; 
+ps:P31  IRI ; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<P2043Prop> {
+pq:P659  IRI ; 
+prov:wasDerivedFrom @<P2043PropRef>; 
+ps:P2043  xsd:decimal; 
+psv:P2043  IRI ; 
+rdf:type  IRI ; 
+wikibase:rank  IRI 
+}
+
+<Shape> {
+rdfs:label  rdf:langString* // sx:maxNumber 10; 
+schema:dateModified  xsd:dateTime; 
+schema:description  rdf:langString* // sx:maxNumber 4; 
+schema:version  xsd:integer; 
+skos:altLabel  rdf:langString* // sx:maxNumber 4; 
+wdp:P155 @<P155Prop>; 
+wdp:P156 @<P156Prop>; 
+wdp:P1813 @<P1813Prop>; 
+wdp:P2043 @<P2043Prop>; 
+wdp:P2249 @<P2249Prop>; 
+wdp:P31 @<P31Prop>; 
+wdp:P703 @<P703Prop>; 
+wdt:P155  IRI  // rdfs:label "follows"@en; 
+wdt:P156  IRI  // rdfs:label "followed by"@en; 
+wdt:P1813  [ @en]  // rdfs:label "short name"@en; 
+wdt:P2043  xsd:decimal // rdfs:label "length"@en; 
+wdt:P2249  xsd:string // rdfs:label "Refseq Genome ID"@en; 
+wdt:P31  IRI  // rdfs:label "instance of"@en; 
+wdt:P703  IRI  // rdfs:label "found in taxon"@en; 
+wikibase:identifiers  xsd:integer; 
+wikibase:sitelinks  xsd:integer; 
+wikibase:statements  xsd:integer
+}

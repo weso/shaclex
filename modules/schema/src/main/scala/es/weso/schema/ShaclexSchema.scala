@@ -4,7 +4,7 @@ import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl.SHACLPrefixes.owl_imports
+import es.weso.shacl.SHACLPrefixes.`owl:imports`
 import es.weso.shacl.report.{AbstractResult, MsgError}
 import es.weso.shacl.{Schema => ShaclSchema, _}
 // import es.weso.shacl._
@@ -110,7 +110,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def fromRDF(rdf: RDFReader): Either[String, Schema] =
     rdf.asRDFBuilder match {
     case Left(_) => for {
-      ts <- rdf.triplesWithPredicate(owl_imports)
+      ts <- rdf.triplesWithPredicate(`owl:imports`)
       schema <- ts.size match {
         case 0 => RDF2Shacl.getShaclFromRDFReader(rdf).map(ShaclexSchema(_))
         case _ => Left(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")

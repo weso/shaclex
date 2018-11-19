@@ -18,6 +18,10 @@ case class IRI(uri: URI) extends RDFNode {
     add(str)
   }
 
+  /**
+    * Represents an IRI as <...>
+    * @return
+    */
   override def toString = {
     "<" + uri.parseServerAuthority.toString + ">"
   }
@@ -26,6 +30,10 @@ case class IRI(uri: URI) extends RDFNode {
     def compare(a: IRI, b: IRI) = a.uri.compareTo(b.uri)
   }
 
+  /**
+    * String representation of IRI without < and >
+    * @return string representation
+    */
   def str: String = {
     uri.toString
   }

@@ -12,13 +12,10 @@ import org.eclipse.rdf4j.model.util.{ModelBuilder, Models}
 import org.eclipse.rdf4j.rio.RDFFormat._
 import org.eclipse.rdf4j.rio.{RDFFormat, Rio}
 import org.apache.commons.io.input.CharSequenceInputStream
-
 import scala.util._
 import scala.collection.JavaConverters._
 import RDF4jMapper._
-import cats.implicits._
 import es.weso.utils.EitherUtils
-import cats.syntax.either._
 
 case class RDFAsRDF4jModel(model: Model,
                            sourceIRI: Option[IRI] = None)

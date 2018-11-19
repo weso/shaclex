@@ -47,14 +47,17 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
   }
 
   override def toString: String = {
-    def cnv(pair: (Prefix, IRI)): String = {
-      pair._1.str + ": " + pair._2 + "|"
-    }
-    pm.map(cnv).mkString("\n")
+    pm.map {
+      case (prefix,iri) => "prefix " + prefix.str + ": " + iri.toString
+    } .mkString("\n")
   }
 
-  def qualifyIRI(iri: IRI): String =
-    qualifyString(iri.str)
+  def qualifyIRI(iri: IRI): String = {
+    getPrefixLocalName(iri) match {
+      case Left(_) => iri.toString
+      case Right((prefix,_,localName)) => prefix.str + ":" + localName
+    }
+  }
 
   def qualify(node: RDFNode): String =
     node match {
@@ -63,17 +66,38 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
     }
 
   /**
+  * Get prefix declaration and local name of an IRI
+    * @param iri
+    * @return If there is a prefix declaration a: -> http://example.org/
+    *     Then, getPrefixLocalName(IRI(http://example.org/foo") returns Right("a", "foo")
+    */
+  def getPrefixLocalName(iri: IRI): Either[String,(Prefix, IRI, String)] = {
+    val str = iri.str
+    val cs = pm.collect{
+       case p if startsWithPredicate(str)(p) => {
+         val (prefix, i) = p
+         (prefix, i, str.stripPrefix(i.str))
+       }
+     }.toSeq
+    cs.sortBy {
+        case (_, _, str) => str.length
+      }.
+      headOption.
+      toRight(s"Not found IRI starting by $iri in prefix map\n$this")
+  }
+
+  private def startsWithPredicate(str:String)(p: (Prefix, IRI)): Boolean = {
+    str.startsWith(p._2.str)
+  }
+
+  /**
    * If prefixMap contains a: -> http://example.org/
    * then qualifyString("http://example.org/x") = "a:x"
    * else <http://example.org/x>
    */
-  def qualifyString(str: String): String = {
-
-    def startsWithPredicate(p: (Prefix, IRI)): Boolean = {
-      str.startsWith(p._2.str)
-    }
-
-    val found = pm.collect{ case p if startsWithPredicate(p) => (p, str.stripPrefix(p._2.str)) }.toSeq.sortBy(_._2.length)
+  /* def qualifyString(str: String): String = {
+    // TODO: Refactor this method to have IRI as parameter and reuse getPrefixLocalName
+    val found = pm.collect{ case p if startsWithPredicate(str)(p) => (p, str.stripPrefix(p._2.str)) }.toSeq.sortBy(_._2.length)
     found.headOption match {
       case None => "<" ++ str ++ ">"
       case Some((p,localName)) => {
@@ -84,12 +108,20 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
         }
       }
     }
-  }
+  } */
 
   def prefixes: List[String] = {
     pm.keySet.map(_.str).toList
   }
 
+  def merge(other: PrefixMap): PrefixMap = {
+    val zero = this.pm
+    def cmb(next: Map[Prefix,IRI], current: (Prefix,IRI)): Map[Prefix,IRI] = {
+      val (prefix,iri) = current
+      next.updated(prefix,iri)
+    }
+    PrefixMap(other.pm.foldLeft(zero)(cmb))
+  }
 
 }
 

@@ -225,7 +225,9 @@ object Main extends App with LazyLogging {
      rdf <- getRDFReader(opts, baseFolder)
      nodeSelector <- getNodeSelector(opts,rdf.getPrefixMap())
      shapeLabel = opts.shapeInferLabel()
+     _ <- { println(s"shapeLabel: $shapeLabel"); Right(()) }
      shapeLabelIri <- IRI.fromString(shapeLabel,None)
+     _ <- { println(s"shapeLabelIri: $shapeLabelIri"); Right(()) }
      schema <- SchemaInfer.runInferSchema(rdf, nodeSelector, opts.shapeInferEngine(), shapeLabelIri)
      str <- schema.serialize(opts.shapeInferFormat())
     } yield (rdf,schema,str)
