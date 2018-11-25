@@ -8,6 +8,8 @@ sealed abstract trait InferredNodeConstraint {
   def collapse(other: InferredNodeConstraint): InferredNodeConstraint
   def collapseNode(node: RDFNode): InferredNodeConstraint =
     this match {
+      case NoConstraint =>
+        PlainNode(node)
       case PlainNode(n) =>
         if (node == n) PlainNode(n)
         else collectKind(n, node)
@@ -80,6 +82,15 @@ sealed abstract trait InferredNodeConstraint {
     */
   def getIRI: Option[IRI]
 
+}
+
+/**
+  * No constraint inferred.
+  * This is different from InferredNone which means that it has been inferred that there is no constraint
+  */
+case object NoConstraint extends InferredNodeConstraint {
+  override def collapse(other: InferredNodeConstraint) = other
+  override def getIRI = None
 }
 case class PlainNode(node: RDFNode) extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other.collapseNode(node)

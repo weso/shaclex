@@ -12,6 +12,89 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
   describe(s"Schema Infer") {
 
     checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:name "Alice" .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:name      xsd:string ;
+         |}
+      """.stripMargin, ":alice", "S"
+    )
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:name "Alice" ;
+                        |       schema:knows :bob .
+                        |:bob   schema:name "Bob" .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:name      xsd:string ;
+         | schema:knows     @<knowsShape>
+         |}
+         |<knowsShape> {
+         | schema:name      xsd:string
+         |}
+      """.stripMargin, ":alice", "S"
+    )
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:name "Alice" ;
+                        |       schema:knows :alice .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:name      xsd:string ;
+         | schema:knows     IRI # Maybe infer @<S>
+         |}
+      """.stripMargin, ":alice", "S"
+    )
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:name "Alice" ;
+                        |       schema:knows :bob ;
+                        |       schema:worksFor :company .
+                        |
+                        |:bob  schema:name "Robert" .
+                        |
+                        |:company schema:name "Company" .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:name      xsd:string ;
+         | schema:knows     @<knowsShape> ;
+         | schema:worksFor  @<worksForShape>
+         |}
+         |<worksForShape> {
+         | schema:name     xsd:string
+         |}
+         |<knowsShape> {
+         | schema:name xsd:string
+         |}
+      """.stripMargin, ":alice", "S"
+    )
+
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix p: <http://www.wikidata.org/prop>
                         |prefix pr: <http://www.wikidata.org/prop/reference>
                         |prefix prov: <http://www.w3.org/ns/prov#>
@@ -61,6 +144,118 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       """.stripMargin, ":x", "S"
     )
 
+    checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:knows :bob .
+                        |:bob  schema:knows :carol .
+                        |:carol schema:knows :dave .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:knows @<knowsShape> ;
+         |}
+         |<knowsShape> {
+         | schema:knows @<knowsShape2>
+         |}
+         |<knowsShape2> {
+         | schema:knows IRI
+         |}
+         """.stripMargin, ":alice", "S"
+    )
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:name "Alice" ;
+                        |       schema:knows :bob .
+                        |:bob  schema:knows :carol ;
+                        |      schema:name "Robert" .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:name xsd:string ;
+         | schema:knows @<knowsShape> ;
+         |}
+         |<knowsShape> {
+         | schema:name xsd:string ;
+         | schema:knows IRI
+         |}
+      """.stripMargin, ":alice", "S"
+    )
+
+    checkSchemaInfer("""|prefix : <http://example.org/>
+                        |prefix schema: <http://schema.org/>
+                        |
+                        |:alice schema:name "Alice" ;
+                        |       schema:knows :bob, :alice .
+                        |:bob  schema:knows :carol ;
+                        |      schema:name "Robert" .
+                     """.stripMargin,
+      """|prefix :    <http://example.org/>
+         |prefix schema: <http://schema.org/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | schema:name xsd:string ;
+         | schema:knows @<knowsShape>* ;
+         |}
+         |<knowsShape> {
+         | schema:name xsd:string ;
+         | schema:knows IRI
+         |}
+      """.stripMargin, ":alice", "S"
+    )
+
+/*    checkSchemaInfer("""|@prefix :      <http://example.org/thing> .
+                        |@prefix td:    <http://www.w3.org/ns/td#> .
+                        |@prefix js:    <http://www.w3.org/ns/json-schema#> .
+                        |
+                        |:light  td:actions      [ td:transition  [ td:description  "smooth transition from current brightness level to target brightness level" ;
+                        |                                           td:input        []
+                        |                                         ] ] ;
+                        |        td:description  "a dimmable light with smooth transitions" ;
+                        |        td:name         "light" ;
+                        |        td:properties   [ td:brightness  [ js:maximum      100 ;
+                        |                                           js:minimum      0 ;
+                        |                                           js:type         "number" ;
+                        |                                           td:description  "brightness in range 0 to 100"
+                        |                                         ] ] .
+                     """.stripMargin,
+      """|prefix :      <http://example.org/thing>
+         |prefix td:    <http://www.w3.org/ns/td#>
+         |prefix js:    <http://www.w3.org/ns/json-schema#>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | td:actions @<actionsShape> ;
+         | td:desctiption xsd:string ;
+         | td:name xsd:string ;
+         | td:properties @<propertiesShape>
+         |}
+         |<actionsShape> {
+         | td:transition @<transitionShape> ;
+         |}
+         |<propertiesshape> {
+         | td:properties @<brightnessShape>
+         |}
+         |<brightnessShape> {
+         | js:minimum xsd:integer ;
+         | js:maximum xsd:integer ;
+         | js:type xsd:string ;
+         | td:description xsd:string
+         |}
+      """.stripMargin, ":light", "S"
+    )
+*/
+
+
     def checkSchemaInfer(rdfStr: String, expectedStr: String, nodeSelectorStr: String, label: String): Unit = {
     it(s"Should infer a ShEx schema: $rdfStr for node $nodeSelectorStr and obtain $expectedStr") {
       val result = for {
@@ -72,13 +267,14 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       result.fold(
         e => fail(s"Error: $e"),
         values => {
-          val (rdf,schemaExpected,nodeSelector,schema) = values
+          val (rdf,schemaExpected,nodeSelector,result) = values
+          val (schema, shapeMap) = result
           (schemaExpected,schema) match {
             case (e: ShExSchema, s: ShExSchema) => {
               compareSchemas(e.schema, s.schema) match {
-                case Left(e) => fail(s"Different $e\nInferred:\n${s.serialize("ShExC")}")
-                case Right(false) => fail(s"Compare schemas returned false!")
-                case Right(true) => info(s"Schemas are equal. Inferred: \n${s.serialize("ShExC")}")
+                case Left(e) => fail(s"Different $e\nInferred:\n${s.serialize("ShExC")}\nInferred shapeMap:\n${shapeMap.serialize("Compact")}")
+                case Right(false) => fail(s"Compare schemas:\n${e.schema}\n${s.schema} returned false!")
+                case Right(true) => info(s"Schemas are equal. Inferred: \n${s.serialize("ShExC")}\nInferred shapeMap:\n${shapeMap.serialize("Compact")}")
               }
             }
             case _ => fail(s"Should be ShEx shemas")
@@ -87,6 +283,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       )
     }
    }
+
   }
 
   private def compareSchemas(s1: Schema, s2: Schema): Either[String,Boolean] = {

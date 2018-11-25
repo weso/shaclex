@@ -53,6 +53,9 @@ case class ResultShapeMap(
     resultMap.get(node).map(_.keySet.toSeq).getOrElse(Seq())
   }
 
+  def containsDeclaration(node: RDFNode): Boolean =
+    resultMap.keySet.contains(node)
+
   def noSolutions = resultMap.isEmpty
 
   val associations: List[Association] = resultMap.toList.flatMap {
@@ -129,22 +132,10 @@ case class ResultShapeMap(
     }
   }
 
-  // The following code requires partial unification plugin
-  // https://github.com/fiadliel/sbt-partial-unification
-  def seqEither[A,B](es: List[Either[A,B]]): Either[A,List[B]] = es.sequence
-  /*{
-    def combine(rest: Either[A,List[B]],
-                current: Either[A,B]): Either[A,List[B]] =
-      current.fold(
-        a => Left(a),
-        b => rest.fold(
-          a => Left(a),
-          bs => Right(b :: bs)
-        )
-      )
-    val zero: Either[A,List[B]] = Right(List())
-    es.foldLeft(zero)(combine)
-  } */
+  type ES[A] = Either[String, A]
+
+  def seqEither[A,B](es: List[Either[String,B]]): Either[String,List[B]] = es.sequence[ES,B]
+
 }
 
 object ResultShapeMap {
