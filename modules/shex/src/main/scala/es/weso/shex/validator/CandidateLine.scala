@@ -15,13 +15,16 @@ case class CandidateLine(values: List[(Arc,ConstraintRef)]) {
     filterOptions(values.map {
       case (arc, cref) => (arc.node, table.getConstraint(cref))
     })
+
+  override def toString: String = CandidateLine.showCandidateLine.show(this)
+
 }
 
 object CandidateLine {
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {
     def show(cl: CandidateLine): String = {
-      s"[${cl.values.map{ case (arc,cref) => (arc.show, cref.show)}.mkString(",")}]"
+      s"CandidateLine: ${cl.values.map{ case (arc,cref) => (arc.show, cref.show)}.mkString(",")}"
     }
   }
 

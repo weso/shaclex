@@ -53,7 +53,7 @@ case class RDFAsJenaModel(model: Model,
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
       val baseURI = base.getOrElse(IRI(""))
-
+//      println(s"baseURI: $baseURI")
       // The following 4 statements are equivalent to :
       // RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       val g: Graph = m.getGraph

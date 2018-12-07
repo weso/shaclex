@@ -19,7 +19,7 @@ import scala.collection.mutable
 
 // TODO: Remove duplication between ValidationTest and ValidationFailureTest
 
-class ValidationFromManifestTest extends FunSpec with Matchers with RDFParser with EitherValues {
+class ValidationFromManifestCompatTest extends FunSpec with Matchers with RDFParser with EitherValues {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable

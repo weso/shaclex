@@ -118,8 +118,12 @@ object SchemaInfer {
                                      inferredValues: InferredNodeValue,
                                      numFollowOns: Int
                                     ): Comp[Option[InferredShape]] =
-  if (neighMap.isEmpty) ok(None)
+  if (neighMap.isEmpty) {
+    println(s"inferShapeFromNeighMap(shapeLabel=$shapeLabel, inferredValues: $inferredValues): EmptyNeighMap")
+    ok(None)
+  }
   else {
+    println(s"inferShapeFromNeighMap(shapeLabel=$shapeLabel, neighMap=$neighMap, inferredValues: $inferredValues)")
 //    println(s"Inferring shape for $shapeLabel with neighMap: $neighMap")
     for {
       rows <- sequence(
@@ -203,9 +207,7 @@ object SchemaInfer {
                                   shapeLabel: IRI,
                                   numFollowOns: Int
                                  ): Comp[Option[IRI]] = for {
-    // s <- getState
-    // _ <- { println(s"Current shapeMap: ${s.prefixMap}"); ok(()) }
-    _ <- { println(s"NumFollowOns: $numFollowOns"); ok(()) }
+    _ <- { println(s"inferShapeFromNodes(nodes=$nodes, label=$shapeLabel, numFollowOns=$numFollowOns"); ok(()) }
     neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_, numFollowOns)))
     ivalues <- collapse(nodes)
     lsShapes <- sequence(neighMaps.map(n => inferShapeFromNeighMap(shapeLabel, n, ivalues, numFollowOns + 1)))
@@ -213,7 +215,11 @@ object SchemaInfer {
       for {
         _ <- associateNodesLabel(nodes,shapeLabel)
       } yield Some(shapeLabel)
-      else ok(None)
+      else /* for {
+      // println(s"inferShapeFromNodes($shapeLabel)...none")
+      _ <- associateNodesLabel(nodes,shapeLabel)
+      } yield Some(shapeLabel) */
+       ok(None)
   } yield v
 
   private def followOn(fo: FollowOn,

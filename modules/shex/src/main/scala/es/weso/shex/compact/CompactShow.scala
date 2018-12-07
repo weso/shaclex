@@ -19,18 +19,18 @@ object CompactShow {
   type Doc = Document
 
   def showSchema(schema: Schema): String = {
-    doc2String(schemaDoc(schema))
+    doc2Str(schemaDoc(schema))
   }
 
   def showShapeExpr(shapeExpr: ShapeExpr, pm: PrefixMap): String = {
-    doc2String(shapeExprDoc(pm)(shapeExpr))
+    doc2Str(shapeExprDoc(pm)(shapeExpr))
   }
 
   def showValueSet(values: List[ValueSetValue], pm: PrefixMap): String = {
-    doc2String(valueSetDoc(pm)(values))
+    doc2Str(valueSetDoc(pm)(values))
   }
 
-  def doc2String(doc: Doc): String = {
+  def doc2Str(doc: Doc): String = {
     val writer = new java.io.StringWriter
     doc.format(1, writer)
     writer.toString
@@ -108,6 +108,7 @@ object CompactShow {
     l match {
       case IRILabel(iri) => str(pm.qualify(iri))
       case BNodeLabel(b) => str(b.toString)
+      case Start => str("Start")
     }
 
   private def iriDoc(pm: PrefixMap)(iri: IRI): Doc =
@@ -123,19 +124,19 @@ object CompactShow {
       // TODO...review ids generation...
       case ShapeOr(id, es, actions, anns) =>
         idDoc(id, pm) :: space ::
-          listDocIntersperse(es, shapeExprDoc(pm), keyword("OR"))
-      case ShapeAnd(id, es, actions, anns) =>
+          listDocIntersperse(es, shapeExprDoc(pm), space :: keyword("OR"))
+      case ShapeAnd(id, es, actions, anns) => {
         idDoc(id, pm) :: space ::
-          listDocIntersperse(es, shapeExprDoc(pm), keyword("AND"))
+          listDocIntersperse(es, shapeExprDoc(pm), space :: keyword("AND"))
+      }
       case ShapeNot(id, e, acts, anns) =>
         idDoc(id, pm) :: space ::
-          keyword("NOT") :: shapeExprDoc(pm)(e)
+          keyword("NOT") :: space :: "(" :: shapeExprDoc(pm)(e) :: text(")")
       case nc: NodeConstraint =>
         idDoc(nc.id, pm) :: space ::
           nodeConstraintDoc(pm)(nc)
       case s: Shape =>
-        idDoc(s.id, pm) :: space ::
-          shapeDoc(pm)(s)
+        idDoc(s.id, pm) :: space :: shapeDoc(pm)(s)
       case ShapeRef(r, acts, anns) =>
         str("@") :: shapeLabelDoc(pm)(r)
       case ShapeExternal(id, acts, anns) =>
@@ -168,7 +169,7 @@ object CompactShow {
       case Length(v) => f.fieldName :: space :: text(v.toString)
       case MinLength(v) => f.fieldName :: space :: text(v.toString)
       case MaxLength(v) => f.fieldName :: space :: text(v.toString)
-      case Pattern(p, flags) => text("~/") :: text(p) :: text("/") :: text(flags.getOrElse(""))
+      case Pattern(p, flags) => text("/") :: text(p) :: text("/") :: text(flags.getOrElse(""))
       case MinInclusive(n) => f.fieldName :: space :: numericDoc(n)
       case MaxInclusive(n) => f.fieldName :: space :: numericDoc(n)
       case MinExclusive(n) => f.fieldName :: space :: numericDoc(n)
@@ -224,6 +225,7 @@ object CompactShow {
       case LiteralStemRange(stem,excls) =>
         literalStemRangeValueDoc(stem) :: space ::
           optListDocSep(excls, literalExclusionDoc,space)
+      case Language(lang) => langDoc(lang)
       case _ => str(s"Unimplemented show of $v")
     }
 
@@ -254,26 +256,26 @@ object CompactShow {
 
   private def literalExclusionDoc(e: LiteralExclusion): Doc =
     e match {
-      case LiteralStringExclusion(s) => str("-") :: str(s)
-      case LiteralStemExclusion(litStem) => str("-") :: literalStemDoc(litStem)
+      case LiteralStringExclusion(s) => str("-") :: "\"" :: str(s) :: text("\"")
+      case LiteralStemExclusion(litStem) => str("- ") :: literalStemDoc(litStem) :: str("~")
     }
 
   private def iriStemRangeValueDoc(stem: IRIStemRangeValue, pm: PrefixMap): Doc =
   stem match {
-    case IRIStemWildcard() => str("*~")
+    case IRIStemWildcard() => str(".")
     case IRIStemValueIRI(iri) => iriDoc(pm)(iri) :: str("~")
   }
 
   private def languageStemRangeValueDoc(stem: LanguageStemRangeValue, pm: PrefixMap): Doc =
     stem match {
-      case LanguageStemRangeWildcard() => str("@~")
+      case LanguageStemRangeWildcard() => str(".")
       case LanguageStemRangeLang(lang) => langDoc(lang) :: str("~")
     }
 
   private def literalStemRangeValueDoc(stem: LiteralStemRangeValue): Doc =
     stem match {
-      case LiteralStemRangeWildcard() => str("*~")
-      case LiteralStemRangeString(s) => str(s) :: str("~")
+      case LiteralStemRangeWildcard() => str(".")
+      case LiteralStemRangeString(s) => "\"" :: str(s) :: text("\"") :: str("~")
     }
 
   private def datatypeStringDoc(pm: PrefixMap)(dt: DatatypeString): Doc =
@@ -298,7 +300,11 @@ object CompactShow {
   private def maybeClosed(closed: Boolean): Doc =
     if (closed) { keyword("CLOSED") } else empty
 
-  private def shapeDoc(pm: PrefixMap)(s: Shape): Doc = {
+  private def shapeDoc(pm: PrefixMap)(s: Shape): Doc =
+    if (s.isEmpty) {
+      "{" :: space :: text("}")
+    }
+    else {
     optDocConst(s.virtual, keyword("VIRTUAL")) ::
     maybeClosed(s.isClosed) ::
     optDoc(s.extra, extraDoc(pm)) ::
@@ -403,8 +409,9 @@ object CompactShow {
   private def listDocIntersperse[A](
     s: Seq[A],
     toDoc: A => Doc,
-    sep: Doc): Doc =
+    sep: Doc): Doc = {
     flatten(intersperse(sep, s.toList.map(toDoc(_))))
+  }
 
   private def flatten(ls: Seq[Doc]): Doc =
     ls.foldLeft(empty: Doc)(
@@ -451,5 +458,6 @@ object CompactShow {
   private def openParen: Doc = text("(")
   private def closeParen: Doc = text(")")
   private def str(str: String): Doc = text(str)
+
 
 }

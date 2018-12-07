@@ -1,10 +1,8 @@
 package es.weso.shex.manifest
 
 import java.nio.file.Paths
-
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.shex._
-
 import scala.io._
 
 class NegativeStructureManifestTest extends ValidateManifest {

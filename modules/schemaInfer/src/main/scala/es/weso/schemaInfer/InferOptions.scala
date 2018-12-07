@@ -27,14 +27,14 @@ object InferOptions {
       inferTypePlainNode = true,
       addLabelLang = Some(Lang("en")),
       possiblePrefixMap = PossiblePrefixes.wikidataPrefixMap,
-      maxFollowOn = 3,
+      maxFollowOn = 4,
       followOnLs = List(
         followOnReference,
         followOnWasDerivedFrom,
-        followOnStem(IRI("http://schema.org/")),
-        followOnStem(IRI("http://www.w3.org/ns/td#"))
+//        followOnStem(IRI("http://schema.org/")),
+//        followOnStem(IRI("http://www.w3.org/ns/td#"))
       ),
-      followOnThreshold = Some(2),
+      followOnThreshold = Some(3),
       sortFunction = orderByIRI
     )
 }

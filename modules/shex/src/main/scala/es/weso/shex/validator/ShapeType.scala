@@ -3,7 +3,9 @@ import cats._
 import es.weso.shex.{ Schema, ShapeExpr, ShapeLabel }
 import es.weso.shex.implicits.showShEx._
 
-case class ShapeType(shape: ShapeExpr, label: Option[ShapeLabel], schema: Schema) {
+case class ShapeType(shape: ShapeExpr,
+                     label: Option[ShapeLabel],
+                     schema: Schema) {
   def hasLabel(expectedLabel: ShapeLabel): Boolean =
     label.fold(false)(_ == expectedLabel)
 }

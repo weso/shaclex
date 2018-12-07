@@ -9,7 +9,6 @@ trait BagChecker[A] {
 
   def check(bag: Bag[A], open: Boolean): Either[String, Bag[A]]
 
-
 }
 
 object BagChecker {

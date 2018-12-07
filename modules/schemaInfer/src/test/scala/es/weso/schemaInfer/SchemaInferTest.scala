@@ -11,7 +11,55 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
 
   describe(s"Schema Infer") {
 
-    checkSchemaInfer("""|prefix : <http://example.org/>
+    checkSchemaInfer(
+      """|prefix schema: <http://schema.org/>
+         |prefix wdp: <http://www.wikidata.org/prop/>
+         |prefix prov: <http://www.w3.org/ns/prov#>
+         |prefix wd: <http://www.wikidata.org/entity/>
+         |prefix ps: <http://www.wikidata.org/entity/statement/>
+         |prefix wdref: <http://www.wikidata.org/reference/>
+         |prefix pr: <http://www.wikidata.org/prop/reference/>
+         |prefix prv: <http://www.wikidata.org/prop/reference/value/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |wd:Q31270287 wdp:P1476 ps:Q31270287-AFE7D074-CF36-4950-B131-CDBEE14CB3D1 .
+         |
+         |ps:Q31270287-AFE7D074-CF36-4950-B131-CDBEE14CB3D1 prov:wasDerivedFrom wdref:62da53368e17402c77b72fa7c9388a70d69ee1df .
+         |
+         |wdref:62da53368e17402c77b72fa7c9388a70d69ee1df pr:P248 <http://www.wikidata.org/entity/Q5412157> .
+         |wdref:62da53368e17402c77b72fa7c9388a70d69ee1df prv:P813 <http://www.wikidata.org/value/1ffdc99e89212d982d6a69ba46106fe1> .
+         |wdref:62da53368e17402c77b72fa7c9388a70d69ee1df pr:P698 <http://www.wikidata.org/value/1ffdc99e89212d982d6a69ba46106fe1> .
+         |wdref:62da53368e17402c77b72fa7c9388a70d69ee1df pr:P813 "2017-07-01"^^xsd:date .
+         |
+         |""".stripMargin,
+      """|prefix schema: <http://schema.org/>
+         |prefix wdp: <http://www.wikidata.org/prop/>
+         |prefix prov: <http://www.w3.org/ns/prov#>
+         |prefix wd: <http://www.wikidata.org/entity/>
+         |prefix ps: <http://www.wikidata.org/entity/statement/>
+         |prefix wdref: <http://www.wikidata.org/reference/>
+         |prefix pr: <http://www.wikidata.org/prop/reference/>
+         |prefix prv: <http://www.wikidata.org/prop/reference/value/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |
+         |<S> {
+         | wdp:P1476 @<P1476Prop> ;
+         |}
+         |
+         |<P1476Prop> {
+         | prov:wasDerivedFrom @<P1476PropRef>
+         |}
+         |
+         |<P1476PropRef> {
+         | pr:P248 IRI ;
+         | prv:P813 IRI ;
+         | pr:P698  IRI ;
+         | pr:P813 xsd:date
+         |}
+      """.stripMargin, "wd:Q31270287", "S"
+    )
+
+/*    checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:name "Alice" .
@@ -213,7 +261,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       """.stripMargin, ":alice", "S"
     )
 
-/*    checkSchemaInfer("""|@prefix :      <http://example.org/thing> .
+    checkSchemaInfer("""|@prefix :      <http://example.org/thing> .
                         |@prefix td:    <http://www.w3.org/ns/td#> .
                         |@prefix js:    <http://www.w3.org/ns/json-schema#> .
                         |
@@ -253,8 +301,8 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          |}
       """.stripMargin, ":light", "S"
     )
-*/
 
+*/
 
     def checkSchemaInfer(rdfStr: String, expectedStr: String, nodeSelectorStr: String, label: String): Unit = {
     it(s"Should infer a ShEx schema: $rdfStr for node $nodeSelectorStr and obtain $expectedStr") {
@@ -344,4 +392,4 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       } else Left(s"Max cardinalities are different: ${tc1.max}, ${tc2.max}")
     } else Left(s"Triple constraints are different because predicates are different: $tc1, $tc2")
   }
-}
+  }

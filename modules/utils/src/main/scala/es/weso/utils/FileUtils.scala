@@ -24,6 +24,19 @@ object FileUtils {
     }
   }
 
+  def getFileFromFolderWithSameExt(
+                                 file: File,
+                                 oldExt: String,
+                                 newExt: String): Either[String,File] = {
+    val newName = file.getAbsolutePath.reverse.replaceFirst(oldExt.reverse, newExt.reverse).reverse
+    Try {
+      new File(newName)
+    }.fold(exc =>
+      Left(s"Error accessing file with name $newName: ${exc.getMessage}"),
+      Right(_))
+  }
+
+
   def getFileFromFolderWithExt(
     path: String,
     name: String,

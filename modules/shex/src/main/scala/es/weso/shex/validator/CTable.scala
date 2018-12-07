@@ -7,6 +7,7 @@ import es.weso.rbe.{Direct => _, Schema => _, Star => _, _}
 import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 import es.weso.shex.compact.Parser.TripleExprMap
+import cats.implicits._
 
 
 /* Candidates table */
@@ -47,11 +48,11 @@ object Table extends LazyLogging {
       (newTable,cref)
     }
 
-    private[validator] def neighs2Candidates(neighs: List[Arc]): List[(Arc, Set[ConstraintRef])] = {
+    private[validator] def neighs2Candidates(neighs: List[Arc]): List[Candidate] = {
       neighs.map(arc =>
-        (arc, paths.get(arc.path).getOrElse(Set()))
-      )
+        Candidate(arc, paths.get(arc.path).getOrElse(Set())))
     }
+
   }
 
   object CTable {
@@ -72,9 +73,9 @@ object Table extends LazyLogging {
         if (tc.predicate == iri) tc.valueExpr.toList
         else List()
       case eachOf: EachOf =>
-        eachOf.expressions.map(appearances(iri,_)).flatten
+        eachOf.expressions.flatMap(appearances(iri,_))
       case oneOf: OneOf =>
-        oneOf.expressions.map(appearances(iri,_)).flatten
+        oneOf.expressions.flatMap(appearances(iri,_))
       case i: Inclusion => List() // TODO
       case e: Expr => List()
     }
@@ -166,7 +167,7 @@ object Table extends LazyLogging {
 
         case e:Expr => {
           val e: Rbe_ = Empty
-          val table = current
+          // val table = current
           Right((current,e))
         }
       }
@@ -186,11 +187,11 @@ object Table extends LazyLogging {
       def showConstraints(cs: ConstraintsMap): String = {
         def combine(s: List[String], current: (ConstraintRef, CheckExpr)): List[String] = {
           val (cref,expr) = current
-          s"${cref.toString}->${expr.toString}" :: s
+          s"${cref.show}->${expr.show}" :: s
         }
         cs.foldLeft(List[String]())(combine).mkString(",")
       }
-      s"""Constraints: ${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}\n---endTable\n""".stripMargin
+      s"""Constraints:\n${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}\n---endTable\n""".stripMargin
     }
   }
 }

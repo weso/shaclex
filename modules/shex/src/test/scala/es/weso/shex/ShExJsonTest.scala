@@ -24,8 +24,9 @@ class ShExJsonTest extends FunSpec with JsonTest with Matchers with EitherValues
     for (file <- getJsonFiles(schemasFolder)) {
       it(s"Should read Schema from file ${file.getName}") {
         val str = Source.fromFile(file)("UTF-8").mkString
-        shouldDecodeEncodeEqual[Schema](str)
+        decodeJsonSchemaEncodeEquals[Schema](str)
       }
     }
   }
+
 }

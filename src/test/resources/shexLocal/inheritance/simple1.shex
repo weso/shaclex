@@ -1,0 +1,4 @@
+prefix : <http:/example.org/>
+
+:B { :a [1 2] }
+:A extends :B { :a [3 4 ] }

@@ -2,6 +2,7 @@ package es.weso.utils
 
 object SetUtils {
 
+
   /**
     * paritition of a set in n sets whose union give that set again
     * Example:

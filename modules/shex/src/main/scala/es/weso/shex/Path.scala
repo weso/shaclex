@@ -5,7 +5,11 @@ import es.weso.rdf.nodes.IRI
 sealed trait Path {
  def isDirect: Boolean
  def pred: IRI
+
+ override def toString: String = Path.showPath.show(this)
+
 }
+
 case class Direct(pred: IRI) extends Path {
  val isDirect = true
 

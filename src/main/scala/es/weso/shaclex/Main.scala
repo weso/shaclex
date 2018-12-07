@@ -231,7 +231,6 @@ object Main extends App with LazyLogging {
      result <- SchemaInfer.runInferSchema(rdf, nodeSelector, opts.shapeInferEngine(), shapeLabelIri)
      (schema,resultMap) = result
      str <- schema.serialize(opts.shapeInferFormat())
-     println(s"\nResultMap:\n${resultMap.serialize("COMPACT")}")
     } yield (rdf,schema,str)
     dataOptions.fold(e => println(s"shapeInfer: Error $e"), values => {
       val (rdf,schema,str) = values

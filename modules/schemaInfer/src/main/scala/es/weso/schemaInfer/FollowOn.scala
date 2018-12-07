@@ -13,10 +13,15 @@ case class FollowOn(name: String,
 object FollowOn {
 
   val followOnReference: FollowOn =
-    FollowOn("WikidataReference", { case (label, prop, _) => {
-      val wdPropRegex = s"^${IRI("http://www.wikidata.org/prop").str}(P\\d*)".r
+    FollowOn("WikidataReference", {
+      case (label, prop, _) => {
+//      println(s"FollowOn(wikidataReference, label=$label, prop=$prop)")
+      val wdPropRegex = s"^${IRI("http://www.wikidata.org/prop/").str}(P\\d*)".r
       prop.str match {
-        case wdPropRegex(prop) => Right(label.resolve(IRI(prop + "Prop")))
+        case wdPropRegex(prop) => {
+//          println(s"Matches wikidataReference with $prop")
+          Right(label.resolve(IRI(prop + "Prop")))
+        }
         case _ => Left(s"$prop does not match $wdPropRegex")
       }
     }}
@@ -25,6 +30,7 @@ object FollowOn {
   val followOnWasDerivedFrom: FollowOn =
     FollowOn("wikidataWasDerivedFrom", {
     case (label,prop, _) => {
+//      println(s"FollowOn(wikidataWasDerivedFrom, label=$label, prop=$prop)")
       val prov = IRI("http://www.w3.org/ns/prov#")
       val `prov:wasDerivedFrom` = prov + "wasDerivedFrom"
       prop match {

@@ -188,7 +188,20 @@ case class Shape(
   def extraPaths =
     extra.getOrElse(List()).map(Direct(_))
 
-  def isEmpty: Boolean = this == Shape.empty
+  def getExtra: List[IRI] = extra.getOrElse(Shape.emptyExtra)
+  def getExtend: List[ShapeLabel] = _extends.getOrElse(Shape.emptyExtends)
+  def getAnnotations: List[Annotation] = annotations.getOrElse(Shape.emptyAnnotations)
+  def getActions: List[SemAct] = actions.getOrElse(Shape.emptySemActs)
+
+  def isEmpty: Boolean = {
+    this.id == None &&
+    this.isVirtual == Shape.defaultVirtual &&
+    this.isClosed == Shape.defaultClosed &&
+    getExtra == Shape.emptyExtra &&
+    getExtend == Shape.emptyExtends &&
+    getAnnotations == Shape.emptyAnnotations &&
+    getActions == Shape.emptySemActs
+  }
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
   private def extend(s: ShapeExpr): Option[List[ShapeLabel]] = s match {
@@ -232,6 +245,7 @@ case class Shape(
   }
 
   override def getShapeRefs(schema: Schema) = expression.map(_.getShapeRefs(schema)).getOrElse(List())
+
 }
 
 object Shape {
@@ -248,13 +262,17 @@ object Shape {
 
   def defaultVirtual = false
   def defaultClosed = false
-  def defaultExtra = List[IRI]()
-  def defaultInherit = List[ShapeLabel]()
-  def defaultSemActs = List[SemAct]()
+  def emptyExtra = List[IRI]()
+  def emptyExtends = List[ShapeLabel]()
+  def emptySemActs = List[SemAct]()
+  def emptyAnnotations = List[Annotation]()
+  def defaultExpr = None
 
   def expr(te: TripleExpr): Shape = {
     Shape.empty.copy(expression = Some(te))
   }
+
+
 }
 
 case class ShapeRef(reference: ShapeLabel,
@@ -293,6 +311,7 @@ case class ShapeExternal(id: Option[ShapeLabel],
   }
   override def getShapeRefs (schema: Schema) =  List()
 }
+
 
 object ShapeExternal {
   def empty: ShapeExternal = ShapeExternal(None,None,None)

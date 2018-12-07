@@ -5,8 +5,11 @@ import cats.implicits._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shex.Path
 
+case class Arc(path: Path, node: RDFNode) {
 
-case class Arc(path: Path, node: RDFNode)
+  override def toString: String = Arc.showArc.show(this)
+
+}
 
 object Arc {
 

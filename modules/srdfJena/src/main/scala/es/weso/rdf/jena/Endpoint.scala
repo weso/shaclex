@@ -108,7 +108,7 @@ case class Endpoint(endpointIRI: IRI)
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(subj)).execConstruct()
       model2triples(model)
     }.fold(e => Left(s"Error accessing endpoint ${endpoint} to obtain triples with subject $node: ${e.getMessage}"), Right(_))
-    case _ => Left("triplesWithSubject: node " + node + " must be a IRI")
+    case _ => Right(Set()) // Left("triplesWithSubject: node " + node + " must be a IRI")
   }
 
   def triplesWithPredicate(p: IRI): Either[String,Set[RDFTriple]] = {

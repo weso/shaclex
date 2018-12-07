@@ -1,13 +1,6 @@
 package es.weso.shex.validator
 
-import org.scalatest._
-import es.weso.shex._
-import es.weso.rdf.jena._
-import es.weso.shapeMaps.ShapeMap
-
-import util._
-
-class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
+class ShapeMapValidatorTest extends ShouldValidateShapeMap {
 
   describe("Simple Shape") {
     val shexStr =
@@ -235,29 +228,5 @@ class ShapeMapValidatorTest extends FunSpec with Matchers with EitherValues {
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@<A>", ":a@<http://base.org/A>")
   }
 
-  def shouldValidateWithShapeMap(
-    rdfStr: String,
-    shexStr: String,
-    shapeMapStr: String,
-    expected: String): Unit = {
-    it(s"Should validate ${shexStr} with ${rdfStr} and ${shapeMapStr} and result $expected") {
-      val validate = for {
-        rdf <- RDFAsJenaModel.fromChars(rdfStr, "Turtle")
-        shex <- Schema.fromString(shexStr, "ShExC", None)
-        shapeMap <- {
-          ShapeMap.fromCompact(shapeMapStr, shex.base, rdf.getPrefixMap, shex.prefixMap)
-        }
-        fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap, rdf, rdf.getPrefixMap, shex.prefixMap)
-        result <- Validator.validate(shex, fixedShapeMap, rdf)
-        expectedShapeMap <- ShapeMap.parseResultMap(expected, None, rdf, shex.prefixMap)
-        _ <- { println(s"Expected shapeMap: $expectedShapeMap"); Right(())}
-        compare <- result.compareWith(expectedShapeMap)
-      } yield compare
-      validate match {
-        case Left(msg) => fail(s"Error: $msg")
-        case Right(v) => v should be(true)
-      }
-    }
-  }
 
 }

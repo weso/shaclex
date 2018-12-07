@@ -1,6 +1,8 @@
 package es.weso.collection
 
 import scala.collection.SortedMap
+import cats.Show
+import cats.implicits._
 
 trait Bag[A] {
 
@@ -75,8 +77,9 @@ trait Bag[A] {
       (1 to n).map(_ => x)
     }
 
-    this.asSortedMap.map(
-      pair => generate(pair._1, pair._2)).flatten.toSeq
+    this.asSortedMap.flatMap {
+      case (x,n) => generate(x, n)
+    }.toSeq
   }
 }
 
@@ -101,4 +104,14 @@ object Bag {
     symbols.foldLeft(e)((rest, x) => rest.add(x, bag.multiplicity(x)))
   }
 
+  implicit def showBag[A:Show](b: Bag[A]): Show[Bag[A]] = new Show[Bag[A]] {
+    def show(b: Bag[A]): String = {
+      val zero = new StringBuilder
+      def cmb(b: StringBuilder, pair:(A,Int)): StringBuilder = {
+        val (x,n) = pair
+        b.append(s"${x.show}/$n")
+      }
+      b.elems.foldLeft(zero)(cmb).toString
+    }
+  }
 }

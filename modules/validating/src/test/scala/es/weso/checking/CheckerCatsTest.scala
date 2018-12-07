@@ -116,9 +116,9 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       }
     }
 
-    shouldCheckSomeFlag("checkSomeFlag(List(2,4), (0,false)) = (2, true)|1",Stream(2, 4),comp,ok((0,false)),(2,true),1)
-    shouldCheckSomeFlag("checkSomeFlag(List(1,4), (0,false)) = (4, true)|2",Stream(1, 4),comp,ok((0,false)),(4,true),2)
-    shouldCheckSomeFlag("checkSomeFlag(List(1,3,5), (0,false)) = (0, false)|3",Stream(1, 3, 5),comp,ok((0,false)),(0,false),3)
+    shouldCheckSomeFlag("checkSomeFlag(Stream(2,4), (0,false)) = (2, true)|1",Stream(2, 4),comp,ok((0,false)),(2,true),1)
+    shouldCheckSomeFlag("checkSomeFlag(Stream1,4), (0,false)) = (4, true)|2",Stream(1, 4),comp,ok((0,false)),(4,true),2)
+    shouldCheckSomeFlag("checkSomeFlag(Stream(1,3,5), (0,false)) = (0, false)|3",Stream(1, 3, 5),comp,ok((0,false)),(0,false),3)
     shouldCheckSomeFlag("checkSomeFlag(Stream(2,4,...), (0,false)) = (2, true)|1",Stream.from(2,2),comp,ok((0,false)),(2,true),1)
     shouldCheckSomeFlag("checkSomeFlag(Stream(), (0,false)) = (0, false)|0",Stream(),comp,ok((0,false)),(0,false),0)
 
