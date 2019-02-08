@@ -172,7 +172,7 @@ case class Shape(
                   closed: Option[Boolean],
                   extra: Option[List[IRI]], // TODO: Extend extras to handle Paths?
                   expression: Option[TripleExpr],
-                  _extends: Option[List[ShapeLabel]],
+                  _extends: Option[List[ShapeExpr]],
                   annotations: Option[List[Annotation]],
                   actions: Option[List[SemAct]]
                 ) extends ShapeExpr with Extend {
@@ -189,7 +189,7 @@ case class Shape(
     extra.getOrElse(List()).map(Direct(_))
 
   def getExtra: List[IRI] = extra.getOrElse(Shape.emptyExtra)
-  def getExtend: List[ShapeLabel] = _extends.getOrElse(Shape.emptyExtends)
+  def getExtend: List[ShapeExpr] = _extends.getOrElse(Shape.emptyExtends)
   def getAnnotations: List[Annotation] = annotations.getOrElse(Shape.emptyAnnotations)
   def getActions: List[SemAct] = actions.getOrElse(Shape.emptySemActs)
 
@@ -204,7 +204,7 @@ case class Shape(
   }
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
-  private def extend(s: ShapeExpr): Option[List[ShapeLabel]] = s match {
+  private def extend(s: ShapeExpr): Option[List[ShapeExpr]] = s match {
     case s: Shape => s._extends
     case _ => None
   }
@@ -263,7 +263,7 @@ object Shape {
   def defaultVirtual = false
   def defaultClosed = false
   def emptyExtra = List[IRI]()
-  def emptyExtends = List[ShapeLabel]()
+  def emptyExtends = List[ShapeExpr]()
   def emptySemActs = List[SemAct]()
   def emptyAnnotations = List[Annotation]()
   def defaultExpr = None
