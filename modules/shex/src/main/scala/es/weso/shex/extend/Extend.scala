@@ -7,7 +7,7 @@ trait Extend {
 
   def extendCheckingVisited[S,E,Label](s: S,
                    finder: Label => Either[String,S],
-                   extend: S => Option[List[Label]],
+                   extend: S => Option[List[ShapeExpr]],
                    combineExpr: (E, E) => E,
                    expr: S => Option[E]): Either[String, Option[E]] = {
     type Visited[A] = State[List[Label], A]
@@ -34,9 +34,10 @@ trait Extend {
 
     def flattenExprAux(s: S): Visited[Result] = extend(s) match {
       case None => ok(Right(expr(s)))
-      case Some(lbls) => {
+      case Some(exprs) => {
         val zero: Result = Right(None)
         def comb(r: Result, x: Label): Visited[Result] = {
+          // This needs to walk through a ShapeExpr and only addVisited for ShapeReferences.
           // println(s"comb, x=$x, r=$r")
           for {
             visited <- getVisited
@@ -59,7 +60,7 @@ trait Extend {
               }
           } yield v
         }
-        for { r <- Foldable[List].foldM(lbls, zero)(comb)
+        for { r <- Foldable[List].foldM(exprs, zero)(comb)
         } yield {
           r.map(combine(_,expr(s)))
         }
