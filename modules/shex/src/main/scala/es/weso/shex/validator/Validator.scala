@@ -376,7 +376,7 @@ case class Validator(schema: Schema,
                                           baseExpr: ShapeExpr
                                          ): CheckTyping = for {
     paths <- fromEither(s.paths(schema).leftMap(msgErr(_)))
-    _ <- { println(s"checkShapeExtend(node=$node,shape=${s.show},baseExpr=$baseLabel). \npaths=$paths") ; ok(()) }
+    _ <- { println(s"checkShapeExtend(node=$node,shape=${s.show},baseExpr=$baseExpr). \npaths=$paths") ; ok(()) }
     neighs <- getNeighPaths(node, paths)
     partitions = SetUtils.pSet(neighs.toSet)
     _ <- checkSomeFlag(partitions,checkPartition(baseExpr,s,attempt,node), noPartition(node, neighs))

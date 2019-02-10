@@ -227,14 +227,15 @@ case class Shape(
     def combinePaths(p1: List[Path],
                      p2: List[Path]
                     ): List[Path] = p1 ++ p2
-    extendCheckingVisited(this, schema.getShape(_), extend, combinePaths, getPath).map(_.getOrElse(List()))
+    extendCheckingVisited(this, getShapeExpr(schema), extend, combinePaths, getPath).map(_.getOrElse(List()))
   }
+
 
   def extendExpression(schema: Schema): Either[String,Option[TripleExpr]] = {
     def combine(e1: TripleExpr, e2: TripleExpr): TripleExpr = {
       EachOf(None,List(e1,e2),None,None,None,None)
     }
-    extendCheckingVisited(this, schema.getShape(_), extend, combine, expr)
+    extendCheckingVisited(this, getShapeExpr(schema), extend, combine, expr)
   }
 
   override def addAnnotations(as: List[Annotation]): ShapeExpr = {
@@ -245,6 +246,14 @@ case class Shape(
   }
 
   override def getShapeRefs(schema: Schema) = expression.map(_.getShapeRefs(schema)).getOrElse(List())
+
+  private def getShapeExpr(schema: Schema)(e: ShapeExpr): Either[String,ShapeExpr] = e match {
+    case ShapeRef(lbl,_,_) => schema.getShape(lbl)
+    case _ => Right(e)
+  } /* for {
+    label <- e.id.toRight(s"getShapeExpr: Expression $e has no Label")
+    shapeExpr <- schema.getShape(label)
+  } yield shapeExpr */
 
 }
 

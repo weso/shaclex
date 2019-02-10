@@ -7,7 +7,7 @@ trait Extend {
 
   def extendCheckingVisited[S,E,Label](s: S,
                    finder: Label => Either[String,S],
-                   extend: S => Option[List[ShapeExpr]],
+                   extend: S => Option[List[Label]],
                    combineExpr: (E, E) => E,
                    expr: S => Option[E]): Either[String, Option[E]] = {
     type Visited[A] = State[List[Label], A]
