@@ -168,11 +168,11 @@ case class Schema(id: IRI,
     ()
   }
 
-  private lazy val checkBadShapeLabels: Either[String,Unit] = for {
+/*  private lazy val checkBadShapeLabels: Either[String,Unit] = for {
     shapesMap <- eitherResolvedShapesMap
     _ <- { println(s"shapesMap: $shapesMap"); Right(())}
     _ <- EitherUtils.sequence(shapesMap.keySet.toList.map(lbl => checkShapeLabel(lbl)))
-  } yield (())
+  } yield (()) */
 
 
   private lazy val checkOddNegCycles: Either[String, Unit] = {

@@ -20,6 +20,8 @@ import java.nio.file._
 import es.weso.rdf.RDFReader
 
 object Main extends App with LazyLogging {
+  val relativeBase = Some("http://base/")
+
     try {
       run(args)
     } catch {
@@ -32,6 +34,8 @@ object Main extends App with LazyLogging {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
 
+    if (args.length==0) return opts.printHelp()
+
     val baseFolder: Path = if (opts.baseFolder.isDefined) {
       Paths.get(opts.baseFolder())
     } else {
@@ -40,9 +44,8 @@ object Main extends App with LazyLogging {
 
     val startTime = System.nanoTime()
 
-    val base = Some(FileUtils.currentFolderURL)
-
-    if (opts.shapeInfer.isDefined) {
+    // Check if inference of shapes graph is activated
+    if (opts.shapeInfer()) {
       shapeInfer(opts,baseFolder)
     }
 
@@ -51,7 +54,7 @@ object Main extends App with LazyLogging {
       schema <- getSchema(opts, baseFolder, rdf)
       triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
       shapeMapStr <- getShapeMapStr(opts)
-      trigger <- ValidationTrigger.findTrigger(triggerName, shapeMapStr, base,
+      trigger <- ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBase,
         opts.node.toOption, opts.shapeLabel.toOption,
         rdf.getPrefixMap(), schema.pm)
     } yield (rdf, schema, trigger)
@@ -171,18 +174,18 @@ object Main extends App with LazyLogging {
     if (opts.shapeInferNode.isDefined) {
       NodeSelector.fromString(opts.shapeInferNode(),None,pm)
     } else
-      Left(s"schemaInfer option requires also schemaInferNode to specify a node selector")
+      Left(s"shapeInfer option requires also shapeInferNode to specify a node selector")
   }
 
   private def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
-    val base = Some(FileUtils.currentFolderURL)
+    val base = relativeBase.map(IRI(_))
     if (opts.data.isDefined || opts.dataUrl.isDefined) {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base.map(IRI(_)))
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
         } else {
-          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), base.map(IRI(_)))
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), base)
         }
       } yield {
         if (opts.inference.isDefined) {
@@ -204,13 +207,12 @@ object Main extends App with LazyLogging {
   }
 
   private def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Either[String, Schema] = {
-    val base = Some(FileUtils.currentFolderURL)
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
-      Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), base)
+      Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), relativeBase)
     } else if (opts.schemaUrl.isDefined) {
       val str = Source.fromURL(opts.schemaUrl()).mkString
-      Schemas.fromString(str,opts.schemaFormat(),opts.engine(),base)
+      Schemas.fromString(str,opts.schemaFormat(),opts.engine(),relativeBase)
     }
     else {
       logger.info("Schema not specified. Extracting schema from data")
@@ -218,7 +220,6 @@ object Main extends App with LazyLogging {
     }
 
   }
-
 
   private def shapeInfer(opts: MainOpts, baseFolder: Path): Unit = {
     val dataOptions = for {

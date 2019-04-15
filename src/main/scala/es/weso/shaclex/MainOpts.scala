@@ -6,9 +6,9 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger
 import es.weso.shapeMaps.ShapeMap
 
-class MainOpts(
-  arguments: Array[String],
-  onError: (Throwable, Scallop) => Nothing) extends ScallopConf(arguments) {
+class MainOpts(arguments: Array[String],
+               onError: (Throwable, Scallop) => Nothing
+              ) extends ScallopConf(arguments) {
 
   lazy val defaultEngine = engines.head
   lazy val engines = Schemas.availableSchemaNames.map(_.toUpperCase) ++ List("None")// List("SHEX","SHACL")

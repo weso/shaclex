@@ -672,7 +672,7 @@ case class Validator(schema: Schema,
     for {
       rdf        <- getRDF
       outTriples <- fromEitherString(rdf.triplesWithSubjectPredicates(node, outgoingPredicates))
-      // _ <- { println(s"Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
+      _ <- { println(s"Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
       outgoing = outTriples.map(t => Arc(Direct(t.pred), t.obj)).toList
       inTriples <- fromEitherString(rdf.triplesWithObject(node))
       incoming = inTriples.map(t => Arc(Inverse(t.pred), t.subj)).toList
