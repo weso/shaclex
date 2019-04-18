@@ -1,12 +1,25 @@
 package es.weso.shapeMaps
 
-import es.weso.rdf.nodes.RDFNode
-import io.circe.{ Decoder, DecodingFailure, Encoder, Json }
+import es.weso.rdf.nodes.{IRI, RDFNode}
+import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 
-sealed abstract class Pattern
-case class NodePattern(node: RDFNode) extends Pattern
-case object WildCard extends Pattern
-case object Focus extends Pattern
+sealed abstract class Pattern {
+  def relativize(base: IRI): Pattern
+}
+
+case class NodePattern(node: RDFNode) extends Pattern {
+  override def relativize(base: IRI): NodePattern =
+    NodePattern(node.relativize(base))
+}
+
+case object WildCard extends Pattern {
+  override def relativize(base: IRI) = this
+
+}
+
+case object Focus extends Pattern {
+  override def relativize(base: IRI) = this
+}
 
 object Pattern {
 

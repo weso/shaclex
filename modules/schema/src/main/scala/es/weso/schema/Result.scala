@@ -38,7 +38,7 @@ case class Result(
 
   def addTrigger(trigger: ValidationTrigger): Result = this.copy(trigger = Some(trigger))
 
-  def show: String = {
+  def show(base: Option[IRI]): String = {
     val sb = new StringBuilder
     if (isValid) {
       if (shapeMaps.size == 0) {
@@ -46,7 +46,7 @@ case class Result(
       } else {
         for ((solution, n) <- shapeMaps zip (1 to cut)) {
           sb ++= "Result " + printNumber(n, cut)
-          sb ++= solution.toString
+          sb ++= solution.relativize(base).toString
         }
       }
     } else
@@ -116,8 +116,8 @@ case class Result(
     else n.toString
   }
 
-  def serialize(format: String): String = format.toUpperCase match {
-    case Result.TEXT => show
+  def serialize(format: String, base: Option[IRI] = None): String = format.toUpperCase match {
+    case Result.TEXT => show(base)
     case Result.JSON => toJsonString2spaces
     case _ => s"Unsupported format to serialize result: $format, $this"
   }
@@ -154,7 +154,7 @@ object Result extends LazyLogging {
     empty.copy(isValid = false, message = str)
 
   implicit val showResult = new Show[Result] {
-    override def show(r: Result): String = r.show
+    override def show(r: Result): String = r.show(None)
   }
 
   lazy val TEXT = "TEXT"

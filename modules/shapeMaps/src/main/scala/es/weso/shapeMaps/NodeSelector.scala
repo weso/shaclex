@@ -10,10 +10,18 @@ import es.weso.rdf.{PrefixMap, RDFReader}
 
 abstract class NodeSelector {
   def select(rdf: RDFReader): Either[String,Set[RDFNode]]
+
+  def relativize(base: IRI): NodeSelector
 }
+
 case class RDFNodeSelector(node: RDFNode) extends NodeSelector {
   override def select(rdf: RDFReader): Either[String,Set[RDFNode]] =
     Right(Set(node))
+
+  override def relativize(base: IRI): NodeSelector =
+    RDFNodeSelector(node.relativize(base))
+
+
 }
 
 case class TriplePattern(
@@ -28,6 +36,12 @@ case class TriplePattern(
       case (NodePattern(subj),p,Focus) =>  rdf.objectsWithPath(subj, p)
       case _ => Left(s"Strange triple pattern in node selector: $this")
     }
+
+  override def relativize(base: IRI): NodeSelector =
+    TriplePattern(subjectPattern.relativize(base),
+      path.relativize(base),
+      objectPattern.relativize(base))
+
 }
 
 case class SparqlSelector(query: String) extends NodeSelector {
@@ -51,12 +65,18 @@ case class SparqlSelector(query: String) extends NodeSelector {
       }
     }
   }
+
+  override def relativize(base: IRI): SparqlSelector = this
+
 }
 
 case class GenericSelector(iri: IRI, param: String) extends NodeSelector {
   override def select(rdf: RDFReader): Either[String, Set[RDFNode]] = {
     Left(s"Not implemented GenericSelector($iri, $param)")
   }
+
+  override def relativize(base: IRI) = this
+
 }
 
 object NodeSelector {

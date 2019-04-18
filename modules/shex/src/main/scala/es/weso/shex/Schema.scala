@@ -190,6 +190,20 @@ case class Schema(id: IRI,
    // _ <- checkBadShapeLabels
   } yield (())
 
+  def relativize(maybeBase: Option[IRI]): Schema = maybeBase match {
+    case None => this
+    case Some(baseIri) => Schema(
+      id.relativizeIRI(baseIri),
+      prefixes,
+      base.map(_.relativizeIRI(baseIri)),
+      startActs,
+      start.map(_.relativize(baseIri)),
+      shapes.map(_.map(_.relativize(baseIri))),
+      tripleExprMap,
+      imports
+    )
+  }
+
 }
 
 
@@ -253,7 +267,7 @@ object Schema {
     * @param cs char sequence
     * @param format syntax format
     * @param base base URL
-    * @param rdfReader RDFReader value from which to obtain RDF data formats (in case of RDF format)
+    * @param maybeRDFReader RDFReader value from which to obtain RDF data formats (in case of RDF format)
     * @return either a Schema or a String message error
     */
   def fromString(cs: CharSequence,
@@ -285,24 +299,28 @@ object Schema {
   }
   def serialize(schema: Schema,
                 format: String,
+                base: Option[IRI],
                 rdfBuilder: RDFBuilder): Either[String,String] = {
     val formatUpperCase = format.toUpperCase
+    val relativeSchema = schema.relativize(base)
     formatUpperCase match {
       case "SHEXC" => {
         import compact.CompactShow._
-        Right(showSchema(schema))
+        Right(showSchema(relativeSchema))
       }
       case "SHEXJ" => {
         import io.circe.syntax._
         import es.weso.shex.implicits.encoderShEx._
-        Right(schema.asJson.spaces2)
+        Right(relativeSchema.asJson.spaces2)
       }
       case _ if (rdfDataFormats(rdfBuilder).contains(formatUpperCase)) => {
-        val rdf = ShEx2RDF(schema, None, rdfBuilder.empty)
-        rdf.serialize(formatUpperCase)
+        val rdf = ShEx2RDF(relativeSchema, None, rdfBuilder.empty)
+        rdf.serialize(formatUpperCase, base)
       }
       case _ =>
         Left(s"Not implemented conversion to $format. Schema: $schema")
     }
   }
+
+
 }

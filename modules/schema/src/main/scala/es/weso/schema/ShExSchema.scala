@@ -119,7 +119,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
   override def fromRDF(rdf: RDFReader): Either[String, Schema] =
     RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
 
-  override def serialize(format: String): Either[String, String] = {
+  override def serialize(format: String, base: Option[IRI]): Either[String, String] = {
     val fmt = format.toUpperCase
     val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formatsUpperCase.contains(fmt))
@@ -127,7 +127,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
 /*        case "SVG" => for {
           uml <- ShEx2UML.schema2Uml(schema)
         } yield uml.toSVG */
-        case _ => Schema_.serialize(schema, fmt, builder)
+        case _ => Schema_.serialize(schema, fmt, base, builder)
       }
     else
       Left(s"Can't serialize to format $format. Supported formats=$formats")
@@ -142,17 +142,23 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
 
   override def pm: PrefixMap = schema.prefixMap
 
-  def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String] = {
+  override def convert(targetFormat: Option[String],
+              targetEngine: Option[String],
+              base: Option[IRI]
+             ): Either[String,String] = {
     targetEngine.map(_.toUpperCase) match {
       case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
       case Some(engine) if (engine.equalsIgnoreCase(name)) => {
-        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),base)
       }
       case Some("SHACL") | Some("SHACLEX") =>
         for {
           newSchema <- ShEx2Shacl.shex2Shacl(schema,None).leftMap(es => es.mkString("\n"))
           builder = RDFAsJenaModel.empty
-          str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
+          // TODO: Check if we should pass base
+          str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),
+            base,
+            builder)
         } yield str
       case Some(unknown) => Left(s"Conversion from ShEx to $unknown not implemented yet")
     }

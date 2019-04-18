@@ -65,6 +65,14 @@ case class IRI(uri: URI) extends RDFNode {
     }
   }
 
+  /**
+  * Make a relative IRI from a given base
+    *  Example `IRI("http://example.com/foo").relativize(IRI("http://example.com/")) = IRI("foo")``
+    * @param base base IRI
+    * @return the relativized IRI
+    */
+  def relativizeIRI(base: IRI): IRI =
+    IRI(base.uri.relativize(uri))
 }
 
 object IRI {

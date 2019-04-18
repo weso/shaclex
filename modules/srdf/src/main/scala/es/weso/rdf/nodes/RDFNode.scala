@@ -38,6 +38,11 @@ abstract class RDFNode {
     b2 <- lessThan(other)
   } yield b1 || b2
 
+  def relativize(base: IRI): RDFNode = this match {
+    case iri: IRI => iri.relativizeIRI(base)
+    case other => other
+  }
+
 }
 
 object RDFNode {

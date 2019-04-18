@@ -14,9 +14,12 @@ import es.weso.shacl.report.Severity
 
 class Shacl2RDF extends RDFSaver with LazyLogging {
 
-  def serialize(shacl: Schema, format: String, builder: RDFBuilder): Either[String, String] = {
+  def serialize(shacl: Schema,
+                format: String,
+                base: Option[IRI],
+                builder: RDFBuilder): Either[String, String] = {
     val rdf: RDFBuilder = toRDF(shacl, builder)
-    rdf.serialize(format)
+    rdf.serialize(format, base)
   }
 
   def toRDF(shacl: Schema, initial: RDFBuilder): RDFBuilder = {

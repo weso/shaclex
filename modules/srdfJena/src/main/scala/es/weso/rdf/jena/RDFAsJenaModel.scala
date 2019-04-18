@@ -9,7 +9,10 @@ import scala.util.Try
 import es.weso.rdf._
 import org.apache.jena.rdf.model.{Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
-import org.apache.jena.riot._
+import org.apache.jena.riot.{
+  Lang => JenaLang,
+  _
+}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.lang._
 import scala.util._
@@ -77,13 +80,18 @@ case class RDFAsJenaModel(model: Model,
     }
   }
 
-  override def serialize(formatName: String): Either[String, String] = for {
+/*  private def getRDFLang(formatName: String): Either[String,Lang] = {
+  } */
+
+
+  override def serialize(formatName: String, base: Option[IRI]): Either[String, String] = for {
     format <- getRDFFormat(formatName)
     str <- format match {
       case "DOT" => Right(RDF2Dot.rdf2dot(this).toString)
       case _ => Try {
-        val out: StringWriter = new StringWriter()
-        model.write(out, format)
+        val out = new ByteArrayOutputStream()
+        val relativizedModel = JenaUtils.relativizeModel(model,base.map(_.uri))
+        relativizedModel.write(out, format)
         out.toString
       }.fold(e => Left(s"Error serializing RDF to format $formatName: $e"),
         Right(_)

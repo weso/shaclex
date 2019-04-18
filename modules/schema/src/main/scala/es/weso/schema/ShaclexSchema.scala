@@ -123,10 +123,10 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   }
 
 
-  override def serialize(format: String): Either[String, String] = {
+  override def serialize(format: String, base: Option[IRI]): Either[String, String] = {
     val builder: RDFBuilder = RDFAsJenaModel.empty
     if (formats.contains(format.toUpperCase))
-      schema.serialize(format, builder.empty)
+      schema.serialize(format, base, builder.empty)
     else
       Left(s"Format $format not supported to serialize $name. Supported formats=$formats")
   }
@@ -139,7 +139,10 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def pm: PrefixMap = schema.pm
 
-  def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String] = {
+  override def convert(targetFormat: Option[String],
+                       targetEngine: Option[String],
+                       base: Option[IRI]
+                      ): Either[String,String] = {
    targetEngine.map(_.toUpperCase) match {
      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      case Some("SHACL") | Some("SHACLEX") => {
@@ -149,7 +152,11 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
        pair <- Shacl2ShEx.shacl2ShEx(schema).leftMap(e => s"Error converting: $e")
        (newSchema,queryMap) = pair
        builder = RDFAsJenaModel.empty
-       str <- es.weso.shex.Schema.serialize(newSchema,targetFormat.getOrElse(DataFormats.defaultFormatName),builder)
+       str <- es.weso.shex.Schema.serialize(
+         newSchema,
+         targetFormat.getOrElse(DataFormats.defaultFormatName),
+         base,
+         builder)
      } yield str
      case Some(other) => Left(s"Conversion $name -> $other not implemented yet")
    }

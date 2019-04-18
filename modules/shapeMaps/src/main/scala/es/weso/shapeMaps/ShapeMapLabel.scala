@@ -14,6 +14,11 @@ sealed abstract class ShapeMapLabel {
     case _: BNodeLabel => true
     case _ => false
   }
+
+  def relativize(base: IRI): ShapeMapLabel = this match {
+    case IRILabel(iri) => IRILabel(iri.relativizeIRI(base))
+    case other => other
+  }
 }
 
 case class IRILabel(iri: IRI) extends ShapeMapLabel

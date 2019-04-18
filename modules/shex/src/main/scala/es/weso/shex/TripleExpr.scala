@@ -10,6 +10,7 @@ abstract sealed trait TripleExpr {
   def predicates(schema:Schema): List[IRI] =
     paths(schema).collect { case i: Direct => i.pred }
   def getShapeRefs(schema: Schema): List[ShapeLabel]
+  def relativize(base: IRI): TripleExpr
 }
 
 case class EachOf( id: Option[ShapeLabel],
@@ -24,6 +25,13 @@ case class EachOf( id: Option[ShapeLabel],
 
   override def paths(schema: Schema): List[Path] = expressions.map(_.paths(schema)).flatten
   override def getShapeRefs (schema: Schema) = expressions.map(_.getShapeRefs(schema)).flatten
+
+  override def relativize(base: IRI): EachOf =
+    EachOf(id.map(_.relativize(base)), expressions.map(_.relativize(base)),
+      optMin,
+      optMax,
+      semActs,
+      annotations)
 }
 
 object EachOf {
@@ -44,6 +52,13 @@ case class OneOf(
 
   override def paths(schema:Schema): List[Path] = expressions.map(_.paths(schema)).flatten
   override def getShapeRefs (schema: Schema) = expressions.map(_.getShapeRefs(schema)).flatten
+
+  override def relativize(base: IRI): OneOf =
+    OneOf(id.map(_.relativize(base)), expressions.map(_.relativize(base)),
+      optMin,
+      optMax,
+      semActs,
+      annotations)
 }
 
 object OneOf {
@@ -60,6 +75,10 @@ case class Inclusion(include: ShapeLabel) extends TripleExpr {
   }
   override def getShapeRefs(schema: Schema) =
     schema.getTripleExpr(include).map(_.getShapeRefs(schema)).getOrElse(List())
+
+  override def relativize(base: IRI): Inclusion =
+    Inclusion(include.relativize(base))
+
 }
 
 case class TripleConstraint(
@@ -90,6 +109,19 @@ case class TripleConstraint(
   )
 
   override def getShapeRefs(schema: Schema) = valueExpr.map(_.getShapeRefs(schema)).getOrElse(List())
+
+  override def relativize(base: IRI): TripleConstraint =
+    TripleConstraint(id.map(_.relativize(base)),
+      optInverse,
+      optNegated,
+      predicate.relativizeIRI(base),
+      valueExpr.map(_.relativize(base)),
+      optMin,
+      optMax,
+      optVariableDecl,
+      semActs,
+      annotations
+    )
 }
 
 /**
@@ -103,6 +135,9 @@ case class Expr(id: Option[ShapeLabel],
   def addId(label: ShapeLabel) = this.copy(id = Some(label))
   override def paths(schema: Schema): List[Path] = List()
   override def getShapeRefs(schema: Schema) = List()
+  override def relativize(base: IRI): Expr =
+    Expr(id.map(_.relativize(base)),e)
+
 }
 
 object TripleConstraint {

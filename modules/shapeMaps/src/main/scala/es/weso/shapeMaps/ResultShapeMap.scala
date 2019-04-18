@@ -3,7 +3,8 @@ package es.weso.shapeMaps
 import cats._
 import cats.implicits._
 import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes.RDFNode
+import es.weso.rdf.nodes.{IRI, RDFNode}
+import es.weso.utils.MapUtils._
 
 
 case class ResultShapeMap(
@@ -132,9 +133,24 @@ case class ResultShapeMap(
     }
   }
 
-  type ES[A] = Either[String, A]
+  private type ES[A] = Either[String, A]
 
-  def seqEither[A,B](es: List[Either[String,B]]): Either[String,List[B]] = es.sequence[ES,B]
+  private def seqEither[A,B](es: List[Either[String,B]]): Either[String,List[B]] = es.sequence[ES,B]
+
+  private def cnvResultMap(cnvNode: RDFNode => RDFNode,
+                           cnvLabel: ShapeMapLabel => ShapeMapLabel
+                          ): ResultShapeMap = {
+    ResultShapeMap(
+      cnvMapMap(resultMap, cnvNode, cnvLabel, identity[Info]),
+      nodesPrefixMap,
+      shapesPrefixMap
+    )
+  }
+
+  override def relativize(maybeBase: Option[IRI]): ShapeMap = maybeBase match {
+    case None => this
+    case Some(base) => cnvResultMap(_.relativize(base), _.relativize(base))
+  }
 
 }
 

@@ -49,7 +49,7 @@ case class Endpoint(endpointIRI: IRI)
     throw new Exception("Cannot parse into an endpoint. endpoint = " + endpoint)
   }
 
-  override def serialize(format: String): Either[String,String] = {
+  override def serialize(format: String, base: Option[IRI]): Either[String,String] = {
     Left(s"Endpoint with url $endpoint. Cannot be serialized to $format")
   }
 

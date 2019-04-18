@@ -1,7 +1,8 @@
 package es.weso.shapeMaps
 
 import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes.RDFNode
+import es.weso.rdf.nodes.{IRI, RDFNode}
+import es.weso.utils.MapUtils.cnvMapMap
 import io.circe._
 import io.circe.syntax._
 
@@ -47,6 +48,20 @@ case class FixedShapeMap(
 
   def addShapesPrefixMap(pm: PrefixMap): FixedShapeMap =
     this.copy(shapesPrefixMap = pm)
+
+  private def cnvFixedShapeMap(cnvNode: RDFNode => RDFNode,
+                           cnvLabel: ShapeMapLabel => ShapeMapLabel
+                          ): FixedShapeMap =
+    FixedShapeMap(
+      cnvMapMap(shapeMap, cnvNode, cnvLabel, identity[Info]),
+      nodesPrefixMap,
+      shapesPrefixMap
+    )
+
+  override def relativize(maybeBase: Option[IRI]): FixedShapeMap = maybeBase match {
+    case None => this
+    case Some(base) => cnvFixedShapeMap(_.relativize(base), _.relativize(base))
+  }
 
 }
 

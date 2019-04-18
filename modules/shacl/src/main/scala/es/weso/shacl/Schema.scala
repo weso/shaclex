@@ -95,13 +95,15 @@ case class Schema(pm: PrefixMap,
     targetNodeShapes.map {case (node, shape) => (node, shape.id) }
   }
 
-  def serialize(format: String = "TURTLE", builder: RDFBuilder): Either[String, String] = {
+  def serialize(format: String = "TURTLE",
+                base: Option[IRI],
+                builder: RDFBuilder): Either[String, String] = {
     format.toUpperCase match {
       case "TREE" => {
         Right(s"PrefixMap ${pm.treeString}\nShapes: ${shapes.treeString}")
       }
       case _ => {
-        new Shacl2RDF {}.serialize(this, format, builder.empty)
+        new Shacl2RDF {}.serialize(this, format, base, builder.empty)
       }
     }
   }

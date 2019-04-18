@@ -42,7 +42,7 @@ abstract class Schema {
 
   def fromRDF(rdf: RDFReader): Either[String, Schema]
 
-  def serialize(format: String): Either[String, String]
+  def serialize(format: String, base: Option[IRI] = None): Either[String, String]
 
   def defaultFormat: String = formats.head
 
@@ -63,7 +63,10 @@ abstract class Schema {
    */
   def pm: PrefixMap
 
-  def convert(targetFormat: Option[String], targetEngine: Option[String]): Either[String,String]
+  def convert(targetFormat: Option[String],
+              targetEngine: Option[String],
+              base: Option[IRI]
+             ): Either[String,String]
 
   def info: SchemaInfo
 

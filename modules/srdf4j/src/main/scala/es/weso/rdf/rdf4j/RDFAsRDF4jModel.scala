@@ -55,10 +55,11 @@ case class RDFAsRDF4jModel(model: Model,
     }
   }
 
-  override def serialize(formatName: String): Either[String, String] = for {
+  override def serialize(formatName: String, base: Option[IRI]): Either[String, String] = for {
     format <- getRDFFormat(formatName)
     str <- Try {
       val out: StringWriter = new StringWriter()
+      // TODO: relitivize model according to base
       Rio.write(model,out,format)
       out.toString
     }.fold(e => Left(s"Error serializing RDF to format $formatName: $e"),

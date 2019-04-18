@@ -1,6 +1,7 @@
 package es.weso.shapeMaps
 
 import es.weso.rdf.PrefixMap
+import es.weso.rdf.nodes.IRI
 import io.circe._
 import io.circe.syntax._
 
@@ -16,6 +17,13 @@ case class QueryShapeMap(
   override def addAssociation(a: Association): Either[String, QueryShapeMap] =
     Right(this.copy(associations = a +: associations))
 
+  override def relativize(maybeBase: Option[IRI]): QueryShapeMap = maybeBase match {
+    case None => this
+    case Some(base) => QueryShapeMap(
+      associations.map(_.relativize(base)),
+      nodesPrefixMap,
+      shapesPrefixMap)
+  }
 }
 
 object QueryShapeMap {

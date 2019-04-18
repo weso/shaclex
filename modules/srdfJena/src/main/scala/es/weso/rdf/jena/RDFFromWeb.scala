@@ -37,7 +37,8 @@ case class RDFFromWeb() extends RDFReader {
     Left("Cannot parse RDFFromWeb ")
   }
 
-  override def serialize(format: String): Either[String,String] = {
+  override def serialize(format: String,
+                         base: Option[IRI]): Either[String,String] = {
     Left(s"Cannot serialize RDFFromWeb")
   }
 

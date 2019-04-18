@@ -8,27 +8,58 @@ import io.circe.{Json, _}
 
 sealed trait SHACLPath {
   def predicate: Option[IRI]
+
+  def relativize(base: IRI): SHACLPath
+
 }
 case class PredicatePath(iri: IRI) extends SHACLPath {
   override def predicate: Option[IRI] = Some(iri)
+  override def relativize(base: IRI): SHACLPath =
+    PredicatePath(iri.relativizeIRI(base))
+
 }
 case class InversePath(path: SHACLPath) extends SHACLPath {
   override def predicate: Option[IRI] = None
+
+  override def relativize(base: IRI): SHACLPath =
+    InversePath(path.relativize(base))
 }
 case class SequencePath(paths: Seq[SHACLPath]) extends SHACLPath {
   override def predicate: Option[IRI] = None
+
+  override def relativize(base: IRI): SHACLPath =
+    SequencePath(paths.map(_.relativize(base)))
 }
+
 case class AlternativePath(paths: Seq[SHACLPath]) extends SHACLPath {
   override def predicate: Option[IRI] = None
+
+  override def relativize(base: IRI): SHACLPath =
+    AlternativePath(paths.map(_.relativize(base)))
+
 }
+
 case class ZeroOrMorePath(path: SHACLPath) extends SHACLPath {
   override def predicate: Option[IRI] = None
+
+  override def relativize(base: IRI): SHACLPath =
+    ZeroOrMorePath(path.relativize(base))
+
 }
+
 case class OneOrMorePath(path: SHACLPath) extends SHACLPath {
   override def predicate: Option[IRI] = None
+
+  override def relativize(base: IRI): SHACLPath =
+    OneOrMorePath(path.relativize(base))
 }
+
 case class ZeroOrOnePath(path: SHACLPath) extends SHACLPath {
   override def predicate: Option[IRI] = None
+
+  override def relativize(base: IRI): SHACLPath =
+    ZeroOrOnePath(path.relativize(base))
+
 }
 
 object SHACLPath {

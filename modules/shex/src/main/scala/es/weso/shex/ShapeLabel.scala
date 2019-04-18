@@ -9,6 +9,12 @@ abstract sealed trait ShapeLabel {
     case BNodeLabel(bn) => bn
     case Start => sx_start
   }
+
+  def relativize(base: IRI): ShapeLabel = this match {
+    case IRILabel(iri) => IRILabel(iri.relativizeIRI(base))
+    case other => other
+  }
+
 }
 
 case object Start extends ShapeLabel

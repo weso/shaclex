@@ -20,9 +20,9 @@ import java.nio.file._
 import es.weso.rdf.RDFReader
 
 object Main extends App with LazyLogging {
-  val relativeBase = Some("http://base/")
-
-    try {
+  val relativeBase: Option[IRI] = Some(IRI("internal://base/"))
+  val relativeBaseStr = relativeBase.map(_.str)
+  try {
       run(args)
     } catch {
       case (e: Exception) => {
@@ -54,7 +54,7 @@ object Main extends App with LazyLogging {
       schema <- getSchema(opts, baseFolder, rdf)
       triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
       shapeMapStr <- getShapeMapStr(opts)
-      trigger <- ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBase,
+      trigger <- ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBaseStr,
         opts.node.toOption, opts.shapeLabel.toOption,
         rdf.getPrefixMap(), schema.pm)
     } yield (rdf, schema, trigger)
@@ -67,13 +67,13 @@ object Main extends App with LazyLogging {
         if (opts.showData()) {
           // If not specified uses the input schema format
           val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
-          rdf.serialize(outDataFormat) match {
+          rdf.serialize(outDataFormat, relativeBase) match {
             case Left(msg) => println(s"Error serializing to $outDataFormat: $msg")
             case Right(str) => println(str)
           }
         }
         if (opts.showSchema() || opts.outSchemaFile.isDefined) {
-          schema.convert(opts.outSchemaFormat.toOption, opts.outEngine.toOption) match {
+          schema.convert(opts.outSchemaFormat.toOption,opts.outEngine.toOption,relativeBase) match {
                 case Right(str) => {
                   if (opts.showSchema()) println(str)
                   if (opts.outSchemaFile.isDefined) {
@@ -85,9 +85,7 @@ object Main extends App with LazyLogging {
         }
 
         if (opts.showShapeMap()) {
-          println(s"Trigger shapemap: ${trigger.shapeMap}")
-          println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat())}")
-          println(s"Trigger json: ${trigger.toJson.spaces2}")
+          println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat(),relativeBase)}")
         }
 
 
@@ -110,7 +108,7 @@ object Main extends App with LazyLogging {
         }
 
         if (opts.showResult() || opts.outputFile.isDefined) {
-          val resultSerialized = result.serialize(opts.resultFormat())
+          val resultSerialized = result.serialize(opts.resultFormat(),relativeBase)
           if (opts.showResult()) println(resultSerialized)
           if (opts.outputFile.isDefined)
             FileUtils.writeFile(opts.outputFile(), resultSerialized)
@@ -178,14 +176,13 @@ object Main extends App with LazyLogging {
   }
 
   private def getRDFReader(opts: MainOpts, baseFolder: Path): Either[String, RDFReader] = {
-    val base = relativeBase.map(IRI(_))
     if (opts.data.isDefined || opts.dataUrl.isDefined) {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), base)
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase)
         } else {
-          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), base)
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase)
         }
       } yield {
         if (opts.inference.isDefined) {
@@ -209,10 +206,10 @@ object Main extends App with LazyLogging {
   private def getSchema(opts: MainOpts, baseFolder: Path, rdf: RDFReader): Either[String, Schema] = {
     if (opts.schema.isDefined) {
       val path = baseFolder.resolve(opts.schema())
-      Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), relativeBase)
+      Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), relativeBaseStr)
     } else if (opts.schemaUrl.isDefined) {
       val str = Source.fromURL(opts.schemaUrl()).mkString
-      Schemas.fromString(str,opts.schemaFormat(),opts.engine(),relativeBase)
+      Schemas.fromString(str,opts.schemaFormat(),opts.engine(),relativeBaseStr)
     }
     else {
       logger.info("Schema not specified. Extracting schema from data")

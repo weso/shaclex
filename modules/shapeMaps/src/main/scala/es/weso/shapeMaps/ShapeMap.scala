@@ -29,12 +29,14 @@ abstract class ShapeMap {
 
   override def toString = Show[ShapeMap].show(this)
 
-  def serialize(format: String): String = {
+  def serialize(format: String, base: Option[IRI] = None): String = {
     format.toUpperCase match {
       case "JSON" => this.toJson.spaces2
-      case "COMPACT" => this.toString
+      case "COMPACT" => this.relativize(base).toString
     }
   }
+
+  def relativize(base: Option[IRI]): ShapeMap
 
 }
 
