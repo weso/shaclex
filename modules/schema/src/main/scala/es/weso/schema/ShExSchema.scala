@@ -147,7 +147,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
               base: Option[IRI]
              ): Either[String,String] = {
     targetEngine.map(_.toUpperCase) match {
-      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),base)
       case Some(engine) if (engine.equalsIgnoreCase(name)) => {
         serialize(targetFormat.getOrElse(DataFormats.defaultFormatName),base)
       }

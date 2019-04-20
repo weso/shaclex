@@ -1,13 +1,11 @@
 package es.weso.shex
 
 import java.nio.file.{Files, Paths}
-
 import cats.implicits._
 import es.weso.depgraphs.DepGraph
 import es.weso.rdf.{PrefixMap, RDFBuilder, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.shex.shexR.{RDF2ShEx, ShEx2RDF}
-import es.weso.utils.EitherUtils
 import es.weso.utils.UriUtils._
 import scala.io.Source
 import scala.util.{Either, Left, Right, Try}
@@ -159,14 +157,15 @@ case class Schema(id: IRI,
       List(s"Negative cycles found: [${ns.map(s => s.map(_.toString).mkString(",")).mkString(",")}]")
   ) */
 
-  private def checkShapeLabel(lbl: ShapeLabel): Either[String, Unit] = for {
+/* Commented because it is not used
+ private def checkShapeLabel(lbl: ShapeLabel): Either[String, Unit] = for {
    se <- getShape(lbl)
    refs <- EitherUtils.sequence(se.getShapeRefs(this).map(getShape(_)))
   } yield {
     println(s"Label: $lbl, refs: ${se.getShapeRefs(this).mkString(",")}")
     println(s"References: ${refs.mkString(",")}")
     ()
-  }
+  } */
 
 /*  private lazy val checkBadShapeLabels: Either[String,Unit] = for {
     shapesMap <- eitherResolvedShapesMap

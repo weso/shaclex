@@ -98,9 +98,9 @@ case class InferredShape(nodeShape: InferredNodesValue,
         sourceIRIs = sourceTriples.map(_.subj)
         labels <- sourceIRIs.map(rdf.triplesWithSubjectPredicate(_,`rdfs:label`)).toList.sequence[ES,Set[RDFTriple]]
       } yield labels.flatten.map(_.obj)
-      else {
-        rdf.triplesWithSubjectPredicate(iri, `rdfs:label`).map(_.obj)
-      }
+      else for {
+        ts <- rdf.triplesWithSubjectPredicate(iri, `rdfs:label`)
+      } yield ts.map(_.obj)
   } yield {
     val okLabels = labels.collect {
       case l: Literal if hasLang(l,maybeLang) => l

@@ -3,13 +3,22 @@ package es.weso.shex
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.nodes._
 
-sealed trait ValueSetValue
+sealed trait ValueSetValue {
+  def relativize(base: IRI): ValueSetValue
+}
 
-sealed trait ObjectValue extends ValueSetValue
+sealed trait ObjectValue extends ValueSetValue {
+  override def relativize(base: IRI): ObjectValue
+}
 
-case class IRIValue(i: IRI) extends ObjectValue
+case class IRIValue(i: IRI) extends ObjectValue {
+  override def relativize(base: IRI): IRIValue = IRIValue(i.relativizeIRI(base))
+}
 
-sealed trait ObjectLiteral extends ObjectValue
+sealed trait ObjectLiteral extends ObjectValue {
+  override def relativize(base:IRI): ObjectLiteral = this
+}
+
 case class StringValue(s: String) extends ObjectLiteral
 case class DatatypeString(s: String, iri: IRI) extends ObjectLiteral
 case class LangString(s: String, lang: Lang) extends ObjectLiteral
@@ -39,21 +48,42 @@ object ObjectValue {
     }
 }
 
-case class IRIStem(stem: IRI) extends ValueSetValue
+case class IRIStem(stem: IRI) extends ValueSetValue {
+  override def relativize(base: IRI) = IRIStem(stem.relativizeIRI(base))
+}
 case class IRIStemRange(stem: IRIStemRangeValue,
-                        exclusions: Option[List[IRIExclusion]]) extends ValueSetValue
+                        exclusions: Option[List[IRIExclusion]]) extends ValueSetValue {
+  override def relativize(base: IRI) =
+    IRIStemRange(stem.relativize(base), exclusions.map(_.map(_.relativize(base))))
+}
 
-sealed trait IRIStemRangeValue
-case class IRIStemValueIRI(iri: IRI) extends IRIStemRangeValue
-case class IRIStemWildcard() extends IRIStemRangeValue
+sealed trait IRIStemRangeValue {
+  def relativize(base: IRI): IRIStemRangeValue
+}
+case class IRIStemValueIRI(iri: IRI) extends IRIStemRangeValue {
+  override def relativize(base: IRI) = IRIStemValueIRI(iri.relativizeIRI(base))
+}
+case class IRIStemWildcard() extends IRIStemRangeValue {
+  override def relativize(base: IRI) = this
+}
 
-sealed trait IRIExclusion
-case class IRIRefExclusion(iri: IRI) extends IRIExclusion
-case class IRIStemExclusion(iriStem: IRIStem) extends IRIExclusion
+sealed trait IRIExclusion {
+  def relativize(base: IRI): IRIExclusion
+}
+case class IRIRefExclusion(iri: IRI) extends IRIExclusion {
+  override def relativize(base: IRI) = IRIRefExclusion(iri.relativizeIRI(base))
+}
+case class IRIStemExclusion(iriStem: IRIStem) extends IRIExclusion {
+  override def relativize(base: IRI) = IRIStemExclusion(iriStem.relativize(base))
+}
 
-case class LanguageStem(stem: Lang) extends ValueSetValue
+case class LanguageStem(stem: Lang) extends ValueSetValue {
+  override def relativize(base: IRI) = this
+}
 case class LanguageStemRange(stem: LanguageStemRangeValue,
-                             exclusions: Option[List[LanguageExclusion]]) extends ValueSetValue
+                             exclusions: Option[List[LanguageExclusion]]) extends ValueSetValue {
+  override def relativize(base: IRI) = this
+}
 
 
 sealed trait LanguageStemRangeValue
@@ -64,9 +94,13 @@ sealed trait LanguageExclusion
 case class LanguageTagExclusion(lang: Lang) extends LanguageExclusion
 case class LanguageStemExclusion(languageStem: LanguageStem) extends LanguageExclusion
 
-case class LiteralStem(stem: String) extends ValueSetValue
+case class LiteralStem(stem: String) extends ValueSetValue {
+  override def relativize(base: IRI) = this
+}
 case class LiteralStemRange(stem: LiteralStemRangeValue,
-                            exclusions: Option[List[LiteralExclusion]]) extends ValueSetValue
+                            exclusions: Option[List[LiteralExclusion]]) extends ValueSetValue {
+  override def relativize(base: IRI) = this
+}
 
 
 sealed trait LiteralStemRangeValue
@@ -77,4 +111,6 @@ sealed trait LiteralExclusion
 case class LiteralStringExclusion(str: String) extends LiteralExclusion
 case class LiteralStemExclusion(literalStem: LiteralStem) extends LiteralExclusion
 
-case class Language(languageTag: Lang) extends ValueSetValue
+case class Language(languageTag: Lang) extends ValueSetValue {
+  override def relativize(base: IRI) = this
+}

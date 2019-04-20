@@ -47,7 +47,7 @@ class SchemaParseShowEqualsCompatTest extends FunSpec with JsonTest with Matcher
       strSchema <- getContents(file)
       schema <- Schema.fromString(strSchema).leftMap(e => s"Error obtainning Schema from string: $e\nString:\n${strSchema}")
       jsonEncoded = schema.asJson
-      schemaShown <- Schema.serialize(schema,"ShExC",RDFAsJenaModel.empty)
+      schemaShown <- Schema.serialize(schema,"ShExC",None, RDFAsJenaModel.empty)
 //      _ <- { println(s"SchemaShown: $schemaShown"); Right(()) }
       newSchemaParsed <- Schema.fromString(schemaShown).leftMap(e =>
         s"Error parsing schema serialized: $e\nSchema serialized: \n$schemaShown\nOriginal schema:\n$strSchema\nInternal schema: ${schema}")

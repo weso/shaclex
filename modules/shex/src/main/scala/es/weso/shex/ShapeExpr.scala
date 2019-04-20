@@ -50,8 +50,8 @@ case class ShapeOr(id: Option[ShapeLabel],
   override def relativize(base: IRI): ShapeOr = ShapeOr(
     id.map(_.relativize(base)),
     shapeExprs.map(_.relativize(base)),
-    annotations,
-    actions
+    annotations.map(_.map(_.relativize(base))),
+    actions.map(_.map(_.relativize(base)))
   )
 }
 
@@ -80,8 +80,8 @@ case class ShapeAnd(id: Option[ShapeLabel],
   override def relativize(base: IRI): ShapeAnd = ShapeAnd(
     id.map(_.relativize(base)),
     shapeExprs.map(_.relativize(base)),
-    annotations,
-    actions
+    annotations.map(_.map(_.relativize(base))),
+    actions.map(_.map(_.relativize(base)))
   )
 }
 
@@ -111,8 +111,8 @@ case class ShapeNot(id: Option[ShapeLabel],
   override def relativize(base: IRI): ShapeNot = ShapeNot(
     id.map(_.relativize(base)),
     shapeExpr.relativize(base),
-    annotations,
-    actions
+    annotations.map(_.map(_.relativize(base))),
+    actions.map(_.map(_.relativize(base)))
   )
 
 }
@@ -150,11 +150,11 @@ case class NodeConstraint(
     NodeConstraint(
       id.map(_.relativize(base)),
       nodeKind,
-      datatype,
+      datatype.map(_.relativizeIRI(base)),
       xsFacets,
-      values,
-      annotations,
-      actions
+      values.map(_.map(_.relativize(base))),
+      annotations.map(_.map(_.relativize(base))),
+      actions.map(_.map(_.relativize(base)))
     )
 
 }
@@ -285,11 +285,11 @@ case class Shape(
       id.map(_.relativize(base)),
       virtual,
       closed,
-      extra,
-      expression,
-      _extends,
-      annotations,
-      actions
+      extra.map(_.map(_.relativizeIRI(base))),
+      expression.map(_.relativize(base)),
+      _extends.map(_.map(_.relativize(base))),
+      annotations.map(_.map(_.relativize(base))),
+      actions.map(_.map(_.relativize(base)))
     )
 
 }
@@ -342,7 +342,11 @@ case class ShapeRef(reference: ShapeLabel,
   override def getShapeRefs(s: Schema) = List(reference)
 
   override def relativize(base: IRI): ShapeRef =
-    ShapeRef(reference.relativize(base), annotations, actions)
+    ShapeRef(
+      reference.relativize(base),
+      annotations.map(_.map(_.relativize(base))),
+      actions.map(_.map(_.relativize(base)))
+    )
 
 }
 
@@ -362,7 +366,11 @@ case class ShapeExternal(id: Option[ShapeLabel],
   override def getShapeRefs (schema: Schema) =  List()
 
   override def relativize(base: IRI): ShapeExternal =
-    ShapeExternal(id.map(_.relativize(base)), annotations, actions)
+    ShapeExternal(
+      id.map(_.relativize(base)),
+      annotations.map(_.map(_.relativize(base))),
+      actions.map(_.map(_.relativize(base)))
+    )
 
 }
 

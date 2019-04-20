@@ -27,11 +27,14 @@ case class EachOf( id: Option[ShapeLabel],
   override def getShapeRefs (schema: Schema) = expressions.map(_.getShapeRefs(schema)).flatten
 
   override def relativize(base: IRI): EachOf =
-    EachOf(id.map(_.relativize(base)), expressions.map(_.relativize(base)),
+    EachOf(
+      id.map(_.relativize(base)),
+      expressions.map(_.relativize(base)),
       optMin,
       optMax,
-      semActs,
-      annotations)
+      semActs.map(_.map(_.relativize(base))),
+      annotations.map(_.map(_.relativize(base)))
+    )
 }
 
 object EachOf {
@@ -54,11 +57,13 @@ case class OneOf(
   override def getShapeRefs (schema: Schema) = expressions.map(_.getShapeRefs(schema)).flatten
 
   override def relativize(base: IRI): OneOf =
-    OneOf(id.map(_.relativize(base)), expressions.map(_.relativize(base)),
+    OneOf(id.map(_.relativize(base)),
+      expressions.map(_.relativize(base)),
       optMin,
       optMax,
-      semActs,
-      annotations)
+      semActs.map(_.map(_.relativize(base))),
+      annotations.map(_.map(_.relativize(base)))
+    )
 }
 
 object OneOf {
@@ -111,7 +116,8 @@ case class TripleConstraint(
   override def getShapeRefs(schema: Schema) = valueExpr.map(_.getShapeRefs(schema)).getOrElse(List())
 
   override def relativize(base: IRI): TripleConstraint =
-    TripleConstraint(id.map(_.relativize(base)),
+    TripleConstraint(
+      id.map(_.relativize(base)),
       optInverse,
       optNegated,
       predicate.relativizeIRI(base),
@@ -119,8 +125,8 @@ case class TripleConstraint(
       optMin,
       optMax,
       optVariableDecl,
-      semActs,
-      annotations
+      semActs.map(_.map(_.relativize(base))),
+      annotations.map(_.map(_.relativize(base)))
     )
 }
 

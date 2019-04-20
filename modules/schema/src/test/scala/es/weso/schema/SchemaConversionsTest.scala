@@ -167,7 +167,7 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
       schema       <- Schemas.fromString(str, format, engine, None).
         leftMap(e => s"Error reading Schema ($format/$engine): $str\nError: $e")
       _ <- { info(s"str:\n$str, format: $format, engine: $engine\nSchema: $schema)"); Right(())}
-      strConverted <- schema.convert(Some(targetFormat), Some(targetEngine)).
+      strConverted <- schema.convert(Some(targetFormat), Some(targetEngine),None).
         leftMap(e => s"Error converting schema(${schema.name}) to ($targetFormat/$targetEngine\n$e")
       _ <- { info(s"strConverted:\n$strConverted\ntargetFormat: $targetFormat, targetEngine: $targetEngine"); Right(())}
       result       <- compare(strConverted, expected).
@@ -209,9 +209,9 @@ class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
     schema2 <- Schemas.fromString(s2,"ShExC","ShEx",None).
       leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
     _ <- { info(s"Schema2: $schema2"); Right(()) }
-    json1 <- schema1.convert(Some("ShExJ"),Some("ShEx")).leftMap(e => s"Error converting schema1 to ShEx/ShExJ: $e\n$schema1")
+    json1 <- schema1.convert(Some("ShExJ"),Some("ShEx"),None).leftMap(e => s"Error converting schema1 to ShEx/ShExJ: $e\n$schema1")
     _ <- { info(s"Json1: $json1"); Right(()) }
-    json2 <- schema2.convert(Some("ShExJ"),Some("ShEx")).leftMap(e => s"Error converting schema2 to ShEx/ShExJ: $e\n$schema2")
+    json2 <- schema2.convert(Some("ShExJ"),Some("ShEx"),None).leftMap(e => s"Error converting schema2 to ShEx/ShExJ: $e\n$schema2")
     _ <- { info(s"Json2: $json2"); Right(()) }
     b <- jsonCompare(json1,json2)
   } yield b

@@ -10,7 +10,8 @@ import es.weso.shex.{ShapeLabel, ShExError}
 import io.circe.Json
 import es.weso.shex.shexR.PREFIXES.sx_start
 
-case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends LazyLogging {
+case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]
+                      ) extends LazyLogging {
 
   def getOkValues(node: RDFNode): Set[ShapeType] =
     t.getOkValues(node)
@@ -23,15 +24,15 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends
     hasType(node, label) || hasNoType(node, label)
 
   def hasType(node: RDFNode, label: ShapeLabel): Boolean = {
-    !getOkValues(node).filter(_.hasLabel(label)).isEmpty
+    getOkValues(node).filter(_.hasLabel(label)).nonEmpty
   }
 
   def hasNoType(node: RDFNode, label: ShapeLabel): Boolean = {
-    !getFailedValues(node).filter(_.hasLabel(label)).isEmpty
+    getFailedValues(node).filter(_.hasLabel(label)).nonEmpty
   }
 
   def getTypingResult(node: RDFNode, label: ShapeLabel): Option[TypingResult[ShExError, String]] =
-    t.getMap.get(node).map(_.toList.filter(_._1.label == Some(label)).map(_._2).head)
+    t.getMap.get(node).map(_.toList.filter(_._1.label.contains(label)).map(_._2).head)
 
   def addType(node: RDFNode, shapeType: ShapeType): ShapeTyping = {
     this.copy(t = t.addType(node, shapeType))
@@ -46,7 +47,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends
   def getMap: Map[RDFNode, Map[ShapeType, TypingResult[ShExError, String]]] =
     t.getMap
 
-  override def toString = showShapeTyping
+  override def toString: String = showShapeTyping
 
   private def cnvShapeType(s: ShapeType): Either[String, ShapeMapLabel] = s.label match {
     case None => Left(s"Can't create Result shape map for a shape expression without label. ShapeExpr: ${s.shape}")
@@ -93,7 +94,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]) extends
       rm <- m
       ls <- typing2Labels(current._2)
     } yield
-      if (!ls.isEmpty) rm.addNodeAssociations(current._1, ls)
+      if (ls.nonEmpty) rm.addNodeAssociations(current._1, ls)
       else rm
     val zero: Either[String, ResultShapeMap] =
       Either.right(ResultShapeMap.empty.
