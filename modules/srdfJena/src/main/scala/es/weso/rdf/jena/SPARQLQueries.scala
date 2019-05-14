@@ -93,4 +93,27 @@ object SPARQLQueries {
        |}
          |""".stripMargin)
 
+  def queryShaclInstances(obj: IRI) = {
+    val s = obj.str
+    QueryFactory.create(
+      s"""|prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+          |prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          |
+          |select ?x where {
+          | ?x rdf:type/rdfs:subClassOf* <${s}> .
+          |}
+          |""".stripMargin)
+  }
+
+  def queryHasShaclClass(node: IRI, c: IRI) = {
+    QueryFactory.create(
+      s"""|prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+          |prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          |
+          |ask {
+          | <${node.str}> rdf:type/rdfs:subClassOf* <${c.str}> .
+          |}
+          |""".stripMargin)
+
+  }
 }

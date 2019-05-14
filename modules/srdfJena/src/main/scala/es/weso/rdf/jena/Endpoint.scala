@@ -74,12 +74,21 @@ case class Endpoint(endpointIRI: IRI)
     resultSet.asScala.map(qs => IRI(qs.get("y").asResource.getURI)).toSet
   }
 
-  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] = {
-    Left(s"getSHACLInstances: Not implemented at Endpoint, node $c")
+  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] = c match {
+   case iri: IRI => {
+     val resultSet = QueryExecutionFactory.sparqlService(endpoint, queryShaclInstances(iri)).execSelect()
+     Right(resultSet.asScala.map(qs => IRI(qs.get("p").asResource.getURI)).toSeq)
+   }
+   case l: Literal => Right(Seq())
+   case bn => Left(s"getSHACLInstances not implemented for blank node $c on endpoint ${endpoint}")
   }
 
-  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String, Boolean] = {
-    Left(s"hasSHACLClass: Not implemented at Endpoint. Node: $n Class: $c")
+  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String, Boolean] = (n,c) match {
+    case (iriN: IRI, iriC: IRI) => {
+      val b = QueryExecutionFactory.sparqlService(endpoint, queryHasShaclClass(iriN,iriC)).execAsk()
+      Right(b)
+   }
+    case _ => Right(false)
   }
 
   override def nodesWithPath(p: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]] = {
