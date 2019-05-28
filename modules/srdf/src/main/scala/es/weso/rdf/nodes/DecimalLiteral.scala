@@ -15,7 +15,7 @@ case class DecimalLiteral(decimal: BigDecimal, repr: String = null) extends Lite
 
   def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
     case IntegerLiteral(n, _) => Right(n == decimal)
-    case DoubleLiteral(d, r) => Right(if (r == null) (d == decimal) else (r == repr))
+    case DoubleLiteral(d, r)  => Right(if (r != null && repr != null) r == repr else d == decimal)
     case DecimalLiteral(d, _) => Right(d == decimal)
     case _ => Left(s"Type error comparing $this with $other")
   }

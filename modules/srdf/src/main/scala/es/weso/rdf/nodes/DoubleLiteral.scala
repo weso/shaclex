@@ -15,7 +15,7 @@ case class DoubleLiteral(double: Double, repr: String = null) extends Literal {
 
   def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
     case IntegerLiteral(n, _) => Right(n == double)
-    case DoubleLiteral(d, r) => Right(if (r == null) (d == double) else (r == repr))
+    case DoubleLiteral(d, r) => Right(if (r!=null && repr != null) r == repr else d == double)
     case DecimalLiteral(d, _) => Right(d == double)
     case _ => Left(s"Type error comparing $this with $other")
   }

@@ -1,26 +1,21 @@
 package es.weso.rdf.jena
 
 // TODO: Refactor this code
-import org.apache.jena.rdf.model.{
-  AnonId,
-  ModelFactory,
-  Property,
-  Resource => JenaResource,
-  Statement,
-  Model => JenaModel,
-  Literal => JenaLiteral,
-  RDFNode => JenaRDFNode
-}
+import org.apache.jena.rdf.model.{AnonId, ModelFactory, Property, Statement, Literal => JenaLiteral, Model => JenaModel, RDFNode => JenaRDFNode, Resource => JenaResource}
 import es.weso.rdf.nodes._
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import es.weso.rdf.triples.RDFTriple
+
 import scala.collection.JavaConverters._
 import com.typesafe.scalalogging._
 import es.weso.rdf.path._
+import es.weso.utils.EitherUtils
 import org.apache.jena.sparql.path._
+
 import util._
 import es.weso.utils.EitherUtils._
+import org.apache.jena.query.{QuerySolution, QuerySolutionMap, ResultSet}
 
 object JenaMapper {
 
@@ -286,6 +281,20 @@ object JenaMapper {
       }
       case _ => Right(false)
     }
+  }
+
+  def resultSet2Map(rs: ResultSet): Either[String, List[Map[String,RDFNode]]] = {
+    var r: Either[String, Set[Map[String,RDFNode]]] = Right(Set())
+    EitherUtils.sequence(rs.asScala.toList.map(querySolution2Map(_)))
+  }
+
+  def querySolution2Map(qs: QuerySolution): Either[String, Map[String,RDFNode]] = {
+    var r: Either[String,Map[String, RDFNode]] = Right(Map())
+    qs.varNames.forEachRemaining(x => for {
+      node <- jenaNode2RDFNode(qs.get(x))
+      } yield r = r.map(_.updated(x, node))
+    )
+    r
   }
 
 }

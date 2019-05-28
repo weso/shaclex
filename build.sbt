@@ -31,7 +31,7 @@ lazy val commonsTextVersion    = "1.2"
 lazy val circeVersion          = "0.11.1"
 lazy val diffsonVersion        = "2.2.5"
 lazy val effVersion            = "4.6.1"
-lazy val jenaVersion           = "3.6.0"
+lazy val jenaVersion           = "3.11.0"
 lazy val jgraphtVersion        = "1.2.0"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.7.2"
@@ -66,6 +66,7 @@ lazy val eff               = "org.atnos"                  %% "eff"              
 lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
@@ -299,6 +300,7 @@ lazy val srdfJena = project
       logbackClassic % Test,
       scalaLogging,
       typesafeConfig % Test,
+      jenaFuseki % Test,
       jenaArq,
       catsCore,
       catsKernel,

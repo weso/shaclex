@@ -5,9 +5,7 @@ import org.apache.jena.sparql.syntax.ElementPathBlock
 import org.apache.jena.riot.system.IRIResolver
 import java.io.ByteArrayInputStream
 
-import org.apache.jena.query.Query
-import org.apache.jena.query.QueryExecutionFactory
-import org.apache.jena.query.QueryFactory
+import org.apache.jena.query.{Query, QueryExecutionFactory, QueryFactory, QuerySolution, ResultSet}
 import java.io.StringWriter
 import java.net.URI
 import java.net.URL
@@ -16,7 +14,6 @@ import java.io.FileOutputStream
 
 import org.apache.jena.atlas.AtlasException
 import org.apache.jena.riot.RiotException
-import org.apache.jena.query.ResultSet
 
 import scala.collection.JavaConverters._
 import org.apache.jena.reasoner.ReasonerRegistry
@@ -27,6 +24,7 @@ import org.apache.jena.util.{FileUtils => FileJenaUtils}
 import scala.annotation.tailrec
 import scala.util.Try
 import cats.syntax.either._
+import org.apache.jena.shared.PrefixMapping
 
 object JenaUtils {
 
@@ -492,7 +490,7 @@ object JenaUtils {
 
   def relativizeModel(m: Model, base: Option[URI]):Model = {
     val r: Model = ModelFactory.createDefaultModel()
-    r.setNsPrefixes(m.getNsPrefixMap)
+    r.setNsPrefixes(m.asInstanceOf[PrefixMapping])
     for (s <- m.listStatements().asScala) {
       val subj = relativizeResource(m, s.getSubject, base)
       val prop = relativizeProperty(r, s.getPredicate,base)
@@ -501,4 +499,5 @@ object JenaUtils {
     }
     r
   }
+
 }

@@ -6,6 +6,8 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.rdf.jena._
 import es.weso.rdf.triples.RDFTriple
+import org.apache.jena.query.{ResultSet, ResultSetFactory}
+import org.apache.jena.sparql.engine.QueryIterator
 
 class JenaMapperTest
   extends FunSpec

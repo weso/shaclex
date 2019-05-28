@@ -15,7 +15,8 @@ case class IntegerLiteral(int: Int, repr: String = null) extends Literal {
   override def getLexicalForm = lexicalForm
 
   def isEqualTo(other: RDFNode): Either[String,Boolean] = other match {
-    case IntegerLiteral(d, r) => Right(if (r == null) (d == int) else (r == repr))
+    case IntegerLiteral(d, r) =>
+      Right (if (r != null && repr != null) r == repr else d == int)
     case _ => Right(false)
   }
 
