@@ -2,6 +2,7 @@ package es.weso.rdf.jena
 
 import org.apache.jena.query._
 import es.weso.rdf.nodes._
+import es.weso.rdf.path.SHACLPath
 
 object SPARQLQueries {
 
@@ -114,6 +115,30 @@ object SPARQLQueries {
           | <${node.str}> rdf:type/rdfs:subClassOf* <${c.str}> .
           |}
           |""".stripMargin)
-
   }
+
+  def queryPath(p: SHACLPath) = {
+    QueryFactory.create(
+      s"""|select ?x ?y {
+          | ?x ${JenaMapper.shaclPath2JenaPath(p)} ?y .
+          |}
+          |""".stripMargin)
+  }
+
+  def querySubjectsWithPath(iri: IRI, p: SHACLPath) = {
+    QueryFactory.create(
+      s"""|select ?x {
+          | ?x ${JenaMapper.shaclPath2JenaPath(p)} <${iri.str}> .
+          |}
+          |""".stripMargin)
+  }
+
+  def queryObjectsWithPath(iri: IRI, p: SHACLPath) = {
+    QueryFactory.create(
+      s"""|select ?x {
+          | <${iri.str}> ${JenaMapper.shaclPath2JenaPath(p)} ?x .
+          |}
+          |""".stripMargin)
+  }
+
 }

@@ -12,7 +12,8 @@ object RDF2Dot {
 
   type Label = String
   type HRef = String
-  type Converter[A] = State[DotGraph, A]
+  type S[A] = State[DotGraph, A]
+  type Converter[A] = EitherT[S,String,A]
 
   def rdfTriple2Edge(t: RDFTriple, pm: PrefixMap): Converter[Edge] = for {
     n1 <- rdfNode2Node(t.subj, pm)
@@ -31,11 +32,12 @@ object RDF2Dot {
     _ <- setGraph(g1)
   } yield n
 
-  def getGraph: Converter[DotGraph] = StateT.get
-  def setGraph(g: DotGraph): Converter[Unit] = StateT.set(g)
-  def ok[A](x:A): Converter[A] = StateT.pure(x)
+  def getGraph: Converter[DotGraph] = EitherT.liftF[S,String,DotGraph](StateT.get)
+  def setGraph(g: DotGraph): Converter[Unit] = EitherT.liftF[S,String,Unit](StateT.set(g))
+  def ok[A](x:A): Converter[A] = EitherT.liftF(StateT.pure(x))
+  def err[A](s: String): Converter[A] = EitherT.fromEither(s.asLeft[A])
 
-  def rdf2dot(rdf: RDFReader): DotGraph = {
+  def rdf2dot(rdf: RDFReader): Either[String,DotGraph] = {
     val pm = rdf.getPrefixMap()
     def cmb(u:Unit, t: RDFTriple): Converter[Unit] = for {
       edge <- rdfTriple2Edge(t, pm)
@@ -43,7 +45,12 @@ object RDF2Dot {
       g1 = g.addEdge(edge)
       _ <- setGraph(g1)
     } yield ()
-    rdf.rdfTriples.toList.foldM(())(cmb).run(DotGraph.empty).value._1
+
+    for {
+      ts <- rdf.rdfTriples
+    } yield {
+      ts.toList.foldM(())(cmb).value.run(DotGraph.empty).value._1
+    }
   }
 
 }

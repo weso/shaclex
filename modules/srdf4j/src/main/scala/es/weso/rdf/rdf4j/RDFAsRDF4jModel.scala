@@ -75,18 +75,18 @@ case class RDFAsRDF4jModel(model: Model,
   } */
 
   // TODO: this implementation only returns subjects
-  override def iris(): Set[IRI] = {
+  override def iris(): Either[String,Set[IRI]] = {
     val resources: Set[Resource] = model.subjects().asScala.toSet
-    resources.filter(_.isInstanceOf[IRI_RDF4j]).map(_.asInstanceOf[IRI_RDF4j].toString).map(IRI(_))
+    Right(resources.filter(_.isInstanceOf[IRI_RDF4j]).map(_.asInstanceOf[IRI_RDF4j].toString).map(IRI(_)))
   }
 
-  override def subjects(): Set[RDFNode] = {
+  override def subjects(): Either[String,Set[RDFNode]] = {
     val resources: Set[Resource] = model.subjects().asScala.toSet
-    resources.map(r => resource2RDFNode(r))
+    Right(resources.map(r => resource2RDFNode(r)))
   }
 
-  override def rdfTriples(): Set[RDFTriple] = {
-    model.asScala.toSet.map(statement2RDFTriple(_))
+  override def rdfTriples(): Either[String,Set[RDFTriple]] = {
+    Right(model.asScala.toSet.map(statement2RDFTriple(_)))
   }
 
   override def triplesWithSubject(node: RDFNode): Either[String,Set[RDFTriple]] =
@@ -243,8 +243,12 @@ case class RDFAsRDF4jModel(model: Model,
         rdf1 <- next
         rdf2 <- rdf1.addTriple(x)
       } yield rdf2
-      other.rdfTriples.foldLeft(zero)(cmb)
-    }
+
+      for {
+       ts <- other.rdfTriples()
+       rdf <- ts.foldLeft(zero)(cmb)
+      } yield rdf
+   }
   }
 
   override def extendImports():Either[String, Rdf] = for {

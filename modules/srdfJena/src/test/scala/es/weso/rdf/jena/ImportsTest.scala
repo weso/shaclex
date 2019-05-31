@@ -16,11 +16,13 @@ class ImportsTest extends FunSpec with JenaBased with Matchers with EitherValues
     it(s"Should read merged file") {
     val r = for {
       rdf1 <- RDFAsJenaModel.fromIRI(rdfFolder + "/merged.ttl")
-    } yield rdf1
+      iris <- rdf1.iris
+    } yield (rdf1,iris)
 
-    r.fold(e => fail(s"Error: $e"), rdf => {
-      info(s"RDF read: ${rdf.iris}")
-      rdf.iris.size should be(1)
+    r.fold(e => fail(s"Error: $e"), t => {
+      val (rdf,iris) = t
+      info(s"RDF read: ${iris}")
+      iris.size should be(1)
     })
     }
 
@@ -65,10 +67,12 @@ class ImportsTest extends FunSpec with JenaBased with Matchers with EitherValues
       val r = for {
         rdf1     <- RDFAsJenaModel.fromIRI(rdfFolder + "/testImportWithLoop.ttl")
         extended <- rdf1.extendImports()
-      } yield (rdf1,extended)
+        ts <- rdf1.rdfTriples
+        tse <- extended.rdfTriples
+      } yield (rdf1,extended,ts,tse)
       r.fold(e => fail(s"Error: $e"), values => {
-        val (rdf1,extended) = values
-        rdf1.rdfTriples.size should be(extended.rdfTriples.size)
+        val (rdf1,extended,ts,tse) = values
+        ts.size should be(tse.size)
       })
     }
 
@@ -79,10 +83,12 @@ class ImportsTest extends FunSpec with JenaBased with Matchers with EitherValues
             |<> owl:imports <...some IRI?...>
             |""".stripMargin,"Turtle",None)
         extended <- rdf1.extendImports()
-      } yield (rdf1,extended)
+        ts1 <- rdf1.rdfTriples()
+        tse <- extended.rdfTriples()
+      } yield (rdf1,extended,ts1,tse)
       r.fold(e => fail(s"Error: $e"), values => {
-        val (rdf1,extended) = values
-        rdf1.rdfTriples.size should be(extended.rdfTriples.size)
+        val (rdf1,extended,ts1,tse) = values
+        ts1.size should be(tse.size)
       })
     }
 

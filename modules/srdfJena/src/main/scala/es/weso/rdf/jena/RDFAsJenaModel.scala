@@ -9,10 +9,7 @@ import scala.util.Try
 import es.weso.rdf._
 import org.apache.jena.rdf.model.{Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
-import org.apache.jena.riot.{
-  Lang => JenaLang,
-  _
-}
+import org.apache.jena.riot._
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.lang._
 import scala.util._
@@ -105,18 +102,18 @@ case class RDFAsJenaModel(model: Model,
   } */
 
   // TODO: this implementation only returns subjects
-  override def iris(): Set[IRI] = {
+  override def iris(): Either[String,Set[IRI]] = {
     val resources: Set[Resource] = model.listSubjects().asScala.toSet
-    resources.filter(s => s.isURIResource).map(r => IRI(r.getURI))
+    Right(resources.filter(s => s.isURIResource).map(r => IRI(r.getURI)))
   }
 
-  override def subjects(): Set[RDFNode] = {
+  override def subjects(): Either[String,Set[RDFNode]] = {
     val resources: Set[Resource] = model.listSubjects().asScala.toSet
-    resources.map(r => jenaNode2RDFNodeUnsafe(r))
+    Right(resources.map(r => jenaNode2RDFNodeUnsafe(r)))
   }
 
-  override def rdfTriples(): Set[RDFTriple] = {
-    model2triples(model)
+  override def rdfTriples(): Either[String, Set[RDFTriple]] = {
+    Right(model2triples(model))
   }
 
   override def triplesWithSubject(node: RDFNode): Either[String, Set[RDFTriple]] = node match {
@@ -401,7 +398,10 @@ case class RDFAsJenaModel(model: Model,
         rdf1 <- next
         rdf2 <- rdf1.addTriple(x)
       } yield rdf2
-      other.rdfTriples.foldLeft(zero)(cmb)
+      for {
+       ts <- other.rdfTriples
+       rdf <- ts.foldLeft(zero)(cmb)
+      } yield rdf
     }
   }
 

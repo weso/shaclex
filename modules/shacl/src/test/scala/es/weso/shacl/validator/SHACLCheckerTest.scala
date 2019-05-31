@@ -2,8 +2,8 @@ package es.weso.shacl.validator
 
 import org.scalatest._
 import SHACLChecker._
-import cats._
-import cats.implicits._
+// import cats._
+// import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._

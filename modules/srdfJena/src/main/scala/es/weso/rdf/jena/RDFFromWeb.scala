@@ -42,8 +42,8 @@ case class RDFFromWeb() extends RDFReader {
     Left(s"Cannot serialize RDFFromWeb")
   }
 
-  override def rdfTriples(): Set[RDFTriple] = {
-    throw new Exception("Cannot obtain triples from RDFFromWeb ")
+  override def rdfTriples(): Either[String,Set[RDFTriple]] = {
+    Left("Cannot obtain triples from RDFFromWeb ")
   }
 
   override def triplesWithSubject(node: RDFNode): Either[String, Set[RDFTriple]] =

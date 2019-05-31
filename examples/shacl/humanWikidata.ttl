@@ -1,0 +1,16 @@
+prefix : <http://example.org/>
+prefix sh: <http://www.w3.org/ns/shacl#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+:Human a sh:NodeShape ;
+  sh:targetNode wd:Q80 ;
+  sh:property :InstanceHuman .
+
+:InstanceHuman a sh:PropertyShape ;
+ sh:path wdt:P31 ;
+ sh:minCount 1 ;
+ sh:hasValue wd:Q5 .
+

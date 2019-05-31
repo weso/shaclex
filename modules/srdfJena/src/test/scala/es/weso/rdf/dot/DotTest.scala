@@ -7,30 +7,33 @@ class DotTest extends FunSpec with Matchers {
 
   describe("Dot") {
     it("Should generate from example") {
-      RDFAsJenaModel
-        .fromChars(
-          """|prefix : <http://example.org/>
-           |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
-           |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-           |
-           |:x :a 1, :y, _:1 .
-           |:x :b ("a" "b") .
-           |:y :b "Hi" .
-           |:z :c "Hola"@es .
-           |:z :c "1984"^^<xsd:year> .
-           |_:1 :a :z .
-           |:z :a :x .
-        """.stripMargin,
-          "TURTLE",
-          None
-        )
-        .fold(
+      val e = for {
+        rdf <- RDFAsJenaModel.fromChars(
+            """|prefix : <http://example.org/>
+               |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+               |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+               |
+               |:x :a 1, :y, _:1 .
+               |:x :b ("a" "b") .
+               |:y :b "Hi" .
+               |:z :c "Hola"@es .
+               |:z :c "1984"^^<xsd:year> .
+               |_:1 :a :z .
+               |:z :a :x .
+            """.stripMargin,
+            "TURTLE",
+            None
+          )
+       ts <- rdf.rdfTriples
+       dot <-RDF2Dot.rdf2dot(rdf)
+      } yield (rdf,ts,dot)
+      e.fold(
           e => fail(s"Error: $e"),
-          rdf => {
+        tuple => {
+            val (rdf,ts,dot) = tuple
             println(s"RDF model: ${rdf.model}")
-            println(s"RDF parsed: ${rdf.rdfTriples().size}")
-            val dot = RDF2Dot.rdf2dot(rdf)
-            println(s"Size of triples: ${rdf.rdfTriples().size}")
+            println(s"RDF parsed: ${ts.size}")
+            println(s"Size of triples: ${ts.size}")
             println(s"Dot generated: $dot")
             dot.edges.size should be(13)
           }

@@ -1,7 +1,7 @@
 package es.weso.rdf.jena
 
 // TODO: Refactor this code
-import org.apache.jena.rdf.model.{AnonId, ModelFactory, Property, Statement, Literal => JenaLiteral, Model => JenaModel, RDFNode => JenaRDFNode, Resource => JenaResource}
+import org.apache.jena.rdf.model.{AnonId, ModelFactory, Property, ResourceFactory, Statement, Literal => JenaLiteral, Model => JenaModel, RDFNode => JenaRDFNode, Resource => JenaResource}
 import es.weso.rdf.nodes._
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
@@ -15,7 +15,7 @@ import org.apache.jena.sparql.path._
 
 import util._
 import es.weso.utils.EitherUtils._
-import org.apache.jena.query.{QuerySolution, QuerySolutionMap, ResultSet}
+import org.apache.jena.query._
 
 object JenaMapper {
 
@@ -145,6 +145,7 @@ object JenaMapper {
   }
 
   def property2IRI(p: Property): IRI = IRI(p.getURI)
+  def iri2Property(iri: IRI): Property = ResourceFactory.createProperty(iri.str)
 
   def createResource(m: JenaModel, node: RDFNode, base: Option[IRI]): JenaResource = {
     node match {
@@ -284,7 +285,7 @@ object JenaMapper {
   }
 
   def resultSet2Map(rs: ResultSet): Either[String, List[Map[String,RDFNode]]] = {
-    var r: Either[String, Set[Map[String,RDFNode]]] = Right(Set())
+    // var r: Either[String, Set[Map[String,RDFNode]]] = Right(Set())
     EitherUtils.sequence(rs.asScala.toList.map(querySolution2Map(_)))
   }
 
@@ -295,6 +296,19 @@ object JenaMapper {
       } yield r = r.map(_.updated(x, node))
     )
     r
+  }
+
+  def shaclPath2JenaPath(p: SHACLPath): Path = {
+    import org.apache.jena.sparql.path.PathFactory._
+    p match {
+      case PredicatePath(iri) => pathLink(iri2Property(iri).asNode)
+      case InversePath(p) => pathInverse(shaclPath2JenaPath(p))
+      case SequencePath(ps) => ps.map(shaclPath2JenaPath(_)).reduce(pathSeq(_,_))
+      case AlternativePath(ps) => ps.map(shaclPath2JenaPath(_)).reduce(pathAlt(_,_))
+      case ZeroOrMorePath(p) => pathZeroOrMore1(shaclPath2JenaPath(p))
+      case ZeroOrOnePath(p) => pathZeroOrOne(shaclPath2JenaPath(p))
+      case OneOrMorePath(p) => pathOneOrMore1(shaclPath2JenaPath(p))
+    }
   }
 
 }

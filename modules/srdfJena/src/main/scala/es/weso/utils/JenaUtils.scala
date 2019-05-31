@@ -490,7 +490,7 @@ object JenaUtils {
 
   def relativizeModel(m: Model, base: Option[URI]):Model = {
     val r: Model = ModelFactory.createDefaultModel()
-    r.setNsPrefixes(m.asInstanceOf[PrefixMapping])
+    r.setNsPrefixes(m)
     for (s <- m.listStatements().asScala) {
       val subj = relativizeResource(m, s.getSubject, base)
       val prop = relativizeProperty(r, s.getPredicate,base)

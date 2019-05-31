@@ -3,7 +3,7 @@ package es.weso.shacl
 import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf._
+// import es.weso.rdf._
 
 import util._
 import es.weso.rdf.path.PredicatePath
@@ -35,8 +35,8 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
           val x = ex + "x"
           val y = ex + "y"
           val z = ex + "z"
-          val s = Shape.empty(S).copy(targets = Seq(TargetNode(y), TargetNode(x)))
-          val t = Shape.empty(S).copy(targets = Seq(TargetNode(z)))
+   //       val s = Shape.empty(S).copy(targets = Seq(TargetNode(y), TargetNode(x)))
+   //       val t = Shape.empty(S).copy(targets = Seq(TargetNode(z)))
           val targetNodes = Validator(schema).targetNodes.map { case (node, shape) => (node, shape.id) }
           targetNodes.size should be(3)
           targetNodes should contain only ((x, S), (y, S), (z, T))
@@ -70,10 +70,10 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
       val PS = ex + "PS"
       val p = ex + "p"
       val x = ex + "x"
-      val good1 = ex + "good1"
-      val good2 = ex + "good2"
-      val bad1 = ex + "bad1"
-      val ps = Shape.emptyPropertyShape(PS, PredicatePath(p)).copy(components = List(MinCount(1)))
+     // val good1 = ex + "good1"
+     // val good2 = ex + "good2"
+     // val bad1 = ex + "bad1"
+     // val ps = Shape.emptyPropertyShape(PS, PredicatePath(p)).copy(components = List(MinCount(1)))
       val psRefs = Seq(RefNode(PS))
       val s = Shape.empty(S).copy(
         targets = Seq(TargetNode(x)),
@@ -92,8 +92,8 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
                 |:x :p 1 .
                 |""".stripMargin
       val rdf = RDFAsJenaModel.fromChars(str, "TURTLE").right.get
-      val x = ex + "x"
-      val p = ex + "p"
+     // val x = ex + "x"
+     //  val p = ex + "p"
       val validator = Validator(Schema.empty)
       val checked = validator.validateAll(rdf)
       checked.isOK should be(true)

@@ -5,6 +5,8 @@ import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES._
 import es.weso.rdf.path.SHACLPath
 import io.circe.Json
+import cats._
+import cats.data._
 import cats.implicits._
 
 /**
@@ -41,35 +43,35 @@ trait RDFReader {
   /**
    * Set of RDFTriples in a graph
    */
-  def rdfTriples(): Set[RDFTriple]
+  def rdfTriples(): Either[String,Set[RDFTriple]]
 
   /**
    * Returns the set of subjects that are IRIs in a graph
    */
-  def subjects(): Set[RDFNode] = {
-    rdfTriples.map(_.subj)
+  def subjects(): Either[String, Set[RDFNode]] = {
+    rdfTriples.map(_.map(_.subj))
   }
 
   /**
    * Returns the set of predicates
    */
-  def predicates(): Set[IRI] = {
-    rdfTriples.map(_.pred)
+  def predicates(): Either[String, Set[IRI]] = {
+    rdfTriples.map(_.map(_.pred))
   }
 
   /**
    * Returns the set of iriObjects that are IRIs in a graph
    */
   // TODO: Extend this to return all iriObjects: Seq[RDFNode]
-  def iriObjects(): Set[IRI] = {
-    rdfTriples.map(_.obj).collect { case i: IRI => i }
+  def iriObjects(): Either[String, Set[IRI]] = {
+    rdfTriples.map(_.map(_.obj).collect { case i: IRI => i })
   }
 
   /**
    * The set of all iri's available
    */
-  def iris(): Set[IRI] = {
-    rdfTriples.map(_.iris).flatten
+  def iris(): Either[String, Set[IRI]] = {
+    rdfTriples.map(_.map(_.iris).flatten)
   }
 
   /**

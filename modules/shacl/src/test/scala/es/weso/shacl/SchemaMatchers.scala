@@ -1,6 +1,6 @@
 package es.weso.shacl
 
-import org.scalatest._
+// import org.scalatest._
 import org.scalatest.matchers._
 import es.weso.rdf.nodes._
 
