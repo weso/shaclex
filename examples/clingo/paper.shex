@@ -1,0 +1,14 @@
+prefix :    <http://example.org/>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+	
+<User> IRI {
+ :name       xsd:string  ;
+ :age        xsd:integer? ;
+ :enrolledIn @<Course>+  ;
+ :knows      @<User>* ;
+ :birthPlace IRI ?               
+}
+<Course> {
+ :subject    xsd:string +      ;
+ :students   @<User> {1,20}
+}

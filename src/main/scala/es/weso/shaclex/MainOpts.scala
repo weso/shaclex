@@ -189,7 +189,6 @@ class MainOpts(arguments: Array[String],
     descr = "filename to save output schema",
     noshort = true)
 
-
   val outShapeMapFormat = opt[String](
     "outShapeMapFormat",
     default = Some(defaultShapeMapFormat),

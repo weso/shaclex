@@ -1,0 +1,21 @@
+@prefix :      <http://example.org/> .
+
+:cs102  :students  :bob ;
+        :subject   "Algebra" .
+
+:bob    :age         "None" ;
+        :birthPlace  :Oviedo ;
+        :enrolledIn  :cs102 ;
+        :name        "Robert" .
+
+:carol  :enrolledIn  :cs101 ;
+        :name        "Carol" .
+
+:cs101  :students  :alice , :carol ;
+        :subject   "Programming" .
+
+:alice  :age         23 ;
+        :birthPlace  :Oviedo ;
+        :enrolledIn  :cs101 ;
+        :knows       :carol ;
+        :name        "Alice" .
