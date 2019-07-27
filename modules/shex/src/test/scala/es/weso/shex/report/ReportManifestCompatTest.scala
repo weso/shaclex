@@ -180,7 +180,7 @@ class ReportManifestCompatTest extends FunSpec with Matchers with RDFParser {
         val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
         for {
           resultShapeMap <- Validator(schema, ExternalIRIResolver(fa.shapeExterns))
-            .validateShapeMap(data, shapeMap)
+            .validateShapeMap(data, shapeMap).toEitherS
           ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
             if (shouldValidate) Right(s"Focus $focus conforms to $lbl as expected")
             else Left(s"Focus $focus conforms to $lbl but should not" ++
@@ -217,7 +217,7 @@ class ReportManifestCompatTest extends FunSpec with Matchers with RDFParser {
           fixedShapeMap <- ShapeMap.fixShapeMap(sm, RDFAsJenaModel.empty, PrefixMap.empty, PrefixMap.empty)
           strData       <- derefUri(mkLocal(mr.data,schemasBase,validationFolderUri))
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", None)
-          resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
+          resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap).toEitherS
           jsonResult     <- JsonResult.fromJsonString(resultMapStr)
           result <- if (jsonResult.compare(resultShapeMap)) Right(s"Json results match resultShapeMap")
           else

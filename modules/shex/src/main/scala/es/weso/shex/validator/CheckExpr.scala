@@ -5,7 +5,9 @@ import cats.implicits._
 import es.weso.shex.{SemAct, ShapeExpr}
 
 private[validator] sealed trait CheckExpr
+
 private[validator] case class Pos(se: ShapeExpr, semActs: Option[List[SemAct]]) extends CheckExpr
+
 private[validator] case class Neg(se: ShapeExpr, semActs: Option[List[SemAct]]) extends CheckExpr
 
 private[validator] object CheckExpr {

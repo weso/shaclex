@@ -100,7 +100,7 @@ class ValidationFromManifestCompatTest extends FunSpec with Matchers with RDFPar
               case Some(focus) => {
                 val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
                 for {
-                  resultShapeMap <- Validator(schema, ExternalIRIResolver(shapeExternsResolved)).validateShapeMap(data, shapeMap)
+                  resultShapeMap <- Validator(schema, ExternalIRIResolver(shapeExternsResolved)).validateShapeMap(data, shapeMap).toEitherS
                   ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
                         Right(s"Focus $focus conforms to $lbl")
                 else Left(s"Focus $focus does not conform to shape $lbl\nResultMap:\n$resultShapeMap" ++
@@ -118,7 +118,7 @@ class ValidationFromManifestCompatTest extends FunSpec with Matchers with RDFPar
                     resultMapStr <- derefUri(resultIRI.uri)
                     sm <- ShapeMap.fromJson(smapStr)
                     fixedShapeMap <- ShapeMap.fixShapeMap(sm, manifestRdf, manifestRdf.getPrefixMap(),schema.prefixMap)
-                    resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
+                    resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap).toEitherS
                     jsonResult <- JsonResult.fromJsonString(resultMapStr)
                     result <- if (jsonResult.compare(resultShapeMap)) Right(s"Json results match resultShapeMap")
                     else Left(s"Json results are different. Expected: ${jsonResult.asJson.spaces2}\nObtained: ${resultShapeMap.toString}")
@@ -193,7 +193,7 @@ class ValidationFromManifestCompatTest extends FunSpec with Matchers with RDFPar
             case Some(focus) => {
               val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
               for {
-                resultShapeMap <- Validator(schema,ExternalIRIResolver(shapeExternsResolved)).validateShapeMap(data, shapeMap)
+                resultShapeMap <- Validator(schema,ExternalIRIResolver(shapeExternsResolved)).validateShapeMap(data, shapeMap).toEitherS
                 ok <- if (resultShapeMap.getNonConformantShapes(focus) contains lbl)
                        Right(s"Focus $focus does not conforms to $lbl as expected")
                 else
@@ -212,7 +212,7 @@ class ValidationFromManifestCompatTest extends FunSpec with Matchers with RDFPar
                  resultMapStr <- derefUri(resultIRI.uri)
                  sm <- ShapeMap.fromJson(smapStr)
                  fixedShapeMap <- ShapeMap.fixShapeMap(sm, manifestRdf,manifestRdf.getPrefixMap(),schema.prefixMap)
-                 resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
+                 resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap).toEitherS
                  jsonResult <- JsonResult.fromJsonString(resultMapStr)
                  result <- if (jsonResult.compare(resultShapeMap)) Right(s"Json results match resultShapeMap")
                  else Left(s"Json results are different. Expected: ${jsonResult.asJson.spaces2}\nObtained: ${resultShapeMap.toString}")

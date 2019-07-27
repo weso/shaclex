@@ -26,7 +26,7 @@ scalafmt: {
 
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
-lazy val catsVersion           = "1.6.0"
+lazy val catsVersion           = "2.0.0-M4"
 lazy val commonsTextVersion    = "1.2"
 lazy val circeVersion          = "0.11.1"
 lazy val diffsonVersion        = "2.2.5"

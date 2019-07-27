@@ -210,6 +210,9 @@ case class Shape(
                   annotations: Option[List[Annotation]],
                   actions: Option[List[SemAct]]
                 ) extends ShapeExpr with Extend {
+
+  def hasRepeatedProperties: Boolean = true // TODO
+  
   def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
@@ -234,7 +237,8 @@ case class Shape(
     getExtra == Shape.emptyExtra &&
     getExtend == Shape.emptyExtends &&
     getAnnotations == Shape.emptyAnnotations &&
-    getActions == Shape.emptySemActs
+    getActions == Shape.emptySemActs &&
+    expression == None
   }
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)

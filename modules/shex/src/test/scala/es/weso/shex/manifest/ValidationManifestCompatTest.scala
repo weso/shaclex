@@ -20,6 +20,7 @@ import es.weso.shex.manifest.ManifestPrefixes._
 import scala.io._
 import es.weso.shex.manifest.Utils._
 
+
 class ValidationManifestCompatTest extends ValidateManifest {
 
   // If the following variable is None, it runs all tests
@@ -130,7 +131,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
         val shapeMap = FixedShapeMap(Map(focus -> Map(lbl -> Info())), data.getPrefixMap, schema.prefixMap)
         for {
           resultShapeMap <- Validator(schema, ExternalIRIResolver(fa.shapeExterns))
-            .validateShapeMap(data, shapeMap)
+            .validateShapeMap(data, shapeMap).toEitherS
           ok <- if (resultShapeMap.getConformantShapes(focus) contains lbl)
             if (shouldValidate) Right(s"Focus $focus conforms to $lbl as expected")
             else Left(s"Focus $focus conforms to $lbl but should not" ++
@@ -171,7 +172,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
           dataUri = mkLocal(mr.data,schemasBase,shexFolderURI)
           strData        <- derefUri(dataUri)
           data           <- RDFAsJenaModel.fromChars(strData, "TURTLE", None)
-          resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap)
+          resultShapeMap <- Validator(schema).validateShapeMap(data, fixedShapeMap).toEitherS
           jsonResult     <- JsonResult.fromJsonString(resultMapStr)
           result <- if (jsonResult.compare(resultShapeMap)) Right(s"Json results match resultShapeMap")
           else

@@ -48,7 +48,7 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
 
   def validateTargetDecls(rdf: RDFReader): Result = {
     val r = validator.validateNodeDecls(rdf)
-    cnvResult(r, rdf)
+    cnvResult(r.toEitherS, rdf)
   }
 
   def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader): Result = r match {
@@ -68,13 +68,13 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
   def validateNodeShape(node: IRI, shape: String, rdf: RDFReader): Result = {
     val validator = Validator(schema)
     val r = validator.validateNodeShape(rdf, node, shape)
-    cnvResult(r, rdf)
+    cnvResult(r.toEitherS, rdf)
   }
 
   def validateNodeStart(node: IRI, rdf: RDFReader): Result = {
     val validator = Validator(schema)
     val r = validator.validateNodeStart(rdf, node)
-    cnvResult(r, rdf)
+    cnvResult(r.toEitherS, rdf)
   }
 
   def validateFixedShapeMap(fixedShapeMap: FixedShapeMap, rdf: RDFReader): Result = {
