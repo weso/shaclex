@@ -87,7 +87,7 @@ lazy val kindProjector       = "org.spire-math"       %% "kind-projector" % kind
 
 lazy val shaclex = project
   .in(file("."))
-  .enablePlugins(ScalaUnidocPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging)
+  .enablePlugins(ScalaUnidocPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging, LauncherJarPlugin)
   .disablePlugins(RevolverPlugin)
 //  .settings(
 //    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
