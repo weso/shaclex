@@ -44,7 +44,7 @@ trait ValidateManifest extends FunSpec with Matchers with TryValues with OptionV
     }
   }
 
-  def processEntry(e: Entry, name: String, manifestFolder: String): Unit = e match {
+  def processEntry(e: es.weso.shex.manifest.Entry, name: String, manifestFolder: String): Unit = e match {
     case r: RepresentationTest => {
       println(s"Entry: ${e}, name: $name")
       ()

@@ -52,7 +52,7 @@ class ShapeMapJsonTest extends FunSpec with Matchers with TryValues with OptionV
         case Left(str) => fail(s"Error encoding/decoding Json: $str")
         case Right((json1, json2)) =>
           if (json1 == json2) info(s"Encoded/decoded $str")
-          else fail(s"${json1.spaces2} != ${json2.spaces2}. Diff: ${JsonCompare.diff(json1, json2)}")
+          else fail(s"${json1.spaces2} != ${json2.spaces2}. Diff: ${JsonCompare.diffBasic(json1, json2)}")
       }
     }
 

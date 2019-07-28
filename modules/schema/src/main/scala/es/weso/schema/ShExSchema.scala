@@ -7,8 +7,8 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shapeMaps._
-import es.weso.shex.{Schema => Schema_, _}
-import es.weso.shex.validator._
+import es.weso.shex.{Schema => SchemaShEx, _}
+import es.weso.shex.validator.{Result => ResultShEx, _}
 import es.weso.shex._
 import es.weso.shex.converter.ShEx2Shacl
 import es.weso.shex.shexR._
@@ -16,7 +16,7 @@ import es.weso.slang.{SLang2Clingo, ShEx2SLang}
 
 import scala.util._
 
-case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
+case class ShExSchema(schema: SchemaShEx) extends es.weso.schema.Schema with LazyLogging
   with SLang2Clingo with ShEx2SLang {
   override def name = "ShEx"
 
@@ -116,8 +116,13 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
     ShExSchema.fromString(cs, format, base)
   }
 
-  override def fromRDF(rdf: RDFReader): Either[String, Schema] =
-    RDF2ShEx.rdf2Schema(rdf).map(ShExSchema(_))
+  override def fromRDF(rdf: RDFReader): Either[String, es.weso.schema.Schema] = {
+    val e: Either[String, SchemaShEx] = RDF2ShEx.rdf2Schema(rdf)
+    e.map(s => {
+      val schema: es.weso.schema.Schema = ShExSchema(s)
+      schema
+    })
+  }
 
   override def serialize(format: String, base: Option[IRI]): Either[String, String] = {
     val fmt = format.toUpperCase
@@ -127,13 +132,13 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
 /*        case "SVG" => for {
           uml <- ShEx2UML.schema2Uml(schema)
         } yield uml.toSVG */
-        case _ => Schema_.serialize(schema, fmt, base, builder)
+        case _ => SchemaShEx.serialize(schema, fmt, base, builder)
       }
     else
       Left(s"Can't serialize to format $format. Supported formats=$formats")
   }
 
-  override def empty: ShExSchema = ShExSchema.empty
+  override def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
   override def shapes: List[String] = {
     val pm = schema.prefixMap
@@ -187,13 +192,13 @@ case class ShExSchema(schema: Schema_) extends Schema with LazyLogging
 }
 
 object ShExSchema {
-  def empty: ShExSchema = ShExSchema(schema = Schema_.empty)
+  def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
   def fromString(
     cs: CharSequence,
     format: String,
     base: Option[String]): Either[String, ShExSchema] = {
-    Schema_.fromString(cs, format, base.map(IRI(_)), Some(RDFAsJenaModel.empty)).map(p => ShExSchema(p))
+    SchemaShEx.fromString(cs, format, base.map(IRI(_)), Some(RDFAsJenaModel.empty)).map(p => ShExSchema(p))
   }
 
 }

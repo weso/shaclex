@@ -1,27 +1,33 @@
 package es.weso.json
 import io.circe._
-import gnieh.diffson.circe._
-
+import diffson._
+import diffson.lcs._
+import diffson.circe._
+import diffson.jsonpatch._
+import diffson.jsonpatch.lcsdiff._
 /*
  * Obtains a diff between 2 Jsons
  */
 object JsonCompare {
 
-  def jsonDiff(json1: Json, json2: Json): JsonPatch = {
+  implicit val lcs = new Patience[Json]
+
+/*  def jsonDiff(json1: Json, json2: Json) = {
     JsonDiff.diff(json1, json2, false)
-  }
+  } */
+  def jsonDiff(json1: Json, json2: Json) = diff(json1, json2)
 
   /**
    * Obtains a diff between 2 Jsons
    *
    */
-  def diff(json1: Json, json2: Json): String = {
-    diff(json1, json2, 0)
+  def diffBasic(json1: Json, json2: Json): String = {
+    diffBasic(json1, json2, 0)
   }
 
   private val OK = ""
 
-  private def diff(json1: Json, json2: Json, indent: Int): String = {
+  private def diffBasic(json1: Json, json2: Json, indent: Int): String = {
     json1.fold(
       checkNull(indent)(json2),
       checkBool(indent)(json2),
@@ -105,7 +111,7 @@ object JsonCompare {
       val (field, value) = pair
       o1(field) match {
         case None => mkIndent(indent, s"obj1 $o1 doesn't contain field $field with value $value" + rest)
-        case Some(v) => diff(value, v, indent) + rest
+        case Some(v) => diffBasic(value, v, indent) + rest
       }
     }
     val fieldsDifferent = diffFields(o1, o2)
@@ -132,7 +138,7 @@ object JsonCompare {
       val zero = ""
       def cont: (((Json, Json), Int), String) => String = { (t, rest) =>
         val ((v1, v2), n) = t
-        val d = diff(v1, v2, indent + 1)
+        val d = diffBasic(v1, v2, indent + 1)
         if (d == "")
           rest
         else

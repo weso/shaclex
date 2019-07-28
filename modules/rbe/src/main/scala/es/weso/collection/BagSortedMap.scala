@@ -17,7 +17,7 @@ case class BagSortedMap[A: Ordering](smap: SortedMap[A, Int])
     if (smap.contains(elem)) {
       val n = smap(elem)
       if (n == 1)
-        BagSortedMap(smap - elem)
+        BagSortedMap(smap -- List(elem))
       else
         BagSortedMap(smap + (elem -> (n - 1)))
     } else // TODO: Consider returning some kind of error

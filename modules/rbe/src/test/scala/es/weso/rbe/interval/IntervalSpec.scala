@@ -1,13 +1,9 @@
 package es.weso.rbe.interval
 
-import org.scalatest._
-import prop._
 import org.scalacheck._
-import org.scalacheck.Gen._
 import es.weso.collection._
 import es.weso.rbe._
 import IntOrUnbounded.int2LimitInt
-import es.weso.rbe.deriv._
 
 trait GenRbe extends GenBag {
 

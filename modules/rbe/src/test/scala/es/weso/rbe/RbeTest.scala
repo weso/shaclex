@@ -2,15 +2,7 @@ package es.weso.rbe
 
 import org.scalatest._
 import es.weso.collection._
-import es.weso.rbe.interval._
-import interval._
-import org.scalacheck.Arbitrary._
-import org.scalacheck.Prop._
-import org.scalatest.prop.Checkers
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.Matchers._
-import es.weso.rbe.deriv._
-import org.scalacheck._
 
 class RbeTest extends FunSpec with Matchers with GeneratorDrivenPropertyChecks {
 

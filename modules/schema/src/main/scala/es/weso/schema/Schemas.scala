@@ -9,8 +9,8 @@ object Schemas {
 
   type SchemaParser = (CharSequence, String, Option[String]) => Either[String, Schema]
 
-  lazy val shEx = ShExSchema.empty
-  lazy val shaclex = ShaclexSchema.empty
+  lazy val shEx: Schema = ShExSchema.empty
+  lazy val shaclex : Schema = ShaclexSchema.empty
   // lazy val shacl_tq = Shacl_TQ.empty
 
   val availableSchemas: List[Schema] = List(shEx, shaclex) // shEx,shaclex) //,shacl_tq)

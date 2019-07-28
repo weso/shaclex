@@ -307,7 +307,7 @@ case class RDFAsJenaModel(model: Model,
         val ls: List[Map[String, RDFNode]] = result.asScala.toList.map(qs => {
           val qsm = new QuerySolutionMap()
           qsm.addAll(qs)
-          qsm.asMap.asScala.toMap.mapValues(node => jenaNode2RDFNodeUnsafe(node))
+          qsm.asMap.asScala.mapValues(node => jenaNode2RDFNodeUnsafe(node)).toMap
         })
         ls
       }

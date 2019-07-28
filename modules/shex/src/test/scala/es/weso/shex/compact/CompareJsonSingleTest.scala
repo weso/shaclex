@@ -13,7 +13,6 @@ import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
 import cats.implicits._
 import es.weso.rdf.jena.RDFAsJenaModel
-import gnieh.diffson.circe._
 
 import scala.io._
 
@@ -41,8 +40,8 @@ class CompareJsonSingleTest extends FunSpec with JsonTest with Matchers with Eit
               } else {
                 fail(s"""|Json's are different. Parsed:\n${schema.asJson.spaces4}
                         |Expected:${json.spaces4}
-                        |Diff: ${JsonCompare.diff(json,json2)}
-                        |Diffson: ${JsonDiff.diff(json,json2,false)}
+                        |Diff: ${JsonCompare.diffBasic(json,json2)}
+                        |Diffson: ${JsonCompare.jsonDiff(json,json2)}
                         |Schema\n${schema.show}
                         |Plain schema\n${schema}""".stripMargin)
               }

@@ -28,28 +28,28 @@ scalafmt: {
 lazy val antlrVersion          = "4.7.1"
 lazy val catsVersion           = "2.0.0-M4"
 lazy val commonsTextVersion    = "1.2"
-lazy val circeVersion          = "0.11.1"
-lazy val diffsonVersion        = "2.2.5"
-lazy val effVersion            = "4.6.1"
+lazy val circeVersion          = "0.12.0-M4"
+lazy val diffsonVersion        = "4.0.0-M4"
+// lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.11.0"
 lazy val jgraphtVersion        = "1.2.0"
 lazy val logbackVersion        = "1.2.3"
-lazy val loggingVersion        = "3.7.2"
+lazy val loggingVersion        = "3.9.2"
 lazy val rdf4jVersion          = "2.2.4"
 lazy val scalacheckVersion     = "1.14.0"
-lazy val scalacticVersion      = "3.0.5"
-lazy val scalaTestVersion      = "3.0.5"
+lazy val scalacticVersion      = "3.0.8"
+lazy val scalaTestVersion      = "3.0.8"
 lazy val scalaGraphVersion     = "1.11.5"
 lazy val scalatagsVersion      = "0.6.7"
-lazy val scallopVersion        = "3.1.1"
+lazy val scallopVersion        = "3.3.1"
 lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.2"
 lazy val xercesVersion         = "2.11.0"
 
 // Compiler plugin dependency versions
-lazy val simulacrumVersion    = "0.11.0"
-lazy val kindProjectorVersion = "0.9.5"
+lazy val simulacrumVersion    = "0.19.0"
+// lazy val kindProjectorVersion = "0.9.5"
 lazy val scalaMacrosVersion   = "2.1.1"
 
 // Dependency modules
@@ -62,7 +62,7 @@ lazy val circeGeneric      = "io.circe"                   %% "circe-generic"    
 lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
 lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
 lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
-lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
+// lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
 lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
@@ -81,9 +81,9 @@ lazy val typesafeConfig    = "com.typesafe"               % "config"            
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
 
 // Compiler plugin modules
-lazy val scalaMacrosParadise = "org.scalamacros"      % "paradise"        % scalaMacrosVersion cross CrossVersion.full
+// lazy val scalaMacrosParadise = "org.scalamacros"      % "paradise"        % scalaMacrosVersion cross CrossVersion.full
 lazy val simulacrum          = "com.github.mpilquist" %% "simulacrum"     % simulacrumVersion
-lazy val kindProjector       = "org.spire-math"       %% "kind-projector" % kindProjectorVersion
+// lazy val kindProjector       = "org.spire-math"       %% "kind-projector" % kindProjectorVersion
 
 lazy val shaclex = project
   .in(file("."))
@@ -264,7 +264,7 @@ lazy val rbe = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-      compilerPlugin(scalaMacrosParadise),
+//      compilerPlugin(scalaMacrosParadise),
       simulacrum,
       catsCore,
       catsKernel,
@@ -343,7 +343,7 @@ lazy val utils = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-      eff,
+//      eff,
       circeCore,
       circeGeneric,
       circeParser,
@@ -363,8 +363,8 @@ lazy val validating = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-      compilerPlugin(kindProjector),
-      eff,
+//      compilerPlugin(kindProjector),
+//      eff,
       catsCore,
       catsKernel,
       catsMacros
@@ -403,7 +403,7 @@ lazy val packagingSettings = Seq(
 )
 
 lazy val compilationSettings = Seq(
-  scalaVersion := "2.12.8",
+  scalaVersion := "2.13.0",
   // format: off
   scalacOptions ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
@@ -412,27 +412,11 @@ lazy val compilationSettings = Seq(
     "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.  "-encoding", "UTF-8",
     "-language:_",
     "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
-    "-Xfuture",                          // Turn on future language features.
     "-Xlint",
     "-Yrangepos",
-//    "-Ylog-classpath",
-    "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
     "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
-    "-Ywarn-inaccessible",               // Warn about inaccessible types in method signatures.
-    "-Ywarn-infer-any",                  // Warn when a type argument is inferred to be `Any`.
-    "-Ywarn-nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
-    "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
-    "-Ywarn-numeric-widen",              // Warn when numerics are widened.
-//    "-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
-//    "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
-//    "-Ywarn-unused:locals",              // Warn if a local definition is unused.
-//    "-Ywarn-unused:params",              // Warn if a value parameter is unused.
-//    "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
-//    "-Ywarn-unused:privates",            // Warn if a private member is unused.
-//    "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
-//    "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
-    "-Ypartial-unification",
+    "-Ymacro-annotations"
   )
   // format: on
 )
