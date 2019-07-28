@@ -231,14 +231,14 @@ case class Shape(
   def getActions: List[SemAct] = actions.getOrElse(Shape.emptySemActs)
 
   def isEmpty: Boolean = {
-    this.id == None &&
+    this.id.isEmpty &&
     this.isVirtual == Shape.defaultVirtual &&
     this.isClosed == Shape.defaultClosed &&
     getExtra == Shape.emptyExtra &&
     getExtend == Shape.emptyExtends &&
     getAnnotations == Shape.emptyAnnotations &&
     getActions == Shape.emptySemActs &&
-    expression == None
+    expression.isEmpty
   }
 
   // def tripleExpr = expression.getOrElse(TripleExpr.any)
@@ -282,7 +282,7 @@ case class Shape(
     this.copy(actions = maybeAddList(actions,as))
   }
 
-  override def getShapeRefs(schema: Schema) = expression.map(_.getShapeRefs(schema)).getOrElse(List())
+  override def getShapeRefs(schema: Schema): List[ShapeLabel] = expression.map(_.getShapeRefs(schema)).getOrElse(List())
 
   override def relativize(base: IRI): Shape =
     Shape(

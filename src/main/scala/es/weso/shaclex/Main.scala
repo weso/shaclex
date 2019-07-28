@@ -53,7 +53,7 @@ object Main extends App with LazyLogging {
       rdf <- getRDFReader(opts, baseFolder)
       schema <- getSchema(opts, baseFolder, rdf)
       triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
-      shapeMapStr <- getShapeMapStr(opts)
+      shapeMapStr <- getShapeMapStr(opts, baseFolder)
       trigger <- ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBaseStr,
         opts.node.toOption, opts.shapeLabel.toOption,
         rdf.getPrefixMap(), schema.pm)
@@ -158,12 +158,13 @@ object Main extends App with LazyLogging {
     }
   }
 
-  private def getShapeMapStr(opts: MainOpts): Either[String, String] = {
+  private def getShapeMapStr(opts: MainOpts, baseFolder: Path): Either[String, String] = {
     if (opts.shapeMap.isDefined) {
       // val shapeMapFormat = opts.shapeMapFormat.toOption.getOrElse("COMPACT")
+      val path = baseFolder.resolve(opts.shapeMap())
       for {
         // TODO: Allow different shapeMap formats
-        content <- FileUtils.getContents(opts.shapeMap())
+        content <- FileUtils.getContents(path.toFile)
       } yield content.toString
     } else Right("")
   }
