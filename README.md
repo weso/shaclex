@@ -1,4 +1,4 @@
-# shaclex
+# SHaclEX
 
 Scala implementation of SHEX and SHACL.
 
