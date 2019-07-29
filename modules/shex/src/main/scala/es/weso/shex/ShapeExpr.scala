@@ -6,7 +6,7 @@ import es.weso.shex.extend.Extend
 import es.weso.utils.EitherUtils._
 import es.weso.utils.OptionListUtils._
 
-abstract sealed trait ShapeExpr {
+sealed trait ShapeExpr extends Product with Serializable {
   def id: Option[ShapeLabel]
   def addId(lbl: ShapeLabel): ShapeExpr
 
@@ -211,9 +211,12 @@ case class Shape(
                   actions: Option[List[SemAct]]
                 ) extends ShapeExpr with Extend {
 
+  def normalized: Either[String,NormalizedShape] =
+    NormalizedShape.fromShape(this)
+
   def hasRepeatedProperties: Boolean = true // TODO
   
-  def addId(lbl: ShapeLabel) = this.copy(id = Some(lbl))
+  def addId(lbl: ShapeLabel): Shape = this.copy(id = Some(lbl))
 
   def isVirtual: Boolean =
     virtual.getOrElse(Shape.defaultVirtual)
@@ -222,8 +225,8 @@ case class Shape(
     closed.getOrElse(Shape.defaultClosed)
 
   // Converts IRIs to direct paths
-  def extraPaths =
-    extra.getOrElse(List()).map(Direct(_))
+  def extraPaths: List[Direct] =
+    extra.getOrElse(List()).map(Direct)
 
   def getExtra: List[IRI] = extra.getOrElse(Shape.emptyExtra)
   def getExtend: List[ShapeLabel] = _extends.getOrElse(Shape.emptyExtends)
@@ -295,7 +298,6 @@ case class Shape(
       annotations.map(_.map(_.relativize(base))),
       actions.map(_.map(_.relativize(base)))
     )
-
 }
 
 object Shape {
@@ -312,11 +314,11 @@ object Shape {
 
   def defaultVirtual = false
   def defaultClosed = false
-  def emptyExtra = List[IRI]()
-  def emptyExtends = List[ShapeLabel]()
-  def emptySemActs = List[SemAct]()
-  def emptyAnnotations = List[Annotation]()
-  def defaultExpr = None
+  def emptyExtra: List[IRI] = List[IRI]()
+  def emptyExtends: List[ShapeLabel] = List[ShapeLabel]()
+  def emptySemActs: List[SemAct] = List[SemAct]()
+  def emptyAnnotations: List[Annotation] = List[Annotation]()
+  def defaultExpr: None.type = None
 
   def expr(te: TripleExpr): Shape = {
     Shape.empty.copy(expression = Some(te))
