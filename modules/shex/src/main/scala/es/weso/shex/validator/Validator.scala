@@ -118,16 +118,16 @@ case class Validator(schema: Schema,
     if (c.hasNoType(node,label)) ok(c)
     else errStr(s"Node $node should not conform to $label but it does")
 
+  private def checkLabelInfo(node: RDFNode)(pair: (ShapeMapLabel,Info)): CheckTyping = {
+    val (label,info) = pair
+    checkNodeShapeMapLabel(node,label,info)
+  }
+
   private[validator] def checkNodeShapesMap(node: RDFNode,
                                             shapesMap: Map[ShapeMapLabel, Info]
                                            ): CheckTyping = {
   for {
-//      _ <- checkOptSemActs(node,schema.startActs)
-      ts <- checkAll(shapesMap.map {
-        case (label, info) => {
-          checkNodeShapeMapLabel(node, label, info)
-        }
-      }.toList)
+      ts <- checkAll(shapesMap.map(checkLabelInfo(node)).toList)
       t <- combineTypings(ts)
     } yield t
   }
@@ -158,7 +158,7 @@ case class Validator(schema: Schema,
 
   private[validator] def checkNodeStart(node: RDFNode): CheckTyping = {
     schema.start match {
-      case None => errStr(s"checking node $node against start declaration of schema. No start declaration found")
+      case None => err(NoStart(node))
       case Some(shape) => {
         logger.debug(s"nodeStart. Node: ${node.show}")
         val shapeType = ShapeType(shape, Some(Start), schema)
@@ -173,7 +173,7 @@ case class Validator(schema: Schema,
 
   private[validator] def getShapeLabel(label: ShapeLabel): Check[ShapeLabel] = {
     if (schema.labels contains label) ok(label)
-    else errStr(s"Schema does not contain label '$label'\nAvailable labels: ${schema.labels}")
+    else err(LabelNotFound(label,schema.labels))
   }
 
   private[validator] def checkNodeLabelSafe(node: RDFNode,
@@ -332,7 +332,7 @@ case class Validator(schema: Schema,
   private[validator] def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
     if (xsFacets.isEmpty) getTyping
     else {
-      FacetChecker(schema).checkFacets(attempt, node)(xsFacets)
+      FacetChecker(schema,rdf).checkFacets(attempt, node)(xsFacets)
     }
   }
 
@@ -428,10 +428,11 @@ case class Validator(schema: Schema,
     }
   }
 
-  private[validator] def checkNeighsShape(attempt: Attempt, node: RDFNode, neighs: Neighs, s: Shape): CheckTyping = if (s.hasRepeatedProperties)
-    checkNeighsShapeWithTable(attempt,node,neighs,s) else {
-    // TODO
-    checkNeighsShapeWithTable(attempt,node,neighs,s)
+  private[validator] def checkNeighsShape(attempt: Attempt, node: RDFNode, neighs: Neighs, s: Shape): CheckTyping =
+    if (s.hasRepeatedProperties(schema))
+     checkNeighsShapeWithTable(attempt,node,neighs,s) else {
+     // TODO
+     checkNeighsShapeWithTable(attempt,node,neighs,s)
   }
 
   private[validator] def checkNeighsShapeWithTable(attempt: Attempt, node: RDFNode, neighs: Neighs, s: Shape): CheckTyping =
@@ -466,7 +467,7 @@ case class Validator(schema: Schema,
   private[validator] def checkShapeBase(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping =
   s match {
     case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
-    case _ if s.isNormalized =>  for {
+    case _ if s.isNormalized(schema) =>  for {
       paths  <- getPaths(s)
       neighs <- getNeighPaths(node, paths)
       typing <- checkNeighsShape(attempt, node, neighs, s)
@@ -496,16 +497,50 @@ case class Validator(schema: Schema,
 
   private def checkConstraint(attempt: Attempt, node: RDFNode, path: Path, constraint: Constraint): CheckTyping = for {
    values <- getValuesPath(node,path)
-   typing <- checkValuesConstraint(values, constraint)
+   typing <- checkValuesConstraint(values, constraint, node, path, attempt)
   } yield typing
 
-  private def getValuesPath(node: RDFNode, path: Path): Check[Set[RDFNode]] = ??? /* for {
-   rdf <- getRDF
-   nodes <- if (path.isDirect) rdf.triplesWithSubjectPredicate(node,path.pred)
-      else rdf.
-  } yield ??? */
+  private def getValuesPath(node: RDFNode, path: Path): Check[Set[RDFNode]] = for {
+    rdf <- getRDF
+    nodes <- fromEitherString(path.getValues(node,rdf))
+  } yield nodes
 
-  private def checkValuesConstraint(values: Set[RDFNode], constraint: Constraint): CheckTyping = ???
+  // We assume that the shape has no reference to other shapes
+  private def checkValuesConstraint(values: Set[RDFNode], constraint: Constraint, node: RDFNode, path: Path, attempt: Attempt): CheckTyping = {
+    constraint.shape match {
+      case None => if (constraint.card.contains(values.size)) addEvidence(attempt.nodeShape, "Number of values fits cardinality")
+        else errStr(s"Number of values ${values.size} doesn't fit cardinality ${constraint.card} for node ${node} and $path")
+      case Some(se) => {
+//        val passed = values.filter(checkNodeShapeExprBasic(_,se))
+        ???
+      }
+    }
+
+  }
+
+  private def checkNodeShapeExprBasic(node: RDFNode, se: ShapeExpr): Either[String,String] =
+  se match {
+    case sa: ShapeAnd => cmb(sa.shapeExprs.map(checkNodeShapeExprBasic(node,_)))
+    case so: ShapeOr => cmb(so.shapeExprs.map(checkNodeShapeExprBasic(node,_)))
+    case sn: ShapeNot =>
+      if (checkNodeShapeExprBasic(node,sn.shapeExpr).isLeft)
+        s"Passes negation".asRight[String]
+      else s"Doesn't pass negation".asLeft[String]
+    case _: ShapeRef => Left("Internal error. A normalized ShapeExpr cannot have references ")
+    case _: Shape => Left(s"Still don't know what to do with shapes")
+    case _: ShapeExternal => Left(s"Still don't know what to do with external shapes")
+    case nk: NodeConstraint => NodeConstraintChecker(schema,rdf).nodeConstraintChecker(node,nk)
+  }
+
+  private def cmb(els: List[Either[String,String]]): Either[String,String] = {
+    els.sequence.map(_.mkString("\n"))
+  }
+/*    constraint.shape match {
+      case None => if
+    }
+    if (values.size < constraint.min) err(NotEnoughArcs(node,values,path,constraint.min))
+    else
+*/
 
   private def checkNoStrangeProperties(node: RDFNode, paths: List[Path]): Check[Unit] = for {
     rdf <- getRDF

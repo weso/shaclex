@@ -21,6 +21,8 @@ sealed trait ShapeExpr extends Product with Serializable {
   def getShapeRefs(schema: Schema): List[ShapeLabel]
 
   def relativize(base: IRI): ShapeExpr
+
+  def hasNoReference(schema:Schema): Boolean = getShapeRefs(schema).isEmpty
 }
 
 object ShapeExpr {
@@ -53,6 +55,7 @@ case class ShapeOr(id: Option[ShapeLabel],
     annotations.map(_.map(_.relativize(base))),
     actions.map(_.map(_.relativize(base)))
   )
+
 }
 
 object ShapeOr {
@@ -83,6 +86,7 @@ case class ShapeAnd(id: Option[ShapeLabel],
     annotations.map(_.map(_.relativize(base))),
     actions.map(_.map(_.relativize(base)))
   )
+
 }
 
 object ShapeAnd {
@@ -131,7 +135,7 @@ case class NodeConstraint(
                            annotations: Option[List[Annotation]],
                            actions: Option[List[SemAct]]
                          ) extends ShapeExpr {
-  override def addId(lbl: ShapeLabel) = {
+  override def addId(lbl: ShapeLabel): NodeConstraint = {
     this.copy(id = Some(lbl))
   }
 
@@ -144,7 +148,7 @@ case class NodeConstraint(
     this.copy(actions = maybeAddList(actions,as))
   }
 
-  override def getShapeRefs(s:Schema) = List()
+  override def getShapeRefs(s:Schema): List[Nothing] = List()
 
   override def relativize(base: IRI): NodeConstraint =
     NodeConstraint(
@@ -197,7 +201,6 @@ object NodeConstraint {
   def xsFacets(facets: List[XsFacet]): NodeConstraint =
     NodeConstraint.empty.copy(xsFacets = facets)
 
-
 }
 
 case class Shape(
@@ -211,12 +214,12 @@ case class Shape(
                   actions: Option[List[SemAct]]
                 ) extends ShapeExpr with Extend {
 
-  lazy val normalized: Either[String,NormalizedShape] =
-    NormalizedShape.fromShape(this)
+  def normalized(schema: Schema): Either[String,NormalizedShape] =
+    NormalizedShape.fromShape(this, schema)
 
-  lazy val isNormalized: Boolean = normalized.isRight
+  def isNormalized(schema: Schema): Boolean = normalized(schema).isRight
 
-  lazy val hasRepeatedProperties: Boolean = !isNormalized
+  def hasRepeatedProperties(schema: Schema): Boolean = !isNormalized(schema)
   
   def addId(lbl: ShapeLabel): Shape = this.copy(id = Some(lbl))
 
@@ -325,8 +328,6 @@ object Shape {
   def expr(te: TripleExpr): Shape = {
     Shape.empty.copy(expression = Some(te))
   }
-
-
 }
 
 case class ShapeRef(reference: ShapeLabel,
