@@ -461,21 +461,51 @@ case class Validator(schema: Schema,
   }
 
   private def getPaths(s: Shape): Check[List[Path]] =
-    fromEither(s.paths(schema).leftMap(StringError(_)))
+    fromEitherString(s.paths(schema))
 
-  private[validator] def checkShapeBase(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
-    println(s"CheckNodeShape $node\nShape: $s\n---\n")
-    if (s.isEmpty) {
-      println(s"Shape is empty")
-      addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
-    } else
-      for {
-        typing <- getTyping
-        paths  <- getPaths(s)
-        neighs <- getNeighPaths(node, paths)
-        typing <- checkNeighsShape(attempt, node, neighs, s)
-      } yield typing
+  private[validator] def checkShapeBase(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping =
+  s match {
+    case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
+    case _ if s.isNormalized =>  for {
+      paths  <- getPaths(s)
+      neighs <- getNeighPaths(node, paths)
+      typing <- checkNeighsShape(attempt, node, neighs, s)
+    } yield typing
+    /*for {
+      normalized <- fromEitherString(s.normalized)
+      typing <- checkNormalizedShape(attempt, node, normalized)
+    } yield typing */
+    case _ => for {
+      paths  <- getPaths(s)
+      neighs <- getNeighPaths(node, paths)
+      typing <- checkNeighsShape(attempt, node, neighs, s)
+    } yield typing
   }
+
+  private[validator] def checkNormalizedShape(attempt: Attempt, node: RDFNode, s: NormalizedShape
+                                             ): CheckTyping = {
+    val zero = getTyping
+    def cmb(ct: CheckTyping, pair: (Path, Constraint)): CheckTyping = for {
+      typing <- {
+        val (path, constraint) = pair
+        checkConstraint(attempt, node, path, constraint)
+      }
+    } yield typing
+    s.constraints.foldLeft(zero)(cmb)
+  }
+
+  private def checkConstraint(attempt: Attempt, node: RDFNode, path: Path, constraint: Constraint): CheckTyping = for {
+   values <- getValuesPath(node,path)
+   typing <- checkValuesConstraint(values, constraint)
+  } yield typing
+
+  private def getValuesPath(node: RDFNode, path: Path): Check[Set[RDFNode]] = ??? /* for {
+   rdf <- getRDF
+   nodes <- if (path.isDirect) rdf.triplesWithSubjectPredicate(node,path.pred)
+      else rdf.
+  } yield ??? */
+
+  private def checkValuesConstraint(values: Set[RDFNode], constraint: Constraint): CheckTyping = ???
 
   private def checkNoStrangeProperties(node: RDFNode, paths: List[Path]): Check[Unit] = for {
     rdf <- getRDF

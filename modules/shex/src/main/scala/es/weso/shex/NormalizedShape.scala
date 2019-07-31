@@ -8,7 +8,9 @@ case class Constraint(shape: Option[ShapeExpr], hasExtra: Boolean, min: Int, max
  * It can be represented as a map from a path to a constraint.
  * @param constraints a map from a Path to a constraint
  */
-case class NormalizedShape(constraints: Map[Path, Constraint], closed: Boolean)
+case class NormalizedShape(constraints: Map[Path, Constraint], closed: Boolean) {
+  lazy val paths: Set[Path] = constraints.keySet
+}
 
 object NormalizedShape {
   def fromShape(shape: Shape): Either[String, NormalizedShape] = {

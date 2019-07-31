@@ -211,10 +211,12 @@ case class Shape(
                   actions: Option[List[SemAct]]
                 ) extends ShapeExpr with Extend {
 
-  def normalized: Either[String,NormalizedShape] =
+  lazy val normalized: Either[String,NormalizedShape] =
     NormalizedShape.fromShape(this)
 
-  def hasRepeatedProperties: Boolean = true // TODO
+  lazy val isNormalized: Boolean = normalized.isRight
+
+  lazy val hasRepeatedProperties: Boolean = !isNormalized
   
   def addId(lbl: ShapeLabel): Shape = this.copy(id = Some(lbl))
 
