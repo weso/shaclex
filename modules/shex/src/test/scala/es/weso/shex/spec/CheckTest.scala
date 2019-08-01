@@ -134,7 +134,7 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
   describe(s"satisfyFirst") {
 
     it(s"Should satisfyFirst on 1,2,3") {
-      val ls = Stream(1,2,3)
+      val ls = LazyList(1,2,3)
       def even(n: Int): Check[Boolean] = {
         if (n < 0) err(s"Negative")
         else pure(n % 2 == 0)
@@ -146,7 +146,7 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
     }
 
     it(s"Should not satisfyFirst on 1,3,5") {
-      val ls = Stream(1,3,5)
+      val ls = LazyList(1,3,5)
       def even(n: Int): Check[Boolean] = {
         if (n < 0) err(s"Negative")
         else pure(n % 2 == 0)
@@ -159,21 +159,21 @@ class CheckTest extends FunSpec with Matchers with EitherValues {
 
     it(s"Should work on infinite list") {
       type E[A] = Id[A]
-      val s: Stream[Int] = Stream.from(1)
+      val s: LazyList[Int] = LazyList.from(1)
       def check(x: Int): E[Boolean] = Monad[E].pure(x == 3)
       satisfyFirst(s,check)  should be(true)
     }
 
     it(s"Should work on finite list and return false") {
       type E[A] = Id[A]
-      val s: Stream[Int] = Stream.from(1).take(100)
+      val s: LazyList[Int] = LazyList.from(1).take(100)
       def check(x: Int): E[Boolean] = Monad[E].pure(x < 0)
       satisfyFirst(s,check)  should be(false)
     }
 
 
     it(s"Should satisfyFirst on infinite") {
-      val ls = Stream.from(1)
+      val ls = LazyList.from(1)
       def even(n: Int): Check[Boolean] = {
         // println(s"Checking $n")
         if (n < 0) err(s"Negative")

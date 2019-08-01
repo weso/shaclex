@@ -10,11 +10,12 @@ case class RegEx(pattern: String, maybeFlags: Option[String]) {
     s
   }
   def matches(str: String): Either[String, Boolean] = {
-    // println(s"Pattern: $pattern\ncleanPattern: $cleanPattern")
-    // println(s"str: $str: chars: ${str.map(c => c.toInt).mkString(",")}")
+    println(s"Pattern: $pattern\ncleanPattern: $cleanPattern")
+    println(s"str: $str")
     // println(s"re: $cleanPattern: chars: ${cleanPattern.map(c => c.toInt).mkString(",")}")
     try {
       val regex = new RegularExpression(cleanPattern, maybeFlags.getOrElse(""))
+      println(s"Regex: ${regex} matches: ${regex.matches(str)}")
       Right(regex.matches(str))
     } catch {
       case e: Exception =>
