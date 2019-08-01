@@ -27,11 +27,11 @@ object SetUtils {
     *
     * @param set set of elements
     * @param n number of sets to generate
-    * @tparam A
-    * @return
+    * @tparam A type of values
+    * @return a list of sets
     */
- def partition[A](set: Set[A], n: Int): Stream[List[Set[A]]] = n match {
-   case 1 => Stream(List(set))
+ def partition[A](set: Set[A], n: Int): LazyList[List[Set[A]]] = n match {
+   case 1 => LazyList(List(set))
    case n if n > 1 => for {
      pair <- pSet(set)
      (s1,s2) = pair
@@ -46,18 +46,18 @@ object SetUtils {
     *  Example: pSet(Set(1,2)) =
     *       Stream((Set(1,2),Set()),(Set(1),Set(2)),(Set(2),Set(1)),(Set(),Set(1,2))).
     **/
-  def pSet[A](set: Set[A]): Stream[(Set[A], Set[A])] = {
+  def pSet[A](set: Set[A]): LazyList[(Set[A], Set[A])] = {
 
     @annotation.tailrec
     def pSetRec(set: Set[A],
-                acc: Stream[(Set[A], Set[A])]): Stream[(Set[A], Set[A])] = {
+                acc: LazyList[(Set[A], Set[A])]): LazyList[(Set[A], Set[A])] = {
       if (set.isEmpty) acc
       else {
         val x = set.head
         pSetRec(set.tail, acc.map(addFirst(x)) ++ acc.map(addSecond(x)))
       }
     }
-    pSetRec(set, Stream((Set(), Set())))
+    pSetRec(set, LazyList((Set(), Set())))
   }
 
   private def addFirst[A](x: A)(pair: (Set[A], Set[A])): (Set[A], Set[A]) = {

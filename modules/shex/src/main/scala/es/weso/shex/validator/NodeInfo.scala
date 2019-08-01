@@ -11,7 +11,7 @@ import scala.util._
 
 object NodeInfo {
 
-  /* This implementation leverages on Xerces internal implementation of XML Schema datatypes */
+  /* This implementation leverages Xerces internal implementation of XML Schema datatypes */
   /* This is probably going too far and could be simplified */
   def totalDigits(node: RDFNode, rdf: RDFReader): Either[String,Int] = {
     node match {
@@ -53,7 +53,7 @@ object NodeInfo {
     }
   }
 
-  /* This implementation leverages on Xerces internal implementation of XML Schema datatypes */
+  /* This implementation leverages Xerces internal implementation of XML Schema datatypes */
   /* This is probably going too far and could be simplified */
   def fractionDigits(node: RDFNode, rdf: RDFReader): Either[String,Int] = {
     node match {

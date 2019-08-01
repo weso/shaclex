@@ -150,7 +150,7 @@ case class Validator(schema: Schema) extends LazyLogging {
       t <- addEvidence(attempt, s"Property shape ${ps.showId} is deactivated")
     } yield (t,true)
     else {
-      val cs      = ps.components.toList
+      val cs      = ps.components
       val pss     = ps.propertyShapes.toList
       for {
         r1 <- runLocal(checkAllWithTyping(cs, component2PropertyChecker(ps)(attempt, path)), _.addType(node, ps))
@@ -629,7 +629,7 @@ case class Validator(schema: Schema) extends LazyLogging {
   private def or(sRefs: Seq[RefNode]): NodeChecker = attempt => node => {
     val last: CheckTyping = fail(s"None of the components of or pass")
     def fn(sref: RefNode): CheckTyping = nodeShapeRef(node, sref, attempt)
-    checkSomeFlag(sRefs.toStream,fn,last)
+    checkSomeFlag(sRefs.to(LazyList),fn,last)
   }
 
   private def not(sref: RefNode): NodeChecker = attempt => node => {
