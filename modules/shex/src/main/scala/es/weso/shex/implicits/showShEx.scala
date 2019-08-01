@@ -51,6 +51,13 @@ object showShEx {
     }
   }
 
+  implicit lazy val showConstraint: Show[Constraint] = new Show[Constraint] {
+    final def show(c: Constraint): String = {
+      s"${c.shape.fold(".")(_.show)} ${if (c.hasExtra) "EXTRA" else ""} ${c.card.show}"
+    }
+  }
+
+
   implicit lazy val showNodeConstraint: Show[NodeConstraint] = new Show[NodeConstraint] {
     final def show(a: NodeConstraint): String =
       s"${optShow(a.id)} ${optShow(a.nodeKind)} ${optShow(a.datatype)} ${showLs(a.xsFacets," ")} ${optShowValues(a.values)})"
@@ -221,6 +228,16 @@ object showShEx {
       case DatatypeString(s, `xsd:integer`) => s
       case DatatypeString(s,iri) => "\"" + s + "\"^^" + iri.show
       case LangString(s,lang) => "\"" + s + "\"@" + lang
+    }
+  }
+
+  implicit lazy val showCardinality: Show[Cardinality] = new Show[Cardinality] {
+    final def show(c: Cardinality): String = (c.min,c.max) match {
+      case (0,Star) => "*"
+      case (0,IntMax(1)) => "?"
+      case (1,Star) => "+"
+      case (m,Star) => s"{$m,*}"
+      case (m,IntMax(n)) => s"{$m,$n}"
     }
   }
 

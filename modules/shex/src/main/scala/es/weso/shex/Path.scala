@@ -1,6 +1,7 @@
 package es.weso.shex
 import cats._
-import es.weso.rdf.nodes.IRI
+import es.weso.rdf.RDFReader
+import es.weso.rdf.nodes.{IRI, RDFNode}
 
 sealed trait Path {
  def isDirect: Boolean
@@ -8,14 +9,22 @@ sealed trait Path {
 
  override def toString: String = Path.showPath.show(this)
 
+ def getValues(node: RDFNode, rdf: RDFReader): Either[String, Set[RDFNode]]
 }
 
 case class Direct(pred: IRI) extends Path {
  val isDirect = true
 
+  override def getValues(node: RDFNode, rdf: RDFReader): Either[String, Set[RDFNode]] =
+    rdf.triplesWithSubjectPredicate(node, pred).map(_.map(_.obj))
+
 }
+
 case class Inverse(pred: IRI) extends Path {
  val isDirect = false
+
+ override def getValues(node: RDFNode, rdf: RDFReader): Either[String, Set[RDFNode]] =
+  rdf.triplesWithPredicateObject(pred, node).map(_.map(_.subj))
 
 }
 
@@ -45,6 +54,7 @@ object Path {
       }
     }
   }
+
 }
 // TODO: Handle sequence and alternative paths
 

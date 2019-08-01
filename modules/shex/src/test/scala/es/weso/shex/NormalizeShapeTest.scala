@@ -17,7 +17,7 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
       val a = ex + "S"
       val iri = NodeConstraint.nodeKind(IRIKind,List())
       shouldNormalizeShape(shexStr, a, NormalizedShape(
-         Map(p -> Constraint(Some(iri),false,1,IntMax(1))),
+         Map(p -> Constraint(Some(iri),false,Cardinality(1,IntMax(1)))),
          false)
       )
   }
@@ -42,9 +42,9 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
     val dot = Some(Shape.empty)
     shouldNormalizeShape(shexStr, a, NormalizedShape(
       Map(
-        p -> Constraint(iri,false,1,IntMax(1)),
-        q -> Constraint(iri,false,2,IntMax(5)),
-        r -> Constraint(dot,false,0,Star)
+        p -> Constraint(iri,false,Cardinality(1,IntMax(1))),
+        q -> Constraint(iri,false,Cardinality(2,IntMax(5))),
+        r -> Constraint(dot,false,Cardinality(0,Star))
       ),
       false)
     )
@@ -57,7 +57,7 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
         schema <- Schema.fromString(strSchema)
         shape <- schema.getShape(shapeLbl)
         normalized <- shape match {
-          case s: Shape => s.normalized
+          case s: Shape => s.normalized(Schema.empty)
           case _ => Left(s"$shape is not a plain shape")
         }
       } yield normalized
