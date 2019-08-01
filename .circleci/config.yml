@@ -41,4 +41,3 @@ jobs:
         
       # run tests!
       - run: cat /dev/null | sbt test:test
-          no_output_timeout: 15m
