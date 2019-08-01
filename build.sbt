@@ -45,7 +45,7 @@ lazy val scallopVersion        = "3.3.1"
 lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.2"
-lazy val xercesVersion         = "2.11.0"
+lazy val xercesVersion         = "2.12.0"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "0.19.0"
