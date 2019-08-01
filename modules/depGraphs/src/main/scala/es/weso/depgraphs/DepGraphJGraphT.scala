@@ -2,7 +2,7 @@ package es.weso.depgraphs
 
 import org.jgrapht.Graph
 import org.jgrapht.graph._
-import org.jgrapht.alg._
+import org.jgrapht.alg.connectivity._
 
 import collection.JavaConverters._
 import cats.implicits._

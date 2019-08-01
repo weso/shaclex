@@ -116,14 +116,14 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       }
     }
 
-    shouldCheckSomeFlag("checkSomeFlag(Stream(2,4), (0,false)) = (2, true)|1",Stream(2, 4),comp,ok((0,false)),(2,true),1)
-    shouldCheckSomeFlag("checkSomeFlag(Stream1,4), (0,false)) = (4, true)|2",Stream(1, 4),comp,ok((0,false)),(4,true),2)
-    shouldCheckSomeFlag("checkSomeFlag(Stream(1,3,5), (0,false)) = (0, false)|3",Stream(1, 3, 5),comp,ok((0,false)),(0,false),3)
-    shouldCheckSomeFlag("checkSomeFlag(Stream(2,4,...), (0,false)) = (2, true)|1",Stream.from(2,2),comp,ok((0,false)),(2,true),1)
-    shouldCheckSomeFlag("checkSomeFlag(Stream(), (0,false)) = (0, false)|0",Stream(),comp,ok((0,false)),(0,false),0)
+    shouldCheckSomeFlag("checkSomeFlag(LazyList(2,4), (0,false)) = (2, true)|1",LazyList(2, 4),comp,ok((0,false)),(2,true),1)
+    shouldCheckSomeFlag("checkSomeFlag(LazyList1,4), (0,false)) = (4, true)|2",LazyList(1, 4),comp,ok((0,false)),(4,true),2)
+    shouldCheckSomeFlag("checkSomeFlag(LazyList(1,3,5), (0,false)) = (0, false)|3",LazyList(1, 3, 5),comp,ok((0,false)),(0,false),3)
+    shouldCheckSomeFlag("checkSomeFlag(LazyList(2,4,...), (0,false)) = (2, true)|1",LazyList.from(2,2),comp,ok((0,false)),(2,true),1)
+    shouldCheckSomeFlag("checkSomeFlag(LazyList(), (0,false)) = (0, false)|0",LazyList(),comp,ok((0,false)),(0,false),0)
 
     def shouldCheckSomeFlag(msg: String,
-                            ls: => Stream[Int],
+                            ls: => LazyList[Int],
                             check: Int => Check[(Int,Boolean)],
                             last: => Check[(Int,Boolean)],
                             expected: (Int,Boolean),
@@ -154,16 +154,16 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       }
     }
 
-    shouldCheckAllFlag("checkAllFlag(List(2,4), 0)) = (6, true)|2",Stream(2, 4),comp,0,(6,true),2)
-    shouldCheckAllFlag("checkAllFlag(List(2,4,1), 0)) = (7, false)|3",Stream(2, 4, 1),comp,0,(7,false),3)
-    shouldCheckAllFlag("checkAllFlag(List(2,4,1,2), 0)) = (7, false)|3",Stream(2, 4, 1,2),comp,0,(7,false),3)
-    shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",Stream(2, 4, 6, 2),comp,0,(14,true),4)
-    shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|1",Stream(1, 4),comp,0,(1,false),1)
-    shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|1",Stream(1, 3, 5),comp,0,(1,false),1)
-    shouldCheckAllFlag("checkAllFlag(Stream(), 0) = (0, true)|0",Stream(),comp,0,(0,true),0)
+    shouldCheckAllFlag("checkAllFlag(List(2,4), 0)) = (6, true)|2",LazyList(2, 4),comp,0,(6,true),2)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1), 0)) = (7, false)|3",LazyList(2, 4, 1),comp,0,(7,false),3)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1,2), 0)) = (7, false)|3",LazyList(2, 4, 1,2),comp,0,(7,false),3)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",LazyList(2, 4, 6, 2),comp,0,(14,true),4)
+    shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|1",LazyList(1, 4),comp,0,(1,false),1)
+    shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|1",LazyList(1, 3, 5),comp,0,(1,false),1)
+    shouldCheckAllFlag("checkAllFlag(LazyList(), 0) = (0, true)|0",LazyList(),comp,0,(0,true),0)
 
     def shouldCheckAllFlag(msg: String,
-                           ls: => Stream[Int],
+                           ls: => LazyList[Int],
                            check: Int => Check[(Int,Boolean)],
                            last: => Int,
                            expected: (Int,Boolean),
@@ -194,16 +194,16 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       }
     }
 
-    shouldCheckAllFlag("checkAllFlag(List(2,4), 0)) = (6, true)|2",Stream(2, 4),comp,0,(6,true),2)
-    shouldCheckAllFlag("checkAllFlag(List(2,4,1), 0)) = (7, false)|3",Stream(2, 4, 1),comp,0,(7,false),3)
-    shouldCheckAllFlag("checkAllFlag(List(2,4,1,2), 0)) = (7, false)|4",Stream(2, 4, 1,2),comp,0,(9,false),4)
-    shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",Stream(2, 4, 6, 2),comp,0,(14,true),4)
-    shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|2",Stream(1, 4),comp,0,(5,false),2)
-    shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|3",Stream(1, 3, 5),comp,0,(9,false),3)
-    shouldCheckAllFlag("checkAllFlag(Stream(), 0) = (0, true)|0",Stream(),comp,0,(0,true),0)
+    shouldCheckAllFlag("checkAllFlag(List(2,4), 0)) = (6, true)|2",LazyList(2, 4),comp,0,(6,true),2)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1), 0)) = (7, false)|3",LazyList(2, 4, 1),comp,0,(7,false),3)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,1,2), 0)) = (7, false)|4",LazyList(2, 4, 1,2),comp,0,(9,false),4)
+    shouldCheckAllFlag("checkAllFlag(List(2,4,6,2), 0)) = (14, true)|4",LazyList(2, 4, 6, 2),comp,0,(14,true),4)
+    shouldCheckAllFlag("checkAllFlag(List(1,4), 0) = (1, false)|2",LazyList(1, 4),comp,0,(5,false),2)
+    shouldCheckAllFlag("checkAllFlag(List(1,3,5), 0) = (1, false)|3",LazyList(1, 3, 5),comp,0,(9,false),3)
+    shouldCheckAllFlag("checkAllFlag(LazyList(), 0) = (0, true)|0",LazyList(),comp,0,(0,true),0)
 
     def shouldCheckAllFlag(msg: String,
-                           ls: => Stream[Int],
+                           ls: => LazyList[Int],
                            check: Int => Check[(Int,Boolean)],
                            last: => Int,
                            expected: (Int,Boolean),
@@ -211,7 +211,7 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       it(msg) {
         counter.set(0)
         println(s"counter in it: $counter")
-        runValueFlag(checkAllFlag(ls, check, last)).fold(e => fail(s"Error: $e"), v => {
+        runValueFlag(checkAllFlag(ls.toStream, check, last)).fold(e => fail(s"Error: $e"), v => {
           println(s"After checkSome. Value $v, steps: $counter")
           v should be(expected)
           counter.get should equal(stepsExpected)
