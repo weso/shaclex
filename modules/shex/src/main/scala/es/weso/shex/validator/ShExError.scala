@@ -3,6 +3,7 @@ import cats._
 import cats.implicits._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shex.implicits.showShEx._
+import es.weso.shex.validator.Attempt
 
 abstract class ShExError
 
@@ -35,6 +36,26 @@ case class NoStart(node: RDFNode) extends ShExError {
     s"""Checking node ${node.show}@start but no start found"""
 }
 
+case class ErrCardinality(attempt: Attempt, node: RDFNode, path: Path, values: Int, card: Cardinality) extends ShExError {
+  override def toString =
+    s"""${attempt.show}: #values for ${path.show}=$values doesn't match ${card.show}"""
+}
+
+case class ErrCardinalityWithExtra(attempt: Attempt, node: RDFNode, path: Path, values: Int, valuesFailed: Int, card: Cardinality) extends ShExError {
+  override def toString =
+    s"""${attempt.show}: #values for ${path.show}=$values doesn't match ${card.show}
+       | #values that failed: ${valuesFailed}""".stripMargin
+}
+
+case class ValuesNotPassed(attempt: Attempt, node: RDFNode, path: Path, valuesPassed: Int, valuesFailed: Set[(RDFNode, String)]) extends ShExError {
+  override def toString =
+    s"""${attempt.show}: #values for ${path.show} failed}
+       | #values that failed: ${showValues(valuesFailed)}""".stripMargin
+
+  private def showValues(vs: Set[(RDFNode, String)]): String = {
+    vs.map(pair => s"${pair._1.show}: ${pair._2}").mkString("\n")
+  }
+}
 
 object ShExError {
 

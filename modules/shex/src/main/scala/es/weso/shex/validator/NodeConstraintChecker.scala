@@ -12,12 +12,14 @@ case class NodeConstraintChecker(schema: Schema, rdf: RDFReader)
 
   def nodeConstraintChecker(value: RDFNode, nk: NodeConstraint
                            ): Either[String, String] = {
-    List(
+   val rs = List(
       optCheck(nk.nodeKind, checkNodeKind(value)),
       optCheck(nk.values, checkValues(value)),
       optCheck(nk.datatype, checkDatatype(value)),
       checkXsFacets(value)(nk.xsFacets)
     ).sequence.map(_.mkString)
+   println(s"Result of nodeConstraintChecker: $rs")
+   rs
   }
 
   private def checkNodeKind(node: RDFNode)(nk: NodeKind): Either[String, String] =
@@ -55,7 +57,9 @@ case class NodeConstraintChecker(schema: Schema, rdf: RDFReader)
   private def checkXsFacets(node: RDFNode)(facets: List[XsFacet]): Either[String, String] =
    if (facets.isEmpty) Right("")
    else {
-    FacetChecker(schema,rdf).facetsChecker(node,facets)
+    val r = FacetChecker(schema,rdf).facetsChecker(node,facets)
+    println(s"Result of facets checker: $r")
+    r
   }
 
   private def optCheck[A, B](c: Option[A], check: A => Either[String,String]): Either[String,String] =

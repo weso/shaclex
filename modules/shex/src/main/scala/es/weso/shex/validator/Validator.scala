@@ -331,9 +331,10 @@ case class Validator(schema: Schema,
 
   private[validator] def checkXsFacets(attempt: Attempt, node: RDFNode)(xsFacets: List[XsFacet]): CheckTyping = {
     if (xsFacets.isEmpty) getTyping
-    else {
-      FacetChecker(schema,rdf).checkFacets(attempt, node)(xsFacets)
-    }
+    else for {
+      rdf <- getRDF
+      t <- FacetChecker(schema,rdf).checkFacets(attempt, node)(xsFacets)
+    } yield t
   }
 
   private[validator] def checkNodeKind(attempt: Attempt, node: RDFNode)(nk: NodeKind): CheckTyping = {
@@ -468,14 +469,9 @@ case class Validator(schema: Schema,
   s match {
     case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
     case _ if s.isNormalized(schema) =>  for {
-      paths  <- getPaths(s)
-      neighs <- getNeighPaths(node, paths)
-      typing <- checkNeighsShape(attempt, node, neighs, s)
-    } yield typing
-    /*for {
-      normalized <- fromEitherString(s.normalized)
+      normalized <- fromEitherString(s.normalized(schema))
       typing <- checkNormalizedShape(attempt, node, normalized)
-    } yield typing */
+    } yield typing
     case _ => for {
       paths  <- getPaths(s)
       neighs <- getNeighPaths(node, paths)
@@ -507,27 +503,67 @@ case class Validator(schema: Schema,
 
   // We assume that the shape has no reference to other shapes
   private def checkValuesConstraint(values: Set[RDFNode], constraint: Constraint, node: RDFNode, path: Path, attempt: Attempt): CheckTyping = {
+    val card: Cardinality = constraint.card
     constraint.shape match {
-      case None => if (constraint.card.contains(values.size)) addEvidence(attempt.nodeShape, "Number of values fits cardinality")
-        else errStr(s"Number of values ${values.size} doesn't fit cardinality ${constraint.card} for node ${node} and $path")
-      case Some(se) => {
-//        val passed = values.filter(checkNodeShapeExprBasic(_,se))
-        ???
-      }
-    }
-
+        case None =>
+          if (card.contains(values.size)) addEvidence(attempt.nodeShape, s"Number of values fits $card")
+          else err(ErrCardinality(attempt, node, path, values.size, card))
+        case Some(se) => if (constraint.hasExtra) {
+          for {
+            rdf <- getRDF
+            t <- {
+              val (passed, notPassed) = values.map(checkNodeShapeExprBasic(_, se, rdf)).partition(_.isRight)
+              if (card.contains(passed.size)) {
+                addEvidence(attempt.nodeShape, s"Number of values for ${node.show} with ${path.show} that satisfy ${constraint.shape} = ${passed.size} matches cardinality ${constraint.card}")
+              } else {
+                err(ErrCardinalityWithExtra(attempt, node, path, passed.size, notPassed.size, card))
+              }
+            }
+          } yield t
+        }
+        else for {
+          rdf <- getRDF
+          t <- {
+            if (constraint.card.contains(values.size)) {
+              val (notPassed, passed) =
+                values.map(v => (v, checkNodeShapeExprBasic(v, se, rdf))).partitionMap(mapFun)
+              // println(s"checkValuesConstraint: \nPassed: $passed\nNot passed: $notPassed")
+              if (notPassed.isEmpty) {
+                addEvidence(attempt.nodeShape, s"${node.show} passed ${constraint.show} for path ${path.show}")
+              } else
+                err(ValuesNotPassed(attempt, node, path, passed.size, notPassed))
+            } else err(ErrCardinality(attempt, node, path, values.size, card))
+        }
+    } yield t
+   }
   }
 
-  private def checkNodeShapeExprBasic(node: RDFNode, se: ShapeExpr): Either[String,String] =
+  private def mapFun(v: (RDFNode,Either[String,String])
+                    ): Either[(RDFNode,String), (RDFNode,String)] = {
+    val (node, either) = v
+    either match {
+      case Left(s) => Left((node,s))
+      case Right(s) => Right((node,s))
+    }
+  }
+
+  private def checkNodeShapeExprBasic(node: RDFNode,
+                                      se: ShapeExpr,
+                                      rdf: RDFReader
+                                     ): Either[String,String] =
   se match {
-    case sa: ShapeAnd => cmb(sa.shapeExprs.map(checkNodeShapeExprBasic(node,_)))
-    case so: ShapeOr => cmb(so.shapeExprs.map(checkNodeShapeExprBasic(node,_)))
+    case sa: ShapeAnd => cmb(sa.shapeExprs.map(checkNodeShapeExprBasic(node,_, rdf)))
+    case so: ShapeOr => cmb(so.shapeExprs.map(checkNodeShapeExprBasic(node,_, rdf)))
     case sn: ShapeNot =>
-      if (checkNodeShapeExprBasic(node,sn.shapeExpr).isLeft)
+      if (checkNodeShapeExprBasic(node,sn.shapeExpr,rdf).isLeft)
         s"Passes negation".asRight[String]
       else s"Doesn't pass negation".asLeft[String]
     case _: ShapeRef => Left("Internal error. A normalized ShapeExpr cannot have references ")
-    case _: Shape => Left(s"Still don't know what to do with shapes")
+    case s: Shape if s.isEmpty => Right(s"$node matches empty shape")
+    case _: Shape => {
+      println(s"Shape expr: $se")
+      Left(s"Still don't know what to do with shapes")
+    }
     case _: ShapeExternal => Left(s"Still don't know what to do with external shapes")
     case nk: NodeConstraint => NodeConstraintChecker(schema,rdf).nodeConstraintChecker(node,nk)
   }
@@ -656,12 +692,12 @@ case class Validator(schema: Schema,
     attempt: Attempt,
     bagChecker: BagChecker_,
     table: CTable)(cs: Candidates): CheckTyping = {
-    println(s"checkCandidates(...)")
+    // println(s"checkCandidates(...)")
     val as: List[CandidateLine] =
       SeqUtils.transpose(cs.map(c => (c.arc,c.crefs))).
         map(CandidateLine(_))
 
-    println(s"Candidate lines: $as, ${as.length}")
+    // println(s"Candidate lines: $as, ${as.length}")
     as.length match {
       case 1 => { // Deterministic
         checkCandidateLine(attempt, bagChecker, table)(as.head)
@@ -670,11 +706,11 @@ case class Validator(schema: Schema,
         errStr(s"${attempt.show} Empty list of candidates")
       }
       case n => {
-        println(s"Non deterministic")
+        // println(s"Non deterministic")
         val checks: List[CheckTyping] =
           as.map(checkCandidateLine(attempt, bagChecker, table)(_))
         checkSome(checks,{
-          println(s"None of the candidates match")
+          // println(s"None of the candidates match")
           StringError(
             s"""|None of the candidates matched. Attempt: ${attempt.show}
                 |Bag: ${bagChecker.show}
@@ -698,7 +734,7 @@ case class Validator(schema: Schema,
     val bag = cl.mkBag
     bagChecker.check(bag, false).fold(
       e => {
-        println(s"Does not match RBE. ${bag} with ${bagChecker.show}")
+        // println(s"Does not match RBE. ${bag} with ${bagChecker.show}")
         errStr(s"${attempt.show} Candidate line ${cl.show} which corresponds to ${bag} does not match ${Rbe.show(
           bagChecker.rbe)}\nTable:${table.show}\nErr: $e")
       },

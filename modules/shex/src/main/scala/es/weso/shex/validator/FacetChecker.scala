@@ -4,10 +4,10 @@ import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes._
 import es.weso.rdf.operations.Comparisons._
-import es.weso.shex.ShExError._
 import es.weso.shex._
 import es.weso.shex.validator.ShExChecker._
 import es.weso.utils.RegEx
+import es.weso.shex.implicits.showShEx._
 
 
 case class FacetChecker(schema: Schema, rdf: RDFReader)
@@ -21,15 +21,27 @@ case class FacetChecker(schema: Schema, rdf: RDFReader)
   } yield t
 
 
-  def checkFacet(attempt: Attempt,
+  private def checkFacet(attempt: Attempt,
                  node: RDFNode)(facet: XsFacet): CheckTyping = {
-     facetChecker(node, facet).fold(errStr(_), addEvidence(attempt.nodeShape,_))
+     facetChecker(node, facet).fold(errStr, addEvidence(attempt.nodeShape,_))
   }
 
-  def facetsChecker(node: RDFNode, facets: List[XsFacet]): Either[String,String] =
-    facets.map(facetChecker(node,_)).sequence.map(_.mkString("\n"))
+  def facetsChecker(node: RDFNode,
+                    facets: List[XsFacet]
+                   ): Either[String,String] = {
+    val (passed,failed) = facets.map(facetChecker(node,_)).partition(_.isRight)
+    if (failed.isEmpty) {
+      Right(s"$node passed facets: ${passed.map(_.show).mkString(",")}")
+    } else {
+      Left(
+        s"""$node failed to pass facets ${facets.map(_.show).mkString(",")}
+           |Failed facets: ${failed.map(_.left).mkString("\n")}
+           |Passed facets: ${passed.mkString("\n")}
+           |""".stripMargin)
+    }
+  }
 
-  def facetChecker(node: RDFNode, facet: XsFacet): Either[String,String] = {
+  private def facetChecker(node: RDFNode, facet: XsFacet): Either[String,String] = {
     facet match {
       case Length(n) => {
         val l = NodeInfo.length(node)
@@ -104,32 +116,38 @@ case class FacetChecker(schema: Schema, rdf: RDFReader)
 
   // TODO: I'd like to refactor the following code to avoid DRY...
   // Problem, how to do it in a compatible way with type safety
-  type Comparator = (NumericLiteral, RDFNode) => Either[String,Boolean]
+  private type Comparator = (NumericLiteral, RDFNode) => Either[String,Boolean]
 
-  def compare(fn: (NumericLiteral,RDFNode) => Either[String,Boolean]
+  private def compare(fn: (NumericLiteral,RDFNode) => Either[String,Boolean]
              ): (NumericLiteral, RDFNode) => Either[String,Boolean] =
     fn
 
-  def minInclusive: Comparator = (nl, node) => for {
+  private def minInclusive: Comparator = (nl, node) => for {
     nl2 <- numericValue(node)
   } yield lessThanOrEquals(nl,nl2)
 
 
-  def minExclusive: Comparator = (nl, node) => for {
+  private def minExclusive: Comparator = (nl, node) => for {
     nl2 <- numericValue(node)
   } yield lessThan(nl,nl2)
 
-  def maxInclusive: Comparator = (nl, node) => for {
+  private def maxInclusive: Comparator = (nl, node) => for {
     nl2 <- numericValue(node)
   } yield lessThanOrEquals(nl2,nl)
 
 
-  def maxExclusive: Comparator = (nl, node) => for {
+  private def maxExclusive: Comparator = (nl, node) => for {
     nl2 <- numericValue(node)
   } yield lessThan(nl2,nl)
 
-  private def checkCond(cond: Boolean, msgTrue: String, msgFalse: String): Either[String, String] =
-    if (cond) msgTrue.asRight[String]
+  private def checkCond(cond: Boolean,
+                        msgFalse: => String,
+                        msgTrue: => String): Either[String, String] =
+    if (cond) {
+      val r = msgTrue.asRight[String]
+      println(s"Value of checkCond = $r")
+      r
+    }
     else msgFalse.asLeft[String]
 
 }
