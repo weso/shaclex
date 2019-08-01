@@ -62,7 +62,7 @@ abstract class CheckerCats extends Checker {
     * @tparam F
     * @return
     */
-  def checkSomeFlag[A,B,F[_]: Monad](ls: => Stream[A],
+  def checkSomeFlag[A,B,F[_]: Monad](ls: => LazyList[A],
                                 check: A => F[(B,Boolean)],
                                 last: F[(B,Boolean)]
                                ): F[(B,Boolean)] = {
@@ -75,7 +75,8 @@ abstract class CheckerCats extends Checker {
           else next.value
         } yield n
       )
-    Foldable[Stream].foldRight(ls,z)(cmb).value
+    // Todo: Use Foldable[LazyList] instead (it currently gives an error)
+    Foldable[Stream].foldRight(ls.toStream,z)(cmb).value
   }
 
   def checkSomeFlagCount[A,B: Monoid](ls: => Stream[A],
@@ -119,7 +120,7 @@ abstract class CheckerCats extends Checker {
   }
 
 
-  def checkAllFailFAtFirstFlag[A,B: Monoid, F[_]: Monad](ls: => Stream[A],
+  def checkAllFailFAtFirstFlag[A,B: Monoid, F[_]: Monad](ls: => LazyList[A],
                                              check: A => F[(B,Boolean)],
                                              last: => B
                                             ): F[(B,Boolean)] = {
@@ -137,7 +138,7 @@ abstract class CheckerCats extends Checker {
         } yield n
       )
     }
-    Foldable[Stream].foldRight(ls,z)(cmb).value
+    Foldable[Stream].foldRight(ls.toStream,z)(cmb).value
   }
 
   def checkSequenceFlag[A: Monoid, F[_]: Monad](ls: => List[F[(A,Boolean)]],

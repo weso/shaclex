@@ -74,6 +74,7 @@ class ShapeMapValidatorTest extends ShouldValidateShapeMap {
 
     shouldValidateWithShapeMap(rdfStr, shexStr, ":a@:A", ":a@:A")
   }
+
   describe("Shape with EXTRA") {
     val shexStr =
       """

@@ -362,7 +362,10 @@ object Spec extends LazyLogging {
                                  shapesPrefixMap: PrefixMap
                                 ): ResultShapeMap = {
     val resultMap: Map[RDFNode,Map[ShapeMapLabel,ShapeMapInfo]] =
-      typing.m.mapValues(valueMap => valueMap.mapValues(info => cnvInfo(info)).toMap).toMap
+      typing.m.view.mapValues(valueMap =>
+        valueMap.view.mapValues(info => cnvInfo(info)
+        ).toMap
+      ).toMap
     ResultShapeMap(resultMap, nodesPrefixMap, shapesPrefixMap)
   }
 

@@ -1,13 +1,12 @@
 package es.weso.shex.spec
 import cats._
-import cats.data.{EitherT, ReaderT}
+import cats.data._
 import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.RDFNode
-import es.weso.shapeMaps.{FixedShapeMap, ShapeMapLabel}
+import es.weso.shapeMaps._
 import es.weso.shex.Schema
-import es.weso.shex.btValidator.ShExErr
-import es.weso.typing.Typing
+import cats.instances._
 
 object Check {
 
@@ -61,7 +60,7 @@ object Check {
   def satisfyNot(check: Check[Boolean]): Check[Boolean] =
     check.map(e => !e)
 
-  def satisfyFirst[A,F[_]: Monad](ls: => Stream[A],
+  def satisfyFirst[A,F[_]: Monad](ls: => LazyList[A],
                                   check: A => F[Boolean]
                                  ): F[Boolean] = {
     val z : Eval[F[Boolean]] = Eval.later(Monad[F].pure(false))
@@ -73,7 +72,9 @@ object Check {
               else next.value
         } yield n
       )
-    Foldable[Stream].foldRight(ls,z)(cmb).value
+    Foldable[Stream].foldRight(ls.toStream,z)(cmb).value
+    // I want to do the following but it gives an error
+    // Foldable[LazyList].foldRight(ls,z)(cmb).value
   }
 
 
