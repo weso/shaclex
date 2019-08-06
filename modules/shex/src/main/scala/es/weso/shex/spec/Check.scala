@@ -72,7 +72,7 @@ object Check {
               else next.value
         } yield n
       )
-    Foldable[Stream].foldRight(ls.toStream,z)(cmb).value
+    Foldable[LazyList].foldRight(ls,z)(cmb).value
     // I want to do the following but it gives an error
     // Foldable[LazyList].foldRight(ls,z)(cmb).value
   }

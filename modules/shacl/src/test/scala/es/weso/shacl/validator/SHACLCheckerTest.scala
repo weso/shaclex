@@ -40,12 +40,12 @@ class SHACLCheckerTest extends FunSpec with Matchers with TryValues with OptionV
         (t.addNotEvidence(node,shape,mkErr("false")), false)
     }
 
-    shouldCheckAllTyping("checkAll x/1, true",Stream((StringLiteral("x"),mkShape("1"),true)), chk, rdf, emptyTyping,
+    shouldCheckAllTyping("checkAll x/1, true",LazyList((StringLiteral("x"),mkShape("1"),true)), chk, rdf, emptyTyping,
       (emptyTyping.addType(StringLiteral("x"),mkShape("1")),true)
     )
 
     shouldCheckAllTyping("checkAll x/1, x/2, true",
-      Stream((StringLiteral("x"),mkShape("1"),true),
+      LazyList((StringLiteral("x"),mkShape("1"),true),
              (StringLiteral("x"),mkShape("2"),true)), chk, rdf, emptyTyping,
       (emptyTyping.
         addType(StringLiteral("x"),mkShape("1")).
@@ -53,14 +53,14 @@ class SHACLCheckerTest extends FunSpec with Matchers with TryValues with OptionV
     )
 
     shouldCheckAllTyping("checkAll x/1, x/not 2, false",
-      Stream((StringLiteral("x"),mkShape("1"),true),
+      LazyList((StringLiteral("x"),mkShape("1"),true),
         (StringLiteral("x"),mkShape("2"),false)), chk, rdf, emptyTyping,
       (emptyTyping.
         addType(StringLiteral("x"),mkShape("1")).
         addNotEvidence(StringLiteral("x"),mkShape("2"),mkErr("false")),false)
     )
 
-    def shouldCheckAllTyping[A](msg: String, ls: Stream[A], chk: A => CheckTyping, rdf: RDFReader, typing: ShapeTyping, expected: Result): Unit = {
+    def shouldCheckAllTyping[A](msg: String, ls: LazyList[A], chk: A => CheckTyping, rdf: RDFReader, typing: ShapeTyping, expected: Result): Unit = {
       it(s"Should checkAllTyping $msg") {
         val (log, e) = SHACLChecker.run(checkAllTyping(ls,chk))(rdf)(typing)
         e.fold(e => fail(s"Error: $e"), r => {

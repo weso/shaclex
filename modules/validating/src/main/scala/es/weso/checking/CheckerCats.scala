@@ -45,7 +45,7 @@ abstract class CheckerCats extends Checker {
     cs.foldRight(z)(comb)
   }
 
-  def checkSome[A](cs: Stream[Check[A]])(implicit ev: Monoid[Err]): Check[A] = {
+  def checkSome[A](cs: LazyList[Check[A]])(implicit ev: Monoid[Err]): Check[A] = {
     lazy val z: Check[A] = err(ev.empty)
     def comb(c1: Check[A], c2: Check[A]) = orElse(c1, c2)
     cs.foldRight(z)(comb)
@@ -75,11 +75,10 @@ abstract class CheckerCats extends Checker {
           else next.value
         } yield n
       )
-    // Todo: Use Foldable[LazyList] instead (it currently gives an error)
-    Foldable[Stream].foldRight(ls.toStream,z)(cmb).value
+    Foldable[LazyList].foldRight(ls,z)(cmb).value
   }
 
-  def checkSomeFlagCount[A,B: Monoid](ls: => Stream[A],
+  def checkSomeFlagCount[A,B: Monoid](ls: => LazyList[A],
                                           check: A => Check[(B,Boolean)],
                                           last: B
                                     ): Check[(B,Int)] = {
@@ -94,11 +93,11 @@ abstract class CheckerCats extends Checker {
           else r2
         }
       )
-    Foldable[Stream].foldRight(ls,z)(cmb).value
+    Foldable[LazyList].foldRight(ls,z)(cmb).value
   }
 
 
-  def checkAllFlag[A,B: Monoid, F[_]: Monad](ls: => Stream[A],
+  def checkAllFlag[A,B: Monoid, F[_]: Monad](ls: => LazyList[A],
                                              check: A => F[(B,Boolean)],
                                              last: => B
                                             ): F[(B,Boolean)] = {
@@ -116,7 +115,7 @@ abstract class CheckerCats extends Checker {
         }
       )
     }
-    Foldable[Stream].foldRight(ls,z)(cmb).value
+    Foldable[LazyList].foldRight(ls,z)(cmb).value
   }
 
 
@@ -138,7 +137,7 @@ abstract class CheckerCats extends Checker {
         } yield n
       )
     }
-    Foldable[Stream].foldRight(ls.toStream,z)(cmb).value
+    Foldable[LazyList].foldRight(ls,z)(cmb).value
   }
 
   def checkSequenceFlag[A: Monoid, F[_]: Monad](ls: => List[F[(A,Boolean)]],
@@ -187,7 +186,7 @@ abstract class CheckerCats extends Checker {
     def comb(rest: Check[List[A]], current: Check[List[A]]): Check[List[A]] = for {
       xs <- rest
       ys <- current
-    } yield (xs ++ ys)
+    } yield xs ++ ys
     css.foldLeft(z)(comb)
   }
 
@@ -228,8 +227,8 @@ abstract class CheckerCats extends Checker {
     * If it fails, applies `thenPart` to the result, otherwise applies `elsePart` to the error
     *
     * @param check Computation to check
-    * @param thenPart
-    * @param elsePart
+    * @param thenPart part to be executed when it passes
+    * @param elsePart part to be executed when the check fails
     * @tparam A type returned by the computation
     * @tparam B type returned the the condition
     * @return
@@ -282,9 +281,9 @@ abstract class CheckerCats extends Checker {
 
   /**
     * If `c` is some value, applies `check`, otherwise applies `default`
-    * @param c
-    * @param check
-    * @param default
+    * @param c Optional value
+    * @param check check function
+    * @param default value in case there is no option
     * @tparam A
     * @tparam B
     * @return
@@ -300,7 +299,7 @@ abstract class CheckerCats extends Checker {
   }
 
   //implicit val monadCheck = implicitly[Monad[Check]]
-  lazy val mWriterEC = implicitly[Monad[WriterEC]]
+  protected lazy val mWriterEC = implicitly[Monad[WriterEC]]
 
   def run[A](c: Check[A])(config: Config)(env: Env): (Log, Either[Err, A]) =
     c.value.run.run(env).run(config)

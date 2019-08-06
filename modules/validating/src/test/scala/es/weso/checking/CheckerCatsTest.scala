@@ -211,7 +211,7 @@ class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
       it(msg) {
         counter.set(0)
         println(s"counter in it: $counter")
-        runValueFlag(checkAllFlag(ls.toStream, check, last)).fold(e => fail(s"Error: $e"), v => {
+        runValueFlag(checkAllFlag(ls, check, last)).fold(e => fail(s"Error: $e"), v => {
           println(s"After checkSome. Value $v, steps: $counter")
           v should be(expected)
           counter.get should equal(stepsExpected)

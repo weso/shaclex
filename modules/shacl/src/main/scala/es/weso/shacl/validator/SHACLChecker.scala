@@ -30,9 +30,9 @@ object SHACLChecker extends CheckerCats with LazyLogging {
     (z, x._2 && y._2)
   }
 
-  private[validator] def checkAllWithTyping[A](cs: List[A], chk: A => CheckTyping): CheckTyping = for {
+  private[validator] def checkAllWithTyping[A](cs: LazyList[A], chk: A => CheckTyping): CheckTyping = for {
     t <- getTyping
-    r <- checkAllFlag(cs.toStream, chk, t)
+    r <- checkAllFlag(cs, chk, t)
   } yield r
 
   private[validator] def done: CheckTyping = for {
@@ -70,7 +70,7 @@ object SHACLChecker extends CheckerCats with LazyLogging {
   private[validator] def runLocalTyping[A](c: Check[A], f: ShapeTyping => ShapeTyping): Check[A] =
     local(f)(c)
 
-  private[validator] def checkAllTyping[A](ls: Stream[A], chk: A => CheckTyping): CheckTyping = for {
+  private[validator] def checkAllTyping[A](ls: LazyList[A], chk: A => CheckTyping): CheckTyping = for {
     t <- getTyping
     r <- checkAllFlag(ls, chk, t)
   } yield r

@@ -44,7 +44,7 @@ class DeactivatedTest extends FunSpec with Matchers with TryValues with OptionVa
         if (ok) {
           info(s"Valid as expected")
         } else {
-          fail(s"Not valid. Typing:\n${typing}")
+          fail(s"Not valid. Typing:\n$typing")
         }
       })
     }
