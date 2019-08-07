@@ -54,7 +54,7 @@ sealed abstract trait InferredNodeConstraint {
       case Ref(lbl) => node match {
         case iri: IRI => Ref(lbl)
         case _ => {
-          println(s"Inferred ref($lbl) collapse with $node => None")
+          // println(s"Inferred ref($lbl) collapse with $node => None")
           InferredNone
         }
       }
@@ -105,14 +105,14 @@ case class Ref(lbl: IRI) extends InferredNodeConstraint {
     other match {
       case Ref(otherLbl) => if (lbl == otherLbl) Ref(lbl)
       else {
-        println(s"Inferred references with different labels")
+        // println(s"Inferred references with different labels")
         InferredNone
       }
       case InferredIRI => {
         Ref(lbl)
       }
       case _ => {
-        println(s"Inferred references label $lbl and other node $other")
+        // println(s"Inferred references label $lbl and other node $other")
         InferredNone
       }
     }

@@ -4,7 +4,7 @@ import es.weso.rdf.nodes.RDFNode
 case class ShapesMap(map: Map[RDFNode, Value[SLang]]) {
 
   def validated(node: RDFNode, shape: SLang): Boolean = {
-    println(s"Checking validated $node/$shape")
+    // println(s"Checking validated $node/$shape")
     isConforming(node,shape) match {
       case Conforms | NotConforms | Inconsistent => true
       case Unknown => false

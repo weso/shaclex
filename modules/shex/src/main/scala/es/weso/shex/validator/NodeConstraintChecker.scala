@@ -1,11 +1,10 @@
 package es.weso.shex.validator
 
-import cats._
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.{IRI, RDFNode}
-import es.weso.shex.{BNodeKind, IRIKind, LiteralKind, NodeConstraint, NodeKind, NonLiteralKind, Schema, ValueSetValue, XsFacet}
+import es.weso.shex._
 
 case class NodeConstraintChecker(schema: Schema, rdf: RDFReader)
   extends ShowValidator(schema) with LazyLogging {
@@ -18,7 +17,7 @@ case class NodeConstraintChecker(schema: Schema, rdf: RDFReader)
       optCheck(nk.datatype, checkDatatype(value)),
       checkXsFacets(value)(nk.xsFacets)
     ).sequence.map(_.mkString)
-   println(s"Result of nodeConstraintChecker: $rs")
+   // println(s"Result of nodeConstraintChecker: $rs")
    rs
   }
 
@@ -58,7 +57,7 @@ case class NodeConstraintChecker(schema: Schema, rdf: RDFReader)
    if (facets.isEmpty) Right("")
    else {
     val r = FacetChecker(schema,rdf).facetsChecker(node,facets)
-    println(s"Result of facets checker: $r")
+    // println(s"Result of facets checker: $r")
     r
   }
 

@@ -377,7 +377,7 @@ case class Validator(schema: Schema,
                                          ): CheckTyping = for {
     base <- getShape(baseLabel)
     paths <- fromEither(s.paths(schema).leftMap(StringError(_)))
-    _ <- { println(s"checkShapeExtend(node=$node,shape=${s.show},base=$baseLabel). \npaths=$paths") ; ok(()) }
+    // _ <- { println(s"checkShapeExtend(node=$node,shape=${s.show},base=$baseLabel). \npaths=$paths") ; ok(()) }
     neighs <- getNeighPaths(node, paths)
     partitions = SetUtils.pSet(neighs.toSet)
     _ <- checkSomeFlag(partitions,checkPartition(base,s,attempt,node), noPartition(node, neighs))
@@ -391,16 +391,16 @@ case class Validator(schema: Schema,
                                         node: RDFNode
                                        )(pair: (Set[Arc],Set[Arc])): Check[(ShapeTyping,Boolean)] = {
     val (neighs1,neighs2) = pair
-    println(s"Checking partition ($neighs1,$neighs2)\n$neighs1 with ${base.show}\nand\n$neighs2 with ${s.show}")
+    // println(s"Checking partition ($neighs1,$neighs2)\n$neighs1 with ${base.show}\nand\n$neighs2 with ${s.show}")
     (for {
       pair <- checkNeighsShapeExpr(attempt, node, neighs1.toList, base)
       (typing1,flag) = pair
-      _ <- { println(s"Typing1: $typing1"); ok(()) }
+      // _ <- { println(s"Typing1: $typing1"); ok(()) }
       typing2 <- checkNeighsShape(attempt,node,neighs2.toList,s)
-      _ <- { println(s"Typing2: $typing2"); ok(()) }
+      // _ <- { println(s"Typing2: $typing2"); ok(()) }
     } yield (typing2,true)) orElse
       (for {
-      _ <- {println(s"partition ($neighs1,$neighs2) failed"); ok(()) }
+      // _ <- {println(s"partition ($neighs1,$neighs2) failed"); ok(()) }
       t <- getTyping
     } yield (t,false))
   }
@@ -416,15 +416,15 @@ case class Validator(schema: Schema,
     se match {
     case s: Shape => (for {
       t <- checkNeighsShape(attempt,node,neighs,s)
-      _ <- { println(s"Failed checkNeighsShape(node=${node.show}, neighs=$neighs, se=${se.show} passed with $t") ; ok(())}
+      // _ <- { println(s"Failed checkNeighsShape(node=${node.show}, neighs=$neighs, se=${se.show} passed with $t") ; ok(())}
     } yield (t,true)) orElse {
       for {
-      _ <- { println(s"Failed checkNeighsShape(node=${node.show}, neighs=$neighs, se=${se.show} failed") ; ok(())}
+      // _ <- { println(s"Failed checkNeighsShape(node=${node.show}, neighs=$neighs, se=${se.show} failed") ; ok(())}
       t <- getTyping
       } yield (t,false)
     }
     case _ => {
-      println(s"Not implemented yet extends with a non shape base: $se")
+      // println(s"Not implemented yet extends with a non shape base: $se")
       errStr(s"Not implemented yet extends with a non shape base: $se")
     }
   }
@@ -449,16 +449,16 @@ case class Validator(schema: Schema,
     paths <- fromEither(s.paths(schema).leftMap(StringError(_)))
     _ <- { if (s.isClosed) {checkNoStrangeProperties(node, paths)} else ok(())      }
     typing <- {
-      println(s"Before checkCandidates: ${candidates.map(_.show).mkString(",")}\nTable:${cTable.show}\n")
+    //  println(s"Before checkCandidates: ${candidates.map(_.show).mkString(",")}\nTable:${cTable.show}\n")
       checkCandidates(attempt, bagChecker, cTable)(candidates)
     }
-    _ <- {println(s"After checkCandidates: $typing"); ok(()) }
+    // _ <- {println(s"After checkCandidates: $typing"); ok(()) }
     _ <- {
       // println(s"checkOptSemActs: ${s.actions}")
       checkOptSemActs(node,s.actions)
     }
   } yield {
-    println(s"End of checkShape(attempt=${attempt.show},node=${node.show},shape=${s.show})=${typing.show}")
+    // println(s"End of checkShape(attempt=${attempt.show},node=${node.show},shape=${s.show})=${typing.show}")
     typing
   }
 
@@ -561,7 +561,7 @@ case class Validator(schema: Schema,
     case _: ShapeRef => Left("Internal error. A normalized ShapeExpr cannot have references ")
     case s: Shape if s.isEmpty => Right(s"$node matches empty shape")
     case _: Shape => {
-      println(s"Shape expr: $se")
+      // println(s"Shape expr: $se")
       Left(s"Still don't know what to do with shapes")
     }
     case _: ShapeExternal => Left(s"Still don't know what to do with external shapes")
@@ -779,7 +779,7 @@ case class Validator(schema: Schema,
     for {
       rdf        <- getRDF
       outTriples <- fromEitherString(rdf.triplesWithSubjectPredicates(node, outgoingPredicates))
-      _ <- { println(s"Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
+      // _ <- { println(s"Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
       outgoing = outTriples.map(t => Arc(Direct(t.pred), t.obj)).toList
       inTriples <- fromEitherString(rdf.triplesWithObject(node))
       incoming = inTriples.map(t => Arc(Inverse(t.pred), t.subj)).toList
