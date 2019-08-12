@@ -22,7 +22,6 @@ import io.circe.Json
 import io.circe.parser.parse
 import org.apache.jena.query.{Query, QueryExecutionFactory, QuerySolutionMap, ResultSetFormatter}
 import cats.implicits._
-import es.weso.rdf.dot.RDF2Dot
 import org.apache.jena.graph.Graph
 import org.apache.jena.riot.system.{StreamRDF, StreamRDFLib}
 import org.apache.jena.sparql.util.Context
@@ -43,7 +42,7 @@ case class RDFAsJenaModel(model: Model,
   val log = LoggerFactory.getLogger("RDFAsJenaModel")
 
   def availableParseFormats: List[String] = RDFAsJenaModel.availableFormats
-  def availableSerializeFormats: List[String] = RDFAsJenaModel.availableFormats ++ List("DOT")
+  def availableSerializeFormats: List[String] = RDFAsJenaModel.availableFormats
 
   override def fromString(cs: CharSequence,
                           format: String,
@@ -70,7 +69,7 @@ case class RDFAsJenaModel(model: Model,
 
   private def getRDFFormat(formatName: String): Either[String,String] = {
     val supportedFormats: List[String] =
-      RDFLanguages.getRegisteredLanguages().asScala.toList.map(_.getName.toUpperCase).distinct ++ List("DOT")
+      RDFLanguages.getRegisteredLanguages().asScala.toList.map(_.getName.toUpperCase).distinct
     formatName.toUpperCase match {
       case format if supportedFormats.contains(format) => Right(format)
       case unknown => Left(s"Unsupported format $unknown. Available formats: ${supportedFormats.mkString(",")} ")
@@ -83,9 +82,7 @@ case class RDFAsJenaModel(model: Model,
 
   override def serialize(formatName: String, base: Option[IRI]): Either[String, String] = for {
     format <- getRDFFormat(formatName)
-    str <- format match {
-      case "DOT" => Right(RDF2Dot.rdf2dot(this).toString)
-      case _ => Try {
+    str <- Try {
         val out = new ByteArrayOutputStream()
         val relativizedModel = JenaUtils.relativizeModel(model,base.map(_.uri))
         relativizedModel.write(out, format)
@@ -93,13 +90,7 @@ case class RDFAsJenaModel(model: Model,
       }.fold(e => Left(s"Error serializing RDF to format $formatName: $e"),
         Right(_)
       )
-    }
   } yield str
-
-/*  private def extend_rdfs: Rdf = {
-    val infModel = ModelFactory.createRDFSModel(model)
-    RDFAsJenaModel(infModel)
-  } */
 
   // TODO: this implementation only returns subjects
   override def iris(): Either[String,Set[IRI]] = {

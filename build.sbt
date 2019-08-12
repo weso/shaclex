@@ -79,11 +79,7 @@ lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"     
 lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-
-// Compiler plugin modules
-// lazy val scalaMacrosParadise = "org.scalamacros"      % "paradise"        % scalaMacrosVersion cross CrossVersion.full
 lazy val simulacrum          = "com.github.mpilquist" %% "simulacrum"     % simulacrumVersion
-// lazy val kindProjector       = "org.spire-math"       %% "kind-projector" % kindProjectorVersion
 
 lazy val shaclex = project
   .in(file("."))
@@ -94,8 +90,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang)
-  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang)
+  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -149,6 +145,22 @@ lazy val slang = project
   .settings(commonSettings, publishSettings)
   .dependsOn(srdf,
     shex, shacl,
+    utils,
+    srdf4j % Test,
+    srdfJena % Test)
+  .settings(
+    libraryDependencies ++= Seq(
+      catsCore,
+      catsKernel,
+      catsMacros
+    )
+  )
+
+lazy val sgraph = project
+  .in(file("modules/sgraph"))
+  .disablePlugins(RevolverPlugin)
+  .settings(commonSettings, publishSettings)
+  .dependsOn(srdf,
     utils,
     srdf4j % Test,
     srdfJena % Test)
