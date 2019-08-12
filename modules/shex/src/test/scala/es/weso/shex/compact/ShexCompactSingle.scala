@@ -4,7 +4,7 @@ import com.typesafe.config._
 import java.io.File
 
 import scala.io._
-import es.weso.json._
+import es.weso.utils.json._
 import es.weso.utils.FileUtils._
 import es.weso.shex._
 

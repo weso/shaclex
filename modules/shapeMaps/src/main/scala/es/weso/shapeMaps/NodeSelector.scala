@@ -4,7 +4,7 @@ import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.rdf.path.SHACLPath
 import io.circe._
 import io.circe.syntax._
-import es.weso.json.DecoderUtils._
+import es.weso.utils.json.DecoderUtils._
 import es.weso.rdf.{PrefixMap, RDFReader}
 
 

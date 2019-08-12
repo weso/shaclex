@@ -2,7 +2,7 @@ package es.weso.schema
 
 import org.scalatest._
 import cats.implicits._
-import es.weso.json.JsonCompare.jsonDiff
+import es.weso.utils.json.JsonCompare.jsonDiff
 import es.weso.rdf.jena.RDFAsJenaModel
 import io.circe.parser._
 

@@ -3,7 +3,7 @@ package es.weso.shex.compact
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
-import es.weso.json.JsonTest
+import es.weso.utils.json.JsonTest
 import es.weso.utils.FileUtils
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 

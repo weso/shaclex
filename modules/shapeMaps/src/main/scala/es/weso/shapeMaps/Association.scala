@@ -4,7 +4,7 @@ import io.circe._
 import io.circe.syntax._
 import NodeSelector._
 import ShapeMapLabel._
-import es.weso.json.DecoderUtils._
+import es.weso.utils.json.DecoderUtils._
 import es.weso.rdf.nodes.IRI
 
 case class Association(node: NodeSelector, shape: ShapeMapLabel, info: Info = Info()) {
