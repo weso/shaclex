@@ -36,7 +36,7 @@ object RDF2SGraph {
   def ok[A](x:A): Converter[A] = EitherT.liftF(StateT.pure(x))
   def err[A](s: String): Converter[A] = EitherT.fromEither(s.asLeft[A])
 
-  def rdf2dot(rdf: RDFReader): Either[String,SGraph] = {
+  def rdf2sgraph(rdf: RDFReader): Either[String,SGraph] = {
     val pm = rdf.getPrefixMap()
     def cmb(u:Unit, t: RDFTriple): Converter[Unit] = for {
       edge <- rdfTriple2Edge(t, pm)

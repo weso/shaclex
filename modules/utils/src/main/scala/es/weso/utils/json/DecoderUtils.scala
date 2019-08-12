@@ -1,4 +1,4 @@
-package es.weso.json
+package es.weso.utils.json
 
 import io.circe._
 import cats.syntax.either._

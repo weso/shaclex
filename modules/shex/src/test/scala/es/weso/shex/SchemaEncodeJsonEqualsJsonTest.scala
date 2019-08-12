@@ -5,8 +5,8 @@ import java.io.File
 import cats._
 import cats.implicits._
 import com.typesafe.config._
-import es.weso.json.JsonCompare.jsonDiff
-import es.weso.json._
+import es.weso.utils.json.JsonCompare.jsonDiff
+import es.weso.utils.json._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._

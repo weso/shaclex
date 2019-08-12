@@ -1,9 +1,11 @@
 package es.weso.rdf.sgraph
 
 import es.weso.rdf.jena.RDFAsJenaModel
-import org.scalatest.{FunSpec, Matchers}
 
-class SGraphTest extends FunSpec with Matchers {
+import es.weso.utils.test._
+import org.scalatest._
+
+class SGraphTest extends FunSpec with Matchers with JsonMatchers {
 
   describe("SGraph") {
     it("Should generate from example") {
@@ -25,7 +27,7 @@ class SGraphTest extends FunSpec with Matchers {
             None
           )
        ts <- rdf.rdfTriples
-       dot <-RDF2SGraph.rdf2dot(rdf)
+       dot <-RDF2SGraph.rdf2sgraph(rdf)
       } yield (rdf,ts,dot)
       e.fold(
           e => fail(s"Error: $e"),
@@ -39,6 +41,8 @@ class SGraphTest extends FunSpec with Matchers {
           }
         )
     }
+
+
     /*    it("Should generate from RDF with 2 overlapping prefixes") {
       RDFAsJenaModel.fromChars(
         """|prefix e: <http://example.org/>
@@ -69,5 +73,33 @@ class SGraphTest extends FunSpec with Matchers {
     )
   }
 */
+  }
+
+  describe(s"Json generation") {
+    it(s"Should convert to Json") {
+      val expected =
+        """|[
+           |{ "data": { "id": "N0", "label": ":x", "type": "iri" } },
+           |{ "data": { "id": "N1", "label": ":y", "type": "iri" } },
+           |{ "data": { "id": "N2", "label": ":A", "type": "iri" } },
+           |{ "data": { "source": "N0", "target": "N2", "label": "a", "href": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" } },
+           |{ "data": { "source": "N0", "target": "N1", "label": ":p", "href": "http://example.org/p" } }
+           |]
+           |""".stripMargin
+
+      val e = for {
+        rdf <- RDFAsJenaModel.fromString(
+          """prefix : <http://example.org/>
+            |:x a :A ;
+            |   :p :y .
+            |""".stripMargin, "TURTLE"
+        )
+        sg <- RDF2SGraph.rdf2sgraph(rdf)
+      } yield sg.toJson
+      e.fold(
+        e => fail(s"SGraph: Error in conversion to Json: $e"),
+        json => json should matchJsonString(expected)
+      )
+    }
   }
 }

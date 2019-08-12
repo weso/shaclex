@@ -1,6 +1,6 @@
 package es.weso.shapeMaps
 
-import es.weso.json.DecoderUtils.optFieldDecode
+import es.weso.utils.json.DecoderUtils.optFieldDecode
 import io.circe._
 
 abstract sealed class Status

@@ -1,4 +1,4 @@
-package es.weso.json
+package es.weso.utils.json
 import io.circe._
 import diffson._
 import diffson.lcs._

@@ -163,7 +163,9 @@ lazy val sgraph = project
   .dependsOn(srdf,
     utils,
     srdf4j % Test,
-    srdfJena % Test)
+    srdfJena % Test,
+    utilsTest % Test
+  )
   .settings(
     libraryDependencies ++= Seq(
       catsCore,
@@ -285,6 +287,7 @@ lazy val rbe = project
     )
   )
 
+
 lazy val srdf = project
   .in(file("modules/srdf"))
   .disablePlugins(RevolverPlugin)
@@ -367,6 +370,26 @@ lazy val utils = project
       commonsText
     )
   )
+
+lazy val utilsTest = project
+  .in(file("modules/utilsTest"))
+  .disablePlugins(RevolverPlugin)
+  .settings(commonSettings, publishSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      circeCore,
+      circeGeneric,
+      circeParser,
+      catsCore,
+      catsKernel,
+      catsMacros,
+      diffsonCirce,
+      xercesImpl,
+      commonsText,
+      scalaTest
+    )
+  )
+
 
 lazy val validating = project
   .in(file("modules/validating"))

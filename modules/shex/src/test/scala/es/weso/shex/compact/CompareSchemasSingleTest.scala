@@ -2,7 +2,7 @@ package es.weso.shex.compact
 
 import java.io.File
 import com.typesafe.config.{Config, ConfigFactory}
-import es.weso.json.JsonTest
+import es.weso.utils.json.JsonTest
 import es.weso.shex._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.utils.FileUtils._

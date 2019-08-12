@@ -45,9 +45,12 @@ case class SGraph(rdfNodeIdMap: Map[RDFNode, Node],
     sb.toString
   }
 
-  def toJson: Json = Json.Null /* rdfNodeIdMap.values.foreach { node =>
+  def toJson: Json =
+    Json.fromValues(
+      rdfNodeIdMap.values.map(_.toJson) ++
+       edges.map(_.toJson)
+    )
 
-  }*/
 }
 
 object SGraph {

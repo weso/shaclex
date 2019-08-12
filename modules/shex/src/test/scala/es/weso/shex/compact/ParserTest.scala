@@ -1,6 +1,6 @@
 package es.weso.shex.compact
 
-import es.weso.json.JsonTest
+import es.weso.utils.json.JsonTest
 import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 import org.scalatest.{EitherValues, FunSpec, Matchers}

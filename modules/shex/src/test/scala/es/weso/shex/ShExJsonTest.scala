@@ -6,7 +6,7 @@ import scala.io._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
-import es.weso.json._
+import es.weso.utils.json._
 import es.weso.utils.FileUtils._
 
 class ShExJsonTest extends FunSpec with JsonTest with Matchers with EitherValues {

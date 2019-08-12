@@ -6,7 +6,7 @@ import es.weso.rdf.nodes.IRI._
 import util.matching._
 import es.weso.shex._
 import es.weso.rdf._
-import es.weso.json.DecoderUtils._
+import es.weso.utils.json.DecoderUtils._
 import es.weso.rdf.operations.Comparisons._
 import es.weso.rdf.PREFIXES.{`rdf:langString`, `xsd:string`}
 
