@@ -90,8 +90,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
-  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph, utilsTest)
+  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph, utilsTest)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(

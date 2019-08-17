@@ -29,10 +29,11 @@ abstract class ShapeMap {
 
   override def toString = Show[ShapeMap].show(this)
 
-  def serialize(format: String, base: Option[IRI] = None): String = {
+  def serialize(format: String, base: Option[IRI] = None): Either[String,String] = {
     format.toUpperCase match {
       case "JSON" => this.toJson.spaces2
       case "COMPACT" => this.relativize(base).toString
+      case _ => Left(s"ShapeMap.serialize: Unsupported format $format, Available formats = ${ShapeMap.availableFormats}")
     }
   }
 
@@ -42,8 +43,8 @@ abstract class ShapeMap {
 
 object ShapeMap {
 
+  def availableFormats: List[String] = List("COMPACT", "JSON")
   def empty: ShapeMap = FixedShapeMap.empty
-
   def fromURI(uri: String,
               format: String,
               base: Option[IRI],
