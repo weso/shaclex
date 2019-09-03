@@ -31,8 +31,8 @@ abstract class ShapeMap {
 
   def serialize(format: String, base: Option[IRI] = None): Either[String,String] = {
     format.toUpperCase match {
-      case "JSON" => this.toJson.spaces2
-      case "COMPACT" => this.relativize(base).toString
+      case "JSON" => Right(this.toJson.spaces2)
+      case "COMPACT" => Right(this.relativize(base).toString)
       case _ => Left(s"ShapeMap.serialize: Unsupported format $format, Available formats = ${ShapeMap.availableFormats}")
     }
   }

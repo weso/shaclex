@@ -482,12 +482,15 @@ case class Validator(schema: Schema,
   private[validator] def checkNormalizedShape(attempt: Attempt, node: RDFNode, s: NormalizedShape
                                              ): CheckTyping = {
     val zero = getTyping
-    def cmb(ct: CheckTyping, pair: (Path, Constraint)): CheckTyping = for {
-      typing <- {
-        val (path, constraint) = pair
-        checkConstraint(attempt, node, path, constraint)
-      }
-    } yield typing
+    def cmb(ct: CheckTyping, pair: (Path, Constraint)): CheckTyping = {
+      val (path, constraint) = pair
+      // println(s"Checking constraint: path: $path")
+      for {
+        typing1 <- ct
+        typing2 <- checkConstraint(attempt, node, path, constraint)
+        typing <- combineTypings(List(typing1,typing2))
+      } yield typing
+    }
     s.constraints.foldLeft(zero)(cmb)
   }
 

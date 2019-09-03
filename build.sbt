@@ -1,41 +1,15 @@
-/*
-scalafmt: {
-  style = defaultWithAlign
-  maxColumn = 150
-  align.tokens = [
-    { code = "=>", owner = "Case" }
-    { code = "⇒", owner = "Case" }
-    { code = "extends", owner = "Defn.(Class|Trait|Object)" }
-    { code = "//", owner = ".*" }
-    { code = "{", owner = "Template" }
-    { code = "}", owner = "Template" }
-    { code = ":=", owner = "Term.ApplyInfix" }
-    { code = "++=", owner = "Term.ApplyInfix" }
-    { code = "+=", owner = "Term.ApplyInfix" }
-    { code = "%", owner = "Term.ApplyInfix" }
-    { code = "%%", owner = "Term.ApplyInfix" }
-    { code = "%%%", owner = "Term.ApplyInfix" }
-    { code = "->", owner = "Term.ApplyInfix" }
-    { code = "→", owner = "Term.ApplyInfix" }
-    { code = "<-", owner = "Enumerator.Generator" }
-    { code = "←", owner = "Enumerator.Generator" }
-    { code = "=", owner = "(Enumerator.Val|Defn.(Va(l|r)|Def|Type))" }
-  ]
-}
- */
-
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
 lazy val catsVersion           = "2.0.0-RC1"
 lazy val commonsTextVersion    = "1.7"
-lazy val circeVersion          = "0.12.0-RC1"
+lazy val circeVersion          = "0.12.0-RC3"
 lazy val diffsonVersion        = "4.0.0-M4"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.12.0"
 lazy val jgraphtVersion        = "1.3.1"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
-lazy val rdf4jVersion          = "2.5.3"
+lazy val rdf4jVersion          = "2.5.4"
 lazy val scalacheckVersion     = "1.14.0"
 lazy val scalacticVersion      = "3.0.8"
 lazy val scalaTestVersion      = "3.0.8"
@@ -90,8 +64,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph, utilsTest)
-  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph, utilsTest)
+  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(

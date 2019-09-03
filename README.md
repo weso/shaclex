@@ -27,7 +27,7 @@ as well as from external SPARQL endpoints.
 
 ## Installation and compilation
 
-The projects uses [sbt](http://www.scala-sbt.org/) for compilation as well as Java 1.8.
+The project uses [sbt](http://www.scala-sbt.org/) for compilation as well as Java 1.8.
 
 * `sbt test` compiles and runs the tests
 

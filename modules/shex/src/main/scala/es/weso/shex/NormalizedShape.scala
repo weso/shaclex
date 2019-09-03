@@ -29,7 +29,7 @@ object NormalizedShape {
                                   schema:Schema
                                  ): Either[String,Map[Path,Constraint]] = te match {
     case _: Expr => Left(s"Contains an expr")
-    case _: Inclusion => Left(s"Constains an inclusion")
+    case _: Inclusion => Left(s"Contains an inclusion")
     case eo: EachOf => {
       val zero = cs.asRight[String]
       def cmb(current: Either[String, Map[Path, Constraint]],
@@ -40,7 +40,7 @@ object NormalizedShape {
       } yield cs1
       eo.expressions.foldLeft(zero)(cmb)
     }
-    case _: OneOf => Left(s"Constains a oneOf")
+    case _: OneOf => Left(s"Contains a oneOf")
     case tc: TripleConstraint =>
       if (cs.keySet contains tc.path) Left(s"Repeated path: ${tc.path}")
       else tc.valueExpr match {
