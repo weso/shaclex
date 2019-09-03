@@ -5,7 +5,7 @@ import org.scalatest._
 
 class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
 
-  describe(s"Normalize shape simple") {
+/*  describe(s"Normalize shape simple") {
       val shexStr =
         """
           |prefix : <http://example.org/>
@@ -21,7 +21,24 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
          false)
       )
   }
+*/
+  describe(s"Normalize shape with OR") {
+    val shexStr =
+      """
+        |prefix : <http://example.org/>
+        |:S { :p IRI OR BNode }
+        |""".stripMargin
 
+    val ex = IRI("http://example.org/")
+    val p: Path = Direct(ex + "p")
+    val a = ex + "S"
+    val iri = NodeConstraint.nodeKind(IRIKind,List())
+    shouldNormalizeShape(shexStr, a, NormalizedShape(
+      Map(p -> Constraint(Some(iri),false,Cardinality(1,IntMax(1)))),
+      false)
+    )
+  }
+/*
   describe(s"Normalize shape simple with two predicates") {
     val shexStr =
       """
@@ -49,7 +66,7 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
       false)
     )
   }
-
+*/
   def shouldNormalizeShape(strSchema: String, shapeLabel: IRI, ns: NormalizedShape) = {
     it(s"Should normalize $shapeLabel and return $ns") {
       val shapeLbl = IRILabel(shapeLabel)

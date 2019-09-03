@@ -23,6 +23,16 @@ sealed trait ShapeExpr extends Product with Serializable {
   def relativize(base: IRI): ShapeExpr
 
   def hasNoReference(schema:Schema): Boolean = getShapeRefs(schema).isEmpty
+
+  def isSimple(schema: Schema): Boolean = this match {
+    case _:Shape => true
+    case _:NodeConstraint => true
+    case _:ShapeExternal => true
+    case _:ShapeOr => false
+    case _:ShapeAnd => false
+    case _:ShapeNot => false
+    case _:ShapeRef => false
+  }
 }
 
 object ShapeExpr {

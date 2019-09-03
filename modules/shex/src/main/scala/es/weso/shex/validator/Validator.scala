@@ -255,6 +255,7 @@ case class Validator(schema: Schema,
     attempt: Attempt,
     node: RDFNode,
     ses: List[ShapeExpr]): CheckTyping = {
+    println(s"Checking OR constraint")
     val vs = ses.map(se => checkNodeShapeExpr(attempt, node, se))
     for {
       t1 <- checkSome(
@@ -484,12 +485,15 @@ case class Validator(schema: Schema,
     val zero = getTyping
     def cmb(ct: CheckTyping, pair: (Path, Constraint)): CheckTyping = {
       val (path, constraint) = pair
-      // println(s"Checking constraint: path: $path")
+      println(s"Checking constraint: path: $path\nConstraint: $constraint")
       for {
         typing1 <- ct
         typing2 <- checkConstraint(attempt, node, path, constraint)
         typing <- combineTypings(List(typing1,typing2))
-      } yield typing
+      } yield {
+        println(s"Typing: ${typing.getMap}")
+        typing
+      }
     }
     s.constraints.foldLeft(zero)(cmb)
   }
@@ -506,6 +510,7 @@ case class Validator(schema: Schema,
 
   // We assume that the shape has no reference to other shapes
   private def checkValuesConstraint(values: Set[RDFNode], constraint: Constraint, node: RDFNode, path: Path, attempt: Attempt): CheckTyping = {
+    println(s"Check values consraint: $constraint")
     val card: Cardinality = constraint.card
     constraint.shape match {
         case None =>

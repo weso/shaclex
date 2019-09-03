@@ -48,11 +48,12 @@ object NormalizedShape {
           Constraint(tc.valueExpr,
             extraPaths contains tc.path,
             Cardinality(tc.min,tc.max))).asRight[String]
-        case Some(se) => if (se.hasNoReference(schema)) {
+        case Some(se) =>
+          if (se.hasNoReference(schema) && se.isSimple(schema)) {
           cs.updated(tc.path,Constraint(tc.valueExpr,
             extraPaths contains tc.path,
             Cardinality(tc.min,tc.max))).asRight[String]
-        } else Left(s"Contains a reference")
+        } else Left(s"$se is not simple or contains a reference")
       }
   }
 }
