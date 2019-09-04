@@ -696,6 +696,14 @@ case class Validator(schema: Schema,
     c.crefs.nonEmpty
   }
 
+  private[validator] def showCandidateLines(cs: List[CandidateLine]): String = {
+    cs.length match {
+      case 0 => "No candidate lines"
+      case 1 => s"One candidate line\n${cs.head.show}"
+      case _ => cs.map(_.show).mkString("\n")
+    }
+  }
+
   private[validator] def checkCandidates(
     attempt: Attempt,
     bagChecker: BagChecker_,
@@ -722,9 +730,10 @@ case class Validator(schema: Schema,
           StringError(
             s"""|None of the candidates matched. Attempt: ${attempt.show}
                 |Bag: ${bagChecker.show}
-                |Candidate lines:${as.map(_.show).mkString(",")}
+                |Candidate lines:${showCandidateLines(as)}
                 |""".stripMargin
         )})
+
       }
     }
   }

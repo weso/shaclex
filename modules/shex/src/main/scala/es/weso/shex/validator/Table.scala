@@ -9,7 +9,6 @@ import es.weso.shex._
 import es.weso.shex.compact.Parser.TripleExprMap
 import cats.implicits._
 
-
 /* Candidates table */
 object Table extends LazyLogging {
 
@@ -189,8 +188,9 @@ object Table extends LazyLogging {
           val (cref,expr) = current
           s"${cref.show}->${expr.show}" :: s
         }
-        cs.foldLeft(List[String]())(combine).mkString(",")
+        cs.foldLeft(List[String]())(combine).mkString("\n")
       }
+      val paths = table.paths.toList
       s"""Constraints:\n${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}\n---endTable\n""".stripMargin
     }
   }

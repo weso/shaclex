@@ -6,8 +6,7 @@ import org.apache.jena.query._
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
-
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{Either, Left, Right, Try}
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.Statement
@@ -24,7 +23,6 @@ import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.jena.JenaMapper._
 import es.weso.utils.EitherUtils
 
-// TODO: Refactor to change String type by IRI
 case class Endpoint(endpointIRI: IRI)
   extends RDFReader
      with RDFReasoner
@@ -190,7 +188,7 @@ case class Endpoint(endpointIRI: IRI)
       jena2rdfnode(st.getObject))
   }
 
-  def property2iri(p: Property): IRI = {
+  private def property2iri(p: Property): IRI = {
     IRI(p.getURI)
   }
 
@@ -245,7 +243,7 @@ case class Endpoint(endpointIRI: IRI)
           val ls: List[Map[String, RDFNode]] = result.asScala.toList.map(qs => {
             val qsm = new QuerySolutionMap()
             qsm.addAll(qs)
-            qsm.asMap.asScala.mapValues(node => jenaNode2RDFNodeUnsafe(node)).toMap
+            qsm.asMap.asScala.view.mapValues(node => jenaNode2RDFNodeUnsafe(node)).toMap
           })
           ls
         }

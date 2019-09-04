@@ -7,6 +7,7 @@ import es.weso.rdf.nodes.RDFNode
 import es.weso.shex.{SemAct, ShapeExpr}
 import es.weso.shex.validator.Table.CTable
 import es.weso.utils.SeqUtils.filterOptions
+import ConstraintRef._
 
 case class CandidateLine(values: List[(Arc,ConstraintRef)]) {
   def mkBag: Bag[ConstraintRef] = Bag.toBag(values.map(_._2))
@@ -24,7 +25,10 @@ object CandidateLine {
 
   implicit lazy val showCandidateLine = new Show[CandidateLine] {
     def show(cl: CandidateLine): String = {
-      s"CandidateLine: ${cl.values.map{ case (arc,cref) => (arc.show, cref.show)}.mkString(",")}"
+      def compare(pair1:(Arc,ConstraintRef), pair2:(Arc,ConstraintRef)): Boolean =
+        Ordering[ConstraintRef].compare(pair1._2, pair2._2) <= 0
+
+      s"CandidateLine: ${cl.values.sortWith(compare).map{ case (arc,cref) => (arc.show, cref.show)}.mkString(",")}"
     }
   }
 
