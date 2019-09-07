@@ -126,6 +126,7 @@ case class Validator(schema: Schema,
   private[validator] def checkNodeShapesMap(node: RDFNode,
                                             shapesMap: Map[ShapeMapLabel, Info]
                                            ): CheckTyping = {
+  println(s"checkNodeShapesMap: $node, shapesMap: $shapesMap")
   for {
       ts <- checkAll(shapesMap.map(checkLabelInfo(node)).toList)
       t <- combineTypings(ts)
@@ -179,10 +180,11 @@ case class Validator(schema: Schema,
   private[validator] def checkNodeLabelSafe(node: RDFNode,
                                             label: ShapeLabel,
                                             shape: ShapeExpr): CheckTyping = {
+    println(s"checkNodeLabel: $node, label: $label, $shape")
     val shapeType = ShapeType(shape, Some(label), schema)
     val attempt = Attempt(NodeShape(node, shapeType), None)
     for {
-      typing <- getTyping
+      _ <- getTyping
       t <- {
         runLocalSafeTyping(
           bind(
@@ -221,6 +223,7 @@ case class Validator(schema: Schema,
   private[validator] def checkNodeShapeExpr(attempt: Attempt,
                                             node: RDFNode,
                                             s: ShapeExpr): CheckTyping = {
+    println(s"checkNodeShapeExpr: $s")
     s match {
       case so: ShapeOr => checkOr(attempt, node, so.shapeExprs)
       case sa: ShapeAnd => checkAnd(attempt, node, sa.shapeExprs)
@@ -466,20 +469,29 @@ case class Validator(schema: Schema,
   private def getPaths(s: Shape): Check[List[Path]] =
     fromEitherString(s.paths(schema))
 
-  private[validator] def checkShapeBase(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping =
-  s match {
-    case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
-    case _ if s.isNormalized(schema) =>  for {
-      normalized <- fromEitherString(s.normalized(schema))
-      typing <- checkNormalizedShape(attempt, node, normalized)
-    } yield typing
-    case _ => for {
-      paths  <- getPaths(s)
-      neighs <- getNeighPaths(node, paths)
-      typing <- checkNeighsShape(attempt, node, neighs, s)
-    } yield typing
+  private[validator] def checkShapeBase(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
+    println(s"checkShapeBase: $node, $s. Normalized?: ${s.isNormalized(schema)}")
+    s match {
+      case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
+      case _ if s.isNormalized(schema) => for {
+        normalized <- fromEitherString(s.normalized(schema))
+        typing <- checkNormalizedShape(attempt, node, normalized)
+      } yield typing
+      case _ => for {
+        paths <- {
+          getPaths(s)
+        }
+        neighs <- {
+          println(s"Paths: $paths")
+          getNeighPaths(node, paths)
+        }
+        typing <- {
+          println(s"Neighs: $neighs")
+          checkNeighsShape(attempt, node, neighs, s)
+        }
+      } yield typing
+    }
   }
-
   private[validator] def checkNormalizedShape(attempt: Attempt, node: RDFNode, s: NormalizedShape
                                              ): CheckTyping = {
     val zero = getTyping
@@ -796,7 +808,7 @@ case class Validator(schema: Schema,
     for {
       rdf        <- getRDF
       outTriples <- fromEitherString(rdf.triplesWithSubjectPredicates(node, outgoingPredicates))
-      // _ <- { println(s"Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
+       _ <- { println(s"getNeighPaths\ntriplesWithSubjectPredicates($node, $outgoingPredicates): Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
       outgoing = outTriples.map(t => Arc(Direct(t.pred), t.obj)).toList
       inTriples <- fromEitherString(rdf.triplesWithObject(node))
       incoming = inTriples.map(t => Arc(Inverse(t.pred), t.subj)).toList

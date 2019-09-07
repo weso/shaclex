@@ -1,26 +1,15 @@
 package es.weso.rdf.jena
-import java.io.ByteArrayOutputStream
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
-import es.weso.rdf.jena.JenaMapper._
-import es.weso.rdf.jena.SPARQLQueries._
 import es.weso.rdf.nodes.{RDFNode, _}
 import es.weso.rdf.path.SHACLPath
 import es.weso.rdf.triples.RDFTriple
-import es.weso.utils.EitherUtils
 import io.circe.Json
-import io.circe.parser.parse
-import org.apache.jena.query._
-import org.apache.jena.rdf.model.{Model, Property, Statement, RDFNode => JenaRDFNode}
 import org.slf4j._
-import scala.jdk.CollectionConverters._
-import scala.util.{Either, Left, Right, Try}
-import cats._
+import scala.util._
 import cats.implicits._
 
-case class Compound(endpoints: List[Endpoint],
-                    rdfModels: List[RDFAsJenaModel])
+case class Compound(members: List[RDFReader])
   extends RDFReader
      with RDFReasoner
      with LazyLogging {
@@ -49,58 +38,72 @@ case class Compound(endpoints: List[Endpoint],
     Left(s"Endpoint cannot be serialized to $format")
   }
 
-  override def iris(): Either[String,Set[IRI]] = ???
-  override def subjects(): Either[String,Set[RDFNode]] = ???
-  override def predicates(): Either[String, Set[IRI]] = ???
-  override def iriObjects(): Either[String,Set[IRI]] = ???
-  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] = ???
+  private def cmb[A, B, C](ls: List[A],
+                           f: A => Either[String,Set[C]]
+                          ): Either[String,Set[C]] = {
+    val vs = ls.map(f(_))
+    vs.sequence.map(_.toSet).map(_.flatten)
+  }
 
-  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String, Boolean] = ???
+  private def cmbSeq[A, B, C](ls: List[A],
+                           f: A => Either[String,Seq[C]]): Either[String,Seq[C]] = {
+    val vs = ls.map(f(_))
+    vs.sequence.map(_.toSeq).map(_.flatten)
+  }
 
-  override def nodesWithPath(path: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]] = ???
+  override def iris(): Either[String,Set[IRI]] =
+    cmb(members, (e:RDFReader) => e.iris())
 
-  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Either[String, Set[RDFNode]] = ???
+  override def subjects(): Either[String,Set[RDFNode]] =
+    cmb(members, (e:RDFReader) => e.subjects())
 
-  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String,Set[RDFNode]] = ???
+  override def predicates(): Either[String, Set[IRI]] =
+    cmb(members, (e:RDFReader) => e.predicates())
+
+  override def iriObjects(): Either[String,Set[IRI]] =
+    cmb(members, (e:RDFReader) => e.iriObjects())
+
+  override def getSHACLInstances(c: RDFNode): Either[String,Seq[RDFNode]] =
+    cmbSeq(members,
+      (e:RDFReader) => e.getSHACLInstances(c))
+
+  private def someTrue(xs: Set[Boolean]): Boolean = xs.exists(_ == true)
+
+  override def hasSHACLClass(n: RDFNode, c: RDFNode): Either[String, Boolean] = {
+    val vs = members.map(_.hasSHACLClass(n,c))
+    vs.sequence.map(_.toSet).map(someTrue(_))
+  }
+
+  override def nodesWithPath(path: SHACLPath): Either[String, Set[(RDFNode, RDFNode)]] =
+    cmb(members, (e:RDFReader) => e.nodesWithPath(path))
+
+
+  override def subjectsWithPath(path: SHACLPath, obj: RDFNode): Either[String, Set[RDFNode]] =
+    cmb(members, (e:RDFReader) => e.subjectsWithPath(path,obj))
+
+  override def objectsWithPath(subj: RDFNode, path: SHACLPath): Either[String,Set[RDFNode]] =
+    cmb(members, (e:RDFReader) => e.objectsWithPath(subj,path))
 
   override def checkDatatype(node: RDFNode, datatype: IRI): Either[String,Boolean] =
     JenaMapper.wellTypedDatatype(node, datatype)
 
-  override def rdfTriples(): Either[String,Set[RDFTriple]] = ???
+  override def rdfTriples(): Either[String,Set[RDFTriple]] =
+    cmb(members, (e:RDFReader) => e.rdfTriples())
 
-  def triplesWithSubject(node: RDFNode): Either[String,Set[RDFTriple]] = ???
+
+  def triplesWithSubject(node: RDFNode): Either[String,Set[RDFTriple]] =
+    cmb(members, (e:RDFReader) => e.triplesWithSubject(node))
 
   def triplesWithPredicate(p: IRI): Either[String,Set[RDFTriple]] = {
-    ???
+    cmb(members, (e:RDFReader) => e.triplesWithPredicate(p))
   }
 
   def triplesWithObject(node: RDFNode): Either[String,Set[RDFTriple]] = {
-    val xs = for {
-      ts1 <- endpoints.map(_.triplesWithObject(node))
-      ts2 <- rdfModels.map(_.triplesWithObject(node))
-    } yield combine(ts1,ts2)
-    flat(xs)
+    cmb(members, (e:RDFReader) => e.triplesWithObject(node))
   }
-
-  private def flat[A](ls: List[Either[String,Set[A]]]): Either[String,Set[A]] = {
-    ls.sequence.map(_.flatten).map(_.toSet)
-  }
-
-  private def combine[A](es1: Either[String,Set[A]], es2: Either[String,Set[A]]): Either[String,Set[A]]=
-    for {
-      s1 <- es1
-      s2 <- es2
-    } yield s1 ++ s2
 
   def triplesWithPredicateObject(p: IRI, o: RDFNode): Either[String, Set[RDFTriple]] = {
-    val xs = for {
-      ts1 <- endpoints.map(_.triplesWithPredicateObject(p, o))
-      ts2 <- rdfModels.map(_.triplesWithPredicateObject(p, o))
-    } yield for {
-      s1 <- ts1
-      s2 <- ts2
-    } yield s1 ++ s2
-    xs.toList.sequence.map(_.flatten).map(_.toSet)
+    cmb(members, (e:RDFReader) => e.triplesWithPredicateObject(p,o))
   }
 
   override def applyInference(inference: String): Either[String, Rdf] = {

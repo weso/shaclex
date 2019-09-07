@@ -142,9 +142,31 @@ case class Endpoint(endpointIRI: IRI)
     model2triples(model)
   }.fold(e => Left(s"Exception obtaining rdfTriples of endpoint: $endpoint: $e"), Right(_))
 
+  override def triplesWithSubjectPredicate(node: RDFNode,
+                                           p: IRI
+                                          ): Either[String, Set[RDFTriple]] = node match {
+    case subj: IRI => Try {
+      println(s"##<<< triplesWithSubjectPredicate($node, $p)")
+      val query = queryTriplesWithSubjectPredicate(subj,p)
+      println(s"Query: $query")
+      val qExec = QueryExecutionFactory.sparqlService(endpoint,query)
+      println(s"QueryExecutor: $qExec")
+      val model = qExec.execConstruct
+      // val it = qExec.execConstructTriples.forEachRemaining()
+      println(s"###<<< triplesWithSubjectPredicate. End of query: ${model.size} triples retrieved")
+      model2triples(model)
+    }.fold(e => Left(s"Error accessing endpoint ${endpoint} to obtain triples with subject $node and predicate ${p}: ${e.getMessage}"),
+      Right(_)
+    )
+    case _ => Right(Set()) // Left("triplesWithSubject: node " + node + " must be a IRI")
+  }
+
+
   def triplesWithSubject(node: RDFNode): Either[String,Set[RDFTriple]] = node match {
     case subj: IRI => Try {
+      println(s"## triplesWithSubject($node)")
       val model = QueryExecutionFactory.sparqlService(endpoint, queryTriplesWithSubject(subj)).execConstruct()
+      println(s"### triplesWithSubjectPredicate. End of query: ${model.size} triples retrieved")
       model2triples(model)
     }.fold(e => Left(s"Error accessing endpoint ${endpoint} to obtain triples with subject $node: ${e.getMessage}"),
       Right(_)
@@ -176,8 +198,9 @@ case class Endpoint(endpointIRI: IRI)
 
   /* TODO: Remove the following code using JenaMapper methods */
   private def model2triples(model: Model): Set[RDFTriple] = {
+    println(s"Model2triples: $model")
     val ts = model.listStatements().asScala.map(st => statement2triple(st)).toSet
-    logger.debug(s"Total triples = ${ts.size}")
+    println(s"##<<< Total triples = ${ts.size}")
     ts
   }
 
@@ -233,6 +256,7 @@ case class Endpoint(endpointIRI: IRI)
   override def availableInferenceEngines: List[String] = List("NONE")
 
   override def querySelect(queryStr: String): Either[String, List[Map[String,RDFNode]]] = {
+    println(s"QuerySelect: $queryStr")
     val tryQuery: Try[List[Map[String,RDFNode]]] = Try {
       val query = QueryFactory.create(queryStr)
       val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
@@ -254,6 +278,7 @@ case class Endpoint(endpointIRI: IRI)
   }
 
   override def queryAsJson(queryStr: String): Either[String, Json] = Try {
+    println(s"QueryAsJson: $queryStr")
     val query = QueryFactory.create(queryStr)
     val qExec = QueryExecutionFactory.sparqlService(endpoint, query)
     qExec.getQuery.getQueryType match {

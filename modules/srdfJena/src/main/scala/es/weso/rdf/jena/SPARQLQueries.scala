@@ -23,6 +23,18 @@ object SPARQLQueries {
          |""".stripMargin)
   }
 
+  def queryTriplesWithSubjectPredicate(subj: IRI, pred: IRI) = {
+    val s = subj.str
+    val p = pred.str
+    val query = QueryFactory.create(
+      s"""|construct {<${s}> <${p}> ?y } where {
+          |<${s}> <${p}> ?y .
+          |}
+          |""".stripMargin)
+    println(s"Running query: $query")
+    query
+  }
+
   def queryTriplesWithObject(obj: IRI) = {
     val s = obj.str
     QueryFactory.create(

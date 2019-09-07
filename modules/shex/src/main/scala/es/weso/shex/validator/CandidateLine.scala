@@ -28,7 +28,7 @@ object CandidateLine {
       def compare(pair1:(Arc,ConstraintRef), pair2:(Arc,ConstraintRef)): Boolean =
         Ordering[ConstraintRef].compare(pair1._2, pair2._2) <= 0
 
-      s"CandidateLine: ${cl.values.sortWith(compare).map{ case (arc,cref) => (arc.show, cref.show)}.mkString(",")}"
+      s"CandidateLine: ${cl.values.sortWith(compare).map{ case (arc,cref) => (arc.show, cref.show)}.mkString("\n")}"
     }
   }
 
