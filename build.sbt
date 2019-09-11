@@ -2,7 +2,7 @@
 lazy val antlrVersion          = "4.7.1"
 lazy val catsVersion           = "2.0.0-RC1"
 lazy val commonsTextVersion    = "1.7"
-lazy val circeVersion          = "0.12.0-RC3"
+lazy val circeVersion          = "0.12.1"
 lazy val diffsonVersion        = "4.0.0-M4"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.12.0"
