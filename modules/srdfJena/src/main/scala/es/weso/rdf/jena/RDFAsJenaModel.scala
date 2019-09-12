@@ -330,7 +330,9 @@ case class RDFAsJenaModel(model: Model,
     Right(model.size.toInt)
 
   override def isIsomorphicWith(other: RDFReader): Either[String,Boolean] = other match {
-    case o: RDFAsJenaModel => Right(model.isIsomorphicWith(o.model))
+    case o: RDFAsJenaModel => {
+      Right(model.isIsomorphicWith(o.model))
+    }
     case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
   }
 

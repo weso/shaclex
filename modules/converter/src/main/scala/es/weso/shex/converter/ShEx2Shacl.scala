@@ -7,8 +7,9 @@ import es.weso.shacl._
 import es.weso.rdf.nodes._
 import es.weso.rdf.path._
 import cats.implicits._
+import es.weso.shex.{Shape => ShExShape, _}
 import es.weso.shapeMaps.QueryShapeMap
-import es.weso.shex.ValueSetValue
+import es.weso.shex.normalized._
 
 object ShEx2Shacl {
 
@@ -29,7 +30,7 @@ object ShEx2Shacl {
                    counter: Int
                   ) {
 
-    def addShapeRefShape(sref: RefNode, s: Shape): State =
+    def addShapeRefShape(sref: RefNode, s: shacl.Shape): State =
       this.copy(shapesMap = shapesMap.updated(sref,s))
 
     def newShapeExprRef(se: shex.ShapeExpr): (State, shacl.RefNode) = {
@@ -63,6 +64,13 @@ object ShEx2Shacl {
     EitherT.leftT[S,A](List(msg))
   }
 
+  private def str2err(str: String): List[Err] = List(str)
+
+  private def fromEither[A](e: Either[List[Err],A]): Result[A] = EitherT.fromEither[S](e)
+  private def fromEitherString[A](e: Either[String,A]): Result[A] =
+    EitherT.fromEither[S](e).leftMap(msg => str2err(msg))
+
+
   private def sequence[A](ls: List[Result[A]]): Result[List[A]] = {
     ls.sequence[Result,A]
   }
@@ -78,7 +86,7 @@ object ShEx2Shacl {
   private def setState(s: State): Result[Unit] =
     EitherT.liftF(StateT.set(s))
 
-  private def addShapeRefShape(ref: RefNode, shape: Shape): Result[Unit] =
+  private def addShapeRefShape(ref: RefNode, shape: shacl.Shape): Result[Unit] =
     EitherT.liftF(StateT.modify(_.addShapeRefShape(ref,shape)))
 
   private def getShapesMap: Result[ShapesMap] =
@@ -100,6 +108,11 @@ object ShEx2Shacl {
     pm.pm.map { case (prefix, value) => (prefix.str, value) }
   } */
 
+  private def cnvPath(path: Path): SHACLPath = path match {
+    case d: Direct => PredicatePath(d.pred)
+    case i: Inverse => InversePath(PredicatePath(i.pred))
+  }
+
   private def getShaclShapes(schema: shex.Schema): Result[Map[shacl.RefNode, shacl.Shape]] = {
     val shexShapes: List[shex.ShapeExpr] = schema.shapes.getOrElse(List())
     sequence(shexShapes.map(s => cnvShapeRefShape(s,schema))).map(_.toMap)
@@ -108,8 +121,8 @@ object ShEx2Shacl {
   private type ShapeRefShape = (shacl.RefNode, shacl.Shape)
 
   private def cnvShapeRefShape(s: shex.ShapeExpr,
-                       schema: shex.Schema
-                      ): Result[ShapeRefShape] = {
+                               schema: shex.Schema
+                              ): Result[ShapeRefShape] = {
     for {
       sref    <- getShapeExprId(s)
       shape <- cnvShapeExpr(s, schema, sref.id)
@@ -117,7 +130,10 @@ object ShEx2Shacl {
     } yield (sref, shape)
   }
 
-  private def cnvShapeExpr(se: shex.ShapeExpr, schema: shex.Schema, id: RDFNode): Result[shacl.Shape] =
+  private def cnvShapeExpr(se: shex.ShapeExpr,
+                           schema: shex.Schema,
+                           id: RDFNode
+                          ): Result[shacl.Shape] =
     se match {
       case s: shex.ShapeAnd => cnvShapeAnd(s,schema,id)
       case s: shex.ShapeOr => cnvShapeOr(s,schema,id)
@@ -160,14 +176,64 @@ object ShEx2Shacl {
   private def cnvShape(shape: shex.Shape,
                schema: shex.Schema,
                id: RDFNode
-              ): Result[shacl.Shape] = for {
+              ): Result[shacl.Shape] = if (shape.isNormalized(schema)) {
+    for {
+      normalized <- fromEitherString(shape.normalized(schema))
+      shape <- cnvNormalizedShape(normalized, schema, id)
+    } yield shape
+  } else {
+    err(s"""|Not implemented conversion of non-normalized shapes yet.
+        |Shape: $shape
+        |Error: ${shape.normalized(schema).fold(identity, s => "Is it normalized?")}
+        |""".stripMargin)
+  }
+
+  private def cnvNormalizedShape(ns: NormalizedShape, schema: shex.Schema, id: RDFNode) : Result[Shape] = for {
+    ps <- sequence(ns.slots.toList.map {
+      case (path, constraint) => cnvConstraints(constraint, path, schema)
+     })
+   } yield
+    Shape.empty(id).addPropertyShapes(ps.flatten.map(_._2))
+
+  private def cnvConstraints(cs: Vector[Constraint],
+                             path: Path,
+                             schema: shex.Schema): Result[List[(shacl.PropertyShape,shacl.RefNode)]] = {
+    cs.size match {
+      case 0 => ok(List())
+      case 1 => for { pair <- cnvConstraint(cs.head, path, schema, false)
+                } yield List(pair)
+      case _ => cs.toList.map(cnvConstraint(_, path, schema, true)).sequence
+    }
+  }
+
+  private def cnvAnnot(a: Annotation): (IRI, RDFNode) = (a.predicate, a.obj.getNode)
+
+    private def cnvConstraint(c: Constraint,
+                              path: Path,
+                              schema: shex.Schema,
+                              qualified: Boolean): Result[(shacl.PropertyShape,shacl.RefNode)] = {
+    val shaclPath = cnvPath(path)
+    if (c.hasExtra || qualified) {
+      for {
+        sref <- getTripleExprId(c.tc)
+        shape <- mkQualifiedPropertyShape(shaclPath, c.shape, c.card.min, c.card.max, schema, sref.id, c.as.getOrElse(List()).map(cnvAnnot))
+      } yield (shape,sref)
+    } else {
+      for {
+        sref <- getTripleExprId(c.tc)
+        shape <- mkPropertyShape(shaclPath, c.shape, c.card.min, c.card.max, schema, sref.id, c.as.getOrElse(List()).map(cnvAnnot))
+      } yield (shape,sref)
+    }
+  }
+
+  /*for {
     ps <- shape.expression match {
       case None => ok(List[(shacl.PropertyShape,shacl.RefNode)]())
       case Some(te) => cnvTripleExpr(te, schema, id)
     }
   } yield {
     Shape.empty(id).copy(propertyShapes = ps.map(_._2))
-  }
+  }*/
 
   private def outCast[A,B >: A](r:Result[A]): Result[B] = r.map(x => x)
 
@@ -194,37 +260,81 @@ object ShEx2Shacl {
        sref <- getTripleExprId(tc)
        ps <- mkPropertyShape(
          path,
-         tc.valueExpr, tc.min, tc.max, schema, sref.id)
+         tc.valueExpr, tc.min, tc.max, schema, sref.id, tc.annotations.getOrElse(List()).map(cnvAnnot))
       } yield (ps,sref)
     }
   }
+
+  private def cnvMin(min: Int): Option[Int] =
+    if (min == Shacl.defaultMin) None
+    else Some(min)
+
+  private def cnvMax(max: shex.Max): Option[Int] =
+    max match {
+      case shex.Star => None
+      case shex.IntMax(n) => Some(n)
+    }
 
   private def mkPropertyShape(path: SHACLPath,
                       valueExpr: Option[shex.ShapeExpr],
                       min: Int,
                       max: shex.Max,
                       schema: shex.Schema,
-                      id: RDFNode
+                      id: RDFNode,
+                      annotations: List[(IRI,RDFNode)]
                      ): Result[PropertyShape] = {
-    val shaclMin: Option[Int] =
+    val shaclMin: Option[Component] =
       if (min == Shacl.defaultMin) None
-      else Some(min)
-    val shaclMax: Option[Int] =
+      else Some(MinCount(min))
+
+    val shaclMax: Option[Component] =
       max match {
         case shex.Star => None
-        case shex.IntMax(n) => Some(n)
+        case shex.IntMax(n) => Some(MaxCount(n))
     }
+    val cardComponents = List(shaclMin, shaclMax).flatten
+
     val rs: Result[PropertyShape] = for {
      components <- valueExpr match {
-       case None => ok(List[Component]())
+       case None => ok(cardComponents)
        case Some(se) => cnvShapeRefShape(se,schema).map{
-         case (sref,_) => List[Component](QualifiedValueShape(sref, shaclMin, shaclMax, None))
+         case (sref,_) => {
+           cardComponents ++ List(NodeComponent(sref))
+         }
        }
      }
      ps: PropertyShape = Shape.emptyPropertyShape(id, path).copy(
-       components = components
+       components = components,
+       annotations = annotations
      )
      _ <- addShapeRefShape(RefNode(id), ps)
+    } yield ps
+    rs
+  }
+
+
+  private def mkQualifiedPropertyShape(path: SHACLPath,
+                              valueExpr: Option[shex.ShapeExpr],
+                              min: Int,
+                              max: shex.Max,
+                              schema: shex.Schema,
+                              id: RDFNode,
+                              annotations: List[(IRI,RDFNode)]
+                             ): Result[PropertyShape] = {
+    val shaclMin = cnvMin(min)
+    val shaclMax = cnvMax(max)
+    val rs: Result[PropertyShape] = for {
+      components <- valueExpr match {
+        case None => ok(List[Component]())
+        case Some(se) => cnvShapeRefShape(se,schema).map{
+          case (sref,_) => List[Component](QualifiedValueShape(sref, shaclMin, shaclMax, None))
+        }
+      }
+      ps: PropertyShape = shacl.Shape.emptyPropertyShape(id, path).copy(
+        components = components,
+        annotations = annotations
+      )
+      _ <- addShapeRefShape(RefNode(id), ps)
     } yield ps
     rs
   }

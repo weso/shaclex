@@ -247,7 +247,8 @@ object RDF2Shacl extends RDFParser with LazyLogging {
       description = description,
       order = order,
       group = group,
-      sourceIRI = rdf.sourceIRI
+      sourceIRI = rdf.sourceIRI,
+      annotations = List()  // TODO: Annotations should contain the values for other predicates associated with a given node
     )
 
     val sref = RefNode(n)

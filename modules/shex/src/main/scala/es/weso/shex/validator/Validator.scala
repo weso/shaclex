@@ -19,6 +19,8 @@ import es.weso.shex.validator.Table._
 import ShExChecker._
 import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMapLabel, _}
 import es.weso.shex.actions.TestSemanticAction
+import es.weso.shex.normalized.{Constraint, FlatShape, NormalizedShape}
+
 import Function.tupled
 
 /**
@@ -473,9 +475,9 @@ case class Validator(schema: Schema,
     println(s"checkShapeBase: $node, $s. Normalized?: ${s.isNormalized(schema)}")
     s match {
       case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
-      case _ if s.isNormalized(schema) => for {
-        normalized <- fromEitherString(s.normalized(schema))
-        typing <- checkNormalizedShape(attempt, node, normalized)
+      case _ if s.isFlatShape(schema) => for {
+        flatShape <- fromEitherString(s.flattenShape(schema))
+        typing <- checkFlatShape(attempt, node, flatShape)
       } yield typing
       case _ => for {
         paths <- {
@@ -492,11 +494,13 @@ case class Validator(schema: Schema,
       } yield typing
     }
   }
-  private[validator] def checkNormalizedShape(attempt: Attempt, node: RDFNode, s: NormalizedShape
+  private[validator] def checkFlatShape(attempt: Attempt,
+                                              node: RDFNode,
+                                              s: FlatShape
                                              ): CheckTyping = {
     val zero = getTyping
-    def cmb(ct: CheckTyping, pair: (Path, Constraint)): CheckTyping = {
-      val (path, constraint) = pair
+    def cmb(ct: CheckTyping, slot: (Path, Constraint)): CheckTyping = {
+      val (path, constraint) = slot
       println(s"Checking constraint: path: $path\nConstraint: $constraint")
       for {
         typing1 <- ct
@@ -507,7 +511,7 @@ case class Validator(schema: Schema,
         typing
       }
     }
-    s.constraints.foldLeft(zero)(cmb)
+    s.slots.foldLeft(zero)(cmb)
   }
 
   private def checkConstraint(attempt: Attempt, node: RDFNode, path: Path, constraint: Constraint): CheckTyping = for {

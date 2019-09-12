@@ -75,7 +75,8 @@ lazy val shaclex = project
     ),
     cancelable in Global      := true,
     fork                      := true,
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    ThisBuild / turbo := true
   )
 
 lazy val schemaInfer = project

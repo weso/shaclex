@@ -15,6 +15,7 @@ import scala.util.Try
 
 abstract class ShapeMap {
   val associations: List[Association]
+  def isEmpty = associations.isEmpty
   val nodesPrefixMap: PrefixMap
   val shapesPrefixMap: PrefixMap
 

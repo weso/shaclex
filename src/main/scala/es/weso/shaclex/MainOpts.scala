@@ -241,7 +241,7 @@ class MainOpts(arguments: Array[String],
     short = 'l',
     default = None,
     required = false,
-    descr = "Label (IRI) of Constraint in Schema")
+    descr = "Label (IRI) of Constraint.scala in Schema")
 
   val inference = opt[String](
     "inference",
