@@ -1,6 +1,6 @@
 package es.weso.shex.converter
 
-import cats.Id
+import cats._
 import cats.data.{EitherT, StateT}
 import es.weso._
 import es.weso.shacl._
@@ -16,7 +16,6 @@ object ShEx2Shacl {
   def shex2Shacl(schema: shex.Schema,
                  shapeMap: Option[QueryShapeMap]
                 ): Either[List[String], shacl.Schema] = {
-    println(s"ShEx prefix map: ${schema.prefixMap}")
     runWithState(getSchema(schema),initialState)
   }
 
