@@ -16,6 +16,7 @@ object ShEx2Shacl {
   def shex2Shacl(schema: shex.Schema,
                  shapeMap: Option[QueryShapeMap]
                 ): Either[List[String], shacl.Schema] = {
+    println(s"ShEx prefix map: ${schema.prefixMap}")
     runWithState(getSchema(schema),initialState)
   }
 

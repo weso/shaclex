@@ -33,6 +33,7 @@ class Shacl2RDF() extends RDFSaver with LazyLogging {
       _ <- addPrefix("xsd", xsd)
       _ <- addPrefix("rdf", rdf)
       _ <- addPrefix("rdfs", rdfs)
+      _ <- addPrefixMap(shacl.pm)
       _ <- sequence(shacl.shapes.toList.map(shape(_)))
       _ <- sequence(shacl.propertyGroups.toList.map(propertyGroup))
     } yield ()
