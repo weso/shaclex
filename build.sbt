@@ -22,7 +22,7 @@ lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
 
 // Compiler plugin dependency versions
-lazy val simulacrumVersion    = "0.19.0"
+lazy val simulacrumVersion    = "1.0.0"
 // lazy val kindProjectorVersion = "0.9.5"
 lazy val scalaMacrosVersion   = "2.1.1"
 
@@ -53,7 +53,7 @@ lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"     
 lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-lazy val simulacrum          = "com.github.mpilquist" %% "simulacrum"     % simulacrumVersion
+lazy val simulacrum          = "org.typelevel" %% "simulacrum"     % simulacrumVersion
 
 lazy val shaclex = project
   .in(file("."))
