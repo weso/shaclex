@@ -9,19 +9,27 @@ sealed trait ValueSetValue {
 
 sealed trait ObjectValue extends ValueSetValue {
   override def relativize(base: IRI): ObjectValue
+  def getNode: RDFNode
 }
 
 case class IRIValue(i: IRI) extends ObjectValue {
   override def relativize(base: IRI): IRIValue = IRIValue(i.relativizeIRI(base))
+  override def getNode = i
 }
 
 sealed trait ObjectLiteral extends ObjectValue {
   override def relativize(base:IRI): ObjectLiteral = this
 }
 
-case class StringValue(s: String) extends ObjectLiteral
-case class DatatypeString(s: String, iri: IRI) extends ObjectLiteral
-case class LangString(s: String, lang: Lang) extends ObjectLiteral
+case class StringValue(s: String) extends ObjectLiteral {
+  override def getNode = StringLiteral(s)
+}
+case class DatatypeString(s: String, iri: IRI) extends ObjectLiteral {
+  override def getNode = DatatypeLiteral(s,iri)
+}
+case class LangString(s: String, lang: Lang) extends ObjectLiteral {
+  override def getNode = LangLiteral(s,lang)
+}
 
 object ObjectValue {
   def trueValue: ObjectValue = DatatypeString("true", `xsd:boolean`)

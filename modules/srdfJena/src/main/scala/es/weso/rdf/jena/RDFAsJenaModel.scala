@@ -208,12 +208,12 @@ case class RDFAsJenaModel(model: Model,
     this.copy(base = Some(iri))
   }
 
-  override def addPrefixMap(pm: PrefixMap): Rdf = {
-    val map: Map[String, String] = pm.pm.map {
+  override def addPrefixMap(other: PrefixMap): Rdf = {
+    val newMap = getPrefixMap.addPrefixMap(other)
+    val map: Map[String, String] = newMap.pm.map {
       case (Prefix(str), iri) => (str, iri.str)
     }
-    model.setNsPrefixes(map.asJava)
-    this
+    RDFAsJenaModel(model.setNsPrefixes(map.asJava))
   }
 
   // TODO: Check that the last character is indeed :
@@ -330,7 +330,9 @@ case class RDFAsJenaModel(model: Model,
     Right(model.size.toInt)
 
   override def isIsomorphicWith(other: RDFReader): Either[String,Boolean] = other match {
-    case o: RDFAsJenaModel => Right(model.isIsomorphicWith(o.model))
+    case o: RDFAsJenaModel => {
+      Right(model.isIsomorphicWith(o.model))
+    }
     case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
   }
 

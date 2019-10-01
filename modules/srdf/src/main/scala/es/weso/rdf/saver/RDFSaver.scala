@@ -17,7 +17,6 @@ trait RDFSaver {
     sequence(ls.map(f(_))).map(_ => ())
   }
 
-  // TODO:
   def listSaver[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[List[RDFNode]] = {
     sequence(ls.map(saver(_)))
   }
@@ -26,7 +25,7 @@ trait RDFSaver {
     case Nil => State.pure(`rdf:nil`)
     case x :: xs => for {
       nodeX <- f(x)
-      bNode <- createBNode
+      bNode <- createBNode()
       _ <- addTriple(bNode, `rdf:first`, nodeX)
       rest <- saveToRDFList(xs, f)
       _ <- addTriple(bNode, `rdf:rest`, rest)
@@ -40,12 +39,6 @@ trait RDFSaver {
     saveList(os, (o: RDFNode) => addTriple(s,p,o))
   }
 
-  def addPrefixMap(pm: PrefixMap): RDFSaver[Unit] =
-    State.modify(_.addPrefixMap(pm))
-
-/*  def addPrefix(alias: String, value: IRI): RDFSaver[Unit] =
-    State.modify(_.addPrefix(alias, value)) */
-
   def createBNode(): RDFSaver[RDFNode] = for {
     rdf <- State.get[RDFBuilder]
     (bNode, newRdf) = rdf.createBNode
@@ -55,22 +48,22 @@ trait RDFSaver {
   def makePath(path: SHACLPath): RDFSaver[RDFNode] = path match {
     case PredicatePath(iri) => State.pure(iri)
     case InversePath(p) => for {
-      node <- createBNode
+      node <- createBNode()
       pathNode <- makePath(p)
       _ <- addTriple(node, `sh:inversePath`, pathNode)
     } yield node
     case ZeroOrOnePath(p) => for {
-      node <- createBNode
+      node <- createBNode()
       pathNode <- makePath(p)
       _ <- addTriple(node, `sh:zeroOrOnePath`, pathNode)
     } yield node
     case ZeroOrMorePath(p) => for {
-      node <- createBNode
+      node <- createBNode()
       pathNode <- makePath(p)
       _ <- addTriple(node, `sh:zeroOrMorePath`, pathNode)
     } yield node
     case OneOrMorePath(p) => for {
-      node <- createBNode
+      node <- createBNode()
       pathNode <- makePath(p)
       _ <- addTriple(node, `sh:oneOrMorePath`, pathNode)
     } yield node
@@ -78,7 +71,7 @@ trait RDFSaver {
       list <- saveToRDFList(ps.toList,makePath)
     } yield list
     case AlternativePath(ps) => for {
-      node <- createBNode
+      node <- createBNode()
       list <- saveToRDFList(ps.toList,makePath)
       _ <- addTriple(node,`sh:alternativePath`,list)
     } yield node
@@ -87,11 +80,8 @@ trait RDFSaver {
 
 
   def makeId(v: Option[IRI]): RDFSaver[RDFNode] = v match {
-    case None => for {
-      bNode <- createBNode()
-    } yield (bNode)
-    case Some(iri) =>
-      State.pure(iri)
+    case None => createBNode()
+    case Some(iri) => State.pure(iri)
   }
 
   def optSaver[A](maybe: Option[A], saver: A => RDFSaver[RDFNode]): RDFSaver[Option[RDFNode]] = {
@@ -118,10 +108,8 @@ trait RDFSaver {
     _ <- maybeAddTriple(node, pred, maybeNode)
   } yield ()
 
-  def rdfBoolean(x: Boolean): RDFSaver[RDFNode] = x match {
-    case true => ok(BooleanLiteral(true))
-    case false => ok(BooleanLiteral(false))
-  }
+  def rdfBoolean(x: Boolean): RDFSaver[RDFNode] =
+    ok(BooleanLiteral(x))
 
   def rdfInt(x: Int): RDFSaver[RDFNode] =
     ok(IntegerLiteral(x))
@@ -134,6 +122,10 @@ trait RDFSaver {
   def addPrefix(alias: String, iri: IRI): RDFSaver[Unit] = {
     State.modify(_.addPrefix(alias, iri))
   }
+
+  def addPrefixMap(pm: PrefixMap): RDFSaver[Unit] =
+    State.modify(_.addPrefixMap(pm))
+
 
   def saveAsRDFList[A](ls: List[A], saver: A => RDFSaver[RDFNode]): RDFSaver[RDFNode] = for {
     nodes <- listSaver(ls, saver)

@@ -7,6 +7,7 @@ import es.weso.rdf._
 import es.weso.rdf.PREFIXES._
 import compact.CompactShow
 import es.weso.rdf.operations.Comparisons._
+import es.weso.shex.normalized.Constraint
 
 
 object showShEx {
