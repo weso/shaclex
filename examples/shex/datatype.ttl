@@ -3,11 +3,11 @@ prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 prefix sh: <http://www.w3.org/ns/shacl#>
 base <http://example.org/>
 
-# :x1 :p "13/12/2014"^^xsd:date .
-:x1 :p "pepe"^^xsd:string .
-:y1 :p "kiko"^^:myType .
-
-<S> sh:targetNode :x1 .
-<T> sh:targetNode :y1 .
-<NotS> sh:targetNode :y1 .
-<NotT> sh:targetNode :x1 .
+:good :p "2014-12-13"^^xsd:date .
+:bad1 :p "someday" .
+:bad2 :q "2014-12-01"^^xsd:date .
+:bad3 :p "2014-12-03"^^xsd:date , 
+         "2014-11-03"^^xsd:date .
+:bad4 :p "2014-10-01"^^xsd:date , 
+         "someday" .
+:bad5 :p "someday"^^xsd:date .

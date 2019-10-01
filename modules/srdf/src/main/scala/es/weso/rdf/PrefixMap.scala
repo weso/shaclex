@@ -42,6 +42,15 @@ case class PrefixMap(pm: Map[Prefix, IRI]) extends LazyLogging {
     PrefixMap(pm + (Prefix(prefix) -> iri))
   }
 
+  def addPrefixMap(other: PrefixMap): PrefixMap = {
+    def cmb(current: PrefixMap, pair: (Prefix,IRI)): PrefixMap = {
+      val (prefix,iri) = pair
+      current.addPrefix(prefix,iri)
+    }
+    other.pm.foldLeft(this)(cmb)
+  }
+
+
   def addPrefix(prefix: Prefix, iri: IRI): PrefixMap = {
     PrefixMap(pm + (prefix -> iri))
   }

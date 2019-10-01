@@ -208,7 +208,7 @@ case class Schema(id: IRI,
 
 object Schema {
 
-  def rdfDataFormats(rdfReader: RDFReader) = rdfReader.availableParseFormats.map(_.toUpperCase) //   RDFAsJenaModel.availableFormats.map(_.toUpperCase)
+  def rdfDataFormats(rdfReader: RDFReader) = rdfReader.availableParseFormats.map(_.toUpperCase)
 
   def empty: Schema =
     Schema(IRI(""),None, None, None, None, None, None, List())
@@ -320,6 +320,5 @@ object Schema {
         Left(s"Not implemented conversion to $format. Schema: $schema")
     }
   }
-
 
 }

@@ -1,10 +1,8 @@
 package es.weso.rdf.jena
-
 import es.weso.rdf.nodes._
 import es.weso.rdf.nodes.RDFNode
 import es.weso.rdf.triples.RDFTriple
-
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 import es.weso.rdf._
 import org.apache.jena.rdf.model.{Model, Property, Resource, Statement, RDFNode => JenaRDFNode}
@@ -52,9 +50,6 @@ case class RDFAsJenaModel(model: Model,
       val m = ModelFactory.createDefaultModel
       val str_reader = new StringReader(cs.toString)
       val baseURI = base.getOrElse(IRI(""))
-//      println(s"baseURI: $baseURI")
-      // The following 4 statements are equivalent to :
-      // RDFDataMgr.read(m, str_reader, baseURI, shortnameToLang(format))
       val g: Graph = m.getGraph
       val dest : StreamRDF = StreamRDFLib.graph(g)
       val ctx : Context = null
@@ -75,10 +70,6 @@ case class RDFAsJenaModel(model: Model,
       case unknown => Left(s"Unsupported format $unknown. Available formats: ${supportedFormats.mkString(",")} ")
     }
   }
-
-/*  private def getRDFLang(formatName: String): Either[String,Lang] = {
-  } */
-
 
   override def serialize(formatName: String, base: Option[IRI]): Either[String, String] = for {
     format <- getRDFFormat(formatName)
@@ -217,12 +208,12 @@ case class RDFAsJenaModel(model: Model,
     this.copy(base = Some(iri))
   }
 
-  override def addPrefixMap(pm: PrefixMap): Rdf = {
-    val map: Map[String, String] = pm.pm.map {
+  override def addPrefixMap(other: PrefixMap): Rdf = {
+    val newMap = getPrefixMap.addPrefixMap(other)
+    val map: Map[String, String] = newMap.pm.map {
       case (Prefix(str), iri) => (str, iri.str)
     }
-    model.setNsPrefixes(map.asJava)
-    this
+    RDFAsJenaModel(model.setNsPrefixes(map.asJava))
   }
 
   // TODO: Check that the last character is indeed :
@@ -298,7 +289,7 @@ case class RDFAsJenaModel(model: Model,
         val ls: List[Map[String, RDFNode]] = result.asScala.toList.map(qs => {
           val qsm = new QuerySolutionMap()
           qsm.addAll(qs)
-          qsm.asMap.asScala.mapValues(node => jenaNode2RDFNodeUnsafe(node)).toMap
+          qsm.asMap.asScala.view.mapValues(node => jenaNode2RDFNodeUnsafe(node)).toMap
         })
         ls
       }
@@ -339,7 +330,9 @@ case class RDFAsJenaModel(model: Model,
     Right(model.size.toInt)
 
   override def isIsomorphicWith(other: RDFReader): Either[String,Boolean] = other match {
-    case o: RDFAsJenaModel => Right(model.isIsomorphicWith(o.model))
+    case o: RDFAsJenaModel => {
+      Right(model.isIsomorphicWith(o.model))
+    }
     case _ => Left(s"Cannot compare RDFAsJenaModel with reader of different type: ${other.getClass.toString}")
   }
 

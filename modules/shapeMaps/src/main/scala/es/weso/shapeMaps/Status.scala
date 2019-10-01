@@ -1,6 +1,5 @@
 package es.weso.shapeMaps
 
-import es.weso.utils.json.DecoderUtils.optFieldDecode
 import io.circe._
 
 abstract sealed class Status
@@ -32,6 +31,5 @@ object Status {
      }
     } yield status
   }
-
 
 }

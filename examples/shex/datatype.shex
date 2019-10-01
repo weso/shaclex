@@ -1,8 +1,4 @@
 prefix : <http://example.org/>
 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
-base <http://example.org/>
 
-<S> { :p xsd:date }
-<NotS> NOT @<S>
-<T> { :p :myType }
-<NotT> NOT @<T>
+:S { :p xsd:date }

@@ -1,41 +1,15 @@
-/*
-scalafmt: {
-  style = defaultWithAlign
-  maxColumn = 150
-  align.tokens = [
-    { code = "=>", owner = "Case" }
-    { code = "⇒", owner = "Case" }
-    { code = "extends", owner = "Defn.(Class|Trait|Object)" }
-    { code = "//", owner = ".*" }
-    { code = "{", owner = "Template" }
-    { code = "}", owner = "Template" }
-    { code = ":=", owner = "Term.ApplyInfix" }
-    { code = "++=", owner = "Term.ApplyInfix" }
-    { code = "+=", owner = "Term.ApplyInfix" }
-    { code = "%", owner = "Term.ApplyInfix" }
-    { code = "%%", owner = "Term.ApplyInfix" }
-    { code = "%%%", owner = "Term.ApplyInfix" }
-    { code = "->", owner = "Term.ApplyInfix" }
-    { code = "→", owner = "Term.ApplyInfix" }
-    { code = "<-", owner = "Enumerator.Generator" }
-    { code = "←", owner = "Enumerator.Generator" }
-    { code = "=", owner = "(Enumerator.Val|Defn.(Va(l|r)|Def|Type))" }
-  ]
-}
- */
-
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
-lazy val catsVersion           = "2.0.0-RC1"
+lazy val catsVersion           = "2.0.0"
 lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.12.0-RC3"
-lazy val diffsonVersion        = "4.0.0-M4"
+lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
-lazy val jenaVersion           = "3.12.0"
+lazy val jenaVersion           = "3.13.0"
 lazy val jgraphtVersion        = "1.3.1"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
-lazy val rdf4jVersion          = "2.5.4"
+lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
 lazy val scalacticVersion      = "3.0.8"
 lazy val scalaTestVersion      = "3.0.8"
@@ -48,7 +22,7 @@ lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
 
 // Compiler plugin dependency versions
-lazy val simulacrumVersion    = "0.19.0"
+lazy val simulacrumVersion    = "1.0.0"
 // lazy val kindProjectorVersion = "0.9.5"
 lazy val scalaMacrosVersion   = "2.1.1"
 
@@ -79,7 +53,7 @@ lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"     
 lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-lazy val simulacrum          = "com.github.mpilquist" %% "simulacrum"     % simulacrumVersion
+lazy val simulacrum          = "org.typelevel" %% "simulacrum"     % simulacrumVersion
 
 lazy val shaclex = project
   .in(file("."))
@@ -101,7 +75,8 @@ lazy val shaclex = project
     ),
     cancelable in Global      := true,
     fork                      := true,
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    ThisBuild / turbo := true
   )
 
 lazy val schemaInfer = project

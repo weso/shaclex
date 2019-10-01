@@ -53,6 +53,9 @@ sealed abstract class Shape {
     }
   }
 
+  def addPropertyShapes(ps: Seq[RefNode]): Shape
+
+
 }
 
 case class NodeShape(
@@ -74,6 +77,9 @@ case class NodeShape(
 
   def isPropertyConstraint = false
 
+  override def addPropertyShapes(ps: Seq[RefNode]): Shape =
+    this.copy(propertyShapes = this.propertyShapes ++ ps)
+
 }
 
 case class PropertyShape(
@@ -91,13 +97,17 @@ case class PropertyShape(
                           description: MessageMap,
                           order: Option[DecimalLiteral],
                           group: Option[RefNode],
-                          sourceIRI: Option[IRI]
+                          sourceIRI: Option[IRI],
+                          annotations: List[(IRI,RDFNode)]
                         ) extends Shape {
 
   def isPropertyConstraint = true
 
   def predicate: Option[IRI] = path.predicate
 
+  override def addPropertyShapes(ps: Seq[RefNode]): Shape = {
+    this.copy(propertyShapes = this.propertyShapes ++ ps)
+  }
 }
 
 object Shape {
@@ -136,6 +146,7 @@ object Shape {
     description = MessageMap.empty,
     order = None,
     group = None,
-    sourceIRI = None
+    sourceIRI = None,
+    annotations = List()
   )
 }

@@ -3,6 +3,7 @@ package es.weso.shex
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.extend.Extend
+import es.weso.shex.normalized.{FlatShape, NormalizedShape}
 import es.weso.utils.EitherUtils._
 import es.weso.utils.OptionListUtils._
 
@@ -23,12 +24,23 @@ sealed trait ShapeExpr extends Product with Serializable {
   def relativize(base: IRI): ShapeExpr
 
   def hasNoReference(schema:Schema): Boolean = getShapeRefs(schema).isEmpty
+
+  def isSimple(schema: Schema): Boolean = this match {
+    case _:Shape => true
+    case _:NodeConstraint => true
+    case _:ShapeExternal => true
+    case _:ShapeOr => false
+    case _:ShapeAnd => false
+    case _:ShapeNot => false
+    case _:ShapeRef => false
+  }
 }
 
 object ShapeExpr {
   def any: ShapeExpr = Shape.empty
 
   def fail: ShapeExpr = NodeConstraint.valueSet(List(), List())
+
 }
 
 case class ShapeOr(id: Option[ShapeLabel],
@@ -218,6 +230,12 @@ case class Shape(
     NormalizedShape.fromShape(this, schema)
 
   def isNormalized(schema: Schema): Boolean = normalized(schema).isRight
+
+  def isFlatShape(schema: Schema): Boolean =
+    FlatShape.fromShape(this,schema).isRight
+
+  def flattenShape(schema: Schema): Either[String,FlatShape] =
+    FlatShape.fromShape(this,schema)
 
   def hasRepeatedProperties(schema: Schema): Boolean = !isNormalized(schema)
   

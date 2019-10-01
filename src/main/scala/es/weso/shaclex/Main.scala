@@ -80,7 +80,7 @@ object Main extends App with LazyLogging {
                     FileUtils.writeFile(opts.outSchemaFile(), str)
                   }
                 }
-                case Left(e) => println(s"Error showing schema $schema with format ${opts.outSchemaFormat}: $e")
+                case Left(e) => println(s"Error: $e when trying to show schema with format ${opts.outSchemaFormat}\nSchema:${schema}")
           }
         }
 
