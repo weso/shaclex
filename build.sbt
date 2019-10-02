@@ -257,7 +257,13 @@ lazy val shapeMaps = project
 lazy val converter = project
   .in(file("modules/converter"))
   .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
+  .settings(
+    commonSettings, 
+    publishSettings,
+    libraryDependencies ++= Seq(
+     srdfJena % Test
+    )
+  )
   .dependsOn(
     shex,
     shacl
@@ -270,7 +276,6 @@ lazy val rbe = project
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-//      compilerPlugin(scalaMacrosParadise),
       simulacrum,
       catsCore,
       catsKernel,
