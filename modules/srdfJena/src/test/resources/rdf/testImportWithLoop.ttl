@@ -1,8 +1,0 @@
-prefix : <http://example.org/>
-prefix owl: <http://www.w3.org/2002/07/owl#>
-
-<> owl:imports <> .
-
-:x :p _:1 .
-_:1 :name "Robert" ;
-    :source <> .

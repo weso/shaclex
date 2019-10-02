@@ -20,6 +20,7 @@ lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
+lazy val srdfVersion           = "0.1.35"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "1.0.0"
@@ -42,6 +43,11 @@ lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"   
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
 lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
+lazy val srdf              = "es.weso"                    % "srdf_2.13"            % srdfVersion
+lazy val srdfJena          = "es.weso"                    % "srdfjena_2.13"        % srdfVersion
+lazy val srdf4j            = "es.weso"                    % "srdf4j_2.13"          % srdfVersion
+lazy val utils             = "es.weso"                     % "utils_2.13"          % srdfVersion
+
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -53,7 +59,8 @@ lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"     
 lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
 lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-lazy val simulacrum          = "org.typelevel" %% "simulacrum"     % simulacrumVersion
+lazy val simulacrum        = "org.typelevel" %% "simulacrum"     % simulacrumVersion
+
 
 lazy val shaclex = project
   .in(file("."))
@@ -64,8 +71,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
-  .dependsOn(schemaInfer, schema, shacl, shex, srdfJena, srdf4j, srdf, utils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .aggregate(schemaInfer, schema, shacl, shex, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .dependsOn(schemaInfer, schema, shacl, shex, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -82,23 +89,29 @@ lazy val shaclex = project
 lazy val schemaInfer = project
   .in(file("modules/schemaInfer"))
   .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
+  .settings(
+    commonSettings, 
+    publishSettings,
+    libraryDependencies ++= Seq(srdf)
+  )
   .dependsOn(
-    schema,
-    srdf
+    schema
   )
 
 lazy val schema = project
   .in(file("modules/schema"))
   .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
+  .settings(
+    commonSettings, 
+    publishSettings,
+    libraryDependencies ++= Seq(srdfJena)
+  )
   .dependsOn(
     shex,
     shacl,
     slang,
     shapeMaps,
     converter,
-    srdfJena
   )
 
 lazy val depGraphs = project
@@ -118,58 +131,63 @@ lazy val slang = project
   .in(file("modules/slang"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(srdf,
-    shex, shacl,
-    utils,
-    srdf4j % Test,
-    srdfJena % Test)
+  .dependsOn(
+    shex, 
+    shacl,
+    sutils
+  )
   .settings(
     libraryDependencies ++= Seq(
       catsCore,
       catsKernel,
-      catsMacros
-    )
+      catsMacros,
+      srdf,
+      srdf4j % Test,
+      srdfJena % Test
+      )
   )
 
 lazy val sgraph = project
   .in(file("modules/sgraph"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(srdf,
-    utils,
-    srdf4j % Test,
-    srdfJena % Test,
+  .dependsOn(
+    sutils,
     utilsTest % Test
   )
   .settings(
     libraryDependencies ++= Seq(
+      srdf,
       catsCore,
       catsKernel,
-      catsMacros
-    )
+      catsMacros,
+      srdf4j % Test,
+      srdfJena % Test
+      )
   )
 
 lazy val shacl = project
   .in(file("modules/shacl"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
-  .dependsOn(srdf,
-    utils,
+  .dependsOn(
+    sutils,
     typing,
-    validating,
-    srdf4j % Test,
-    srdfJena % Test)
+    validating)
   .settings(
     logBuffered in Test       := false,
     parallelExecution in Test := false,
     fork in Test              := true,
     libraryDependencies ++= Seq(
       typesafeConfig % Test,
-      sext,
       catsCore,
+      sext,
       catsKernel,
-      catsMacros
-    )
+      catsMacros, 
+      srdf,
+      srdf4j % Test,
+      srdfJena % Test
+      )
   )
 
 
@@ -191,15 +209,12 @@ lazy val shex = project
     testOptions in CompatTest := Seq(Tests.Filter(compatFilter)),
   )
   .dependsOn(
-    srdf,
     typing,
-    utils % "test -> test; compile -> compile",
+    sutils % "test -> test; compile -> compile",
     validating,
     shapeMaps,
     rbe,
-    depGraphs,
-    srdfJena % Test,
-    srdf4j % Test
+    depGraphs
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -210,7 +225,10 @@ lazy val shex = project
       circeGeneric,
       circeParser,
       scalaTest % Test,
-      scalacheck % Test
+      scalacheck % Test, 
+      srdf,    
+      srdfJena % Test,
+      srdf4j % Test
     )
   )
 
@@ -220,11 +238,11 @@ lazy val shapeMaps = project
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings, antlrSettings("es.weso.shapeMaps.parser"))
   .dependsOn(
-    srdf,
-    utils,
-    srdfJena % Test)
+    sutils)
   .settings(
     libraryDependencies ++= Seq(
+      srdf,
+      srdfJena % Test,
       sext % Test,
       scalaLogging,
       catsCore,
@@ -233,7 +251,7 @@ lazy val shapeMaps = project
       circeCore,
       circeGeneric,
       circeParser
-    )
+      )
   )
 
 lazy val converter = project
@@ -242,8 +260,7 @@ lazy val converter = project
   .settings(commonSettings, publishSettings)
   .dependsOn(
     shex,
-    shacl,
-    srdfJena % Test
+    shacl
   )
 
 lazy val rbe = project
@@ -258,62 +275,11 @@ lazy val rbe = project
       catsCore,
       catsKernel,
       catsMacros,
-      scalacheck % Test
-    )
+      scalacheck % Test,
+      srdfJena % Test
+      )
   )
 
-
-lazy val srdf = project
-  .in(file("modules/srdf"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .settings(
-//    crossScalaVersions := Seq("2.12.6","2.13.0-M3"),
-    libraryDependencies ++= Seq(
-      catsCore,
-      catsKernel,
-      catsMacros,
-      circeCore,
-      circeGeneric,
-      circeParser,
-      scalaLogging
-    )
-  )
-
-lazy val srdfJena = project
-  .in(file("modules/srdfJena"))
-  .disablePlugins(RevolverPlugin)
-  .dependsOn(srdf, utils)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      logbackClassic % Test,
-      scalaLogging,
-      typesafeConfig % Test,
-      jenaFuseki % Test,
-      jenaArq,
-      catsCore,
-      catsKernel,
-      catsMacros
-    )
-  )
-
-lazy val srdf4j = project
-  .in(file("modules/srdf4j"))
-  .disablePlugins(RevolverPlugin)
-  .dependsOn(srdf, utils)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      logbackClassic % Test,
-      scalaLogging,
-      typesafeConfig % Test,
-      rdf4j_runtime,
-      catsCore,
-      catsKernel,
-      catsMacros
-    )
-  )
 
 lazy val typing = project
   .in(file("modules/typing"))
@@ -327,13 +293,14 @@ lazy val typing = project
     )
   )
 
-lazy val utils = project
-  .in(file("modules/utils"))
+lazy val sutils = project
+  .in(file("modules/sutils"))
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
 //      eff,
+      utils,  
       circeCore,
       circeGeneric,
       circeParser,
@@ -369,12 +336,12 @@ lazy val utilsTest = project
 lazy val validating = project
   .in(file("modules/validating"))
   .disablePlugins(RevolverPlugin)
-  .dependsOn(srdf, srdfJena % Test, utils % "test -> test; compile -> compile")
+  .dependsOn(sutils % "test -> test; compile -> compile")
   .settings(commonSettings, publishSettings)
   .settings(
     libraryDependencies ++= Seq(
-//      compilerPlugin(kindProjector),
-//      eff,
+      srdf, 
+      srdfJena % Test,
       catsCore,
       catsKernel,
       catsMacros
