@@ -26,7 +26,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-    // Some("recursion_example")
+//     Some("1val1IRIREFClosedExtra1_fail-iri2_higher")
      None
 
   val conf: Config = ConfigFactory.load()

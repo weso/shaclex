@@ -1,0 +1,737 @@
+{
+    "version" : "1.1.2",
+    "project" : {
+        "name" : "slang",
+        "directory" : "/home/labra/src/shapes/shaclex/modules/slang",
+        "sources" : [
+            "/home/labra/src/shapes/shaclex/modules/slang/src/main/scala-2.13",
+            "/home/labra/src/shapes/shaclex/modules/slang/src/main/scala",
+            "/home/labra/src/shapes/shaclex/modules/slang/src/main/java",
+            "/home/labra/src/shapes/shaclex/modules/slang/target/scala-2.13/src_managed/main"
+        ],
+        "dependencies" : [
+            "shex",
+            "shacl",
+            "sutils"
+        ],
+        "classpath" : [
+            "/home/labra/src/shapes/shaclex/.bloop/shex/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/typing/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/sutils/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/validating/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/shapeMaps/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/rbe/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/depGraphs/scala-2.13/classes",
+            "/home/labra/src/shapes/shaclex/.bloop/shacl/scala-2.13/classes",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_2.13/0.12.1/circe-parser_2.13-0.12.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nikita-volkov/sext/0.2.6/sext-0.2.6.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_2.13/0.14.2/jawn-parser_2.13-0.14.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_2.13/0.12.1/circe-jawn_2.13-0.12.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.13/2.0.0/cats-kernel_2.13-2.0.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.8/commons-text-1.8.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.13/0.12.1/circe-core_2.13-0.12.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.3.1/jgrapht-core-1.3.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalactic/scalactic_2.13/3.0.8/scalactic_2.13-3.0.8.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.0/scala-library-2.13.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/gnieh/diffson-circe_2.13/4.0.0/diffson-circe_2.13-4.0.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jheaps/jheaps/0.10/jheaps-0.10.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.0/scala-reflect-2.13.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_2.13/0.12.0-RC3/circe-generic_2.13-0.12.0-RC3.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/scala-logging/scala-logging_2.13/3.9.2/scala-logging_2.13-3.9.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.13/2.0.0/cats-macros_2.13-2.0.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-collection-compat_2.13/2.1.2/scala-collection-compat_2.13-2.1.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.13/0.12.1/circe-numbers_2.13-0.12.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/gnieh/diffson-core_2.13/4.0.0/diffson-core_2.13-4.0.0.jar",
+            "/home/labra/.cache/coursier/v1/https/dl.bintray.com/labra/maven/es/weso/utils_2.13/0.1.36/utils_2.13-0.1.36.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/estatico/newtype_2.13/0.4.3/newtype_2.13-0.4.3.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.13/2.0.0/cats-core_2.13-2.0.0.jar",
+            "/home/labra/.cache/coursier/v1/https/dl.bintray.com/labra/maven/es/weso/srdf_2.13/0.1.36/srdf_2.13-0.1.36.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/simulacrum_2.13/1.0.0/simulacrum_2.13-1.0.0.jar"
+        ],
+        "out" : "/home/labra/src/shapes/shaclex/.bloop/slang",
+        "classesDir" : "/home/labra/src/shapes/shaclex/.bloop/slang/scala-2.13/classes",
+        "resources" : [
+            "/home/labra/src/shapes/shaclex/modules/slang/src/main/resources",
+            "/home/labra/src/shapes/shaclex/modules/slang/target/scala-2.13/resource_managed/main"
+        ],
+        "scala" : {
+            "organization" : "org.scala-lang",
+            "name" : "scala-compiler",
+            "version" : "2.13.0",
+            "options" : [
+                "-deprecation",
+                "-encoding",
+                "utf-8",
+                "-explaintypes",
+                "-feature",
+                "-language:_",
+                "-unchecked",
+                "-Xlint",
+                "-Yrangepos",
+                "-Ywarn-dead-code",
+                "-Ywarn-extra-implicit",
+                "-Ymacro-annotations",
+                "-P:semanticdb:synthetics:on",
+                "-P:semanticdb:failures:warning",
+                "-P:semanticdb:sourceroot:/home/labra/src/shapes/shaclex",
+                "-Yrangepos",
+                "-Xplugin-require:semanticdb",
+                "-Xplugin:/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/semanticdb-scalac_2.13.0/4.2.3/semanticdb-scalac_2.13.0-4.2.3.jar"
+            ],
+            "jars" : [
+                "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.0/scala-library-2.13.0.jar",
+                "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.13.0/scala-compiler-2.13.0.jar",
+                "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.0/scala-reflect-2.13.0.jar",
+                "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/jline/jline/2.14.6/jline-2.14.6.jar"
+            ],
+            "setup" : {
+                "order" : "mixed",
+                "addLibraryToBootClasspath" : true,
+                "addCompilerToClasspath" : false,
+                "addExtraJarsToClasspath" : false,
+                "manageBootClasspath" : true,
+                "filterLibraryFromClasspath" : true
+            }
+        },
+        "java" : {
+            "options" : [
+            ]
+        },
+        "test" : {
+            "frameworks" : [
+                {
+                    "names" : [
+                        "org.scalacheck.ScalaCheckFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "org.specs2.runner.Specs2Framework",
+                        "org.specs2.runner.SpecsFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "org.specs.runner.SpecsFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "org.scalatest.tools.Framework",
+                        "org.scalatest.tools.ScalaTestFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "com.novocode.junit.JUnitFramework"
+                    ]
+                }
+            ],
+            "options" : {
+                "excludes" : [
+                ],
+                "arguments" : [
+                ]
+            }
+        },
+        "platform" : {
+            "name" : "jvm",
+            "config" : {
+                "home" : "/usr/lib/jvm/jdk-12.0.2",
+                "options" : [
+                ]
+            },
+            "mainClass" : [
+            ]
+        },
+        "resolution" : {
+            "modules" : [
+                {
+                    "organization" : "org.scala-lang",
+                    "name" : "scala-library",
+                    "version" : "2.13.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-library",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "e988ea597113786768900f1c260c694a2ae32a42"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.0/scala-library-2.13.0.jar"
+                        },
+                        {
+                            "name" : "scala-library",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.0/scala-library-2.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.circe",
+                    "name" : "circe-parser_2.13",
+                    "version" : "0.12.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-parser_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_2.13/0.12.1/circe-parser_2.13-0.12.1.jar"
+                        },
+                        {
+                            "name" : "circe-parser_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_2.13/0.12.1/circe-parser_2.13-0.12.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.github.nikita-volkov",
+                    "name" : "sext",
+                    "version" : "0.2.6",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "sext",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "8c912e20b94e570390ff953664684bec88a3150c"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nikita-volkov/sext/0.2.6/sext-0.2.6.jar"
+                        },
+                        {
+                            "name" : "sext",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nikita-volkov/sext/0.2.6/sext-0.2.6-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "jawn-parser_2.13",
+                    "version" : "0.14.2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "jawn-parser_2.13",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "44620f09be1afc78d2ae6b030e25e2d189a2bc5b"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_2.13/0.14.2/jawn-parser_2.13-0.14.2.jar"
+                        },
+                        {
+                            "name" : "jawn-parser_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_2.13/0.14.2/jawn-parser_2.13-0.14.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.circe",
+                    "name" : "circe-jawn_2.13",
+                    "version" : "0.12.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-jawn_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_2.13/0.12.1/circe-jawn_2.13-0.12.1.jar"
+                        },
+                        {
+                            "name" : "circe-jawn_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_2.13/0.12.1/circe-jawn_2.13-0.12.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.antlr",
+                    "name" : "antlr4-runtime",
+                    "version" : "4.7.2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "antlr4-runtime",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "e27d8ab4f984f9d186f54da984a6ab1cccac755e"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar"
+                        },
+                        {
+                            "name" : "antlr4-runtime",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "cats-kernel_2.13",
+                    "version" : "2.0.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "cats-kernel_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.13/2.0.0/cats-kernel_2.13-2.0.0.jar"
+                        },
+                        {
+                            "name" : "cats-kernel_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.13/2.0.0/cats-kernel_2.13-2.0.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "xerces",
+                    "name" : "xercesImpl",
+                    "version" : "2.12.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "xercesImpl",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar"
+                        },
+                        {
+                            "name" : "xercesImpl",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "xml-apis",
+                    "name" : "xml-apis",
+                    "version" : "1.4.01",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "xml-apis",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "3789d9fada2d3d458c4ba2de349d48780f381ee3"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar"
+                        },
+                        {
+                            "name" : "xml-apis",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.apache.commons",
+                    "name" : "commons-text",
+                    "version" : "1.8",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-text",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.8/commons-text-1.8.jar"
+                        },
+                        {
+                            "name" : "commons-text",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.8/commons-text-1.8-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.circe",
+                    "name" : "circe-core_2.13",
+                    "version" : "0.12.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-core_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.13/0.12.1/circe-core_2.13-0.12.1.jar"
+                        },
+                        {
+                            "name" : "circe-core_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.13/0.12.1/circe-core_2.13-0.12.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.jgrapht",
+                    "name" : "jgrapht-core",
+                    "version" : "1.3.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "jgrapht-core",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.3.1/jgrapht-core-1.3.1.jar"
+                        },
+                        {
+                            "name" : "jgrapht-core",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.3.1/jgrapht-core-1.3.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scalactic",
+                    "name" : "scalactic_2.13",
+                    "version" : "3.0.8",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scalactic_2.13",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "0117808606de90b0dbe758f007caaeb74dba93d1"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalactic/scalactic_2.13/3.0.8/scalactic_2.13-3.0.8.jar"
+                        },
+                        {
+                            "name" : "scalactic_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalactic/scalactic_2.13/3.0.8/scalactic_2.13-3.0.8-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.gnieh",
+                    "name" : "diffson-circe_2.13",
+                    "version" : "4.0.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "diffson-circe_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/gnieh/diffson-circe_2.13/4.0.0/diffson-circe_2.13-4.0.0.jar"
+                        },
+                        {
+                            "name" : "diffson-circe_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/gnieh/diffson-circe_2.13/4.0.0/diffson-circe_2.13-4.0.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.jheaps",
+                    "name" : "jheaps",
+                    "version" : "0.10",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "jheaps",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jheaps/jheaps/0.10/jheaps-0.10.jar"
+                        },
+                        {
+                            "name" : "jheaps",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jheaps/jheaps/0.10/jheaps-0.10-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scala-lang",
+                    "name" : "scala-reflect",
+                    "version" : "2.13.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-reflect",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "2dbe07b0369dbf00a098b7925b2afca016f124b0"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.0/scala-reflect-2.13.0.jar"
+                        },
+                        {
+                            "name" : "scala-reflect",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.0/scala-reflect-2.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.slf4j",
+                    "name" : "slf4j-api",
+                    "version" : "1.7.26",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "slf4j-api",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "77100a62c2e6f04b53977b9f541044d7d722693d"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"
+                        },
+                        {
+                            "name" : "slf4j-api",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.circe",
+                    "name" : "circe-generic_2.13",
+                    "version" : "0.12.0-RC3",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-generic_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_2.13/0.12.0-RC3/circe-generic_2.13-0.12.0-RC3.jar"
+                        },
+                        {
+                            "name" : "circe-generic_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_2.13/0.12.0-RC3/circe-generic_2.13-0.12.0-RC3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.typesafe.scala-logging",
+                    "name" : "scala-logging_2.13",
+                    "version" : "3.9.2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-logging_2.13",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "6986314976f55419819ca7ae9f9d077ba070fe42"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/scala-logging/scala-logging_2.13/3.9.2/scala-logging_2.13-3.9.2.jar"
+                        },
+                        {
+                            "name" : "scala-logging_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/scala-logging/scala-logging_2.13/3.9.2/scala-logging_2.13-3.9.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "cats-macros_2.13",
+                    "version" : "2.0.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "cats-macros_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.13/2.0.0/cats-macros_2.13-2.0.0.jar"
+                        },
+                        {
+                            "name" : "cats-macros_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.13/2.0.0/cats-macros_2.13-2.0.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scala-lang.modules",
+                    "name" : "scala-collection-compat_2.13",
+                    "version" : "2.1.2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-collection-compat_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-collection-compat_2.13/2.1.2/scala-collection-compat_2.13-2.1.2.jar"
+                        },
+                        {
+                            "name" : "scala-collection-compat_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-collection-compat_2.13/2.1.2/scala-collection-compat_2.13-2.1.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.circe",
+                    "name" : "circe-numbers_2.13",
+                    "version" : "0.12.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-numbers_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.13/0.12.1/circe-numbers_2.13-0.12.1.jar"
+                        },
+                        {
+                            "name" : "circe-numbers_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.13/0.12.1/circe-numbers_2.13-0.12.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.gnieh",
+                    "name" : "diffson-core_2.13",
+                    "version" : "4.0.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "diffson-core_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/gnieh/diffson-core_2.13/4.0.0/diffson-core_2.13-4.0.0.jar"
+                        },
+                        {
+                            "name" : "diffson-core_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/gnieh/diffson-core_2.13/4.0.0/diffson-core_2.13-4.0.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "es.weso",
+                    "name" : "utils_2.13",
+                    "version" : "0.1.36",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "utils_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/dl.bintray.com/labra/maven/es/weso/utils_2.13/0.1.36/utils_2.13-0.1.36.jar"
+                        },
+                        {
+                            "name" : "utils_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/dl.bintray.com/labra/maven/es/weso/utils_2.13/0.1.36/utils_2.13-0.1.36-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.apache.commons",
+                    "name" : "commons-lang3",
+                    "version" : "3.9",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-lang3",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar"
+                        },
+                        {
+                            "name" : "commons-lang3",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.estatico",
+                    "name" : "newtype_2.13",
+                    "version" : "0.4.3",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "newtype_2.13",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "59ac1215c257ee7b2e0fe400c0a756acd8ff19fb"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/estatico/newtype_2.13/0.4.3/newtype_2.13-0.4.3.jar"
+                        },
+                        {
+                            "name" : "newtype_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/estatico/newtype_2.13/0.4.3/newtype_2.13-0.4.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.chuusai",
+                    "name" : "shapeless_2.13",
+                    "version" : "2.3.3",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "shapeless_2.13",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "61817a5ac96ba59ce20b9073416c57519be40f41"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3.jar"
+                        },
+                        {
+                            "name" : "shapeless_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.13/2.3.3/shapeless_2.13-2.3.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "cats-core_2.13",
+                    "version" : "2.0.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "cats-core_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.13/2.0.0/cats-core_2.13-2.0.0.jar"
+                        },
+                        {
+                            "name" : "cats-core_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.13/2.0.0/cats-core_2.13-2.0.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "es.weso",
+                    "name" : "srdf_2.13",
+                    "version" : "0.1.36",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "srdf_2.13",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "dcf9d3c7ab4d84105e826dfa152b1441c00ba74c"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/dl.bintray.com/labra/maven/es/weso/srdf_2.13/0.1.36/srdf_2.13-0.1.36.jar"
+                        },
+                        {
+                            "name" : "srdf_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/dl.bintray.com/labra/maven/es/weso/srdf_2.13/0.1.36/srdf_2.13-0.1.36-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "simulacrum_2.13",
+                    "version" : "1.0.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "simulacrum_2.13",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/simulacrum_2.13/1.0.0/simulacrum_2.13-1.0.0.jar"
+                        },
+                        {
+                            "name" : "simulacrum_2.13",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/simulacrum_2.13/1.0.0/simulacrum_2.13-1.0.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scala-lang",
+                    "name" : "scala-library",
+                    "version" : "2.13.0",
+                    "configurations" : "optional",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-library",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "e988ea597113786768900f1c260c694a2ae32a42"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.0/scala-library-2.13.0.jar"
+                        },
+                        {
+                            "name" : "scala-library",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.0/scala-library-2.13.0-sources.jar"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

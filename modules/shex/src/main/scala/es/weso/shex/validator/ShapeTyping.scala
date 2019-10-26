@@ -6,7 +6,7 @@ import es.weso.rdf.PrefixMap
 import es.weso.typing._
 import es.weso.rdf.nodes._
 import es.weso.shapeMaps.{BNodeLabel, IRILabel => IRIMapLabel, _}
-import es.weso.shex.{ShapeLabel, ShExError}
+import es.weso.shex.ShapeLabel
 import io.circe.Json
 import es.weso.shex.shexR.PREFIXES.sx_start
 
@@ -59,16 +59,18 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]
     }
   }
 
-  private def cnvTypingResult(t: TypingResult[ShExError, String]): Info = {
+  private def cnvTypingResult(t: TypingResult[ShExError, String], nodesPrefixMap: PrefixMap, shapesPrefixMap: PrefixMap): Info = {
     val status = if (t.isOK) Conformant else NonConformant
     val reason =
       if (t.isOK) t.getEvidences.map(_.mkString("\n"))
-      else t.getErrors.map(_.mkString("\n"))
+      else t.getErrors.map(es => es.map(_.showQualified(nodesPrefixMap,shapesPrefixMap)).mkString("\n"))
     val appInfo = Json.fromString("Shaclex")
     Info(status, reason, Some(appInfo))
   }
 
-  private def typing2Labels(m: Map[ShapeType, TypingResult[ShExError, String]]
+  private def typing2Labels(m: Map[ShapeType, TypingResult[ShExError, String]],
+                            nodesPrefixMap: PrefixMap,
+                            shapesPrefixMap: PrefixMap
                    ): Either[String, Map[ShapeMapLabel, Info]] = {
     def processType(m: Either[String, Map[ShapeMapLabel, Info]],
                     current: (ShapeType, TypingResult[ShExError, String])
@@ -78,7 +80,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]
           m
         }
         case Right(label) => {
-          val info = cnvTypingResult(current._2)
+          val info = cnvTypingResult(current._2, nodesPrefixMap, shapesPrefixMap)
           m.map(_.updated(label, info))
         }
       }
@@ -92,7 +94,7 @@ case class ShapeTyping(t: Typing[RDFNode, ShapeType, ShExError, String]
                 current: (RDFNode, Map[ShapeType, TypingResult[ShExError, String]])
                ): Result = for {
       rm <- m
-      ls <- typing2Labels(current._2)
+      ls <- typing2Labels(current._2, nodesPrefixMap, shapesPrefixMap)
     } yield
       if (ls.nonEmpty) rm.addNodeAssociations(current._1, ls)
       else rm

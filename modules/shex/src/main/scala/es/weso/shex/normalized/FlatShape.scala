@@ -1,6 +1,7 @@
 package es.weso.shex.normalized
 
 import cats.implicits._
+import es.weso.rdf.nodes.IRI
 import es.weso.shex._
 
 /**
@@ -10,9 +11,10 @@ import es.weso.shex._
  * @param slots a vector of pairs (Path, Constraint)
  */
 case class FlatShape(slots: Map[Path, Constraint],
-                           closed: Boolean,
-                          ) {
+                     closed: Boolean,
+                    ) {
   lazy val paths: Set[Path] = slots.keySet
+  lazy val preds: Set[IRI] = paths.collect { case Direct(p) => p }
   lazy val hasRepeatedProperties: Boolean = false
 }
 

@@ -13,13 +13,12 @@ import es.weso.rbe.{BagChecker, Empty, Rbe}
 import es.weso.rbe.BagChecker._
 import es.weso.utils.{SeqUtils, SetUtils}
 import es.weso.shex.implicits.showShEx._
-import ShExError._
 import es.weso.rdf.PREFIXES._
 import es.weso.shex.validator.Table._
 import ShExChecker._
 import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMapLabel, _}
 import es.weso.shex.actions.TestSemanticAction
-import es.weso.shex.normalized.{Constraint, FlatShape, NormalizedShape}
+import es.weso.shex.normalized._
 
 import Function.tupled
 
@@ -58,11 +57,8 @@ case class Validator(schema: Schema,
       } yield t
 
   private[validator] def checkShapeMap(shapeMap: FixedShapeMap): CheckTyping = {
-      for {
-        rdf <- getRDF
-        t   <- checkNodesShapes(shapeMap)
-      } yield t
-    }
+      checkNodesShapes(shapeMap)
+  }
 
   private[validator] def getTargetNodeDeclarations(rdf: RDFReader): Check[List[(RDFNode, ShapeLabel)]] =
       for {
@@ -494,10 +490,11 @@ case class Validator(schema: Schema,
       } yield typing
     }
   }
+
   private[validator] def checkFlatShape(attempt: Attempt,
-                                              node: RDFNode,
-                                              s: FlatShape
-                                             ): CheckTyping = {
+                                        node: RDFNode,
+                                        s: FlatShape
+                                       ): CheckTyping = {
     val zero = getTyping
     def cmb(ct: CheckTyping, slot: (Path, Constraint)): CheckTyping = {
       val (path, constraint) = slot
@@ -511,8 +508,27 @@ case class Validator(schema: Schema,
         typing
       }
     }
-    s.slots.foldLeft(zero)(cmb)
+    for {
+      extra <- extraPreds(node,s.preds)
+      _ <- {
+        println(s"Extra preds: $extra. Closed? ${s.closed}")
+        ok()
+      }
+      typing <- if (s.closed && extra.nonEmpty) {
+        err(ClosedButExtraPreds(extra))
+      } else s.slots.foldLeft(zero)(cmb)
+    } yield typing
   }
+
+  private def getExistingPredicates(node: RDFNode): Check[Set[IRI]] = for {
+    rdf <- getRDF
+    ps <- fromEitherString(rdf.triplesWithSubject(node))
+  } yield ps.map(_.pred)
+
+  // Returns the list of paths that are different from a given list
+  private def extraPreds(node: RDFNode, preds: Set[IRI]): Check[Set[IRI]] = for {
+    existingPreds <-  getExistingPredicates(node)
+  } yield existingPreds -- preds
 
   private def checkConstraint(attempt: Attempt, node: RDFNode, path: Path, constraint: Constraint): CheckTyping = for {
    values <- getValuesPath(node,path)
@@ -584,10 +600,9 @@ case class Validator(schema: Schema,
       else s"Doesn't pass negation".asLeft[String]
     case _: ShapeRef => Left("Internal error. A normalized ShapeExpr cannot have references ")
     case s: Shape if s.isEmpty => Right(s"$node matches empty shape")
-    case _: Shape => {
-      // println(s"Shape expr: $se")
-      Left(s"Still don't know what to do with shapes")
-    }
+    case s: Shape =>
+      // checkShapeBase(Attempt(NodeShape(node, ShapeType(s,s.id, schema)),None), node, s)
+      Left(s"Not implemented yet")
     case _: ShapeExternal => Left(s"Still don't know what to do with external shapes")
     case nk: NodeConstraint => NodeConstraintChecker(schema,rdf).nodeConstraintChecker(node,nk)
   }
@@ -595,12 +610,6 @@ case class Validator(schema: Schema,
   private def cmb(els: List[Either[String,String]]): Either[String,String] = {
     els.sequence.map(_.mkString("\n"))
   }
-/*    constraint.shape match {
-      case None => if
-    }
-    if (values.size < constraint.min) err(NotEnoughArcs(node,values,path,constraint.min))
-    else
-*/
 
   private def checkNoStrangeProperties(node: RDFNode, paths: List[Path]): Check[Unit] = for {
     rdf <- getRDF

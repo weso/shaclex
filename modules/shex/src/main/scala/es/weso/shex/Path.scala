@@ -1,6 +1,6 @@
 package es.weso.shex
 import cats._
-import es.weso.rdf.RDFReader
+import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 
 sealed trait Path {
@@ -8,6 +8,11 @@ sealed trait Path {
  def pred: IRI
 
  override def toString: String = Path.showPath.show(this)
+
+ def showQualified(prefixMap: PrefixMap): String = this match {
+   case Direct(iri) => prefixMap.qualifyIRI(iri)
+   case Inverse(iri) => s"^${prefixMap.qualifyIRI(iri)}"
+ }
 
  def getValues(node: RDFNode, rdf: RDFReader): Either[String, Set[RDFNode]]
 }
