@@ -36,6 +36,10 @@ object Main extends App with LazyLogging {
 
     if (args.length==0) return opts.printHelp()
 
+    if (opts.testShEx.isDefined) {
+      ShExTestRunner.run(opts.testShEx())
+    }
+
     val baseFolder: Path = if (opts.baseFolder.isDefined) {
       Paths.get(opts.baseFolder())
     } else {
@@ -87,8 +91,6 @@ object Main extends App with LazyLogging {
         if (opts.showShapeMap()) {
           println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat(),relativeBase)}")
         }
-
-
 
         if (opts.clingoFile.isDefined || opts.showClingo()) {
           val maybeStr = for {

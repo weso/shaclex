@@ -232,6 +232,37 @@ lazy val shex = project
     )
   )
 
+  lazy val shexTest = project
+  .in(file("modules/shexTest"))
+  .disablePlugins(RevolverPlugin)
+  .configs(CompatTest)
+  .settings(
+    commonSettings,
+    publishSettings,
+    inConfig(CompatTest)(Defaults.testTasks),
+    testOptions in Test := Seq(Tests.Filter(testFilter)),
+    testOptions in CompatTest := Seq(Tests.Filter(compatFilter)),
+  )
+  .dependsOn(
+    shex
+  )
+  .settings(
+    libraryDependencies ++= Seq(
+      typesafeConfig % Test,
+      logbackClassic % Test,
+      scalaLogging,
+      circeCore,
+      circeGeneric,
+      circeParser,
+      scalaTest % Test,
+      scalacheck % Test, 
+      srdf,    
+      srdfJena,
+      srdf4j % Test
+    )
+  )
+
+
 lazy val shapeMaps = project
   .in(file("modules/shapeMaps"))
   .enablePlugins(Antlr4Plugin)

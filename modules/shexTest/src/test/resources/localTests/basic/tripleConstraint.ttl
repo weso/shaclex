@@ -1,0 +1,8 @@
+prefix : <http://example.org/>
+
+:g1 :p 1 .
+:g2 :p "Hi" .
+:g3 :p 1; :q 1 .
+
+:b1 :p 1, 2 .
+:b2 :q 1 .
