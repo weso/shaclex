@@ -21,7 +21,7 @@ import scala.io._
 import es.weso.shex.manifest.Utils._
 
 
-class ValidationManifestCompatTest extends ValidateManifest {
+class ValidationManifestTest extends ValidateManifest {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
@@ -34,7 +34,7 @@ class ValidationManifestCompatTest extends ValidateManifest {
 //  val shexFolder = conf.getString("shexLocalFolder")
   val shexFolderURI = Paths.get(shexFolder).normalize.toUri
 
-  println(s"ValidationManifest")
+  //println(s"ValidationManifest")
 
   describe("ValidationManifest compatTest") {
     val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI.toString), false)

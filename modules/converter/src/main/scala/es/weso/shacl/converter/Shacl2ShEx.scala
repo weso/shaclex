@@ -101,15 +101,15 @@ object Shacl2ShEx {
     for {
       id <- cnvId(ns.id)
       maybeSe <- cnvComponentsAsShapeExpr(ns.components)
-      _ <- { println(s"MaybeSe: $maybeSe"); ok(()) }
+      // _ <- { println(s"MaybeSe: $maybeSe"); ok(()) }
       ps <- cnvPropertyShapes(ns.propertyShapes.toList, schema)
-      _ <- { println(s"ps: $ps"); ok(()) }
+      // _ <- { println(s"ps: $ps"); ok(()) }
       se = maybeSe.getOrElse(shex.ShapeExpr.any)
       se1 = ps.length match {
           case 0 => // TODO: Check when there are more triple exprs...
            se
           case 1 => {
-            println(s"Length 1...")
+            // println(s"Length 1...")
             ps.head // addExpression(se, ps.head)
           }
           case n if (n > 1) =>

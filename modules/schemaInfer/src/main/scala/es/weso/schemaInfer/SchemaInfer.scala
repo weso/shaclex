@@ -207,7 +207,7 @@ object SchemaInfer {
                                   shapeLabel: IRI,
                                   numFollowOns: Int
                                  ): Comp[Option[IRI]] = for {
-    _ <- { println(s"inferShapeFromNodes(nodes=$nodes, label=$shapeLabel, numFollowOns=$numFollowOns"); ok(()) }
+    // _ <- { println(s"inferShapeFromNodes(nodes=$nodes, label=$shapeLabel, numFollowOns=$numFollowOns"); ok(()) }
     neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_, numFollowOns)))
     ivalues <- collapse(nodes)
     lsShapes <- sequence(neighMaps.map(n => inferShapeFromNeighMap(shapeLabel, n, ivalues, numFollowOns + 1)))

@@ -124,7 +124,6 @@ case class Validator(schema: Schema,
   private[validator] def checkNodeShapesMap(node: RDFNode,
                                             shapesMap: Map[ShapeMapLabel, Info]
                                            ): CheckTyping = {
-  println(s"checkNodeShapesMap: $node, shapesMap: $shapesMap")
   for {
       ts <- checkAll(shapesMap.map(checkLabelInfo(node)).toList)
       t <- combineTypings(ts)
@@ -178,7 +177,6 @@ case class Validator(schema: Schema,
   private[validator] def checkNodeLabelSafe(node: RDFNode,
                                             label: ShapeLabel,
                                             shape: ShapeExpr): CheckTyping = {
-    println(s"checkNodeLabel: $node, label: $label, $shape")
     val shapeType = ShapeType(shape, Some(label), schema)
     val attempt = Attempt(NodeShape(node, shapeType), None)
     for {
@@ -221,7 +219,6 @@ case class Validator(schema: Schema,
   private[validator] def checkNodeShapeExpr(attempt: Attempt,
                                             node: RDFNode,
                                             s: ShapeExpr): CheckTyping = {
-    println(s"checkNodeShapeExpr: $s")
     s match {
       case so: ShapeOr => checkOr(attempt, node, so.shapeExprs)
       case sa: ShapeAnd => checkAnd(attempt, node, sa.shapeExprs)
@@ -256,7 +253,6 @@ case class Validator(schema: Schema,
     attempt: Attempt,
     node: RDFNode,
     ses: List[ShapeExpr]): CheckTyping = {
-    println(s"Checking OR constraint")
     val vs = ses.map(se => checkNodeShapeExpr(attempt, node, se))
     for {
       t1 <- checkSome(
@@ -468,7 +464,7 @@ case class Validator(schema: Schema,
     fromEitherString(s.paths(schema))
 
   private[validator] def checkShapeBase(attempt: Attempt, node: RDFNode, s: Shape): CheckTyping = {
-    println(s"checkShapeBase: $node, $s. Normalized?: ${s.isNormalized(schema)}")
+    //println(s"checkShapeBase: $node, $s. Normalized?: ${s.isNormalized(schema)}")
     s match {
       case _ if s.isEmpty => addEvidence(attempt.nodeShape, s"Node $node matched empty shape")
       case _ if s.isFlatShape(schema) => for {
@@ -480,11 +476,11 @@ case class Validator(schema: Schema,
           getPaths(s)
         }
         neighs <- {
-          println(s"Paths: $paths")
+          //println(s"Paths: $paths")
           getNeighPaths(node, paths)
         }
         typing <- {
-          println(s"Neighs: $neighs")
+          //println(s"Neighs: $neighs")
           checkNeighsShape(attempt, node, neighs, s)
         }
       } yield typing
@@ -498,20 +494,20 @@ case class Validator(schema: Schema,
     val zero = getTyping
     def cmb(ct: CheckTyping, slot: (Path, Constraint)): CheckTyping = {
       val (path, constraint) = slot
-      println(s"Checking constraint: path: $path\nConstraint: $constraint")
+      //println(s"Checking constraint: path: $path\nConstraint: $constraint")
       for {
         typing1 <- ct
         typing2 <- checkConstraint(attempt, node, path, constraint)
         typing <- combineTypings(List(typing1,typing2))
       } yield {
-        println(s"Typing: ${typing.getMap}")
+        //println(s"Typing: ${typing.getMap}")
         typing
       }
     }
     for {
       extra <- extraPreds(node,s.preds)
       _ <- {
-        println(s"Extra preds: $extra. Closed? ${s.closed}")
+        //println(s"Extra preds: $extra. Closed? ${s.closed}")
         ok()
       }
       typing <- if (s.closed && extra.nonEmpty) {
@@ -542,7 +538,6 @@ case class Validator(schema: Schema,
 
   // We assume that the shape has no reference to other shapes
   private def checkValuesConstraint(values: Set[RDFNode], constraint: Constraint, node: RDFNode, path: Path, attempt: Attempt): CheckTyping = {
-    println(s"Check values consraint: $constraint")
     val card: Cardinality = constraint.card
     constraint.shape match {
         case None =>
@@ -821,7 +816,7 @@ case class Validator(schema: Schema,
     for {
       rdf        <- getRDF
       outTriples <- fromEitherString(rdf.triplesWithSubjectPredicates(node, outgoingPredicates))
-       _ <- { println(s"getNeighPaths\ntriplesWithSubjectPredicates($node, $outgoingPredicates): Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
+      // _ <- { println(s"getNeighPaths\ntriplesWithSubjectPredicates($node, $outgoingPredicates): Outtriples: $outTriples\nRDF: ${rdf.serialize("TURTLE")}\nNode: $node\nPreds:$outgoingPredicates"); ok(()) }
       outgoing = outTriples.map(t => Arc(Direct(t.pred), t.obj)).toList
       inTriples <- fromEitherString(rdf.triplesWithObject(node))
       incoming = inTriples.map(t => Arc(Inverse(t.pred), t.subj)).toList

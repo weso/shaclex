@@ -97,7 +97,7 @@ object StrUtils {
    if (str(i) == '\\') {
     str(i + 1) match {
       case c if "^$[]".contains(c) => {
-        println(s"unescape pattern: $c")
+        // println(s"unescape pattern: $c")
         Some((Array('\\',c),i + 1))
       }
       case c => None
