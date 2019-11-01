@@ -24,7 +24,6 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered-util_2.12/0.9.1/unfiltered-util_2.12-0.9.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-bridge/1.8/batik-bridge-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/asciidoctor/asciidoctorj/1.6.2/asciidoctorj-1.6.2.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.2/machinist_2.12-0.6.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.6/httpclient-4.3.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/ivy/ivy/2.3.0-sbt-cb9cc189e9f3af519f9f102e6c5d446488ff6832/ivy-2.3.0-sbt-cb9cc189e9f3af519f9f102e6c5d446488ff6832.jar",
@@ -68,18 +67,16 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/9.2.21.v20170120/jetty-io-9.2.21.v20170120.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/foundweekends/bintry_2.12/0.5.2/bintry_2.12-0.5.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/9.2.21.v20170120/jetty-http-9.2.21.v20170120.jar",
+            "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/jars/sbt-idea-shell.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-css/1.8/batik-css-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/fastparse-utils_2.12/0.4.2/fastparse-utils_2.12-0.4.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/tasks_2.12/1.3.2/tasks_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-derivation_2.12/0.9.0-M3/circe-derivation_2.12-0.9.0-M3.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_2.12/0.9.3/circe-jawn_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm/7.0/asm-7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.12/0.4.0/ssl-config-core_2.12-0.4.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/core-macros_2.12/1.3.2/core-macros_2.12-1.3.2.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.3.2/sbt-bloop-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.eed3si9n/sbt-buildinfo/scala_2.12/sbt_1.0/0.9.0/jars/sbt-buildinfo.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlet/9.2.21.v20170120/jetty-servlet-9.2.21.v20170120.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-compress/1.18/commons-compress-1.18.jar",
@@ -88,11 +85,13 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-interface/1.3.0/util-interface-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/webjars/webjars-locator-core/0.36/webjars-locator-core-0.36.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/spire-math/jawn-parser_2.12/0.10.4/jawn-parser_2.12-0.10.4.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/sjson-new-murmurhash_2.12/0.8.3/sjson-new-murmurhash_2.12-0.8.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.12/2.5.17/akka-actor_2.12-2.5.17.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-agent/1.3.2/test-agent-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-parser/1.8/batik-parser-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jruby/jruby-stdlib/9.2.6.0/jruby-stdlib-9.2.6.0.jar",
+            "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-structure-extractor/scala_2.12/sbt_1.0/2018.2.1+4-88400d3f/jars/sbt-structure-extractor.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/googlecode/javaewah/JavaEWAH/0.7.9/JavaEWAH-0.7.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/launcher-interface/1.1.3/launcher-interface-1.1.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/databinder/dispatch/dispatch-core_2.12/0.12.0/dispatch-core_2.12-0.12.0.jar",
@@ -102,9 +101,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-xml/9.2.21.v20170120/jetty-xml-9.2.21.v20170120.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ben-manes/caffeine/caffeine/2.5.6/caffeine-2.5.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered_2.12/0.9.1/unfiltered_2.12-0.9.1.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.0.1/cats-kernel_2.12-1.0.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/jcraft/jzlib/1.1.3/jzlib-1.1.3.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.0.1/cats-core_2.12-1.0.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classpath_2.12/1.3.0/zinc-classpath_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/collections_2.12/1.3.2/collections_2.12-1.3.2.jar",
@@ -116,7 +113,6 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/pantsbuild/jarjar/1.7.2/jarjar-1.7.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-site/scala_2.12/sbt_1.0/1.4.0/jars/sbt-site.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.12/0.9.3/circe-numbers_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/actions_2.12/1.3.2/actions_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/jcraft/jsch/0.1.54/jsch-0.1.54.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/get-coursier/lm-coursier-shaded_2.12/2.0.0-RC3-4/lm-coursier-shaded_2.12-2.0.0-RC3-4.jar",
@@ -128,7 +124,6 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-relation_2.12/1.3.0/util-relation_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-script/1.8/batik-script-1.8.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_2.12/0.9.3/circe-parser_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/planet42/laika-pdf_2.12/0.8.0/laika-pdf_2.12-0.8.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jruby/jcodings/jcodings/1.0.41/jcodings-1.0.41.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lightbend/paradox/sbt-paradox_2.12_1.0/0.5.5/sbt-paradox-0.5.5.jar",
@@ -148,6 +143,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.9.9/joda-time-2.9.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/io_2.12/1.3.1/io_2.12-1.3.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/github/sugakandrey/scala-compiler-indices-protocol_2.12/0.1.1/scala-compiler-indices-protocol_2.12-0.1.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/foundweekends/pamflet-knockoff_2.12/0.8.0/pamflet-knockoff_2.12-0.8.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/ant/ant/1.10.5/ant-1.10.5.jar",
@@ -167,7 +163,6 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-commons/7.0/asm-commons-7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-lm-integration_2.12/1.3.2/zinc-lm-integration_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/librarymanagement-core_2.12/1.3.0/librarymanagement-core_2.12-1.3.0.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.12/0.9.3/circe-core_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-ext/1.8/batik-ext-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered-filter_2.12/0.9.1/unfiltered-filter_2.12-0.9.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/foundweekends/knockoff_2.12/0.8.6/knockoff_2.12-0.8.6.jar",
@@ -178,12 +173,10 @@
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-ghpages/scala_2.12/sbt_1.0/0.6.3/jars/sbt-ghpages.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-tracking_2.12/1.3.0/util-tracking_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/reactivestreams/reactive-streams/1.0.2/reactive-streams-1.0.2.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.0.1/cats-macros_2.12-1.0.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lightbend/paradox/paradox_2.12/0.5.5/paradox_2.12-0.5.5.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-scripted_2.12/1.3.0/util-scripted_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/testing_2.12/1.3.2/testing_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/javax/enterprise/cdi-api/1.0/cdi-api-1.0.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/bloop-config_2.12/1.3.2/bloop-config_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/task-system_2.12/1.3.2/task-system_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-bridge_2.12/1.3.0/compiler-bridge_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.3/httpcore-4.3.3.jar",
@@ -191,6 +184,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.3.4/config-1.3.4.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-logging_2.12/1.3.0/util-logging_2.12-1.3.0.jar",
+            "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/jars/sbt-idea-compiler-indices.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-util/7.0/asm-util-7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-gvt/1.8/batik-gvt-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/scripted-sbt-redux_2.12/1.3.2/scripted-sbt-redux_2.12-1.3.2.jar",
@@ -203,13 +197,13 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-analysis/7.0/asm-analysis-7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/completion_2.12/1.3.2/completion_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/trueaccord/lenses/lenses_2.12/0.4.12/lenses_2.12-0.4.12.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/spray/spray-json_2.12/1.3.4/spray-json_2.12-1.3.4.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.simplytyped/sbt-antlr4/scala_2.12/sbt_1.0/0.8.2/jars/sbt-antlr4.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/gigahorse-okhttp_2.12/0.5.0/gigahorse-okhttp_2.12-0.5.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main_2.12/1.3.2/main_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/pegdown/pegdown/1.6.0/pegdown-1.6.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-extension/1.8/batik-extension-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/trueaccord/scalapb/scalapb-runtime_2.12/0.6.0/scalapb-runtime_2.12-0.6.0.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/spire-math/jawn-parser_2.12/0.11.1/jawn-parser_2.12-0.11.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-apiinfo_2.12/1.3.0/zinc-apiinfo_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/headius/modulator/1.0/modulator-1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18-native.jar",
@@ -235,7 +229,6 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/command_2.12/1.3.2/command_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/asciidoctor/asciidoctorj-diagram/1.5.16/asciidoctorj-diagram-1.5.16.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-enxio/0.19/jnr-enxio-0.19.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/sbt-metals_2.12_1.0/0.7.6/sbt-metals-0.7.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-persist_2.12/1.3.0/zinc-persist_2.12-1.3.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.3.2/sbt-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/9.2.21.v20170120/jetty-server-9.2.21.v20170120.jar",
@@ -283,8 +276,8 @@
                 "import _root_.sbt._",
                 "import _root_.sbt.Keys._",
                 "import _root_.sbt.nio.Keys._",
-                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.sbtunidoc.BaseUnidocPlugin.autoImport._, _root_.sbtunidoc.GenJavadocPlugin.autoImport._, _root_.sbtunidoc.JavaUnidocPlugin.autoImport._, _root_.sbtunidoc.ScalaUnidocPlugin.autoImport._, _root_.spray.revolver.RevolverPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.com.typesafe.sbt.web.SbtWeb.autoImport._, _root_.bintray.BintrayPlugin.autoImport._, _root_.org.lyranthe.sbt.PartialUnification.autoImport._, _root_.sbtbuildinfo.BuildInfoPlugin.autoImport._, _root_.com.typesafe.sbt.GitPlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePreviewPlugin.autoImport._, _root_.com.typesafe.sbt.site.SiteScaladocPlugin.autoImport._, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin.autoImport._, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin.autoImport._, _root_.com.typesafe.sbt.site.hugo.HugoPlugin.autoImport._, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport._, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin.autoImport._, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin.autoImport._, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin.autoImport._, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin.autoImport._, _root_.com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._, _root_.laika.sbt.LaikaPlugin.autoImport._, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin.autoImport._, _root_.com.simplytyped.Antlr4Plugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.com.typesafe.sbt.SbtNativePackager.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin.autoImport._, _root_.com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._, _root_.com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin.autoImport._, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin.autoImport._, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin.autoImport._",
-                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.scala.meta.metals.MetalsPlugin, _root_.sbtunidoc.BaseUnidocPlugin, _root_.sbtunidoc.GenJavadocPlugin, _root_.sbtunidoc.JavaUnidocPlugin, _root_.sbtunidoc.PublishJavadocPlugin, _root_.sbtunidoc.ScalaUnidocPlugin, _root_.spray.revolver.RevolverPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.com.typesafe.sbt.web.SbtWeb, _root_.bintray.BintrayPlugin, _root_.org.lyranthe.sbt.PartialUnification, _root_.sbtbuildinfo.BuildInfoPlugin, _root_.com.typesafe.sbt.GitBranchPrompt, _root_.com.typesafe.sbt.GitPlugin, _root_.com.typesafe.sbt.GitVersioning, _root_.com.typesafe.sbt.site.SitePlugin, _root_.com.typesafe.sbt.site.SitePreviewPlugin, _root_.com.typesafe.sbt.site.SiteScaladocPlugin, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin, _root_.com.typesafe.sbt.site.hugo.HugoPlugin, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin, _root_.com.lightbend.paradox.sbt.ParadoxPlugin, _root_.laika.sbt.LaikaPlugin, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin, _root_.com.simplytyped.Antlr4Plugin, _root_.sbtassembly.AssemblyPlugin, _root_.com.typesafe.sbt.SbtNativePackager, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.AshScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemVPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.UpstartPlugin, _root_.com.typesafe.sbt.packager.debian.DebianDeployPlugin, _root_.com.typesafe.sbt.packager.debian.DebianPlugin, _root_.com.typesafe.sbt.packager.debian.JDebPackaging, _root_.com.typesafe.sbt.packager.docker.DockerPlugin, _root_.com.typesafe.sbt.packager.docker.DockerSpotifyClientPlugin, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerDeployPlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmDeployPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalDeployPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsDeployPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin"
+                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbtunidoc.BaseUnidocPlugin.autoImport._, _root_.sbtunidoc.GenJavadocPlugin.autoImport._, _root_.sbtunidoc.JavaUnidocPlugin.autoImport._, _root_.sbtunidoc.ScalaUnidocPlugin.autoImport._, _root_.spray.revolver.RevolverPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.com.typesafe.sbt.web.SbtWeb.autoImport._, _root_.bintray.BintrayPlugin.autoImport._, _root_.org.lyranthe.sbt.PartialUnification.autoImport._, _root_.org.jetbrains.sbt.IdeaShellPlugin.autoImport._, _root_.sbtbuildinfo.BuildInfoPlugin.autoImport._, _root_.com.typesafe.sbt.GitPlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePreviewPlugin.autoImport._, _root_.com.typesafe.sbt.site.SiteScaladocPlugin.autoImport._, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin.autoImport._, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin.autoImport._, _root_.com.typesafe.sbt.site.hugo.HugoPlugin.autoImport._, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport._, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin.autoImport._, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin.autoImport._, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin.autoImport._, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin.autoImport._, _root_.com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._, _root_.laika.sbt.LaikaPlugin.autoImport._, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin.autoImport._, _root_.org.jetbrains.sbt.indices.SbtIntellijIndicesPlugin.autoImport._, _root_.com.simplytyped.Antlr4Plugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.com.typesafe.sbt.SbtNativePackager.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin.autoImport._, _root_.com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._, _root_.com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin.autoImport._, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin.autoImport._, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin.autoImport._",
+                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbtunidoc.BaseUnidocPlugin, _root_.sbtunidoc.GenJavadocPlugin, _root_.sbtunidoc.JavaUnidocPlugin, _root_.sbtunidoc.PublishJavadocPlugin, _root_.sbtunidoc.ScalaUnidocPlugin, _root_.spray.revolver.RevolverPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.com.typesafe.sbt.web.SbtWeb, _root_.bintray.BintrayPlugin, _root_.org.lyranthe.sbt.PartialUnification, _root_.org.jetbrains.sbt.IdeaShellPlugin, _root_.sbtbuildinfo.BuildInfoPlugin, _root_.org.jetbrains.sbt.StructurePlugin, _root_.com.typesafe.sbt.GitBranchPrompt, _root_.com.typesafe.sbt.GitPlugin, _root_.com.typesafe.sbt.GitVersioning, _root_.com.typesafe.sbt.site.SitePlugin, _root_.com.typesafe.sbt.site.SitePreviewPlugin, _root_.com.typesafe.sbt.site.SiteScaladocPlugin, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin, _root_.com.typesafe.sbt.site.hugo.HugoPlugin, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin, _root_.com.lightbend.paradox.sbt.ParadoxPlugin, _root_.laika.sbt.LaikaPlugin, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin, _root_.org.jetbrains.sbt.indices.SbtIntellijIndicesPlugin, _root_.com.simplytyped.Antlr4Plugin, _root_.sbtassembly.AssemblyPlugin, _root_.com.typesafe.sbt.SbtNativePackager, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.AshScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemVPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.UpstartPlugin, _root_.com.typesafe.sbt.packager.debian.DebianDeployPlugin, _root_.com.typesafe.sbt.packager.debian.DebianPlugin, _root_.com.typesafe.sbt.packager.debian.JDebPackaging, _root_.com.typesafe.sbt.packager.docker.DockerPlugin, _root_.com.typesafe.sbt.packager.docker.DockerSpotifyClientPlugin, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerDeployPlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmDeployPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalDeployPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsDeployPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin"
             ]
         },
         "test" : {
@@ -477,18 +470,6 @@
                         {
                             "name" : "asciidoctorj",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/asciidoctor/asciidoctorj/1.6.2/asciidoctorj-1.6.2.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "org.typelevel",
-                    "name" : "machinist_2.12",
-                    "version" : "0.6.2",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "machinist_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.2/machinist_2.12-0.6.2.jar"
                         }
                     ]
                 },
@@ -981,6 +962,40 @@
                     ]
                 },
                 {
+                    "organization" : "org.jetbrains",
+                    "name" : "sbt-idea-shell",
+                    "version" : "2018.3",
+                    "configurations" : "compile",
+                    "artifacts" : [
+                        {
+                            "name" : "sbt-idea-shell",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "c64b2eda1becf7a84e5a842c032324c5"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/jars/sbt-idea-shell.jar"
+                        },
+                        {
+                            "name" : "sbt-idea-shell",
+                            "classifier" : "sources",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "b138166cb370d582c7bd9c1494fd93eb"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/srcs/sbt-idea-shell-sources.jar"
+                        },
+                        {
+                            "name" : "sbt-idea-shell",
+                            "classifier" : "javadoc",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "d41d8cd98f00b204e9800998ecf8427e"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/docs/sbt-idea-shell-javadoc.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.apache.xmlgraphics",
                     "name" : "batik-css",
                     "version" : "1.8",
@@ -1029,30 +1044,6 @@
                     ]
                 },
                 {
-                    "organization" : "io.circe",
-                    "name" : "circe-derivation_2.12",
-                    "version" : "0.9.0-M3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "circe-derivation_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-derivation_2.12/0.9.0-M3/circe-derivation_2.12-0.9.0-M3.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "io.circe",
-                    "name" : "circe-jawn_2.12",
-                    "version" : "0.9.3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "circe-jawn_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_2.12/0.9.3/circe-jawn_2.12-0.9.3.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "org.ow2.asm",
                     "name" : "asm",
                     "version" : "7.0",
@@ -1081,18 +1072,6 @@
                                 "digest" : "0f43afa184555fbc6e36b3334b17246c39b30f6e"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "ch.epfl.scala",
-                    "name" : "sbt-bloop",
-                    "version" : "1.3.2",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "sbt-bloop",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.3.2/sbt-bloop-1.3.2.jar"
                         }
                     ]
                 },
@@ -1259,6 +1238,22 @@
                     ]
                 },
                 {
+                    "organization" : "org.jetbrains",
+                    "name" : "sbt-structure-extractor",
+                    "version" : "2018.2.1+4-88400d3f",
+                    "configurations" : "compile",
+                    "artifacts" : [
+                        {
+                            "name" : "sbt-structure-extractor",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "683a91e93468729f9846e557743bea49"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-structure-extractor/scala_2.12/sbt_1.0/2018.2.1+4-88400d3f/jars/sbt-structure-extractor.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "com.googlecode.javaewah",
                     "name" : "JavaEWAH",
                     "version" : "0.7.9",
@@ -1363,18 +1358,6 @@
                     ]
                 },
                 {
-                    "organization" : "org.typelevel",
-                    "name" : "cats-kernel_2.12",
-                    "version" : "1.0.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "cats-kernel_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.0.1/cats-kernel_2.12-1.0.1.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "com.jcraft",
                     "name" : "jzlib",
                     "version" : "1.1.3",
@@ -1383,18 +1366,6 @@
                         {
                             "name" : "jzlib",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/jcraft/jzlib/1.1.3/jzlib-1.1.3.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "org.typelevel",
-                    "name" : "cats-core_2.12",
-                    "version" : "1.0.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "cats-core_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.0.1/cats-core_2.12-1.0.1.jar"
                         }
                     ]
                 },
@@ -1485,18 +1456,6 @@
                     ]
                 },
                 {
-                    "organization" : "io.circe",
-                    "name" : "circe-numbers_2.12",
-                    "version" : "0.9.3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "circe-numbers_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.12/0.9.3/circe-numbers_2.12-0.9.3.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "com.jcraft",
                     "name" : "jsch",
                     "version" : "0.1.54",
@@ -1581,18 +1540,6 @@
                                 "digest" : "5bda6a9d45065b184c83c46b64d8002b4e0ab7c7\n"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-script/1.8/batik-script-1.8.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "io.circe",
-                    "name" : "circe-parser_2.12",
-                    "version" : "0.9.3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "circe-parser_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_2.12/0.9.3/circe-parser_2.12-0.9.3.jar"
                         }
                     ]
                 },
@@ -1815,6 +1762,18 @@
                     ]
                 },
                 {
+                    "organization" : "io.github.sugakandrey",
+                    "name" : "scala-compiler-indices-protocol_2.12",
+                    "version" : "0.1.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-compiler-indices-protocol_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/github/sugakandrey/scala-compiler-indices-protocol_2.12/0.1.1/scala-compiler-indices-protocol_2.12-0.1.1.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.foundweekends",
                     "name" : "pamflet-knockoff_2.12",
                     "version" : "0.8.0",
@@ -2031,18 +1990,6 @@
                     ]
                 },
                 {
-                    "organization" : "io.circe",
-                    "name" : "circe-core_2.12",
-                    "version" : "0.9.3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "circe-core_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.12/0.9.3/circe-core_2.12-0.9.3.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "org.apache.xmlgraphics",
                     "name" : "batik-ext",
                     "version" : "1.8",
@@ -2139,18 +2086,6 @@
                     ]
                 },
                 {
-                    "organization" : "org.typelevel",
-                    "name" : "cats-macros_2.12",
-                    "version" : "1.0.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "cats-macros_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.0.1/cats-macros_2.12-1.0.1.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "com.lightbend.paradox",
                     "name" : "paradox_2.12",
                     "version" : "0.5.5",
@@ -2175,18 +2110,6 @@
                                 "digest" : "44c453f60909dfc223552ace63e05c694215156b"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/javax/enterprise/cdi-api/1.0/cdi-api-1.0.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "ch.epfl.scala",
-                    "name" : "bloop-config_2.12",
-                    "version" : "1.3.2",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "bloop-config_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/bloop-config_2.12/1.3.2/bloop-config_2.12-1.3.2.jar"
                         }
                     ]
                 },
@@ -2231,6 +2154,40 @@
                         {
                             "name" : "config",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.3.4/config-1.3.4.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.jetbrains",
+                    "name" : "sbt-idea-compiler-indices",
+                    "version" : "0.1.3",
+                    "configurations" : "compile",
+                    "artifacts" : [
+                        {
+                            "name" : "sbt-idea-compiler-indices",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "5d189d6ab1526926d758556bad1ef1c7"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/jars/sbt-idea-compiler-indices.jar"
+                        },
+                        {
+                            "name" : "sbt-idea-compiler-indices",
+                            "classifier" : "sources",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "75daacaaac25e22e9c87a11a70889884"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/srcs/sbt-idea-compiler-indices-sources.jar"
+                        },
+                        {
+                            "name" : "sbt-idea-compiler-indices",
+                            "classifier" : "javadoc",
+                            "checksum" : {
+                                "type" : "md5",
+                                "digest" : "d41d8cd98f00b204e9800998ecf8427e"
+                            },
+                            "path" : "/home/labra/.IntelliJIdea2019.2/config/plugins/Scala/repo/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/docs/sbt-idea-compiler-indices-javadoc.jar"
                         }
                     ]
                 },
@@ -2339,6 +2296,18 @@
                     ]
                 },
                 {
+                    "organization" : "io.spray",
+                    "name" : "spray-json_2.12",
+                    "version" : "1.3.4",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "spray-json_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/spray/spray-json_2.12/1.3.4/spray-json_2.12-1.3.4.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "com.simplytyped",
                     "name" : "sbt-antlr4",
                     "version" : "0.8.2",
@@ -2401,18 +2370,6 @@
                                 "digest" : "c5e9e1f07a65c89d2be92fd63e1b0f64357a46db\n"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-extension/1.8/batik-extension-1.8.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "org.spire-math",
-                    "name" : "jawn-parser_2.12",
-                    "version" : "0.11.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "jawn-parser_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/spire-math/jawn-parser_2.12/0.11.1/jawn-parser_2.12-0.11.1.jar"
                         }
                     ]
                 },
@@ -2611,18 +2568,6 @@
                         {
                             "name" : "jnr-enxio",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-enxio/0.19/jnr-enxio-0.19.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "org.scalameta",
-                    "name" : "sbt-metals",
-                    "version" : "0.7.6",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "sbt-metals",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/sbt-metals_2.12_1.0/0.7.6/sbt-metals-0.7.6.jar"
                         }
                     ]
                 },
@@ -2899,6 +2844,22 @@
                         {
                             "name" : "util-interface",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-interface/1.3.0/util-interface-1.3.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.spire-math",
+                    "name" : "jawn-parser_2.12",
+                    "version" : "0.10.4",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "jawn-parser_2.12",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "452b1bdf2982219e1b7c9d27ec316241144b0910"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/spire-math/jawn-parser_2.12/0.10.4/jawn-parser_2.12-0.10.4.jar"
                         }
                     ]
                 },

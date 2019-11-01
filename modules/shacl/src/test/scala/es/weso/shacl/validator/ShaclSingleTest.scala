@@ -60,8 +60,11 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
           failed.push(name)
           fail(s"Error processing Entry: $e \n $f")
         }
-        case Right((schema, rdf)) => validate(schema, rdf, e.result,name)
+        case Right((schema, rdf)) => {
+          println(s"Schema read:\n${schema.serialize("TURTLE",None,RDFAsJenaModel.empty).getOrElse("")}\n---")
+          validate(schema, rdf, e.result,name)
       }
+     }
     }
   }
 
@@ -96,9 +99,8 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
         for {
           rdf <- RDFAsJenaModel.fromURI(realDataIri.str, dataFormat)
           schemaRdf <- RDFAsJenaModel.fromURI(realSchemaIri.str, dataFormat)
-          schema <- {
-            RDF2Shacl.getShacl(schemaRdf)
-          }
+          schema <- RDF2Shacl.getShacl(schemaRdf)
+          _ <- { println(s"schemaRDF: ${schemaRdf.serialize("TURTLE").getOrElse("")}\n---\nSchema:\n${schema.toString}\n---"); Right(())}
         } yield (schema, rdf)
       }
       case (None, Some(shapesIri)) => {

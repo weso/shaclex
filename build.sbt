@@ -1,3 +1,6 @@
+// Local dependencies
+lazy val srdfVersion           = "0.1.38"
+
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
 lazy val catsVersion           = "2.0.0"
@@ -20,7 +23,6 @@ lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
-lazy val srdfVersion           = "0.1.37"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "1.0.0"

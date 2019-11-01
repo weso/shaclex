@@ -13,6 +13,26 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
 
   describe("RDf2Shacl Syntax") {
 
+/*    it("should be able to get the a shape") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
+                 |@prefix sh: <http://www.w3.org/ns/shacl#>
+                 |
+                 |:S a sh:Shape .
+                 |""".stripMargin
+      val attempt: Either[String, Schema] = for {
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+      } yield (schema)
+      val s = ex + "S"
+      info(s"Attempt: $attempt")
+      attempt match {
+        case Left(e) => fail(s"Failed: $e")
+        case Right(v) => v should containShapes(Set(s))
+      }
+    }
+
     it("should be able to get the list of shapes") {
       val ex = IRI("http://example.org/")
       val str =
@@ -227,7 +247,38 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
         }
       }
     }
+*/
+    it("should be able to get shape with minInclusive") {
+      val ex = IRI("http://example.org/")
+      val str =
+        """|@prefix : <http://example.org/>
+         |@prefix sh: <http://www.w3.org/ns/shacl#>
+         |
+         |:S a sh:Shape;
+         |   sh:property :prop .
+         |
+         |:prop sh:path :p;
+         |       sh:minInclusive 3 .
+         |""".stripMargin
+      val S = ex + "S"
+      val prop = ex + "prop"
+      val attempt = for {
+        rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
+        schema <- RDF2Shacl.getShacl(rdf)
+        shape <- schema.shape(S)
+        propShape <- schema.shape(prop)
+      } yield ((shape, propShape))
+      //val p1 = Shape.emptyPropertyShape(prop, PredicatePath(p)).copy(components = Seq(NodeKind(IRIKind)))
+      attempt match {
+        case Left(e) => fail(s"Failed $e")
+        case Right((shape,propShape)) => {
+          shape.propertyShapes should contain only (RefNode(prop))
+          propShape.components should contain only (MinInclusive(IntegerLiteral(3,"3"))) 
+        }
+      }
 
-  }
+    }
+
+} 
 
 }
