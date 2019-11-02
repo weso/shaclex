@@ -771,6 +771,7 @@ case class Validator(schema: Schema) extends LazyLogging {
     case ps: PropertyShape => ok(ps)
     case _ => err(expectedPropertyShape(node, attempt, s"Expected shape $shape to be a property shape"))
   }
+
   private def addEvidence(attempt: Attempt, msg: String): Check[ShapeTyping] = {
     for {
       t <- getTyping

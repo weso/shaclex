@@ -58,7 +58,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
     ResultShapeMap(
-      t._1.getMap.mapValues(cnvMapShapeResult).toMap, rdf.getPrefixMap(), schema.pm)
+      t._1.getMap.view.mapValues(cnvMapShapeResult).toMap, rdf.getPrefixMap(), schema.pm)
   }
 
   private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
@@ -112,7 +112,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     case Left(_) => for {
       ts <- rdf.triplesWithPredicate(`owl:imports`)
       schema <- ts.size match {
-        case 0 => RDF2Shacl.getShaclFromRDFReader(rdf).map(ShaclexSchema(_))
+        case 0 => RDF2Shacl.getShacl(rdf).map(ShaclexSchema(_))
         case _ => Left(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
       }
     } yield schema

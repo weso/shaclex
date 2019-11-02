@@ -21,13 +21,14 @@ private type ShapesMap = Map[RefNode, Shape]
 
 type PropertyGroups = Map[RefNode, PropertyGroup]
 
+// TODO. Why this class cannot be private?
 case class ParserState(
     parsedShapes: ShapesMap, 
     parsedPropertyGroups: PropertyGroups, 
     pendingNodes: List[RDFNode]
   )
 
-def initialState: ParserState = 
+private def initialState: ParserState = 
     ParserState(Map(),Map(),List())
 
 type ShaclParser[A] = StateT[RDFParser, ParserState, A]
@@ -140,7 +141,6 @@ private def anyOf_s[A](ps: ShaclParser[A]*): ShaclParser[Seq[A]] = {
       Success(_))
 */
 
-
 private def getShaclFromRDFReader(rdf: RDFReader): ShaclParser[Schema] = {
     val pm = rdf.getPrefixMap
     for {
@@ -170,6 +170,10 @@ private def getShaclFromRDFReader(rdf: RDFReader): ShaclParser[Schema] = {
       schema <- getShaclFromRDFReader(extendedRdf).run(initialState).value.run(Config(initialNode,extendedRdf))
     } yield schema._2
   }
+
+  def getShacl(rdf: RDFReader): Either[String, Schema] = for {
+   stateSchema <- getShaclFromRDFReader(rdf).run(initialState).value.run(Config(initialNode,rdf))
+  } yield stateSchema._2
 
   private def shapesMap: ShaclParser[Unit] = 
     for {

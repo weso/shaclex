@@ -3,9 +3,8 @@ package es.weso.shacl
 import org.scalatest._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.path.{ InversePath, PredicatePath }
 import es.weso.shacl.converter.RDF2Shacl
-
+import es.weso.rdf.path._
 import util._
 
 class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValues
@@ -13,7 +12,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
 
   describe("RDf2Shacl Syntax") {
 
-/*    it("should be able to get the a shape") {
+    it("should be able to get the a shape") {
       val ex = IRI("http://example.org/")
       val str =
         """|@prefix : <http://example.org/>
@@ -247,7 +246,7 @@ class RDF2ShaclTest extends FunSpec with Matchers with TryValues with EitherValu
         }
       }
     }
-*/
+
     it("should be able to get shape with minInclusive") {
       val ex = IRI("http://example.org/")
       val str =

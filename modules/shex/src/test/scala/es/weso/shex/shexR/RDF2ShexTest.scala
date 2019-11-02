@@ -71,7 +71,8 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
         val result = for {
           rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
-          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
+          cfg = rdf2Shex.Config(IRI("http://example.org/x"), rdf)
+          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri).value.run(cfg) 
         } yield schemas
 
         result match {
@@ -94,7 +95,8 @@ class RDF2ShExTest extends FunSpec with Matchers with EitherValues with TryValue
 
         val result = for {
           rdf <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
-          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri)(IRI("http://example.org/x"), rdf)
+          cfg = rdf2Shex.Config(IRI("http://example.org/x"), rdf)
+          schemas <- rdf2Shex.opt(sx_start, rdf2Shex.iri).value.run(cfg)
         } yield schemas
 
         result match {

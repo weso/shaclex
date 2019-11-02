@@ -209,7 +209,8 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     } yield node
   }
 
-  private def tripleExpr(te: TripleExpr): RDFSaver[RDFNode] = te match {
+  private def tripleExpr(te: TripleExpr): RDFSaver[RDFNode] = 
+   te match {
     // TODO: Variable declaration
     case TripleConstraint(id, inverse, negated, pred, valueExpr, min, max, _, semActs, annotations) => for {
       teId <- mkId(id)
@@ -242,6 +243,12 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
       _ <- maybeAddStarContent(annotations, node, sx_annotation, annotation)
     } yield node
     case Inclusion(lbl) => label(lbl)
+    case e: Expr => {
+      // TODO
+      val msg = s"Expr serialization to RDF not implemented yet. Expr = $e"
+      println(msg)
+      ok(StringLiteral(msg))
+    }
   }
 
   private def semAct(x: SemAct): RDFSaver[RDFNode] = for {
@@ -271,6 +278,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
   }
 
   private def label(lbl: ShapeLabel): RDFSaver[RDFNode] = lbl match {
+    case Start => ok(sx_start)
     case IRILabel(iri) => ok(iri)
     case BNodeLabel(bnode) => ok(bnode)
   }
@@ -287,6 +295,7 @@ trait ShEx2RDF extends RDFSaver with LazyLogging {
     case None => createBNode
     case Some(IRILabel(iri)) => ok(iri)
     case Some(BNodeLabel(bNode)) => ok(bNode)
+    case Some(Start) => ok(sx_start)
   }
 
 }
