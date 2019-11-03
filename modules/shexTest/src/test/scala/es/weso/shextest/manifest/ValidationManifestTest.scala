@@ -1,9 +1,8 @@
-package es.weso.shex.manifest
-import java.net.URI
+package es.weso.shextest.manifest
 
+import java.net.URI
 import es.weso.utils.UriUtils._
 import java.nio.file.Paths
-
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -13,10 +12,11 @@ import es.weso.shex._
 import es.weso.shex.validator.{ExternalIRIResolver, Validator}
 import es.weso.shapeMaps._
 import es.weso.shex.compact.CompareSchemas
-import es.weso.shex.manifest.Utils._
-import es.weso.shex.implicits._
+import es.weso.shextest.manifest.Utils._
+import es.weso.shex.implicits.decoderShEx._
+import es.weso.shex.implicits.encoderShEx._
+import ManifestPrefixes._
 import scala.io._
-import io.circe._
 import io.circe.parser._
 import io.circe.syntax._
 

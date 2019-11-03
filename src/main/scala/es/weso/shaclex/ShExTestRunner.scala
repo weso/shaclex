@@ -1,5 +1,5 @@
 package es.weso.shaclex
-import es.weso.shex.manifest._
+import es.weso.shextest.manifest._
 import com.typesafe.config.{Config, ConfigFactory}
 import java.nio.file.Paths
 

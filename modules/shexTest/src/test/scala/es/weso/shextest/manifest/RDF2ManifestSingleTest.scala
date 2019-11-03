@@ -1,17 +1,17 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 
 import java.nio.file.Paths
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest._
 
-class RDF2ManifestTest extends FunSpec with ValidateManifest {
+class RDF2ManifestSingleTest extends ValidateManifest {
 
   val conf: Config = ConfigFactory.load()
   val shexFolder = conf.getString("localFolderTest")
   val shexFolderURI = Paths.get(shexFolder).normalize.toUri.toString
 
   describe("RDF2Manifest") {
-    parseManifest("manifest","extends",shexFolder)
+     parseManifest("manifest", "basic", shexFolder)
   }
+
 }

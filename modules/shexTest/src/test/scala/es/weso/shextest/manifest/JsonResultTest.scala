@@ -1,4 +1,4 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 
 import java.nio.file.Paths
 import com.typesafe.config.{Config, ConfigFactory}

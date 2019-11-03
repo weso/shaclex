@@ -1,4 +1,4 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shapeMaps._
 import es.weso.shapeMaps.ShapeMapLabel._
@@ -7,14 +7,16 @@ import io.circe.parser._
 import io.circe.syntax._
 
 case class ShapeResult(shapeMapLabel: ShapeMapLabel, value: Boolean)
+
 object ShapeResult {
   implicit val shapeResultDecoder: Decoder[ShapeResult] = Decoder.instance { c => {
     for {
       shape   <- c.downField("shape").as[ShapeMapLabel]
       value <- c.downField("result").as[Boolean]
     } yield ShapeResult(shape,value)
+   }
   }
-  }
+
   implicit val shapeResultEncoder: Encoder[ShapeResult] = Encoder.instance { r =>
     Json.fromJsonObject(
       JsonObject.empty.
@@ -22,6 +24,7 @@ object ShapeResult {
         add("result", r.value.asJson)
     )
   }
+
 }
 
 case class JsonResult(rmap: Map[RDFNode,List[ShapeResult]]) {
@@ -76,4 +79,3 @@ object JsonResult {
     r.rmap.asJson
   }
 }
-

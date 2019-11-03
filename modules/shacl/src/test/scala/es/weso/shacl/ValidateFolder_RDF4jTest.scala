@@ -9,9 +9,9 @@ import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 import es.weso.utils.FileUtils._
 import org.scalatest._
-
 import scala.io.Source
 import scala.util._
+import cats.implicits._
 
 class ValidateFolder_RDF4jTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
@@ -41,7 +41,7 @@ class ValidateFolder_RDF4jTest extends FunSpec with Matchers with TryValues with
     val attempt = for {
       rdf <- RDFAsRDF4jModel.fromChars(str, "TURTLE", Some(IRI("http://example.org/")))
       schema <- RDF2Shacl.getShacl(rdf)
-      result <- Validator.validate(schema, rdf)
+      result <- Validator.validate(schema, rdf).leftMap(_.toString)
     } yield result
     attempt match {
       case Left(e) => {

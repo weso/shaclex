@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.rdf.nodes.{IRI, RDFNode}
+import es.weso.rdf.nodes._
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.manifest.{Manifest, ManifestAction, Result => ManifestResult, _}
 import es.weso.shacl.{Schema, SchemaMatchers, Shacl, manifest}
@@ -96,7 +96,6 @@ class ShaclCoreTest extends FunSpec with Matchers with TryValues with OptionValu
 
   def getSchema(a: ManifestAction, fileName: String, parentFolder: Path, manifestRdf: RDFBuilder): Either[String, (Schema, RDFReader)] = {
     info(s"Manifest action $a, fileName $fileName, parent: $parentFolder }")
-    val parentIri = absoluteIri // absoluteIri.resolve(IRI(parentFolder))
     a.schema match {
       case None => {
         info(s"No data in manifestAction $a")

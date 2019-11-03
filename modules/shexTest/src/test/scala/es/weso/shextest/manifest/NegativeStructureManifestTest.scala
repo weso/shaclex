@@ -1,33 +1,33 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 
 import java.nio.file.Paths
-
 import com.typesafe.config.{Config, ConfigFactory}
 import es.weso.shex._
 import scala.io._
 
-class NegativeSyntaxManifestTest extends ValidateManifest {
+class NegativeStructureManifestTest extends ValidateManifest {
 
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-    // Some("tripleConsraint-no-valueClass")
+   // Some("Cycle2Extra")
     None
 
-  val ignored = Map(
-    "directShapeExpression" -> "No file with that name in folder",
-    "1iriLength2" -> "We allow several lengths by now",
-    "1literalLength2" -> "We allow several lengths by now",
-    "1unknowndatatypeMaxInclusive" -> "We allow MaxInclusive over unknown datatypes by now"
+  val ignored: Map[String,String] = Map(
+    "includeSimpleShape" -> "Non checked shape includes yet",
+    "includeNonSimpleShape" -> "Non checked shape includes yet",
+    "1focusRefANDSelfdot" -> "Not sure why it must fail",
+    "1ShapeProductionCollision" -> "Collision between shape reference and tripleExpr reference, shaclex supports it, shouldn't it?",
+    "includeExpressionNotFound" -> "Include checks not tested yet"
   )
 
   val conf: Config = ConfigFactory.load()
-  val negativeSyntaxFolder = conf.getString("negativeSyntaxFolder")
-  val folderUri = Paths.get(negativeSyntaxFolder).normalize.toUri
+  val negativeStructureFolder = conf.getString("negativeStructureFolder")
+  val folderUri = Paths.get(negativeStructureFolder).normalize.toUri
   // println(s"FolderURI=$folderUri")
 
   describe("RDF2ManifestLocal") {
-    val r = RDF2Manifest.read(negativeSyntaxFolder + "/" + "manifest.ttl", "Turtle", Some(folderUri.toString), false)
+    val r = RDF2Manifest.read(negativeStructureFolder + "/" + "manifest.ttl", "Turtle", Some(folderUri.toString), false)
     r.fold(e => fail(s"Error reading manifest: $e"),
       mf => {
         for (e <- mf.entries) {
@@ -37,15 +37,18 @@ class NegativeSyntaxManifestTest extends ValidateManifest {
             } else
             it(s"Should test ${e.name}") {
               e match {
-                case r: NegativeSyntax => {
+                case r: NegativeStructure => {
                   val fileName = Paths.get(r.shex.uri.getPath).getFileName.toString
                   val uri      = folderUri.resolve(fileName)
                   val schemaStr = Source.fromURI(uri)("UTF-8").mkString
                   Schema.fromString(schemaStr, "SHEXC", None) match {
                     case Right(schema) => {
-                      fail(s"ShEx parsed OK but should fail. String:\n${schemaStr}\nParsed as:\n${schema}")
+                      schema.wellFormed match {
+                        case Right(str) => fail(s"Schema is well formed, but should not\nSchema: $schema\nMsg: $str")
+                        case Left(str) => info(s"Schema is not well formed: $str\nSchema: ${schema}")
+                      }
                     }
-                    case Left(e) => info(s"Faiiled to parse as expected with message: $e")
+                    case Left(e) => fail(s"Faiiled to parse: $e")
                   }
                 }
               }

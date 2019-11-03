@@ -171,7 +171,7 @@ private def getShaclFromRDFReader(rdf: RDFReader): ShaclParser[Schema] = {
     } yield schema._2
   }
 
-  def getShacl(rdf: RDFReader): Either[String, Schema] = for {
+  def getShaclReader(rdf: RDFReader): Either[String, Schema] = for {
    stateSchema <- getShaclFromRDFReader(rdf).run(initialState).value.run(Config(initialNode,rdf))
   } yield stateSchema._2
 

@@ -6,7 +6,6 @@ import es.weso.rdf.jena.RDFAsJenaModel
 // import es.weso.rdf._
 
 import util._
-import es.weso.rdf.path.PredicatePath
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 
@@ -65,10 +64,12 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
         rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
         schema <- RDF2Shacl.getShacl(rdf)
       } yield (rdf, schema)
-      val (rdf, schema) = attempt.right.get
+      attempt.fold(e => fail(s"Error: $e"),
+       pair => 
+     { 
+      val (rdf,schema)=pair
       val S = ex + "S"
       val PS = ex + "PS"
-      val p = ex + "p"
       val x = ex + "x"
      // val good1 = ex + "good1"
      // val good2 = ex + "good2"
@@ -83,6 +84,7 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
       val checked = validator.validateAll(rdf)
       checked.isOK should be(true)
     }
+    )}
   }
 
   describe("minCount") {
@@ -91,13 +93,17 @@ class ValidatorTest extends FunSpec with Matchers with TryValues with OptionValu
       val str = s"""|@prefix : $ex
                 |:x :p 1 .
                 |""".stripMargin
-      val rdf = RDFAsJenaModel.fromChars(str, "TURTLE").right.get
+      val eitherRdf = RDFAsJenaModel.fromChars(str, "TURTLE")
+      eitherRdf.fold(e => fail(s"Error: $e"),
+        rdf => {
      // val x = ex + "x"
      //  val p = ex + "p"
       val validator = Validator(Schema.empty)
       val checked = validator.validateAll(rdf)
       checked.isOK should be(true)
+        })
     }
+
     /*
  it("validates minCount(1) when there are 2") {
   val ex = IRI("http://example.org/")

@@ -112,7 +112,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     case Left(_) => for {
       ts <- rdf.triplesWithPredicate(`owl:imports`)
       schema <- ts.size match {
-        case 0 => RDF2Shacl.getShacl(rdf).map(ShaclexSchema(_))
+        case 0 => RDF2Shacl.getShaclReader(rdf).map(ShaclexSchema(_))
         case _ => Left(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
       }
     } yield schema

@@ -183,12 +183,6 @@ case class RDF2Manifest(base: Option[IRI],
     case _ => parseFail(s"Trying to deref an include from node $node which is not an IRI")
   }
 
-/*  private def parsePropertyValue[A](pred: IRI, parser: RDFParser[A]): RDFParser[A] =
-    for {
-        value  <- objectFromPredicate(pred)
-        result <- withNode(value, parser) 
-      } yield result */
-
   private def parsePropertyValues[A](pred: IRI, parser: RDFParser[A]): RDFParser[Set[A]] =
     for {
         values  <- objectsFromPredicate(pred)

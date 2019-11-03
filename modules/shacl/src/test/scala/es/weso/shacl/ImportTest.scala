@@ -20,9 +20,11 @@ class ImportTest extends FunSpec with Matchers with TryValues with OptionValues
     it(s"Validates a shape that imports another one") {
       val r = for {
         rdf <- RDFAsJenaModel.fromIRI(shaclFolder + "imports/import.ttl")
-        _ <- { println(s"RDF: ${rdf.serialize("TURTLE").getOrElse("<None>")}"); Right(()) } 
+        //_ <- { println(s"RDF: ${rdf.serialize("TURTLE").getOrElse("<None>")}"); Right(()) } 
+        // extendedRdf <- rdf.extendImports()
+        // _ <- { println(s"Extended RDF: ${extendedRdf.serialize("TURTLE").getOrElse("<None>")}"); Right(()) } 
         schema <- RDF2Shacl.getShacl(rdf)
-        _ <- { println(s"----\nSchema: $schema"); Right(()) } 
+        //_ <- { println(s"----\nSchema: ${schema.serialize("TURTLE", None,RDFAsJenaModel.empty)}"); Right(()) } 
         result <- Validator.validate(schema, rdf).leftMap(ar => s"AbstractResult: $ar")
       } yield result
 

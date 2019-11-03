@@ -1,10 +1,11 @@
 package es.weso.shacl
 
-
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
 import org.scalatest._
+import cats.implicits._
+
 class DeactivatedTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
 
@@ -34,7 +35,7 @@ class DeactivatedTest extends FunSpec with Matchers with TryValues with OptionVa
       val r = for {
         rdf    <- RDFAsJenaModel.fromChars(str, "TURTLE", None)
         schema <- RDF2Shacl.getShacl(rdf)
-        result <- Validator.validate(schema, rdf)
+        result <- Validator.validate(schema, rdf).leftMap(_.toString)
       } yield result
 
       r.fold(
