@@ -32,7 +32,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          |wdref:62da53368e17402c77b72fa7c9388a70d69ee1df pr:P813 "2017-07-01"^^xsd:date .
          |
          |""".stripMargin,
-      """|prefix schema: <http://schema.org/>
+/*      """|prefix schema: <http://schema.org/>
          |prefix wdp: <http://www.wikidata.org/prop/>
          |prefix prov: <http://www.w3.org/ns/prov#>
          |prefix wd: <http://www.wikidata.org/entity/>
@@ -55,8 +55,23 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | prv:P813 IRI ;
          | pr:P698  IRI ;
          | pr:P813 xsd:date
+         |} 
+      """.stripMargin */
+      """|prefix pr: <http://www.wikidata.org/prop/reference/>
+         |prefix ps: <http://www.wikidata.org/entity/statement/>
+         |prefix prv: <http://www.wikidata.org/prop/reference/value/>
+         |prefix wdref: <http://www.wikidata.org/reference/>
+         |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+         |prefix schema: <http://schema.org/>
+         |prefix wdp: <http://www.wikidata.org/prop/>
+         |prefix wd: <http://www.wikidata.org/entity/>
+         |prefix prov: <http://www.w3.org/ns/prov#>
+         |prefix sx: <http://weso.es/ns/shex/>
+         |<S> {
+         | wdp:P1476  IRI 
          |}
-      """.stripMargin, "wd:Q31270287", "S"
+         |""".stripMargin
+      , "wd:Q31270287", "S"
     )
 
 /*    checkSchemaInfer("""|prefix : <http://example.org/>

@@ -107,7 +107,6 @@ case class Schema(id: IRI,
 
   def addId(i: IRI): Schema = this.copy(id = i)
 
-
   def qualify(node: RDFNode): String =
     prefixMap.qualify(node)
 
@@ -157,25 +156,25 @@ case class Schema(id: IRI,
       List(s"Negative cycles found: [${ns.map(s => s.map(_.toString).mkString(",")).mkString(",")}]")
   ) */
 
-/* Commented because it is not used
+
  private def checkShapeLabel(lbl: ShapeLabel): Either[String, Unit] = for {
    se <- getShape(lbl)
-   refs <- EitherUtils.sequence(se.getShapeRefs(this).map(getShape(_)))
+   refs <- se.getShapeRefs(this).map(getShape(_)).sequence
   } yield {
-    println(s"Label: $lbl, refs: ${se.getShapeRefs(this).mkString(",")}")
-    println(s"References: ${refs.mkString(",")}")
+    // println(s"Label: $lbl, refs: ${se.getShapeRefs(this).mkString(",")}")
+    // println(s"References: ${refs.mkString(",")}")
     ()
-  } */
+  } 
 
-/*  private lazy val checkBadShapeLabels: Either[String,Unit] = for {
+  private lazy val checkBadShapeLabels: Either[String,Unit] = for {
     shapesMap <- eitherResolvedShapesMap
-    _ <- { println(s"shapesMap: $shapesMap"); Right(())}
-    _ <- EitherUtils.sequence(shapesMap.keySet.toList.map(lbl => checkShapeLabel(lbl)))
-  } yield (()) */
+    //_ <- { println(s"shapesMap: $shapesMap"); Right(())}
+    _ <- shapesMap.keySet.toList.map(lbl => checkShapeLabel(lbl)).sequence
+  } yield (()) 
 
 
   private lazy val checkOddNegCycles: Either[String, Unit] = {
-    // println(s"NegCycles: $oddNegCycles")
+    println(s"OddNegCycles: $oddNegCycles")
     oddNegCycles match {
       case Left(e) => Left(e)
       case Right(cs) => if (cs.isEmpty) Right(())
@@ -186,7 +185,7 @@ case class Schema(id: IRI,
 
   lazy val wellFormed: Either[String,Unit] = for {
     _ <- checkOddNegCycles
-   // _ <- checkBadShapeLabels
+    _ <- checkBadShapeLabels
   } yield (())
 
   def relativize(maybeBase: Option[IRI]): Schema = maybeBase match {

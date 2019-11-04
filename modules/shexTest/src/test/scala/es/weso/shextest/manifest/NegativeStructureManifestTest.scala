@@ -10,10 +10,10 @@ class NegativeStructureManifestTest extends ValidateManifest {
   // If the following variable is None, it runs all tests
   // Otherwise, it runs only the test whose name is equal to the value of this variable
   val nameIfSingle: Option[String] =
-   // Some("Cycle2Extra")
     None
 
   val ignored: Map[String,String] = Map(
+    "TwoNegation2" -> "Shaclex only checks odd cycles as in the spec",
     "includeSimpleShape" -> "Non checked shape includes yet",
     "includeNonSimpleShape" -> "Non checked shape includes yet",
     "1focusRefANDSelfdot" -> "Not sure why it must fail",
