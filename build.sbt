@@ -1,3 +1,6 @@
+// Local dependencies
+lazy val srdfVersion           = "0.1.38"
+
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
 lazy val catsVersion           = "2.0.0"
@@ -20,7 +23,6 @@ lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
-lazy val srdfVersion           = "0.1.36"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "1.0.0"
@@ -72,13 +74,14 @@ lazy val shaclex = project
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
   .aggregate(schemaInfer, schema, shacl, shex, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
-  .dependsOn(schemaInfer, schema, shacl, shex, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .dependsOn(schemaInfer, schema, shacl, shex, shexTest, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
       logbackClassic,
       scalaLogging,
-      scallop
+      scallop,
+      typesafeConfig,
     ),
     cancelable in Global      := true,
     fork                      := true,

@@ -9,7 +9,8 @@ import es.weso.utils.UriUtils._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import org.scalatest.Matchers
-import es.weso.shex.manifest.ManifestPrefixes._
+import es.weso.shextest.manifest._
+import es.weso.shextest.manifest.ManifestPrefixes._
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{BNode, IRI}
@@ -18,7 +19,6 @@ import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, 
 import es.weso.shex.validator.{ExternalIRIResolver, Validator}
 import es.weso.shex._
 import es.weso.shex.compact.CompareSchemas
-import es.weso.shex.manifest._
 import io.circe.parser.{decode, parse}
 import io.circe.syntax._
 import es.weso.shex.manifest.Utils._

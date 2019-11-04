@@ -6,6 +6,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import util._
 import es.weso.shacl.converter.RDF2Shacl
 import es.weso.shacl.validator.Validator
+import cats.implicits._
 
 class ShapeValidatorTest extends FunSpec with Matchers with TryValues with EitherValues {
 
@@ -28,7 +29,7 @@ class ShapeValidatorTest extends FunSpec with Matchers with TryValues with Eithe
         schema <- RDF2Shacl.getShacl(rdf)
         shape <- schema.shape(s)
         validator = Validator(schema)
-        result <- Validator.validate(schema, rdf)
+        result <- Validator.validate(schema, rdf).leftMap(_.toString)
       } yield (Validator(schema).showResult(result))
       attempt match {
         case Right(result) => {

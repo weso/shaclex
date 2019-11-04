@@ -1,7 +1,6 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 
 import java.nio.file.Paths
-
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shapeMaps.ShapeMap
@@ -31,7 +30,7 @@ trait ValidateManifest extends FunSpec with Matchers with TryValues with OptionV
     }
   }
 
-  def processManifest(m: Manifest, name: String, parentFolder: String): Unit = {
+  def processManifest(m: ShExManifest, name: String, parentFolder: String): Unit = {
     println(s"processManifest with ${name} and parent folder $parentFolder")
     for ((includeNode, manifest) <- m.includes) {
       println(s"Include: $includeNode")
@@ -44,7 +43,7 @@ trait ValidateManifest extends FunSpec with Matchers with TryValues with OptionV
     }
   }
 
-  def processEntry(e: es.weso.shex.manifest.Entry, name: String, manifestFolder: String): Unit = e match {
+  def processEntry(e: es.weso.shextest.manifest.Entry, name: String, manifestFolder: String): Unit = e match {
     case r: RepresentationTest => {
       println(s"Entry: ${e}, name: $name")
       ()

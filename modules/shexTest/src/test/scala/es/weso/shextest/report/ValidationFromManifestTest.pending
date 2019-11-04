@@ -4,7 +4,8 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import com.typesafe.config._
 import java.io._
 import java.nio.file.Paths
-import es.weso.shex.manifest.ManifestPrefixes._
+import es.weso.shextest.manifest.JsonResult
+import es.weso.shextest.manifest.ManifestPrefixes._
 import es.weso.rdf.RDFReader
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{BNode, IRI}
@@ -12,7 +13,6 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMap, _}
 import es.weso.shex.validator.{ExternalIRIResolver, Validator}
 import es.weso.shex._
-import es.weso.shex.manifest.JsonResult
 import io.circe.syntax._
 import es.weso.utils.UriUtils._
 import scala.collection.mutable

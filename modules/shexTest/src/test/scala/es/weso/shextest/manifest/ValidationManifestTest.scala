@@ -1,4 +1,4 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 
 import java.net.URI
 import es.weso.utils.UriUtils._
@@ -9,16 +9,16 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{BNode, IRI}
 import es.weso.shapeMaps.{BNodeLabel => BNodeMapLabel, IRILabel => IRIMapLabel, Start => StartMap, _}
 import es.weso.shex._
+import es.weso.shex.validator.{ExternalIRIResolver, Validator}
+import es.weso.shapeMaps._
 import es.weso.shex.compact.CompareSchemas
+import es.weso.shextest.manifest.Utils._
 import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
-import es.weso.shex.validator.{ExternalIRIResolver, Validator}
+import ManifestPrefixes._
+import scala.io._
 import io.circe.parser._
 import io.circe.syntax._
-import es.weso.shapeMaps._
-import es.weso.shex.manifest.ManifestPrefixes._
-import scala.io._
-import es.weso.shex.manifest.Utils._
 
 
 class ValidationManifestTest extends ValidateManifest {
@@ -36,7 +36,7 @@ class ValidationManifestTest extends ValidateManifest {
 
   //println(s"ValidationManifest")
 
-  describe("ValidationManifest compatTest") {
+  describe("ValidationManifest") {
     val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI.toString), false)
     r.fold(e => println(s"Error reading manifest: $e"),
       mf => {

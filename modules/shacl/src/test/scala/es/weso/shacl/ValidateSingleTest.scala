@@ -9,6 +9,7 @@ import es.weso.utils.FileUtils._
 import org.scalatest._
 import scala.io.Source
 import scala.util._
+import cats.implicits._
 
 class ValidateSingleTest extends FunSpec with Matchers with TryValues with OptionValues
   with SchemaMatchers {
@@ -32,7 +33,7 @@ class ValidateSingleTest extends FunSpec with Matchers with TryValues with Optio
     val attempt = for {
       rdf <- RDFAsJenaModel.fromChars(str, "TURTLE")
       schema <- RDF2Shacl.getShacl(rdf)
-      result <- Validator.validate(schema, rdf)
+      result <- Validator.validate(schema, rdf).leftMap(_.toString)
     } yield result
     attempt match {
       case Left(e) => fail(s"Error validating $name: $e")

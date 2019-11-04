@@ -1,4 +1,4 @@
-package es.weso.shex.manifest
+package es.weso.shextest.manifest
 
 import es.weso.rdf.nodes.IRI
 

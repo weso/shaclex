@@ -3,7 +3,7 @@ package es.weso.shacl.report
 import java.io._
 import java.nio.file.{Path, Paths}
 
-import com.typesafe.config._
+import com.typesafe.config.{Config => TConfig, _}
 import es.weso.rdf.{RDFBuilder, RDFReader}
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{IRI, RDFNode}
@@ -19,7 +19,7 @@ import scala.util.{Either, Left, Right}
 
 class ReportGeneratorCompatTest extends FunSpec with Matchers with RDFParser {
 
-  val conf: Config = ConfigFactory.load()
+  val conf: TConfig = ConfigFactory.load()
 //  val manifestFile = new File(conf.getString("manifestFile"))
   val outFile = conf.getString("EarlReportFile")
 //  val baseIRI: Option[String] = Some(Paths.get(manifestFile.getCanonicalPath()).normalize().toUri.toString)

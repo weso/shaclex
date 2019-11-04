@@ -10,8 +10,7 @@ import es.weso.shapeMaps.Parser._
 import es.weso.shapeMaps.parser.NodeSelectorBaseVisitor
 import es.weso.shapeMaps.parser.NodeSelectorParser.{StringContext => ShapeMapStringContext, _}
 import es.weso.utils.FileUtils
-
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Visits the AST and builds the corresponding ShapeMaps classes
