@@ -73,8 +73,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(schemaInfer, schema, shacl, shex, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
-  .dependsOn(schemaInfer, schema, shacl, shex, shexTest, sutils, converter, rbe, typing, validating, shapeMaps, depGraphs, slang, sgraph)
+  .aggregate(depGraphs, schemaInfer, schema, shacl, shex, shexTest, sutils, converter, rbe, typing, validating, shapeMaps, slang, sgraph, shexTest, utilsTest)
+  .dependsOn(depGraphs, schemaInfer, schema, shacl, shex, shexTest, sutils, converter, rbe, typing, validating, shapeMaps, slang, sgraph, utilsTest)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -93,7 +93,7 @@ lazy val schemaInfer = project
   .in(file("modules/schemaInfer"))
   .disablePlugins(RevolverPlugin)
   .settings(
-    commonSettings, 
+    commonSettings,  
     publishSettings,
     libraryDependencies ++= Seq(srdf)
   )

@@ -55,7 +55,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       nodesPrefixMap = rdf.getPrefixMap(),
       shapesPrefixMap = schema.pm)
   }
-
+  
   def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
     ResultShapeMap(
       t._1.getMap.view.mapValues(cnvMapShapeResult).toMap, rdf.getPrefixMap(), schema.pm)

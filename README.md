@@ -6,7 +6,7 @@ This project contains an implementation of
 [SHACL](http://w3c.github.io/data-shapes/shacl/) and
 [ShEx](http://www.shex.io)
 
-[![Build Status](https://travis-ci.org/labra/shaclex.svg?branch=master)](https://travis-ci.org/labra/shaclex)
+[![Build Status](https://travis-ci.org/weso/shaclex.svg?branch=master)](https://travis-ci.org/labra/shaclex)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214239.svg)](https://doi.org/10.5281/zenodo.1214239)
 
@@ -17,7 +17,7 @@ This project contains an implementation of [SHACL](https://www.w3.org/TR/shacl/)
 Both are implemented in Scala using the same underlying mechanism using a purely functional approach.
 
 The library handles RDF using a 
-[simple RDF interface](https://github.com/labra/shaclex/tree/master/modules/srdf) 
+[simple RDF library](https://github.com/weso/srdf) 
 which has 2 implementations,
 one using [Apache Jena](https://jena.apache.org/)
 and another one using [RDF4j](http://rdf4j.org/),
@@ -140,14 +140,15 @@ $ sbt "run --schema examples/shex/good1.shex
 
 ## More information
 
-* This project is based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
 * The aim of Shaclex is to support both ShEx and SHACL and to provide conversions between both languages. 
   More information about both languages can be read in the [Validating RDF data](http://book.validatingrdf.com) written by the authors.
 * An online demo based on this library is available at [http://rdfshape.weso.es](http://rdfshape.weso.es).
+* Another online demo based on this library customized for Wikidata is available at [http://wikidata.weso.es](http://wikidata.weso.es).
+* This project was based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
 
 ## Author & contributors
 
-* Author: [Jose Emilio Labra Gayo](http://www.di.uniovi.es/~labra)
+* Author: [Jose Emilio Labra Gayo](http://labra.weso.es)
 
 Contributors:
 
@@ -158,10 +159,8 @@ Contributors:
 ## Adopters
 
 * [RDFShape](http://rdfshape.weso.es): An online demo powered by this library.
-
-* [Eclipse lyo](http://www.eclipse.org/lyo/): An SDK and a modelling environment to 
- design and develop linked data applications based on the [OSLC standards](http://open-services.net/). 
- The validation library is [lyo-validation](https://github.com/eclipse/lyo-validation).
+* [Wikishape](http://wikishape.weso.es): An online demo powered by this library for Wikidata.
+* [Eclipse lyo](http://www.eclipse.org/lyo/): An SDK and a modelling environment to design and develop linked data applications based on the [OSLC standards](http://open-services.net/). The validation library is [lyo-validation](https://github.com/eclipse/lyo-validation).
 
 ## Contribution
 
