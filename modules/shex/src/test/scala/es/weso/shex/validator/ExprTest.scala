@@ -1,7 +1,6 @@
 package es.weso.shex.validator
 
 import es.weso.rdf.jena._
-import es.weso.rdf.nodes._
 import es.weso.shapeMaps.ShapeMap
 import es.weso.shex._
 import org.scalatest._
@@ -35,18 +34,18 @@ class ExprTest extends FunSpec with Matchers with EitherValues {
           |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
           |
           |:R {
-          | :a  xsd:integer as $a;
-          | :a1 xsd:integer as $a1 ;
-          | $a1 = $a + 1
+          | :b  xsd:integer as $b;
+          | :b1 xsd:integer as $b1 ;
+          | $b1 = $b + 1
           |}
         """.stripMargin
 
-      var strRdf =
+      val strRdf =
         """
           |prefix : <http://example.org/>
           |
-          |:good :a 1 ; :a1 2 .
-          |:bad  :a 1 ; :a1 3 .
+          |:good :b 1 ; :b1 2 .
+          |:bad  :b 1 ; :b1 3 .
         """.stripMargin
 
       val strShapeMap =

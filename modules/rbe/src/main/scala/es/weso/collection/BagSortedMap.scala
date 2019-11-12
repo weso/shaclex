@@ -9,17 +9,17 @@ case class BagSortedMap[A: Ordering](smap: SortedMap[A, Int])
 
   def insert(elem: A): BagSortedMap[A] =
     if (smap.contains(elem))
-      BagSortedMap(smap + (elem -> (smap(elem) + 1)))
+      BagSortedMap(smap.concat(List(elem -> (smap(elem) + 1))))
     else
-      BagSortedMap(smap + (elem -> 1))
+      BagSortedMap(smap.concat(List(elem -> 1)))
 
   def delete(elem: A): BagSortedMap[A] =
     if (smap.contains(elem)) {
       val n = smap(elem)
       if (n == 1)
-        BagSortedMap(smap -- List(elem))
+        BagSortedMap(smap.filter{case (key, _) => key != elem})
       else
-        BagSortedMap(smap + (elem -> (n - 1)))
+        BagSortedMap(smap.concat(List(elem -> (n - 1))))
     } else // TODO: Consider returning some kind of error
       this
 
@@ -35,9 +35,9 @@ case class BagSortedMap[A: Ordering](smap: SortedMap[A, Int])
    */
   override def add(elem: A, n: Int): BagSortedMap[A] =
     if (smap.contains(elem))
-      BagSortedMap(smap + (elem -> (smap(elem) + n)))
+      BagSortedMap(smap.concat(List(elem -> (smap(elem) + n))))
     else
-      BagSortedMap(smap + (elem -> n))
+      BagSortedMap(smap.concat(List(elem -> n)))
 
   def elems: Iterator[(A, Int)] = smap.iterator
 

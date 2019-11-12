@@ -6,7 +6,7 @@ import es.weso.checking.CheckerCats
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.validator.Action._
-import Context._
+import es.weso.shex.validator.Context._
 
 object ShExChecker extends CheckerCats {
 

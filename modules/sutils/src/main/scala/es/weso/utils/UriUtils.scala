@@ -1,10 +1,11 @@
 package es.weso.utils
 
-import java.net.{URI, URL}
+import java.net.URI
+
+import cats.implicits._
 
 import scala.io.Source
 import scala.util.Try
-import cats.implicits._
 
 object UriUtils {
   /**

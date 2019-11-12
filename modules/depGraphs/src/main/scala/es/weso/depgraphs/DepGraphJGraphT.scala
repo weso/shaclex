@@ -1,12 +1,12 @@
 package es.weso.depgraphs
 
-import org.jgrapht.Graph
-import org.jgrapht.graph._
-import org.jgrapht.alg.connectivity._
-
-import collection.JavaConverters._
 import cats.implicits._
+import org.jgrapht.Graph
+import org.jgrapht.alg.connectivity._
 import org.jgrapht.alg.interfaces.StrongConnectivityAlgorithm
+import org.jgrapht.graph._
+
+import scala.jdk.CollectionConverters._
 
 case class DepGraphJGraphT[Node]() extends DepGraph[Node] {
 

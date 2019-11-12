@@ -42,6 +42,7 @@ object Spec extends LazyLogging {
         runLocalWithTyping(_.addTesting(node,lbl), satisfiesLabel(node,lbl))
       case NonConformantStatus =>
         runLocalWithTyping(_.addTesting(node,lbl), notSatisfiesLabel(node,lbl))
+      case _ => sys.error("We shouldn't be here")
     }
   }
 
@@ -355,6 +356,7 @@ object Spec extends LazyLogging {
     case Conformant(es) => ShapeMapInfo(ConformantStatus, None, None)
     case NonConformant(es) => ShapeMapInfo(NonConformantStatus,None,None)
     case Unknown => ShapeMapInfo(Undefined, None, None)
+    case Testing => sys.error("We shouldn't be here")
   }
 
   def shapeTyping2ResultShapeMap(typing: ShapeTyping,

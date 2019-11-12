@@ -31,7 +31,6 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
         |""".stripMargin
 
     val ex = IRI("http://example.org/")
-    val shape = ex + "S"
     // TODO. Check if we could normalize these kind of shapes
     val p: Path = Direct(ex + "p")
     val a = ex + "S"
@@ -102,6 +101,8 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
   }
 
   describe(s"Normalize shape with top level annotation ") {
+    pending
+    /*
     val shexStr =
       """
         |prefix : <http://example.org/>
@@ -119,7 +120,7 @@ class NormalizeShapeTest extends FunSpec with Matchers with EitherValues {
     val tc = TripleConstraint.valueExpr(ex + "p",iri).copy(annotations = as)
 
     // TODO: Add a test to check normalized shape
-
+    */
   }
 
   def shouldNormalizeShape(strSchema: String, shapeLabel: IRI, ns: NormalizedShape): Unit = {

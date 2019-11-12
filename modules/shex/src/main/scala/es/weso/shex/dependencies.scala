@@ -139,6 +139,7 @@ object Dependencies {
               dependencies(schema, ve, source, posNeg)
             }
         }
+      case _@tripleExpr => sys.error(s"Don't know how to handle TripleExpr $tripleExpr")
     }
   }
 
@@ -189,6 +190,7 @@ object Dependencies {
             }
         }
       } else noDeps
+      case _@tripleExpr => sys.error(s"Don't know how to handle TripleExpr $tripleExpr")
     }
   }
 

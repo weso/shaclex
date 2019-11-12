@@ -2,7 +2,7 @@ package es.weso.utils.test
 import io.circe.Json
 import org.scalatest._
 
-class MapUtilsTest extends FunSpec with Matchers with JsonMatchers {
+class JsonMatchersTest extends FunSpec with Matchers with JsonMatchers {
 
   describe("Simple Json test") {
     it(s"Should check two json values") {
@@ -30,11 +30,11 @@ class MapUtilsTest extends FunSpec with Matchers with JsonMatchers {
         ("key1",Json.fromString("value1")),
         ("key2",Json.fromString("value2"))
         ))
-      val expected = Json.fromFields(List(
+      val expected: Json = Json.fromFields(List(
         ("key2",Json.fromString("value2")),
         ("key1",Json.fromString("value1"))
       ))
-      json should matchJson(expected)
+      json should be (expected)
     }
 
   }

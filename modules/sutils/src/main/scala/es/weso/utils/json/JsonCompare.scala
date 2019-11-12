@@ -15,7 +15,7 @@ object JsonCompare {
 /*  def jsonDiff(json1: Json, json2: Json) = {
     JsonDiff.diff(json1, json2, false)
   } */
-  def jsonDiff(json1: Json, json2: Json) = diff(json1, json2)
+  def jsonDiff(json1: Json, json2: Json): JsonPatch[Json] = diff(json1, json2)
 
   /**
    * Obtains a diff between 2 Jsons

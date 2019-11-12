@@ -23,7 +23,7 @@ class ShaclSingleTest extends FunSpec with Matchers with TryValues with OptionVa
   val shaclFolderURI = Paths.get(fileName).normalize.toUri.toString
   val absoluteIri = IRI(shaclFolderURI)
 
-  val failed = mutable.ArrayStack[String]()
+  val failed = mutable.Stack[String]()
 
   describe(s"Validate from manifest file $fileName") {
     println(s"SHACLFolderURI=$shaclFolderURI")

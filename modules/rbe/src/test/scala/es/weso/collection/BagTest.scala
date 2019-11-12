@@ -1,7 +1,7 @@
 package es.weso.collection
 
 import org.scalatest._
-import org.scalatest.prop._
+import org.scalatestplus.scalacheck._
 
 class BagTest
   extends FunSpec

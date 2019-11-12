@@ -136,6 +136,8 @@ case class InferredShape(nodeShape: InferredNodesValue,
       // println(s"Ref($lbl")
       ShapeRef(IRILabel(lbl),None,None)
     }
+    case _@inferredNodeConstraint =>
+      sys.error(s"Don't know what to do with this InferredNodeConstraint: $inferredNodeConstraint")
   }
 
   private def mkMinCardinality(n: Integer): Integer =

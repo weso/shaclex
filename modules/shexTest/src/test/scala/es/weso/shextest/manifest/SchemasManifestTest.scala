@@ -33,7 +33,6 @@ class SchemasManifestTest extends ValidateManifest {
             it(s"Should pass test ${e.name}") {
               e match {
                 case r: RepresentationTest => {
-                  val base      = Paths.get(".").toUri
                   val schemaUri = mkLocal(r.shex, schemasBase, shexFolderURI)
                   val jsonUri   = mkLocal(r.json, schemasBase, shexFolderURI)
                   val either: Either[String, String] = for {

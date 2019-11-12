@@ -1,17 +1,15 @@
 package es.weso.schema
 
-import cats._
+import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import implicits._
 import es.weso.rdf._
-import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
+import es.weso.rdf.nodes._
 import es.weso.shapeMaps._
-import es.weso.shex.{Schema => SchemaShEx, _}
-import es.weso.shex.validator.{Result => ResultShEx, _}
-import es.weso.shex._
 import es.weso.shex.converter.ShEx2Shacl
 import es.weso.shex.shexR._
+import es.weso.shex.validator.{Result => _, _}
+import es.weso.shex.{Schema => SchemaShEx}
 import es.weso.slang.{SLang2Clingo, ShEx2SLang}
 
 import scala.util._

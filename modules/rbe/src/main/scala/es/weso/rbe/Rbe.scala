@@ -48,8 +48,8 @@ sealed trait Rbe[+A] extends LazyLogging {
       case Fail(_) => List()
       case Empty => List()
       case Symbol(a, _, _) => List(a)
-      case And(v1, v2) => v1.symbols union v2.symbols
-      case Or(v1, v2) => v1.symbols union v2.symbols
+      case And(v1, v2) => v1.symbols concat v2.symbols
+      case Or(v1, v2) => v1.symbols concat v2.symbols
       case Star(v) => v.symbols
       case Plus(v) => v.symbols
       case Repeat(v, _, _) => v.symbols

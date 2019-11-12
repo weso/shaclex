@@ -2,11 +2,10 @@ package es.weso.shex.compact
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
-import es.weso.utils.json.JsonTest
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.utils.FileUtils._
+import es.weso.utils.json.JsonTest
 import io.circe.parser._
 import io.circe.syntax._
 import org.scalatest.{EitherValues, FunSpec, Matchers}

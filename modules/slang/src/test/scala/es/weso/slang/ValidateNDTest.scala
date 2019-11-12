@@ -21,10 +21,10 @@ class ValidateNDTest extends FunSpec
       } yield (rdf,schema,schema)
 
       r.fold(e => fail(s"Error: $e"), values => {
-        val (rdf,schema,slangSchema) = values
-        val result = ValidateND.runValidation(node, shape, rdf, slangSchema).right.value
+        val (rdf,_,slangSchema) = values
         info(s"SLang schema: $slangSchema")
-        info(s"Result for $node:\n${result.map(node).m.map(pair => { s"${pair._1}: ${pair._2}"}).mkString("\n")}")
+        val result = ValidateND.runValidation(node, shape, rdf, slangSchema)
+          .getOrElse(sys.error("Unexpected Left in Either"))
         result.isConforming(node, shape) should be(Conforms)
       })
     }
@@ -50,9 +50,9 @@ class ValidateNDTest extends FunSpec
         val (rdf,schema,slangSchema) = values
         val node = IRI("a")
         val shape: SLang  = Ref(IRILabel(IRI("User")))
-        val result = ValidateND.runValidation(node, shape, rdf, slangSchema).right.value
         info(s"SLang schema: $slangSchema")
-        info(s"Result for $node:\n${result.map(node).m.map(pair => { s"${pair._1}: ${pair._2}"}).mkString("\n")}")
+        val result = ValidateND.runValidation(node, shape, rdf, slangSchema)
+            .getOrElse(sys.error("Unexpected Left value in Either"))
         result.isConforming(node, shape) should be(Conforms)
       })
     }

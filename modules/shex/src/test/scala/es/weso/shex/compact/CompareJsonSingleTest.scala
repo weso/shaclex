@@ -2,17 +2,16 @@ package es.weso.shex.compact
 
 import java.io.File
 
+import cats.implicits._
 import com.typesafe.config.{Config, ConfigFactory}
-import es.weso.utils.json.{JsonCompare, JsonTest}
 import es.weso.shex._
+import es.weso.shex.implicits.encoderShEx._
+import es.weso.shex.implicits.showShEx._
 import es.weso.utils.FileUtils._
+import es.weso.utils.json.{JsonCompare, JsonTest}
 import io.circe.parser._
 import io.circe.syntax._
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import es.weso.shex.implicits.encoderShEx._
-import es.weso.shex.implicits.showShEx._
-import cats.implicits._
-import es.weso.rdf.jena.RDFAsJenaModel
 
 import scala.io._
 

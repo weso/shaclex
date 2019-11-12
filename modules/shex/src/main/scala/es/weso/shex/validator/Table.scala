@@ -190,7 +190,6 @@ object Table extends LazyLogging {
         }
         cs.foldLeft(List[String]())(combine).mkString("\n")
       }
-      val paths = table.paths.toList
       s"""Constraints:\n${showConstraints(table.constraints)}\nPaths: ${table.paths.toString}\n---endTable\n""".stripMargin
     }
   }

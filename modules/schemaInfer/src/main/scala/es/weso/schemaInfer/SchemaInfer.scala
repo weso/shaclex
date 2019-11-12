@@ -4,9 +4,8 @@ import cats.data._
 import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import es.weso.rdf.triples.RDFTriple
-import es.weso.schema._
 import es.weso.schema.Schemas._
+import es.weso.schema._
 import es.weso.shapeMaps._
 
 object SchemaInfer {
@@ -25,8 +24,6 @@ object SchemaInfer {
   private def getSchema: Comp[InferredSchema] = getState.map(_.schema)
 
   private def getPrefixMap: Comp[PrefixMap] = getState.map(_.prefixMap)
-
-  private def getShapeMap: Comp[ResultShapeMap] = getState.map(_.inferredShapeMap)
 
   private def updateState(fn: InferState => InferState): Comp[Unit] =
     EitherT.liftF(StateT.modify(fn))

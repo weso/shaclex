@@ -1,8 +1,5 @@
 package es.weso.collection
-import org.scalatest._
 import org.scalacheck._
-
-import org.scalacheck.Gen._
 
 trait GenBag {
 

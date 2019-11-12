@@ -68,7 +68,7 @@ trait Bag[A] {
 
   def asSortedMap: SortedMap[A, Int]
 
-  def from(t: Traversable[A]): Bag[A] = {
+  def from(t: Iterable[A]): Bag[A] = {
     t.foldLeft(this)((s, a) => s.insert(a))
   }
 
@@ -92,7 +92,7 @@ object Bag {
   def empty[A: Ordering]: Bag[A] =
     BagSortedMap(SortedMap[A, Int]())
 
-  def toBag[A: Ordering](t: Traversable[A]): Bag[A] = {
+  def toBag[A: Ordering](t: Iterable[A]): Bag[A] = {
     empty.from(t)
   }
 
