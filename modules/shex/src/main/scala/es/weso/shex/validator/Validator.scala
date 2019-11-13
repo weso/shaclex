@@ -508,7 +508,7 @@ case class Validator(schema: Schema,
       extra <- extraPreds(node,s.preds)
       _ <- {
         //println(s"Extra preds: $extra. Closed? ${s.closed}")
-        ok()
+        ok(extra)
       }
       typing <- if (s.closed && extra.nonEmpty) {
         err(ClosedButExtraPreds(extra))

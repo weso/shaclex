@@ -118,10 +118,6 @@ case class FacetChecker(schema: Schema, rdf: RDFReader)
   // Problem, how to do it in a compatible way with type safety
   private type Comparator = (NumericLiteral, RDFNode) => Either[String,Boolean]
 
-  private def compare(fn: (NumericLiteral,RDFNode) => Either[String,Boolean]
-             ): (NumericLiteral, RDFNode) => Either[String,Boolean] =
-    fn
-
   private def minInclusive: Comparator = (nl, node) => for {
     nl2 <- numericValue(node)
   } yield lessThanOrEquals(nl,nl2)

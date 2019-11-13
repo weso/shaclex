@@ -1,10 +1,9 @@
 package es.weso.collection
 
-import scala.collection.SortedMap
-
 import org.scalatest._
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.prop.Checkers
+import org.scalatestplus.scalacheck._
+
+import scala.collection.SortedMap
 
 class SortedMapBagTest extends FunSpec with Matchers with Checkers {
 

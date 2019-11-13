@@ -419,7 +419,7 @@ lazy val packagingSettings = Seq(
 )
 
 lazy val compilationSettings = Seq(
-  scalaVersion := "2.13.0",
+  scalaVersion := "2.13.1",
   // format: off
   scalacOptions ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
@@ -431,6 +431,7 @@ lazy val compilationSettings = Seq(
     "-Xlint",
     "-Yrangepos",
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
+    "-Xfatal-warnings",
     "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
     "-Ymacro-annotations"
   )

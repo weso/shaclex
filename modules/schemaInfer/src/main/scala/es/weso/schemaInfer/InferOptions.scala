@@ -1,7 +1,6 @@
 package es.weso.schemaInfer
-import es.weso.rdf.{Prefix, PrefixMap}
-import es.weso.rdf.nodes.{IRI, Lang}
-import es.weso.schemaInfer.FollowOn._
+import es.weso.rdf.PrefixMap
+import es.weso.rdf.nodes.Lang
 import es.weso.schemaInfer.SchemaInfer.SortFunction
 
 case class InferOptions(

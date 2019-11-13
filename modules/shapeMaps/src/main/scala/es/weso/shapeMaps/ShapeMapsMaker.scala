@@ -1,17 +1,16 @@
 package es.weso.shapeMaps
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import es.weso.rdf.PREFIXES._
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
-import es.weso.rdf.PREFIXES._
-import Parser._
 import es.weso.rdf.path._
+import es.weso.shapeMaps.Parser._
 import es.weso.shapeMaps.parser.ShapeMapParser.{StringContext => ShapeMapStringContext, _}
 import es.weso.shapeMaps.parser._
 import es.weso.utils.{EitherUtils, FileUtils}
 import io.circe.Json
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Visits the AST and builds the corresponding ShapeMaps classes

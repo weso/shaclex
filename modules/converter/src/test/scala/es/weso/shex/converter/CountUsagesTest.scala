@@ -1,11 +1,8 @@
 package es.weso.shex.converter
 
-import cats._
 import es.weso._
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
 import es.weso.shex._
-import es.weso.shex.implicits.eqShEx._
 import org.scalatest._
 
 class CountUsagesTest extends FunSpec with Matchers with EitherValues {

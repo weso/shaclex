@@ -2,21 +2,17 @@ package es.weso.shex
 
 import java.io.File
 
-import cats._
 import cats.implicits._
+import cats.syntax.either._
 import com.typesafe.config._
-import es.weso.utils.json.JsonCompare.jsonDiff
-import es.weso.utils.json._
-import es.weso.shex.implicits.decoderShEx._
 import es.weso.shex.implicits.encoderShEx._
 import es.weso.shex.implicits.showShEx._
 import es.weso.utils.FileUtils._
-import io.circe.{Decoder, Encoder}
-import io.circe.syntax._
+import es.weso.utils.json.JsonCompare.jsonDiff
+import es.weso.utils.json._
 import io.circe.parser.parse
+import io.circe.syntax._
 import org.scalatest._
-import cats.syntax.either._
-import scala.io._
 
 class SchemaEncodeJsonEqualsJsonTest extends FunSpec with JsonTest with Matchers with EitherValues {
 

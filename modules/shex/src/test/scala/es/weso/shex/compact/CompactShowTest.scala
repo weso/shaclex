@@ -1,7 +1,6 @@
 package es.weso.shex.compact
 
 import cats.implicits._
-import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.Schema
 import org.scalatest._
 

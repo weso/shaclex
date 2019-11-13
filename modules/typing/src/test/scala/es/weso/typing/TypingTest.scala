@@ -82,7 +82,6 @@ class TypingTest extends FunSpec with Matchers {
       val t1: Typing[K, V, Er, Ev] =
         Typing.empty.addType(K("x"), V("a"), List(Ev("e1")))
       val t2 = t1.addNotEvidence(K("x"), V("b"), Er("E1"))
-      val t3 = t1.addNotEvidence(K("x"), V("b"), Er("E2"))
       t2.getOkValues(K("x")) should contain theSameElementsAs List(V("a"))
       t2.getFailedValues(K("x")) should contain theSameElementsAs List(V("b"))
     }

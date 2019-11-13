@@ -1,9 +1,8 @@
 package es.weso.checking
 import java.util.concurrent.atomic.AtomicInteger
 
-import org.scalatest._
-import cats._
 import cats.implicits._
+import org.scalatest._
 
 class CheckerCatsTest extends FunSpec with Matchers with OptionValues {
 

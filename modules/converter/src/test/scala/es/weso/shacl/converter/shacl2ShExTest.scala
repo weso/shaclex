@@ -3,10 +3,9 @@ package es.weso.shacl.converter
 import cats._
 import cats.implicits._
 import es.weso._
-import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
-import org.scalatest._
 import es.weso.shex.implicits.eqShEx._
+import org.scalatest._
 
 class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
 
@@ -103,9 +102,7 @@ class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
   }
 
   def shouldConvertSHACLShEx(strSHACL: String, expected: String): Unit = {
-    import es.weso.shex.implicits.showShEx._
     it(s"Should convert: $strSHACL to ShEx and obtain: $expected") {
-    val emptyRdf: RDFReader = RDFAsJenaModel.empty
     val r = for {
       shaclRDF       <- RDFAsJenaModel.fromChars(strSHACL, "TURTLE", None)
       shacl          <- RDF2Shacl.getShacl(shaclRDF)

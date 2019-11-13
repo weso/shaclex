@@ -1,10 +1,5 @@
 package es.weso.shex.spec
 
-import cats.data.{NonEmptyList, Validated}
-import es.weso.rdf.PrefixMap
-import es.weso.rdf.nodes.RDFNode
-import es.weso.shapeMaps.{Info => ShapeMapInfo, _}
-
 sealed trait Info[+A] {
   def isOk: Boolean = this match {
     case c: Conformant[_] => true

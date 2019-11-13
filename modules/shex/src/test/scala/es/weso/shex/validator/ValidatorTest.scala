@@ -1,5 +1,6 @@
 package es.weso.shex.validator
 
+import es.weso.rdf.RDFReader
 import es.weso.rdf.jena._
 import es.weso.rdf.nodes._
 import es.weso.shex._
@@ -10,8 +11,7 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
   describe("ShEx validator") {
     val shapeLabel = IRILabel(IRI("http://example.org/S"))
     val schema =
-      Schema.empty.copy(shapes = Some(List(
-        NodeConstraint.nodeKind(IRIKind, List()).addId(shapeLabel))))
+      Schema.empty.copy(shapes = Some(List(NodeConstraint.nodeKind(IRIKind, List()).addId(shapeLabel))))
     val rdfStr = """|prefix : <http://example.org/>
                     |:a :p :b .""".stripMargin
 
@@ -24,35 +24,32 @@ class ValidatorTest extends FunSpec with Matchers with EitherValues {
     }
   }
 
-  def shouldValidate(
-    node: RDFNode,
-    label: ShapeLabel,
-    rdfStr: String,
-    schema: Schema): Unit = {
+  def shouldValidate(node: RDFNode, label: ShapeLabel, rdfStr: String, schema: Schema): Unit = {
     val v = Validator(schema)
-    val eitherResult = for {
-      rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE")
-      check = v.checkNodeLabel(node, label)
-      result <- ShExChecker.runCheck(check, rdf).toEither
-    } yield result
-    eitherResult.fold(
-      err => fail(s"Error validating: $err"),
-      _.hasType(node, label) should be(true))
+    val check: ShExChecker.Check[ShapeTyping] = v.checkNodeLabel(node, label)
+    val reader : Either[String, RDFReader] = RDFAsJenaModel
+      .fromChars(rdfStr, "TURTLE")
+
+    val obtained = reader
+      .map(rdf => ShExChecker.runCheck(check, rdf).toEither)
+      .getOrElse(sys.error("Unexpected Left found in Either"))
+      .fold(err => fail(s"Error validating: $err"), _.hasType(node, label))
+
+    obtained should be(true)
   }
 
-  def shouldNotValidate(
-    node: RDFNode,
-    label: ShapeLabel,
-    rdfStr: String,
-    schema: Schema): Unit = {
+
+  def shouldNotValidate(node: RDFNode, label: ShapeLabel, rdfStr: String, schema: Schema): Unit = {
     val v = Validator(schema)
-    val eitherResult = for {
-      rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE")
-      check = v.checkNodeLabel(node, label)
-      shapeTyping <- ShExChecker.runCheck(check, rdf).toEither
-    } yield shapeTyping
-    eitherResult.fold(
-      err => fail(s"Error validating: $err"),
-      _.hasNoType(node, label) should be(true))
+    val check: ShExChecker.Check[ShapeTyping] = v.checkNodeLabel(node, label)
+    val reader: Either[String, RDFReader] = RDFAsJenaModel
+      .fromChars(rdfStr, "TURTLE")
+
+    val obtained = reader
+      .map(rdf => ShExChecker.runCheck(check, rdf).toEither)
+      .getOrElse(sys.error("Unexpected Left found in Either"))
+      .fold(err => fail(s"Error validating: $err"), _.hasNoType(node, label))
+
+    obtained should be(true)
   }
 }

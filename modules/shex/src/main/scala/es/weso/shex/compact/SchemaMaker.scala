@@ -11,7 +11,7 @@ import es.weso.shex.parser.ShExDocParser.{StringContext => ShExStringContext, _}
 import es.weso.shex.values._
 import es.weso.utils.StrUtils._
 import es.weso.rdf.operations.Comparisons._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Visits the AST and builds the corresponding ShEx abstract syntax

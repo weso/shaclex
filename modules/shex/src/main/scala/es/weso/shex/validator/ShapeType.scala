@@ -1,7 +1,6 @@
 package es.weso.shex.validator
 import cats._
-import es.weso.shex.{ Schema, ShapeExpr, ShapeLabel }
-import es.weso.shex.implicits.showShEx._
+import es.weso.shex.{Schema, ShapeExpr, ShapeLabel}
 
 case class ShapeType(shape: ShapeExpr,
                      label: Option[ShapeLabel],

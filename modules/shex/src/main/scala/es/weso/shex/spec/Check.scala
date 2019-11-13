@@ -6,7 +6,6 @@ import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.RDFNode
 import es.weso.shapeMaps._
 import es.weso.shex.Schema
-import cats.instances._
 
 object Check {
 

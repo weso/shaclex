@@ -31,7 +31,8 @@ class ValidationTest extends FunSpec
         val (rdf,schema,slangSchema) = values
         val node = IRI("http://example.org/a")
         val shape: SLang  = Ref(IRILabel(IRI("http://example.org/User")))
-        val result = Validation.runValidation(node, shape, rdf, slangSchema).right.value
+        val result = Validation.runValidation(node, shape, rdf, slangSchema)
+            .getOrElse(sys.error("Unexpected Left value in Either"))
         info(s"SLang schema: $slangSchema")
         info(s"Result: ${result.map(node)}")
         result.isConforming(node, shape) should be(Conforms)

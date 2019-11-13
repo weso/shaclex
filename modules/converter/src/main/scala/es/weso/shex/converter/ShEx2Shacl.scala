@@ -7,7 +7,8 @@ import es.weso.shacl._
 import es.weso.rdf.nodes._
 import es.weso.rdf.path._
 import cats.implicits._
-import es.weso.shex.{Shape => ShExShape, _}
+//import es.weso.shex.{Shape => ShExShape, _}
+import es.weso.shex.{ValueSetValue, Annotation, Path, Inverse, Direct}
 import es.weso.shapeMaps.QueryShapeMap
 import es.weso.shex.normalized._
 
@@ -66,7 +67,6 @@ object ShEx2Shacl {
 
   private def str2err(str: String): List[Err] = List(str)
 
-  private def fromEither[A](e: Either[List[Err],A]): Result[A] = EitherT.fromEither[S](e)
   private def fromEitherString[A](e: Either[String,A]): Result[A] =
     EitherT.fromEither[S](e).leftMap(msg => str2err(msg))
 
@@ -236,34 +236,6 @@ object ShEx2Shacl {
   }*/
 
   private def outCast[A,B >: A](r:Result[A]): Result[B] = r.map(x => x)
-
-  private def cnvTripleExpr(te: shex.TripleExpr, schema: shex.Schema, id: RDFNode): Result[List[(shacl.PropertyShape, shacl.RefNode)]] = {
-    te match {
-      case e: shex.EachOf => err(s"cnvTripleExpr: Not implemented EachOf $e conversion yet")
-      case e: shex.OneOf => err(s"cnvTripleExpr: Not implemented OneOf $e conversion yet")
-      case e: shex.Inclusion => err(s"cnvTripleExpr: Not implemented $e Inclusion conversion yet")
-      case tc: shex.TripleConstraint => cnvTripleConstraint(tc, schema, id).map(List(_))
-      case e: shex.Expr => err(s"cnvTripleExpr: Not implemented Expr: $e conversion yet")
-    }
-  }
-
-  private def cnvTripleConstraint(tc: shex.TripleConstraint,
-                          schema: shex.Schema,
-                          id: RDFNode
-                         ): Result[(shacl.PropertyShape, shacl.RefNode)] = {
-    if (tc.negated)
-      err(s"cnvTripleConstraint: Not implemented negated")
-    else {
-      val path = if (!tc.inverse) PredicatePath(tc.predicate)
-                 else InversePath(PredicatePath(tc.predicate))
-      for {
-       sref <- getTripleExprId(tc)
-       ps <- mkPropertyShape(
-         path,
-         tc.valueExpr, tc.min, tc.max, schema, sref.id, tc.annotations.getOrElse(List()).map(cnvAnnot))
-      } yield (ps,sref)
-    }
-  }
 
   private def cnvMin(min: Int): Option[Int] =
     if (min == Shacl.defaultMin) None
