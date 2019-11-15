@@ -1,5 +1,9 @@
 // Local dependencies
 lazy val srdfVersion           = "0.1.38"
+lazy val shexsVersion          = "0.1.43"
+lazy val shaclsVersion         = "0.1.45"
+lazy val sutilsVersion         = "0.1.48"
+
 
 // Dependency versions
 lazy val antlrVersion          = "4.7.1"
@@ -45,10 +49,20 @@ lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"   
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
 lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
+
+// WESO components
 lazy val srdf              = "es.weso"                    % "srdf_2.13"            % srdfVersion
 lazy val srdfJena          = "es.weso"                    % "srdfjena_2.13"        % srdfVersion
 lazy val srdf4j            = "es.weso"                    % "srdf4j_2.13"          % srdfVersion
-lazy val utils             = "es.weso"                     % "utils_2.13"          % srdfVersion
+lazy val utils             = "es.weso"                    % "utils_2.13"           % srdfVersion
+lazy val typing            = "es.weso"                    % "typing_2.13"          % sutilsVersion
+lazy val validating        = "es.weso"                    % "validating_2.13"      % sutilsVersion
+lazy val sutils            = "es.weso"                    % "sutils_2.13"          % sutilsVersion
+lazy val utilsTest         = "es.weso"                    % "utilstest_2.13"       % sutilsVersion
+lazy val shex              = "es.weso"                    % "shex_s_2.13"          % shexsVersion
+lazy val shapeMaps         = "es.weso"                    % "shapemaps_2.13"     % shexsVersion
+lazy val shacl             = "es.weso"                    % "shacl_s_2.13"         % shaclsVersion
+
 
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
@@ -73,8 +87,8 @@ lazy val shaclex = project
 //    buildInfoPackage := "es.weso.shaclex.buildinfo" 
 //  )
   .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
-  .aggregate(depGraphs, schemaInfer, schema, shacl, shex, shexTest, sutils, converter, rbe, typing, validating, shapeMaps, slang, sgraph, shexTest, utilsTest)
-  .dependsOn(depGraphs, schemaInfer, schema, shacl, shex, shexTest, sutils, converter, rbe, typing, validating, shapeMaps, slang, sgraph, utilsTest)
+  .aggregate(schemaInfer, schema, converter, slang, sgraph)
+  .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
@@ -107,27 +121,16 @@ lazy val schema = project
   .settings(
     commonSettings, 
     publishSettings,
-    libraryDependencies ++= Seq(srdfJena)
+    libraryDependencies ++= Seq(
+      srdfJena,
+      shex,
+      shacl,
+      shapeMaps
+      )
   )
   .dependsOn(
-    shex,
-    shacl,
     slang,
-    shapeMaps,
-    converter,
-  )
-
-lazy val depGraphs = project
-  .in(file("modules/depGraphs"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      catsCore,
-      catsKernel,
-      catsMacros,
-      jgraphtCore
-    )
+    converter
   )
 
 lazy val slang = project
@@ -135,15 +138,15 @@ lazy val slang = project
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(
-    shex, 
-    shacl,
-    sutils
   )
   .settings(
     libraryDependencies ++= Seq(
       catsCore,
       catsKernel,
       catsMacros,
+      shex, 
+      shacl,
+      sutils,
       srdf,
       srdf4j % Test,
       srdfJena % Test
@@ -155,136 +158,17 @@ lazy val sgraph = project
   .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(
-    sutils,
-    utilsTest % Test
   )
   .settings(
     libraryDependencies ++= Seq(
+      sutils,
+      utilsTest % Test,
       srdf,
       catsCore,
       catsKernel,
       catsMacros,
       srdf4j % Test,
       srdfJena % Test
-      )
-  )
-
-lazy val shacl = project
-  .in(file("modules/shacl"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .dependsOn(
-    sutils,
-    typing,
-    validating)
-  .settings(
-    logBuffered in Test       := false,
-    parallelExecution in Test := false,
-    fork in Test              := true,
-    libraryDependencies ++= Seq(
-      typesafeConfig % Test,
-      catsCore,
-      sext,
-      catsKernel,
-      catsMacros, 
-      srdf,
-      srdf4j % Test,
-      srdfJena % Test
-      )
-  )
-
-
-lazy val CompatTest = config("compat") extend (Test) describedAs("Tests that check compatibility (some may fail)")
-def compatFilter(name: String): Boolean = name endsWith "CompatTest"
-def testFilter(name: String): Boolean = /*(name endsWith "Test") && */ !compatFilter(name)
-
-lazy val shex = project
-  .in(file("modules/shex"))
-  .enablePlugins(Antlr4Plugin)
-  .disablePlugins(RevolverPlugin)
-  .configs(CompatTest)
-  .settings(
-    commonSettings,
-    publishSettings,
-    antlrSettings("es.weso.shex.parser"),
-    inConfig(CompatTest)(Defaults.testTasks),
-    testOptions in Test := Seq(Tests.Filter(testFilter)),
-    testOptions in CompatTest := Seq(Tests.Filter(compatFilter)),
-  )
-  .dependsOn(
-    typing,
-    sutils % "test -> test; compile -> compile",
-    validating,
-    shapeMaps,
-    rbe,
-    depGraphs
-  )
-  .settings(
-    libraryDependencies ++= Seq(
-      typesafeConfig % Test,
-      logbackClassic % Test,
-      scalaLogging,
-      circeCore,
-      circeGeneric,
-      circeParser,
-      scalaTest % Test,
-      scalacheck % Test, 
-      srdf,    
-      srdfJena % Test,
-      srdf4j % Test
-    )
-  )
-
-  lazy val shexTest = project
-  .in(file("modules/shexTest"))
-  .disablePlugins(RevolverPlugin)
-  .configs(CompatTest)
-  .settings(
-    commonSettings,
-    publishSettings,
-    inConfig(CompatTest)(Defaults.testTasks),
-    testOptions in Test := Seq(Tests.Filter(testFilter)),
-    testOptions in CompatTest := Seq(Tests.Filter(compatFilter)),
-  )
-  .dependsOn(
-    shex
-  )
-  .settings(
-    libraryDependencies ++= Seq(
-      typesafeConfig % Test,
-      logbackClassic % Test,
-      scalaLogging,
-      circeCore,
-      circeGeneric,
-      circeParser,
-      scalaTest % Test,
-      scalacheck % Test, 
-      srdf,    
-      srdfJena,
-      srdf4j % Test
-    )
-  )
-
-
-lazy val shapeMaps = project
-  .in(file("modules/shapeMaps"))
-  .enablePlugins(Antlr4Plugin)
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings, antlrSettings("es.weso.shapeMaps.parser"))
-  .dependsOn(
-    sutils)
-  .settings(
-    libraryDependencies ++= Seq(
-      srdf,
-      srdfJena % Test,
-      sext % Test,
-      scalaLogging,
-      catsCore,
-      catsKernel,
-      catsMacros,
-      circeCore,
-      circeGeneric,
-      circeParser
       )
   )
 
@@ -295,105 +179,17 @@ lazy val converter = project
     commonSettings, 
     publishSettings,
     libraryDependencies ++= Seq(
-     srdfJena % Test
-    )
-  )
-  .dependsOn(
-    shex,
-    shacl
-  )
-
-lazy val rbe = project
-  .in(file("modules/rbe"))
-  .disablePlugins(RevolverPlugin)
-  .dependsOn(validating, typing)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      simulacrum,
-      catsCore,
-      catsKernel,
-      catsMacros,
-      scalacheck % Test,
-      srdfJena % Test
-      )
-  )
-
-
-lazy val typing = project
-  .in(file("modules/typing"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      catsCore,
-      catsKernel,
-      catsMacros
-    )
-  )
-
-lazy val sutils = project
-  .in(file("modules/sutils"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-//      eff,
-      utils,  
-      circeCore,
-      circeGeneric,
-      circeParser,
-      catsCore,
-      catsKernel,
-      catsMacros,
-      diffsonCirce,
-      xercesImpl,
-      commonsText
-    )
-  )
-
-lazy val utilsTest = project
-  .in(file("modules/utilsTest"))
-  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      circeCore,
-      circeGeneric,
-      circeParser,
-      catsCore,
-      catsKernel,
-      catsMacros,
-      diffsonCirce,
-      xercesImpl,
-      commonsText,
-      scalaTest
-    )
-  )
-
-
-lazy val validating = project
-  .in(file("modules/validating"))
-  .disablePlugins(RevolverPlugin)
-  .dependsOn(sutils % "test -> test; compile -> compile")
-  .settings(commonSettings, publishSettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      srdf, 
-      srdfJena % Test,
-      catsCore,
-      catsKernel,
-      catsMacros
-    )
+     srdfJena % Test,
+     shex,
+     shacl
+     )
   )
 
 /* ********************************************************
  ******************** Grouped Settings ********************
  **********************************************************/
 
-lazy val noDocProjects = Seq[ProjectReference](
-  validating
-)
+lazy val noDocProjects = Seq[ProjectReference]()
 
 lazy val noPublishSettings = Seq(
 //  publish := (),
