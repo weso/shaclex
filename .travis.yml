@@ -14,5 +14,5 @@ before_cache:
   - find $HOME/.sbt        -name "*.lock"               -print -delete
 
 jdk:
-  - oraclejdk9
+  - oraclejdk12
   - openjdk12
