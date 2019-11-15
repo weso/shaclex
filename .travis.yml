@@ -15,4 +15,4 @@ before_cache:
 
 jdk:
   - oraclejdk9
-  - openjdk11
+  - openjdk12
