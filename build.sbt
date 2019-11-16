@@ -2,7 +2,7 @@
 lazy val srdfVersion           = "0.1.38"
 lazy val shexsVersion          = "0.1.43"
 lazy val shaclsVersion         = "0.1.45"
-lazy val sutilsVersion         = "0.1.48"
+lazy val utilsVersion          = "0.1.50"
 
 
 // Dependency versions
@@ -54,13 +54,13 @@ lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"     
 lazy val srdf              = "es.weso"                    % "srdf_2.13"            % srdfVersion
 lazy val srdfJena          = "es.weso"                    % "srdfjena_2.13"        % srdfVersion
 lazy val srdf4j            = "es.weso"                    % "srdf4j_2.13"          % srdfVersion
-lazy val utils             = "es.weso"                    % "utils_2.13"           % srdfVersion
-lazy val typing            = "es.weso"                    % "typing_2.13"          % sutilsVersion
-lazy val validating        = "es.weso"                    % "validating_2.13"      % sutilsVersion
-lazy val sutils            = "es.weso"                    % "sutils_2.13"          % sutilsVersion
-lazy val utilsTest         = "es.weso"                    % "utilstest_2.13"       % sutilsVersion
+lazy val utils             = "es.weso"                    % "utils_2.13"           % utilsVersion
+lazy val typing            = "es.weso"                    % "typing_2.13"          % utilsVersion
+lazy val validating        = "es.weso"                    % "validating_2.13"      % utilsVersion
+lazy val sutils            = "es.weso"                    % "sutils_2.13"          % utilsVersion
+lazy val utilsTest         = "es.weso"                    % "utilstest_2.13"       % utilsVersion
 lazy val shex              = "es.weso"                    % "shex_s_2.13"          % shexsVersion
-lazy val shapeMaps         = "es.weso"                    % "shapemaps_2.13"     % shexsVersion
+lazy val shapeMaps         = "es.weso"                    % "shapemaps_2.13"       % shexsVersion
 lazy val shacl             = "es.weso"                    % "shacl_s_2.13"         % shaclsVersion
 
 

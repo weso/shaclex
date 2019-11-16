@@ -1,27 +1,37 @@
 @startuml
 
-package SHACLex {
+package SHaclEx {
 [Schema] as Schema
 [ShExSchema] as ShExSchema
 [SHACLSchema] as SHACLSchema
 [Converter] as Converter
+}
+
+package ShEx-s {
 [ShEx] as ShEx
-[SHACL] as SHACL
 '[RBE] as RBE
 [ShapeMaps] as shapeMaps
 '[DepGraphs] as depGraphs
-[SRDF] as SRDF
-[SRDF4j] as SRDF4j
-[SRDFJena] as SRDFJena
+
+}
+
+package SHACL-s {
+ [SHACL] as SHACL
+}
+
+package SRDF {
+
+ [SRDF] as SRDFComponent
+ [SRDF4j] as SRDF4j
+ [SRDFJena] as SRDFJena
+
+}
+
+
 note left of SRDFJena
  RDFAsJenaModel
 end note
 
-note right of Converter
- UML
- conversion
-end note
-}
 [Apache Jena] as ApacheJena
 [RDF4j] as RDF4j
 
@@ -34,33 +44,61 @@ Converter --> SHACL
 ShEx --> shapeMaps
 'ShEx --> RBE
 'ShEx --> depGraphs
-SHACL --> SRDF
-ShEx --> SRDF
-SRDF <|-- SRDFJena
-SRDF <|-- SRDF4j
-SRDFJena --> ApacheJena
-SRDF4j --> RDF4j
+SHACL --> SRDFComponent
+ShEx --> SRDFComponent
+
+
+package RDFShapeClient {
+
+} 
+package WikiShape {
+
+} 
 
 package RDFShape {
 
 } 
+
+package UMLSHaclEX {
+
+}
+
 package shexJava {
 
 }
 
-shexJava --> Schema
-RDFShape --> Schema
 
-note left of RDFShape 
+shexJava --> Schema
+WikiShape --> RDFShape
+RDFShape --> UMLSHaclEX
+RDFShape --> Schema
+UMLSHaclEX --> Schema
+RDFShapeClient --> RDFShape
+
+SRDFComponent <|-- SRDFJena
+SRDFComponent <|-- SRDF4j
+SRDFJena --> ApacheJena
+SRDF4j --> RDF4j
+
+
+note left of RDFShapeClient 
  Online demo deployed at
- http://rdfshape.weso.es
+ <b>http://rdfshape.weso.es<b>
 end note
+note right of WikiShape 
+ Online demo deployed at
+ <b>http://wikishape.weso.es</b>
+end note
+
 
 note left of shexJava 
  Demo using
  SHACLex from
  Java
 end note
+
+
+
 
 
 @enduml
