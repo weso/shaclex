@@ -17,6 +17,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/protocol_2.12/1.3.3/protocol_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered-jetty_2.12/0.9.1/unfiltered-jetty_2.12-0.9.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/netty/netty/3.10.0.Final/netty-3.10.0.Final.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jsoup/jsoup/1.11.3/jsoup-1.11.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-posix/3.0.49/jnr-posix-3.0.49.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-position_2.12/1.3.2/util-position_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18.jar",
@@ -26,15 +27,19 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered-util_2.12/0.9.1/unfiltered-util_2.12-0.9.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-bridge/1.8/batik-bridge-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/asciidoctor/asciidoctorj/1.6.2/asciidoctorj-1.6.2.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.2/machinist_2.12-0.6.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.7/sourcecode_2.12-0.1.7.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.6/httpclient-4.3.6.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/47deg/sbt-microsites_2.12_1.0/0.9.7/sbt-microsites-0.9.7.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/ivy/ivy/2.3.0-sbt-cb9cc189e9f3af519f9f102e6c5d446488ff6832/ivy-2.3.0-sbt-cb9cc189e9f3af519f9f102e6c5d446488ff6832.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-relation_2.12/1.3.2/util-relation_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/martiansoftware/nailgun-server/0.9.1/nailgun-server-0.9.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-free_2.12/1.5.0/cats-free_2.12-1.5.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/headius/invokebinder/1.11/invokebinder-1.11.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-webapp/9.2.21.v20170120/jetty-webapp-9.2.21.v20170120.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.2.21.v20170120/jetty-util-9.2.21.v20170120.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/macro-compat_2.12/1.1.1/macro-compat_2.12-1.1.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/imageio/imageio-core/3.2.1/imageio-core-3.2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-anim/1.8/batik-anim-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/testing_2.12/1.3.3/testing_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar",
@@ -51,11 +56,15 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xalan/xalan/2.7.0/xalan-2.7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/headius/options/1.4/options-1.4.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-core_2.12/3.4.2/json4s-core_2.12-3.4.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.12/0.11.0/circe-core_2.12-0.11.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.12/1.1.2/scala-parser-combinators_2.12-1.1.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scoverage/sbt-scoverage_2.12_1.0/1.6.0/sbt-scoverage-1.6.0.jar",
             "/home/labra/.sbt/boot/scala-2.12.10/lib/scala-library.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.12/0.11.0/circe-numbers_2.12-0.11.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp-urlconnection/3.7.0/okhttp-urlconnection-3.7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-java8-compat_2.12/0.8.0/scala-java8-compat_2.12-0.8.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/imageio/imageio-metadata/3.2.1/imageio-metadata-3.2.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.8.0/jackson-annotations-2.8.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-web/scala_2.12/sbt_1.0/1.4.4/jars/sbt-web.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.foundweekends/sbt-bintray/scala_2.12/sbt_1.0/0.5.5/jars/sbt-bintray.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-dom/1.8/batik-dom-1.8.jar",
@@ -66,18 +75,21 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-unixsocket/0.20/jnr-unixsocket-0.20.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile-core_2.12/1.3.1/zinc-compile-core_2.12-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/9.2.21.v20170120/jetty-io-9.2.21.v20170120.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/47deg/github4s_2.12/0.20.1/github4s_2.12-0.20.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main_2.12/1.3.3/main_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/foundweekends/bintry_2.12/0.5.2/bintry_2.12-0.5.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/9.2.21.v20170120/jetty-http-9.2.21.v20170120.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/collections_2.12/1.3.3/collections_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-css/1.8/batik-css-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/fastparse-utils_2.12/0.4.2/fastparse-utils_2.12-0.4.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.10.1/joda-time-2.10.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-derivation_2.12/0.9.0-M3/circe-derivation_2.12-0.9.0-M3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_2.12/0.9.3/circe-jawn_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-bridge_2.12/1.3.1/compiler-bridge_2.12-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm/7.0/asm-7.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.tpolecat/tut-plugin/scala_2.12/sbt_1.0/0.6.12/jars/tut-plugin.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.12/0.4.0/ssl-config-core_2.12-0.4.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.3.2/sbt-bloop-1.3.2.jar",
@@ -90,11 +102,13 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/webjars/webjars-locator-core/0.36/webjars-locator-core-0.36.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/command_2.12/1.3.3/command_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/sjson-new-murmurhash_2.12/0.8.3/sjson-new-murmurhash_2.12-0.8.3.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/adobe/xmp/xmpcore/5.1.2/xmpcore-5.1.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.12/2.5.17/akka-actor_2.12-2.5.17.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-core_2.12/1.3.1/zinc-core_2.12-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-parser/1.8/batik-parser-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jruby/jruby-stdlib/9.2.6.0/jruby-stdlib-9.2.6.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-interface/1.3.2/util-interface-1.3.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/jcazevedo/moultingyaml_2.12/0.4.1/moultingyaml_2.12-0.4.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/googlecode/javaewah/JavaEWAH/0.7.9/JavaEWAH-0.7.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/launcher-interface/1.1.3/launcher-interface-1.1.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/databinder/dispatch/dispatch-core_2.12/0.12.0/dispatch-core_2.12-0.12.0.jar",
@@ -105,21 +119,24 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main-settings_2.12/1.3.3/main-settings_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/ben-manes/caffeine/caffeine/2.5.6/caffeine-2.5.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered_2.12/0.9.1/unfiltered_2.12-0.9.1.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.0.1/cats-kernel_2.12-1.0.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/jcraft/jzlib/1.1.3/jzlib-1.1.3.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.0.1/cats-core_2.12-1.0.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.6.1/cats-kernel_2.12-1.6.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/drewnoakes/metadata-extractor/2.8.1/metadata-extractor-2.8.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/scalatags_2.12/0.7.0/scalatags_2.12-0.7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc_2.12/1.3.1/zinc_2.12-1.3.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.6.1/cats-macros_2.12-1.6.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-git/scala_2.12/sbt_1.0/0.9.3/jars/sbt-git.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/cb372/scalacache-core_2.12/0.20.0/scalacache-core_2.12-0.20.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/xmlgraphics-commons/2.1/xmlgraphics-commons-2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbinary_2.12/0.5.0/sbinary_2.12-0.5.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/cb372/scalacache-caffeine_2.12/0.20.0/scalacache-caffeine_2.12-0.20.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/pantsbuild/jarjar/1.7.2/jarjar-1.7.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/joda/joda-convert/2.2.0/joda-convert-2.2.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalaj/scalaj-http_2.12/2.4.1/scalaj-http_2.12-2.4.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-site/scala_2.12/sbt_1.0/1.4.0/jars/sbt-site.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/logic_2.12/1.3.3/logic_2.12-1.3.3.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.12/0.9.3/circe-numbers_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/jcraft/jsch/0.1.54/jsch-0.1.54.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/get-coursier/lm-coursier-shaded_2.12/2.0.0-RC3-4/lm-coursier-shaded_2.12-2.0.0-RC3-4.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.11.2/log4j-slf4j-impl-2.11.2.jar",
@@ -132,6 +149,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-script/1.8/batik-script-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_2.12/0.9.3/circe-parser_2.12-0.9.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/planet42/laika-pdf_2.12/0.8.0/laika-pdf_2.12-0.8.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.12/2.3.3/shapeless_2.12-2.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jruby/jcodings/jcodings/1.0.41/jcodings-1.0.41.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lightbend/paradox/sbt-paradox_2.12_1.0/0.5.5/sbt-paradox-0.5.5.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-apiinfo_2.12/1.3.1/zinc-apiinfo_2.12-1.3.1.jar",
@@ -139,6 +157,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/jline/jline/2.14.6/jline-2.14.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/fop/2.1/fop-2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classpath_2.12/1.3.1/zinc-classpath_2.12-1.3.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/imageio/imageio-jpeg/3.2.1/imageio-jpeg-3.2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-constants/0.9.12/jnr-constants-0.9.12.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-svggen/1.8/batik-svggen-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/ning/async-http-client/1.9.11/async-http-client-1.9.11.jar",
@@ -149,10 +168,10 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/databinder/dispatch/dispatch-json4s-native_2.12/0.12.0/dispatch-json4s-native_2.12-0.12.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.0.8/scalactic_2.12-3.0.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.9.9/joda-time-2.9.9.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/io_2.12/1.3.1/io_2.12-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/foundweekends/pamflet-knockoff_2.12/0.8.0/pamflet-knockoff_2.12-0.8.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/common/common-io/3.2.1/common-io-3.2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/ant/ant/1.10.5/ant-1.10.5.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-xml_2.12/1.2.0/scala-xml_2.12-1.2.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/completion_2.12/1.3.3/completion_2.12-1.3.3.jar",
@@ -167,29 +186,35 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-nop/1.7.7/slf4j-nop-1.7.7.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/common/common-image/3.2.1/common-image-3.2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/template-resolver/0.1/template-resolver-0.1.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.3/sourcecode_2.12-0.1.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-tracking_2.12/1.3.2/util-tracking_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-commons/7.0/asm-commons-7.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.8.11.3/jackson-databind-2.8.11.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/librarymanagement-core_2.12/1.3.0/librarymanagement-core_2.12-1.3.0.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.12/0.9.3/circe-core_2.12-0.9.3.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nscala-time/nscala-time_2.12/2.22.0/nscala-time_2.12-2.22.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-agent/1.3.3/test-agent-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/core-macros_2.12/1.3.3/core-macros_2.12-1.3.3.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/mpilquist/simulacrum_2.12/0.14.0/simulacrum_2.12-0.14.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/sbt-mdoc_2.12_1.0/1.3.2/sbt-mdoc-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-ext/1.8/batik-ext-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered-filter_2.12/0.9.1/unfiltered-filter_2.12-0.9.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/foundweekends/knockoff_2.12/0.8.6/knockoff_2.12-0.8.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/47deg/org-policies-core_2.12/0.12.0-M2/org-policies-core_2.12-0.12.0-M2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/codehaus/plexus/plexus-classworlds/2.5.2/plexus-classworlds-2.5.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/beust/jcommander/1.35/jcommander-1.35.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.7.0/protobuf-java-3.7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-ghpages/scala_2.12/sbt_1.0/0.6.3/jars/sbt-ghpages.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/reactivestreams/reactive-streams/1.0.2/reactive-streams-1.0.2.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.0.1/cats-macros_2.12-1.0.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-logging_2.12/1.3.2/util-logging_2.12-1.3.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lightbend/paradox/paradox_2.12/0.5.5/paradox_2.12-0.5.5.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-cache_2.12/1.3.2/util-cache_2.12-1.3.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.6.1/cats-core_2.12-1.6.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/javax/enterprise/cdi-api/1.0/cdi-api-1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/bloop-config_2.12/1.3.2/bloop-config_2.12-1.3.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/marklister/base64_2.12/0.2.4/base64_2.12-0.2.4.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/common/common-lang/3.2.1/common-lang-3.2.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.3/httpcore-4.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ws/unfiltered/unfiltered-directives_2.12/0.9.1/unfiltered-directives_2.12-0.9.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.3.4/config-1.3.4.jar",
@@ -198,9 +223,10 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile_2.12/1.3.1/zinc-compile_2.12-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-gvt/1.8/batik-gvt-1.8.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/sisu/org.eclipse.sisu.plexus/0.3.2/org.eclipse.sisu.plexus-0.3.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jackson28_2.12/0.11.0/circe-jackson28_2.12-0.11.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-netdb/1.1.6/jnr-netdb-1.1.6.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/4.5.0/jna-4.5.0.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.6/machinist_2.12-0.6.6.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-interface/1.3.1/compiler-interface-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm-analysis/7.0/asm-analysis-7.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-scripted_2.12/1.3.2/util-scripted_2.12-1.3.2.jar",
@@ -213,6 +239,7 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classfile_2.12/1.3.1/zinc-classfile_2.12-1.3.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/tasks_2.12/1.3.3/tasks_2.12-1.3.3.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/spire-math/jawn-parser_2.12/0.11.1/jawn-parser_2.12-0.11.1.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ar/com/hjg/pngj/2.1.0/pngj-2.1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/headius/modulator/1.0/modulator-1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18-native.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.eed3si9n/sbt-assembly/scala_2.12/sbt_1.0/0.14.10/jars/sbt-assembly.jar",
@@ -229,6 +256,9 @@
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/headius/backport9/1.1/backport9-1.1.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/ipcsocket/ipcsocket/1.0.0/ipcsocket-1.0.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/fastparse_2.12/0.4.2/fastparse_2.12-0.4.2.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/sksamuel/scrimage/scrimage-core_2.12/2.1.8/scrimage-core_2.12-2.1.8.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/commons-io/commons-io/2.4/commons-io-2.4.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_2.12/0.11.0/circe-generic_2.12-0.11.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jruby/jruby/9.2.6.0/jruby-9.2.6.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-native_2.12/3.4.2/json4s-native_2.12-3.4.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-util/1.8/batik-util-1.8.jar",
@@ -283,8 +313,8 @@
                 "import _root_.sbt._",
                 "import _root_.sbt.Keys._",
                 "import _root_.sbt.nio.Keys._",
-                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.sbtunidoc.BaseUnidocPlugin.autoImport._, _root_.sbtunidoc.GenJavadocPlugin.autoImport._, _root_.sbtunidoc.JavaUnidocPlugin.autoImport._, _root_.sbtunidoc.ScalaUnidocPlugin.autoImport._, _root_.spray.revolver.RevolverPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.com.typesafe.sbt.web.SbtWeb.autoImport._, _root_.bintray.BintrayPlugin.autoImport._, _root_.org.lyranthe.sbt.PartialUnification.autoImport._, _root_.sbtbuildinfo.BuildInfoPlugin.autoImport._, _root_.com.typesafe.sbt.GitPlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePreviewPlugin.autoImport._, _root_.com.typesafe.sbt.site.SiteScaladocPlugin.autoImport._, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin.autoImport._, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin.autoImport._, _root_.com.typesafe.sbt.site.hugo.HugoPlugin.autoImport._, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport._, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin.autoImport._, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin.autoImport._, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin.autoImport._, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin.autoImport._, _root_.com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._, _root_.laika.sbt.LaikaPlugin.autoImport._, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin.autoImport._, _root_.com.simplytyped.Antlr4Plugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.com.typesafe.sbt.SbtNativePackager.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin.autoImport._, _root_.com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._, _root_.com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin.autoImport._, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin.autoImport._, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin.autoImport._",
-                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.scala.meta.metals.MetalsPlugin, _root_.sbtunidoc.BaseUnidocPlugin, _root_.sbtunidoc.GenJavadocPlugin, _root_.sbtunidoc.JavaUnidocPlugin, _root_.sbtunidoc.PublishJavadocPlugin, _root_.sbtunidoc.ScalaUnidocPlugin, _root_.spray.revolver.RevolverPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.com.typesafe.sbt.web.SbtWeb, _root_.bintray.BintrayPlugin, _root_.org.lyranthe.sbt.PartialUnification, _root_.sbtbuildinfo.BuildInfoPlugin, _root_.com.typesafe.sbt.GitBranchPrompt, _root_.com.typesafe.sbt.GitPlugin, _root_.com.typesafe.sbt.GitVersioning, _root_.com.typesafe.sbt.site.SitePlugin, _root_.com.typesafe.sbt.site.SitePreviewPlugin, _root_.com.typesafe.sbt.site.SiteScaladocPlugin, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin, _root_.com.typesafe.sbt.site.hugo.HugoPlugin, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin, _root_.com.lightbend.paradox.sbt.ParadoxPlugin, _root_.laika.sbt.LaikaPlugin, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin, _root_.com.simplytyped.Antlr4Plugin, _root_.sbtassembly.AssemblyPlugin, _root_.com.typesafe.sbt.SbtNativePackager, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.AshScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemVPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.UpstartPlugin, _root_.com.typesafe.sbt.packager.debian.DebianDeployPlugin, _root_.com.typesafe.sbt.packager.debian.DebianPlugin, _root_.com.typesafe.sbt.packager.debian.JDebPackaging, _root_.com.typesafe.sbt.packager.docker.DockerPlugin, _root_.com.typesafe.sbt.packager.docker.DockerSpotifyClientPlugin, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerDeployPlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmDeployPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalDeployPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsDeployPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin"
+                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.sbtunidoc.BaseUnidocPlugin.autoImport._, _root_.sbtunidoc.GenJavadocPlugin.autoImport._, _root_.sbtunidoc.JavaUnidocPlugin.autoImport._, _root_.sbtunidoc.ScalaUnidocPlugin.autoImport._, _root_.microsites.MicrositesPlugin.autoImport._, _root_.spray.revolver.RevolverPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.com.typesafe.sbt.web.SbtWeb.autoImport._, _root_.bintray.BintrayPlugin.autoImport._, _root_.org.lyranthe.sbt.PartialUnification.autoImport._, _root_.tut.TutPlugin.autoImport._, _root_.sbtbuildinfo.BuildInfoPlugin.autoImport._, _root_.com.typesafe.sbt.GitPlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePreviewPlugin.autoImport._, _root_.com.typesafe.sbt.site.SiteScaladocPlugin.autoImport._, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin.autoImport._, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin.autoImport._, _root_.com.typesafe.sbt.site.hugo.HugoPlugin.autoImport._, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport._, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin.autoImport._, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin.autoImport._, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin.autoImport._, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin.autoImport._, _root_.com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._, _root_.laika.sbt.LaikaPlugin.autoImport._, _root_.mdoc.DocusaurusPlugin.autoImport._, _root_.mdoc.MdocPlugin.autoImport._, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin.autoImport._, _root_.com.simplytyped.Antlr4Plugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.com.typesafe.sbt.SbtNativePackager.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin.autoImport._, _root_.com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._, _root_.com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin.autoImport._, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin.autoImport._, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin.autoImport._",
+                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.scala.meta.metals.MetalsPlugin, _root_.sbtunidoc.BaseUnidocPlugin, _root_.sbtunidoc.GenJavadocPlugin, _root_.sbtunidoc.JavaUnidocPlugin, _root_.sbtunidoc.PublishJavadocPlugin, _root_.sbtunidoc.ScalaUnidocPlugin, _root_.microsites.MicrositesPlugin, _root_.spray.revolver.RevolverPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.com.typesafe.sbt.web.SbtWeb, _root_.bintray.BintrayPlugin, _root_.org.lyranthe.sbt.PartialUnification, _root_.tut.TutPlugin, _root_.sbtbuildinfo.BuildInfoPlugin, _root_.com.typesafe.sbt.GitBranchPrompt, _root_.com.typesafe.sbt.GitPlugin, _root_.com.typesafe.sbt.GitVersioning, _root_.com.typesafe.sbt.site.SitePlugin, _root_.com.typesafe.sbt.site.SitePreviewPlugin, _root_.com.typesafe.sbt.site.SiteScaladocPlugin, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin, _root_.com.typesafe.sbt.site.hugo.HugoPlugin, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin, _root_.com.lightbend.paradox.sbt.ParadoxPlugin, _root_.laika.sbt.LaikaPlugin, _root_.mdoc.DocusaurusPlugin, _root_.mdoc.MdocPlugin, _root_.com.typesafe.sbt.sbtghpages.GhpagesPlugin, _root_.com.simplytyped.Antlr4Plugin, _root_.sbtassembly.AssemblyPlugin, _root_.com.typesafe.sbt.SbtNativePackager, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.AshScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemVPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.UpstartPlugin, _root_.com.typesafe.sbt.packager.debian.DebianDeployPlugin, _root_.com.typesafe.sbt.packager.debian.DebianPlugin, _root_.com.typesafe.sbt.packager.debian.JDebPackaging, _root_.com.typesafe.sbt.packager.docker.DockerPlugin, _root_.com.typesafe.sbt.packager.docker.DockerSpotifyClientPlugin, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerDeployPlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmDeployPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalDeployPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsDeployPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin"
             ]
         },
         "test" : {
@@ -377,6 +407,22 @@
                                 "digest" : "ad61cd1bba067e6634ddd3e160edf0727391ac30"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/netty/netty/3.10.0.Final/netty-3.10.0.Final.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.jsoup",
+                    "name" : "jsoup",
+                    "version" : "1.11.3",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "jsoup",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "36da09a8f68484523fa2aaa100399d612b247d67"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jsoup/jsoup/1.11.3/jsoup-1.11.3.jar"
                         }
                     ]
                 },
@@ -481,14 +527,18 @@
                     ]
                 },
                 {
-                    "organization" : "org.typelevel",
-                    "name" : "machinist_2.12",
-                    "version" : "0.6.2",
+                    "organization" : "com.lihaoyi",
+                    "name" : "sourcecode_2.12",
+                    "version" : "0.1.7",
                     "configurations" : "default",
                     "artifacts" : [
                         {
-                            "name" : "machinist_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.2/machinist_2.12-0.6.2.jar"
+                            "name" : "sourcecode_2.12",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "09e8529b7b8771acea441a2c8478824cd63c7e84"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.7/sourcecode_2.12-0.1.7.jar"
                         }
                     ]
                 },
@@ -525,6 +575,18 @@
                     ]
                 },
                 {
+                    "organization" : "com.47deg",
+                    "name" : "sbt-microsites",
+                    "version" : "0.9.7",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "sbt-microsites",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/47deg/sbt-microsites_2.12_1.0/0.9.7/sbt-microsites-0.9.7.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "com.martiansoftware",
                     "name" : "nailgun-server",
                     "version" : "0.9.1",
@@ -533,6 +595,18 @@
                         {
                             "name" : "nailgun-server",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/martiansoftware/nailgun-server/0.9.1/nailgun-server-0.9.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "cats-free_2.12",
+                    "version" : "1.5.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "cats-free_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-free_2.12/1.5.0/cats-free_2.12-1.5.0.jar"
                         }
                     ]
                 },
@@ -577,6 +651,34 @@
                                 "digest" : "58d9c3a134dc6d6d84b555758015ab3585b88464"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/9.2.21.v20170120/jetty-util-9.2.21.v20170120.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "macro-compat_2.12",
+                    "version" : "1.1.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "macro-compat_2.12",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "ed809d26ef4237d7c079ae6cf7ebd0dfa7986adf"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/macro-compat_2.12/1.1.1/macro-compat_2.12-1.1.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.twelvemonkeys.imageio",
+                    "name" : "imageio-core",
+                    "version" : "3.2.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "imageio-core",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/imageio/imageio-core/3.2.1/imageio-core-3.2.1.jar"
                         }
                     ]
                 },
@@ -757,6 +859,18 @@
                     ]
                 },
                 {
+                    "organization" : "io.circe",
+                    "name" : "circe-core_2.12",
+                    "version" : "0.11.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-core_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.12/0.11.0/circe-core_2.12-0.11.0.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.scala-lang.modules",
                     "name" : "scala-parser-combinators_2.12",
                     "version" : "1.1.2",
@@ -797,6 +911,18 @@
                     ]
                 },
                 {
+                    "organization" : "io.circe",
+                    "name" : "circe-numbers_2.12",
+                    "version" : "0.11.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-numbers_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.12/0.11.0/circe-numbers_2.12-0.11.0.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.scala-lang.modules",
                     "name" : "scala-java8-compat_2.12",
                     "version" : "0.8.0",
@@ -809,6 +935,30 @@
                                 "digest" : "1e6f1e745bf6d3c34d1e2ab150653306069aaf34"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-java8-compat_2.12/0.8.0/scala-java8-compat_2.12-0.8.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.twelvemonkeys.imageio",
+                    "name" : "imageio-metadata",
+                    "version" : "3.2.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "imageio-metadata",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/imageio/imageio-metadata/3.2.1/imageio-metadata-3.2.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.core",
+                    "name" : "jackson-annotations",
+                    "version" : "2.8.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-annotations",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.8.0/jackson-annotations-2.8.0.jar"
                         }
                     ]
                 },
@@ -949,6 +1099,18 @@
                     ]
                 },
                 {
+                    "organization" : "com.47deg",
+                    "name" : "github4s_2.12",
+                    "version" : "0.20.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "github4s_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/47deg/github4s_2.12/0.20.1/github4s_2.12-0.20.1.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.foundweekends",
                     "name" : "bintry_2.12",
                     "version" : "0.5.2",
@@ -993,6 +1155,18 @@
                                 "digest" : "2b3f22cc65702a0821b7f0178d055282a1cdde59\n"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/batik-css/1.8/batik-css-1.8.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "joda-time",
+                    "name" : "joda-time",
+                    "version" : "2.10.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "joda-time",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.10.1/joda-time-2.10.1.jar"
                         }
                     ]
                 },
@@ -1065,6 +1239,28 @@
                                 "digest" : "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/ow2/asm/asm/7.0/asm-7.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.tpolecat",
+                    "name" : "tut-plugin",
+                    "version" : "0.6.12",
+                    "configurations" : "compile",
+                    "artifacts" : [
+                        {
+                            "name" : "tut-plugin",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.tpolecat/tut-plugin/scala_2.12/sbt_1.0/0.6.12/jars/tut-plugin.jar"
+                        },
+                        {
+                            "name" : "tut-plugin",
+                            "classifier" : "sources",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.tpolecat/tut-plugin/scala_2.12/sbt_1.0/0.6.12/srcs/tut-plugin-sources.jar"
+                        },
+                        {
+                            "name" : "tut-plugin",
+                            "classifier" : "javadoc",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.tpolecat/tut-plugin/scala_2.12/sbt_1.0/0.6.12/docs/tut-plugin-javadoc.jar"
                         }
                     ]
                 },
@@ -1219,6 +1415,18 @@
                     ]
                 },
                 {
+                    "organization" : "com.adobe.xmp",
+                    "name" : "xmpcore",
+                    "version" : "5.1.2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "xmpcore",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/adobe/xmp/xmpcore/5.1.2/xmpcore-5.1.2.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "com.typesafe.akka",
                     "name" : "akka-actor_2.12",
                     "version" : "2.5.17",
@@ -1255,6 +1463,18 @@
                         {
                             "name" : "jruby-stdlib",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jruby/jruby-stdlib/9.2.6.0/jruby-stdlib-9.2.6.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "net.jcazevedo",
+                    "name" : "moultingyaml_2.12",
+                    "version" : "0.4.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "moultingyaml_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/jcazevedo/moultingyaml_2.12/0.4.1/moultingyaml_2.12-0.4.1.jar"
                         }
                     ]
                 },
@@ -1363,18 +1583,6 @@
                     ]
                 },
                 {
-                    "organization" : "org.typelevel",
-                    "name" : "cats-kernel_2.12",
-                    "version" : "1.0.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "cats-kernel_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.0.1/cats-kernel_2.12-1.0.1.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "com.jcraft",
                     "name" : "jzlib",
                     "version" : "1.1.3",
@@ -1388,13 +1596,49 @@
                 },
                 {
                     "organization" : "org.typelevel",
-                    "name" : "cats-core_2.12",
-                    "version" : "1.0.1",
+                    "name" : "cats-kernel_2.12",
+                    "version" : "1.6.1",
                     "configurations" : "default",
                     "artifacts" : [
                         {
-                            "name" : "cats-core_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.0.1/cats-core_2.12-1.0.1.jar"
+                            "name" : "cats-kernel_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.6.1/cats-kernel_2.12-1.6.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.drewnoakes",
+                    "name" : "metadata-extractor",
+                    "version" : "2.8.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "metadata-extractor",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/drewnoakes/metadata-extractor/2.8.1/metadata-extractor-2.8.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.lihaoyi",
+                    "name" : "scalatags_2.12",
+                    "version" : "0.7.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scalatags_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/scalatags_2.12/0.7.0/scalatags_2.12-0.7.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "cats-macros_2.12",
+                    "version" : "1.6.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "cats-macros_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.6.1/cats-macros_2.12-1.6.1.jar"
                         }
                     ]
                 },
@@ -1447,6 +1691,18 @@
                     ]
                 },
                 {
+                    "organization" : "org.joda",
+                    "name" : "joda-convert",
+                    "version" : "2.2.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "joda-convert",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/joda/joda-convert/2.2.0/joda-convert-2.2.0.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.apache.maven",
                     "name" : "maven-model",
                     "version" : "3.3.9",
@@ -1459,6 +1715,18 @@
                                 "digest" : "6efde8cbcb4de4c47f7e9c2a3ab2806022b5c70f"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scalaj",
+                    "name" : "scalaj-http_2.12",
+                    "version" : "2.4.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scalaj-http_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalaj/scalaj-http_2.12/2.4.1/scalaj-http_2.12-2.4.1.jar"
                         }
                     ]
                 },
@@ -1481,18 +1749,6 @@
                             "name" : "sbt-site",
                             "classifier" : "javadoc",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.typesafe.sbt/sbt-site/scala_2.12/sbt_1.0/1.4.0/docs/sbt-site-javadoc.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "io.circe",
-                    "name" : "circe-numbers_2.12",
-                    "version" : "0.9.3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "circe-numbers_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_2.12/0.9.3/circe-numbers_2.12-0.9.3.jar"
                         }
                     ]
                 },
@@ -1609,6 +1865,22 @@
                     ]
                 },
                 {
+                    "organization" : "com.chuusai",
+                    "name" : "shapeless_2.12",
+                    "version" : "2.3.3",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "shapeless_2.12",
+                            "checksum" : {
+                                "type" : "sha1",
+                                "digest" : "6041e2c4871650c556a9c6842e43c04ed462b11f"
+                            },
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/chuusai/shapeless_2.12/2.3.3/shapeless_2.12-2.3.3.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.jruby.jcodings",
                     "name" : "jcodings",
                     "version" : "1.0.41",
@@ -1661,6 +1933,18 @@
                                 "digest" : "c78a1013a5de5b49a3fb1c6f3289940f44554cb6\n"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xmlgraphics/fop/2.1/fop-2.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.twelvemonkeys.imageio",
+                    "name" : "imageio-jpeg",
+                    "version" : "3.2.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "imageio-jpeg",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/imageio/imageio-jpeg/3.2.1/imageio-jpeg-3.2.1.jar"
                         }
                     ]
                 },
@@ -1791,18 +2075,6 @@
                     ]
                 },
                 {
-                    "organization" : "joda-time",
-                    "name" : "joda-time",
-                    "version" : "2.9.9",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "joda-time",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.9.9/joda-time-2.9.9.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "org.scala-sbt",
                     "name" : "io_2.12",
                     "version" : "1.3.1",
@@ -1839,6 +2111,18 @@
                                 "digest" : "77100a62c2e6f04b53977b9f541044d7d722693d"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.twelvemonkeys.common",
+                    "name" : "common-io",
+                    "version" : "3.2.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "common-io",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/common/common-io/3.2.1/common-io-3.2.1.jar"
                         }
                     ]
                 },
@@ -2015,6 +2299,18 @@
                     ]
                 },
                 {
+                    "organization" : "com.twelvemonkeys.common",
+                    "name" : "common-image",
+                    "version" : "3.2.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "common-image",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/common/common-image/3.2.1/common-image-3.2.1.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.ow2.asm",
                     "name" : "asm-commons",
                     "version" : "7.0",
@@ -2031,14 +2327,50 @@
                     ]
                 },
                 {
-                    "organization" : "io.circe",
-                    "name" : "circe-core_2.12",
-                    "version" : "0.9.3",
+                    "organization" : "com.fasterxml.jackson.core",
+                    "name" : "jackson-databind",
+                    "version" : "2.8.11.3",
                     "configurations" : "default",
                     "artifacts" : [
                         {
-                            "name" : "circe-core_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_2.12/0.9.3/circe-core_2.12-0.9.3.jar"
+                            "name" : "jackson-databind",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.8.11.3/jackson-databind-2.8.11.3.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.github.nscala-time",
+                    "name" : "nscala-time_2.12",
+                    "version" : "2.22.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "nscala-time_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nscala-time/nscala-time_2.12/2.22.0/nscala-time_2.12-2.22.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.github.mpilquist",
+                    "name" : "simulacrum_2.12",
+                    "version" : "0.14.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "simulacrum_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/mpilquist/simulacrum_2.12/0.14.0/simulacrum_2.12-0.14.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scalameta",
+                    "name" : "sbt-mdoc",
+                    "version" : "1.3.2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "sbt-mdoc",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/sbt-mdoc_2.12_1.0/1.3.2/sbt-mdoc-1.3.2.jar"
                         }
                     ]
                 },
@@ -2091,6 +2423,18 @@
                     ]
                 },
                 {
+                    "organization" : "com.47deg",
+                    "name" : "org-policies-core_2.12",
+                    "version" : "0.12.0-M2",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "org-policies-core_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/47deg/org-policies-core_2.12/0.12.0-M2/org-policies-core_2.12-0.12.0-M2.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "org.codehaus.plexus",
                     "name" : "plexus-classworlds",
                     "version" : "2.5.2",
@@ -2139,18 +2483,6 @@
                     ]
                 },
                 {
-                    "organization" : "org.typelevel",
-                    "name" : "cats-macros_2.12",
-                    "version" : "1.0.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "cats-macros_2.12",
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.0.1/cats-macros_2.12-1.0.1.jar"
-                        }
-                    ]
-                },
-                {
                     "organization" : "com.lightbend.paradox",
                     "name" : "paradox_2.12",
                     "version" : "0.5.5",
@@ -2159,6 +2491,18 @@
                         {
                             "name" : "paradox_2.12",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lightbend/paradox/paradox_2.12/0.5.5/paradox_2.12-0.5.5.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "cats-core_2.12",
+                    "version" : "1.6.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "cats-core_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.6.1/cats-core_2.12-1.6.1.jar"
                         }
                     ]
                 },
@@ -2187,6 +2531,30 @@
                         {
                             "name" : "bloop-config_2.12",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/bloop-config_2.12/1.3.2/bloop-config_2.12-1.3.2.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.github.marklister",
+                    "name" : "base64_2.12",
+                    "version" : "0.2.4",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "base64_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/marklister/base64_2.12/0.2.4/base64_2.12-0.2.4.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.twelvemonkeys.common",
+                    "name" : "common-lang",
+                    "version" : "3.2.1",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "common-lang",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/twelvemonkeys/common/common-lang/3.2.1/common-lang-3.2.1.jar"
                         }
                     ]
                 },
@@ -2279,6 +2647,18 @@
                     ]
                 },
                 {
+                    "organization" : "io.circe",
+                    "name" : "circe-jackson28_2.12",
+                    "version" : "0.11.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-jackson28_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jackson28_2.12/0.11.0/circe-jackson28_2.12-0.11.0.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "com.github.jnr",
                     "name" : "jnr-netdb",
                     "version" : "1.1.6",
@@ -2287,22 +2667,6 @@
                         {
                             "name" : "jnr-netdb",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jnr-netdb/1.1.6/jnr-netdb-1.1.6.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "commons-io",
-                    "name" : "commons-io",
-                    "version" : "1.3.1",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "commons-io",
-                            "checksum" : {
-                                "type" : "sha1",
-                                "digest" : "b90b6ac57cf27a2858eaa490d02ba7945d18ca7b"
-                            },
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"
                         }
                     ]
                 },
@@ -2319,6 +2683,18 @@
                                 "digest" : "55b548d3195efc5280bf1c3f17b49659c54dee40"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/4.5.0/jna-4.5.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.typelevel",
+                    "name" : "machinist_2.12",
+                    "version" : "0.6.6",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "machinist_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.6/machinist_2.12-0.6.6.jar"
                         }
                     ]
                 },
@@ -2417,6 +2793,18 @@
                     ]
                 },
                 {
+                    "organization" : "ar.com.hjg",
+                    "name" : "pngj",
+                    "version" : "2.1.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "pngj",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ar/com/hjg/pngj/2.1.0/pngj-2.1.0.jar"
+                        }
+                    ]
+                },
+                {
                     "organization" : "com.headius",
                     "name" : "modulator",
                     "version" : "1.0",
@@ -2503,6 +2891,42 @@
                         {
                             "name" : "backport9",
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/headius/backport9/1.1/backport9-1.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.sksamuel.scrimage",
+                    "name" : "scrimage-core_2.12",
+                    "version" : "2.1.8",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "scrimage-core_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/sksamuel/scrimage/scrimage-core_2.12/2.1.8/scrimage-core_2.12-2.1.8.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "commons-io",
+                    "name" : "commons-io",
+                    "version" : "2.4",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-io",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/commons-io/commons-io/2.4/commons-io-2.4.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.circe",
+                    "name" : "circe-generic_2.12",
+                    "version" : "0.11.0",
+                    "configurations" : "default",
+                    "artifacts" : [
+                        {
+                            "name" : "circe-generic_2.12",
+                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_2.12/0.11.0/circe-generic_2.12-0.11.0.jar"
                         }
                     ]
                 },
@@ -3255,22 +3679,6 @@
                                 "digest" : "758dcd28de14b3a6eaa39d314a074d59218f4de3"
                             },
                             "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/template-resolver/0.1/template-resolver-0.1.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization" : "com.lihaoyi",
-                    "name" : "sourcecode_2.12",
-                    "version" : "0.1.3",
-                    "configurations" : "default",
-                    "artifacts" : [
-                        {
-                            "name" : "sourcecode_2.12",
-                            "checksum" : {
-                                "type" : "sha1",
-                                "digest" : "37504e0fab14f28cff977250e891a25c8bd6a762"
-                            },
-                            "path" : "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.3/sourcecode_2.12-0.1.3.jar"
                         }
                     ]
                 },

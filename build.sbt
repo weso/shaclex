@@ -1,8 +1,12 @@
+lazy val scala212 = "2.12.10"
+lazy val scala213 = "2.13.0"
+lazy val supportedScalaVersions = List(scala212, scala213)
+
 // Local dependencies
-lazy val srdfVersion           = "0.1.38"
-lazy val shexsVersion          = "0.1.43"
-lazy val shaclsVersion         = "0.1.45"
-lazy val utilsVersion          = "0.1.50"
+lazy val srdfVersion          = "0.1.43"
+lazy val shexVersion          = "0.1.45"
+lazy val shaclVersion         = "0.1.49"
+lazy val utilsVersion         = "0.1.56"
 
 
 // Dependency versions
@@ -51,17 +55,17 @@ lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"  
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 
 // WESO components
-lazy val srdf              = "es.weso"                    % "srdf_2.13"            % srdfVersion
-lazy val srdfJena          = "es.weso"                    % "srdfjena_2.13"        % srdfVersion
-lazy val srdf4j            = "es.weso"                    % "srdf4j_2.13"          % srdfVersion
-lazy val utils             = "es.weso"                    % "utils_2.13"           % utilsVersion
-lazy val typing            = "es.weso"                    % "typing_2.13"          % utilsVersion
-lazy val validating        = "es.weso"                    % "validating_2.13"      % utilsVersion
-lazy val sutils            = "es.weso"                    % "sutils_2.13"          % utilsVersion
-lazy val utilsTest         = "es.weso"                    % "utilstest_2.13"       % utilsVersion
-lazy val shex              = "es.weso"                    % "shex_s_2.13"          % shexsVersion
-lazy val shapeMaps         = "es.weso"                    % "shapemaps_2.13"       % shexsVersion
-lazy val shacl             = "es.weso"                    % "shacl_s_2.13"         % shaclsVersion
+lazy val srdf              = "es.weso"                    %% "srdf"            % srdfVersion
+lazy val srdfJena          = "es.weso"                    %% "srdfjena"        % srdfVersion
+lazy val srdf4j            = "es.weso"                    %% "srdf4j"          % srdfVersion
+lazy val utils             = "es.weso"                    %% "utils"           % utilsVersion
+lazy val typing            = "es.weso"                    %% "typing"          % utilsVersion
+lazy val validating        = "es.weso"                    %% "validating"      % utilsVersion
+lazy val utilsTest         = "es.weso"                    %% "utilstest"       % utilsVersion
+lazy val shex              = "es.weso"                    %% "shex"            % shexVersion
+lazy val shexTest          = "es.weso"                    %% "shextest"        % shexVersion
+lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       % shexVersion
+lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
 
 
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
@@ -96,17 +100,21 @@ lazy val shaclex = project
       scalaLogging,
       scallop,
       typesafeConfig,
+      shexTest,
     ),
     cancelable in Global      := true,
     fork                      := true,
-    parallelExecution in Test := false,
-    ThisBuild / turbo := true
+//    parallelExecution in Test := false,
+    ThisBuild / turbo := true,
+    crossScalaVersions := Nil,
+    publish / skip := true,
   )
 
 lazy val schemaInfer = project
   .in(file("modules/schemaInfer"))
   .disablePlugins(RevolverPlugin)
   .settings(
+    crossScalaVersions := supportedScalaVersions,
     commonSettings,  
     publishSettings,
     libraryDependencies ++= Seq(srdf)
@@ -119,6 +127,7 @@ lazy val schema = project
   .in(file("modules/schema"))
   .disablePlugins(RevolverPlugin)
   .settings(
+    crossScalaVersions := supportedScalaVersions,
     commonSettings, 
     publishSettings,
     libraryDependencies ++= Seq(
@@ -140,13 +149,14 @@ lazy val slang = project
   .dependsOn(
   )
   .settings(
+    crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
       catsCore,
       catsKernel,
       catsMacros,
       shex, 
       shacl,
-      sutils,
+      utils,
       srdf,
       srdf4j % Test,
       srdfJena % Test
@@ -156,12 +166,12 @@ lazy val slang = project
 lazy val sgraph = project
   .in(file("modules/sgraph"))
   .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
-  .dependsOn(
-  )
   .settings(
+    crossScalaVersions := supportedScalaVersions,
+    commonSettings, 
+    publishSettings,
     libraryDependencies ++= Seq(
-      sutils,
+      utils,
       utilsTest % Test,
       srdf,
       catsCore,
@@ -176,6 +186,7 @@ lazy val converter = project
   .in(file("modules/converter"))
   .disablePlugins(RevolverPlugin)
   .settings(
+    crossScalaVersions := supportedScalaVersions,
     commonSettings, 
     publishSettings,
     libraryDependencies ++= Seq(
@@ -229,7 +240,6 @@ lazy val compilationSettings = Seq(
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
     "-Xfatal-warnings",
     "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
-    "-Ymacro-annotations"
   )
   // format: on
 )

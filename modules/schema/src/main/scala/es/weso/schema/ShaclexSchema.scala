@@ -12,7 +12,7 @@ import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
 import es.weso.shacl.report.{ValidationReport, ValidationResult}
 import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator}
 import es.weso.shapeMaps._
-
+import es.weso.utils.internal.CollectionCompat._
 import util._
 import es.weso.typing._
 import es.weso.utils.MapUtils
@@ -58,7 +58,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   
   def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
     ResultShapeMap(
-      t._1.getMap.view.mapValues(cnvMapShapeResult).toMap, rdf.getPrefixMap(), schema.pm)
+      mapValues(t._1.getMap)(cnvMapShapeResult).toMap, rdf.getPrefixMap(), schema.pm)
   }
 
   private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {

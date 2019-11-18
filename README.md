@@ -16,8 +16,8 @@ This project contains an implementation of [SHACL](https://www.w3.org/TR/shacl/)
 
 Both are implemented in Scala using the same underlying mechanism using a purely functional approach.
 
-The library handles RDF using a 
-[simple RDF library](https://github.com/weso/srdf) 
+The library handles RDF using a
+[simple RDF library](https://github.com/weso/srdf)
 which has 2 implementations,
 one using [Apache Jena](https://jena.apache.org/)
 and another one using [RDF4j](http://rdf4j.org/),
@@ -30,12 +30,12 @@ The project uses [sbt](http://www.scala-sbt.org/) for compilation as well as Jav
 
 * `sbt test` compiles and runs the tests
 
-## Usage
+## Command line usage
 
 Once compiled, the program can be run as a command line tool.
 It is possible to run the program inside `sbt` as:
 
-### Validating RDF data with SHACL 
+### Validating RDF data with SHACL
 
 Example:
 
@@ -94,6 +94,13 @@ target/universal/shaclex-N.N.N.zip
 ```
 
 which contains the compressed binary code.
+
+## Programmatic usage
+
+The Shaclex library can be invoked programmatically.
+
+* [Simple project validating ShEx](https://github.com/weso/simpleShExScala)
+* Simple example validating SHACL
 
 ## Implementation details
 
