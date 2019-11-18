@@ -1,7 +1,7 @@
 // Local dependencies
 lazy val srdfVersion           = "0.1.38"
 lazy val shexsVersion          = "0.1.43"
-lazy val shaclsVersion         = "0.1.45"
+lazy val shaclsVersion         = "0.1.47"
 lazy val utilsVersion          = "0.1.50"
 
 
