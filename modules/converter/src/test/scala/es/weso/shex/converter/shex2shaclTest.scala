@@ -5,8 +5,10 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.Shacl2RDF
 import org.scalatest._
 import cats.implicits._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class shex2shaclTest extends FunSpec with Matchers with EitherValues {
+class shex2shaclTest extends AnyFunSpec with Matchers with EitherValues {
 
   describe(s"ShEx2SHACL") {
     shouldConvertShEx2Shacl(
