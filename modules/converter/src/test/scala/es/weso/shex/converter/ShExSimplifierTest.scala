@@ -5,8 +5,10 @@ import es.weso._
 import es.weso.shex.implicits.eqShEx._
 import es.weso.shex.Schema
 import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ShExSimplifierTest extends FunSpec
+class ShExSimplifierTest extends AnyFunSpec
   with Matchers
   with EitherValues
   with ShExSimplifier {

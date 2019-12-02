@@ -5,8 +5,10 @@ import cats.implicits._
 import es.weso.utils.json.JsonCompare.jsonDiff
 import es.weso.rdf.jena.RDFAsJenaModel
 import io.circe.parser._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
+class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
 
   describe(s"Convert 2 shaclex") {
       val str1 =

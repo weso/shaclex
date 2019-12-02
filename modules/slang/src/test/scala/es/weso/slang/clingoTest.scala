@@ -8,9 +8,11 @@ import java.io._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shapeMaps.ShapeMap
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
 
-class ClingoTest extends FunSpec
+class ClingoTest extends AnyFunSpec
   with Matchers with SLang2Clingo {
 
   describe(s"ClingoTest") {
