@@ -16,6 +16,8 @@ import es.weso.utils.internal.CollectionCompat._
 import util._
 import es.weso.typing._
 import es.weso.utils.MapUtils
+import cats.data.EitherT
+import cats.effect._
 
 case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
@@ -100,20 +102,22 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     throw new Exception("Unimplemented validateShapeMap")
   }*/
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema] = {
+  override def fromString(cs: CharSequence, format: String, 
+     base: Option[String]
+    ): EitherT[IO, String, Schema] = {
     for {
-      rdf <- RDFAsJenaModel.fromChars(cs, format, base.map(IRI(_)))
+      rdf <- RDFAsJenaModel.fromStringIO(cs.toString, format, base.map(IRI(_)))
       schema <- RDF2Shacl.getShacl(rdf, true)
     } yield ShaclexSchema(schema)
   }
 
-  override def fromRDF(rdf: RDFReader): Either[String, Schema] =
+  override def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema] =
     rdf.asRDFBuilder match {
     case Left(_) => for {
-      ts <- rdf.triplesWithPredicate(`owl:imports`)
+      ts <- EitherT(IO(rdf.triplesWithPredicate(`owl:imports`)))
       schema <- ts.size match {
         case 0 => RDF2Shacl.getShaclReader(rdf).map(ShaclexSchema(_))
-        case _ => Left(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
+        case _ => EitherT.leftT[IO,Schema](s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
       }
     } yield schema
     case Right(rdfBuilder) =>

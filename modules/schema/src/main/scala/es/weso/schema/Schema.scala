@@ -3,8 +3,9 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.shapeMaps.ShapeMap
 import es.weso.utils.FileUtils
-
-import util._
+import cats.effect._
+import cats.data.EitherT
+//import util._
 
 abstract class Schema {
 
@@ -38,9 +39,9 @@ abstract class Schema {
     }
   }
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, Schema]
+  def fromString(cs: CharSequence, format: String, base: Option[String]): EitherT[IO, String, Schema]
 
-  def fromRDF(rdf: RDFReader): Either[String, Schema]
+  def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema]
 
   def serialize(format: String, base: Option[IRI] = None): Either[String, String]
 

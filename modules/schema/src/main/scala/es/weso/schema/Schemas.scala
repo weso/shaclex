@@ -2,12 +2,14 @@ package es.weso.schema
 import java.io.File
 
 import util._
+import cats.effect._
+import cats.data.EitherT
 import es.weso.rdf.RDFReader
-import es.weso.utils.FileUtils
+import es.weso.utils.FileUtils._
 
 object Schemas {
 
-  type SchemaParser = (CharSequence, String, Option[String]) => Either[String, Schema]
+  type SchemaParser = (CharSequence, String, Option[String]) => EitherT[IO, String, Schema]
 
   lazy val shEx: Schema = ShExSchema.empty
   lazy val shaclex : Schema = ShaclexSchema.empty
@@ -43,9 +45,10 @@ object Schemas {
     }
   }
 
-  def getSchemaParser(schemaName: String): Either[String, SchemaParser] = for {
-    schema <- lookupSchema(schemaName)
-  } yield schema.fromString _
+  def getSchemaParser(schemaName: String): EitherT[IO, String, SchemaParser] = for {
+    schema <- EitherT.fromEither[IO](lookupSchema(schemaName))
+    parser = schema.fromString _
+  } yield parser
 
   val schemaNames: List[String] = availableSchemas.map(_.name)
 
@@ -53,8 +56,8 @@ object Schemas {
     file: File,
     format: String,
     schemaName: String,
-    base: Option[String] = None): Either[String, Schema] = for {
-    cs <- FileUtils.getContents(file)
+    base: Option[String] = None): EitherT[IO, String, Schema] = for {
+    cs <- getContents(file)
     schema <- fromString(cs, format, schemaName, base)
   } yield schema
 
@@ -62,15 +65,15 @@ object Schemas {
     cs: CharSequence,
     format: String,
     schemaName: String,
-    base: Option[String] = None): Either[String, Schema] = for {
-    schema <- lookupSchema(schemaName)
-    schemaParsed <- if (cs.length == 0) Right(schema.empty)
+    base: Option[String] = None): EitherT[IO, String, Schema] = for {
+    schema <- EitherT.fromEither[IO](lookupSchema(schemaName))
+    schemaParsed <- if (cs.length == 0) EitherT.pure[IO,String](schema.empty)
                     else schema.empty.fromString(cs, format, base)
   } yield schemaParsed
 
-  def fromRDF(rdf: RDFReader, schemaName: String): Either[String, Schema] = {
+  def fromRDF(rdf: RDFReader, schemaName: String): EitherT[IO, String, Schema] = {
     for {
-      defaultSchema <- lookupSchema(schemaName)
+      defaultSchema <- EitherT.fromEither[IO](lookupSchema(schemaName))
       schema <- defaultSchema.fromRDF(rdf)
     } yield schema
   }

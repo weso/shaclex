@@ -3,8 +3,9 @@ package es.weso.schema
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{ IRI, RDFNode }
 import org.scalatest._
-
-import util._
+import cats.data.EitherT
+import cats.effect._
+// import util._
 
 class SchemaTest extends FunSpec with Matchers with EitherValues {
 
@@ -26,11 +27,11 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
       val schemaEngine = "SHEX"
       val node: RDFNode = IRI("http://example.org/x")
       val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
-      val tryResult: Either[String, Result] = for {
+      val tryResult: EitherT[IO, String, Result] = for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
-        rdf <- RDFAsJenaModel.fromChars(data, dataFormat)
+        rdf <- RDFAsJenaModel.fromStringIO(data, dataFormat)
       } yield schema.validate(rdf, triggerMode, "", None, None, schema.pm)
-      tryResult match {
+      tryResult.value.unsafeRunSync match {
         case Right(result) => {
           info(s"Result: ${result.serialize(Result.TEXT)}")
           info(s"Result solution: ${result.solution}")
@@ -54,9 +55,9 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
         """.stripMargin
       val eitherResult = for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
-        rdf <- RDFAsJenaModel.fromChars(data,"TURTLE",None)
+        rdf <- RDFAsJenaModel.fromStringIO(data,"TURTLE",None)
       } yield schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm)
-      eitherResult.fold(e => fail(s"Error: $e"), result => {
+      eitherResult.value.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isValid should be(false)
       })
     }

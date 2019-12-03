@@ -3,10 +3,10 @@ lazy val scala213 = "2.13.0"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
-lazy val srdfVersion          = "0.1.43"
-lazy val shexVersion          = "0.1.45"
-lazy val shaclVersion         = "0.1.49"
-lazy val utilsVersion         = "0.1.56"
+lazy val srdfVersion          = "0.1.54"
+lazy val shexVersion          = "0.1.51"
+lazy val shaclVersion         = "0.1.53"
+lazy val utilsVersion         = "0.1.63"
 
 
 // Dependency versions
@@ -131,7 +131,9 @@ lazy val schema = project
     commonSettings, 
     publishSettings,
     libraryDependencies ++= Seq(
+      srdf,
       srdfJena,
+      srdf4j,
       shex,
       shacl,
       shapeMaps
