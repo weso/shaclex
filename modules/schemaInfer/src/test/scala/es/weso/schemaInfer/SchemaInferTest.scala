@@ -5,11 +5,16 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.schema.{Schemas, ShExSchema}
 import es.weso.shapeMaps.NodeSelector
 import es.weso.shex._
+import cats.data.EitherT
+import cats.effect._
 import org.scalatest.{FunSpec, Matchers}
 
 class SchemaInterTest extends FunSpec with Matchers with RDFParser {
 
+  
   describe(s"Schema Infer") {
+
+    def fromEither[A](e: Either[String,A]): EitherT[IO,String,A] = EitherT.fromEither[IO](e)
 
     checkSchemaInfer(
       """|prefix schema: <http://schema.org/>
@@ -319,15 +324,16 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
 
 */
 
-    def checkSchemaInfer(rdfStr: String, expectedStr: String, nodeSelectorStr: String, label: String): Unit = {
+
+  def checkSchemaInfer(rdfStr: String, expectedStr: String, nodeSelectorStr: String, label: String): Unit = {
     it(s"Should infer a ShEx schema: $rdfStr for node $nodeSelectorStr and obtain $expectedStr") {
       val result = for {
-       rdf <- RDFAsJenaModel.fromChars(rdfStr, "TURTLE")
+       rdf <- RDFAsJenaModel.fromStringIO(rdfStr, "TURTLE")
        schemaExpected <- Schemas.fromString(expectedStr,"ShExC","ShEx")
-       nodeSelector <- NodeSelector.fromString(nodeSelectorStr, None,rdf.getPrefixMap)
-       schema <- SchemaInfer.runInferSchema(rdf, nodeSelector, "ShEx", IRI("S"))
+       nodeSelector <- fromEither(NodeSelector.fromString(nodeSelectorStr, None,rdf.getPrefixMap))
+       schema <- fromEither(SchemaInfer.runInferSchema(rdf, nodeSelector, "ShEx", IRI("S")))
       } yield (rdf, schemaExpected, nodeSelector, schema)
-      result.fold(
+      result.value.unsafeRunSync.fold(
         e => fail(s"Error: $e"),
         values => {
           val (rdf,schemaExpected,nodeSelector,result) = values
