@@ -4,7 +4,7 @@ language: scala
 
 scala:
    - 2.13.1
-   - 2.12.10
+#   - 2.12.10
 
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
