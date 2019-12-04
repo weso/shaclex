@@ -94,6 +94,7 @@ lazy val shaclex = project
   .aggregate(schemaInfer, schema, converter, slang, sgraph)
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
+    crossScalaVersions := supportedScalaVersions,
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
       logbackClassic,
@@ -106,7 +107,6 @@ lazy val shaclex = project
     fork                      := true,
 //    parallelExecution in Test := false,
     ThisBuild / turbo := true,
-    crossScalaVersions := Nil,
     publish / skip := true,
   )
 
