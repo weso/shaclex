@@ -3,14 +3,12 @@ lazy val scala213 = "2.13.1"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
+lazy val utilsVersion         = "0.1.63"
 lazy val srdfVersion          = "0.1.54"
 lazy val shexVersion          = "0.1.51"
 lazy val shaclVersion         = "0.1.54"
-lazy val utilsVersion         = "0.1.63"
-
 
 // Dependency versions
-lazy val antlrVersion          = "4.7.1"
 lazy val catsVersion           = "2.0.0"
 lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.12.0-RC3"
@@ -38,7 +36,6 @@ lazy val simulacrumVersion    = "1.0.0"
 lazy val scalaMacrosVersion   = "2.1.1"
 
 // Dependency modules
-lazy val antlr4            = "org.antlr"                  % "antlr4"               % antlrVersion
 lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
 lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
 lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
@@ -228,7 +225,7 @@ lazy val packagingSettings = Seq(
 )
 
 lazy val compilationSettings = Seq(
-  scalaVersion := "2.13.1",
+  // scalaVersion := "2.13.1",
   // format: off
   scalacOptions ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
@@ -265,13 +262,6 @@ lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
     Resolver.bintrayRepo("weso", "weso-releases"),
     Resolver.sonatypeRepo("snapshots")
   )
-)
-
-def antlrSettings(packageName: String) = Seq(
-  antlr4GenListener in Antlr4 := true,
-  antlr4GenVisitor in Antlr4  := true,
-  antlr4Dependency in Antlr4  := antlr4,
-  antlr4PackageName in Antlr4 := Some(packageName),
 )
 
 lazy val publishSettings = Seq(
