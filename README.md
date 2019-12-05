@@ -6,7 +6,7 @@ This project contains an implementation of
 [SHACL](http://w3c.github.io/data-shapes/shacl/) and
 [ShEx](http://www.shex.io)
 
-[![Build Status](https://travis-ci.org/weso/shaclex.svg?branch=master)](https://travis-ci.org/labra/shaclex)
+[![Build Status](https://travis-ci.org/weso/shaclex.svg?branch=master)](https://travis-ci.org/weso/shaclex)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/f87bd2ebcfa94dce89e2a981ff13decd)](https://www.codacy.com/app/jelabra/shaclex)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214239.svg)](https://doi.org/10.5281/zenodo.1214239)
 
