@@ -7,9 +7,10 @@ import es.weso.shapeMaps.NodeSelector
 import es.weso.shex._
 import cats.data.EitherT
 import cats.effect._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class SchemaInterTest extends FunSpec with Matchers with RDFParser {
+class SchemaInterTest extends AnyFunSpec with Matchers with RDFParser {
 
   
   describe(s"Schema Infer") {

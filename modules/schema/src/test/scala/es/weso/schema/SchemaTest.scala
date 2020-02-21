@@ -5,9 +5,11 @@ import es.weso.rdf.nodes.{ IRI, RDFNode }
 import org.scalatest._
 import cats.data.EitherT
 import cats.effect._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 // import util._
 
-class SchemaTest extends FunSpec with Matchers with EitherValues {
+class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
 
   describe("Simple schema") {
     it("Validates a simple Schema using ShEx") {

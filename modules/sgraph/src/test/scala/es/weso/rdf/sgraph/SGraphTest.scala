@@ -4,8 +4,10 @@ import es.weso.rdf.jena.RDFAsJenaModel
 
 import es.weso.utils.test._
 import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class SGraphTest extends FunSpec with Matchers with JsonMatchers {
+class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
 
   describe("SGraph") {
     it("Should generate from example") {
