@@ -4,8 +4,10 @@ import es.weso._
 import es.weso.rdf.nodes._
 import es.weso.shex._
 import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class CountUsagesTest extends FunSpec with Matchers with EitherValues {
+class CountUsagesTest extends AnyFunSpec with Matchers with EitherValues {
 
  describe(s"Count usages") {
    shouldCount(

@@ -4,8 +4,10 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.Schema
 import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ValidateNDTest extends FunSpec
+class ValidateNDTest extends AnyFunSpec
   with Matchers with SLang2Clingo with ShEx2SLang with EitherValues {
 
   describe(s"SLang validation") {

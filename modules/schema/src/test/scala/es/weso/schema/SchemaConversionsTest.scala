@@ -7,8 +7,10 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import cats.data.EitherT
 import cats.effect._
 import io.circe.parser._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class SchemaConversionsTest extends FunSpec with Matchers with EitherValues {
+class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
 
   type PureCompare = (String,String) => Either[String,Boolean]
   type IOCompare = (String,String) => EitherT[IO,String,Boolean]
