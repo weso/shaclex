@@ -3,10 +3,11 @@ lazy val scala213 = "2.13.1"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.63"
-lazy val srdfVersion          = "0.1.54"
-lazy val shexVersion          = "0.1.52"
-lazy val shaclVersion         = "0.1.55"
+lazy val utilsVersion         = "0.1.67"
+lazy val srdfVersion          = "0.1.59"
+lazy val shexVersion          = "0.1.55"
+lazy val shaclVersion         = "0.1.58"
+lazy val shapeMapsVersion     = "0.1.54"
 
 // Dependency versions
 lazy val catsVersion           = "2.0.0"
@@ -61,7 +62,7 @@ lazy val validating        = "es.weso"                    %% "validating"      %
 lazy val utilsTest         = "es.weso"                    %% "utilstest"       % utilsVersion
 lazy val shex              = "es.weso"                    %% "shex"            % shexVersion
 lazy val shexTest          = "es.weso"                    %% "shextest"        % shexVersion
-lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       % shexVersion
+lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       % shapeMapsVersion
 lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
 
 

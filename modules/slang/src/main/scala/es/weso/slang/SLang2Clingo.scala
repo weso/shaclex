@@ -1,16 +1,18 @@
 package es.weso.slang
 import es.weso.rdf.RDFReader
-import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
-import es.weso.rdf.operations.Graph
-import es.weso.rdf.triples.RDFTriple
-import es.weso.shapeMaps.{
- IRILabel => SMIRILabel,
- BNodeLabel => SMBNodeLabel,
- _
-}
+//import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
+//import es.weso.rdf.operations.Graph
+//import es.weso.rdf.triples.RDFTriple
+//import es.weso.shapeMaps.{
+// IRILabel => SMIRILabel,
+// BNodeLabel => SMBNodeLabel,
+// _
+//}
+import es.weso.shapeMaps.ShapeMap
 import es.weso.slang.Clingo._
-import cats.syntax.either._
-import scala.annotation.tailrec
+//import cats.syntax.either._
+//import scala.annotation.tailrec
+//import cats.effect.IO
 
 object ClingoNames {
   val ARC = "arc"
@@ -36,12 +38,13 @@ object ClingoNames {
 
 trait SLang2Clingo {
 
-  import ClingoNames._
+  //import ClingoNames._
 
   def validate2Clingo(smap: ShapeMap,
                       rdf: RDFReader,
                       schema: SchemaS
-                     ): Either[String,Program] = {
+                     ): Either[String,Program] = Left(s"This code has been commented out") 
+              /*       {
     val zero: Either[String,Program] = Right(commonStatements(schema))
     def comb(a: Association, next: Either[String,Program]): Either[String,Program] = a.node match {
       case RDFNodeSelector(node) => for {
@@ -51,8 +54,8 @@ trait SLang2Clingo {
       } yield p1.append(p2)
     }
     smap.associations.foldRight(zero)(comb)
-  }
-
+  } */
+/*
   private def commonStatements(schema:SchemaS): Program = {
 
 //    val showHasShape = Seq(ShowDirective(CHECK, 2))
@@ -178,7 +181,7 @@ trait SLang2Clingo {
   private def ground(node: RDFNode,
              label: Label,
              rdf: RDFReader,
-             schema: SchemaS): Either[String,Program] =
+             schema: SchemaS): IO[Program] = 
     for {
      shape <- schema.getLabel(label).fold(
        s"Label $label not found in Schema. Available labels: ${schema.availableLabels.mkString(",")}".asLeft[SLang]
@@ -207,15 +210,17 @@ trait SLang2Clingo {
     case l: RDFLiteral => mkFact(LITERAL, node2Term(node),iri2Term(l.dataType))
   }
 
-  private def groundRDF(node: RDFNode, rdf: RDFReader): Either[String, Program] = for {
-    nodesTriples <- Graph.traverseWithArcs(node,rdf)
+  private def groundRDF(node: RDFNode, rdf: RDFReader): IO[Program] = 
+    IO.raiseError(new RuntimeException(s"Not implemented yet"))
+  for {
+    nodesTriples <- Graph.traverseWithArcs(node,rdf).compile.toList
   } yield {
-    val (nodes,triples) = nodesTriples
+    val (nodes,triples) = nodesTriples.flatten
     val statementsNodes = nodes.map(node2Statement(_))
     val statementsTriples = triples.map(triple2Statement(_))
     // val statementsPredicates = triples.map(_.pred).distinct.map(pred2Statement(_))
     Program(statementsNodes ++ statementsTriples)
-  }
+  } 
 
   private def groundShapeMap(node: RDFNode, label: Label): List[Statement] = {
     List(mkFact("shapeMap",node2Term(node),label2Term(label)))
@@ -302,4 +307,6 @@ trait SLang2Clingo {
     case l: LangLiteral => StringTerm(s"${l.getLexicalForm}@${l.lang}")
     case l: RDFLiteral => StringTerm((s"${l.getLexicalForm}^^<${l.dataType.str}>"))
   }
+
+  */
 }

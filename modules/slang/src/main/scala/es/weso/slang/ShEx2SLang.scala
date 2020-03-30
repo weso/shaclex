@@ -1,5 +1,4 @@
 package es.weso.slang
-
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.{
   BNodeKind => ShExBNodeKind,
@@ -10,15 +9,18 @@ import es.weso.shex.{
   Max => ShExMax,
   Star => ShExStar, _}
 import es.weso.slang
-import es.weso.utils.EitherUtils._
+// import es.weso.utils.EitherUtils._
+import cats.effect.IO
+import cats.data._
+import cats.implicits._
 
 trait ShEx2SLang {
 
- def shex2SLang(schema: Schema): Either[String,SchemaS] = for {
-   keyValues <- sequence(schema.localShapesMap.toList.map(cnvlabelShape(schema)))
+ def shex2SLang(schema: Schema): EitherT[IO,String, SchemaS] = for {
+   keyValues <- schema.shapesMap.toList.map(cnvlabelShape(schema)).sequence
  } yield SchemaS(keyValues.toMap)
 
-  private def cnvlabelShape(schema: Schema)(pair: (ShapeLabel, ShapeExpr)): Either[String, (Label,SLang)] = {
+  private def cnvlabelShape(schema: Schema)(pair: (ShapeLabel, ShapeExpr)): EitherT[IO, String, (Label,SLang)] = {
     val (label,se) = pair
     for {
      lbl <- cnvLabel(label)
@@ -26,18 +28,18 @@ trait ShEx2SLang {
     } yield (lbl,s)
   }
 
-  private def cnvLabel(lbl: ShapeLabel): Either[String,Label] = lbl match {
-    case ShExBNodeLabel(bnode) => Right(slang.BNodeLabel(bnode))
-    case ShExIRILabel(iri) => Right(slang.IRILabel(iri))
-    case Start => Left(s"Unimplemented conversion of Start to SLang")
+  private def cnvLabel(lbl: ShapeLabel): EitherT[IO,String, Label] = lbl match {
+    case ShExBNodeLabel(bnode) => ok(slang.BNodeLabel(bnode))
+    case ShExIRILabel(iri) => ok(slang.IRILabel(iri))
+    case Start => err(s"Unimplemented conversion of Start to SLang")
   }
 
-  private def cnvShapeExpr(se: ShapeExpr, schema: Schema): Either[String,SLang] = se match {
+  private def cnvShapeExpr(se: ShapeExpr, schema: Schema): EitherT[IO,String, SLang] = se match {
     case ShapeAnd(_,ses, _, _) => for {
-      ss <- sequence(ses.map(se => cnvShapeExpr(se,schema)))
+      ss <- ses.map(se => cnvShapeExpr(se,schema)).sequence
     } yield ss.foldRight(SLang.strue)(And)
     case ShapeOr(_,ses,_,_) => for {
-      ss <- sequence(ses.map(se => cnvShapeExpr(se,schema)))
+      ss <- ses.map(se => cnvShapeExpr(se,schema)).sequence
     } yield ss.foldRight(SLang.sfalse)(SLang.or)
     case nk: NodeConstraint => for {
      s <- cnvNodeConstraint(nk)
@@ -49,40 +51,43 @@ trait ShEx2SLang {
       lbl <- cnvLabel(ref)
     } yield Ref(lbl)
     case s: Shape => cnvShape(s,schema)
-    case _ => Left(s"shex2slang: Unimplemented $se")
+    case _ => err(s"shex2slang: Unimplemented $se")
   }
 
-  private def cnvNodeConstraint(nc: NodeConstraint): Either[String,SLang] = for {
-    nks <- sequence(nc.nodeKind.map(cnvNodeKind(_)).toList)
-    datatypes <- sequence(nc.datatype.map(cnvDatatype(_)).toList)
+  private def cnvNodeConstraint(nc: NodeConstraint): EitherT[IO,String,SLang] = for {
+    nks <- nc.nodeKind.map(cnvNodeKind(_)).sequence
+    datatypes <- nc.datatype.map(cnvDatatype(_)).sequence
     // TODO convert the rest: xsfacets, values...
     r <- {
       val maybeS : Option[SLang] = (nks ++ datatypes).reduceOption(SLang.and)
       maybeS match {
-        case None => Left(s"cnvNodeConstraint($nc): No values in constraint")
-        case Some(s) => Right(s)
+        case None => err(s"cnvNodeConstraint($nc): No values in constraint")
+        case Some(s) => ok(s)
       }
     }
    } yield r
 
-  private def cnvNodeKind(nk: NodeKind): Either[String,SLang] = nk match {
-    case ShExIRIKind => Right(slang.IRIKind)
-    case ShExBNodeKind => Right(slang.BNodeKind)
-    case _ => Left(s"shex2slang (cnvNodeKind): Unimplemented $nk")
+  private def cnvNodeKind(nk: NodeKind): EitherT[IO,String,SLang] = nk match {
+    case ShExIRIKind => ok(slang.IRIKind)
+    case ShExBNodeKind => ok(slang.BNodeKind)
+    case _ => err(s"shex2slang (cnvNodeKind): Unimplemented $nk")
   }
 
-  private def cnvDatatype(dt: IRI): Either[String,SLang] =
-    Right(Datatype(dt))
+  private def ok[A](x:A): EitherT[IO,String,A] = EitherT.fromEither(x.asRight)
+  private def err[A](msg: String): EitherT[IO,String,A] = EitherT.fromEither[IO](msg.asLeft[A])
+
+  private def cnvDatatype(dt: IRI): EitherT[IO,String,SLang] =
+    ok(Datatype(dt))
 
   // TODO: Handle Closed, Extras, etc....
-  private def cnvShape(s: Shape, schema: Schema): Either[String,SLang] = s.expression match {
-    case None => Right(SLang.strue)
+  private def cnvShape(s: Shape, schema: Schema): EitherT[IO,String,SLang] = s.expression match {
+    case None => EitherT.fromEither(SLang.strue.asRight)
     case Some(expr) => cnvTripleExpr(expr,schema)
   }
 
-  private def cnvTripleExpr(te: TripleExpr, schema: Schema): Either[String,SLang] = te match {
+  private def cnvTripleExpr(te: TripleExpr, schema: Schema): EitherT[IO,String,SLang] = te match {
     case eo: EachOf => for {
-      es <- sequence(eo.expressions.map(cnvTripleExpr(_,schema)))
+      es <- eo.expressions.map(cnvTripleExpr(_,schema)).sequence
       preds = eo.predicates(schema)
     } yield And(
       es.foldRight(SLang.strue)(And),
@@ -90,14 +95,17 @@ trait ShEx2SLang {
     )
 
     case tc: TripleConstraint => for {
-      s <- tc.valueExpr.map(cnvShapeExpr(_,schema)).getOrElse(Right(SLang.strue))
+      s <- tc.valueExpr.map(cnvShapeExpr(_,schema)) match {
+        case None => EitherT.fromEither[IO](SLang.strue.asRight[String])
+        case Some(r) => r
+      }
       card = cnvCard(tc.min,tc.max)
     } yield
       And(
         QualifiedArc(Pred(tc.predicate),s,card),
         Not(QualifiedArc(Pred(tc.predicate), Not(s), Card.oneStar))
       )
-    case _ => Left(s"shex2slang (cnvTripleExpr): Unimplemented $te")
+    case _ => EitherT.fromEither(s"shex2slang (cnvTripleExpr): Unimplemented $te".asLeft)
   }
 
   private def cnvCard(min: Int, max: ShExMax): Card =

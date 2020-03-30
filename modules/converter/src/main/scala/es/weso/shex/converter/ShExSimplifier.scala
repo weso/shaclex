@@ -23,7 +23,7 @@ trait ShExSimplifier {
   } yield next
 
   def inline(schema: Schema, lbl: ShapeLabel): Either[String, Schema] = for {
-    te <- schema.getTripleExprMap.get(lbl).toRight(s"Error obtaining label $lbl in map: ${schema.getTripleExprMap()}")
+    te <- schema.tripleExprMap.get(lbl).toRight(s"Error obtaining label $lbl in map: ${schema.tripleExprMap}")
   } yield ???
 
 }

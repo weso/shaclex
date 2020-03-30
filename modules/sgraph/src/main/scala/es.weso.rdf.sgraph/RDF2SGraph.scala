@@ -2,6 +2,7 @@ package es.weso.rdf.sgraph
 
 import cats.data._
 import cats.implicits._
+import cats.effect.IO
 import es.weso.rdf.PREFIXES.`rdf:type`
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import es.weso.rdf.triples.RDFTriple
@@ -36,7 +37,7 @@ object RDF2SGraph {
   def ok[A](x:A): Converter[A] = EitherT.liftF(StateT.pure(x))
   def err[A](s: String): Converter[A] = EitherT.fromEither(s.asLeft[A])
 
-  def rdf2sgraph(rdf: RDFReader): Either[String,SGraph] = {
+  def rdf2sgraph(rdf: RDFReader): IO[SGraph] = {
     val pm = rdf.getPrefixMap()
     def cmb(u:Unit, t: RDFTriple): Converter[Unit] = for {
       edge <- rdfTriple2Edge(t, pm)
@@ -46,7 +47,7 @@ object RDF2SGraph {
     } yield ()
 
     for {
-      ts <- rdf.rdfTriples
+      ts <- rdf.rdfTriples.compile.toList
     } yield {
       ts.toList.foldM(())(cmb).value.run(SGraph.empty).value._1
     }

@@ -19,7 +19,7 @@ abstract class Schema {
    */
   def formats: Seq[String]
 
-  def validate(rdf: RDFReader, trigger: ValidationTrigger): Result
+  def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result]
 
   def validate(
     rdf: RDFReader,
@@ -28,11 +28,11 @@ abstract class Schema {
     optNode: Option[String],
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,
-    shapesPrefixMap: PrefixMap = pm): Result = {
+    shapesPrefixMap: PrefixMap = pm): IO[Result] = {
     val base = Some(FileUtils.currentFolderURL)
     ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, nodePrefixMap, shapesPrefixMap) match {
       case Left(err) => {
-        Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm")
+        IO(Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm"))
       }
       case Right(trigger) =>
         validate(rdf, trigger)
@@ -43,7 +43,7 @@ abstract class Schema {
 
   def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema]
 
-  def serialize(format: String, base: Option[IRI] = None): Either[String, String]
+  def serialize(format: String, base: Option[IRI] = None): IO[String]
 
   def defaultFormat: String = formats.head
 
@@ -67,10 +67,10 @@ abstract class Schema {
   def convert(targetFormat: Option[String],
               targetEngine: Option[String],
               base: Option[IRI]
-             ): Either[String,String]
+             ): EitherT[IO,String,String]
 
   def info: SchemaInfo
 
-  def toClingo(rdf: RDFReader, shapeMap: ShapeMap): Either[String,String]
+  def toClingo(rdf: RDFReader, shapeMap: ShapeMap): EitherT[IO,String,String]
 
 }

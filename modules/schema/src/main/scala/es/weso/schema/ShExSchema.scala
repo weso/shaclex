@@ -14,6 +14,7 @@ import es.weso.slang.{SLang2Clingo, ShEx2SLang}
 import cats.effect._
 import cats.data.EitherT
 import scala.util._
+import es.weso.shex.ResolvedSchema
 
 case class ShExSchema(schema: SchemaShEx)
     extends es.weso.schema.Schema
@@ -24,8 +25,11 @@ case class ShExSchema(schema: SchemaShEx)
 
   lazy val shExCFormat = "ShExC"
   lazy val shExJFormat = "ShExJ"
-//  lazy val svgFormat = "SVG"
-  lazy val validator = Validator(schema)
+  //  lazy val svgFormat = "SVG"
+
+  def getValidator(): IO[Validator] = for { 
+    resolvedSchema <- ResolvedSchema.resolve(schema, None)
+  } yield Validator(resolvedSchema)
 
   // TODO: Separate input/output formats
   override def formats =
@@ -37,22 +41,24 @@ case class ShExSchema(schema: SchemaShEx)
 
   override def defaultTriggerMode: ValidationTrigger = ShapeMapTrigger.empty
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result =
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result] =
     (trigger match {
       case TargetDeclarations => validateTargetDecls(rdf)
       //    case MapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
-      case ShapeMapTrigger(sm) => {
-        ShapeMap.fixShapeMap(sm, rdf, rdf.getPrefixMap(), schema.prefixes.getOrElse(PrefixMap.empty)) match {
-          case Left(msg)            => Result.errStr(s"Error fixing shape map: $msg")
+      case ShapeMapTrigger(sm) => for {
+        eitherFixedMap <- ShapeMap.fixShapeMap(sm, rdf, rdf.getPrefixMap(), schema.prefixes.getOrElse(PrefixMap.empty)).attempt
+        result <- eitherFixedMap match {
+          case Left(e) => IO(Result.errStr(s"Error fixing shape map: $e"))
           case Right(fixedShapeMap) => validateFixedShapeMap(fixedShapeMap, rdf)
-        }
-      }
-    }).addTrigger(trigger)
+        } 
+      } yield result
+    }).map(_.addTrigger(trigger))
 
-  def validateTargetDecls(rdf: RDFReader): Result = {
-    val r = validator.validateNodeDecls(rdf)
-    cnvResult(r.toEitherS, rdf)
-  }
+  def validateTargetDecls(rdf: RDFReader): IO[Result] = for {
+    validator <- getValidator()
+    r <- validator.validateNodeDecls(rdf)
+    converted = cnvResult(r.toEitherS, rdf)
+  } yield converted
 
   def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader): Result = r match {
     case Left(msg) =>
@@ -79,35 +85,53 @@ case class ShExSchema(schema: SchemaShEx)
       )
   }
 
-  def validateNodeShape(node: IRI, shape: String, rdf: RDFReader): Result = {
-    val validator = Validator(schema)
-    val r         = validator.validateNodeShape(rdf, node, shape)
-    cnvResult(r.toEitherS, rdf)
-  }
-
-  def validateNodeStart(node: IRI, rdf: RDFReader): Result = {
-    val validator = Validator(schema)
-    val r         = validator.validateNodeStart(rdf, node)
-    cnvResult(r.toEitherS, rdf)
-  }
-
-  def validateFixedShapeMap(fixedShapeMap: FixedShapeMap, rdf: RDFReader): Result = {
+  def validateFixedShapeMap(fixedShapeMap: FixedShapeMap, rdf: RDFReader): IO[Result] = {
     validateShapeMap(fixedShapeMap, rdf)
   }
 
-  def validateShapeMap(shapeMap: FixedShapeMap, rdf: RDFReader): Result = {
-    Validator.validate(schema, shapeMap, rdf) match {
+  def validateNodeShape(node: IRI, shape: String, rdf: RDFReader): IO[Result] = for {
+    validator <- getValidator
+    r <- validator.validateNodeShape(rdf, node, shape)
+    res = cnvResult(r.toEitherS, rdf)
+  } yield res
+
+  def validateNodeStart(node: IRI, rdf: RDFReader): IO[Result] = for {
+    validator <- getValidator
+    r <- validator.validateNodeStart(rdf, node)
+    res = cnvResult(r.toEitherS, rdf)
+  } yield res
+
+
+  def validateShapeMap(shapeMap: FixedShapeMap, rdf: RDFReader): IO[Result] = for {
+    validator <- getValidator
+    r <- validator.validateShapeMap(rdf,shapeMap).attempt
+    res <- r match {
       case Left(error) =>
-        Result(
+        IO(Result(
           false,
           "Error validating",
           Seq(),
           Left("No validation report yet"),
-          Seq(ErrorInfo(error)),
+          Seq(ErrorInfo(error.getMessage())),
+          None,
+          rdf.getPrefixMap(),
+          schema.prefixMap
+        ))
+      case Right(result) => for {
+        resultShapeMap <- result.toResultShapeMap
+      } yield Result(
+          true,
+          "Validated",
+          Seq(resultShapeMap),
+          Left(s"No validation report for ShEx"),
+          Seq(),
           None,
           rdf.getPrefixMap(),
           schema.prefixMap
         )
+      }
+  } yield res 
+/*    match {
       case Right(resultShapeMap) => {
         // println(s"Validated, result=$resultShapeMap")
         Result(
@@ -122,14 +146,14 @@ case class ShExSchema(schema: SchemaShEx)
         )
       }
     }
-  }
+  } */
 
   def cnvViolationError(v: ShExError): ErrorInfo = {
     ErrorInfo(v.show)
   }
 
   override def fromString(cs: CharSequence, format: String, base: Option[String]): EitherT[IO, String, Schema] = {
-    EitherT.fromEither[IO](ShExSchema.fromString(cs, format, base))
+    EitherT.liftF(ShExSchema.fromString(cs, format, base))
   }
 
   override def fromRDF(rdf: RDFReader): EitherT[IO, String, es.weso.schema.Schema] = {
@@ -140,17 +164,15 @@ case class ShExSchema(schema: SchemaShEx)
     })
   }
 
-  override def serialize(format: String, base: Option[IRI]): Either[String, String] = {
+  override def serialize(format: String, base: Option[IRI]): IO[String] = {
     val fmt                 = format.toUpperCase
-    val builder: RDFBuilder = RDFAsJenaModel.empty
-    if (formatsUpperCase.contains(fmt))
-      fmt match {
-        /*        case "SVG" => for {
-          uml <- ShEx2UML.schema2Uml(schema)
-        } yield uml.toSVG */
-        case _ => SchemaShEx.serialize(schema, fmt, base, builder)
-      } else
-      Left(s"Can't serialize to format $format. Supported formats=$formats")
+    for {
+      builder <- RDFAsJenaModel.empty
+      str <- fmt.toUpperCase match {
+          case _ if (formatsUpperCase.contains(fmt)) => SchemaShEx.serialize(schema, fmt, base, builder)
+          case _ => IO.raiseError(new RuntimeException(s"Can't serialize to format $format. Supported formats=$formats"))
+      } 
+    } yield str
   }
 
   override def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
@@ -166,20 +188,20 @@ case class ShExSchema(schema: SchemaShEx)
       targetFormat: Option[String],
       targetEngine: Option[String],
       base: Option[IRI]
-  ): Either[String, String] = {
+  ): EitherT[IO, String, String] = {
     targetEngine.map(_.toUpperCase) match {
-      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
+      case None => EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base))
       case Some(engine) if (engine.equalsIgnoreCase(name)) => {
-        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
+        EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base))
       }
       case Some("SHACL") | Some("SHACLEX") =>
         for {
-          newSchema <- ShEx2Shacl.shex2Shacl(schema, None).leftMap(es => es.mkString("\n"))
-          builder = RDFAsJenaModel.empty
+          newSchema <- EitherT.fromEither[IO](ShEx2Shacl.shex2Shacl(schema, None).leftMap(es => es.mkString("\n")))
+          builder <- EitherT.liftF(RDFAsJenaModel.empty)
           // TODO: Check if we should pass base
-          str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base, builder)
+          str <- EitherT.liftF(newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base, builder))
         } yield str
-      case Some(unknown) => Left(s"Conversion from ShEx to $unknown not implemented yet")
+      case Some(unknown) => EitherT.fromEither(Left(s"Conversion from ShEx to $unknown not implemented yet"))
     }
   }
 
@@ -196,11 +218,11 @@ case class ShExSchema(schema: SchemaShEx)
     SchemaInfo(name, "Iterative", wellFormed, reasons)
   }
 
-  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): Either[String, String] =
+  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): EitherT[IO,String,String] =
     for {
       schemaS <- shex2SLang(schema)
       // _ <- {println(s"SchemaS: $schemaS"); Right(())}
-      program <- validate2Clingo(shapeMap, rdf, schemaS)
+      program <- EitherT.fromEither[IO](validate2Clingo(shapeMap, rdf, schemaS))
       // _ <- {println(s"Program: $program"); Right(())}
     } yield program.show
 
@@ -209,8 +231,9 @@ case class ShExSchema(schema: SchemaShEx)
 object ShExSchema {
   def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): Either[String, ShExSchema] = {
-    SchemaShEx.fromString(cs, format, base.map(IRI(_)), Some(RDFAsJenaModel.empty)).map(p => ShExSchema(p))
-  }
+  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[ShExSchema] = for {
+    rdf <- RDFAsJenaModel.empty
+    schema <- SchemaShEx.fromString(cs, format, base.map(IRI(_)), Some(rdf)).map(p => ShExSchema(p))
+  } yield schema
 
 }

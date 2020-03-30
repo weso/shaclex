@@ -37,7 +37,7 @@ object CountUsages {
   } */
 
   private def tripleExprBNodeLabels(schema: Schema): List[ShapeLabel] =
-    schema.tripleExprMap.getOrElse(Map()).keys.toList // .filter(isBNode(_))
+    schema.optTripleExprMap.getOrElse(Map()).keys.toList // .filter(isBNode(_))
 
   private def countUsagesSchema: Result[Map[ShapeLabel,Int]] = for {
     schema <- getSchema

@@ -1,5 +1,5 @@
 package es.weso.schemaInfer
-import cats._
+// import cats._
 import cats.data._
 import cats.implicits._
 import es.weso.rdf._
@@ -7,13 +7,17 @@ import es.weso.rdf.nodes._
 import es.weso.schema.Schemas._
 import es.weso.schema._
 import es.weso.shapeMaps._
+import cats.effect.IO
+import es.weso.utils.internal.CollectionCompat._
+// import es.weso.rdf.triples.RDFTriple
+import fs2.Stream
 
 object SchemaInfer {
 
   private type NeighMap = Map[IRI, Set[RDFNode]]
 
   private type Err = String
-  private type R[A] = ReaderT[Id,Config,A]
+  private type R[A] = ReaderT[IO,Config,A]
   private type S[A] = StateT[R, InferState,A]
   private type Comp[A] = EitherT[S,Err,A]
 
@@ -43,8 +47,10 @@ object SchemaInfer {
 
   private def sequence[A](ls: List[Comp[A]]): Comp[List[A]] = ls.sequence[Comp,A]
 
-  private def runWithState[A](c: Comp[A], initial: InferState, config: Config): Either[String,(A,InferState)] = {
-    val (finalState, x) = c.value.run(initial).run(config)
+  private def runWithState[A](c: Comp[A], initial: InferState, config: Config): IO[Either[String,(A,InferState)]] = for {
+    pair <- c.value.run(initial).run(config)
+  } yield {
+    val (finalState, x) = pair
     x.map(v => (v,finalState))
   }
 
@@ -52,6 +58,8 @@ object SchemaInfer {
   private def getRDF:Comp[RDFReader] = getConfig.map(_.rdf)
   private def getOptions:Comp[InferOptions] = getConfig.map(_.options)
   private def fromES[A](e: Either[String,A]): Comp[A] = EitherT.fromEither(e)
+  private def liftIO[A](io: IO[A]): Comp[A] = EitherT.liftF(StateT.liftF(ReaderT.liftF(io)))
+  private def fromStream[A](s: Stream[IO,A]): Comp[List[A]] = liftIO(s.compile.toList)
 
   private def addShape(lbl: IRI, shape: InferredShape): Comp[Unit] = for {
     _ <- updateSchema(schema => schema.get(lbl) match {
@@ -68,24 +76,27 @@ object SchemaInfer {
                      engine: String,
                      shapeLabel: IRI,
                      opts: InferOptions = InferOptions.defaultOptions
-                    ): Either[String, (Schema, ResultShapeMap)] = {
-    runWithState(inferSchema(selector, engine, shapeLabel),
+                    ): IO[Either[String, (Schema, ResultShapeMap)]] = for {
+    e <- runWithState(inferSchema(selector, engine, shapeLabel),
                  InferState.initial.addPrefixMap(rdfReader.getPrefixMap),
-                 Config(opts, rdfReader)).map {
-      case (schema, state) => (schema, state.inferredShapeMap)
-    }
-  }
+                 Config(opts, rdfReader))
+   } yield {
+    e.map(pair => {
+      val (schema, s) = pair
+      (schema, s.inferredShapeMap)
+    }) 
+   }
 
   private def inferSchema(selector: NodeSelector,
                   engine: String,
                   shapeLabel: IRI,
                  ): Comp[Schema] = for {
     rdfReader <- getRDF
-    nodes <- fromES(selector.select(rdfReader))
+    nodes <- fromStream(selector.select(rdfReader))
 //    neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_)))
 //    _ <- sequence(neighMaps.map(n => inferShape(shapeLabel,n)))
-    _ <- associateNodesLabel(nodes,shapeLabel)
-    _ <- inferShapeFromNodes(nodes, shapeLabel, 0)
+    _ <- associateNodesLabel(nodes.toSet,shapeLabel)
+    _ <- inferShapeFromNodes(nodes.toSet, shapeLabel, 0)
     schema <- mkSchema(engine, shapeLabel)
     _ <- updateShapeMap(_.addNodesPrefixMap(rdfReader.getPrefixMap()).addShapesPrefixMap(schema.pm))
   } yield schema
@@ -260,22 +271,46 @@ object SchemaInfer {
 
   private def getMaxFollowOns: Comp[Int] = getOptions.map(_.maxFollowOn)
 
+  private def mkNeigh(xs: List[(IRI,RDFNode)]): NeighMap = {
+    val m: Map[IRI, List[(IRI,RDFNode)]] = xs.groupBy(_._1)
+    def cnv(ls: List[(IRI,RDFNode)]): Set[RDFNode] = ls.map(_._2).toSet
+    val n: Map[IRI, Set[RDFNode]] = mapValues(m)(cnv)
+    val nei : NeighMap = n
+    nei
+  }
+
   private def getNeighbourhood(node: RDFNode,
                                numberFollowOns: Int
-                              ): Comp[NeighMap] = for {
+                              ): Comp[NeighMap] = {
+   def xx : Comp[NeighMap]= for {
+     rdf <- getRDF
+     ts <- fromStream(rdf.triplesWithSubject(node))
+     _ <- addVisited(node)
+   } yield {
+//     val setTs: Set[RDFTriple] = ts.toSet
+//     val setPs: Set[(IRI,RDFNode)] = setTs.map(t => (t.pred, t.obj))
+//     val setPPs: Map[IRI,Set[RDFNode]] = setPs.groupBy(_._1)
+//     setPPs
+     mkNeigh(ts.map(t => (t.pred, t.obj)))
+   }
+   //??? 
+   /*for {
+         rdf <- getRDF
+         ts <- fromStream(rdf.triplesWithSubject(node))
+         _ <- addVisited(node)
+      } yield ts.toSet.map((triple: RDFTriple) => 
+       (triple.pred, triple.obj)).groupBy(_._1).map { case (k,v) => (k, v.map(_._2))
+      } */
+
+   for {
       b <- isVisited(node)
       maxFollowOns <- getMaxFollowOns
 //      s <- getState
 //      _ <- { println(s"getNeighbourhood($node). visited?: $b, visited: $s"); ok(())}
       nm <- if (b || numberFollowOns >= maxFollowOns) ok(Map[IRI,Set[RDFNode]]())
-      else for {
-      rdf <- getRDF
-      ts <- fromES(rdf.triplesWithSubject(node))
-      _ <- addVisited(node)
-    } yield ts.map(
-      triple => (triple.pred, triple.obj)
-    ).groupBy(_._1).map { case (k,v) => (k, v.map(_._2))}
-  } yield nm
+      else xx
+   } yield nm
+  }
 
   private def collapse(nodes: Set[RDFNode]): Comp[InferredNodeValue] = for {
    opts <- getOptions
@@ -347,7 +382,11 @@ object SchemaInfer {
     opts <- getOptions
     schema <- getSchema
     pm <- getPrefixMap
-    shexSchema <- fromES(schema.toShExSchema(rdfReader,opts,pm))
+    eitherShexSchema <- liftIO(schema.toShExSchema(rdfReader,opts,pm).value)
+    shexSchema <- eitherShexSchema match {
+      case Left(s) => err(s)
+      case Right(v) => ok(v)
+    } 
   } yield {
     ShExSchema(shexSchema)
   }

@@ -6,10 +6,14 @@ import cats.implicits._
 import es.weso.rdf.triples.RDFTriple
 import es.weso.shex._
 import SxNamespace._
+import fs2.Stream
+import cats.effect.IO
+import cats.data._
 import PossiblePrefixes._
 
 case class InferredShape(nodeShape: InferredNodesValue,
                          smap: Map[IRI, InferredNodesValue]) {
+
   def get(label: IRI): Option[InferredNodesValue] =
     smap.get(label)
 
@@ -40,11 +44,11 @@ case class InferredShape(nodeShape: InferredNodesValue,
 
   def values: List[InferredNodesValue] = smap.values.toList
 
-  type ES[A] = Either[String, A]
+  type ES[A] = EitherT[IO, String, A]
 
   def toShapeExpr(eitherLabel: Option[IRI],
                   opts: InferOptions,
-                  rdf: RDFReader): Either[String, ShapeExpr] = for {
+                  rdf: RDFReader): ES[ShapeExpr] = for {
     es <- smap.toList.sortWith(opts.sortFunction(opts.possiblePrefixMap)).map {
       case (iri, c) => mkTripleExpr(iri,c,rdf,opts)
     }.sequence[ES,TripleExpr]
@@ -62,7 +66,7 @@ case class InferredShape(nodeShape: InferredNodesValue,
                            c: InferredNodesValue,
                            rdf: RDFReader,
                            inferOptions: InferOptions
-                          ): Either[String, TripleExpr] = for {
+                          ): ES[TripleExpr] = for {
     label <- getLabel(iri, rdf, inferOptions.addLabelLang)
     // _ <- { println(s"Selected label for $iri: $label") ; Right(()) }
   } yield {
@@ -88,18 +92,26 @@ case class InferredShape(nodeShape: InferredNodesValue,
       as)
   }
 
+  private def fromIO[A](io: IO[A]): ES[A] = EitherT.liftF(io)
+  private def fromStream[A](s: Stream[IO,A]): ES[List[A]] = fromIO(s.compile.toList)
+
+  private def getLabelsFromNode(t: RDFNode): ES[List[RDFNode]] = {
+    ???
+  }
+
   private def getLabel(iri: IRI,
                        rdf: RDFReader,
                        maybeLang: Option[Lang]
-                      ): Either[String, Option[Literal]] = for {
+                      ): EitherT[IO, String, Option[Literal]] = for {
     labels <-
       if (rdf.id == wikidataId) for {
-        sourceTriples <- rdf.triplesWithPredicateObject(`wikibase:directClaim`, iri)
+        sourceTriples <- fromStream[RDFTriple](rdf.triplesWithPredicateObject(`wikibase:directClaim`, iri))
         sourceIRIs = sourceTriples.map(_.subj)
-        labels <- sourceIRIs.map(rdf.triplesWithSubjectPredicate(_,`rdfs:label`)).toList.sequence[ES,Set[RDFTriple]]
-      } yield labels.flatten.map(_.obj)
+        labels <- sourceIRIs.map(getLabelsFromNode).sequence
+        // labels <- sourceIRIs.map(fromStream(rdf.triplesWithSubjectPredicate(_,`rdfs:label`))).sequence
+      } yield labels.flatten
       else for {
-        ts <- rdf.triplesWithSubjectPredicate(iri, `rdfs:label`)
+        ts <- fromStream[RDFTriple](rdf.triplesWithSubjectPredicate(iri, `rdfs:label`))
       } yield ts.map(_.obj)
   } yield {
     val okLabels = labels.collect {

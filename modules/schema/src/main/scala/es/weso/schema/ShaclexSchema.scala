@@ -26,32 +26,36 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def defaultTriggerMode = TargetDeclarations
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger): Result = trigger match {
-    case TargetDeclarations => validateTargetDecls(rdf).addTrigger(trigger)
-    case _ => Result.errStr(s"Not implemented trigger ${trigger.name} for SHACL yet")
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result] = trigger match {
+    case TargetDeclarations => validateTargetDecls(rdf).map(_.addTrigger(trigger))
+    case _ => IO(Result.errStr(s"Not implemented trigger ${trigger.name} for SHACL yet"))
   }
 
-  def validateTargetDecls(rdf: RDFReader): Result = {
+  def validateTargetDecls(rdf: RDFReader): IO[Result] = {
     val validator = Validator(schema)
-    val r = validator.validateAll(rdf)
-    val builder = RDFAsJenaModel.empty
-    builder.addPrefixMap(schema.pm)
-    cnvResult(r, rdf, builder)
+    for {
+     r <- validator.validateAll(rdf)
+     emptyRdf <- RDFAsJenaModel.empty  
+     builder <- emptyRdf.addPrefixMap(schema.pm)
+     result <-  cnvResult(r, rdf, builder)
+    } yield result
   }
 
   def cnvResult(r: CheckResult[AbstractResult, (ShapeTyping,Boolean), List[Evidence]],
                 rdf: RDFReader,
                 builder: RDFBuilder
-               ): Result = {
+               ): IO[Result] = {
     val vr: ValidationReport =
       r.result.fold(e => ValidationReport.fromError(e), r =>
         r._1.toValidationReport
       )
-    Result(
+    for {
+      eitherVR <- vr.toRDF(builder).attempt
+    } yield Result(
       isValid = vr.conforms,
       message = if (vr.conforms) "Valid" else "Not valid",
       shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
-      validationReport = vr.toRDF(builder),
+      validationReport = eitherVR.leftMap(_.getMessage),
       errors = vr.results.map(cnvViolationError(_)),
       trigger = None,
       nodesPrefixMap = rdf.getPrefixMap(),
@@ -106,34 +110,36 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
      base: Option[String]
     ): EitherT[IO, String, Schema] = {
     for {
-      rdf <- RDFAsJenaModel.fromStringIO(cs.toString, format, base.map(IRI(_)))
+      rdf <- EitherT.liftF(RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))))
       schema <- RDF2Shacl.getShacl(rdf, true)
     } yield ShaclexSchema(schema)
   }
 
-  override def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema] =
-    rdf.asRDFBuilder match {
+  private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
+
+  override def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema] = for {
+    eitherBuilder <- EitherT.liftF(rdf.asRDFBuilder.attempt)
+    schema <- eitherBuilder match {
     case Left(_) => for {
-      ts <- EitherT(IO(rdf.triplesWithPredicate(`owl:imports`)))
+      ts <- EitherT.liftF(rdf.triplesWithPredicate(`owl:imports`).compile.toList)
       schema <- ts.size match {
         case 0 => RDF2Shacl.getShaclReader(rdf).map(ShaclexSchema(_))
-        case _ => EitherT.leftT[IO,Schema](s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
+        case _ => err[ShaclexSchema](s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
       }
     } yield schema
     case Right(rdfBuilder) =>
       for {
         schemaShacl <- RDF2Shacl.getShacl(rdfBuilder, true)
-      } yield ShaclexSchema(schemaShacl)
-  }
+      } yield ShaclexSchema(schemaShacl) 
+   }
+  } yield schema
 
-
-  override def serialize(format: String, base: Option[IRI]): Either[String, String] = {
-    val builder: RDFBuilder = RDFAsJenaModel.empty
-    if (formats.contains(format.toUpperCase))
-      schema.serialize(format, base, builder.empty)
-    else
-      Left(s"Format $format not supported to serialize $name. Supported formats=$formats")
-  }
+  override def serialize(format: String, base: Option[IRI]): IO[String] = for {
+    builder <- RDFAsJenaModel.empty
+    str <- if (formats.contains(format.toUpperCase))
+      schema.serialize(format, base, builder)
+    else IO.raiseError(new RuntimeException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
+  } yield str  
 
   override def empty: Schema = ShaclexSchema.empty
 
@@ -146,23 +152,23 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def convert(targetFormat: Option[String],
                        targetEngine: Option[String],
                        base: Option[IRI]
-                      ): Either[String,String] = {
+                      ): EitherT[IO,String,String] = {
    targetEngine.map(_.toUpperCase) match {
-     case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+     case None => EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName)))
      case Some("SHACL") | Some("SHACLEX") => {
-       serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+       EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName)))
      }
      case Some("SHEX") => for {
-       pair <- Shacl2ShEx.shacl2ShEx(schema).leftMap(e => s"Error converting: $e")
+       pair <- EitherT.fromEither[IO](Shacl2ShEx.shacl2ShEx(schema)).leftMap(e => s"Error converting: $e")
        (newSchema,queryMap) = pair
-       builder = RDFAsJenaModel.empty
-       str <- es.weso.shex.Schema.serialize(
+       builder <- EitherT.liftF(RDFAsJenaModel.empty)
+       str <- EitherT.liftF(es.weso.shex.Schema.serialize(
          newSchema,
          targetFormat.getOrElse(DataFormats.defaultFormatName),
          base,
-         builder)
+         builder))
      } yield str
-     case Some(other) => Left(s"Conversion $name -> $other not implemented yet")
+     case Some(other) => err(s"Conversion $name -> $other not implemented yet")
    }
   }
 
@@ -172,7 +178,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   }
 
   override def toClingo(rdf: RDFReader, shapeMap: ShapeMap)
-  : Either[String, String] = Left(s"Not implemented yet")
+  : EitherT[IO,String, String] = EitherT.fromEither(Left(s"Not implemented yet"))
 
 }
 
