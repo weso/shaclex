@@ -4,11 +4,12 @@ import cats._
 import es.weso._
 import es.weso.shex.implicits.eqShEx._
 import es.weso.shex.Schema
-import org.scalatest._
+import org.scalatest.funspec._
+import org.scalatest.matchers.should._
+import es.weso.utils.IOUtils._
 
-class ShExSimplifierTest extends FunSpec
+class ShExSimplifierTest extends AnyFunSpec
   with Matchers
-  with EitherValues
   with ShExSimplifier {
 
  describe(s"ShExSimplifier") {
@@ -26,13 +27,12 @@ class ShExSimplifierTest extends FunSpec
                    ): Unit = {
    it(s"Should simplify $shexStr and obtain $strExpected") {
    val r = for {
-     schema <- shex.Schema.fromString(shexStr,"SHEXC")
-     simplified <- inlineInclusions(schema)
-     expected <- shex.Schema.fromString(strExpected,"SHEXC")
-
+     schema <- io2es(shex.Schema.fromString(shexStr,"SHEXC"))
+     simplified <- either2es(inlineInclusions(schema))
+     expected <- io2es(shex.Schema.fromString(strExpected,"SHEXC"))
    } yield (schema,simplified, expected)
 
-   r.fold(e => fail(s"Error: $e"), values => {
+   run_es(r).unsafeRunSync.fold(e => fail(s"Error: $e"), values => {
      val (schema,simplified,expected) = values
      if (Eq[Schema].eqv(simplified,expected)) {
        info(s"Schemas are equal")

@@ -1,40 +1,39 @@
 package es.weso.slang
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers 
+import org.scalatest.funspec.AnyFunSpec
 
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.Schema
+import cats.data._ 
+import cats.effect._ 
+import es.weso.utils.IOUtils._
 
-
-class ValidationTest extends FunSpec
-  with Matchers with SLang2Clingo with ShEx2SLang with EitherValues {
+class ValidationTest extends AnyFunSpec with Matchers with SLang2Clingo with ShEx2SLang {
 
   describe(s"SLang validation") {
     it(s"Should validate simple example") {
-      val r = for {
-        rdf <- RDFAsJenaModel.fromChars(
+      val node = IRI("http://example.org/a")
+      val shape: SLang  = Ref(IRILabel(IRI("http://example.org/User")))
+      val r: EitherT[IO,String,ShapesMap] = for {
+        rdf <- io2es(RDFAsJenaModel.fromChars(
           """|<a> <name> "a" ;
              | <knows> <a> .
             |
-          """.stripMargin, "TURTLE",Some(IRI("http://example.org/")))
-        schema <- Schema.fromString(
+          """.stripMargin, "TURTLE",Some(IRI("http://example.org/"))))
+        schema <- io2es(Schema.fromString(
           """|
              |<User> {
              | <name> . ;
              | <knows> .
              |}
-          """.stripMargin, "ShEXC",Some(IRI("http://example.org/")))
+          """.stripMargin, "ShEXC",Some(IRI("http://example.org/"))))
         slangSchema <- shex2SLang(schema)
-      } yield (rdf,schema,slangSchema)
+        eitherResult <- io2es(Validation.runValidation(node, shape, rdf, slangSchema))
+        result <- either2es(eitherResult)
+      } yield result
 
-      r.fold(e => fail(s"Error: $e"), values => {
-        val (rdf,schema,slangSchema) = values
-        val node = IRI("http://example.org/a")
-        val shape: SLang  = Ref(IRILabel(IRI("http://example.org/User")))
-        val result = Validation.runValidation(node, shape, rdf, slangSchema)
-            .getOrElse(sys.error("Unexpected Left value in Either"))
-        info(s"SLang schema: $slangSchema")
-        info(s"Result: ${result.map(node)}")
+      run_es(r).unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isConforming(node, shape) should be(Conforms)
       })
     }

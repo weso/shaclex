@@ -7,9 +7,11 @@ import cats.effect._
 import es.weso._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.implicits.eqShEx._
-import org.scalatest._
+import org.scalatest.matchers.should._
+import org.scalatest.funspec._
+import es.weso.utils.IOUtils._
 
-class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
+class shacl2ShExTest extends AnyFunSpec with Matchers {
 
   describe("shacl2ShEx converter") {
     {
@@ -106,10 +108,10 @@ class shacl2ShExTest extends FunSpec with Matchers with EitherValues {
   def shouldConvertSHACLShEx(strSHACL: String, expected: String): Unit = {
     it(s"Should convert: $strSHACL to ShEx and obtain: $expected") {
     val r = for {
-      shaclRDF       <- RDFAsJenaModel.fromStringIO(strSHACL, "TURTLE", None)
+      shaclRDF       <- io2es(RDFAsJenaModel.fromString(strSHACL, "TURTLE", None))
       shacl          <- RDF2Shacl.getShacl(shaclRDF)
       shexConverted  <- EitherT.fromEither[IO](Shacl2ShEx.shacl2ShEx(shacl).leftMap(e => s"Error in conversion: $e"))
-      expectedSchema <- EitherT.fromEither[IO](shex.Schema.fromString(expected, "ShExC"))
+      expectedSchema <- io2es(shex.Schema.fromString(expected, "ShExC"))
     } yield (shexConverted, expectedSchema, shacl)
     r.fold(
         e => fail(s"Error: $e"),

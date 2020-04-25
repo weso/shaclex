@@ -3,11 +3,13 @@ package es.weso.schema
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{ IRI, RDFNode }
 import org.scalatest._
+import matchers.should._
+import funspec._
 import cats.data.EitherT
 import cats.effect._
-// import util._
+import es.weso.utils.IOUtils._
 
-class SchemaTest extends FunSpec with Matchers with EitherValues {
+class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
 
   describe("Simple schema") {
     it("Validates a simple Schema using ShEx") {
@@ -29,8 +31,9 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
       val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
       val tryResult: EitherT[IO, String, Result] = for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
-        rdf <- RDFAsJenaModel.fromStringIO(data, dataFormat)
-      } yield schema.validate(rdf, triggerMode, "", None, None, schema.pm)
+        rdf <- io2es(RDFAsJenaModel.fromString(data, dataFormat))
+        result <- io2es(schema.validate(rdf, triggerMode, "", None, None, schema.pm))
+      } yield result
       tryResult.value.unsafeRunSync match {
         case Right(result) => {
           info(s"Result: ${result.serialize(Result.TEXT)}")
@@ -55,8 +58,9 @@ class SchemaTest extends FunSpec with Matchers with EitherValues {
         """.stripMargin
       val eitherResult = for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
-        rdf <- RDFAsJenaModel.fromStringIO(data,"TURTLE",None)
-      } yield schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm)
+        rdf <- io2es(RDFAsJenaModel.fromString(data,"TURTLE",None))
+        result <- io2es(schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm))
+      } yield result
       eitherResult.value.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isValid should be(false)
       })

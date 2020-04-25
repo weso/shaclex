@@ -92,8 +92,9 @@ object SchemaInfer {
                   shapeLabel: IRI,
                  ): Comp[Schema] = for {
     rdfReader <- getRDF
+    inferOpts <- getOptions
     nodes <- fromStream(selector.select(rdfReader))
-//    neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_)))
+//    neighMaps <- sequence(nodes.toList.map(getNeighbourhood(_, inferOpts.maxFollowOn)))
 //    _ <- sequence(neighMaps.map(n => inferShape(shapeLabel,n)))
     _ <- associateNodesLabel(nodes.toSet,shapeLabel)
     _ <- inferShapeFromNodes(nodes.toSet, shapeLabel, 0)

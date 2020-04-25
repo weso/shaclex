@@ -3,9 +3,13 @@ package es.weso.rdf.sgraph
 import es.weso.rdf.jena.RDFAsJenaModel
 
 import es.weso.utils.test._
-import org.scalatest._
+import org.scalatest.matchers.should._ 
+import org.scalatest.funspec.AnyFunSpec
+// import cats.data._
+// import cats.effect._
+// import es.weso.utils.IOUtils._
 
-class SGraphTest extends FunSpec with Matchers with JsonMatchers {
+class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
 
   describe("SGraph") {
     it("Should generate from example") {
@@ -26,10 +30,10 @@ class SGraphTest extends FunSpec with Matchers with JsonMatchers {
             "TURTLE",
             None
           )
-       ts <- rdf.rdfTriples
+       ts <- rdf.rdfTriples.compile.toList
        dot <-RDF2SGraph.rdf2sgraph(rdf)
       } yield (rdf,ts,dot)
-      e.fold(
+      e.attempt.unsafeRunSync.fold(
           e => fail(s"Error: $e"),
         tuple => {
             val (rdf,ts,dot) = tuple
@@ -96,7 +100,7 @@ class SGraphTest extends FunSpec with Matchers with JsonMatchers {
         )
         sg <- RDF2SGraph.rdf2sgraph(rdf)
       } yield sg.toJson
-      e.fold(
+      e.attempt.unsafeRunSync.fold(
         e => fail(s"SGraph: Error in conversion to Json: $e"),
         json => json should matchJsonString(expected)
       )

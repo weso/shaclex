@@ -2,8 +2,10 @@ package es.weso.schema
 
 import io.circe._
 import org.scalatest._
+import matchers.should._
+import funspec._
 
-trait JsonTest extends FunSpec with Matchers with EitherValues {
+trait JsonTest extends AnyFunSpec with Matchers with EitherValues {
 
   def encodeDecodeTest[A](x: A)(implicit d: Decoder[A], e: Encoder[A]): Unit = {
     it(s"Encode/decode ${x.toString}") {

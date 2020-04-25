@@ -2,16 +2,18 @@ package es.weso.slang
 
 
 import es.weso.slang.Clingo._
-import org.scalatest._
+import org.scalatest.funspec._
+import org.scalatest.matchers.should._
 import java.io._
 
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shapeMaps.ShapeMap
+// import cats.effect._ 
+// import cats.data.{ Func => _, Const => _, _}
+import es.weso.utils.IOUtils._
 
-
-class ClingoTest extends FunSpec
-  with Matchers with SLang2Clingo {
+class ClingoTest extends AnyFunSpec with Matchers with SLang2Clingo {
 
   describe(s"ClingoTest") {
     it(s"Should show a program") {
@@ -42,9 +44,9 @@ class ClingoTest extends FunSpec
       ))
 
       val r = for {
-        rdf <- RDFAsJenaModel.fromChars(strRDF, "TURTLE", None)
-        smap <- ShapeMap.empty.add(IRI("alice"), es.weso.shapeMaps.IRILabel(IRI("user")))
-        program <- validate2Clingo(smap, rdf, schema)
+        rdf <- io2es(RDFAsJenaModel.fromChars(strRDF, "TURTLE", None))
+        smap <- either2es(ShapeMap.empty.add(IRI("alice"), es.weso.shapeMaps.IRILabel(IRI("user"))))
+        program <- either2es(validate2Clingo(smap, rdf, schema))
       } yield (rdf,program)
       r.fold(e => fail(s"Error: $e"),values => {
         val (rdf,prog) = values
