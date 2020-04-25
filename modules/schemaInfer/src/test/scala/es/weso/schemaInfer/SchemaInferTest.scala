@@ -6,15 +6,15 @@ import es.weso.schema.{Schemas, ShExSchema}
 import es.weso.shapeMaps.NodeSelector
 import es.weso.shex._
 import cats.data.EitherT
-import cats.effect._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec._
+import es.weso.utils.IOUtils._
 
-class SchemaInterTest extends FunSpec with Matchers with RDFParser {
+class SchemaInterTest extends AnyFunSpec with Matchers with RDFParser {
 
   
   describe(s"Schema Infer") {
 
-    def fromEither[A](e: Either[String,A]): EitherT[IO,String,A] = EitherT.fromEither[IO](e)
 
     checkSchemaInfer(
       """|prefix schema: <http://schema.org/>
@@ -79,7 +79,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       , "wd:Q31270287", "S"
     )
 
-/*    checkSchemaInfer("""|prefix : <http://example.org/>
+    checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:name "Alice" .
@@ -94,7 +94,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       """.stripMargin, ":alice", "S"
     )
 
-    checkSchemaInfer("""|prefix : <http://example.org/>
+  /*  checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:name "Alice" ;
@@ -113,7 +113,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | schema:name      xsd:string
          |}
       """.stripMargin, ":alice", "S"
-    )
+    ) */
 
     checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
@@ -132,7 +132,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       """.stripMargin, ":alice", "S"
     )
 
-    checkSchemaInfer("""|prefix : <http://example.org/>
+  /*  checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:name "Alice" ;
@@ -159,7 +159,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | schema:name xsd:string
          |}
       """.stripMargin, ":alice", "S"
-    )
+    ) */
 
 
     checkSchemaInfer("""|prefix : <http://example.org/>
@@ -212,7 +212,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
       """.stripMargin, ":x", "S"
     )
 
-    checkSchemaInfer("""|prefix : <http://example.org/>
+  /*  checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:knows :bob .
@@ -233,9 +233,9 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | schema:knows IRI
          |}
          """.stripMargin, ":alice", "S"
-    )
+    ) */
 
-    checkSchemaInfer("""|prefix : <http://example.org/>
+  /*  checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:name "Alice" ;
@@ -256,9 +256,9 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | schema:knows IRI
          |}
       """.stripMargin, ":alice", "S"
-    )
-
-    checkSchemaInfer("""|prefix : <http://example.org/>
+    ) */
+ 
+  /*  checkSchemaInfer("""|prefix : <http://example.org/>
                         |prefix schema: <http://schema.org/>
                         |
                         |:alice schema:name "Alice" ;
@@ -279,9 +279,9 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | schema:knows IRI
          |}
       """.stripMargin, ":alice", "S"
-    )
+    ) */
 
-    checkSchemaInfer("""|@prefix :      <http://example.org/thing> .
+  /*  checkSchemaInfer("""|@prefix :      <http://example.org/thing> .
                         |@prefix td:    <http://www.w3.org/ns/td#> .
                         |@prefix js:    <http://www.w3.org/ns/json-schema#> .
                         |
@@ -320,18 +320,17 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          | td:description xsd:string
          |}
       """.stripMargin, ":light", "S"
-    )
+    ) */
 
-*/
 
 
   def checkSchemaInfer(rdfStr: String, expectedStr: String, nodeSelectorStr: String, label: String): Unit = {
-    it(s"Should infer a ShEx schema: $rdfStr for node $nodeSelectorStr and obtain $expectedStr") {
+    it(s"Should infer a ShEx schema:\n$rdfStr\n for node $nodeSelectorStr and obtain\n$expectedStr\n") {
       val result = for {
-       rdf <- RDFAsJenaModel.fromStringIO(rdfStr, "TURTLE")
+       rdf <- io2es(RDFAsJenaModel.fromString(rdfStr, "TURTLE"))
        schemaExpected <- Schemas.fromString(expectedStr,"ShExC","ShEx")
-       nodeSelector <- fromEither(NodeSelector.fromString(nodeSelectorStr, None,rdf.getPrefixMap))
-       schema <- fromEither(SchemaInfer.runInferSchema(rdf, nodeSelector, "ShEx", IRI("S")))
+       nodeSelector <- either2es(NodeSelector.fromString(nodeSelectorStr, None,rdf.getPrefixMap))
+       schema <- EitherT(SchemaInfer.runInferSchema(rdf, nodeSelector, "ShEx", IRI("S")))
       } yield (rdf, schemaExpected, nodeSelector, schema)
       result.value.unsafeRunSync.fold(
         e => fail(s"Error: $e"),
@@ -356,8 +355,8 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
   }
 
   private def compareSchemas(s1: Schema, s2: Schema): Either[String,Boolean] = {
-    if (s1.localShapesMap.keys != s2.localShapesMap.keys) {
-      Left(s"Different labels. labels1 = ${s1.localShapesMap.keys}\nlabels2 = ${s2.localShapesMap.keys}")
+    if (s1.shapesMap.keys != s2.shapesMap.keys) {
+      Left(s"Different labels. labels1 = ${s1.shapesMap.keys}\nlabels2 = ${s2.shapesMap.keys}")
     } else {
       val zero: Either[String,Boolean] = Right(true)
       def compareLabelSE(e: Either[String,Boolean], pair: (ShapeLabel,ShapeExpr)): Either[String,Boolean] = for {
@@ -377,7 +376,7 @@ class SchemaInterTest extends FunSpec with Matchers with RDFParser {
          }
        }
       } yield b
-      s1.localShapesMap.foldLeft(zero)(compareLabelSE)
+      s1.shapesMap.foldLeft(zero)(compareLabelSE)
     }
   }
 

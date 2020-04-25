@@ -3,9 +3,11 @@ package es.weso.shex.converter
 import es.weso._
 import es.weso.rdf.nodes._
 import es.weso.shex._
-import org.scalatest._
+import org.scalatest.funspec._
+import org.scalatest.matchers.should._
+import es.weso.utils.IOUtils._
 
-class CountUsagesTest extends FunSpec with Matchers with EitherValues {
+class CountUsagesTest extends AnyFunSpec with Matchers {
 
  describe(s"Count usages") {
    shouldCount(
@@ -30,8 +32,8 @@ class CountUsagesTest extends FunSpec with Matchers with EitherValues {
                 ): Unit = {
    it(s"Should count usages $shexStr and obtain $mapExpected") {
    val r = for {
-     schema <- shex.Schema.fromString(shexStr,"SHEXC")
-     result <- CountUsages.countUsages(schema)
+     schema <- io2es(shex.Schema.fromString(shexStr,"SHEXC"))
+     result <- either2es(CountUsages.countUsages(schema))
    } yield (schema,result)
 
    r.fold(e => fail(s"Error: $e"), values => {

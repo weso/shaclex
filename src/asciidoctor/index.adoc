@@ -1,0 +1,7 @@
+= SHaclEX library 
+
+SHACL/ShEx library.
+
+== ScalaDoc
+
+link:latest/api/index.html[ScalaDoc]

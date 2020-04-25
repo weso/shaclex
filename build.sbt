@@ -1,18 +1,18 @@
-lazy val scala212 = "2.12.10"
+lazy val scala212 = "2.12.11"
 lazy val scala213 = "2.13.1"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
 lazy val utilsVersion         = "0.1.67"
-lazy val srdfVersion          = "0.1.59"
-lazy val shexVersion          = "0.1.55"
-lazy val shaclVersion         = "0.1.58"
-lazy val shapeMapsVersion     = "0.1.54"
+lazy val srdfVersion          = "0.1.63"
+lazy val shexVersion          = "0.1.60"
+lazy val shaclVersion         = "0.1.59"
+lazy val shapeMapsVersion     = "0.1.56"
 
 // Dependency versions
-lazy val catsVersion           = "2.0.0"
+lazy val catsVersion           = "2.1.1"
 lazy val commonsTextVersion    = "1.8"
-lazy val circeVersion          = "0.12.0-RC3"
+lazy val circeVersion          = "0.12.3"
 lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.13.1"
@@ -21,8 +21,8 @@ lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
-lazy val scalacticVersion      = "3.0.8"
-lazy val scalaTestVersion      = "3.0.8"
+lazy val scalacticVersion      = "3.1.1"
+lazy val scalaTestVersion      = "3.1.1"
 lazy val scalaGraphVersion     = "1.11.5"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
@@ -82,7 +82,7 @@ lazy val simulacrum        = "org.typelevel" %% "simulacrum"     % simulacrumVer
 
 lazy val shaclex = project
   .in(file("."))
-  .enablePlugins(ScalaUnidocPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging, LauncherJarPlugin)
+  .enablePlugins(ScalaUnidocPlugin, SiteScaladocPlugin, AsciidoctorPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging, LauncherJarPlugin)
   .disablePlugins(RevolverPlugin)
 //  .settings(
 //    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
@@ -93,7 +93,9 @@ lazy val shaclex = project
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
+    siteSubdirName in ScalaUnidoc := "api/latest",
+    addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
+//     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
     libraryDependencies ++= Seq(
       logbackClassic,
       scalaLogging,
@@ -105,7 +107,7 @@ lazy val shaclex = project
     fork                      := true,
 //    parallelExecution in Test := false,
     ThisBuild / turbo := true,
-    publish / skip := true,
+//    publish / skip := true,
   )
 
 lazy val schemaInfer = project

@@ -3,10 +3,14 @@ package es.weso.shex.converter
 import es.weso._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.Shacl2RDF
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec 
+import org.scalatest.matchers.should._
 import cats.implicits._
+import cats.data._ 
+import cats.effect._
+import es.weso.utils.IOUtils._
 
-class shex2shaclTest extends FunSpec with Matchers with EitherValues {
+class shex2shaclTest extends AnyFunSpec with Matchers {
 
   describe(s"ShEx2SHACL") {
     shouldConvertShEx2Shacl(
@@ -218,18 +222,18 @@ class shex2shaclTest extends FunSpec with Matchers with EitherValues {
                               shaclStrExpected: String,
                               ignored: Boolean = false): Unit = {
     def comp(): Unit = {
-      val result: Either[String,Boolean] = for {
-        schema <- shex.Schema.fromString(shexStr,"SHEXC")
-        shaclSchema <- ShEx2Shacl.shex2Shacl(schema,None).
-          leftMap(e => s"Error converting schema: $e\n$schema")
-        rdfShacl = Shacl2RDF.shacl2RDF(shaclSchema, RDFAsJenaModel.empty)
-        rdfShaclExpected <- RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None)
-        b <-rdfShacl.isIsomorphicWith(rdfShaclExpected)
-        _ <- if (!b)
+      val result: EitherT[IO,String,Boolean] = for {
+        schema <- io2es(shex.Schema.fromString(shexStr,"SHEXC"))
+        shaclSchema <- either2es(ShEx2Shacl.shex2Shacl(schema,None).leftMap(ls => ls.mkString("\n"))).leftMap(e => s"Error converting schema: $e\n$schema")
+        rdfEmpty <- io2es(RDFAsJenaModel.empty)
+        rdfShacl <- io2es(Shacl2RDF.shacl2RDF(shaclSchema, rdfEmpty))
+        rdfShaclExpected <- io2es(RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None))
+        b <-io2es(rdfShacl.isIsomorphicWith(rdfShaclExpected))
+        _ <- either2es(if (!b)
            Left("RDFs are not isomorphic. Obtained RDF:\n" +
              s"${rdfShacl.serialize("Turtle")}\n" +
              s"Expected: \n${rdfShaclExpected.serialize("Turtle")}")
-          else Right(())
+          else Right(()))
       } yield b
       result.fold(e => fail(s"Error: $e"),
         b => b should be(true))

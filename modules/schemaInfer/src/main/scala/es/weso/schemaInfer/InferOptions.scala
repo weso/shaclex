@@ -2,6 +2,8 @@ package es.weso.schemaInfer
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes.Lang
 import es.weso.schemaInfer.SchemaInfer.SortFunction
+import FollowOn._
+import es.weso.rdf.nodes._
 
 case class InferOptions(
                          inferTypePlainNode: Boolean,
@@ -28,10 +30,10 @@ object InferOptions {
       possiblePrefixMap = PossiblePrefixes.wikidataPrefixMap,
       maxFollowOn = 1,
       followOnLs = List(
-//        followOnReference,
-//        followOnWasDerivedFrom,
-//        followOnStem(IRI("http://schema.org/")),
-//        followOnStem(IRI("http://www.w3.org/ns/td#"))
+        followOnReference,
+        followOnWasDerivedFrom,
+        followOnStem(IRI("http://schema.org/")),
+        followOnStem(IRI("http://www.w3.org/ns/td#"))
       ),
       followOnThreshold = Some(3),
       sortFunction = orderByIRI

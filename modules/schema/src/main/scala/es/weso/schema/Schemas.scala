@@ -78,10 +78,13 @@ object Schemas {
     } yield schema
   }
 
-/*  def fromURI(uri: String, schemaName: String): Either[String, Schema] = {
-    for {
-      defaultSchema <- lookupSchema(schemaName)
-      schema <- defaultSchema.fromURI(rdf)
-    } yield schema
-  } */
+  def fromRDFIO(rdf: RDFReader, schemaName: String): IO[Schema] = 
+    lookupSchema(schemaName) match {
+      case Left(s) => IO.raiseError(new RuntimeException(s"fromRDFIO: Cannot obtain default schema ${schemaName}: $s"))
+      case Right(defaultSchema) => defaultSchema.fromRDF(rdf).value.flatMap(either => either.fold(
+        s => IO.raiseError(new RuntimeException(s"fromRDFIO: Error obtaining schema ${schemaName}: $s")),
+        schema => IO(schema)
+      ))
+    }
+
 }
