@@ -21,8 +21,8 @@ cache:
 install:
   - pip install --user codecov
   - rvm use 2.6.0 --install --fuzzy
-  - pip install --user graphviz
-#  - sudo apt-get install graphviz
+#  - pip install --user graphviz
+  - sudo apt-get install graphviz
   - gem update --system
   - gem install sass
   - gem install jekyll -v 3.8.5  
@@ -51,4 +51,4 @@ deploy:
   local_dir: target/site
   on:
     branch: master
-    condition: $TRAVIS_SCALA_VERSION = 2.13.2 AND $JAVA_HOME=/home/travis/openjdk12
+    condition: $TRAVIS_SCALA_VERSION = 2.13.2 AND $JAVA_HOME="/home/travis/openjdk12"
