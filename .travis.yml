@@ -51,4 +51,4 @@ deploy:
   local_dir: target/site
   on:
     branch: master
-    condition: $TRAVIS_SCALA_VERSION = 2.13.2 AND $JAVA_HOME="/home/travis/openjdk12"
+    condition: $TRAVIS_SCALA_VERSION = 2.13.2
