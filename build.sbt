@@ -1,5 +1,5 @@
 lazy val scala212 = "2.12.11"
-lazy val scala213 = "2.13.1"
+lazy val scala213 = "2.13.2"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
@@ -93,9 +93,13 @@ lazy val shaclex = project
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    siteSubdirName in ScalaUnidoc := "api/latest",
+    siteSubdirName in ScalaUnidoc := "scaladoc/latest",
     addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
-//     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(noDocProjects: _*),
+    mappings in makeSite ++= Seq(
+      file("src/assets/favicon.ico") -> "favicon.ico"
+    ),
+    previewFixedPort := Some(9999),
     libraryDependencies ++= Seq(
       logbackClassic,
       scalaLogging,

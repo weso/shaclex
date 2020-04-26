@@ -1,7 +1,190 @@
 = SHaclEX library 
+:toc: right
 
-SHACL/ShEx library.
+SHaclEX is a Scala library that implements both 
+link:http://shex.io/[ShEx]
+and 
+link:https://www.w3.org/TR/shacl/[SHACL].
+
+The library has been implemented in Scala which means that it can be used in any JVM environment. 
+In principle, it could also work on Javascript compiling it with ScalaJs, but we haven't tried it yet 
+(see link:https://github.com/weso/shaclex/issues/117[issue 117])
+
+SHaclEX can be used as:
+- An independent comman line tool
+- A JAR library that can be invoked from other Scala or Java programs
+- Integrated in a Web application (see link:http://rdfshape.weso.es[rdfshape])
+
+- link:https://github.com/labra/shaclex/issues[List of issues]
+- link:https://github.com/labra/shaclex[Source code]
+- link:scaladoc/latest/es/weso/index.html[ScalaDoc]
+- link:https://bintray.com/labra/maven/shaclex[Binary Jars and Javadocs]
+- link:https://github.com/labra/shaclex/wiki[SHaclEX wiki]
+
+== About ShEx and SHACL 
+
+- link:http://book.validatingrdf.com/[Validating RDF data book]. The HTML version of the book is freely available online.
+
+== Modules and repositories
+
+The library is composed of several modules and repositories. 
+
+The following diagram depicts the main modules and dependencies:
+
+[plantuml, diagram-classes, png]     
+....
+package "SHaclEX" {
+[Schema] as Schema
+[ShExSchema] as ShExSchema
+[SHACLSchema] as SHACLSchema
+[Converter] as Converter
+[SchemaInfer] as SchemaInfer
+}
+
+package ShEx-s {
+[ShEx] as ShEx
+'[RBE] as RBE
+'[DepGraphs] as depGraphs
+}
+
+package ShapeMaps {
+}
+
+
+package SHACL-s {
+ [SHACL] as SHACL
+}
+
+package SRDF {
+ [SRDF] as SRDFComponent
+ [SRDF4j] as SRDF4j
+ [SRDFJena] as SRDFJena
+
+}
+
+
+note left of SRDFJena
+ RDFAsJenaModel
+end note
+
+[Apache Jena] as ApacheJena
+[RDF4j] as RDF4j
+
+Schema <|-- ShExSchema
+Schema <|-- SHACLSchema
+ShExSchema --> ShEx
+SHACLSchema --> SHACL
+Converter --> ShEx
+Converter --> SHACL
+ShEx --> ShapeMaps
+'ShEx --> RBE
+'ShEx --> depGraphs
+SHACL --> SRDFComponent
+ShEx --> SRDFComponent
+
+
+package RDFShapeClient {
+
+} 
+package WikiShape {
+
+} 
+
+package RDFShape {
+
+} 
+
+package UMLSHaclEX {
+
+}
+
+package shexJava {
+}
+
+
+shexJava --> Schema
+WikiShape --> RDFShape
+RDFShape --> UMLSHaclEX
+RDFShape --> Schema
+UMLSHaclEX --> Schema
+RDFShapeClient --> RDFShape
+
+SRDFComponent <|-- SRDFJena
+SRDFComponent <|-- SRDF4j
+SRDFJena --> ApacheJena
+SRDF4j --> RDF4j
+
+
+note left of RDFShapeClient 
+ Online demo deployed at
+ <b>http://rdfshape.weso.es<b>
+end note
+note right of WikiShape 
+ Online demo deployed at
+ <b>http://wikishape.weso.es</b>
+end note
+
+
+note left of shexJava 
+ Demo using
+ SHACLex from
+ Java
+end note
+....
+
+== Schema
+
+This module handles schema validation. 
+It is a top-level module that invokes ShEx and SHACL engines.
+
+== Converter
+
+This module can be used to convert between different schema formats and schema engines. As an example, it can be used to convert from ShEx to SHACL and from SHACL to ShEx. 
+
+Currently, only a subset of both languages can be converted.
+
+== ShEx-s
+
+Scala implementation of ShEx. This module has been separated to its own 
+link:https://github.com/weso/shex-s[its own repository]
+
+== SHACL-s
+
+Scala implementation of SHACL. 
+This module has been separated to 
+link:https://github.com/weso/shacl-s[its own repository].
+
+
+== ShapeMaps
+
+Scala implementation of ShapeMaps. 
+This module has been separated to  
+link:https://github.com/weso/shapeMaps[its own repository].
+
+
+== SRDF
+
+Simple RDF library. This module contains a simple RDF interface for Scala. The module has 
+link:https://github.com/weso/srdf[its own repository] and 
+link:http://www.weso.es/srdf/[documentation].
+
+We have two implementations of SRDF:
+- SRDFJena for link:https://jena.apache.org/[Apache Jena]
+- RDF4J for link:https://rdf4j.org/[RDF4j]
+
+
+== SchemaInfer
+
+This module allows to infer schemas from RDF data. 
+
+== SLang
+
+This module contains an implementation of the S-Language, which is a minimal language that can represent both SHACL and ShEx. 
+
+The S-Language is described in 
+link:http://labra.weso.es/publication/2018_validatingrdfdatachallenges/[this paper]
+
 
 == ScalaDoc
 
-link:latest/api/index.html[ScalaDoc]
+link:scaladoc/latest/es/weso/index.html[ScalaDoc]
