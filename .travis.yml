@@ -21,6 +21,7 @@ cache:
 install:
   - pip install --user codecov
   - rvm use 2.6.0 --install --fuzzy
+  - sudo apt-get install graphviz
   - gem update --system
   - gem install sass
   - gem install jekyll -v 3.8.5  
