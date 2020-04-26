@@ -21,10 +21,12 @@ cache:
 install:
   - pip install --user codecov
   - rvm use 2.6.0 --install --fuzzy
-  - sudo apt-get install graphviz
+  - pip install --user graphviz
+#  - sudo apt-get install graphviz
   - gem update --system
   - gem install sass
   - gem install jekyll -v 3.8.5  
+  - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2018.2.jar/download' -O /tmp/plantuml.1.2018.2.jar  
   - gem install asciidoctor asciidoctor-diagram
 
 script:
