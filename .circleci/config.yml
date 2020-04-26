@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: openjdk:9
+      - image: openjdk:12
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -20,7 +20,7 @@ jobs:
       # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
       TERM: dumb
-      SBT_VERSION: 1.2.8
+      SBT_VERSION: 1.3.3
     
     steps:
       - checkout
