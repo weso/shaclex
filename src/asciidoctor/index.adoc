@@ -161,6 +161,31 @@ Scala implementation of ShapeMaps.
 This module has been separated to  
 link:https://github.com/weso/shapeMaps[its own repository].
 
+== shexJava
+
+A simple Java application that invokes Shaclex.
+
+== RDFShape
+
+link:https://github.com/weso/rdfshape[RDFShape] 
+is a web service implemented using 
+link:https://http4s.org/[http4s]. 
+
+== RDFShape clients
+
+=== RDFShape-client 
+
+A client of RDFShape which is deployed at http://rdfshape.weso.es.
+It is implemented in Javascript using React.
+
+=== Wikishape 
+
+Another client of RDFShape specialized on Wikidata and wikibase. 
+It is deployed at http://wikishape.weso.es
+
+=== YaSHE
+
+A Shape Expressions Editor. Deployed at: http://www.weso.es/YASHE/
 
 == SRDF
 
