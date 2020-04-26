@@ -28,7 +28,7 @@ install:
 
 script:
 #  - sbt clean coverage test 
-  - echo "JAVA_HOME: $JAVA_HOME"
+  - echo $JAVA_HOME
   - if [[ "$TRAVIS_SCALA_VERSION" == 2.12.* ]];
     then
       sbt ++$TRAVIS_SCALA_VERSION  clean coverage test coverageReport && bash <(curl -s https://codecov.io/bash);
