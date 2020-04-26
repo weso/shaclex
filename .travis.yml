@@ -24,10 +24,11 @@ install:
   - gem update --system
   - gem install sass
   - gem install jekyll -v 3.8.5  
-  - gem install asciidoctor
+  - gem install asciidoctor asciidoctor-diagram
 
 script:
 #  - sbt clean coverage test 
+  - echo "JAVA_HOME: $JAVA_HOME"
   - if [[ "$TRAVIS_SCALA_VERSION" == 2.12.* ]];
     then
       sbt ++$TRAVIS_SCALA_VERSION  clean coverage test coverageReport && bash <(curl -s https://codecov.io/bash);
@@ -47,4 +48,4 @@ deploy:
   local_dir: target/site
   on:
     branch: master
-    condition: $TRAVIS_SCALA_VERSION = 2.13.2
+    condition: $TRAVIS_SCALA_VERSION = 2.13.2 AND $
