@@ -7,7 +7,7 @@ lazy val utilsVersion         = "0.1.67"
 lazy val srdfVersion          = "0.1.63"
 lazy val shexVersion          = "0.1.60"
 lazy val shaclVersion         = "0.1.59"
-lazy val shapeMapsVersion     = "0.1.56"
+lazy val shapeMapsVersion     = "0.1.58"
 
 // Dependency versions
 lazy val catsVersion           = "2.1.1"
