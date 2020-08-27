@@ -148,7 +148,7 @@ $ sbt "run --schema examples/shex/good1.shex
 ## Convert between ShEx and SHACL
 
 Shaclex can be used to convert schemas from ShEx to SHACL and viceversa. 
- The following example shows how to convert a SHACL schema and to ShEx. 
+ The following example shows how to convert a SHACL schema to ShEx. 
 
 ```
 $ sbt "run --schema examples/shacl/good1.ttl 
