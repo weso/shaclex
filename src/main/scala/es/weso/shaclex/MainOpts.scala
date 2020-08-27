@@ -40,7 +40,7 @@ class MainOpts(arguments: List[String],
     "schemaFormat",
     noshort = true,
     default = Some(defaultSchemaFormat),
-    descr = s"Schema format. Default ($defaultDataFormat) Possible values: ${showLs(schemaFormats)}",
+    descr = s"Schema format. Default ($defaultSchemaFormat) Possible values: ${showLs(schemaFormats)}",
     validate = isMemberOf(schemaFormats))
 
   val schemaUrl: ScallopOption[String] = opt[String](
@@ -96,6 +96,16 @@ class MainOpts(arguments: List[String],
     descrNo = "don't show SHACL validation report",
     noshort = true
   )
+
+  val validate: ScallopOption[Boolean] = toggle(
+    name = "validate",
+    prefix = "no-",
+    default = Some(true),
+    descrYes = "perform validation",
+    descrNo = "don't perform validation",
+    noshort = true
+  )
+
 
   val validationReportFormat: ScallopOption[String] = opt[String](
     "validationReportFormat",

@@ -20,7 +20,8 @@ import java.nio.file._
 import es.weso.rdf.RDFReader
 import cats.data.EitherT
 import cats.effect._
-import cats.Applicative
+import cats._
+// import cats.implicits._
 
 object Main extends IOApp with LazyLogging {
 
@@ -31,6 +32,8 @@ object Main extends IOApp with LazyLogging {
 
   private def fromEither[A](e: Either[String,A]): ESIO[A] =
     EitherT.fromEither[IO](e)
+
+  // private def printlnIO(str: String): ESIO[Unit] = EitherT.liftF[IO,String,Unit](IO { println(str) })
 
   private def whenA[A](x: Boolean, v: ESIO[Unit]): ESIO[Unit] = {
     Applicative[ESIO].whenA(x)(v)
@@ -75,12 +78,12 @@ object Main extends IOApp with LazyLogging {
      baseFolder <- getBaseFolder(opts) 
      startTime <- IO(System.nanoTime())
      _ <- doShapeInfer(baseFolder,opts)
-     _ <- doValidate(baseFolder, opts)
+     _ <- doProcess(baseFolder, opts)
      _ <- doShowTime(startTime, opts)
     } yield ExitCode.Success     
   }
 
-  private def doValidate(baseFolder: Path, opts:MainOpts): IO[Unit] = {
+  private def doProcess(baseFolder: Path, opts:MainOpts): IO[Unit] = {
     val e: EitherT[IO, String, Unit] = for {
     rdf <- getRDFReader(opts, baseFolder)
     schema <- getSchema(opts, baseFolder, rdf)
@@ -93,16 +96,20 @@ object Main extends IOApp with LazyLogging {
     _ <- doShowSchema(opts,schema)
     _ <- doShowShapeMap(opts, trigger)
     _ <- doShowClingo(opts,rdf,schema,trigger)
-    result <- EitherT.liftF(schema.validate(rdf, trigger))
-    _ <- doShowResult(opts,result)
-    _ <- doShowValidationReport(opts,result)
+    _ <- whenA(opts.validate(), doValidation(opts, rdf, schema, trigger))
   } yield ()
    e.fold(e => for { 
     _ <- IO(println(s"Error: $e"))
    } yield (), 
-   _ => IO(())
+   _ => IO.pure(())
    )
-  } 
+  }
+
+  private def doValidation(opts: MainOpts, rdf: RDFReader, schema: Schema, trigger: ValidationTrigger): ESIO[Unit] = for {
+    result <- EitherT.liftF(schema.validate(rdf, trigger))
+    _ <- doShowResult(opts,result)
+    _ <- doShowValidationReport(opts,result)
+  } yield ()
 
   private def doShowData(opts:MainOpts, rdf:RDFReader): EitherT[IO, String, Unit] = {
     if (opts.showData()) {
@@ -125,7 +132,8 @@ object Main extends IOApp with LazyLogging {
   private def doShowSchema(opts:MainOpts, schema:Schema): EitherT[IO,String,Unit] = {
     if (opts.showSchema() || opts.outSchemaFile.isDefined) {
       for {
-        str <- schema.convert(opts.outSchemaFormat.toOption,opts.outEngine.toOption,relativeBase) 
+        // _ <- printlnIO(s"Schema: ${schema}\n")
+        str <- schema.convert(opts.outSchemaFormat.toOption,opts.outEngine.toOption,relativeBase)
         _ <- whenA(opts.showSchema(), fromUnit(println(str)))
         _ <- whenA(opts.outSchemaFile.isDefined, fromUnit(FileUtils.writeFile(opts.outSchemaFile(), str)))
       } yield ()

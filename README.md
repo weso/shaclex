@@ -135,7 +135,7 @@ sbt:shex> compat:test
 
 ## Convert between Schema formats
 
-Shaclex can be used to convert between different schemas. 
+Shaclex can be used to convert between different schema formats. 
 The following example shows how to convert between ShExC to ShExJ:
 
 ```
@@ -144,6 +144,25 @@ $ sbt "run --schema examples/shex/good1.shex
            --outSchemaFormat ShExJ
            --showSchema"
 ```
+
+## Convert between ShEx and SHACL
+
+Shaclex can be used to convert schemas from ShEx to SHACL and viceversa. 
+ The following example shows how to convert a SHACL schema and to ShEx. 
+
+```
+$ sbt "run --schema examples/shacl/good1.ttl 
+           --schemaFormat Turtle 
+           --outSchemaFormat ShExC 
+           --engine SHACLEX 
+           --outEngine SHEX 
+           --showSchema 
+           --no-validate"
+```
+
+The conversion code is work in progress. This [issue tracks ShEx->SHACL conversion](https://github.com/weso/shaclex/issues/114) and this one tracks [SHACL->ShEx 
+ conversion](https://github.com/weso/shaclex/issues/113). 
+
 
 ## More information
 

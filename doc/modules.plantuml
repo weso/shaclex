@@ -63,6 +63,11 @@ package UMLSHaclEX {
 
 }
 
+
+package shapeComponents {
+
+}
+
 package shexJava {
 
 }
@@ -70,10 +75,13 @@ package shexJava {
 
 shexJava --> Schema
 WikiShape --> RDFShape
+WikiShape --> shapeComponents
 RDFShape --> UMLSHaclEX
 RDFShape --> Schema
 UMLSHaclEX --> Schema
 RDFShapeClient --> RDFShape
+RDFShapeClient --> shapeComponents
+
 
 SRDFComponent <|-- SRDFJena
 SRDFComponent <|-- SRDF4j
@@ -83,13 +91,18 @@ SRDF4j --> RDF4j
 
 note left of RDFShapeClient 
  Online demo deployed at
- <b>http://rdfshape.weso.es<b>
+ <b>http://rdfshape.weso.es</b>
 end note
+
 note right of WikiShape 
  Online demo deployed at
  <b>http://wikishape.weso.es</b>
 end note
 
+note left of RDFShape 
+ Online demo server 
+ Provides API
+end note
 
 note left of shexJava 
  Demo using

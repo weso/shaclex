@@ -6,17 +6,20 @@ import cats.implicits._
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.{InversePath, PredicatePath, SHACLPath}
+import es.weso.shex.implicits.showShEx._
 import es.weso.{shacl, _}
 
 object Shacl2ShEx {
 
   def shacl2ShEx(schema: shacl.Schema): Either[String, (shex.Schema, shapeMaps.QueryShapeMap)] = {
     val (state, eitherSchema) = cnvSchema(schema).value.run(initialState)
-    for {
+    val e = for {
      schema <- eitherSchema
      schema1 = schema.addTripleExprMap(state.tripleExprMap)
      queryMap <- cnvShapeMap(schema)
     } yield (schema1,queryMap)
+    // println(s"Result of conversion: \n$e")
+    e
   }
 
   def cnvShapeMap(schema: shex.Schema): Either[String,shapeMaps.QueryShapeMap] = Right(shapeMaps.QueryShapeMap(List(), PrefixMap.empty, PrefixMap.empty))
@@ -58,18 +61,6 @@ object Shacl2ShEx {
     )
   }
 
-/*  def collect[A, B, E](xs: List[(A, Result[B])]): ValidatedNel[E, List[(A, B)]] = {
-    val zero: ValidatedNel[E, List[(A, B)]] = Validated.valid(List())
-    def comb(
-      rest: ValidatedNel[E, List[(A, B)]],
-      current: (A, ValidatedNel[E, B])): ValidatedNel[E, List[(A, B)]] = {
-      val (a, r) = current
-      for
-      (r,rest).mapN((b, ls) => (a, b) :: ls)
-    }
-    xs.foldLeft(zero)(comb)
-  } */
-
   private def cnvShape(c: shacl.Shape,
                        schema: shacl.Schema
                       ): Result[shex.ShapeExpr] =
@@ -87,8 +78,8 @@ object Shacl2ShEx {
   private def cnvId(node: RDFNode): Result[shex.ShapeLabel] =
     shex.ShapeLabel.fromRDFNode(node).fold(e => err(e), lbl => ok(lbl))
 
-  private def cnvComponents(cs: List[shacl.Component]): Result[List[shex.ShapeExpr]] =
-    sequence(cs.map(cnvComponent(_)))
+/*  private def cnvComponents(cs: List[shacl.Component]): Result[List[shex.ShapeExpr]] =
+    sequence(cs.map(cnvComponent(_))) */
 
   private def cnvPropertyShapes(ps: List[shacl.RefNode],
                                 schema: shacl.Schema
@@ -172,12 +163,74 @@ object Shacl2ShEx {
     ok(components.collect { case shacl.MaxCount(m) => shex.IntMax(m) }.headOption)
   }
 
+  // TODO: Conversion of components like BlankNodeOrIRI is ignored by now
   private def cnvComponentsAsShapeExpr(cs: List[shacl.Component]): Result[Option[shex.ShapeExpr]] = for {
+    maybeNodeConstraint <- getNodeConstraint(cs)
+  } yield maybeNodeConstraint
+
+  private def getNodeConstraint(cs: List[shacl.Component]): Result[Option[shex.NodeConstraint]] = for {
+    nk <- getNodeKind(cs)
+    dt <- getDatatype(cs)
+    valueSet <- getValueSet(cs)
+  } yield if (nk.isDefined || dt.isDefined || valueSet.isDefined)
+    shex.NodeConstraint(id = None, nodeKind = nk, datatype = dt, xsFacets = List(), values = valueSet, annotations = None, actions = None).some
+  else
+    none[shex.NodeConstraint]
+
+/*  private def cnvComponentsAsShapeExpr(cs: List[shacl.Component]): Result[Option[shex.ShapeExpr]] = for {
     components <- cnvComponents(cs)
   } yield components length match {
     case 1 => Some(components.head)
     case n if (n > 1) => Some(shex.ShapeAnd(None,components.reverse, None,None))
     case 0 => None
+  } */
+
+  private def getNodeKind(cs: List[shacl.Component]): Result[Option[shex.NodeKind]] = {
+    val nks: List[shex.NodeKind] = cs.flatMap(component2NodeKind)
+    nks.length match {
+      case 1 => ok(Some(nks.head))
+      case 0 => ok(None)
+      case _ => err(s"More than one component provides NodeKind constraints: ${nks.map(_.show).mkString(",")}")
+    }
+  }
+
+  private def getDatatype(cs: List[shacl.Component]): Result[Option[IRI]] = {
+    val nks: List[IRI] = cs.flatMap(component2Datatype)
+    nks.length match {
+      case 1 => ok(Some(nks.head))
+      case 0 => ok(None)
+      case _ => err(s"More than one component provides Datatype constraints: ${nks.map(_.show).mkString(",")}")
+    }
+  }
+
+  private def getValueSet(cs: List[shacl.Component]): Result[Option[List[shex.ValueSetValue]]] = {
+    val vss: List[List[shex.ValueSetValue]] = cs.flatMap(component2ListValues)
+    vss.length match {
+      case 1 => ok(Some(vss.head))
+      case 0 => ok(None)
+      case _ => err(s"More than one component provides ValueSet constraints: ${vss.map(_.show).mkString(",")}")
+    }
+  }
+
+  private def component2NodeKind(c: shacl.Component): Option[shex.NodeKind] = c match {
+    case nk: shacl.NodeKind => nk.value match {
+      case shacl.IRIKind => Some(shex.IRIKind)
+      case shacl.BlankNodeKind => Some(shex.BNodeKind)
+      case shacl.LiteralKind => Some(shex.LiteralKind)
+      case _ => None // TODO: Here we are ignoring the SHACl constraints BlankNodeOrIRI, BlankNodeOrLiteral and IRIOrLiteral
+      // The conversion of those constraints should be done before...
+    }
+    case _ => None
+  }
+
+  private def component2Datatype(c: shacl.Component): Option[IRI] = c match {
+    case dt: shacl.Datatype => Some(dt.value)
+    case _ => None
+  }
+
+  private def component2ListValues(c: shacl.Component): Option[List[shex.ValueSetValue]] = c match {
+    case cin: shacl.In => Some(cnvIn(cin))
+    case _ => None
   }
 
   def getPredicateInversePair(path: SHACLPath): Result[PredicateInverse] = path match {
@@ -208,22 +261,22 @@ object Shacl2ShEx {
     rs andThen next */
 
 
-  private def cnvComponent(c: shacl.Component): Result[shex.ShapeExpr] = {
+  /*private def cnvComponent(c: shacl.Component): Result[shex.ShapeExpr] = {
     c match {
       case nk: shacl.NodeKind => cnvNodeKind(nk)
       case dt: shacl.Datatype => cnvDatatype(dt)
       case in: shacl.In => cnvIn(in)
       case _ => err(s"cnvComponent: Unimplemented $c")
     }
-  }
+  }*/
 
-  private def shexIri(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.IRIKind, List())
-  private def shexBNode(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.BNodeKind, List())
-  private def shexLiteral(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.LiteralKind, List())
+//  private def shexIri(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.IRIKind, List())
+//  private def shexBNode(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.BNodeKind, List())
+//  private def shexLiteral(): shex.ShapeExpr = shex.NodeConstraint.nodeKind(shex.LiteralKind, List())
   private def shapeInclusion(lbl: shex.ShapeLabel): shex.ShapeExpr =
     shex.Shape.empty.copy(expression = Some(shex.Inclusion(lbl)))
 
-  private def cnvNodeKind(nk: shacl.NodeKind): Result[shex.ShapeExpr] =
+/*  private def cnvNodeKind(nk: shacl.NodeKind): Result[shex.ShapeExpr] =
    nk.value match {
     case shacl.IRIKind => ok(shexIri)
     case shacl.BlankNodeKind => ok(shexBNode)
@@ -231,24 +284,23 @@ object Shacl2ShEx {
     case shacl.BlankNodeOrIRI => ok(shex.ShapeOr.fromShapeExprs(List(shexBNode,shexIri)))
     case shacl.BlankNodeOrLiteral => ok(shex.ShapeOr.fromShapeExprs(List(shexBNode,shexLiteral)))
     case shacl.IRIOrLiteral => ok(shex.ShapeOr.fromShapeExprs(List(shexIri,shexLiteral)))
-  }
+  } */
 
-  private def cnvDatatype(dt: shacl.Datatype): Result[shex.ShapeExpr] = {
+/*  private def cnvDatatype(dt: shacl.Datatype): Result[shex.ShapeExpr] = {
    ok(shex.NodeConstraint.datatype(dt.value,List()))
-  }
+  } */
 
-  private def cnvIn(dt: shacl.In): Result[shex.ShapeExpr] = for {
-    values <- sequence(dt.list.map(cnvValue(_)))
-    } yield shex.NodeConstraint.valueSet(values.reverse, List())
+  private def cnvIn(dt: shacl.In): List[shex.ValueSetValue] =
+    dt.list.map(cnvValue)
 
-  private def cnvValue(v: shacl.Value): Result[shex.ValueSetValue] =
+  private def cnvValue(v: shacl.Value): shex.ValueSetValue =
    v match {
-     case shacl.IRIValue(iri) => ok(shex.IRIValue(iri))
+     case shacl.IRIValue(iri) => shex.IRIValue(iri)
      case shacl.LiteralValue(lit) => lit match {
-       case StringLiteral(str) => ok(shex.StringValue(str))
-       case DatatypeLiteral(str,dt) => ok(shex.DatatypeString(str,dt))
-       case LangLiteral(str,lang) => ok(shex.LangString(str,lang))
-       case _ => ok(shex.DatatypeString(lit.getLexicalForm,lit.dataType))
+       case StringLiteral(str) => shex.StringValue(str)
+       case DatatypeLiteral(str,dt) => shex.DatatypeString(str,dt)
+       case LangLiteral(str,lang) => shex.LangString(str,lang)
+       case _ => shex.DatatypeString(lit.getLexicalForm,lit.dataType)
      }
   }
 
