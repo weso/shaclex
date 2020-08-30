@@ -19,6 +19,7 @@ lazy val jenaVersion           = "3.13.1"
 lazy val jgraphtVersion        = "1.3.1"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
+lazy val pprintVersion         = "0.5.6"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
 lazy val scalacticVersion      = "3.1.1"
@@ -66,6 +67,7 @@ lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       %
 lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
 
 
+lazy val pprint            = "com.lihaoyi"                %% "pprint"              % pprintVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -196,10 +198,13 @@ lazy val converter = project
     commonSettings, 
     publishSettings,
     libraryDependencies ++= Seq(
-     srdfJena % Test,
+    logbackClassic,
+    scalaLogging,
+    srdfJena % Test,
      shex,
-     shacl
-     )
+     shacl,
+     pprint
+    )
   )
 
 /* ********************************************************
