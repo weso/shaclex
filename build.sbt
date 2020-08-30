@@ -3,11 +3,11 @@ lazy val scala213 = "2.13.2"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.67"
-lazy val srdfVersion          = "0.1.63"
-lazy val shexVersion          = "0.1.60"
-lazy val shaclVersion         = "0.1.59"
-lazy val shapeMapsVersion     = "0.1.56"
+lazy val utilsVersion         = "0.1.69"
+lazy val srdfVersion          = "0.1.69"
+lazy val shexVersion          = "0.1.65"
+lazy val shaclVersion         = "0.1.60"
+lazy val shapeMapsVersion     = "0.1.58"
 
 // Dependency versions
 lazy val catsVersion           = "2.1.1"
@@ -82,7 +82,14 @@ lazy val simulacrum        = "org.typelevel" %% "simulacrum"     % simulacrumVer
 
 lazy val shaclex = project
   .in(file("."))
-  .enablePlugins(ScalaUnidocPlugin, SiteScaladocPlugin, AsciidoctorPlugin, SbtNativePackager, WindowsPlugin, JavaAppPackaging, LauncherJarPlugin)
+  .enablePlugins(
+    ScalaUnidocPlugin, 
+    SiteScaladocPlugin, 
+    AsciidoctorPlugin, 
+    SbtNativePackager, 
+    WindowsPlugin, 
+    JavaAppPackaging, 
+    LauncherJarPlugin)
   .disablePlugins(RevolverPlugin)
 //  .settings(
 //    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
@@ -99,7 +106,6 @@ lazy val shaclex = project
     mappings in makeSite ++= Seq(
       file("src/assets/favicon.ico") -> "favicon.ico"
     ),
-    previewFixedPort := Some(9999),
     libraryDependencies ++= Seq(
       logbackClassic,
       scalaLogging,
