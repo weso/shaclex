@@ -7,6 +7,7 @@ import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.{InversePath, PredicatePath, SHACLPath}
 import es.weso.shex.implicits.showShEx._
+import es.weso.shex.linter.ShExLinter
 import es.weso.{shacl, _}
 
 object Shacl2ShEx {
@@ -17,7 +18,8 @@ object Shacl2ShEx {
      schema <- eitherSchema
      schema1 = schema.addTripleExprMap(state.tripleExprMap)
      queryMap <- cnvShapeMap(schema)
-    } yield (schema1,queryMap)
+     lintedSchema <- ShExLinter.inlineInclusions(schema1)
+    } yield (lintedSchema,queryMap)
     // println(s"Result of conversion: \n$e")
     e
   }

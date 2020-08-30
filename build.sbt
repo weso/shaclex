@@ -19,6 +19,7 @@ lazy val jenaVersion           = "3.13.1"
 lazy val jgraphtVersion        = "1.3.1"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
+lazy val pprintVersion         = "0.5.6"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
 lazy val scalacticVersion      = "3.1.1"
@@ -37,20 +38,6 @@ lazy val simulacrumVersion    = "1.0.0"
 lazy val scalaMacrosVersion   = "2.1.1"
 
 // Dependency modules
-lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
-lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
-lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
-lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
-lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
-lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
-lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
-lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
-// lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
-lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
-lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
-lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
-lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
-lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 
 // WESO components
 lazy val srdf              = "es.weso"                    %% "srdf"            % srdfVersion
@@ -65,7 +52,21 @@ lazy val shexTest          = "es.weso"                    %% "shextest"        %
 lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       % shapeMapsVersion
 lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
 
-
+lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
+lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
+lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
+lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
+lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
+lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
+lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
+lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
+// lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
+lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
+lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
+lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
+lazy val pprint         = "com.lihaoyi"                %% "pprint"     % pprintVersion
+lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion

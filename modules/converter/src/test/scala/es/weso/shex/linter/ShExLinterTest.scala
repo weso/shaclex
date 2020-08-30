@@ -9,8 +9,7 @@ import org.scalatest.funspec._
 import org.scalatest.matchers.should._
 
 class ShExLinterTest extends AnyFunSpec
-  with Matchers
-  with ShExLinter {
+  with Matchers {
 
  describe(s"ShExSimplifier") {
 /*   shouldSimplify(
@@ -37,7 +36,7 @@ class ShExLinterTest extends AnyFunSpec
    it(s"Should simplify $shexStr and obtain $strExpected") {
    val r = for {
      schema <- io2es(shex.Schema.fromString(shexStr,"SHEXC"))
-     simplified <- either2es(inlineInclusions(schema))
+     simplified <- either2es(ShExLinter.inlineInclusions(schema))
      expected <- io2es(shex.Schema.fromString(strExpected,"SHEXC"))
    } yield (schema,simplified, expected)
 
