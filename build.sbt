@@ -204,7 +204,8 @@ lazy val converter = project
     libraryDependencies ++= Seq(
      srdfJena % Test,
      shex,
-     shacl
+     shacl,
+     pprint
      )
   )
 

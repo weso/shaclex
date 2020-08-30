@@ -1,21 +1,30 @@
-package es.weso.shex.converter
+package es.weso.shex.linter
 
 import cats._
 import es.weso._
-import es.weso.shex.implicits.eqShEx._
 import es.weso.shex.Schema
+import es.weso.shex.implicits.eqShEx._
+import es.weso.utils.IOUtils._
 import org.scalatest.funspec._
 import org.scalatest.matchers.should._
-import es.weso.utils.IOUtils._
 
-class ShExSimplifierTest extends AnyFunSpec
+class ShExLinterTest extends AnyFunSpec
   with Matchers
-  with ShExSimplifier {
+  with ShExLinter {
 
  describe(s"ShExSimplifier") {
-   shouldSimplify(
+/*   shouldSimplify(
      """|prefix : <>
         |<S> { :p . }
+     """.stripMargin,
+     """|prefix : <>
+        |<S> { :p . }
+     """.stripMargin) */
+
+   shouldSimplify(
+     """|prefix : <>
+        |<S> { &_:1 }
+        |_:1 { :p . }
      """.stripMargin,
      """|prefix : <>
         |<S> { :p . }
