@@ -5,7 +5,7 @@ import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
 import es.weso.rdf.triples.RDFTriple
 //import cats._
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import cats.effect.IO
 import fs2.Stream
 

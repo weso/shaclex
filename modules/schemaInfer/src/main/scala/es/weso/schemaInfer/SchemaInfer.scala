@@ -1,7 +1,7 @@
 package es.weso.schemaInfer
 // import cats._
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.schema.Schemas._

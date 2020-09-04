@@ -2,7 +2,7 @@ package es.weso.shex.linter
 
 import cats._
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import es.weso.shex._
 
 object CountUsages {

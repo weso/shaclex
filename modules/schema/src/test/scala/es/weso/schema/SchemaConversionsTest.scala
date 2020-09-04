@@ -3,7 +3,7 @@ package es.weso.schema
 import org.scalatest._
 import matchers.should._
 import funspec._
-import cats.implicits._
+import cats.syntax.all._
 import es.weso.utils.json.JsonCompare.jsonDiff
 import es.weso.rdf.jena.RDFAsJenaModel
 import cats.data.EitherT

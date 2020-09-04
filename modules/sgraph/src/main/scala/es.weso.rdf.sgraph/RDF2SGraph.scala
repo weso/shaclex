@@ -1,7 +1,7 @@
 package es.weso.rdf.sgraph
 
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import cats.effect.IO
 import es.weso.rdf.PREFIXES.`rdf:type`
 import es.weso.rdf.nodes.{IRI, RDFNode}

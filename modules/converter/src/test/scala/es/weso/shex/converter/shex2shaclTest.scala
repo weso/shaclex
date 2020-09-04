@@ -5,7 +5,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.converter.Shacl2RDF
 import org.scalatest.funspec.AnyFunSpec 
 import org.scalatest.matchers.should._
-import cats.implicits._
+import cats.syntax.all._
 import cats.data._ 
 import cats.effect._
 import es.weso.utils.IOUtils._

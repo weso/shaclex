@@ -2,7 +2,7 @@ package es.weso.schemaInfer
 import es.weso.rdf.PREFIXES.{`rdf:langString`, `rdfs:label`, `xsd:string`}
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes._
-import cats.implicits._
+import cats.syntax.all._
 import es.weso.rdf.triples.RDFTriple
 import es.weso.shex._
 import SxNamespace._

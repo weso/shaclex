@@ -2,7 +2,7 @@ package es.weso.shacl.converter
 
 import cats._
 import cats.data.EitherT
-import cats.implicits._
+import cats.syntax.all._
 import cats.effect._
 import es.weso._
 import es.weso.rdf.jena.RDFAsJenaModel
