@@ -370,13 +370,20 @@ object SchemaInfer {
     else pm
   } */
 
-  private def mkSchema(engine: String, label: IRI): Comp[Schema] =
-   lookupSchema(engine) match {
-    case Right(_: ShExSchema) => mkShExSchema(label)
-    case Right(_: ShaclexSchema) => err(s"Not implemented yet")
-    case Left(e) => err(s"Not found engine $engine, Error: $e")
-    case l => err(s"Not found schema $engine. Found: $l")
-  }
+  private def mkSchema(engine: String, label: IRI): Comp[Schema] = for {
+    eitherSchema <- {
+      val s: Comp[Either[Throwable,Schema]] = liftIO(lookupSchema(engine).attempt)
+      s
+    }
+    schema <- eitherSchema.fold(
+      exc => err(s"schemaInfer/mkSchema: Not found engine ${engine}: ${exc.getMessage }"),
+      s => s match {
+        case _: ShExSchema => mkShExSchema(label)
+        case _: ShaclexSchema => err(s"SchemaInfer: Not implemented yet creation of ShaclexSchema yet")
+        case _ => err(s"SchemaInfer: Not implemented creation of unknown schema: ${s.name} ")
+      }
+    )
+  } yield schema
 
   private def mkShExSchema(label: IRI): Comp[Schema]  = for {
     rdfReader <- getRDF

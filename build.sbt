@@ -249,7 +249,7 @@ lazy val compilationSettings = Seq(
     "-Xlint",
     "-Yrangepos",
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
-    "-Xfatal-warnings",
+    // "-Xfatal-warnings",
     "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
   )
   // format: on

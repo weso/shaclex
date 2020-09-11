@@ -108,31 +108,48 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def fromString(cs: CharSequence, format: String, 
      base: Option[String]
-    ): EitherT[IO, String, Schema] = {
+    ): IO[Schema] = {
     for {
-      rdf <- EitherT.liftF(RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))))
-      schema <- RDF2Shacl.getShacl(rdf, true)
+      rdf <- RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_)))
+      eitherSchema <- RDF2Shacl.getShacl(rdf, true).value
+      schema <- eitherSchema match {
+        case Left(s) => IO.raiseError(new RuntimeException(s))
+        case Right(schema) => IO.pure(schema)
+      }
     } yield ShaclexSchema(schema)
   }
 
   private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
 
-  override def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema] = for {
-    eitherBuilder <- EitherT.liftF(rdf.asRDFBuilder.attempt)
+  override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = for {
+    eitherBuilder <- rdf.asRDFBuilder.attempt
     schema <- eitherBuilder match {
     case Left(_) => for {
-      ts <- EitherT.liftF(rdf.triplesWithPredicate(`owl:imports`).compile.toList)
+      ts <- rdf.triplesWithPredicate(`owl:imports`).compile.toList
       schema <- ts.size match {
-        case 0 => RDF2Shacl.getShaclReader(rdf).map(ShaclexSchema(_))
-        case _ => err[ShaclexSchema](s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
+        case 0 => RDF2Shacl.getShaclReader(rdf).map(ShaclexSchema(_)).value >>= handleErr
+        case _ => IO.raiseError(new RuntimeException(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}"))
       }
     } yield schema
+
     case Right(rdfBuilder) =>
       for {
-        schemaShacl <- RDF2Shacl.getShacl(rdfBuilder, true)
-      } yield ShaclexSchema(schemaShacl) 
+        maybeSchemaShacl <- RDF2Shacl.getShacl(rdfBuilder, true).value
+        schemaShacl <- maybeSchemaShacl.fold(
+          s => IO.raiseError(new RuntimeException(s)),
+          s => IO.pure(s)
+        )
+      } yield {
+        val ss: es.weso.schema.Schema = ShaclexSchema(schemaShacl)
+        ss
+      }
    }
   } yield schema
+
+  private def handleErr[A](e: Either[String,A]): IO[A] = e.fold(
+    s => IO.raiseError(new RuntimeException(s)),
+    IO.pure(_)
+  )
 
   override def serialize(format: String, base: Option[IRI]): IO[String] = for {
     builder <- RDFAsJenaModel.empty
@@ -152,23 +169,27 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def convert(targetFormat: Option[String],
                        targetEngine: Option[String],
                        base: Option[IRI]
-                      ): EitherT[IO,String,String] = {
+                      ): IO[String] = {
    targetEngine.map(_.toUpperCase) match {
-     case None => EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName)))
+     case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      case Some("SHACL") | Some("SHACLEX") => {
-       EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName)))
+       serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      }
      case Some("SHEX") => for {
-       pair <- EitherT.fromEither[IO](Shacl2ShEx.shacl2ShEx(schema)).leftMap(e => s"Error converting: $e")
-       (newSchema,queryMap) = pair
-       builder <- EitherT.liftF(RDFAsJenaModel.empty)
-       str <- EitherT.liftF(es.weso.shex.Schema.serialize(
+       pair <- Shacl2ShEx.shacl2ShEx(schema).fold(
+         s => IO.raiseError(new RuntimeException(s"SHACL2ShEx: Error converting: $s")),
+         IO.pure(_)
+       )
+       (newSchema,_) = pair
+       builder <- RDFAsJenaModel.empty
+       str <- es.weso.shex.Schema.serialize(
          newSchema,
          targetFormat.getOrElse(DataFormats.defaultFormatName),
          base,
-         builder))
+         builder)
      } yield str
-     case Some(other) => err(s"Conversion $name -> $other not implemented yet")
+     case Some(other) =>
+       IO.raiseError(new RuntimeException(s"Conversion $name -> $other not implemented yet"))
    }
   }
 
@@ -177,8 +198,8 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     SchemaInfo(name,"SHACLex", true, List())
   }
 
-  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap)
-  : EitherT[IO,String, String] = EitherT.fromEither(Left(s"Not implemented yet"))
+  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String] =
+    IO.raiseError(new RuntimeException(s"Not implemented yet"))
 
 }
 

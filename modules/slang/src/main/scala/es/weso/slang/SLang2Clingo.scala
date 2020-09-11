@@ -1,18 +1,16 @@
 package es.weso.slang
 import es.weso.rdf.RDFReader
-//import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
+import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
 //import es.weso.rdf.operations.Graph
-//import es.weso.rdf.triples.RDFTriple
-//import es.weso.shapeMaps.{
-// IRILabel => SMIRILabel,
-// BNodeLabel => SMBNodeLabel,
-// _
-//}
+import es.weso.rdf.triples.RDFTriple
+import es.weso.shapeMaps.{BNodeLabel => SMBNodeLabel, IRILabel => SMIRILabel, _}
 import es.weso.shapeMaps.ShapeMap
 import es.weso.slang.Clingo._
-//import cats.syntax.either._
-//import scala.annotation.tailrec
-//import cats.effect.IO
+// import cats.syntax.either._
+
+import scala.annotation.tailrec
+import cats.effect.IO
+import fs2.Stream
 
 object ClingoNames {
   val ARC = "arc"
@@ -38,24 +36,23 @@ object ClingoNames {
 
 trait SLang2Clingo {
 
-  //import ClingoNames._
+  import ClingoNames._
 
   def validate2Clingo(smap: ShapeMap,
                       rdf: RDFReader,
                       schema: SchemaS
-                     ): Either[String,Program] = Left(s"This code has been commented out") 
-              /*       {
-    val zero: Either[String,Program] = Right(commonStatements(schema))
-    def comb(a: Association, next: Either[String,Program]): Either[String,Program] = a.node match {
+                     ): IO[Program] = {
+    val zero: IO[Program] = IO(commonStatements(schema))
+    def comb(a: Association, next: IO[Program]): IO[Program] = ??? /*a.node match {
       case RDFNodeSelector(node) => for {
         lbl <- cnvLabel(a.shape)
         p1 <- ground(node,lbl,rdf,schema)
         p2 <- next
       } yield p1.append(p2)
-    }
+    } */
     smap.associations.foldRight(zero)(comb)
-  } */
-/*
+  }
+
   private def commonStatements(schema:SchemaS): Program = {
 
 //    val showHasShape = Seq(ShowDirective(CHECK, 2))
@@ -171,7 +168,6 @@ trait SLang2Clingo {
       ))
   }
 
-
   private def cnvLabel(lbl: ShapeMapLabel): Either[String,Label] = lbl match {
     case Start => Left(s"Not supported start in clingo conversion yet")
     case SMIRILabel(iri) => Right(IRILabel(iri))
@@ -184,8 +180,8 @@ trait SLang2Clingo {
              schema: SchemaS): IO[Program] = 
     for {
      shape <- schema.getLabel(label).fold(
-       s"Label $label not found in Schema. Available labels: ${schema.availableLabels.mkString(",")}".asLeft[SLang]
-     )(Right(_))
+       IO.raiseError[SLang](new RuntimeException(s"Label $label not found in Schema. Available labels: ${schema.availableLabels.mkString(",")}"))
+     )(s => IO.pure(s))
      rdfStatements <- groundRDF(node,rdf)
      shapeStatements = groundShape(shape)
      schemaStatements = groundSchema(schema)
@@ -195,9 +191,8 @@ trait SLang2Clingo {
     Program(all)
   }
 
-/*  private  def closure(node: RDFNode, rdf: RDFReader): List[RDFTriple] =
-    rdf.triplesWithSubject(node).toList ++
-      rdf.triplesWithObject(node).toList */
+  private  def closure(node: RDFNode, rdf: RDFReader): Stream[IO, RDFTriple] =
+     rdf.triplesWithSubject(node) ++ rdf.triplesWithObject(node)
 
 
   private def triple2Statement(t: RDFTriple): Statement = {
@@ -210,9 +205,9 @@ trait SLang2Clingo {
     case l: RDFLiteral => mkFact(LITERAL, node2Term(node),iri2Term(l.dataType))
   }
 
-  private def groundRDF(node: RDFNode, rdf: RDFReader): IO[Program] = 
+  private def groundRDF(node: RDFNode, rdf: RDFReader): IO[Program] =
     IO.raiseError(new RuntimeException(s"Not implemented yet"))
-  for {
+  /*for {
     nodesTriples <- Graph.traverseWithArcs(node,rdf).compile.toList
   } yield {
     val (nodes,triples) = nodesTriples.flatten
@@ -220,7 +215,7 @@ trait SLang2Clingo {
     val statementsTriples = triples.map(triple2Statement(_))
     // val statementsPredicates = triples.map(_.pred).distinct.map(pred2Statement(_))
     Program(statementsNodes ++ statementsTriples)
-  } 
+  } */
 
   private def groundShapeMap(node: RDFNode, label: Label): List[Statement] = {
     List(mkFact("shapeMap",node2Term(node),label2Term(label)))
@@ -308,5 +303,5 @@ trait SLang2Clingo {
     case l: RDFLiteral => StringTerm((s"${l.getLexicalForm}^^<${l.dataType.str}>"))
   }
 
-  */
+
 }
