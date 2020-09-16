@@ -1,6 +1,8 @@
 package es.weso.slang
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
+import es.weso.rdf.operations.Graph
+import es.weso.utils.IOUtils.fromES
 //import es.weso.rdf.operations.Graph
 import es.weso.rdf.triples.RDFTriple
 import es.weso.shapeMaps.{BNodeLabel => SMBNodeLabel, IRILabel => SMIRILabel, _}
@@ -38,18 +40,21 @@ trait SLang2Clingo {
 
   import ClingoNames._
 
+  case class ClingoException(str: String) extends RuntimeException(str)
+
   def validate2Clingo(smap: ShapeMap,
                       rdf: RDFReader,
                       schema: SchemaS
                      ): IO[Program] = {
     val zero: IO[Program] = IO(commonStatements(schema))
-    def comb(a: Association, next: IO[Program]): IO[Program] = ??? /*a.node match {
+    def comb(a: Association, next: IO[Program]): IO[Program] = a.node match {
       case RDFNodeSelector(node) => for {
-        lbl <- cnvLabel(a.shape)
+        lbl <- fromES(cnvLabel(a.shape))
         p1 <- ground(node,lbl,rdf,schema)
         p2 <- next
       } yield p1.append(p2)
-    } */
+      case _ => IO.raiseError(ClingoException(s"Unhandled association node: ${a.node}"))
+    }
     smap.associations.foldRight(zero)(comb)
   }
 
@@ -194,7 +199,6 @@ trait SLang2Clingo {
   private  def closure(node: RDFNode, rdf: RDFReader): Stream[IO, RDFTriple] =
      rdf.triplesWithSubject(node) ++ rdf.triplesWithObject(node)
 
-
   private def triple2Statement(t: RDFTriple): Statement = {
     mkFact(ARC,node2Term(t.subj), node2Term(t.pred), node2Term(t.obj))
   }
@@ -205,17 +209,15 @@ trait SLang2Clingo {
     case l: RDFLiteral => mkFact(LITERAL, node2Term(node),iri2Term(l.dataType))
   }
 
-  private def groundRDF(node: RDFNode, rdf: RDFReader): IO[Program] =
-    IO.raiseError(new RuntimeException(s"Not implemented yet"))
-  /*for {
-    nodesTriples <- Graph.traverseWithArcs(node,rdf).compile.toList
+  private def groundRDF(node: RDFNode, rdf: RDFReader): IO[Program] = for {
+    nodes <- Graph.traverse(node,rdf).compile.toList
+    triples <- Graph.traverseWithArcs(node,rdf).compile.toList
   } yield {
-    val (nodes,triples) = nodesTriples.flatten
     val statementsNodes = nodes.map(node2Statement(_))
     val statementsTriples = triples.map(triple2Statement(_))
     // val statementsPredicates = triples.map(_.pred).distinct.map(pred2Statement(_))
     Program(statementsNodes ++ statementsTriples)
-  } */
+  }
 
   private def groundShapeMap(node: RDFNode, label: Label): List[Statement] = {
     List(mkFact("shapeMap",node2Term(node),label2Term(label)))

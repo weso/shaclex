@@ -5,9 +5,7 @@ import es.weso.rdf.nodes.{ IRI, RDFNode }
 import org.scalatest._
 import matchers.should._
 import funspec._
-import cats.data.EitherT
 import cats.effect._
-import es.weso.utils.IOUtils._
 
 class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
 
@@ -29,18 +27,17 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
       val schemaEngine = "SHEX"
       val node: RDFNode = IRI("http://example.org/x")
       val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
-      val tryResult: EitherT[IO, String, Result] = for {
+      val tryResult: IO[Result] = for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
-        rdf <- io2es(RDFAsJenaModel.fromString(data, dataFormat))
-        result <- io2es(schema.validate(rdf, triggerMode, "", None, None, schema.pm))
+        rdf <- RDFAsJenaModel.fromString(data, dataFormat)
+        result <- schema.validate(rdf, triggerMode, "", None, None, schema.pm)
       } yield result
-      tryResult.value.unsafeRunSync match {
-        case Right(result) => {
+      tryResult.attempt.unsafeRunSync match {
+        case Right(result) =>
           info(s"Result: ${result.serialize(Result.TEXT)}")
           info(s"Result solution: ${result.solution}")
           result.isValid should be(true)
-          result.hasShapes(node) should contain only (shape)
-        }
+          result.hasShapes(node) should contain only shape
         case Left(e) => fail(s"Error trying to validate: $e")
       }
     }
@@ -58,10 +55,10 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
         """.stripMargin
       val eitherResult = for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
-        rdf <- io2es(RDFAsJenaModel.fromString(data,"TURTLE",None))
-        result <- io2es(schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm))
+        rdf <- RDFAsJenaModel.fromString(data,"TURTLE",None)
+        result <- schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm)
       } yield result
-      eitherResult.value.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
+      eitherResult.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isValid should be(false)
       })
     }

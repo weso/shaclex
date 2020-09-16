@@ -1,13 +1,13 @@
-lazy val scala212 = "2.12.11"
-lazy val scala213 = "2.13.2"
+lazy val scala212 = "2.12.12"
+lazy val scala213 = "2.13.3"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.67"
-lazy val srdfVersion          = "0.1.63"
-lazy val shexVersion          = "0.1.60"
-lazy val shaclVersion         = "0.1.59"
-lazy val shapeMapsVersion     = "0.1.56"
+lazy val utilsVersion         = "0.1.69"
+lazy val srdfVersion          = "0.1.70"
+lazy val shexVersion          = "0.1.66"
+lazy val shaclVersion         = "0.1.62"
+lazy val shapeMapsVersion     = "0.1.58"
 
 // Dependency versions
 lazy val catsVersion           = "2.1.1"
@@ -22,8 +22,8 @@ lazy val loggingVersion        = "3.9.2"
 lazy val pprintVersion         = "0.5.6"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
-lazy val scalacticVersion      = "3.1.1"
-lazy val scalaTestVersion      = "3.1.1"
+lazy val scalacticVersion      = "3.2.0"
+lazy val scalaTestVersion      = "3.2.0"
 lazy val scalaGraphVersion     = "1.11.5"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
@@ -37,21 +37,6 @@ lazy val simulacrumVersion    = "1.0.0"
 // lazy val kindProjectorVersion = "0.9.5"
 lazy val scalaMacrosVersion   = "2.1.1"
 
-// Dependency modules
-lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
-lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
-lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
-lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
-lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
-lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
-lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
-lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
-// lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
-lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
-lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
-lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
-lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
-lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 
 // WESO components
 lazy val srdf              = "es.weso"                    %% "srdf"            % srdfVersion
@@ -66,8 +51,22 @@ lazy val shexTest          = "es.weso"                    %% "shextest"        %
 lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       % shapeMapsVersion
 lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
 
-
+// Other dependency modules
+lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
+lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
+lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
+lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
+lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
+lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
+lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
+lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
+// lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
+lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
+lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
+lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
 lazy val pprint            = "com.lihaoyi"                %% "pprint"              % pprintVersion
+lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -101,7 +100,6 @@ lazy val shaclex = project
     mappings in makeSite ++= Seq(
       file("src/assets/favicon.ico") -> "favicon.ico"
     ),
-    previewFixedPort := Some(9999),
     libraryDependencies ++= Seq(
       logbackClassic,
       scalaLogging,
@@ -264,7 +262,7 @@ lazy val wixSettings = Seq(
 )
 
 lazy val ghPagesSettings = Seq(
-  git.remoteRepo := "git@github.com:labra/shaclex.git"
+  git.remoteRepo := "git@github.com:weso/shaclex.git"
 )
 
 lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
@@ -278,16 +276,16 @@ lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
 
 lazy val publishSettings = Seq(
   maintainer      := "Jose Emilio Labra Gayo <labra@uniovi.es>",
-  homepage        := Some(url("https://github.com/labra/shaclex")),
+  homepage        := Some(url("https://github.com/weso/shaclex")),
   licenses        := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
-  scmInfo         := Some(ScmInfo(url("https://github.com/labra/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
+  scmInfo         := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
   autoAPIMappings := true,
-  apiURL          := Some(url("http://labra.github.io/shaclex/latest/api/")),
+  apiURL          := Some(url("http://weso.github.io/shaclex/latest/api/")),
   pomExtra        := <developers>
                        <developer>
                          <id>labra</id>
                          <name>Jose Emilio Labra Gayo</name>
-                         <url>https://github.com/labra/</url>
+                         <url>https://labra.weso.es/</url>
                        </developer>
                      </developers>,
   scalacOptions in doc ++= Seq(

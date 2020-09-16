@@ -235,7 +235,7 @@
           }, "text/plain").text(ttl(attrs.focus) + "@" + ("shape" in attrs ? ttl(attrs.shape) : "START"))
         }
       }
-    };
+    }
   }
 
   function readfiles(files, target) {

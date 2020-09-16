@@ -34,23 +34,23 @@ class ValidateNDTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
     it(s"Should validate simple example") {
       val node = IRI("a")
       val shape: SLang  = Ref(IRILabel(IRI("User")))
-      val r: EitherT[IO,String,ShapesMap] = for {
-        rdf <- io2es(RDFAsJenaModel.fromChars(
+      val r: IO[ShapesMap] = for {
+        rdf <- RDFAsJenaModel.fromChars(
           """|<a> <x> 1 .
              |
-          """.stripMargin, "TURTLE"))
-        schema <- io2es(Schema.fromString(
+          """.stripMargin, "TURTLE")
+        schema <- Schema.fromString(
           """|
              |<User> {
              | <x> @<User>
              |}
-          """.stripMargin, "ShEXC"))
+          """.stripMargin, "ShEXC")
         slangSchema <- shex2SLang(schema)
-        eitherResult <- io2es(ValidateND.runValidation(node, shape, rdf, slangSchema))
-        result <- either2es(eitherResult)
+        eitherResult <- ValidateND.runValidation(node, shape, rdf, slangSchema)
+        result <- fromES(eitherResult)
       } yield result
 
-      run_es(r).unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
+      r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isConforming(node, shape) should be(Conforms)
       })
     }

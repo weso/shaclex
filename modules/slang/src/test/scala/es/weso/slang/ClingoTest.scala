@@ -27,7 +27,7 @@ class ClingoTest extends AnyFunSpec with Matchers with SLang2Clingo {
 
      val str = program.show
      // writeContents("modules/converter/target/test.pl", program.show)
-     info(s"Program: ${str}")
+     info(s"Program: $str")
      str.isEmpty should be(false)
     }
 
@@ -44,12 +44,12 @@ class ClingoTest extends AnyFunSpec with Matchers with SLang2Clingo {
       ))
 
       val r = for {
-        rdf <- io2es(RDFAsJenaModel.fromChars(strRDF, "TURTLE", None))
-        smap <- either2es(ShapeMap.empty.add(IRI("alice"), es.weso.shapeMaps.IRILabel(IRI("user"))))
-        program <- either2es(validate2Clingo(smap, rdf, schema))
+        rdf <- RDFAsJenaModel.fromChars(strRDF, "TURTLE", None)
+        smap <- fromES(ShapeMap.empty.add(IRI("alice"), es.weso.shapeMaps.IRILabel(IRI("user"))))
+        program <- validate2Clingo(smap, rdf, schema)
       } yield (rdf,program)
-      r.fold(e => fail(s"Error: $e"),values => {
-        val (rdf,prog) = values
+      r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"),values => {
+        val (_,prog) = values
         val contents = prog.show
         writeContents("modules/converter/target/test.pl", contents)
         info(s"Contents written: $contents")
@@ -58,9 +58,14 @@ class ClingoTest extends AnyFunSpec with Matchers with SLang2Clingo {
     }
   }
 
+  // Move this to IOUtils
   def writeContents(fileName: String, contents: String): Unit = {
     val pw = new PrintWriter(new File(fileName))
-    try { pw.write(contents) }
-    finally { pw.close }
+    try {
+      pw.write(contents)
+    }
+    finally {
+      pw.close()
+    }
   }
 }
