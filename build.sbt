@@ -1,12 +1,12 @@
-lazy val scala212 = "2.12.11"
-lazy val scala213 = "2.13.2"
+lazy val scala212 = "2.12.12"
+lazy val scala213 = "2.13.3"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
 lazy val utilsVersion         = "0.1.69"
-lazy val srdfVersion          = "0.1.69"
-lazy val shexVersion          = "0.1.65"
-lazy val shaclVersion         = "0.1.60"
+lazy val srdfVersion          = "0.1.70"
+lazy val shexVersion          = "0.1.66"
+lazy val shaclVersion         = "0.1.61"
 lazy val shapeMapsVersion     = "0.1.58"
 
 // Dependency versions
@@ -22,8 +22,8 @@ lazy val loggingVersion        = "3.9.2"
 lazy val pprintVersion         = "0.5.6"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
-lazy val scalacticVersion      = "3.1.1"
-lazy val scalaTestVersion      = "3.1.1"
+lazy val scalacticVersion      = "3.2.0"
+lazy val scalaTestVersion      = "3.2.0"
 lazy val scalaGraphVersion     = "1.11.5"
 lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
