@@ -9,7 +9,7 @@ import io.circe.JsonObject._
 
 import util._
 
-abstract class ValidationTrigger {
+sealed abstract class ValidationTrigger {
   def explain: String
   def name: String
   def toJson: Json

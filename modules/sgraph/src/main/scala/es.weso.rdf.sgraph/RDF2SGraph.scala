@@ -47,7 +47,7 @@ object RDF2SGraph {
     } yield ()
 
     for {
-      ts <- rdf.rdfTriples.compile.toList
+      ts <- rdf.rdfTriples().compile.toList
     } yield {
       ts.toList.foldM(())(cmb).value.run(SGraph.empty).value._1
     }

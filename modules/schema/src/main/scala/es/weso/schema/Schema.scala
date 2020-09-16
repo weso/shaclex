@@ -4,8 +4,6 @@ import es.weso.rdf.nodes._
 import es.weso.shapeMaps.ShapeMap
 import es.weso.utils.FileUtils
 import cats.effect._
-import cats.data.EitherT
-//import util._
 
 abstract class Schema {
 
@@ -39,9 +37,9 @@ abstract class Schema {
     }
   }
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): EitherT[IO, String, Schema]
+  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[Schema]
 
-  def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema]
+  def fromRDF(rdf: RDFReader): IO[Schema]
 
   def serialize(format: String, base: Option[IRI] = None): IO[String]
 
@@ -67,10 +65,10 @@ abstract class Schema {
   def convert(targetFormat: Option[String],
               targetEngine: Option[String],
               base: Option[IRI]
-             ): EitherT[IO,String,String]
+             ): IO[String]
 
   def info: SchemaInfo
 
-  def toClingo(rdf: RDFReader, shapeMap: ShapeMap): EitherT[IO,String,String]
+  def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String]
 
 }
