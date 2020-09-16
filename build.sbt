@@ -35,7 +35,7 @@ lazy val xercesVersion         = "2.12.0"
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "1.0.0"
 // lazy val kindProjectorVersion = "0.9.5"
-lazy val scalaMacrosVersion   = "2.1.1"
+lazy val scalaMacrosVersion   = "2.2.0"
 
 
 // WESO components
