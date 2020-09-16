@@ -3,19 +3,20 @@ package es.weso.schema
 import org.scalatest._
 import matchers.should._
 import funspec._
-import cats.syntax.all._
+import cats._
+import cats.implicits._
+import cats.effect._
 import es.weso.utils.json.JsonCompare.jsonDiff
 import es.weso.rdf.jena.RDFAsJenaModel
-import cats.data.EitherT
-import cats.effect._
-import io.circe.parser._
 import es.weso.utils.IOUtils._
+import es.weso.utils._
+import io.circe.parser._
 
 class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
 
   type PureCompare = (String,String) => Either[String,Boolean]
-  type IOCompare = (String,String) => EitherT[IO,String,Boolean]
-  def cnvCompare[A](cmp: PureCompare): IOCompare = (x,y) => EitherT.fromEither[IO](cmp(x,y))
+  type IOCompare = (String,String) => IO[Boolean]
+  def cnvCompare[A](cmp: PureCompare): IOCompare = (x,y) => fromES(cmp(x,y))
 
   describe(s"Convert 2 shaclex") {
       val str1 =
@@ -166,24 +167,23 @@ class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
     shouldConvert(strShacl, "ShExC", "ShEx", "Turtle", "SHACLEX", strExpected, rdfCompare)
   }
 
+
   def shouldConvert(str: String, format: String, engine: String,
                     targetFormat: String, targetEngine: String,
                     expected: String,
-                    compare: (String,String) => EitherT[IO, String, Boolean]
+                    compare: (String,String) => IO[Boolean]
                    ): Unit = {
    it(s"Should convert $str with format $format and engine $engine and obtain $expected") {
-     val r = for {
-      schema       <- Schemas.fromString(str, format, engine, None).
-        leftMap(e => s"Error reading Schema ($format/$engine): $str\nError: $e")
+     val r: IO[(Schema,String,Boolean)] = for {
+      schema  <- runWithError(Schemas.fromString(str, format, engine, None),s"Error reading Schema ($format/$engine): $str")
       // _ <- { info(s"str:\n$str, format: $format, engine: $engine\nSchema: $schema)"); Right(())}
-      strConverted <- schema.convert(Some(targetFormat), Some(targetEngine),None).
-        leftMap(e => s"Error converting schema(${schema.name}) to ($targetFormat/$targetEngine\n$e")
+      strConverted <- runWithError(schema.convert(Some(targetFormat), Some(targetEngine),None), s"Error converting schema(${schema.name}) to ($targetFormat/$targetEngine")
       // _ <- { info(s"strConverted:\n$strConverted\ntargetFormat: $targetFormat, targetEngine: $targetEngine"); Right(())}
-      result       <- compare(strConverted, expected).leftMap(e => s"Error in comparison: $e")
-    } yield // (strConverted, expected, result) 
+      result       <- runWithError(compare(strConverted, expected), s"Error in comparison")
+    } yield // (strConverted, expected, result)
        (schema, strConverted, result)
 
-    r.value.unsafeRunSync.fold(e => fail(s"Error: $e"), v => {
+    r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), v => {
        val (s1, s2, r) = v
        if (r) {
          info(s"Conversion is ok")
@@ -202,27 +202,32 @@ class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
       else Left(s"Json's different:\nJson1: $json1\nJson2: $json2. Diff: ${jsonDiff(json1, json2)}")
   } yield b
 
-  def rdfCompare(s1: String, s2: String): EitherT[IO, String, Boolean] = for {
+  def rdfCompare(s1: String, s2: String): IO[Boolean] = for {
     //_ <- { info(s"s1: $s1"); Right(()) }
-    rdf1 <- io2es(RDFAsJenaModel.fromChars(s1,"TURTLE",None))
+    rdf1 <- RDFAsJenaModel.fromChars(s1,"TURTLE",None)
     //_ <- { info(s"RDF1: $rdf1"); Right(()) }
-    rdf2 <- io2es(RDFAsJenaModel.fromChars(s2,"TURTLE",None))
+    rdf2 <- RDFAsJenaModel.fromChars(s2,"TURTLE",None)
     //_ <- { info(s"RDF2: $rdf2"); Right(()) }
-    b <- io2es(rdf1.isIsomorphicWith(rdf2))
+    b <- rdf1.isIsomorphicWith(rdf2)
   } yield b
 
-  def shExCompare(s1: String, s2: String): EitherT[IO, String, Boolean] = for {
-    schema1 <- Schemas.fromString(s1,"ShExC","ShEx",None).
-      leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
+  def shExCompare(s1: String, s2: String): IO[Boolean] = for {
+    schema1 <- runWithError(Schemas.fromString(s1,"ShExC","ShEx",None), s"Error reading ShEx from string s1: $s1")
     // _ <- { info(s"Schema1: $schema1"); Right(()) }
-    schema2 <- Schemas.fromString(s2,"ShExC","ShEx",None).
-      leftMap(e => s"Error reading ShEx from string s1: $s1\n$e")
+    schema2 <- runWithError(Schemas.fromString(s2,"ShExC","ShEx",None), s"Error reading ShEx from string s1: $s1")
     // _ <- { info(s"Schema2: $schema2"); Right(()) }
-    json1 <- schema1.convert(Some("ShExJ"),Some("ShEx"),None).leftMap(e => s"Error converting schema1 to ShEx/ShExJ: $e\n$schema1")
+    json1 <- runWithError(schema1.convert(Some("ShExJ"),Some("ShEx"),None), s"Error converting schema1 to ShEx/ShExJ")
     // _ <- { info(s"Json1: $json1"); Right(()) }
-    json2 <- schema2.convert(Some("ShExJ"),Some("ShEx"),None).leftMap(e => s"Error converting schema2 to ShEx/ShExJ: $e\n$schema2")
+    json2 <- runWithError(schema2.convert(Some("ShExJ"),Some("ShEx"),None), s"Error converting schema2 to ShEx/ShExJ")
     // _ <- { info(s"Json2: $json2"); Right(()) }
-    b <- EitherT.fromEither[IO](jsonCompare(json1,json2))
+    b <- IOUtils.fromES(jsonCompare(json1,json2))
   } yield b
+
+  // TODO: Move to IOUtils
+  def runWithError[A](x: IO[A], msg: String): IO[A] = {
+    MonadError[IO,Throwable].adaptError(x) {
+      case e : Exception => IOException.fromString(s"$msg: ${e.getMessage}")
+    }
+  }
 
 }

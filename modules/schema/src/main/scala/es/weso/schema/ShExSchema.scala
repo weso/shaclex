@@ -1,6 +1,9 @@
 package es.weso.schema
 
-import cats.syntax.all._
+import cats._
+import cats.data._
+import cats.implicits._
+import cats.effect._
 import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -11,8 +14,7 @@ import es.weso.shex.shexR._
 import es.weso.shex.validator.{Result => _, _}
 import es.weso.shex.{Schema => SchemaShEx}
 import es.weso.slang.{SLang2Clingo, ShEx2SLang}
-import cats.effect._
-import cats.data.EitherT
+
 import scala.util._
 import es.weso.shex.ResolvedSchema
 
@@ -152,16 +154,25 @@ case class ShExSchema(schema: SchemaShEx)
     ErrorInfo(v.show)
   }
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): EitherT[IO, String, Schema] = {
-    EitherT.liftF(ShExSchema.fromString(cs, format, base))
+  override def fromString(cs: CharSequence, format: String, base: Option[String]): IO[Schema] = {
+    ShExSchema.fromString(cs, format, base)
   }
 
-  override def fromRDF(rdf: RDFReader): EitherT[IO, String, es.weso.schema.Schema] = {
+  private def handleErr[A](e: Either[String,A]): IO[A] = e.fold(
+    s => IO.raiseError(new RuntimeException(s)),
+    IO.pure(_)
+  )
+/*  {
+    val x: Either[Throwable,A] = e.leftMap(new RuntimeException(_))
+    MonadError[IO,Throwable].rethrow(IO(x))
+  } */
+
+  override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = {
     val e: EitherT[IO, String, SchemaShEx] = RDF2ShEx.rdf2Schema(rdf)
     e.map(s => {
       val schema: es.weso.schema.Schema = ShExSchema(s)
       schema
-    })
+    }).value >>= handleErr
   }
 
   override def serialize(format: String, base: Option[IRI]): IO[String] = {
@@ -188,22 +199,24 @@ case class ShExSchema(schema: SchemaShEx)
       targetFormat: Option[String],
       targetEngine: Option[String],
       base: Option[IRI]
-  ): EitherT[IO, String, String] = {
+  ): IO[String] = {
     targetEngine.map(_.toUpperCase) match {
-      case None => EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base))
+      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
       case Some(engine) if (engine.equalsIgnoreCase(name)) => {
-        EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base))
+        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
       }
       case Some("SHACL") | Some("SHACLEX") =>
         for {
-          newSchema <- EitherT.fromEither[IO](ShEx2Shacl.shex2Shacl(schema, None).leftMap(es => es.mkString("\n")))
-          builder <- EitherT.liftF(RDFAsJenaModel.empty)
+          newSchema <- handleErr(ShEx2Shacl.shex2Shacl(schema, None).leftMap(es => es.mkString("\n")))
+          builder <- RDFAsJenaModel.empty
           // TODO: Check if we should pass base
-          str <- EitherT.liftF(newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base, builder))
+          str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base, builder)
         } yield str
-      case Some(unknown) => EitherT.fromEither(Left(s"Conversion from ShEx to $unknown not implemented yet"))
+      case Some(unknown) => mkErr(s"Conversion from ShEx to $unknown not implemented yet")
     }
   }
+
+  private def mkErr[A](s: String): IO[A] = IO.raiseError(new RuntimeException(s))
 
   override def info: SchemaInfo = {
 
@@ -218,12 +231,10 @@ case class ShExSchema(schema: SchemaShEx)
     SchemaInfo(name, "Iterative", wellFormed, reasons)
   }
 
-  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): EitherT[IO,String,String] =
+  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String] =
     for {
       schemaS <- shex2SLang(schema)
-      // _ <- {println(s"SchemaS: $schemaS"); Right(())}
-      program <- EitherT.fromEither[IO](validate2Clingo(shapeMap, rdf, schemaS))
-      // _ <- {println(s"Program: $program"); Right(())}
+      program <- validate2Clingo(shapeMap, rdf, schemaS)
     } yield program.show
 
 }

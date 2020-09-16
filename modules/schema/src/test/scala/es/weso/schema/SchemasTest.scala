@@ -14,10 +14,10 @@ class SchemasTest extends AnyFunSpec with Matchers with EitherValues {
                        |prefix sh: <http://www.w3.org/ns/shacl#>
                        |:S a sh:NodeShape .""".stripMargin
 
-      val r: IO[(Schema, Either[String,Schema])] = for { 
+      val r: IO[(Schema, Either[Throwable,Schema])] = for {
         rdf <- RDFAsJenaModel.fromString(rdfStr,"TURTLE",None)
         schema1 <- Schemas.fromRDFIO(rdf,"SHACLex")
-        eitherSchema <- ShaclexSchema.empty.fromRDF(rdf).value
+        eitherSchema <- ShaclexSchema.empty.fromRDF(rdf).attempt
       } yield (schema1,eitherSchema)
       
       val pair = r.unsafeRunSync

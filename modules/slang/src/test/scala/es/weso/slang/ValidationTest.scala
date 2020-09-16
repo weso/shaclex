@@ -15,25 +15,25 @@ class ValidationTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
     it(s"Should validate simple example") {
       val node = IRI("http://example.org/a")
       val shape: SLang  = Ref(IRILabel(IRI("http://example.org/User")))
-      val r: EitherT[IO,String,ShapesMap] = for {
-        rdf <- io2es(RDFAsJenaModel.fromChars(
+      val r: IO[ShapesMap] = for {
+        rdf <- RDFAsJenaModel.fromChars(
           """|<a> <name> "a" ;
              | <knows> <a> .
             |
-          """.stripMargin, "TURTLE",Some(IRI("http://example.org/"))))
-        schema <- io2es(Schema.fromString(
+          """.stripMargin, "TURTLE",Some(IRI("http://example.org/")))
+        schema <- Schema.fromString(
           """|
              |<User> {
              | <name> . ;
              | <knows> .
              |}
-          """.stripMargin, "ShEXC",Some(IRI("http://example.org/"))))
+          """.stripMargin, "ShEXC",Some(IRI("http://example.org/")))
         slangSchema <- shex2SLang(schema)
-        eitherResult <- io2es(Validation.runValidation(node, shape, rdf, slangSchema))
-        result <- either2es(eitherResult)
+        eitherResult <- Validation.runValidation(node, shape, rdf, slangSchema)
+        result <- fromES(eitherResult)
       } yield result
 
-      run_es(r).unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
+      r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isConforming(node, shape) should be(Conforms)
       })
     }

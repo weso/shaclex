@@ -161,7 +161,7 @@ function genText () {
           [s, "mf"   , "name"    , function (v) { return util.getLiteralValue(v[0]); }],
           [s, "sht", "trait"  , function (v) {
            return v.map(function (x) {
-             return x.substr(P.sht.length);;
+             return x.substr(P.sht.length);
            });
           }],
           //[s, "rdfs" , "comment" , function (v) { return util.getLiteralValue(v[0]); }],
@@ -183,7 +183,7 @@ function genText () {
         [s, "mf"   , "name"    , function (v) { return util.getLiteralValue(v[0]); }],
         [s, "sht", "trait"  , function (v) {
           return v.map(function (x) {
-            return x.substr(P.sht.length);;
+            return x.substr(P.sht.length);
           });
         }],
         [s, "rdfs" , "comment" , function (v) { return util.getLiteralValue(v[0]); }],

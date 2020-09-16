@@ -16,9 +16,15 @@ import cats.syntax.all._
 
 trait ShEx2SLang {
 
- def shex2SLang(schema: Schema): EitherT[IO,String, SchemaS] = for {
-   keyValues <- schema.shapesMap.toList.map(cnvlabelShape(schema)).sequence
- } yield SchemaS(keyValues.toMap)
+ def shex2SLang(schema: Schema): IO[SchemaS] = {
+   val e = for {
+     keyValues <- schema.shapesMap.toList.map(cnvlabelShape(schema)).sequence
+   } yield SchemaS(keyValues.toMap)
+   e.value.flatMap(e => e match {
+     case Left(s) => IO.raiseError(new RuntimeException(s))
+     case Right(schema) => IO.pure(schema)
+   })
+ }
 
   private def cnvlabelShape(schema: Schema)(pair: (ShapeLabel, ShapeExpr)): EitherT[IO, String, (Label,SLang)] = {
     val (label,se) = pair
