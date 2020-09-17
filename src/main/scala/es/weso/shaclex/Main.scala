@@ -8,6 +8,7 @@ import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.Endpoint
 import es.weso.rdf.nodes.IRI
 import es.weso.schemaInfer.SchemaInfer
+import es.weso.shaclex.repl.Repl
 import es.weso.shapeMaps.NodeSelector
 
 import scala.io.Source
@@ -82,9 +83,16 @@ object Main extends IOApp with LazyLogging {
      either <- doProcess(baseFolder, opts)
      code <- either.fold(
        err => IO(println(s"Error: $err")) >> IO.pure(ExitCode.Error),
-       _ => IO(println(s"<End of process>")) >> IO.pure(ExitCode.Success)
+       _ => IO.pure(ExitCode.Success)
      )
      _ <- doShowTime(startTime, opts)
+     _ <- if (opts.shell()) {
+       IO {
+         new Repl(opts).runUntilQuit()
+       }
+     } else {
+       IO.pure(())
+     }
     } yield code
   }
 

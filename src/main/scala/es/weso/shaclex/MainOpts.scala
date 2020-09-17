@@ -30,7 +30,16 @@ class MainOpts(arguments: List[String],
 
   footer("Enjoy!")
 
-   val schema: ScallopOption[String] = opt[String](
+  val shell: ScallopOption[Boolean] = toggle(
+    name = "shell",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "interactive shell",
+    descrNo = "don't do interactive shell",
+    noshort = true
+  )
+
+  val schema: ScallopOption[String] = opt[String](
     "schema",
     short = 's',
     default = None,

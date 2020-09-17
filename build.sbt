@@ -17,6 +17,8 @@ lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.13.1"
 lazy val jgraphtVersion        = "1.3.1"
+lazy val jlineVersion          = "3.16.0"
+lazy val jnaVersion            = "5.6.0"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
 lazy val pprintVersion         = "0.5.6"
@@ -31,6 +33,7 @@ lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
 lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
+
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "1.0.0"
@@ -65,6 +68,8 @@ lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"      
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
 lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
+lazy val jline             = "org.jline"                  % "jline"                % jlineVersion
+lazy val jna               = "net.java.dev.jna"           % "jna"                  % jnaVersion
 lazy val pprint            = "com.lihaoyi"                %% "pprint"              % pprintVersion
 lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
@@ -106,6 +111,8 @@ lazy val shaclex = project
       scallop,
       typesafeConfig,
       shexTest,
+      jline,
+      jna
     ),
     cancelable in Global      := true,
     fork                      := true,
