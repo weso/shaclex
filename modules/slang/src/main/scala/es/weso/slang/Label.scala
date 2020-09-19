@@ -1,6 +1,6 @@
 package es.weso.slang
 import es.weso.rdf.nodes._
-import cats.implicits._
+import cats.syntax.all._
 
 sealed trait Label {
   def toRDFNode: RDFNode

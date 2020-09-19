@@ -3,7 +3,7 @@ import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.{Schema, ShapeExpr}
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import cats.effect.IO
 
 case class InferredSchema(smap: Map[IRI, InferredShape]) extends AnyVal {

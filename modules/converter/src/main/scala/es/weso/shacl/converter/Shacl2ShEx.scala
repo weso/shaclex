@@ -2,7 +2,7 @@ package es.weso.shacl.converter
 
 import cats.Id
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import es.weso.rdf.path.{InversePath, PredicatePath, SHACLPath}

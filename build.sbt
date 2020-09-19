@@ -10,7 +10,7 @@ lazy val shaclVersion         = "0.1.62"
 lazy val shapeMapsVersion     = "0.1.58"
 
 // Dependency versions
-lazy val catsVersion           = "2.1.1"
+lazy val catsVersion           = "2.2.0"
 lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.12.3"
 lazy val diffsonVersion        = "4.0.0"
@@ -38,7 +38,7 @@ lazy val xercesVersion         = "2.12.0"
 // Compiler plugin dependency versions
 lazy val simulacrumVersion    = "1.0.0"
 // lazy val kindProjectorVersion = "0.9.5"
-lazy val scalaMacrosVersion   = "2.1.1"
+lazy val scalaMacrosVersion   = "2.2.0"
 
 
 // WESO components

@@ -2,7 +2,7 @@ package es.weso.shex.linter
 
 import es.weso.depgraphs.DepGraph
 import es.weso.shex.{Dependencies, Inclusion, Schema, Shape, ShapeExpr, ShapeLabel}
-import cats.implicits._
+import cats.syntax.all._
 
 object ShExLinter {
 

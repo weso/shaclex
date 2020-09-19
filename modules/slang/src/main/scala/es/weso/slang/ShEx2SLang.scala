@@ -12,7 +12,7 @@ import es.weso.slang
 // import es.weso.utils.EitherUtils._
 import cats.effect.IO
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 
 trait ShEx2SLang {
 

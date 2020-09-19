@@ -6,7 +6,7 @@ import es.weso._
 import es.weso.shacl._
 import es.weso.rdf.nodes._
 import es.weso.rdf.path._
-import cats.implicits._
+import cats.syntax.all._
 //import es.weso.shex.{Shape => ShExShape, _}
 import es.weso.shex.{ValueSetValue, Annotation, Path, Inverse, Direct}
 import es.weso.shapeMaps.QueryShapeMap
