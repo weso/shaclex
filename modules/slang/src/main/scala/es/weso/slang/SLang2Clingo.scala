@@ -127,7 +127,7 @@ trait SLang2Clingo {
   def selectFragmentsAux(shapes: List[SLang], visited: List[SLang], current: Set[Statement]): Set[Statement] =
       shapes match {
       case Nil => current
-      case s :: rest => if (visited contains(s)) {
+      case s :: rest => if (visited contains s) {
         selectFragmentsAux(rest, visited, current)
       } else {
         val fragment = s match {
@@ -204,8 +204,8 @@ trait SLang2Clingo {
   }
 
   private def node2Statement(node: RDFNode): Statement = node match {
-    case i: IRI => mkFact(IRI, node2Term(node))
-    case b: BNode => mkFact(BNODE, node2Term(node))
+    case _: IRI => mkFact(IRI, node2Term(node))
+    case _: BNode => mkFact(BNODE, node2Term(node))
     case l: RDFLiteral => mkFact(LITERAL, node2Term(node),iri2Term(l.dataType))
   }
 
@@ -213,8 +213,8 @@ trait SLang2Clingo {
     nodes <- Graph.traverse(node,rdf).compile.toList
     triples <- Graph.traverseWithArcs(node,rdf).compile.toList
   } yield {
-    val statementsNodes = nodes.map(node2Statement(_))
-    val statementsTriples = triples.map(triple2Statement(_))
+    val statementsNodes = nodes.map(node2Statement)
+    val statementsTriples = triples.map(triple2Statement)
     // val statementsPredicates = triples.map(_.pred).distinct.map(pred2Statement(_))
     Program(statementsNodes ++ statementsTriples)
   }
@@ -234,7 +234,7 @@ trait SLang2Clingo {
     pending match {
       case Nil => current
       case shape :: rest =>
-        if (visited contains(shape))
+        if (visited contains shape)
           groundShapeAux(rest, visited, current)
         else {
           groundShapeAux(shape.children ++ rest, shape :: visited, mkShape(shape) ++ current)
@@ -244,10 +244,10 @@ trait SLang2Clingo {
   private def mkShape(s: SLang): List[Statement] = List(mkFact(SHAPE, shape2Term(s)))
 
   private def groundSchema(schema: SchemaS): List[Statement] = {
-    schema.lblMap.toList.map { case (label, shape) =>
-      schemaLabelShape(label,shape)
-    }.flatten ++
-      schema.lblMap.keySet.toList.map(label2Statement(_))
+    schema.lblMap.toList.flatMap { case (label, shape) =>
+      schemaLabelShape(label, shape)
+    } ++
+      schema.lblMap.keySet.toList.map(label2Statement)
   }
 
   private def label2Statement(lbl: Label): Statement = {
@@ -302,7 +302,7 @@ trait SLang2Clingo {
     case l: StringLiteral => StringTerm(s"${l.getLexicalForm}")
     case l: IntegerLiteral => IntTerm(l.int)
     case l: LangLiteral => StringTerm(s"${l.getLexicalForm}@${l.lang}")
-    case l: RDFLiteral => StringTerm((s"${l.getLexicalForm}^^<${l.dataType.str}>"))
+    case l: RDFLiteral => StringTerm(s"${l.getLexicalForm}^^<${l.dataType.str}>")
   }
 
 
