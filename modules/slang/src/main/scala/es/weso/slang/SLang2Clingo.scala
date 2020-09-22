@@ -8,11 +8,8 @@ import es.weso.rdf.triples.RDFTriple
 import es.weso.shapeMaps.{BNodeLabel => SMBNodeLabel, IRILabel => SMIRILabel, _}
 import es.weso.shapeMaps.ShapeMap
 import es.weso.slang.Clingo._
-// import cats.syntax.either._
-
 import scala.annotation.tailrec
 import cats.effect.IO
-import fs2.Stream
 
 object ClingoNames {
   val ARC = "arc"
@@ -135,7 +132,7 @@ trait SLang2Clingo {
          case _: And => hasShapeAnd
          case IRIKind => hasShapeIri
          case BNodeKind => hasShapeBNode
-         case Datatype(d) => hasShapeDatatype
+         case Datatype(_) => hasShapeDatatype
          case QualifiedArc(_,_,Card(_,IntMax(_))) => hasShapeQAIntMax
          case QualifiedArc(_, _, Card(_,Star)) => hasShapeQAStar
          case _: Ref => hasShapeRef
@@ -196,8 +193,9 @@ trait SLang2Clingo {
     Program(all)
   }
 
-  private  def closure(node: RDFNode, rdf: RDFReader): Stream[IO, RDFTriple] =
+/*  private  def closure(node: RDFNode, rdf: RDFReader): Stream[IO, RDFTriple] =
      rdf.triplesWithSubject(node) ++ rdf.triplesWithObject(node)
+     */
 
   private def triple2Statement(t: RDFTriple): Statement = {
     mkFact(ARC,node2Term(t.subj), node2Term(t.pred), node2Term(t.obj))
