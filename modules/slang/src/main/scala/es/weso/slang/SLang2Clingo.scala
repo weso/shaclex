@@ -158,9 +158,16 @@ trait SLang2Clingo {
            | node(X), pred(P), shape(S),
            | #count { V: arcWithShape(X,P,S,V) } = T .
            |
+           |countPropShape(X,P,S,0):-
+           | node(X),
+           | pred(P),
+           | shape(S),
+           | not arcWithShape(X,P,S,_).
+           |
            |% #show arcWithShape/4 .
            |arcWithShape(X,P,S,V):-arc(X,P,V),hasShape(V,S).
            |
+           |node(X):-shapeMap(X,_).
            |node(X):-arc(X,_,_).
            |node(X):-arc(_,_,X).
            |pred(P):-arc(_,P,_).
@@ -179,7 +186,7 @@ trait SLang2Clingo {
   private def ground(node: RDFNode,
              label: Label,
              rdf: RDFReader,
-             schema: SchemaS): IO[Program] = 
+             schema: SchemaS): IO[Program] =
     for {
      shape <- schema.getLabel(label).fold(
        IO.raiseError[SLang](new RuntimeException(s"Label $label not found in Schema. Available labels: ${schema.availableLabels.mkString(",")}"))
@@ -277,7 +284,7 @@ trait SLang2Clingo {
 
   private def getPred(pp: PropPath): IRI = pp match {
     case Pred(iri) => iri
-    case _ => 
+    case _ =>
      throw new Exception(s"Unsupported $pp yet")
   }
 
