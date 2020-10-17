@@ -37,6 +37,9 @@ object SchemaInfer {
   private def updateSchema(fn: InferredSchema => InferredSchema): Comp[Unit] =
     updateState(_.updateSchema(fn))
 
+  private def fromIO[A](io: IO[A]): Comp[A] = 
+    EitherT.liftF(StateT.liftF(ReaderT.liftF(io)))
+
   private def updateShapeMap(fn: ResultShapeMap => ResultShapeMap): Comp[Unit] =
     updateState(_.updateShapeMap(fn))
 
@@ -77,8 +80,9 @@ object SchemaInfer {
                      shapeLabel: IRI,
                      opts: InferOptions = InferOptions.defaultOptions
                     ): IO[Either[String, (Schema, ResultShapeMap)]] = for {
+    pm <- rdfReader.getPrefixMap                      
     e <- runWithState(inferSchema(selector, engine, shapeLabel),
-                 InferState.initial.addPrefixMap(rdfReader.getPrefixMap),
+                 InferState.initial.addPrefixMap(pm),
                  Config(opts, rdfReader))
    } yield {
     e.map(pair => {
@@ -99,7 +103,8 @@ object SchemaInfer {
     _ <- associateNodesLabel(nodes.toSet,shapeLabel)
     _ <- inferShapeFromNodes(nodes.toSet, shapeLabel, 0)
     schema <- mkSchema(engine, shapeLabel)
-    _ <- updateShapeMap(_.addNodesPrefixMap(rdfReader.getPrefixMap()).addShapesPrefixMap(schema.pm))
+    pm <- fromIO(rdfReader.getPrefixMap)
+    _ <- updateShapeMap(_.addNodesPrefixMap(pm).addShapesPrefixMap(schema.pm))
   } yield schema
 
 /*  private def inferShapes(neighMap: NeighMap,

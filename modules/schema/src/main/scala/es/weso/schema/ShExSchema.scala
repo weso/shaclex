@@ -29,9 +29,9 @@ case class ShExSchema(schema: SchemaShEx)
   lazy val shExJFormat = "ShExJ"
   //  lazy val svgFormat = "SVG"
 
-  def getValidator(): IO[Validator] = for { 
+  def getValidator(builder: RDFBuilder): IO[Validator] = for { 
     resolvedSchema <- ResolvedSchema.resolve(schema, None)
-  } yield Validator(resolvedSchema)
+  } yield Validator(schema = resolvedSchema, builder= builder)
 
   // TODO: Separate input/output formats
   override def formats =
@@ -43,26 +43,28 @@ case class ShExSchema(schema: SchemaShEx)
 
   override def defaultTriggerMode: ValidationTrigger = ShapeMapTrigger.empty
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result] =
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger, builder: RDFBuilder): IO[Result] =
     (trigger match {
-      case TargetDeclarations => validateTargetDecls(rdf)
+      case TargetDeclarations => validateTargetDecls(rdf, builder)
       //    case MapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
       case ShapeMapTrigger(sm) => for {
-        eitherFixedMap <- ShapeMap.fixShapeMap(sm, rdf, rdf.getPrefixMap(), schema.prefixes.getOrElse(PrefixMap.empty)).attempt
+        pm <- rdf.getPrefixMap
+        eitherFixedMap <- ShapeMap.fixShapeMap(sm, rdf, pm, schema.prefixes.getOrElse(PrefixMap.empty)).attempt
         result <- eitherFixedMap match {
           case Left(e) => IO(Result.errStr(s"Error fixing shape map: $e"))
-          case Right(fixedShapeMap) => validateFixedShapeMap(fixedShapeMap, rdf)
+          case Right(fixedShapeMap) => validateFixedShapeMap(fixedShapeMap, rdf, builder)
         } 
       } yield result
     }).map(_.addTrigger(trigger))
 
-  def validateTargetDecls(rdf: RDFReader): IO[Result] = for {
-    validator <- getValidator()
+  def validateTargetDecls(rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
+    validator <- getValidator(builder)
     r <- validator.validateNodeDecls(rdf)
-    converted = cnvResult(r.toEitherS, rdf)
+    pm <- rdf.getPrefixMap
+    converted = cnvResult(r.toEitherS, rdf, pm)
   } yield converted
 
-  def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader): Result = r match {
+  def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader, pm: PrefixMap): Result = r match {
     case Left(msg) =>
       Result(
         false,
@@ -71,7 +73,7 @@ case class ShExSchema(schema: SchemaShEx)
         validationReport = Left("No validation report in ShEx"),
         errors = Seq(ErrorInfo(msg)),
         None,
-        rdf.getPrefixMap(),
+        pm,
         schema.prefixMap
       )
     case Right(resultShapeMap) =>
@@ -82,31 +84,34 @@ case class ShExSchema(schema: SchemaShEx)
         validationReport = Left(s"No validaton report in ShEx"),
         errors = Seq(),
         None,
-        rdf.getPrefixMap(),
+        pm,
         schema.prefixMap
       )
   }
 
-  def validateFixedShapeMap(fixedShapeMap: FixedShapeMap, rdf: RDFReader): IO[Result] = {
-    validateShapeMap(fixedShapeMap, rdf)
+  def validateFixedShapeMap(fixedShapeMap: FixedShapeMap, rdf: RDFReader, builder: RDFBuilder): IO[Result] = {
+    validateShapeMap(fixedShapeMap, rdf, builder)
   }
 
-  def validateNodeShape(node: IRI, shape: String, rdf: RDFReader): IO[Result] = for {
-    validator <- getValidator
+  def validateNodeShape(node: IRI, shape: String, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
+    validator <- getValidator(builder)
     r <- validator.validateNodeShape(rdf, node, shape)
-    res = cnvResult(r.toEitherS, rdf)
+    pm <- rdf.getPrefixMap
+    res = cnvResult(r.toEitherS, rdf,pm)
   } yield res
 
-  def validateNodeStart(node: IRI, rdf: RDFReader): IO[Result] = for {
-    validator <- getValidator
+  def validateNodeStart(node: IRI, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
+    validator <- getValidator(builder)
     r <- validator.validateNodeStart(rdf, node)
-    res = cnvResult(r.toEitherS, rdf)
+    pm <- rdf.getPrefixMap
+    res = cnvResult(r.toEitherS, rdf,pm)
   } yield res
 
 
-  def validateShapeMap(shapeMap: FixedShapeMap, rdf: RDFReader): IO[Result] = for {
-    validator <- getValidator
+  def validateShapeMap(shapeMap: FixedShapeMap, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
+    validator <- getValidator(builder)
     r <- validator.validateShapeMap(rdf,shapeMap).attempt
+    pm <- rdf.getPrefixMap
     res <- r match {
       case Left(error) =>
         IO(Result(
@@ -116,7 +121,7 @@ case class ShExSchema(schema: SchemaShEx)
           Left("No validation report yet"),
           Seq(ErrorInfo(error.getMessage())),
           None,
-          rdf.getPrefixMap(),
+          pm,
           schema.prefixMap
         ))
       case Right(result) => for {
@@ -128,7 +133,7 @@ case class ShExSchema(schema: SchemaShEx)
           Left(s"No validation report for ShEx"),
           Seq(),
           None,
-          rdf.getPrefixMap(),
+          pm,
           schema.prefixMap
         )
       }
@@ -167,23 +172,23 @@ case class ShExSchema(schema: SchemaShEx)
     MonadError[IO,Throwable].rethrow(IO(x))
   } */
 
-  override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = {
-    val e: EitherT[IO, String, SchemaShEx] = RDF2ShEx.rdf2Schema(rdf)
-    e.map(s => {
+  override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = for {
+    eitherSchema <- RDF2ShEx.rdf2Schema(rdf)
+    schema <- IO.fromEither(eitherSchema.leftMap(s => new RuntimeException(s"Error obtaining schema from RDF: $s\nRDF:\n${rdf.rdfReaderName}")))
+/*    e.map(s => {
       val schema: es.weso.schema.Schema = ShExSchema(s)
       schema
-    }).value >>= handleErr
-  }
+    }).value >>= handleErr */
+  } yield ShExSchema(schema)
 
   override def serialize(format: String, base: Option[IRI]): IO[String] = {
     val fmt                 = format.toUpperCase
-    for {
-      builder <- RDFAsJenaModel.empty
+    RDFAsJenaModel.empty.use(builder => for {
       str <- fmt.toUpperCase match {
           case _ if (formatsUpperCase.contains(fmt)) => SchemaShEx.serialize(schema, fmt, base, builder)
           case _ => IO.raiseError(new RuntimeException(s"Can't serialize to format $format. Supported formats=$formats"))
       } 
-    } yield str
+    } yield str)
   }
 
   override def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
@@ -206,12 +211,11 @@ case class ShExSchema(schema: SchemaShEx)
         serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
       }
       case Some("SHACL") | Some("SHACLEX") =>
-        for {
+        RDFAsJenaModel.empty.use(builder => for {
           newSchema <- handleErr(ShEx2Shacl.shex2Shacl(schema, None).leftMap(es => es.mkString("\n")))
-          builder <- RDFAsJenaModel.empty
           // TODO: Check if we should pass base
           str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base, builder)
-        } yield str
+        } yield str)
       case Some(unknown) => mkErr(s"Conversion from ShEx to $unknown not implemented yet")
     }
   }
@@ -242,9 +246,9 @@ case class ShExSchema(schema: SchemaShEx)
 object ShExSchema {
   def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[ShExSchema] = for {
-    rdf <- RDFAsJenaModel.empty
+  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[ShExSchema] = RDFAsJenaModel.empty.use(rdf => 
+  for {
     schema <- SchemaShEx.fromString(cs, format, base.map(IRI(_)), Some(rdf)).map(p => ShExSchema(p))
-  } yield schema
+  } yield schema)
 
 }

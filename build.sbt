@@ -4,10 +4,10 @@ lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
 lazy val utilsVersion         = "0.1.69"
-lazy val srdfVersion          = "0.1.70"
-lazy val shexVersion          = "0.1.66"
-lazy val shaclVersion         = "0.1.62"
-lazy val shapeMapsVersion     = "0.1.58"
+lazy val srdfVersion          = "0.1.74"
+lazy val shexVersion          = "0.1.69"
+lazy val shaclVersion         = "0.1.64"
+lazy val shapeMapsVersion     = "0.1.59"
 
 // Dependency versions
 lazy val catsVersion           = "2.1.1"
@@ -118,7 +118,7 @@ lazy val shaclex = project
     fork                      := true,
 //    parallelExecution in Test := false,
     ThisBuild / turbo := true,
-//    publish / skip := true,
+  //   skip in publish := true
   )
 
 lazy val schemaInfer = project

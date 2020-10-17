@@ -202,14 +202,13 @@ class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
       else Left(s"Json's different:\nJson1: $json1\nJson2: $json2. Diff: ${jsonDiff(json1, json2)}")
   } yield b
 
-  def rdfCompare(s1: String, s2: String): IO[Boolean] = for {
-    //_ <- { info(s"s1: $s1"); Right(()) }
-    rdf1 <- RDFAsJenaModel.fromChars(s1,"TURTLE",None)
-    //_ <- { info(s"RDF1: $rdf1"); Right(()) }
-    rdf2 <- RDFAsJenaModel.fromChars(s2,"TURTLE",None)
-    //_ <- { info(s"RDF2: $rdf2"); Right(()) }
-    b <- rdf1.isIsomorphicWith(rdf2)
-  } yield b
+  def rdfCompare(s1: String, s2: String): IO[Boolean] = (
+    RDFAsJenaModel.fromChars(s1,"TURTLE",None),
+    RDFAsJenaModel.fromChars(s2,"TURTLE",None)
+  ).tupled.use { 
+    case (rdf1,rdf2) => for {
+     b <- rdf1.isIsomorphicWith(rdf2)
+  } yield b }
 
   def shExCompare(s1: String, s2: String): IO[Boolean] = for {
     schema1 <- runWithError(Schemas.fromString(s1,"ShExC","ShEx",None), s"Error reading ShEx from string s1: $s1")

@@ -13,8 +13,7 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
 
   describe("SGraph") {
     it("Should generate from example") {
-      val e = for {
-        rdf <- RDFAsJenaModel.fromChars(
+      val e = RDFAsJenaModel.fromChars(
             """|prefix : <http://example.org/>
                |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
                |prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -29,15 +28,14 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
             """.stripMargin,
             "TURTLE",
             None
-          )
+          ).use(rdf => for {
        ts <- rdf.rdfTriples.compile.toList
        dot <-RDF2SGraph.rdf2sgraph(rdf)
-      } yield (rdf,ts,dot)
+      } yield (rdf,ts,dot))
       e.attempt.unsafeRunSync.fold(
           e => fail(s"Error: $e"),
         tuple => {
-            val (rdf,ts,dot) = tuple
-            println(s"RDF model: ${rdf.model}")
+            val (_,ts,dot) = tuple
             println(s"RDF parsed: ${ts.size}")
             println(s"Size of triples: ${ts.size}")
             println(s"Dot generated: $dot")
@@ -91,15 +89,14 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
            |]
            |""".stripMargin
 
-      val e = for {
-        rdf <- RDFAsJenaModel.fromString(
+      val e = RDFAsJenaModel.fromString(
           """prefix : <http://example.org/>
             |:x a :A ;
             |   :p :y .
             |""".stripMargin, "TURTLE"
-        )
+        ).use(rdf => for {
         sg <- RDF2SGraph.rdf2sgraph(rdf)
-      } yield sg.toJson
+      } yield sg.toJson)
       e.attempt.unsafeRunSync.fold(
         e => fail(s"SGraph: Error in conversion to Json: $e"),
         json => json should matchJsonString(expected)
