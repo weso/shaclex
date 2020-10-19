@@ -164,6 +164,27 @@ The conversion code is work in progress. This [issue tracks ShEx->SHACL conversi
  conversion](https://github.com/weso/shaclex/issues/113). 
 
 
+## Clingo validation
+
+The project supports experimental Answer Set Programming based validation by converting the validation process to a [Clingo program])(https://potassco.org/clingo/). To run this, use the option `--showClingo` which will generate a Cling program. Example:
+
+```sh
+sbt "run --engine=ShEx 
+         --schema examples/shex/good1.shex 
+         --schemaFormat ShExC 
+         --data examples/shex/good1.ttl
+         --showClingo
+         --clingoFile clingoProgram.pl" 
+```
+
+Once you generate the Clingo program and have installed Clingo itself, you can run the program with:
+
+```sh
+clingo clingoProgram.pl
+```
+
+This feature is experimental. This [issue tracks the Clingo conversion](https://github.com/weso/shaclex/issues/316).
+
 ## More information
 
 * The aim of Shaclex is to support both ShEx and SHACL and to provide conversions between both languages. 
