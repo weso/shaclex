@@ -107,11 +107,11 @@ class shacl2ShExTest extends AnyFunSpec with Matchers {
 
   def shouldConvertSHACLShEx(strSHACL: String, expected: String): Unit = {
     it(s"Should convert: $strSHACL to ShEx and obtain: $expected") {
-    val cmp = RDFAsJenaModel.fromString(strSHACL, "TURTLE", None).use(shaclRDF => for {
+    val cmp = RDFAsJenaModel.fromString(strSHACL, "TURTLE", None).flatMap(_.use(shaclRDF => for {
       shacl          <- RDF2Shacl.getShacl(shaclRDF)
       shexConverted  <- IOUtils.fromES(Shacl2ShEx.shacl2ShEx(shacl).leftMap(e => s"Error in conversion: $e"))
       expectedSchema <- shex.Schema.fromString(expected, "ShExC")
-    } yield (shexConverted, expectedSchema, shacl))
+    } yield (shexConverted, expectedSchema, shacl)))
     cmp.attempt.unsafeRunSync().fold(
         e => fail(s"Error: $e"),
         values => {

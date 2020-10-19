@@ -1,7 +1,7 @@
 package es.weso.schema
 
-import cats._
-import cats.data._
+// import cats._
+// import cats.data._
 import cats.implicits._
 import cats.effect._
 import com.typesafe.scalalogging.LazyLogging
@@ -183,12 +183,12 @@ case class ShExSchema(schema: SchemaShEx)
 
   override def serialize(format: String, base: Option[IRI]): IO[String] = {
     val fmt                 = format.toUpperCase
-    RDFAsJenaModel.empty.use(builder => for {
+    RDFAsJenaModel.empty.flatMap(_.use(builder => for {
       str <- fmt.toUpperCase match {
           case _ if (formatsUpperCase.contains(fmt)) => SchemaShEx.serialize(schema, fmt, base, builder)
           case _ => IO.raiseError(new RuntimeException(s"Can't serialize to format $format. Supported formats=$formats"))
       } 
-    } yield str)
+    } yield str))
   }
 
   override def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
@@ -211,11 +211,11 @@ case class ShExSchema(schema: SchemaShEx)
         serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
       }
       case Some("SHACL") | Some("SHACLEX") =>
-        RDFAsJenaModel.empty.use(builder => for {
+        RDFAsJenaModel.empty.flatMap(_.use(builder => for {
           newSchema <- handleErr(ShEx2Shacl.shex2Shacl(schema, None).leftMap(es => es.mkString("\n")))
           // TODO: Check if we should pass base
           str <- newSchema.serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base, builder)
-        } yield str)
+        } yield str))
       case Some(unknown) => mkErr(s"Conversion from ShEx to $unknown not implemented yet")
     }
   }
@@ -246,9 +246,9 @@ case class ShExSchema(schema: SchemaShEx)
 object ShExSchema {
   def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[ShExSchema] = RDFAsJenaModel.empty.use(rdf => 
+  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[ShExSchema] = RDFAsJenaModel.empty.flatMap(_.use(rdf => 
   for {
     schema <- SchemaShEx.fromString(cs, format, base.map(IRI(_)), Some(rdf)).map(p => ShExSchema(p))
-  } yield schema)
+  } yield schema))
 
 }

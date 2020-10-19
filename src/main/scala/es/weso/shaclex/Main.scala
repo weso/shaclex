@@ -108,10 +108,10 @@ object Main extends IOApp with LazyLogging {
   }
 
   private def doProcess(baseFolder: Path, opts:MainOpts): IO[Either[Throwable,Unit]] = {
-    val e: IO[Unit] = (
-      getRDFReader(opts, baseFolder), 
-      RDFAsJenaModel.empty
-      ).tupled.use { case (rdf,builder) => for {
+    val e: IO[Unit] = for {
+      res1 <- getRDFReader(opts, baseFolder)
+      res2 <- RDFAsJenaModel.empty
+      vv <- (res1, res2).tupled.use { case (rdf,builder) => for {
     schema <- getSchema(opts, baseFolder, rdf)
     triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
     shapeMapStr <- getShapeMapStr(opts, baseFolder)
@@ -126,6 +126,7 @@ object Main extends IOApp with LazyLogging {
     _ <- whenA(opts.validate(), doValidation(opts, rdf, schema, trigger,builder))
     } yield ()
    }
+    } yield vv 
    e.attempt
   }
 
@@ -252,23 +253,22 @@ object Main extends IOApp with LazyLogging {
   } */
 
   // private def ok[A](x:A):ESIO[A] = IO.pure(x)
+  // private def okResource[A](x:A): Resource[IO,A] = Resource.pure[IO,A](x)
 
-  private def okResource[A](x:A): Resource[IO,A] = Resource.pure[IO,A](x)
-
-  private def getRDFReader(opts: MainOpts, baseFolder: Path): Resource[IO,RDFReader] = {
+  private def getRDFReader(opts: MainOpts, baseFolder: Path): IO[Resource[IO,RDFReader]] = {
     if (opts.data.isDefined || opts.dataUrl.isDefined) {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase)
+          IO(RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase))
         } else {
-          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase)
+          IO(RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase))
         }
-        newRdf <- if (opts.inference.isDefined) Resource.liftF(rdf.applyInference(opts.inference()))
-                  else okResource(rdf)
+        newRdf = if (opts.inference.isDefined) rdf.evalMap(rdf => rdf.applyInference(opts.inference()))
+                  else rdf
       } yield newRdf 
     } else if (opts.endpoint.isDefined) {
-      Resource.liftF(Endpoint.fromString(opts.endpoint()))
+      IO(Resource.liftF(Endpoint.fromString(opts.endpoint())))
     } else {
       logger.info("RDF Data option not specified")
       RDFAsJenaModel.empty

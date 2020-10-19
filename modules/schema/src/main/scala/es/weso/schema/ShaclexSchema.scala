@@ -33,11 +33,11 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   def validateTargetDecls(rdf: RDFReader): IO[Result] = {
     val validator = Validator(schema)
-    RDFAsJenaModel.empty.use(emptyRdf => for {
+    RDFAsJenaModel.empty.flatMap(_.use(emptyRdf => for {
       r <- validator.validateAll(rdf)
       builder <- emptyRdf.addPrefixMap(schema.pm)
       result <-  cnvResult(r, rdf, builder)
-    } yield result)
+    } yield result))
   }
 
   def cnvResult(r: CheckResult[AbstractResult, (ShapeTyping,Boolean), List[Evidence]],
@@ -109,13 +109,13 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def fromString(cs: CharSequence, format: String, 
      base: Option[String]
     ): IO[Schema] = {
-    RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))).use(rdf => for {
+    RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))).flatMap(_.use(rdf => for {
       eitherSchema <- RDF2Shacl.getShacl(rdf, resolveImports = true).attempt
       schema <- eitherSchema match {
         case Left(s) => IO.raiseError(new RuntimeException(s))
         case Right(schema) => IO.pure(schema)
       }
-    } yield ShaclexSchema(schema))
+    } yield ShaclexSchema(schema)))
   }
 
   // private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
@@ -150,11 +150,11 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     IO.pure
   ) */
 
-  override def serialize(format: String, base: Option[IRI]): IO[String] = RDFAsJenaModel.empty.use(builder => for {
+  override def serialize(format: String, base: Option[IRI]): IO[String] = RDFAsJenaModel.empty.flatMap(_.use(builder => for {
     str <- if (formats.contains(format.toUpperCase))
       schema.serialize(format, base, builder)
     else IO.raiseError(new RuntimeException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
-  } yield str)
+  } yield str))
 
   override def empty: Schema = ShaclexSchema.empty
 
@@ -172,7 +172,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      case Some("SHACL") | Some("SHACLEX") =>
        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
-     case Some("SHEX") => RDFAsJenaModel.empty.use(builder => for {
+     case Some("SHEX") => RDFAsJenaModel.empty.flatMap(_.use(builder => for {
        pair <- Shacl2ShEx.shacl2ShEx(schema).fold(
          s => IO.raiseError(new RuntimeException(s"SHACL2ShEx: Error converting: $s")),
          IO.pure
@@ -183,7 +183,7 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
          targetFormat.getOrElse(DataFormats.defaultFormatName),
          base,
          builder)
-     } yield str)
+     } yield str))
      case Some(other) =>
        IO.raiseError(new RuntimeException(s"Conversion $name -> $other not implemented yet"))
    }

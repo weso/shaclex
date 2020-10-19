@@ -6,7 +6,7 @@ import es.weso.shex.Schema
 import org.scalatest.matchers.should._
 import org.scalatest.funspec._
 import es.weso.utils.IOUtils._
-import cats.data._ 
+//import cats.data._ 
 import cats.effect._
 
 class ValidateNDTest extends AnyFunSpec with Matchers with SLang2Clingo with ShEx2SLang {
@@ -18,11 +18,11 @@ class ValidateNDTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
       val shape: SLang  = Ref(IRILabel(IRI("User")))
       val r = RDFAsJenaModel.fromChars(
           """|<a> <x> "a", 1 .
-          """.stripMargin, "TURTLE", Some(IRI("http://example.org/"))).use(rdf => {
+          """.stripMargin, "TURTLE", Some(IRI("http://example.org/"))).flatMap(_.use(rdf => {
           val schema = SchemaS(Map(IRILabel(IRI("User")) -> QualifiedArc(Pred(x), SLang.string, Card(1,IntMax(1)))))
           for {
             result <- ValidateND.runValidation(node, shape, rdf, schema)
-          } yield result})
+          } yield result}))
 
       r.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isConforming(node, shape) should be(Conforms)
@@ -37,7 +37,7 @@ class ValidateNDTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
       val r: IO[ShapesMap] = RDFAsJenaModel.fromChars(
           """|<a> <x> 1 .
              |
-          """.stripMargin, "TURTLE").use(rdf => for {
+          """.stripMargin, "TURTLE").flatMap(_.use(rdf => for {
         schema <- Schema.fromString(
           """|
              |<User> {
@@ -47,7 +47,7 @@ class ValidateNDTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
         slangSchema <- shex2SLang(schema)
         eitherResult <- ValidateND.runValidation(node, shape, rdf, slangSchema)
         result <- fromES(eitherResult)
-      } yield result)
+      } yield result))
 
       r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isConforming(node, shape) should be(Conforms)

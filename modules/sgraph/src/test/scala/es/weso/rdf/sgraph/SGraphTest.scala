@@ -28,10 +28,10 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
             """.stripMargin,
             "TURTLE",
             None
-          ).use(rdf => for {
+          ).flatMap(_.use(rdf => for {
        ts <- rdf.rdfTriples.compile.toList
        dot <-RDF2SGraph.rdf2sgraph(rdf)
-      } yield (rdf,ts,dot))
+      } yield (rdf,ts,dot)))
       e.attempt.unsafeRunSync.fold(
           e => fail(s"Error: $e"),
         tuple => {
@@ -94,9 +94,9 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
             |:x a :A ;
             |   :p :y .
             |""".stripMargin, "TURTLE"
-        ).use(rdf => for {
+        ).flatMap(_.use(rdf => for {
         sg <- RDF2SGraph.rdf2sgraph(rdf)
-      } yield sg.toJson)
+      } yield sg.toJson))
       e.attempt.unsafeRunSync.fold(
         e => fail(s"SGraph: Error in conversion to Json: $e"),
         json => json should matchJsonString(expected)

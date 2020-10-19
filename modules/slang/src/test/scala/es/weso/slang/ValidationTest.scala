@@ -5,7 +5,7 @@ import org.scalatest.funspec.AnyFunSpec
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.IRI
 import es.weso.shex.Schema
-import cats.data._ 
+// import cats.data._ 
 import cats.effect._ 
 import es.weso.utils.IOUtils._
 
@@ -19,7 +19,7 @@ class ValidationTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
           """|<a> <name> "a" ;
              | <knows> <a> .
             |
-          """.stripMargin, "TURTLE",Some(IRI("http://example.org/"))).use(rdf => for {
+          """.stripMargin, "TURTLE",Some(IRI("http://example.org/"))).flatMap(_.use(rdf => for {
         schema <- Schema.fromString(
           """|
              |<User> {
@@ -30,7 +30,7 @@ class ValidationTest extends AnyFunSpec with Matchers with SLang2Clingo with ShE
         slangSchema <- shex2SLang(schema)
         eitherResult <- Validation.runValidation(node, shape, rdf, slangSchema)
         result <- fromES(eitherResult)
-      } yield result)
+      } yield result))
 
       r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isConforming(node, shape) should be(Conforms)

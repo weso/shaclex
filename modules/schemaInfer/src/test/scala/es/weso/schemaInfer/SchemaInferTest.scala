@@ -5,7 +5,7 @@ import es.weso.rdf.parser.RDFParser
 import es.weso.schema.{Schemas, ShExSchema}
 import es.weso.shapeMaps.NodeSelector
 import es.weso.shex._
-import cats.data._
+// import cats.data._
 import cats.implicits._
 import cats.effect.IO
 import org.scalatest.matchers.should.Matchers
@@ -331,13 +331,13 @@ class SchemaInterTest extends AnyFunSpec with Matchers with RDFParser {
 
   def checkSchemaInfer(rdfStr: String, expectedStr: String, nodeSelectorStr: String, label: String): Unit = {
     it(s"Should infer a ShEx schema:\n$rdfStr\n for node $nodeSelectorStr and obtain\n$expectedStr\n") {
-      val result = RDFAsJenaModel.fromString(rdfStr, "TURTLE").use(rdf => for {
+      val result = RDFAsJenaModel.fromString(rdfStr, "TURTLE").flatMap(_.use(rdf => for {
        schemaExpected <- Schemas.fromString(expectedStr,"ShExC","ShEx")
        pm <- rdf.getPrefixMap
        nodeSelector <- fromEitherS(NodeSelector.fromString(nodeSelectorStr, None,pm))
        eitherPair <- SchemaInfer.runInferSchema(rdf, nodeSelector, "ShEx", IRI("S"))
        pair <- fromEitherS(eitherPair)
-      } yield (rdf, schemaExpected, nodeSelector, pair))
+      } yield (rdf, schemaExpected, nodeSelector, pair)))
       result.attempt.unsafeRunSync.fold(
         e => fail(s"Error: $e"),
         values => {

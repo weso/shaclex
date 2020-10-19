@@ -28,10 +28,10 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
       val schemaEngine = "SHEX"
       val node: RDFNode = IRI("http://example.org/x")
       val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
-      val tryResult: IO[Result] = (
-        RDFAsJenaModel.fromString(data, dataFormat), 
-        RDFAsJenaModel.empty
-        ).tupled.use { 
+      val tryResult: IO[Result] = for {
+        res1 <- RDFAsJenaModel.fromString(data, dataFormat)
+        res2 <- RDFAsJenaModel.empty
+        vv <- (res1,res2).tupled.use { 
         case (rdf,builder) => for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
         pm <- rdf.getPrefixMap
@@ -44,6 +44,8 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
          shapesPrefixMap = schema.pm, 
          builder = builder)
       } yield result }
+      } yield vv
+      
       tryResult.attempt.unsafeRunSync match {
         case Right(result) =>
           info(s"Result: ${result.serialize(Result.TEXT)}")
@@ -65,11 +67,16 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
           |        sh:nodeKind  sh:BlankNode .
           |:alice  a       :User .
         """.stripMargin
-      val eitherResult = (RDFAsJenaModel.fromString(data,"TURTLE",None), RDFAsJenaModel.empty).tupled.use{ case (rdf, builder) => for {
+      val eitherResult = for {
+       res1 <- RDFAsJenaModel.fromString(data,"TURTLE",None)
+       res2 <- RDFAsJenaModel.empty
+       vv <- (res1,res2).tupled.use{ case (rdf, builder) => for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
         pm <- rdf.getPrefixMap
         result <- schema.validate(rdf,"TargetDecls","",None,None,pm,schema.pm,builder)
       } yield result }
+      } yield vv
+      
       eitherResult.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isValid should be(false)
       })

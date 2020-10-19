@@ -43,10 +43,10 @@ class ClingoTest extends AnyFunSpec with Matchers with SLang2Clingo {
               QualifiedArc(Pred(IRI("knows")), STrue,Card.oneStar))
       ))
 
-      val r = RDFAsJenaModel.fromChars(strRDF, "TURTLE", None).use(rdf => for {
+      val r = RDFAsJenaModel.fromChars(strRDF, "TURTLE", None).flatMap(_.use(rdf => for {
         smap <- fromES(ShapeMap.empty.add(IRI("alice"), es.weso.shapeMaps.IRILabel(IRI("user"))))
         program <- validate2Clingo(smap, rdf, schema)
-      } yield (rdf,program))
+      } yield (rdf,program)))
       r.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"),values => {
         val (_,prog) = values
         val contents = prog.show

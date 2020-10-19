@@ -6,9 +6,9 @@ import es.weso.shacl.converter.Shacl2RDF
 import org.scalatest.funspec.AnyFunSpec 
 import org.scalatest.matchers.should._
 import cats.implicits._
-import cats.data._ 
+// import cats.data._ 
 import cats.effect._
-import es.weso.utils.IOUtils._
+// import es.weso.utils.IOUtils._
 
 class shex2shaclTest extends AnyFunSpec with Matchers {
 
@@ -222,10 +222,10 @@ class shex2shaclTest extends AnyFunSpec with Matchers {
                               shaclStrExpected: String,
                               ignored: Boolean = false): Unit = {
     def comp(): Unit = {
-      val result: IO[Boolean] = 
-        (RDFAsJenaModel.empty,
-         RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None)
-        ).tupled.use{ case (rdfEmpty, rdfShaclExpected) => for {
+      val result: IO[Boolean] = for {
+        res1 <- RDFAsJenaModel.empty
+        res2 <- RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None)
+        vv <- (res1,res2).tupled.use{ case (rdfEmpty, rdfShaclExpected) => for {
         schema <- shex.Schema.fromString(shexStr,"SHEXC")
         shaclSchema <- ShEx2Shacl.shex2Shacl(schema,None).fold(
           ls => IO.raiseError(new RuntimeException(s"Errors converting ShEx2SHACL: ${ls.mkString("\n")}")),
@@ -242,6 +242,8 @@ class shex2shaclTest extends AnyFunSpec with Matchers {
              |""".stripMargin))
           else IO(())
       } yield b}
+      } yield vv
+
       result.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"),
         b => b should be(true))
     }
