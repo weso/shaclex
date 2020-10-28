@@ -127,7 +127,7 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
     else 
       IO.raiseError(JenaShaclException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
 
-  override def empty: Schema = ShaclexSchema.empty
+  override def empty: Schema = JenaShacl.empty
 
   override def shapes: List[String] = {
     List()

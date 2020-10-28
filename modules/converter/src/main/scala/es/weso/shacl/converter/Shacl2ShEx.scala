@@ -9,14 +9,18 @@ import es.weso.rdf.path.{InversePath, PredicatePath, SHACLPath}
 import es.weso.shex.implicits.showShEx._
 import es.weso.shex.linter.ShExLinter
 import es.weso.{shacl, _}
+import es.weso.shacl.TargetClass
+import es.weso.shacl.TargetNode
+import es.weso.shacl.TargetObjectsOf
+import es.weso.shacl.TargetSubjectsOf
 
 object Shacl2ShEx {
 
   def shacl2ShEx(schema: shacl.Schema): Either[String, (shex.Schema, shapeMaps.QueryShapeMap)] = {
     val (state, eitherSchema) = cnvSchema(schema).value.run(initialState)
     val e = for {
-     schema <- eitherSchema
-     schema1 = schema.addTripleExprMap(state.tripleExprMap)
+     shexSchema <- eitherSchema
+     schema1 = shexSchema.addTripleExprMap(state.tripleExprMap)
      queryMap <- cnvShapeMap(schema)
      lintedSchema <- ShExLinter.inlineInclusions(schema1)
     } yield (lintedSchema,queryMap)
@@ -24,7 +28,19 @@ object Shacl2ShEx {
     e
   }
 
-  def cnvShapeMap(schema: shex.Schema): Either[String,shapeMaps.QueryShapeMap] = Right(shapeMaps.QueryShapeMap(List(), PrefixMap.empty, PrefixMap.empty))
+  def cnvShapeMap(schema: shacl.Schema): Either[String,shapeMaps.QueryShapeMap] = {
+    val associations: List[Association] = schema.shapesMap.values.map(shape2Associations)
+    Right(shapeMaps.QueryShapeMap(List(), PrefixMap.empty, PrefixMap.empty))
+  }
+
+  private def shape2Associations(shape: shacl.Shape): List[Association] = shape.targets.map(target2Association)
+
+  private def target2Association(target: shacl.Target): Association = target match {
+    case TargetClass(node) => ???
+    case TargetNode(node) => ???
+    case TargetObjectsOf(pred) => ???
+    case TargetSubjectsOf(pred) => ???
+  }
 
   case class State(tripleExprMap: TEMap) {
     def addLabelTripleExpr(lbl: shex.ShapeLabel, te: shex.TripleExpr): State = {
