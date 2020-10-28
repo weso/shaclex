@@ -3,7 +3,7 @@ import java.io.File
 
 import util._
 import cats.effect._
-import cats.implicits._
+// import cats.implicits._
 import es.weso.rdf.RDFReader
 import es.weso.utils.FileUtils._
 

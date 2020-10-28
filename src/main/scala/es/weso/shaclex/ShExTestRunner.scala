@@ -11,7 +11,7 @@ object ShExTestRunner {
 
   def run(testName: String): Unit = {
     val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI.toString), false)
-    r.fold(e => println(s"Error reading manifest: $e"),
+    r.attempt.unsafeRunSync.fold(e => println(s"Error reading manifest: $e"),
       mf => {
         println(s"Manifest read with ${mf.entries.length} entries")
         for (e <- mf.entries) {

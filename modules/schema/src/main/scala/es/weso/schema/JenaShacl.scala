@@ -19,28 +19,37 @@ import es.weso.utils.MapUtils
 import cats.data.EitherT
 import cats.effect._
 import org.apache.jena.shacl.Shapes
+import scala.util.control.NoStackTrace
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.rdf.model.ModelFactory
 
-case class JenaShacl(shapes: Shapes) extends Schema {
+case class JenaShaclException(msg: String) extends Exception(msg) with NoStackTrace
+
+
+case class JenaShacl(shapesGraph: Model) extends Schema {
   override def name = "JenaSHACL"
 
   override def formats: Seq[String] = DataFormats.formatNames
 
   override def defaultTriggerMode: ValidationTrigger = TargetDeclarations
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result] = trigger match {
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger, builder: RDFBuilder): IO[Result] = trigger match {
     case TargetDeclarations => validateTargetDecls(rdf).map(_.addTrigger(trigger))
     case _ => IO(Result.errStr(s"Not implemented trigger ${trigger.name} for SHACL yet"))
   }
 
-  def validateTargetDecls(rdf: RDFReader): IO[Result] = {
-    val validator = Validator(schema)
-    for {
+  def validateTargetDecls(rdf: RDFReader): IO[Result] = rdf match {
+    case _: RDFAsJenaModel => {
+      IO.raiseError(JenaShaclException(s"Not Implemented yet for RDFAsJenaModel"))
+    }
+    case _ => IO.raiseError(JenaShaclException(s"Not Implemented Jena SHACL validation for ${rdf.rdfReaderName} yet"))
+  }
+    /*for {
      r <- validator.validateAll(rdf)
      emptyRdf <- RDFAsJenaModel.empty  
      builder <- emptyRdf.addPrefixMap(schema.pm)
      result <-  cnvResult(r, rdf, builder)
-    } yield result
-  }
+    } yield result */
 
   def cnvResult(r: CheckResult[AbstractResult, (ShapeTyping,Boolean), List[Evidence]],
                 rdf: RDFReader,
@@ -52,73 +61,22 @@ case class JenaShacl(shapes: Shapes) extends Schema {
       )
     for {
       eitherVR <- vr.toRDF(builder).attempt
+      pm <- rdf.getPrefixMap
     } yield Result(
       isValid = vr.conforms,
       message = if (vr.conforms) "Valid" else "Not valid",
-      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
+      shapeMaps = ???,
       validationReport = eitherVR.leftMap(_.getMessage),
-      errors = vr.results.map(cnvViolationError),
+      errors = ???,
       trigger = None,
-      nodesPrefixMap = rdf.getPrefixMap(),
-      shapesPrefixMap = schema.pm)
+      nodesPrefixMap = pm,
+      shapesPrefixMap = PrefixMap.empty
+      )
   }
   
-  def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
-    ResultShapeMap(
-      mapValues(t._1.getMap)(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
-  }
-
-  private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
-
-    MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
-  }
-
-  private def cnvShape(s: Shape): ShapeMapLabel = {
-    s.id match {
-      case iri: IRI => IRILabel(iri)
-      case bnode: BNode => BNodeLabel(bnode)
-      case _ => throw new Exception(s"cnvShape: unexpected ${s.id}")
-    }
-  }
-
-  private def cnvTypingResult(t: TypingResult[AbstractResult, String]): Info = {
-    import showShacl._
-    import TypingResult.showTypingResult
-    Info(
-      status = if (t.isOK) Conformant else NonConformant,
-      reason = Some(t.show)
-    // TODO: Convert typing result to JSON and add it to appInfo
-    )
-  }
-
-  private def cnvViolationError(v: AbstractResult): ErrorInfo = {
-    val pm = schema.pm
-    v match {
-      case ar: MsgError => ErrorInfo(s"Error: $ar")
-      case vr: ValidationResult =>
-        ErrorInfo(
-          pm.qualify(vr.sourceConstraintComponent) +
-            " FocusNode: " + schema.pm.qualify(vr.focusNode) + " " +
-            vr.message.mkString(","))
-    }
-  }
-
-  /*def validateShapeMap(sm: Map[RDFNode,Set[String]], nodesStart: Set[RDFNode], rdf: RDFReader) : Result = {
-    throw new Exception("Unimplemented validateShapeMap")
-  }*/
-
   override def fromString(cs: CharSequence, format: String, 
      base: Option[String]
-    ): IO[Schema] = {
-    for {
-      rdf <- RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_)))
-      eitherSchema <- RDF2Shacl.getShacl(rdf, resolveImports = true).attempt
-      schema <- eitherSchema match {
-        case Left(s) => IO.raiseError(new RuntimeException(s))
-        case Right(schema) => IO.pure(schema)
-      }
-    } yield ShaclexSchema(schema)
-  }
+    ): IO[Schema] = IO.raiseError(JenaShaclException(s"Not implemented yet"))
 
   // private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
 
@@ -155,17 +113,17 @@ case class JenaShacl(shapes: Shapes) extends Schema {
   override def serialize(format: String, base: Option[IRI]): IO[String] = for {
     builder <- RDFAsJenaModel.empty
     str <- if (formats.contains(format.toUpperCase))
-      schema.serialize(format, base, builder)
-    else IO.raiseError(new RuntimeException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
+      IO.raiseError(JenaShaclException(s"not implemented serialize yet"))
+    else IO.raiseError(JenaShaclException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
   } yield str  
 
   override def empty: Schema = ShaclexSchema.empty
 
   override def shapes: List[String] = {
-    schema.shapes.map(_.id).map(_.toString).toList
+    List()
   }
 
-  override def pm: PrefixMap = schema.pm
+  override def pm: PrefixMap = ???
 
   override def convert(targetFormat: Option[String],
                        targetEngine: Option[String],
@@ -175,7 +133,7 @@ case class JenaShacl(shapes: Shapes) extends Schema {
      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      case Some("SHACL") | Some("SHACLEX") =>
        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
-     case Some("SHEX") => for {
+     case Some("SHEX") => ??? /*for {
        pair <- Shacl2ShEx.shacl2ShEx(schema).fold(
          s => IO.raiseError(new RuntimeException(s"SHACL2ShEx: Error converting: $s")),
          IO.pure
@@ -187,9 +145,9 @@ case class JenaShacl(shapes: Shapes) extends Schema {
          targetFormat.getOrElse(DataFormats.defaultFormatName),
          base,
          builder)
-     } yield str
+     } yield str */
      case Some(other) =>
-       IO.raiseError(new RuntimeException(s"Conversion $name -> $other not implemented yet"))
+       IO.raiseError(JenaShaclException(s"Conversion $name -> $other not implemented yet"))
    }
   }
 
@@ -199,11 +157,14 @@ case class JenaShacl(shapes: Shapes) extends Schema {
   }
 
   override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String] =
-    IO.raiseError(new RuntimeException(s"Not implemented yet toClingo for $name"))
+    IO.raiseError(JenaShaclException(s"Not implemented yet toClingo for $name"))
 
 }
 
 object JenaShacl {
-  def empty: JenaShacl = JenaShacl(schema = "")
+  def empty: JenaShacl = {
+    val m = ModelFactory.createDefaultModel()
+    JenaShacl(m)
+  }
 
 }

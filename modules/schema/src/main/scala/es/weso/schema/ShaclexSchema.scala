@@ -16,7 +16,7 @@ import es.weso.utils.internal.CollectionCompat._
 import util._
 import es.weso.typing._
 import es.weso.utils.MapUtils
-import cats.data.EitherT
+//import cats.data.EitherT
 import cats.effect._
 
 case class ShaclexSchema(schema: ShaclSchema) extends Schema {
@@ -26,19 +26,18 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def defaultTriggerMode: ValidationTrigger = TargetDeclarations
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result] = trigger match {
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger, builder: RDFBuilder): IO[Result] = trigger match {
     case TargetDeclarations => validateTargetDecls(rdf).map(_.addTrigger(trigger))
     case _ => IO(Result.errStr(s"Not implemented trigger ${trigger.name} for SHACL yet"))
   }
 
   def validateTargetDecls(rdf: RDFReader): IO[Result] = {
     val validator = Validator(schema)
-    for {
-     r <- validator.validateAll(rdf)
-     emptyRdf <- RDFAsJenaModel.empty  
-     builder <- emptyRdf.addPrefixMap(schema.pm)
-     result <-  cnvResult(r, rdf, builder)
-    } yield result
+    RDFAsJenaModel.empty.flatMap(_.use(emptyRdf => for {
+      r <- validator.validateAll(rdf)
+      builder <- emptyRdf.addPrefixMap(schema.pm)
+      result <-  cnvResult(r, rdf, builder)
+    } yield result))
   }
 
   def cnvResult(r: CheckResult[AbstractResult, (ShapeTyping,Boolean), List[Evidence]],
@@ -50,21 +49,22 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
         r._1.toValidationReport
       )
     for {
+      pm <- rdf.getPrefixMap
       eitherVR <- vr.toRDF(builder).attempt
     } yield Result(
       isValid = vr.conforms,
       message = if (vr.conforms) "Valid" else "Not valid",
-      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
+      shapeMaps = r.results.map(cnvShapeTyping(_, rdf,pm)),
       validationReport = eitherVR.leftMap(_.getMessage),
       errors = vr.results.map(cnvViolationError),
       trigger = None,
-      nodesPrefixMap = rdf.getPrefixMap(),
+      nodesPrefixMap = pm,
       shapesPrefixMap = schema.pm)
   }
   
-  def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
+  def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader, pm: PrefixMap): ResultShapeMap = {
     ResultShapeMap(
-      mapValues(t._1.getMap)(cnvMapShapeResult), rdf.getPrefixMap(), schema.pm)
+      mapValues(t._1.getMap)(cnvMapShapeResult), pm, schema.pm)
   }
 
   private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
@@ -109,14 +109,13 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def fromString(cs: CharSequence, format: String, 
      base: Option[String]
     ): IO[Schema] = {
-    for {
-      rdf <- RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_)))
+    RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))).flatMap(_.use(rdf => for {
       eitherSchema <- RDF2Shacl.getShacl(rdf, resolveImports = true).attempt
       schema <- eitherSchema match {
         case Left(s) => IO.raiseError(new RuntimeException(s))
         case Right(schema) => IO.pure(schema)
       }
-    } yield ShaclexSchema(schema)
+    } yield ShaclexSchema(schema)))
   }
 
   // private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
@@ -151,12 +150,11 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     IO.pure
   ) */
 
-  override def serialize(format: String, base: Option[IRI]): IO[String] = for {
-    builder <- RDFAsJenaModel.empty
+  override def serialize(format: String, base: Option[IRI]): IO[String] = RDFAsJenaModel.empty.flatMap(_.use(builder => for {
     str <- if (formats.contains(format.toUpperCase))
       schema.serialize(format, base, builder)
     else IO.raiseError(new RuntimeException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
-  } yield str  
+  } yield str))
 
   override def empty: Schema = ShaclexSchema.empty
 
@@ -174,19 +172,18 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
      case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      case Some("SHACL") | Some("SHACLEX") =>
        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
-     case Some("SHEX") => for {
+     case Some("SHEX") => RDFAsJenaModel.empty.flatMap(_.use(builder => for {
        pair <- Shacl2ShEx.shacl2ShEx(schema).fold(
          s => IO.raiseError(new RuntimeException(s"SHACL2ShEx: Error converting: $s")),
          IO.pure
        )
        (newSchema,_) = pair
-       builder <- RDFAsJenaModel.empty
        str <- es.weso.shex.Schema.serialize(
          newSchema,
          targetFormat.getOrElse(DataFormats.defaultFormatName),
          base,
          builder)
-     } yield str
+     } yield str))
      case Some(other) =>
        IO.raiseError(new RuntimeException(s"Conversion $name -> $other not implemented yet"))
    }

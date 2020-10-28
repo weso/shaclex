@@ -6,6 +6,7 @@ import org.scalatest._
 import matchers.should._
 import funspec._
 import cats.effect._
+import cats.implicits._
 
 class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
 
@@ -28,10 +29,23 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
       val node: RDFNode = IRI("http://example.org/x")
       val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
       val tryResult: IO[Result] = for {
+        res1 <- RDFAsJenaModel.fromString(data, dataFormat)
+        res2 <- RDFAsJenaModel.empty
+        vv <- (res1,res2).tupled.use { 
+        case (rdf,builder) => for {
         schema <- Schemas.fromString(schema, schemaFormat, schemaEngine, None)
-        rdf <- RDFAsJenaModel.fromString(data, dataFormat)
-        result <- schema.validate(rdf, triggerMode, "", None, None, schema.pm)
-      } yield result
+        pm <- rdf.getPrefixMap
+        result <- schema.validate(rdf = rdf, 
+         triggerMode = triggerMode, 
+         shapeMap = "", 
+         optNode = None, 
+         optShape = None, 
+         nodePrefixMap = pm, 
+         shapesPrefixMap = schema.pm, 
+         builder = builder)
+      } yield result }
+      } yield vv
+      
       tryResult.attempt.unsafeRunSync match {
         case Right(result) =>
           info(s"Result: ${result.serialize(Result.TEXT)}")
@@ -54,10 +68,15 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
           |:alice  a       :User .
         """.stripMargin
       val eitherResult = for {
+       res1 <- RDFAsJenaModel.fromString(data,"TURTLE",None)
+       res2 <- RDFAsJenaModel.empty
+       vv <- (res1,res2).tupled.use{ case (rdf, builder) => for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
-        rdf <- RDFAsJenaModel.fromString(data,"TURTLE",None)
-        result <- schema.validate(rdf,"TargetDecls","",None,None,rdf.getPrefixMap,schema.pm)
-      } yield result
+        pm <- rdf.getPrefixMap
+        result <- schema.validate(rdf,"TargetDecls","",None,None,pm,schema.pm,builder)
+      } yield result }
+      } yield vv
+      
       eitherResult.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
         result.isValid should be(false)
       })

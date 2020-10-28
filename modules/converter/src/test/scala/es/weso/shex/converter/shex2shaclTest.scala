@@ -6,9 +6,9 @@ import es.weso.shacl.converter.Shacl2RDF
 import org.scalatest.funspec.AnyFunSpec 
 import org.scalatest.matchers.should._
 import cats.implicits._
-import cats.data._ 
+// import cats.data._ 
 import cats.effect._
-import es.weso.utils.IOUtils._
+// import es.weso.utils.IOUtils._
 
 class shex2shaclTest extends AnyFunSpec with Matchers {
 
@@ -222,20 +222,29 @@ class shex2shaclTest extends AnyFunSpec with Matchers {
                               shaclStrExpected: String,
                               ignored: Boolean = false): Unit = {
     def comp(): Unit = {
-      val result: EitherT[IO,String,Boolean] = for {
-        schema <- io2es(shex.Schema.fromString(shexStr,"SHEXC"))
-        shaclSchema <- either2es(ShEx2Shacl.shex2Shacl(schema,None).leftMap(ls => ls.mkString("\n"))).leftMap(e => s"Error converting schema: $e\n$schema")
-        rdfEmpty <- io2es(RDFAsJenaModel.empty)
-        rdfShacl <- io2es(Shacl2RDF.shacl2RDF(shaclSchema, rdfEmpty))
-        rdfShaclExpected <- io2es(RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None))
-        b <-io2es(rdfShacl.isIsomorphicWith(rdfShaclExpected))
-        _ <- either2es(if (!b)
-           Left("RDFs are not isomorphic. Obtained RDF:\n" +
-             s"${rdfShacl.serialize("Turtle")}\n" +
-             s"Expected: \n${rdfShaclExpected.serialize("Turtle")}")
-          else Right(()))
-      } yield b
-      result.fold(e => fail(s"Error: $e"),
+      val result: IO[Boolean] = for {
+        res1 <- RDFAsJenaModel.empty
+        res2 <- RDFAsJenaModel.fromChars(shaclStrExpected,"TURTLE",None)
+        vv <- (res1,res2).tupled.use{ case (rdfEmpty, rdfShaclExpected) => for {
+        schema <- shex.Schema.fromString(shexStr,"SHEXC")
+        shaclSchema <- ShEx2Shacl.shex2Shacl(schema,None).fold(
+          ls => IO.raiseError(new RuntimeException(s"Errors converting ShEx2SHACL: ${ls.mkString("\n")}")),
+          IO(_)
+        )
+        rdfShacl <- Shacl2RDF.shacl2RDF(shaclSchema, rdfEmpty)
+        b <-rdfShacl.isIsomorphicWith(rdfShaclExpected)
+        str1 <- rdfShacl.serialize("Turtle")
+        str2 <- rdfShaclExpected.serialize("Turtle") 
+        _ <- if (!b) IO(println(s"""|RDFs are not isomorphic. Obtained RDF:
+             |${str1}
+             |Expected:
+             |${str2}
+             |""".stripMargin))
+          else IO(())
+      } yield b}
+      } yield vv
+
+      result.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"),
         b => b should be(true))
     }
   val msg = (s"Should convert ShEx->SHACL\n$shexStr\nExpected:\n$shaclStrExpected\n--->")

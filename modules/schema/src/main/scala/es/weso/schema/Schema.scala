@@ -17,7 +17,7 @@ abstract class Schema {
    */
   def formats: Seq[String]
 
-  def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result]
+  def validate(rdf: RDFReader, trigger: ValidationTrigger, builder: RDFBuilder): IO[Result]
 
   def validate(
     rdf: RDFReader,
@@ -26,14 +26,15 @@ abstract class Schema {
     optNode: Option[String],
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,
-    shapesPrefixMap: PrefixMap = pm): IO[Result] = {
+    shapesPrefixMap: PrefixMap = pm,
+    builder: RDFBuilder): IO[Result] = {
     val base = Some(FileUtils.currentFolderURL)
     ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, nodePrefixMap, shapesPrefixMap) match {
       case Left(err) => {
         IO(Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm"))
       }
       case Right(trigger) =>
-        validate(rdf, trigger)
+        validate(rdf, trigger, builder)
     }
   }
 

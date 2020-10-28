@@ -203,13 +203,13 @@ class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
   } yield b
 
   def rdfCompare(s1: String, s2: String): IO[Boolean] = for {
-    //_ <- { info(s"s1: $s1"); Right(()) }
-    rdf1 <- RDFAsJenaModel.fromChars(s1,"TURTLE",None)
-    //_ <- { info(s"RDF1: $rdf1"); Right(()) }
-    rdf2 <- RDFAsJenaModel.fromChars(s2,"TURTLE",None)
-    //_ <- { info(s"RDF2: $rdf2"); Right(()) }
-    b <- rdf1.isIsomorphicWith(rdf2)
-  } yield b
+    res1 <- RDFAsJenaModel.fromChars(s1,"TURTLE",None)
+    res2 <- RDFAsJenaModel.fromChars(s2,"TURTLE",None)
+    vv <- (res1,res2).tupled.use { 
+    case (rdf1,rdf2) => for {
+     b <- rdf1.isIsomorphicWith(rdf2)
+  } yield b } 
+  } yield vv 
 
   def shExCompare(s1: String, s2: String): IO[Boolean] = for {
     schema1 <- runWithError(Schemas.fromString(s1,"ShExC","ShEx",None), s"Error reading ShEx from string s1: $s1")

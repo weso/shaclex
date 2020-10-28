@@ -4,15 +4,15 @@ lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
 lazy val utilsVersion         = "0.1.69"
-lazy val srdfVersion          = "0.1.70"
-lazy val shexVersion          = "0.1.66"
-lazy val shaclVersion         = "0.1.62"
-lazy val shapeMapsVersion     = "0.1.58"
+lazy val srdfVersion          = "0.1.76"
+lazy val shexVersion          = "0.1.71"
+lazy val shaclVersion         = "0.1.65"
+lazy val shapeMapsVersion     = "0.1.61"
 
 // Dependency versions
-lazy val catsVersion           = "2.1.1"
+lazy val catsVersion           = "2.2.0"
 lazy val commonsTextVersion    = "1.8"
-lazy val circeVersion          = "0.12.3"
+lazy val circeVersion          = "0.14.0-M1"
 lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.16.0"
@@ -57,7 +57,7 @@ lazy val shacl             = "es.weso"                    %% "shacl"           %
 // Other dependency modules
 lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
 lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
-lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
+//lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
 lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
 lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
 lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
@@ -119,7 +119,7 @@ lazy val shaclex = project
     fork                      := true,
 //    parallelExecution in Test := false,
     ThisBuild / turbo := true,
-//    publish / skip := true,
+  //   skip in publish := true
   )
 
 lazy val schemaInfer = project
@@ -148,7 +148,8 @@ lazy val schema = project
       srdf4j,
       shex,
       shacl,
-      shapeMaps
+      shapeMaps,
+      jenaShacl
       )
   )
   .dependsOn(
@@ -167,13 +168,13 @@ lazy val slang = project
     libraryDependencies ++= Seq(
       catsCore,
       catsKernel,
-      catsMacros,
+      // catsMacros,
       shex, 
       shacl,
       utils,
       srdf,
       srdf4j % Test,
-      srdfJena % Test
+      srdfJena % Test,
       )
   )
 
@@ -190,7 +191,7 @@ lazy val sgraph = project
       srdf,
       catsCore,
       catsKernel,
-      catsMacros,
+      // catsMacros,
       srdf4j % Test,
       srdfJena % Test
       )
