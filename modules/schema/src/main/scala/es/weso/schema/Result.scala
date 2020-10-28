@@ -9,14 +9,17 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import es.weso.shapeMaps._
 import es.weso.rdf.jena.RDFAsJenaModel
-import java.io
-import java.io.ByteArrayOutputStream
+import java.io._
+import es.weso.shacl.report.ValidationReport
+import es.weso.rdf.RDFBuilder
+import cats.effect._
+
 
 case class Result(
   isValid: Boolean,
   message: String,
   shapeMaps: Seq[ResultShapeMap],
-  validationReport: Either[String,RDFReader],
+  validationReport: RDFReport,  // Either[String,RDFReader],
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
@@ -59,13 +62,7 @@ case class Result(
     sb.toString
   }
 
-  def toJson: Json = {
-
-/*    implicit val encodeIRI: Encoder[IRI] = new Encoder[IRI] {
-      final def apply(iri: IRI): Json = {
-        Json.fromString(iri.getLexicalForm)
-      }
-    } */
+  def toJson(builder: RDFBuilder): IO[Json] = {
 
     implicit val encodePrefixMap: Encoder[PrefixMap] = new Encoder[PrefixMap] {
       final def apply(prefixMap: PrefixMap): Json = {
@@ -76,26 +73,7 @@ case class Result(
       }
     }
 
-/*    implicit val encodeShapeMap: Encoder[ResultShapeMap] = new Encoder[ResultShapeMap] {
-      final def apply(a: ResultShapeMap): Json = {
-        def node2String(n: RDFNode): String = a.nodesPrefixMap.qualify(n)
-        def shapeMapLabel2String(s: ShapeMapLabel): String = s match {
-          case IRILabel(iri) => a.shapesPrefixMap.qualify(iri)
-          case BNodeLabel(b) => b.getLexicalForm
-          case _ => throw new Exception(s"encodeShapeMap. shapeMapLabel2String: unsupported $s")
-        }
-        def info2Json(i: Info): Json = i.asJson
-        def result2Json(s: Map[ShapeMapLabel, Info]): Json = {
-          Json.fromJsonObject(JsonObject.fromMap(cnvMap(s, shapeMapLabel2String, info2Json)))
-        }
-
-        Json.fromJsonObject(JsonObject.fromMap(cnvMap(a.resultMap, node2String, result2Json)))
-      }
-    } */
-
-    implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
-      final def apply(a: Result): Json = 
-        Json.obj(
+    def result2Json(result: Result, strValidationReport: String): Json = Json.obj(
           ("valid", isValid.asJson),
           ("type", "Result".asJson),
           ("message", message.asJson),
@@ -106,28 +84,19 @@ case class Result(
           ("errors", errors.toList.asJson),
           ("nodesPrefixMap", nodesPrefixMap.asJson),
           ("shapesPrefixMap", shapesPrefixMap.asJson),
-          ("validationReport", validationReport match {
-            case Left(msg) => msg.asJson
-            case Right(rdf) => Json.fromString(serializeRDF(rdf, reportFormat))
-          })
-        )
+          ("validationReport", Json.fromString(strValidationReport))
+    )
+
+    for {
+      rdf <- validationReport.toRDF(builder)
+      str <- rdf.serialize(reportFormat)
+    } yield {
+      result2Json(this, str)
     }
-      
-    this.asJson 
   } 
 
-  private def serializeRDF(rdf: RDFReader, format: String): String = rdf match {
-    case rdfJena: RDFAsJenaModel => {
-      val model = rdfJena.modelRef.get.unsafeRunSync()
-      val out              = new ByteArrayOutputStream()
-      model.write(out, format)
-      out.toString
-    }
-    case _ => s"Unsupported serialization of ${rdf.rdfReaderName}"
-  }
-
-  private def toJsonString2spaces: String =
-    toJson.spaces2
+  private def toJsonString2spaces(builder: RDFBuilder): IO[String] =
+    toJson(builder)map(_.spaces2)
 
   private lazy val cut = 1 // TODO maybe remove concept of cut
 
@@ -136,10 +105,10 @@ case class Result(
     else n.toString
   }
 
-  def serialize(format: String, base: Option[IRI] = None): String = format.toUpperCase match {
-    case Result.TEXT => show(base)
-    case Result.JSON => toJsonString2spaces
-    case _ => s"Unsupported format to serialize result: $format, $this"
+  def serialize(format: String, base: Option[IRI] = None, builder: RDFBuilder): IO[String] = format.toUpperCase match {
+    case Result.TEXT => IO(show(base))
+    case Result.JSON => toJsonString2spaces(builder)
+    case _ => IO.raiseError(new RuntimeException(s"Unsupported format to serialize result: $format, $this"))
   }
 
   def hasShapes(node: RDFNode): Seq[SchemaLabel] = {
@@ -164,7 +133,7 @@ object Result extends LazyLogging {
       isValid = true,
       message = "",
       shapeMaps = Seq(),
-      validationReport = Left("No report"),
+      validationReport = RDFReport.empty,
       errors = Seq(),
       None,
       PrefixMap.empty,
@@ -226,7 +195,7 @@ object Result extends LazyLogging {
       isValid,
       message,
       solutions,
-      Left("Not implemented ValidationReport Json decoder yet"),
+      RDFReport.empty,
       errors,
       trigger,
       nodesPrefixMap,

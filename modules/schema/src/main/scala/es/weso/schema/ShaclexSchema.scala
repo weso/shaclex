@@ -45,17 +45,17 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
                 builder: RDFBuilder
                ): IO[Result] = {
     val vr: ValidationReport =
-      r.result.fold(e => ValidationReport.fromError(e), r =>
+      r.result.fold(
+        e => ValidationReport.fromError(e), r =>
         r._1.toValidationReport
       )
     for {
       pm <- rdf.getPrefixMap
-      eitherVR <- vr.toRDF(builder).attempt
     } yield Result(
       isValid = vr.conforms,
       message = if (vr.conforms) "Valid" else "Not valid",
       shapeMaps = r.results.map(cnvShapeTyping(_, rdf,pm)),
-      validationReport = eitherVR.leftMap(_.getMessage),
+      validationReport = ShaclexReport(vr),
       errors = vr.results.map(cnvViolationError),
       trigger = None,
       nodesPrefixMap = pm,

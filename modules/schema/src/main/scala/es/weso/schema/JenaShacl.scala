@@ -73,7 +73,7 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
     Result(isValid = isValid, 
       message = message, 
       shapeMaps = Seq(shapesMap), 
-      validationReport = esRdf, 
+      validationReport = JenaShaclReport(report.getModel), 
       errors = errors,
       trigger = Some(TargetDeclarations), 
       nodesPrefixMap = nodesPrefixMap, 
