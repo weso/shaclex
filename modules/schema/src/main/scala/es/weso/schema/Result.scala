@@ -8,6 +8,9 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import es.weso.shapeMaps._
+import es.weso.rdf.jena.RDFAsJenaModel
+import java.io
+import java.io.ByteArrayOutputStream
 
 case class Result(
   isValid: Boolean,
@@ -17,7 +20,9 @@ case class Result(
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
-  shapesPrefixMap: PrefixMap) extends LazyLogging {
+  shapesPrefixMap: PrefixMap,
+  reportFormat: String = "TURTLE",
+  ) extends LazyLogging {
 
   def noSolutions(shapeMaps: Seq[ResultShapeMap]): Boolean = {
     shapeMaps.size == 0 || shapeMaps.head.noSolutions
@@ -89,29 +94,44 @@ case class Result(
     } */
 
     implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
-      final def apply(a: Result): Json = {
-        Json.fromJsonObject(JsonObject.empty.
-          add("valid", Json.fromBoolean(isValid)).
-          add("type", Json.fromString("Result")).
-          add("message", Json.fromString(message)).
-          add("shapeMap", solution match {
+      final def apply(a: Result): Json = 
+        Json.obj(
+          ("valid", isValid.asJson),
+          ("type", "Result".asJson),
+          ("message", message.asJson),
+          ("shapeMap", solution match {
             case Left(msg) => Json.fromString(msg)
             case Right(r) => r.toJson
-          }).
-          add("errors", errors.toList.asJson).
-          add("nodesPrefixMap", nodesPrefixMap.asJson).
-          add("shapesPrefixMap", shapesPrefixMap.asJson))
-      }
+          }),
+          ("errors", errors.toList.asJson),
+          ("nodesPrefixMap", nodesPrefixMap.asJson),
+          ("shapesPrefixMap", shapesPrefixMap.asJson),
+          ("validationReport", validationReport match {
+            case Left(msg) => msg.asJson
+            case Right(rdf) => Json.fromString(serializeRDF(rdf, reportFormat))
+          })
+        )
     }
-    this.asJson
+      
+    this.asJson 
+  } 
+
+  private def serializeRDF(rdf: RDFReader, format: String): String = rdf match {
+    case rdfJena: RDFAsJenaModel => {
+      val model = rdfJena.modelRef.get.unsafeRunSync()
+      val out              = new ByteArrayOutputStream()
+      model.write(out, format)
+      out.toString
+    }
+    case _ => s"Unsupported serialization of ${rdf.rdfReaderName}"
   }
 
-  def toJsonString2spaces: String =
+  private def toJsonString2spaces: String =
     toJson.spaces2
 
-  lazy val cut = 1 // TODO maybe remove concept of cut
+  private lazy val cut = 1 // TODO maybe remove concept of cut
 
-  def printNumber(n: Int, cut: Int): String = {
+  private def printNumber(n: Int, cut: Int): String = {
     if (n == 1 && cut == 1) ""
     else n.toString
   }
