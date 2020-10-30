@@ -15,9 +15,9 @@ lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.14.0-M1"
 lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
-lazy val jenaVersion           = "3.13.16"
+lazy val jenaVersion           = "3.16.0"
 lazy val jgraphtVersion        = "1.3.1"
-lazy val jlineVersion          = "3.16.0"
+lazy val jlineVersion          = "3.17.0"
 lazy val jnaVersion            = "5.6.0"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
@@ -31,7 +31,8 @@ lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
 lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
-lazy val typesafeConfigVersion = "1.4.1"
+lazy val shaclTQVersion        = "1.3.2"
+lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
 
 
@@ -67,11 +68,13 @@ lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"    
 lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val jenaShacl         = "org.apache.jena"            % "jena-shacl"           % jenaVersion
 lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
 lazy val jline             = "org.jline"                  % "jline"                % jlineVersion
 lazy val jna               = "net.java.dev.jna"           % "jna"                  % jnaVersion
 lazy val pprint            = "com.lihaoyi"                %% "pprint"              % pprintVersion
-lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
+lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          %  "rdf4j-runtime"       % rdf4jVersion
+lazy val shaclTQ           = "org.topbraid"               %  "shacl"               % shaclTQVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -147,7 +150,9 @@ lazy val schema = project
       srdf4j,
       shex,
       shacl,
-      shapeMaps
+      shapeMaps,
+      jenaShacl,
+      shaclTQ
       )
   )
   .dependsOn(
@@ -172,7 +177,7 @@ lazy val slang = project
       utils,
       srdf,
       srdf4j % Test,
-      srdfJena % Test
+      srdfJena % Test,
       )
   )
 

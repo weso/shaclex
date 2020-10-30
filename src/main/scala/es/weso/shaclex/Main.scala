@@ -185,10 +185,12 @@ object Main extends IOApp with LazyLogging {
   
   private def doShowResult(opts: MainOpts, result: Result): ESIO[Unit] = 
   if (opts.showResult() || opts.outputFile.isDefined) {
-    val resultSerialized = result.serialize(opts.resultFormat(),relativeBase)
+    // val resultSerialized = result.serialize(opts.resultFormat(),relativeBase)
     for {
-      _ <- whenA(opts.showResult(),fromUnit(println(resultSerialized)))
-      _ <- whenA(opts.outputFile.isDefined,fromUnit(FileUtils.writeFile(opts.outputFile(), resultSerialized)))
+      resEmpty <-fromIO(RDFAsJenaModel.empty)
+      str <- fromIO(resEmpty.use(builder => result.serialize(opts.resultFormat(),relativeBase,builder)))
+      _ <- whenA(opts.showResult(),fromUnit(println(str)))
+      _ <- whenA(opts.outputFile.isDefined,fromUnit(FileUtils.writeFile(opts.outputFile(), str)))
     } yield (())
   } else done
 
@@ -196,8 +198,8 @@ object Main extends IOApp with LazyLogging {
   private def doShowValidationReport(opts:MainOpts, result: Result): ESIO[Unit] = 
     if (opts.showValidationReport()) 
       for {
-        rdf <- fromEither(result.validationReport)
-        str <- fromIO(rdf.serialize(opts.validationReportFormat()))
+        res <- fromIO(RDFAsJenaModel.empty)
+        str <- fromIO(res.use(builder => result.validationReport.toRDF(builder).flatMap(_.serialize(opts.validationReportFormat()))))
         _ <- fromUnit(println(str))
       } yield (())
     else done

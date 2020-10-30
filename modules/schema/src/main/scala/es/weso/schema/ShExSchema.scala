@@ -70,7 +70,7 @@ case class ShExSchema(schema: SchemaShEx)
         false,
         message = "Error validating",
         shapeMaps = Seq(),
-        validationReport = Left("No validation report in ShEx"),
+        validationReport = EmptyReport,
         errors = Seq(ErrorInfo(msg)),
         None,
         pm,
@@ -81,7 +81,7 @@ case class ShExSchema(schema: SchemaShEx)
         true,
         "Validated",
         shapeMaps = Seq(resultShapeMap),
-        validationReport = Left(s"No validaton report in ShEx"),
+        validationReport = EmptyReport,
         errors = Seq(),
         None,
         pm,
@@ -118,7 +118,7 @@ case class ShExSchema(schema: SchemaShEx)
           false,
           "Error validating",
           Seq(),
-          Left("No validation report yet"),
+          EmptyReport,
           Seq(ErrorInfo(error.getMessage())),
           None,
           pm,
@@ -130,7 +130,7 @@ case class ShExSchema(schema: SchemaShEx)
           true,
           "Validated",
           Seq(resultShapeMap),
-          Left(s"No validation report for ShEx"),
+          EmptyReport,
           Seq(),
           None,
           pm,
@@ -138,22 +138,6 @@ case class ShExSchema(schema: SchemaShEx)
         )
       }
   } yield res 
-/*    match {
-      case Right(resultShapeMap) => {
-        // println(s"Validated, result=$resultShapeMap")
-        Result(
-          true,
-          "Validated",
-          Seq(resultShapeMap),
-          Left(s"No validation report for ShEx"),
-          Seq(),
-          None,
-          rdf.getPrefixMap(),
-          schema.prefixMap
-        )
-      }
-    }
-  } */
 
   def cnvViolationError(v: ShExError): ErrorInfo = {
     ErrorInfo(v.show)
@@ -167,10 +151,6 @@ case class ShExSchema(schema: SchemaShEx)
     s => IO.raiseError(new RuntimeException(s)),
     IO.pure(_)
   )
-/*  {
-    val x: Either[Throwable,A] = e.leftMap(new RuntimeException(_))
-    MonadError[IO,Throwable].rethrow(IO(x))
-  } */
 
   override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = for {
     eitherSchema <- RDF2ShEx.rdf2Schema(rdf)

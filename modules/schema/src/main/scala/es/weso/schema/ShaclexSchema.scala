@@ -45,17 +45,17 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
                 builder: RDFBuilder
                ): IO[Result] = {
     val vr: ValidationReport =
-      r.result.fold(e => ValidationReport.fromError(e), r =>
+      r.result.fold(
+        e => ValidationReport.fromError(e), r =>
         r._1.toValidationReport
       )
     for {
       pm <- rdf.getPrefixMap
-      eitherVR <- vr.toRDF(builder).attempt
     } yield Result(
       isValid = vr.conforms,
       message = if (vr.conforms) "Valid" else "Not valid",
       shapeMaps = r.results.map(cnvShapeTyping(_, rdf,pm)),
-      validationReport = eitherVR.leftMap(_.getMessage),
+      validationReport = ShaclexReport(vr),
       errors = vr.results.map(cnvViolationError),
       trigger = None,
       nodesPrefixMap = pm,
@@ -164,30 +164,30 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def pm: PrefixMap = schema.pm
 
-  override def convert(targetFormat: Option[String],
-                       targetEngine: Option[String],
+  override def convert(maybeTargetFormat: Option[String],
+                       maybeTargetEngine: Option[String],
                        base: Option[IRI]
                       ): IO[String] = {
-   targetEngine.map(_.toUpperCase) match {
-     case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+   val targetFormat = maybeTargetFormat.getOrElse(DataFormats.defaultFormatName)
+   for {
+    str <- maybeTargetEngine.map(_.toUpperCase) match {
+     case None => 
+       serialize(targetFormat)
      case Some("SHACL") | Some("SHACLEX") =>
-       serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
+       serialize(targetFormat)
      case Some("SHEX") => RDFAsJenaModel.empty.flatMap(_.use(builder => for {
        pair <- Shacl2ShEx.shacl2ShEx(schema).fold(
          s => IO.raiseError(new RuntimeException(s"SHACL2ShEx: Error converting: $s")),
          IO.pure
        )
        (newSchema,_) = pair
-       str <- es.weso.shex.Schema.serialize(
-         newSchema,
-         targetFormat.getOrElse(DataFormats.defaultFormatName),
-         base,
-         builder)
-     } yield str))
+       str <- es.weso.shex.Schema.serialize(newSchema,targetFormat,base,builder)
+     } yield (str)))
      case Some(other) =>
        IO.raiseError(new RuntimeException(s"Conversion $name -> $other not implemented yet"))
-   }
-  }
+   } 
+  } yield str
+ }
 
   override def info: SchemaInfo = {
     // TODO: Check if shacl schemas are well formed
