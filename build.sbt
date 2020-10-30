@@ -31,6 +31,7 @@ lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
 lazy val seleniumVersion       = "2.35.0"
 lazy val sextVersion           = "0.2.6"
+lazy val shaclTQVersion        = "1.3.2"
 lazy val typesafeConfigVersion = "1.3.4"
 lazy val xercesVersion         = "2.12.0"
 
@@ -72,7 +73,8 @@ lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"  
 lazy val jline             = "org.jline"                  % "jline"                % jlineVersion
 lazy val jna               = "net.java.dev.jna"           % "jna"                  % jnaVersion
 lazy val pprint            = "com.lihaoyi"                %% "pprint"              % pprintVersion
-lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          % "rdf4j-runtime"        % rdf4jVersion
+lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          %  "rdf4j-runtime"       % rdf4jVersion
+lazy val shaclTQ           = "org.topbraid"               %  "shacl"               % shaclTQVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
 lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
@@ -149,7 +151,8 @@ lazy val schema = project
       shex,
       shacl,
       shapeMaps,
-      jenaShacl
+      jenaShacl,
+      shaclTQ
       )
   )
   .dependsOn(

@@ -48,7 +48,6 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
       
       tryResult.attempt.unsafeRunSync match {
         case Right(result) =>
-          info(s"Result: ${result.serialize(Result.TEXT)}")
           info(s"Result solution: ${result.solution}")
           result.isValid should be(true)
           result.hasShapes(node) should contain only shape

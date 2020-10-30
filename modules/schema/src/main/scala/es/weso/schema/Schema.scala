@@ -63,6 +63,9 @@ abstract class Schema {
    */
   def pm: PrefixMap
 
+  /**
+   * Convert this schema into another schema
+   */
   def convert(targetFormat: Option[String],
               targetEngine: Option[String],
               base: Option[IRI]
