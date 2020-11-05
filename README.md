@@ -40,9 +40,27 @@ It is possible to run the program inside `sbt` as:
 Example:
 
 ```sh
-sbt "run --data examples/shacl/good1.ttl 
-         --engine ShaClex"
+sbt "run --data examples/shacl/good1.ttl \
+         --engine shaclex \
+         --showValidationReport"
 ```
+
+It is also possible to use [Jena SHACL](https://jena.apache.org/documentation/shacl/) using:  
+
+```sh
+sbt "run --data examples/shacl/good1.ttl \
+         --engine JenaSHACL \
+         --showValidationReport"
+```
+
+or [Top Braid SHACL API] using:
+
+```sh
+sbt "run --data examples/shacl/good1.ttl \
+         --engine shacl-tq \
+         --showValidationReport"
+```
+
 
 ### Validating RDF with ShEx 
 
