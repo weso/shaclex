@@ -17,6 +17,7 @@ import es.weso.slang.{SLang2Clingo, ShEx2SLang}
 
 import scala.util._
 import es.weso.shex.ResolvedSchema
+import scala.util.control.NoStackTrace
 
 case class ShExSchema(schema: SchemaShEx)
     extends es.weso.schema.Schema
@@ -114,28 +115,10 @@ case class ShExSchema(schema: SchemaShEx)
     pm <- rdf.getPrefixMap
     res <- r match {
       case Left(error) =>
-        IO(Result(
-          false,
-          "Error validating",
-          Seq(),
-          EmptyReport,
-          Seq(ErrorInfo(error.getMessage())),
-          None,
-          pm,
-          schema.prefixMap
-        ))
+        IO(Result(false,"Error validating",Seq(),EmptyReport,Seq(ErrorInfo(error.getMessage())),None,pm,schema.prefixMap))
       case Right(result) => for {
         resultShapeMap <- result.toResultShapeMap
-      } yield Result(
-          true,
-          "Validated",
-          Seq(resultShapeMap),
-          EmptyReport,
-          Seq(),
-          None,
-          pm,
-          schema.prefixMap
-        )
+      } yield Result(true,"Validated",Seq(resultShapeMap),EmptyReport,Seq(),None,pm,schema.prefixMap)
       }
   } yield res 
 
@@ -148,17 +131,13 @@ case class ShExSchema(schema: SchemaShEx)
   }
 
   private def handleErr[A](e: Either[String,A]): IO[A] = e.fold(
-    s => IO.raiseError(new RuntimeException(s)),
+    s => err(s),
     IO.pure(_)
   )
 
   override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = for {
     eitherSchema <- RDF2ShEx.rdf2Schema(rdf)
-    schema <- IO.fromEither(eitherSchema.leftMap(s => new RuntimeException(s"Error obtaining schema from RDF: $s\nRDF:\n${rdf.rdfReaderName}")))
-/*    e.map(s => {
-      val schema: es.weso.schema.Schema = ShExSchema(s)
-      schema
-    }).value >>= handleErr */
+    schema <- IO.fromEither(eitherSchema.leftMap(s => ShExSchemaError(s"Error obtaining schema from RDF: $s\nRDF:\n${rdf.rdfReaderName}")))
   } yield ShExSchema(schema)
 
   override def serialize(format: String, base: Option[IRI]): IO[String] = {
@@ -166,10 +145,13 @@ case class ShExSchema(schema: SchemaShEx)
     RDFAsJenaModel.empty.flatMap(_.use(builder => for {
       str <- fmt.toUpperCase match {
           case _ if (formatsUpperCase.contains(fmt)) => SchemaShEx.serialize(schema, fmt, base, builder)
-          case _ => IO.raiseError(new RuntimeException(s"Can't serialize to format $format. Supported formats=$formats"))
+          case _ => err(s"Can't serialize to format $format. Supported formats=$formats")
       } 
     } yield str))
   }
+
+  case class ShExSchemaError(msg:String) extends RuntimeException(msg) with NoStackTrace
+  private def err[A](msg: String): IO[A] = IO.raiseError(ShExSchemaError(msg))
 
   override def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
