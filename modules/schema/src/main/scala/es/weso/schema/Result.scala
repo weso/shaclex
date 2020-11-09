@@ -46,7 +46,11 @@ case class Result(
 
   def addTrigger(trigger: ValidationTrigger): Result = this.copy(trigger = Some(trigger))
 
-  def show(base: Option[IRI]): String = {
+  sealed abstract trait DetailsOption extends Product with Serializable
+  case object Details extends DetailsOption
+  case object NoDetails extends DetailsOption
+
+  def show(base: Option[IRI], details: DetailsOption): String = {
     val sb = new StringBuilder
     if (isValid) {
       if (shapeMaps.size == 0) {
@@ -106,7 +110,8 @@ case class Result(
   }
 
   def serialize(format: String, base: Option[IRI] = None, builder: RDFBuilder): IO[String] = format.toUpperCase match {
-    case Result.TEXT => IO(show(base))
+    case Result.COMPACT => IO(show(base, NoDetails))
+    case Result.DETAILS => IO(show(base, Details))
     case Result.JSON => toJsonString2spaces(builder)
     case _ => IO.raiseError(new RuntimeException(s"Unsupported format to serialize result: $format, $this"))
   }
@@ -146,9 +151,11 @@ object Result extends LazyLogging {
     override def show(r: Result): String = r.show(None)
   }
 
-  lazy val TEXT = "TEXT"
+  lazy val TEXT = "COMPACT"
   lazy val JSON = "JSON"
-  lazy val availableResultFormats = List(TEXT, JSON).map(_.toUpperCase)
+  lazy val DETAILS = "DETAILS"
+
+  lazy val availableResultFormats = List(TEXT, JSON, DETAILS).map(_.toUpperCase)
   lazy val defaultResultFormat = availableResultFormats.head
 
   // TODO: implement this

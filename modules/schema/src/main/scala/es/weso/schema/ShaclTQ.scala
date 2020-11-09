@@ -90,7 +90,7 @@ case class ShaclTQ(shapesGraph: Model) extends Schema {
     IO { report.hasProperty(SH.conforms,JenaDatatypes.TRUE) }
 
   private def countViolations(report: Resource): IO[Int] = 
-    IO { report.getModel.listResourcesWithProperty(RDF.`type`,SH.Violation).toList.size }
+    IO { report.getModel.listResourcesWithProperty(RDF.`type`,SH.ValidationResult).toList.size }
 
 
   private def report2reader(model: Model): IO[RDFReader] = for {

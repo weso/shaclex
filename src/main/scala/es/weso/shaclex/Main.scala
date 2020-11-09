@@ -4,16 +4,12 @@ import cats.implicits._
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
-// import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.Endpoint
 import es.weso.rdf.nodes.IRI
-// import es.weso.schemaInfer.SchemaInfer
 import es.weso.shaclex.repl.Repl
-// import es.weso.shapeMaps.NodeSelector
 import fs2._
 
 import scala.io.Source
-// import es.weso.server._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
@@ -27,6 +23,7 @@ import cats._
 // import scala.concurrent.ExecutionContext
 import fs2.Pipe
 import es.weso.rdf.RDFBuilder
+import es.weso.rdf.InferenceEngine
 // import cats.implicits._
 
 object Main extends IOApp with LazyLogging {
@@ -115,6 +112,7 @@ object Main extends IOApp with LazyLogging {
     schema <- getSchema(opts, baseFolder, rdf)
     triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
     shapeMapStr <- getShapeMapStr(opts, baseFolder)
+    // _ <- IO { pprint.log(shapeMapStr) }
     pm <- rdf.getPrefixMap
     trigger <- fromEither(ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBaseStr,
         opts.node.toOption, opts.shapeLabel.toOption,
@@ -230,22 +228,10 @@ object Main extends IOApp with LazyLogging {
       val path = baseFolder.resolve(opts.shapeMap())
       for {
         // TODO: Allow different shapeMap formats
-        content <- getContents(path.toFile.getName())
+        content <- getContents(path)
       } yield content.toString
     } else "".pure[IO]
   }
-
-
-  // TODO: Move to a common tools package
-  private def getContents(fileName: String): IO[CharSequence] = {
-    val path = Paths.get(fileName)
-    // implicit val cs = IO.contextShift(ExecutionContext.global)
-    val decoder: Pipe[IO,Byte,String] = fs2.text.utf8Decode
-    Stream.resource(Blocker[IO]).flatMap(blocker =>
-      fs2.io.file.readAll[IO](path, blocker,4096).through(decoder)
-    ).compile.string
-  }
-
 
 /*  private def getNodeSelector(opts:MainOpts, pm: PrefixMap): EitherT[IO, String, NodeSelector] = {
     if (opts.shapeInferNode.isDefined) {
@@ -266,8 +252,11 @@ object Main extends IOApp with LazyLogging {
         } else {
           IO(RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase))
         }
-        newRdf = if (opts.inference.isDefined) rdf.evalMap(rdf => rdf.applyInference(opts.inference()))
-                  else rdf
+        newRdf = if (opts.inference.isDefined) for {
+          inference <- Resource.liftF(fromEither(InferenceEngine.fromString(opts.inference())))
+          r <- rdf.evalMap(rdf => rdf.applyInference(inference))
+        } yield r 
+        else rdf
       } yield newRdf 
     } else if (opts.endpoint.isDefined) {
       IO(Resource.liftF(Endpoint.fromString(opts.endpoint())))
