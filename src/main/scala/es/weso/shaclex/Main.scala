@@ -233,16 +233,6 @@ object Main extends IOApp with LazyLogging {
     } else "".pure[IO]
   }
 
-
-  // TODO: Move to a common tools package
-  private def getContents(path: Path): IO[CharSequence] = {
-    val decoder: Pipe[IO,Byte,String] = fs2.text.utf8Decode
-    Stream.resource(Blocker[IO]).flatMap(blocker =>
-      fs2.io.file.readAll[IO](path, blocker,4096).through(decoder)
-    ).compile.string
-  }
-
-
 /*  private def getNodeSelector(opts:MainOpts, pm: PrefixMap): EitherT[IO, String, NodeSelector] = {
     if (opts.shapeInferNode.isDefined) {
       EitherT.fromEither[IO](NodeSelector.fromString(opts.shapeInferNode(),None,pm))
