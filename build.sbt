@@ -10,7 +10,7 @@ lazy val shaclVersion         = "0.1.65"
 lazy val shapeMapsVersion     = "0.1.61"
 
 // Dependency versions
-lazy val catsVersion           = "2.2.0"
+lazy val catsVersion           = "2.3.0"
 lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.14.0-M1"
 lazy val diffsonVersion        = "4.0.0"
