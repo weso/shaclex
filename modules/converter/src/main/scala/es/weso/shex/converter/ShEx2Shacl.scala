@@ -142,6 +142,7 @@ object ShEx2Shacl {
       case s: shex.Shape => cnvShape(s, schema, id)
       case s: shex.ShapeRef => err(s"cnvShapeExpr: Not implemented $s")
       case s: shex.ShapeExternal => err(s"cnvShapeExpr: Not implemented $s")
+      case s: shex.ShapeDecl => err(s"cnvShapeExpr: Not implemented $s")
     }
 
   private def cnvShapeAnd(shapeAnd: shex.ShapeAnd, schema: shex.Schema, id: RDFNode): Result[shacl.Shape] =

@@ -3,14 +3,14 @@ lazy val scala213 = "2.13.3"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.69"
-lazy val srdfVersion          = "0.1.77"
-lazy val shexVersion          = "0.1.71"
-lazy val shaclVersion         = "0.1.65"
-lazy val shapeMapsVersion     = "0.1.61"
+lazy val utilsVersion         = "0.1.73"
+lazy val srdfVersion          = "0.1.81"
+lazy val shexVersion          = "0.1.76"
+lazy val shaclVersion         = "0.1.67"
+lazy val shapeMapsVersion     = "0.1.66"
 
 // Dependency versions
-lazy val catsVersion           = "2.2.0"
+lazy val catsVersion           = "2.3.0"
 lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.14.0-M1"
 lazy val diffsonVersion        = "4.0.0"

@@ -1,6 +1,6 @@
 package es.weso.schema
 
-import cats.implicits._
+// import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
@@ -69,7 +69,7 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
      else s"Number of violations: ${report.getEntries().size()}"
     val shapesMap = report2ShapesMap(report, nodesPrefixMap, shapesPrefixMap)
     val errors: Seq[ErrorInfo] = report2errors(report)
-    val esRdf = eitherRdf.leftMap(_.getMessage())
+    // val esRdf = eitherRdf.leftMap(_.getMessage())
     Result(isValid = isValid, 
       message = message, 
       shapeMaps = Seq(shapesMap), 

@@ -7,7 +7,6 @@ import com.typesafe.scalalogging._
 import es.weso.rdf.jena.Endpoint
 import es.weso.rdf.nodes.IRI
 import es.weso.shaclex.repl.Repl
-import fs2._
 
 import scala.io.Source
 import es.weso.schema._
@@ -21,7 +20,6 @@ import es.weso.rdf.RDFReader
 import cats.effect._
 import cats._
 // import scala.concurrent.ExecutionContext
-import fs2.Pipe
 import es.weso.rdf.RDFBuilder
 import es.weso.rdf.InferenceEngine
 // import cats.implicits._
@@ -228,7 +226,7 @@ object Main extends IOApp with LazyLogging {
       val path = baseFolder.resolve(opts.shapeMap())
       for {
         // TODO: Allow different shapeMap formats
-        content <- getContents(path)
+        content <- FileUtils.getContents(path)
       } yield content.toString
     } else "".pure[IO]
   }

@@ -93,6 +93,7 @@ object CountUsages {
             } yield n
         } yield n
       }
+      case sd: ShapeDecl => countUsagesLabelShapeExpr(lbl,sd.shapeExpr)
     }
 
   private def countUsagesLabelTripleExpr(lbl: ShapeLabel, te: TripleExpr): Result[Int] =

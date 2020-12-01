@@ -2,24 +2,28 @@ package es.weso.schema
 
 import cats.Show
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.{PrefixMap, RDFReader}
+// import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import es.weso.shapeMaps._
-import es.weso.rdf.jena.RDFAsJenaModel
+// import es.weso.rdf.jena.RDFAsJenaModel
 import java.io._
-import es.weso.shacl.report.ValidationReport
+// import es.weso.shacl.report.ValidationReport
 import es.weso.rdf.RDFBuilder
 import cats.effect._
+import es.weso.rdf.PrefixMap
 
+sealed abstract trait DetailsOption extends Product with Serializable
+case object Details extends DetailsOption
+case object NoDetails extends DetailsOption
 
 case class Result(
   isValid: Boolean,
   message: String,
   shapeMaps: Seq[ResultShapeMap],
-  validationReport: RDFReport,  // Either[String,RDFReader],
+  validationReport: RDFReport,  
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
@@ -46,9 +50,6 @@ case class Result(
 
   def addTrigger(trigger: ValidationTrigger): Result = this.copy(trigger = Some(trigger))
 
-  sealed abstract trait DetailsOption extends Product with Serializable
-  case object Details extends DetailsOption
-  case object NoDetails extends DetailsOption
 
   def show(base: Option[IRI], details: DetailsOption): String = {
     val sb = new StringBuilder
@@ -110,7 +111,7 @@ case class Result(
   }
 
   def serialize(format: String, base: Option[IRI] = None, builder: RDFBuilder): IO[String] = format.toUpperCase match {
-    case Result.COMPACT => IO(show(base, NoDetails))
+    case Result.TEXT => IO(show(base, NoDetails))
     case Result.DETAILS => IO(show(base, Details))
     case Result.JSON => toJsonString2spaces(builder)
     case _ => IO.raiseError(new RuntimeException(s"Unsupported format to serialize result: $format, $this"))
@@ -148,7 +149,7 @@ object Result extends LazyLogging {
     empty.copy(isValid = false, message = str)
 
   implicit val showResult = new Show[Result] {
-    override def show(r: Result): String = r.show(None)
+    override def show(r: Result): String = r.show(None,Details)
   }
 
   lazy val TEXT = "COMPACT"
@@ -162,7 +163,7 @@ object Result extends LazyLogging {
   implicit val decodeTrigger: Decoder[Option[ValidationTrigger]] = Decoder.instance { c =>
     {
       logger.warn("Trigger decoder not implemented")
-      ??? //Right(None)
+      throw new RuntimeException("Trigger decoder not implemented yet")
     }
   }
 

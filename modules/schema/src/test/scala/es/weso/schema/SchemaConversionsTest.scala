@@ -83,7 +83,7 @@ class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
           |@prefix sx:      <http://shex.io/ns/shex#> .
           |
           |:S a    sx:Shape ;
-          |   sx:closed false ;
+          |#   sx:closed false ;
           |   sx:expression [
           |    a sx:TripleConstraint ;
           |    sx:predicate :p ;

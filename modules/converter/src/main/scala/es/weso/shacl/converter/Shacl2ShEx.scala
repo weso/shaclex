@@ -11,8 +11,8 @@ import es.weso.shex.implicits.showShEx._
 import es.weso.shex.linter.ShExLinter
 import es.weso.{shacl, _}
 import es.weso.{shapeMaps,_}
-import es.weso.shapeMaps.BNodeLabel
-import es.weso.shapeMaps.IRILabel
+// import es.weso.shapeMaps.BNodeLabel
+// import es.weso.shapeMaps.IRILabel
 
 object Shacl2ShEx {
 

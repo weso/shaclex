@@ -67,9 +67,9 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
       mapValues(t._1.getMap)(cnvMapShapeResult), pm, schema.pm)
   }
 
-  private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
+  private def cnvMapShapeResult(m: scala.collection.Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
 
-    MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
+    MapUtils.cnvMap(m.toMap, cnvShape, cnvTypingResult)
   }
 
   private def cnvShape(s: Shape): ShapeMapLabel = {
