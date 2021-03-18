@@ -4,7 +4,7 @@ import es.weso.schema._
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.ShapeMap
 
 class MainOpts(arguments: List[String],
                onError: (Throwable, Scallop) => Nothing

@@ -6,7 +6,7 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.schema.Schemas._
 import es.weso.schema._
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 import cats.effect.IO
 import es.weso.utils.internal.CollectionCompat._
 // import es.weso.rdf.triples.RDFTriple

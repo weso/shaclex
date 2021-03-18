@@ -1,0 +1,142 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX xml: <http://www.w3.org/XML/1998/namespace>
+PREFIX bcn: <https://www.bcn.cl/presupuesto/vocabulario/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://weso.es/shapes/>
+
+:FormalOrganization {
+   rdfs:label         xsd:string  +;                                  
+   bcn:financiadoPor  @:FormalOrganization  +
+}
+
+:Programa {
+   dc:identifier       xsd:integer  +;                              
+   bcn:valorAsignado   xsd:string  +;                           
+   dc:title            xsd:string  +;                                    
+   bcn:timestamp       xsd:dateTimeStamp  +;                        
+   bcn:anio            xsd:integer  +;                                   
+   bcn:asignadoA       @:FormalOrganization  +;                                                       
+   bcn:variacionAnual  xsd:decimal  +;                         
+   skos:member         IRI OR @:EntidadPresupuesto OR @:Subtitulo OR @:Collection  +;
+   bcn:tieneEjecucion  @:EjecucionPresupuesto +;
+   rdfs:label          xsd:string  + 
+}
+
+:EntidadPresupuesto {
+   dc:identifier       xsd:integer  +;                              
+   bcn:valorAsignado   xsd:string  +;    
+   dc:title            xsd:string  +;             
+   bcn:timestamp       xsd:dateTimeStamp  +; 
+   bcn:anio            xsd:integer  +;            
+   bcn:variacionAnual  xsd:decimal  +;  
+   rdfs:label          xsd:string  +;           
+   bcn:tieneEjecucion  @:EjecucionPresupuesto +;
+   skos:member         IRI OR @:EntidadPresupuesto OR @:Collection OR @:Item OR @:Subtitulo OR @:Programa  +;
+   bcn:asignadoA       IRI OR @:FormalOrganization + 
+}
+
+:Item {
+   dc:identifier       xsd:integer  +;                              
+   bcn:valorAsignado   xsd:string  +;                           
+   dc:title            xsd:string  +;                                    
+   bcn:timestamp       xsd:dateTimeStamp  +;                        
+   bcn:anio            xsd:integer  +;                                   
+   bcn:variacionAnual  xsd:decimal  +;                         
+   rdfs:label          xsd:string  +;                                  
+   bcn:tieneEjecucion  @:EjecucionPresupuesto  +; 
+   skos:member         IRI OR @:Collection OR @:EntidadPresupuesto OR @:Asignacion + ; 
+}
+
+:Collection {
+   dc:identifier       xsd:integer  +; 
+   bcn:valorAsignado   xsd:string  +; 
+   dc:title            xsd:string  +;          
+   bcn:timestamp       xsd:dateTimeStamp  +; 
+   bcn:anio            xsd:integer  +;            
+   bcn:variacionAnual  xsd:decimal  +;  
+   rdfs:label          xsd:string  +;           
+   bcn:tieneEjecucion  @:EjecucionPresupuesto  +;
+   skos:member         IRI OR @:EntidadPresupuesto OR @:Collection OR @:Item OR @:Subtitulo OR @:Programa +; 
+   bcn:asignadoA       IRI OR @:FormalOrganization + 
+}
+
+:Partida {
+   dc:identifier       xsd:integer  +; 
+   bcn:valorAsignado   xsd:string  +; 
+   dc:title            xsd:string  +;          
+   bcn:timestamp       xsd:dateTimeStamp  +; 
+   bcn:anio            xsd:integer  +;            
+   bcn:asignadoA       @:FormalOrganization  +; 
+   bcn:variacionAnual  xsd:decimal  +;     
+   skos:member         @:Capitulo OR @:EntidadPresupuesto OR @:Collection +;                                                       
+   bcn:tieneEjecucion  @:EjecucionPresupuesto + ;                                                       
+   rdfs:label          xsd:string  +                                   
+}
+
+
+:EjecucionPresupuesto {
+   bcn:tipoMovimiento  xsd:string  +;                        
+   dc:identifier       xsd:integer  +;                            
+   bcn:valorVigente    xsd:string  +;                          
+   bcn:anio            xsd:integer  +;                                 
+   bcn:mes             xsd:integer  +;                                  
+   bcn:valorEjecutado  xsd:string  +                         
+}
+
+
+:Subtitulo {
+   dc:identifier       xsd:integer  +;                              
+   bcn:valorAsignado   xsd:string  +;                           
+   dc:title            xsd:string  +;                                    
+   bcn:timestamp       xsd:dateTimeStamp  +;                        
+   bcn:anio            xsd:integer  +;                                   
+   bcn:variacionAnual  xsd:decimal  +;                         
+   rdfs:label          xsd:string  +;                                  
+   bcn:tieneEjecucion  @:EjecucionPresupuesto  +;
+   skos:member         IRI OR @:Item OR @:EntidadPresupuesto OR @:Collection  + 
+}
+
+
+:PresupuestoNacional {
+   dc:identifier       xsd:integer  +; 
+   bcn:valorAsignado   xsd:string  +; 
+   dc:title            xsd:string  +;          
+   bcn:timestamp       xsd:dateTimeStamp  +; 
+   bcn:anio            xsd:integer  +;            
+   bcn:asignadoA       IRI  +;               
+   bcn:variacionAnual  xsd:decimal  +;  
+   skos:member         @:Collection OR @:EntidadPresupuesto OR @:Partida +; 
+   rdfs:label          xsd:string  + 
+}
+
+:Asignacion {
+   dc:identifier       xsd:integer  +; 
+   bcn:valorAsignado   xsd:string  +; 
+   dc:title            xsd:string  +; 
+   bcn:timestamp       xsd:dateTimeStamp  +; 
+   bcn:anio            xsd:integer  +; 
+   bcn:asignadoA       @:FormalOrganization  +;
+   bcn:variacionAnual  xsd:decimal  +;   
+   bcn:provistoDesde   @:EntidadPresupuesto OR @:Programa OR @:Collection +;
+   rdfs:label          xsd:string  +; 
+   bcn:tieneEjecucion  @:EjecucionPresupuesto  + 
+}
+
+:Capitulo {
+   dc:identifier       xsd:integer  +; 
+   bcn:valorAsignado   xsd:string  +; 
+   dc:title            xsd:string  +;          
+   bcn:timestamp       xsd:dateTimeStamp  +; 
+   bcn:anio            xsd:integer  +;            
+   bcn:asignadoA       @:FormalOrganization  +; 
+   bcn:variacionAnual  xsd:decimal  +;     
+   bcn:tieneEjecucion  @:EjecucionPresupuesto  +; 
+   rdfs:label          xsd:string  +;                     
+   skos:member         IRI OR @:EntidadPresupuesto OR @:Programa OR @:Collection + 
+}

@@ -246,9 +246,9 @@ object Main extends IOApp with LazyLogging {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          IO(RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase))
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase)
         } else {
-          IO(RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase))
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase)
         }
         newRdf = if (opts.inference.isDefined) for {
           inference <- Resource.liftF(fromEither(InferenceEngine.fromString(opts.inference())))

@@ -102,8 +102,9 @@ sbt> run -d examples/shacl/good1.ttl --engine ShaClex
 
 ### Binary mode
 
-The fastest way to run Shaclex is to compile the code and generate a binary. 
-The following command:
+The fastest way to run Shaclex is to compile the code and generate a comand line binary file. 
+
+The following command will generate a binary file:
 
 ```sh
 $ sbt universal:packageBin

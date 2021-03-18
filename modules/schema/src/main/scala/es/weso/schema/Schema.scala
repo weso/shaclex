@@ -1,7 +1,7 @@
 package es.weso.schema
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.ShapeMap
 import es.weso.utils.FileUtils
 import cats.effect._
 
@@ -38,7 +38,7 @@ abstract class Schema {
     }
   }
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[Schema]
+  def fromString(str: String, format: String, base: Option[String]): IO[Schema]
 
   def fromRDF(rdf: RDFReader): IO[Schema]
 

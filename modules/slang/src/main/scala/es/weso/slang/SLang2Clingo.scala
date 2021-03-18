@@ -5,8 +5,11 @@ import es.weso.rdf.operations.Graph
 import es.weso.utils.IOUtils.fromES
 //import es.weso.rdf.operations.Graph
 import es.weso.rdf.triples.RDFTriple
-import es.weso.shapeMaps.{BNodeLabel => SMBNodeLabel, IRILabel => SMIRILabel, _}
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.{
+  BNodeLabel => SMBNodeLabel, 
+  IRILabel => SMIRILabel, _
+}
+// import es.weso.shapemaps.ShapeMap
 import es.weso.slang.Clingo._
 import scala.annotation.tailrec
 import cats.effect.IO
