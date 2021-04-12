@@ -4,14 +4,13 @@ import cats.implicits._
 import es.weso._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.utils.IOUtils
-import org.scalatest.matchers.should._
-import org.scalatest.funspec._
+import munit._
 import es.weso.shapemaps.Association
 import es.weso.shapemaps.ShapeMapLabel
 import es.weso.shapemaps.NodeSelector
 import es.weso.shapemaps.ShapeMap
 
-class shacl2ShapeMapTest extends AnyFunSpec with Matchers {
+class shacl2ShapeMapTest extends CatsEffectSuite {
 
     shouldConvertSHACLShapeMap(
       """|prefix : <http://example.org/>
@@ -60,16 +59,17 @@ class shacl2ShapeMapTest extends AnyFunSpec with Matchers {
   private def getPairs(shapeMap: ShapeMap): List[(NodeSelector,ShapeMapLabel)] = shapeMap.associations.map(getAssociationPair)
 
   def shouldConvertSHACLShapeMap(strSHACL: String, expected: String): Unit = {
-    it(s"Should convert: $strSHACL to ShapeMap and obtain: $expected") {
+    test(s"Should convert: $strSHACL to ShapeMap and obtain: $expected") {
+
     val cmp = RDFAsJenaModel.fromString(strSHACL, "TURTLE", None).flatMap(_.use(shaclRDF => for {
       shacl          <- RDF2Shacl.getShacl(shaclRDF)
       shapeMapConverted  <- IOUtils.fromES(Shacl2ShEx.shacl2ShEx(shacl).leftMap(e => s"Error in Shacl2ShEx conversion: $e"))
       expectedShapeMap <- IOUtils.fromES(shapemaps.ShapeMap.fromString(expected, "Compact", None,shacl.pm,shacl.pm).leftMap(e => s"Error in Shape maps parsing: $e"))
-    } yield (shapeMapConverted, expectedShapeMap, shacl)))
+     } yield (shapeMapConverted, expectedShapeMap, shacl)))
     cmp.map(values => {
           val (converted, expected, shacl) = values
           val (schema,shapeMap) = converted
-          getPairs(shapeMap) should contain theSameElementsAs getPairs(expected)
+          assertEquals(getPairs(shapeMap), getPairs(expected))
         }
       )
     }

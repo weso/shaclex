@@ -6,17 +6,17 @@ val Java11 = "adopt@1.11"
 
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.78"
-lazy val srdfVersion          = "0.1.85"
-lazy val shexVersion          = "0.1.84"
-lazy val shaclVersion         = "0.1.71"
-lazy val shapeMapsVersion     = "0.1.79"
+lazy val utilsVersion         = "0.1.81"
+lazy val srdfVersion          = "0.1.96"
+lazy val shexVersion          = "0.1.86"
+lazy val shaclVersion         = "0.1.73"
+lazy val shapeMapsVersion     = "0.1.82"
 
 // Dependency versions
-lazy val catsVersion           = "2.4.2"
-lazy val commonsTextVersion    = "1.8"
-lazy val circeVersion          = "0.14.0-M4"
-lazy val diffsonVersion        = "4.0.0"
+lazy val catsVersion           = "2.5.0"
+// lazy val commonsTextVersion    = "1.8"
+lazy val circeVersion          = "0.14.0-M5"
+// lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.16.0"
 lazy val jgraphtVersion        = "1.3.1"
@@ -24,21 +24,21 @@ lazy val jlineVersion          = "3.17.0"
 lazy val jnaVersion            = "5.6.0"
 lazy val logbackVersion        = "1.2.3"
 lazy val loggingVersion        = "3.9.2"
-lazy val munitVersion          = "0.7.22"
-lazy val munitEffectVersion    = "0.13.1"
-lazy val pprintVersion         = "0.5.6"
+lazy val munitVersion          = "0.7.23"
+lazy val munitEffectVersion    = "1.0.1"
+lazy val pprintVersion         = "0.6.0"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
-lazy val scalacticVersion      = "3.2.0"
-lazy val scalaTestVersion      = "3.2.0"
-lazy val scalaGraphVersion     = "1.11.5"
-lazy val scalatagsVersion      = "0.6.7"
+// lazy val scalacticVersion      = "3.2.0"
+// lazy val scalaTestVersion      = "3.2.0"
+// lazy val scalaGraphVersion     = "1.11.5"
+// lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
-lazy val seleniumVersion       = "2.35.0"
-lazy val sextVersion           = "0.2.6"
+// lazy val seleniumVersion       = "2.35.0"
+// lazy val sextVersion           = "0.2.6"
 lazy val shaclTQVersion        = "1.3.2"
 lazy val typesafeConfigVersion = "1.3.4"
-lazy val xercesVersion         = "2.12.0"
+// lazy val xercesVersion         = "2.12.0"
 
 
 // Compiler plugin dependency versions
@@ -67,10 +67,10 @@ lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"      
 lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
 lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
 lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
-lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
-lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
+// lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
+// lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
 // lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
-lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
+// lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
 lazy val jenaShacl         = "org.apache.jena"            % "jena-shacl"           % jenaVersion
@@ -86,16 +86,16 @@ lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          %  "rdf4j-runtime"    
 lazy val shaclTQ           = "org.topbraid"               %  "shacl"               % shaclTQVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
-lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
-lazy val scalacheck        = "org.scalacheck"             %% "scalacheck"          % scalacheckVersion
-lazy val scalaTest         = "org.scalatest"              %% "scalatest"           % scalaTestVersion
-lazy val scalatags         = "com.lihaoyi"                %% "scalatags"           % scalatagsVersion
-lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"        % seleniumVersion
+// lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
+// lazy val scalacheck        = "org.scalacheck"             %% "scalacheck"          % scalacheckVersion
+// lazy val scalaTest         = "org.scalatest"              %% "scalatest"           % scalaTestVersion
+// lazy val scalatags         = "com.lihaoyi"                %% "scalatags"           % scalatagsVersion
+// lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"        % seleniumVersion
 // lazy val htmlUnit          = "org.seleniumhq.selenium"    % "htmlunit-driver"      % seleniumVersion
-lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
+// lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
-lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-lazy val simulacrum        = "org.typelevel" %% "simulacrum"     % simulacrumVersion
+// lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
+// lazy val simulacrum        = "org.typelevel" %% "simulacrum"     % simulacrumVersion
 
 ThisBuild / githubWorkflowJavaVersions := Seq(Java11)
 ThisBuild / githubOwner := "weso"
@@ -259,8 +259,8 @@ lazy val noPublishSettings = Seq(
 
 lazy val sharedDependencies = Seq(
   libraryDependencies ++= Seq(
-    scalactic,
-    scalaTest % Test
+   // scalactic,
+   // scalaTest % Test
   )
 )
 

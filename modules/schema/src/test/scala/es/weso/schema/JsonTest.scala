@@ -1,19 +1,21 @@
 package es.weso.schema
 
 import io.circe._
-import org.scalatest._
-import matchers.should._
-import funspec._
+import munit._
 
-trait JsonTest extends AnyFunSpec with Matchers with EitherValues {
+trait JsonTest extends FunSuite {
 
-  def encodeDecodeTest[A](x: A)(implicit d: Decoder[A], e: Encoder[A]): Unit = {
-    it(s"Encode/decode ${x.toString}") {
+  def encodeDecodeTest[A](x: A)(
+    implicit 
+     d: Decoder[A], 
+     e: Encoder[A], 
+     loc: munit.Location): Unit = {
+    test(s"Encode/decode ${x.toString}") {
       val json = e.apply(x)
       val decoded = json.as[A]
       decoded.fold(failure => fail(s"Failure decoding $decoded: $failure"), value =>
         if (value == x)
-          info(s"Encoded/decoded $x OK")
+          ()
         else
           fail(s"Value $x != $value. Json = ${json.spaces2}"))
     }
