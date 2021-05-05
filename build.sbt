@@ -6,11 +6,11 @@ val Java11 = "adopt@1.11"
 
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.81"
-lazy val srdfVersion          = "0.1.96"
-lazy val shexVersion          = "0.1.86"
-lazy val shaclVersion         = "0.1.73"
-lazy val shapeMapsVersion     = "0.1.82"
+lazy val utilsVersion         = "0.1.87"
+lazy val srdfVersion          = "0.1.100"
+lazy val shexVersion          = "0.1.90"
+lazy val shaclVersion         = "0.1.74"
+// lazy val shapeMapsVersion     = "0.1.82"
 
 // Dependency versions
 lazy val catsVersion           = "2.5.0"
@@ -57,7 +57,7 @@ lazy val validating        = "es.weso"                    %% "validating"      %
 lazy val utilsTest         = "es.weso"                    %% "utilstest"       % utilsVersion
 lazy val shex              = "es.weso"                    %% "shex"            % shexVersion
 lazy val shexTest          = "es.weso"                    %% "shextest"        % shexVersion
-lazy val shapeMaps         = "es.weso"                    %% "shapemaps"       % shapeMapsVersion
+lazy val shapemap          = "es.weso"                    %% "shapemap"        % shexVersion
 lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
 
 // Other dependency modules
@@ -170,7 +170,7 @@ lazy val schema = project
       srdf4j,
       shex,
       shacl,
-      shapeMaps,
+      shapemap,
       jenaShacl,
       shaclTQ,
       munitEffect % Test
