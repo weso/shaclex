@@ -212,6 +212,19 @@ This feature is experimental. This [issue tracks the Clingo conversion](https://
 * Another online demo based on this library customized for Wikidata is available at [http://wikidata.weso.es](http://wikidata.weso.es).
 * This project was based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
 
+## Publishing to OSS-Sonatype
+
+This project uses [the sbt ci release](https://github.com/olafurpg/sbt-ci-release) plugin for publishing to [OSS Sonatype](https://oss.sonatype.org/).
+
+##### SNAPSHOT Releases
+Open a PR and merge it to watch the CI release a -SNAPSHOT version
+
+##### Full Library Releases
+1. Push a tag and watch the CI do a regular release
+2. `git tag -a v0.1.0 -m "v0.1.0"`
+3. `git push origin v0.1.0`
+_Note that the tag version MUST start with v._
+
 ## Author & contributors
 
 * Author: [Jose Emilio Labra Gayo](http://labra.weso.es)
