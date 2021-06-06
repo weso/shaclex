@@ -6,10 +6,10 @@ val Java11 = "adopt@1.11"
 
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.87"
-lazy val srdfVersion          = "0.1.100"
-lazy val shexVersion          = "0.1.90"
-lazy val shaclVersion         = "0.1.74"
+lazy val utilsVersion         = "0.1.94"
+lazy val srdfVersion          = "0.1.101"
+lazy val shexVersion          = "0.1.92-SNAPSHOT"
+lazy val shaclVersion         = "0.1.75"
 // lazy val shapeMapsVersion     = "0.1.82"
 
 // Dependency versions
@@ -63,14 +63,9 @@ lazy val shacl             = "es.weso"                    %% "shacl"           %
 // Other dependency modules
 lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
 lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
-//lazy val catsMacros        = "org.typelevel"              %% "cats-macros"         % catsVersion
 lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
 lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
 lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
-// lazy val commonsText       = "org.apache.commons"         %  "commons-text"        % commonsTextVersion
-// lazy val diffsonCirce      = "org.gnieh"                  %% "diffson-circe"       % diffsonVersion
-// lazy val eff               = "org.atnos"                  %% "eff"                 % effVersion
-// lazy val jgraphtCore       = "org.jgrapht"                % "jgrapht-core"         % jgraphtVersion
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
 lazy val jenaShacl         = "org.apache.jena"            % "jena-shacl"           % jenaVersion
@@ -86,20 +81,9 @@ lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          %  "rdf4j-runtime"    
 lazy val shaclTQ           = "org.topbraid"               %  "shacl"               % shaclTQVersion
 lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
 lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
-// lazy val scalactic         = "org.scalactic"              %% "scalactic"           % scalacticVersion
-// lazy val scalacheck        = "org.scalacheck"             %% "scalacheck"          % scalacheckVersion
-// lazy val scalaTest         = "org.scalatest"              %% "scalatest"           % scalaTestVersion
-// lazy val scalatags         = "com.lihaoyi"                %% "scalatags"           % scalatagsVersion
-// lazy val selenium          = "org.seleniumhq.selenium"    % "selenium-java"        % seleniumVersion
-// lazy val htmlUnit          = "org.seleniumhq.selenium"    % "htmlunit-driver"      % seleniumVersion
-// lazy val sext              = "com.github.nikita-volkov"   % "sext"                 % sextVersion
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
-// lazy val xercesImpl        = "xerces"                     % "xercesImpl"           % xercesVersion
-// lazy val simulacrum        = "org.typelevel" %% "simulacrum"     % simulacrumVersion
 
 ThisBuild / githubWorkflowJavaVersions := Seq(Java11)
-ThisBuild / githubOwner := "weso"
-ThisBuild / githubRepository := "shaclex"
 
 
 lazy val shaclex = project
@@ -308,9 +292,6 @@ lazy val ghPagesSettings = Seq(
 lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
   organization := "es.weso",
   resolvers ++= Seq(
-//    Resolver.bintrayRepo("labra", "maven"),
-//    Resolver.bintrayRepo("weso", "weso-releases"),
-    Resolver.githubPackages("weso"),
     Resolver.sonatypeRepo("snapshots")
   )
 )
@@ -329,15 +310,5 @@ lazy val publishSettings = Seq(
                          <url>https://labra.weso.es/</url>
                        </developer>
                      </developers>,
- /* scalacOptions in doc ++= Seq(
-    "-diagrams-debug",
-    "-doc-source-url",
-    scmInfo.value.get.browseUrl + "/tree/master€{FILE_PATH}.scala",
-    "-sourcepath",
-    baseDirectory.in(LocalRootProject).value.getAbsolutePath,
-    "-diagrams",
-  ), */
   publishMavenStyle              := true,
-//  bintrayRepository in bintray   := "weso-releases",
-//  bintrayOrganization in bintray := Some("weso")
 )
