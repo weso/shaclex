@@ -8,13 +8,8 @@ val Java11 = "adopt@1.11"
 // Local dependencies
 lazy val utilsVersion         = "0.1.94"
 lazy val srdfVersion          = "0.1.101"
-<<<<<<< HEAD
 lazy val shexVersion          = "0.1.92-SNAPSHOT"
-=======
-lazy val shexVersion          = "0.1.91"
->>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89
 lazy val shaclVersion         = "0.1.75"
-// lazy val shapeMapsVersion     = "0.1.82"
 
 // Dependency versions
 lazy val catsVersion           = "2.5.0"
@@ -88,10 +83,7 @@ lazy val scallop           = "org.rogach"                 %% "scallop"          
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
 
 ThisBuild / githubWorkflowJavaVersions := Seq(Java11)
-<<<<<<< HEAD
 
-=======
->>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89
 
 lazy val shaclex = project
   .in(file("."))
@@ -288,7 +280,6 @@ lazy val ghPagesSettings = Seq(
 
 lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
   organization := "es.weso",
-<<<<<<< HEAD
   resolvers ++= Seq(
     Resolver.sonatypeRepo("snapshots")
   )
@@ -309,7 +300,6 @@ lazy val publishSettings = Seq(
                        </developer>
                      </developers>,
   publishMavenStyle              := true,
-=======
   sonatypeProfileName := ("es.weso"),
   homepage            := Some(url("https://github.com/weso/shaclex")),
   licenses            := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
@@ -324,5 +314,4 @@ lazy val publishSettings = Seq(
       email="jelabra@gmail.com",
       url=url("https://weso.labra.es")
     ))
->>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89
 )
