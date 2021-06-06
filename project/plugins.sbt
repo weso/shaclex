@@ -2,6 +2,7 @@ addSbtPlugin("com.codecommit"    % "sbt-github-actions"  % "0.10.1")
 addSbtPlugin("com.eed3si9n"      % "sbt-unidoc"          % "0.4.3")
 addSbtPlugin("com.eed3si9n"      % "sbt-assembly"        % "0.15.0")
 addSbtPlugin("com.eed3si9n"      % "sbt-buildinfo"       % "0.9.0")
+<<<<<<< HEAD
 addSbtPlugin("com.geirsson"      % "sbt-ci-release"      % "1.5.7")
 addSbtPlugin("com.typesafe.sbt"  % "sbt-site"            % "1.4.1")
 addSbtPlugin("com.typesafe.sbt"  % "sbt-native-packager" % "1.8.0")
@@ -11,3 +12,10 @@ addSbtPlugin("org.scoverage"     % "sbt-scoverage"       % "1.6.1")
 
 addCompilerPlugin("com.olegpy"   %% "better-monadic-for" % "0.3.1")
 
+=======
+addSbtPlugin("com.typesafe.sbt"  % "sbt-site"            % "1.4.1")
+addSbtPlugin("com.typesafe.sbt"  % "sbt-native-packager" % "1.8.0")
+addSbtPlugin("org.lyranthe.sbt"  % "partial-unification" % "1.1.2")
+addSbtPlugin("org.scoverage"     % "sbt-scoverage"       % "1.6.1")
+addSbtPlugin("com.geirsson"      % "sbt-ci-release"      % "1.5.7")
+>>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89

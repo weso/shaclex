@@ -2,13 +2,17 @@ lazy val scala212 = "2.12.13"
 lazy val scala213 = "2.13.5"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
-val Java11 = "adopt@1.11"  
+val Java11 = "adopt@1.11"
 
 
 // Local dependencies
 lazy val utilsVersion         = "0.1.94"
 lazy val srdfVersion          = "0.1.101"
+<<<<<<< HEAD
 lazy val shexVersion          = "0.1.92-SNAPSHOT"
+=======
+lazy val shexVersion          = "0.1.91"
+>>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89
 lazy val shaclVersion         = "0.1.75"
 // lazy val shapeMapsVersion     = "0.1.82"
 
@@ -84,24 +88,27 @@ lazy val scallop           = "org.rogach"                 %% "scallop"          
 lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
 
 ThisBuild / githubWorkflowJavaVersions := Seq(Java11)
+<<<<<<< HEAD
 
+=======
+>>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89
 
 lazy val shaclex = project
   .in(file("."))
   .enablePlugins(
-    ScalaUnidocPlugin, 
-    SiteScaladocPlugin, 
-    AsciidoctorPlugin, 
-    SbtNativePackager, 
-    WindowsPlugin, 
-    JavaAppPackaging, 
+    ScalaUnidocPlugin,
+    SiteScaladocPlugin,
+    AsciidoctorPlugin,
+    SbtNativePackager,
+    WindowsPlugin,
+    JavaAppPackaging,
     LauncherJarPlugin)
 //  .disablePlugins(RevolverPlugin)
 //  .settings(
 //    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
-//    buildInfoPackage := "es.weso.shaclex.buildinfo" 
+//    buildInfoPackage := "es.weso.shaclex.buildinfo"
 //  )
-  .settings(commonSettings, packagingSettings, publishSettings, ghPagesSettings, wixSettings)
+  .settings(commonSettings, packagingSettings, ghPagesSettings, wixSettings)
   .aggregate(schemaInfer, schema, converter, slang, sgraph)
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
@@ -133,8 +140,7 @@ lazy val schemaInfer = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,  
-    publishSettings,
+    commonSettings,
     libraryDependencies ++= Seq(srdf)
   )
   .dependsOn(
@@ -146,8 +152,7 @@ lazy val schema = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, 
-    publishSettings,
+    commonSettings,
     libraryDependencies ++= Seq(
       srdf,
       srdfJena,
@@ -169,7 +174,7 @@ lazy val schema = project
 lazy val slang = project
   .in(file("modules/slang"))
 //  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings, publishSettings)
+  .settings(commonSettings)
   .dependsOn(
   )
   .settings(
@@ -178,7 +183,7 @@ lazy val slang = project
       catsCore,
       catsKernel,
       // catsMacros,
-      shex, 
+      shex,
       shacl,
       utils,
       srdf,
@@ -192,8 +197,7 @@ lazy val sgraph = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, 
-    publishSettings,
+    commonSettings,
     libraryDependencies ++= Seq(
       utils,
       utilsTest % Test,
@@ -214,8 +218,7 @@ lazy val converter = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, 
-    publishSettings,
+    commonSettings,
     libraryDependencies ++= Seq(
     logbackClassic,
     scalaLogging,
@@ -234,12 +237,6 @@ lazy val converter = project
  **********************************************************/
 
 lazy val noDocProjects = Seq[ProjectReference]()
-
-lazy val noPublishSettings = Seq(
-//  publish := (),
-//  publishLocal := (),
-  publishArtifact := false
-)
 
 lazy val sharedDependencies = Seq(
   libraryDependencies ++= Seq(
@@ -291,6 +288,7 @@ lazy val ghPagesSettings = Seq(
 
 lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
   organization := "es.weso",
+<<<<<<< HEAD
   resolvers ++= Seq(
     Resolver.sonatypeRepo("snapshots")
   )
@@ -311,4 +309,20 @@ lazy val publishSettings = Seq(
                        </developer>
                      </developers>,
   publishMavenStyle              := true,
+=======
+  sonatypeProfileName := ("es.weso"),
+  homepage            := Some(url("https://github.com/weso/shaclex")),
+  licenses            := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
+  scmInfo             := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:weso/shaclex.git")),
+  autoAPIMappings     := true,
+  apiURL              := Some(url("http://weso.github.io/shaclex/latest/api/")),
+  autoAPIMappings     := true,
+  developers := List(
+    Developer(
+      id="labra",
+      name="Jose Emilio Labra Gayo",
+      email="jelabra@gmail.com",
+      url=url("https://weso.labra.es")
+    ))
+>>>>>>> de70efd726a40cc89ffb28bab82d8752ffc6fd89
 )
