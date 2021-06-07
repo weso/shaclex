@@ -44,16 +44,22 @@ case class ShExSchema(schema: SchemaShEx)
 
   override def defaultTriggerMode: ValidationTrigger = ShapeMapTrigger.empty
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger, builder: RDFBuilder): IO[Result] =
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger, optBuilder: Option[RDFBuilder]): IO[Result] =
     (trigger match {
-      case TargetDeclarations => validateTargetDecls(rdf, builder)
+      case TargetDeclarations => optBuilder match {
+        case Some(builder) => validateTargetDecls(rdf, builder)
+        case None => RDFAsJenaModel.empty.flatMap(_.use(builder => validateTargetDecls(rdf, builder)))
+      }
       //    case MapTrigger(sm, ns) => validateShapeMap(sm, ns, rdf)
       case ShapeMapTrigger(sm) => for {
         pm <- rdf.getPrefixMap
         eitherFixedMap <- ShapeMap.fixShapeMap(sm, rdf, pm, schema.prefixes.getOrElse(PrefixMap.empty)).attempt
         result <- eitherFixedMap match {
           case Left(e) => IO(Result.errStr(s"Error fixing shape map: $e"))
-          case Right(fixedShapeMap) => validateFixedShapeMap(fixedShapeMap, rdf, builder)
+          case Right(fixedShapeMap) => optBuilder match {
+            case Some(builder) => validateFixedShapeMap(fixedShapeMap, rdf, builder)
+            case None => RDFAsJenaModel.empty.flatMap(_.use(builder => validateFixedShapeMap(fixedShapeMap, rdf, builder)))
+          }
         } 
       } yield result
     }).map(_.addTrigger(trigger))

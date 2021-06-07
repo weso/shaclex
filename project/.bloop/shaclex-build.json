@@ -29,6 +29,9 @@
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo.scala-sbt.org\\scalasbt\\sbt-plugin-releases\\com.typesafe.sbt\\sbt-git\\scala_2.12\\sbt_1.0\\1.0.0\\jars\\sbt-git.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo.scala-sbt.org\\scalasbt\\sbt-plugin-releases\\org.lyranthe.sbt\\partial-unification\\scala_2.12\\sbt_1.0\\1.1.2\\jars\\partial-unification.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scoverage\\sbt-scoverage_2.12_1.0\\1.6.1\\sbt-scoverage-1.6.1.jar",
+            "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\sbt-structure-extractor_2.12_1.0\\2021.1.1\\sbt-structure-extractor-2021.1.1.jar",
+            "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\sbt-idea-shell_2.12_1.0\\2021.1.0\\sbt-idea-shell-2021.1.0.jar",
+            "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\sbt-idea-compiler-indices_2.12_1.0\\1.0.13\\sbt-idea-compiler-indices-1.0.13.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\main_2.12\\1.5.3\\main_2.12-1.5.3.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\io_2.12\\1.5.1\\io_2.12-1.5.1.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\net\\java\\dev\\jna\\jna\\5.5.0\\jna-5.5.0.jar",
@@ -57,6 +60,7 @@
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-lang\\modules\\scala-xml_2.12\\1.3.0\\scala-xml_2.12-1.3.0.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\eclipse\\jgit\\org.eclipse.jgit\\4.9.0.201710071750-r\\org.eclipse.jgit-4.9.0.201710071750-r.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scoverage\\scalac-scoverage-plugin_2.12\\1.4.0\\scalac-scoverage-plugin_2.12-1.4.0.jar",
+            "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\scala-compiler-indices-protocol_2.12\\1.0.13\\scala-compiler-indices-protocol_2.12-1.0.13.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\logic_2.12\\1.5.3\\logic_2.12-1.5.3.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\actions_2.12\\1.5.3\\actions_2.12-1.5.3.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\main-settings_2.12\\1.5.3\\main-settings_2.12-1.5.3.jar",
@@ -100,6 +104,7 @@
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\com\\googlecode\\javaewah\\JavaEWAH\\1.1.6\\JavaEWAH-1.1.6.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\apache\\httpcomponents\\httpclient\\4.3.6\\httpclient-4.3.6.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\slf4j\\slf4j-api\\1.7.26\\slf4j-api-1.7.26.jar",
+            "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\io\\spray\\spray-json_2.12\\1.3.5\\spray-json_2.12-1.3.5.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\util-relation_2.12\\1.5.3\\util-relation_2.12-1.5.3.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\completion_2.12\\1.5.3\\completion_2.12-1.5.3.jar",
             "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-sbt\\task-system_2.12\\1.5.3\\task-system_2.12-1.5.3.jar",
@@ -298,8 +303,8 @@
                 "import _root_.sbt._",
                 "import _root_.sbt.Keys._",
                 "import _root_.sbt.nio.Keys._",
-                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.JUnitXmlReportPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.sbtghactions.GenerativePlugin.autoImport._, _root_.sbtghactions.GitHubActionsPlugin.autoImport._, _root_.sbtunidoc.BaseUnidocPlugin.autoImport._, _root_.sbtunidoc.GenJavadocPlugin.autoImport._, _root_.sbtunidoc.JavaUnidocPlugin.autoImport._, _root_.sbtunidoc.ScalaUnidocPlugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.sbtbuildinfo.BuildInfoPlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePreviewPlugin.autoImport._, _root_.com.typesafe.sbt.site.SiteScaladocPlugin.autoImport._, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin.autoImport._, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin.autoImport._, _root_.com.typesafe.sbt.site.hugo.HugoPlugin.autoImport._, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport._, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin.autoImport._, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin.autoImport._, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin.autoImport._, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin.autoImport._, _root_.com.typesafe.sbt.SbtNativePackager.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin.autoImport._, _root_.com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._, _root_.com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin.autoImport._, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin.autoImport._, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin.autoImport._, _root_.com.typesafe.sbt.GitPlugin.autoImport._, _root_.org.lyranthe.sbt.PartialUnification.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.sbtdynver.DynVerPlugin.autoImport._, _root_.xerial.sbt.Sonatype.autoImport._, _root_.com.jsuereth.sbtpgp.SbtPgp.autoImport._, _root_.com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._, _root_.laika.sbt.LaikaPlugin.autoImport._, _root_.com.typesafe.sbt.web.SbtWeb.autoImport._",
-                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.sbtghactions.GenerativePlugin, _root_.sbtghactions.GitHubActionsPlugin, _root_.sbtunidoc.BaseUnidocPlugin, _root_.sbtunidoc.GenJavadocPlugin, _root_.sbtunidoc.JavaUnidocPlugin, _root_.sbtunidoc.PublishJavadocPlugin, _root_.sbtunidoc.ScalaUnidocPlugin, _root_.sbtassembly.AssemblyPlugin, _root_.sbtbuildinfo.BuildInfoPlugin, _root_.com.geirsson.CiReleasePlugin, _root_.com.typesafe.sbt.site.SitePlugin, _root_.com.typesafe.sbt.site.SitePreviewPlugin, _root_.com.typesafe.sbt.site.SiteScaladocPlugin, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin, _root_.com.typesafe.sbt.site.hugo.HugoPlugin, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin, _root_.com.typesafe.sbt.SbtNativePackager, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.AshScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemVPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.UpstartPlugin, _root_.com.typesafe.sbt.packager.debian.DebianDeployPlugin, _root_.com.typesafe.sbt.packager.debian.DebianPlugin, _root_.com.typesafe.sbt.packager.debian.JDebPackaging, _root_.com.typesafe.sbt.packager.docker.DockerPlugin, _root_.com.typesafe.sbt.packager.docker.DockerSpotifyClientPlugin, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerDeployPlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmDeployPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalDeployPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsDeployPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin, _root_.com.typesafe.sbt.GitBranchPrompt, _root_.com.typesafe.sbt.GitPlugin, _root_.com.typesafe.sbt.GitVersioning, _root_.org.lyranthe.sbt.PartialUnification, _root_.scoverage.ScoverageSbtPlugin, _root_.sbtdynver.DynVerPlugin, _root_.xerial.sbt.Sonatype, _root_.com.jsuereth.sbtpgp.SbtPgp, _root_.com.lightbend.paradox.sbt.ParadoxPlugin, _root_.laika.sbt.LaikaPlugin, _root_.com.typesafe.sbt.web.SbtWeb"
+                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.JUnitXmlReportPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.sbtghactions.GenerativePlugin.autoImport._, _root_.sbtghactions.GitHubActionsPlugin.autoImport._, _root_.sbtunidoc.BaseUnidocPlugin.autoImport._, _root_.sbtunidoc.GenJavadocPlugin.autoImport._, _root_.sbtunidoc.JavaUnidocPlugin.autoImport._, _root_.sbtunidoc.ScalaUnidocPlugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.sbtbuildinfo.BuildInfoPlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePlugin.autoImport._, _root_.com.typesafe.sbt.site.SitePreviewPlugin.autoImport._, _root_.com.typesafe.sbt.site.SiteScaladocPlugin.autoImport._, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin.autoImport._, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin.autoImport._, _root_.com.typesafe.sbt.site.hugo.HugoPlugin.autoImport._, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport._, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin.autoImport._, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin.autoImport._, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin.autoImport._, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin.autoImport._, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin.autoImport._, _root_.com.typesafe.sbt.SbtNativePackager.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin.autoImport._, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin.autoImport._, _root_.com.typesafe.sbt.packager.debian.DebianPlugin.autoImport._, _root_.com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin.autoImport._, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin.autoImport._, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin.autoImport._, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin.autoImport._, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin.autoImport._, _root_.com.typesafe.sbt.GitPlugin.autoImport._, _root_.org.lyranthe.sbt.PartialUnification.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.org.jetbrains.sbt.IdeaShellPlugin.autoImport._, _root_.org.jetbrains.sbt.indices.SbtIntellijIndicesPlugin.autoImport._, _root_.sbtdynver.DynVerPlugin.autoImport._, _root_.xerial.sbt.Sonatype.autoImport._, _root_.com.jsuereth.sbtpgp.SbtPgp.autoImport._, _root_.com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._, _root_.laika.sbt.LaikaPlugin.autoImport._, _root_.com.typesafe.sbt.web.SbtWeb.autoImport._",
+                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.sbtghactions.GenerativePlugin, _root_.sbtghactions.GitHubActionsPlugin, _root_.sbtunidoc.BaseUnidocPlugin, _root_.sbtunidoc.GenJavadocPlugin, _root_.sbtunidoc.JavaUnidocPlugin, _root_.sbtunidoc.PublishJavadocPlugin, _root_.sbtunidoc.ScalaUnidocPlugin, _root_.sbtassembly.AssemblyPlugin, _root_.sbtbuildinfo.BuildInfoPlugin, _root_.com.geirsson.CiReleasePlugin, _root_.com.typesafe.sbt.site.SitePlugin, _root_.com.typesafe.sbt.site.SitePreviewPlugin, _root_.com.typesafe.sbt.site.SiteScaladocPlugin, _root_.com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin, _root_.com.typesafe.sbt.site.gitbook.GitBookPlugin, _root_.com.typesafe.sbt.site.hugo.HugoPlugin, _root_.com.typesafe.sbt.site.jekyll.JekyllPlugin, _root_.com.typesafe.sbt.site.laika.LaikaSitePlugin, _root_.com.typesafe.sbt.site.nanoc.NanocPlugin, _root_.com.typesafe.sbt.site.pamflet.PamfletPlugin, _root_.com.typesafe.sbt.site.paradox.ParadoxSitePlugin, _root_.com.typesafe.sbt.site.preprocess.PreprocessPlugin, _root_.com.typesafe.sbt.site.sphinx.SphinxPlugin, _root_.com.typesafe.sbt.SbtNativePackager, _root_.com.typesafe.sbt.packager.archetypes.JavaAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.JavaServerAppPackaging, _root_.com.typesafe.sbt.packager.archetypes.jar.ClasspathJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jar.LauncherJarPlugin, _root_.com.typesafe.sbt.packager.archetypes.jlink.JlinkPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.AshScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemVPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemdPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.SystemloaderPlugin, _root_.com.typesafe.sbt.packager.archetypes.systemloader.UpstartPlugin, _root_.com.typesafe.sbt.packager.debian.DebianDeployPlugin, _root_.com.typesafe.sbt.packager.debian.DebianPlugin, _root_.com.typesafe.sbt.packager.debian.JDebPackaging, _root_.com.typesafe.sbt.packager.docker.DockerPlugin, _root_.com.typesafe.sbt.packager.docker.DockerSpotifyClientPlugin, _root_.com.typesafe.sbt.packager.graalvmnativeimage.GraalVMNativeImagePlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerDeployPlugin, _root_.com.typesafe.sbt.packager.jdkpackager.JDKPackagerPlugin, _root_.com.typesafe.sbt.packager.linux.LinuxPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmDeployPlugin, _root_.com.typesafe.sbt.packager.rpm.RpmPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalDeployPlugin, _root_.com.typesafe.sbt.packager.universal.UniversalPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsDeployPlugin, _root_.com.typesafe.sbt.packager.windows.WindowsPlugin, _root_.com.typesafe.sbt.GitBranchPrompt, _root_.com.typesafe.sbt.GitPlugin, _root_.com.typesafe.sbt.GitVersioning, _root_.org.lyranthe.sbt.PartialUnification, _root_.scoverage.ScoverageSbtPlugin, _root_.org.jetbrains.sbt.StructurePlugin, _root_.org.jetbrains.sbt.IdeaShellPlugin, _root_.org.jetbrains.sbt.indices.SbtIntellijIndicesPlugin, _root_.sbtdynver.DynVerPlugin, _root_.xerial.sbt.Sonatype, _root_.com.jsuereth.sbtpgp.SbtPgp, _root_.com.lightbend.paradox.sbt.ParadoxPlugin, _root_.laika.sbt.LaikaPlugin, _root_.com.typesafe.sbt.web.SbtWeb"
             ]
         },
         "test": {
@@ -519,6 +524,42 @@
                         {
                             "name": "sbt-scoverage",
                             "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scoverage\\sbt-scoverage_2.12_1.0\\1.6.1\\sbt-scoverage-1.6.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.jetbrains.scala",
+                    "name": "sbt-structure-extractor",
+                    "version": "2021.1.1",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "sbt-structure-extractor",
+                            "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\sbt-structure-extractor_2.12_1.0\\2021.1.1\\sbt-structure-extractor-2021.1.1.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.jetbrains.scala",
+                    "name": "sbt-idea-shell",
+                    "version": "2021.1.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "sbt-idea-shell",
+                            "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\sbt-idea-shell_2.12_1.0\\2021.1.0\\sbt-idea-shell-2021.1.0.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.jetbrains.scala",
+                    "name": "sbt-idea-compiler-indices",
+                    "version": "1.0.13",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "sbt-idea-compiler-indices",
+                            "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\sbt-idea-compiler-indices_2.12_1.0\\1.0.13\\sbt-idea-compiler-indices-1.0.13.jar"
                         }
                     ]
                 },
@@ -821,6 +862,18 @@
                     ]
                 },
                 {
+                    "organization": "org.jetbrains.scala",
+                    "name": "scala-compiler-indices-protocol_2.12",
+                    "version": "1.0.13",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "scala-compiler-indices-protocol_2.12",
+                            "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\jetbrains\\scala\\scala-compiler-indices-protocol_2.12\\1.0.13\\scala-compiler-indices-protocol_2.12-1.0.13.jar"
+                        }
+                    ]
+                },
+                {
                     "organization": "org.scala-lang",
                     "name": "scala-library",
                     "version": "2.12.14",
@@ -1091,6 +1144,18 @@
                         {
                             "name": "httpclient",
                             "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\org\\apache\\httpcomponents\\httpclient\\4.3.6\\httpclient-4.3.6.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "io.spray",
+                    "name": "spray-json_2.12",
+                    "version": "1.3.5",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "spray-json_2.12",
+                            "path": "C:\\Users\\jelab\\AppData\\Local\\Coursier\\Cache\\v1\\https\\repo1.maven.org\\maven2\\io\\spray\\spray-json_2.12\\1.3.5\\spray-json_2.12-1.3.5.jar"
                         }
                     ]
                 },
