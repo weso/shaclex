@@ -100,7 +100,7 @@ lazy val shaclex = project
 //    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
 //    buildInfoPackage := "es.weso.shaclex.buildinfo"
 //  )
-  .settings(commonSettings, packagingSettings, ghPagesSettings, wixSettings)
+  .settings(commonSettings, packagingSettings, ghPagesSettings, publishSettings, wixSettings)
   .aggregate(schemaInfer, schema, converter, slang, sgraph)
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
