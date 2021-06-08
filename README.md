@@ -9,6 +9,7 @@ This project contains an implementation of
 [![Build Status](https://travis-ci.org/weso/shaclex.svg?branch=master)](https://travis-ci.org/weso/shaclex)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1c264d2087734a80b4cecf071bb5eaad)](https://www.codacy.com/gh/weso/shaclex?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=weso/shaclex&amp;utm_campaign=Badge_Grade)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214239.svg)](https://doi.org/10.5281/zenodo.1214239)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.weso/shaclex_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.weso/shaclex_2.13)
 
 ## Introduction
 
