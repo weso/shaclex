@@ -38,8 +38,7 @@ object RDF2SGraph {
   def err[A](s: String): Converter[A] = EitherT.fromEither(s.asLeft[A])
 
   def rdf2sgraph(rdf: RDFReader): IO[SGraph] = {
-    val pm = rdf.getPrefixMap()
-    def cmb(u:Unit, t: RDFTriple): Converter[Unit] = for {
+    def cmb(pm:PrefixMap)(u:Unit, t: RDFTriple): Converter[Unit] = for {
       edge <- rdfTriple2Edge(t, pm)
       g <- getGraph
       g1 = g.addEdge(edge)
@@ -47,9 +46,10 @@ object RDF2SGraph {
     } yield ()
 
     for {
-      ts <- rdf.rdfTriples.compile.toList
+      pm <- rdf.getPrefixMap
+      ts <- rdf.rdfTriples().compile.toList
     } yield {
-      ts.toList.foldM(())(cmb).value.run(SGraph.empty).value._1
+      ts.toList.foldM(())(cmb(pm)).value.run(SGraph.empty).value._1
     }
   }
 

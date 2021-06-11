@@ -2,22 +2,34 @@ package es.weso.schema
 
 import cats.Show
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.rdf.{PrefixMap, RDFReader}
+// import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
+// import es.weso.rdf.jena.RDFAsJenaModel
+import java.io._
+// import es.weso.shacl.report.ValidationReport
+import es.weso.rdf.RDFBuilder
+import cats.effect._
+import es.weso.rdf.PrefixMap
+
+sealed abstract trait DetailsOption extends Product with Serializable
+case object Details extends DetailsOption
+case object NoDetails extends DetailsOption
 
 case class Result(
   isValid: Boolean,
   message: String,
   shapeMaps: Seq[ResultShapeMap],
-  validationReport: Either[String,RDFReader],
+  validationReport: RDFReport,  
   errors: Seq[ErrorInfo],
   trigger: Option[ValidationTrigger],
   nodesPrefixMap: PrefixMap,
-  shapesPrefixMap: PrefixMap) extends LazyLogging {
+  shapesPrefixMap: PrefixMap,
+  reportFormat: String = "TURTLE",
+  ) extends LazyLogging {
 
   def noSolutions(shapeMaps: Seq[ResultShapeMap]): Boolean = {
     shapeMaps.size == 0 || shapeMaps.head.noSolutions
@@ -38,7 +50,8 @@ case class Result(
 
   def addTrigger(trigger: ValidationTrigger): Result = this.copy(trigger = Some(trigger))
 
-  def show(base: Option[IRI]): String = {
+
+  def show(base: Option[IRI], details: DetailsOption): String = {
     val sb = new StringBuilder
     if (isValid) {
       if (shapeMaps.size == 0) {
@@ -54,13 +67,7 @@ case class Result(
     sb.toString
   }
 
-  def toJson: Json = {
-
-/*    implicit val encodeIRI: Encoder[IRI] = new Encoder[IRI] {
-      final def apply(iri: IRI): Json = {
-        Json.fromString(iri.getLexicalForm)
-      }
-    } */
+  def toJson(builder: RDFBuilder): IO[Json] = {
 
     implicit val encodePrefixMap: Encoder[PrefixMap] = new Encoder[PrefixMap] {
       final def apply(prefixMap: PrefixMap): Json = {
@@ -71,55 +78,43 @@ case class Result(
       }
     }
 
-/*    implicit val encodeShapeMap: Encoder[ResultShapeMap] = new Encoder[ResultShapeMap] {
-      final def apply(a: ResultShapeMap): Json = {
-        def node2String(n: RDFNode): String = a.nodesPrefixMap.qualify(n)
-        def shapeMapLabel2String(s: ShapeMapLabel): String = s match {
-          case IRILabel(iri) => a.shapesPrefixMap.qualify(iri)
-          case BNodeLabel(b) => b.getLexicalForm
-          case _ => throw new Exception(s"encodeShapeMap. shapeMapLabel2String: unsupported $s")
-        }
-        def info2Json(i: Info): Json = i.asJson
-        def result2Json(s: Map[ShapeMapLabel, Info]): Json = {
-          Json.fromJsonObject(JsonObject.fromMap(cnvMap(s, shapeMapLabel2String, info2Json)))
-        }
-
-        Json.fromJsonObject(JsonObject.fromMap(cnvMap(a.resultMap, node2String, result2Json)))
-      }
-    } */
-
-    implicit val encodeResult: Encoder[Result] = new Encoder[Result] {
-      final def apply(a: Result): Json = {
-        Json.fromJsonObject(JsonObject.empty.
-          add("valid", Json.fromBoolean(isValid)).
-          add("type", Json.fromString("Result")).
-          add("message", Json.fromString(message)).
-          add("shapeMap", solution match {
+    def result2Json(result: Result, strValidationReport: String): Json = Json.obj(
+          ("valid", isValid.asJson),
+          ("type", "Result".asJson),
+          ("message", message.asJson),
+          ("shapeMap", solution match {
             case Left(msg) => Json.fromString(msg)
             case Right(r) => r.toJson
-          }).
-          add("errors", errors.toList.asJson).
-          add("nodesPrefixMap", nodesPrefixMap.asJson).
-          add("shapesPrefixMap", shapesPrefixMap.asJson))
-      }
+          }),
+          ("errors", errors.toList.asJson),
+          ("nodesPrefixMap", nodesPrefixMap.asJson),
+          ("shapesPrefixMap", shapesPrefixMap.asJson),
+          ("validationReport", Json.fromString(strValidationReport))
+    )
+
+    for {
+      rdf <- validationReport.toRDF(builder)
+      str <- rdf.serialize(reportFormat)
+    } yield {
+      result2Json(this, str)
     }
-    this.asJson
-  }
+  } 
 
-  def toJsonString2spaces: String =
-    toJson.spaces2
+  private def toJsonString2spaces(builder: RDFBuilder): IO[String] =
+    toJson(builder)map(_.spaces2)
 
-  lazy val cut = 1 // TODO maybe remove concept of cut
+  private lazy val cut = 1 // TODO maybe remove concept of cut
 
-  def printNumber(n: Int, cut: Int): String = {
+  private def printNumber(n: Int, cut: Int): String = {
     if (n == 1 && cut == 1) ""
     else n.toString
   }
 
-  def serialize(format: String, base: Option[IRI] = None): String = format.toUpperCase match {
-    case Result.TEXT => show(base)
-    case Result.JSON => toJsonString2spaces
-    case _ => s"Unsupported format to serialize result: $format, $this"
+  def serialize(format: String, base: Option[IRI] = None, builder: RDFBuilder): IO[String] = format.toUpperCase match {
+    case Result.TEXT => IO(show(base, NoDetails))
+    case Result.DETAILS => IO(show(base, Details))
+    case Result.JSON => toJsonString2spaces(builder)
+    case _ => IO.raiseError(new RuntimeException(s"Unsupported format to serialize result: $format, $this"))
   }
 
   def hasShapes(node: RDFNode): Seq[SchemaLabel] = {
@@ -144,7 +139,7 @@ object Result extends LazyLogging {
       isValid = true,
       message = "",
       shapeMaps = Seq(),
-      validationReport = Left("No report"),
+      validationReport = RDFReport.empty,
       errors = Seq(),
       None,
       PrefixMap.empty,
@@ -154,19 +149,21 @@ object Result extends LazyLogging {
     empty.copy(isValid = false, message = str)
 
   implicit val showResult = new Show[Result] {
-    override def show(r: Result): String = r.show(None)
+    override def show(r: Result): String = r.show(None,Details)
   }
 
-  lazy val TEXT = "TEXT"
+  lazy val TEXT = "COMPACT"
   lazy val JSON = "JSON"
-  lazy val availableResultFormats = List(TEXT, JSON).map(_.toUpperCase)
+  lazy val DETAILS = "DETAILS"
+
+  lazy val availableResultFormats = List(TEXT, JSON, DETAILS).map(_.toUpperCase)
   lazy val defaultResultFormat = availableResultFormats.head
 
   // TODO: implement this
   implicit val decodeTrigger: Decoder[Option[ValidationTrigger]] = Decoder.instance { c =>
     {
       logger.warn("Trigger decoder not implemented")
-      ??? //Right(None)
+      throw new RuntimeException("Trigger decoder not implemented yet")
     }
   }
 
@@ -206,7 +203,7 @@ object Result extends LazyLogging {
       isValid,
       message,
       solutions,
-      Left("Not implemented ValidationReport Json decoder yet"),
+      RDFReport.empty,
       errors,
       trigger,
       nodesPrefixMap,

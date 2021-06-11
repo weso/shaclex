@@ -1,20 +1,16 @@
 package es.weso.shacl.converter
 
 import cats._
-import cats.data.EitherT
 import cats.implicits._
-import cats.effect._
 import es.weso._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shex.implicits.eqShEx._
-import org.scalatest.matchers.should._
-import org.scalatest.funspec._
-import es.weso.utils.IOUtils._
+import es.weso.shex.implicits.showShEx._
+import es.weso.utils.IOUtils
+import munit.CatsEffectSuite
 
-class shacl2ShExTest extends AnyFunSpec with Matchers {
+class shacl2ShExTest extends CatsEffectSuite {
 
-  describe("shacl2ShEx converter") {
-    {
     shouldConvertSHACLShEx(
       """|prefix : <http://example.org/>
          |prefix sh: <http://www.w3.org/ns/shacl#>
@@ -40,6 +36,9 @@ class shacl2ShExTest extends AnyFunSpec with Matchers {
            |:S xsd:string
         """.stripMargin)
 
+      /* The following test is commented. 
+         It fails because ShExC doesn't allow several components in node constraints
+         See: https://github.com/shexSpec/shex/issues/106
       shouldConvertSHACLShEx(
         """|prefix : <http://example.org/>
            |prefix sh: <http://www.w3.org/ns/shacl#>
@@ -52,10 +51,10 @@ class shacl2ShExTest extends AnyFunSpec with Matchers {
         """|prefix : <http://example.org/>
            |prefix sh: <http://www.w3.org/ns/shacl#>
            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
-           |:S xsd:string AND Literal
+           |:S Literal xsd:string
         """.stripMargin)
-
-      shouldConvertSHACLShEx(
+     */
+     shouldConvertSHACLShEx(
         """|prefix : <http://example.org/>
            |prefix sh: <http://www.w3.org/ns/shacl#>
            |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -101,27 +100,24 @@ class shacl2ShExTest extends AnyFunSpec with Matchers {
         """.stripMargin)
 
 
-    }
-
-  }
 
   def shouldConvertSHACLShEx(strSHACL: String, expected: String): Unit = {
-    it(s"Should convert: $strSHACL to ShEx and obtain: $expected") {
-    val r = for {
-      shaclRDF       <- io2es(RDFAsJenaModel.fromString(strSHACL, "TURTLE", None))
+    test(s"Should convert: $strSHACL to ShEx and obtain: $expected") {
+    val cmp = RDFAsJenaModel.fromString(strSHACL, "TURTLE", None).flatMap(_.use(shaclRDF => for {
       shacl          <- RDF2Shacl.getShacl(shaclRDF)
-      shexConverted  <- EitherT.fromEither[IO](Shacl2ShEx.shacl2ShEx(shacl).leftMap(e => s"Error in conversion: $e"))
-      expectedSchema <- io2es(shex.Schema.fromString(expected, "ShExC"))
-    } yield (shexConverted, expectedSchema, shacl)
-    r.fold(
-        e => fail(s"Error: $e"),
-        values => {
+      shexConverted  <- IOUtils.fromES(Shacl2ShEx.shacl2ShEx(shacl).leftMap(e => s"Error in conversion: $e"))
+      expectedSchema <- shex.Schema.fromString(expected, "ShExC")
+    } yield (shexConverted, expectedSchema, shacl)))
+    cmp.map(values => {
           val (converted, expected, shacl) = values
           val (schema,shapeMap) = converted
           if (Eq[shex.Schema].eqv(schema,expected)) {
-            info(s"Schemas are equals")
+            assertEquals(true,true)
           } else {
-            fail(s"SHACL2ShEx schemas are not equal: SHACL:\n$shacl\n---\nSHACL converted to ShEx:\n${schema}\nExpected:\n$expected")
+            pprint.log(shacl)
+            pprint.log(schema)
+            pprint.log(expected)
+            fail(s"SHACL2ShEx schemas are not equal: SHACL:\n${shacl}\n---\nSHACL converted to ShEx:\n${schema.show}\nExpected:\n${expected.show}")
           }
         }
       )

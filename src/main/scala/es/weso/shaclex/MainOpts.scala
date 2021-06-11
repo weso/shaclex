@@ -1,9 +1,10 @@
 package es.weso.shaclex
 import org.rogach.scallop._
 import es.weso.schema._
+import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.ShapeMap
 
 class MainOpts(arguments: List[String],
                onError: (Throwable, Scallop) => Nothing
@@ -23,6 +24,7 @@ class MainOpts(arguments: List[String],
   private lazy val shapeMapFormats = ShapeMap.formats
   private lazy val defaultValidationReportFormat = "TURTLE"
   private lazy val validationReportFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase).distinct
+  private lazy val inferenceValues: List[String] = InferenceEngine.availableInferenceEngineNames
 
   banner("""| shaclex: SHACL/ShEx processor
             | Options:
@@ -30,7 +32,16 @@ class MainOpts(arguments: List[String],
 
   footer("Enjoy!")
 
-   val schema: ScallopOption[String] = opt[String](
+  val shell: ScallopOption[Boolean] = toggle(
+    name = "shell",
+    prefix = "no-",
+    default = Some(false),
+    descrYes = "interactive shell",
+    descrNo = "don't do interactive shell",
+    noshort = true
+  )
+
+  val schema: ScallopOption[String] = opt[String](
     "schema",
     short = 's',
     default = None,
@@ -40,7 +51,7 @@ class MainOpts(arguments: List[String],
     "schemaFormat",
     noshort = true,
     default = Some(defaultSchemaFormat),
-    descr = s"Schema format. Default ($defaultDataFormat) Possible values: ${showLs(schemaFormats)}",
+    descr = s"Schema format. Default ($defaultSchemaFormat) Possible values: ${showLs(schemaFormats)}",
     validate = isMemberOf(schemaFormats))
 
   val schemaUrl: ScallopOption[String] = opt[String](
@@ -96,6 +107,16 @@ class MainOpts(arguments: List[String],
     descrNo = "don't show SHACL validation report",
     noshort = true
   )
+
+  val validate: ScallopOption[Boolean] = toggle(
+    name = "validate",
+    prefix = "no-",
+    default = Some(true),
+    descrYes = "perform validation",
+    descrNo = "don't perform validation",
+    noshort = true
+  )
+
 
   val validationReportFormat: ScallopOption[String] = opt[String](
     "validationReportFormat",
@@ -242,11 +263,11 @@ class MainOpts(arguments: List[String],
     required = false,
     descr = "Label (IRI) of Constraint.scala in Schema")
 
-  val inference: ScallopOption[String] = opt[String](
-    "inference",
-    default = None,
+  val inference: ScallopOption[String] = opt[String]("inference",
+    default = Some("NONE"),
     required = false,
-    descr = "Apply some inference before. Available values: RDFS")
+    descr = s"Apply some inference before. Available values: ${inferenceValues.mkString(",")}"
+  )
 
   val shapeInfer: ScallopOption[Boolean] = toggle("shapeInfer",
     prefix="no-",

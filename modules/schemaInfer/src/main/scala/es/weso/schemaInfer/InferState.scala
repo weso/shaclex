@@ -2,7 +2,7 @@ package es.weso.schemaInfer
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.PREFIXES.xsd
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 
 case class InferState(schema: InferredSchema,
                       prefixMap: PrefixMap,
