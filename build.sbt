@@ -12,7 +12,7 @@ lazy val shexVersion          = "0.1.92-SNAPSHOT"
 lazy val shaclVersion         = "0.1.75"
 
 // Dependency versions
-lazy val catsVersion           = "2.5.0"
+lazy val catsVersion           = "2.6.1"
 // lazy val commonsTextVersion    = "1.8"
 lazy val circeVersion          = "0.14.0-M5"
 // lazy val diffsonVersion        = "4.0.0"
