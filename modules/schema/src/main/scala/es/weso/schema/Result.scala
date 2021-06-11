@@ -7,7 +7,7 @@ import es.weso.rdf.nodes.{IRI, RDFNode}
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 // import es.weso.rdf.jena.RDFAsJenaModel
 import java.io._
 // import es.weso.shacl.report.ValidationReport

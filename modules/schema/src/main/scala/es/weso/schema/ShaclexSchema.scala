@@ -11,7 +11,7 @@ import es.weso.shacl.{Schema => ShaclSchema, _}
 import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
 import es.weso.shacl.report.{ValidationReport, ValidationResult}
 import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator}
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 import es.weso.utils.internal.CollectionCompat._
 import util._
 import es.weso.typing._
@@ -106,10 +106,10 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     throw new Exception("Unimplemented validateShapeMap")
   }*/
 
-  override def fromString(cs: CharSequence, format: String, 
+  override def fromString(str: String, format: String, 
      base: Option[String]
     ): IO[Schema] = {
-    RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))).flatMap(_.use(rdf => for {
+    RDFAsJenaModel.fromString(str.toString, format, base.map(IRI(_))).flatMap(_.use(rdf => for {
       eitherSchema <- RDF2Shacl.getShacl(rdf, resolveImports = true).attempt
       schema <- eitherSchema match {
         case Left(s) => IO.raiseError(new RuntimeException(s))

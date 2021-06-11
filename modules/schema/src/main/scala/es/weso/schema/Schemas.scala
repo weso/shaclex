@@ -12,7 +12,7 @@ import es.weso.utils.FileUtils
 
 object Schemas {
 
-  type SchemaParser = (CharSequence, String, Option[String]) => IO[Schema]
+  type SchemaParser = (String, String, Option[String]) => IO[Schema]
 
   lazy val shEx: Schema = ShExSchema.empty
   lazy val shaclex : Schema = ShaclexSchema.empty
@@ -66,13 +66,13 @@ object Schemas {
     } yield schema
 
   def fromString(
-    cs: CharSequence,
+    str: String,
     format: String,
     schemaName: String,
     base: Option[String] = None): IO[Schema] = for {
     schema <- lookupSchema(schemaName)
-    schemaParsed <- if (cs.length == 0) IO.pure(schema.empty)
-                    else schema.empty.fromString(cs, format, base)
+    schemaParsed <- if (str.length == 0) IO.pure(schema.empty)
+                    else schema.empty.fromString(str, format, base)
   } yield schemaParsed
 
 /*  private def getFileContents(file: File): IO[CharSequence] = {

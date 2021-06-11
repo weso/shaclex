@@ -1,9 +1,10 @@
 package es.weso.schema
 import es.weso.rdf._
 import es.weso.rdf.nodes._
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.ShapeMap
 import es.weso.utils.FileUtils
 import cats.effect._
+import es.weso.rdf.jena.RDFAsJenaModel
 
 abstract class Schema {
 
@@ -27,18 +28,21 @@ abstract class Schema {
     optShape: Option[String],
     nodePrefixMap: PrefixMap = PrefixMap.empty,
     shapesPrefixMap: PrefixMap = pm,
-    builder: RDFBuilder): IO[Result] = {
+    builder: Option[RDFBuilder]): IO[Result] = {
     val base = Some(FileUtils.currentFolderURL)
     ValidationTrigger.findTrigger(triggerMode, shapeMap, base, optNode, optShape, nodePrefixMap, shapesPrefixMap) match {
       case Left(err) => {
         IO(Result.errStr(s"Cannot get trigger: $err. TriggerMode: $triggerMode, prefixMap: $pm"))
       }
-      case Right(trigger) =>
-        validate(rdf, trigger, builder)
+      case Right(trigger) => builder match {
+        case None => RDFAsJenaModel.empty.flatMap(_.use(builder => validate(rdf,trigger,builder)))
+        case Some(builder) => validate(rdf, trigger, builder)
+
+      }
     }
   }
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[Schema]
+  def fromString(str: String, format: String, base: Option[String]): IO[Schema]
 
   def fromRDF(rdf: RDFReader): IO[Schema]
 

@@ -1,0 +1,226 @@
+@prefix :      <http://weso.es/shapes/> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix xml:   <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix bcn:   <https://www.bcn.cl/presupuesto/vocabulario/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+
+_:b0    a        sh:NodeShape ;
+        sh:node  :EntidadPresupuesto .
+
+_:b1    a            sh:NodeShape ;
+        sh:nodeKind  sh:IRI .
+
+_:b2    a            sh:PropertyShape ;
+        sh:minCount  1 ;
+        sh:or        ( _:b1
+                       [ a        sh:NodeShape ;
+                         sh:node  :FormalOrganization
+                       ]
+                     ) ;
+        sh:path      bcn:asignadoA .
+
+_:b3    a            sh:PropertyShape ;
+        sh:datatype  xsd:integer ;
+        sh:minCount  1 ;
+        sh:path      dc:identifier .
+
+:Subtitulo  a        sh:NodeShape ;
+        sh:property  _:b4 , _:b5 , _:b6 , _:b7 , _:b8 , _:b9 , _:b10 , _:b3 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( _:b1
+                                      _:b11
+                                      _:b0
+                                      _:b12
+                                    ) ;
+                       sh:path      skos:member
+                     ] .
+
+:Asignacion  a       sh:NodeShape ;
+        sh:property  _:b9 , _:b5 , _:b3 , _:b7 , _:b4 , _:b10 , _:b8 , _:b13 , _:b6 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( _:b0
+                                      _:b14
+                                      _:b12
+                                    ) ;
+                       sh:path      bcn:provistoDesde
+                     ] .
+
+_:b10   a            sh:PropertyShape ;
+        sh:minCount  1 ;
+        sh:node      :EjecucionPresupuesto ;
+        sh:path      bcn:tieneEjecucion .
+
+_:b9    a            sh:PropertyShape ;
+        sh:datatype  xsd:integer ;
+        sh:minCount  1 ;
+        sh:path      bcn:anio .
+
+:EjecucionPresupuesto
+        a            sh:NodeShape ;
+        sh:property  _:b9 , _:b3 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:datatype  xsd:string ;
+                       sh:minCount  1 ;
+                       sh:path      bcn:valorEjecutado
+                     ] ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:datatype  xsd:string ;
+                       sh:minCount  1 ;
+                       sh:path      bcn:valorVigente
+                     ] ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:datatype  xsd:string ;
+                       sh:minCount  1 ;
+                       sh:path      bcn:tipoMovimiento
+                     ] ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:datatype  xsd:integer ;
+                       sh:minCount  1 ;
+                       sh:path      bcn:mes
+                     ] .
+
+_:b14   a        sh:NodeShape ;
+        sh:node  :Programa .
+
+:Collection  a       sh:NodeShape ;
+        sh:property  _:b6 , _:b9 , _:b4 , _:b5 , _:b7 , _:b15 , _:b8 , _:b10 , _:b3 , _:b2 .
+
+:EntidadPresupuesto  a  sh:NodeShape ;
+        sh:property  _:b6 , _:b5 , _:b15 , _:b9 , _:b3 , _:b2 , _:b7 , _:b4 , _:b8 , _:b10 .
+
+_:b6    a            sh:PropertyShape ;
+        sh:datatype  xsd:string ;
+        sh:minCount  1 ;
+        sh:path      bcn:valorAsignado .
+
+_:b4    a            sh:PropertyShape ;
+        sh:datatype  xsd:string ;
+        sh:minCount  1 ;
+        sh:path      dc:title .
+
+:Partida  a          sh:NodeShape ;
+        sh:property  _:b7 , _:b3 , _:b8 , _:b4 , _:b6 , _:b13 , _:b10 , _:b9 , _:b5 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( [ a        sh:NodeShape ;
+                                        sh:node  :Capitulo
+                                      ]
+                                      _:b0
+                                      _:b12
+                                    ) ;
+                       sh:path      skos:member
+                     ] .
+
+_:b11   a        sh:NodeShape ;
+        sh:node  :Item .
+
+_:b8    a            sh:PropertyShape ;
+        sh:datatype  xsd:dateTimeStamp ;
+        sh:minCount  1 ;
+        sh:path      bcn:timestamp .
+
+:Capitulo  a         sh:NodeShape ;
+        sh:property  _:b5 , _:b3 , _:b13 , _:b7 , _:b10 , _:b4 , _:b6 , _:b8 , _:b9 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( _:b1
+                                      _:b0
+                                      _:b14
+                                      _:b12
+                                    ) ;
+                       sh:path      skos:member
+                     ] .
+
+_:b12   a        sh:NodeShape ;
+        sh:node  :Collection .
+
+_:b7    a            sh:PropertyShape ;
+        sh:datatype  xsd:string ;
+        sh:minCount  1 ;
+        sh:path      rdfs:label .
+
+:PresupuestoNacional  a  sh:NodeShape ;
+        sh:property  _:b9 , _:b4 , _:b3 , _:b8 , _:b5 , _:b6 , _:b7 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:nodeKind  sh:IRI ;
+                       sh:path      bcn:asignadoA
+                     ] ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( _:b12
+                                      _:b0
+                                      [ a        sh:NodeShape ;
+                                        sh:node  :Partida
+                                      ]
+                                    ) ;
+                       sh:path      skos:member
+                     ] .
+
+_:b15   a            sh:PropertyShape ;
+        sh:minCount  1 ;
+        sh:or        ( _:b1
+                       _:b0
+                       _:b12
+                       _:b11
+                       _:b16
+                       _:b14
+                     ) ;
+        sh:path      skos:member .
+
+_:b5    a            sh:PropertyShape ;
+        sh:datatype  xsd:decimal ;
+        sh:minCount  1 ;
+        sh:path      bcn:variacionAnual .
+
+_:b16   a        sh:NodeShape ;
+        sh:node  :Subtitulo .
+
+:Item   a            sh:NodeShape ;
+        sh:property  _:b4 , _:b6 , _:b9 , _:b3 , _:b8 , _:b7 , _:b10 , _:b5 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( _:b1
+                                      _:b12
+                                      _:b0
+                                      [ a        sh:NodeShape ;
+                                        sh:node  :Asignacion
+                                      ]
+                                    ) ;
+                       sh:path      skos:member
+                     ] .
+
+:FormalOrganization  a  sh:NodeShape ;
+        sh:property  _:b7 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:node      :FormalOrganization ;
+                       sh:path      bcn:financiadoPor
+                     ] .
+
+:Programa  a         sh:NodeShape ;
+        sh:property  _:b8 , _:b7 , _:b4 , _:b9 , _:b3 , _:b5 , _:b6 , _:b13 , _:b10 ;
+        sh:property  [ a            sh:PropertyShape ;
+                       sh:minCount  1 ;
+                       sh:or        ( _:b1
+                                      _:b0
+                                      _:b16
+                                      _:b12
+                                    ) ;
+                       sh:path      skos:member
+                     ] .
+
+_:b13   a            sh:PropertyShape ;
+        sh:minCount  1 ;
+        sh:node      :FormalOrganization ;
+        sh:path      bcn:asignadoA .
+

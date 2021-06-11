@@ -246,18 +246,18 @@ object Main extends IOApp with LazyLogging {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          IO(RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase))
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase)
         } else {
-          IO(RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase))
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase)
         }
         newRdf = if (opts.inference.isDefined) for {
-          inference <- Resource.liftF(fromEither(InferenceEngine.fromString(opts.inference())))
+          inference <- Resource.eval(fromEither(InferenceEngine.fromString(opts.inference())))
           r <- rdf.evalMap(rdf => rdf.applyInference(inference))
         } yield r 
         else rdf
       } yield newRdf 
     } else if (opts.endpoint.isDefined) {
-      IO(Resource.liftF(Endpoint.fromString(opts.endpoint())))
+      IO(Resource.eval(Endpoint.fromString(opts.endpoint())))
     } else {
       logger.info("RDF Data option not specified")
       RDFAsJenaModel.empty

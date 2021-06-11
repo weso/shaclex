@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 import es.weso.shex.converter.ShEx2Shacl
 import es.weso.shex.shexR._
 import es.weso.shex.validator.{Result => _, _}
@@ -62,7 +62,8 @@ case class ShExSchema(schema: SchemaShEx)
     validator <- getValidator(builder)
     r <- validator.validateNodeDecls(rdf)
     pm <- rdf.getPrefixMap
-    converted = cnvResult(r.toEitherS, rdf, pm)
+    eitherResultShapeMap = r.toEitherS.map(_._2) 
+    converted = cnvResult(eitherResultShapeMap, rdf, pm)
   } yield converted
 
   def cnvResult(r: Either[String, ResultShapeMap], rdf: RDFReader, pm: PrefixMap): Result = r match {
@@ -98,14 +99,16 @@ case class ShExSchema(schema: SchemaShEx)
     validator <- getValidator(builder)
     r <- validator.validateNodeShape(rdf, node, shape)
     pm <- rdf.getPrefixMap
-    res = cnvResult(r.toEitherS, rdf,pm)
+    eitherResultShapeMap = r.toEitherS.map(_._2)
+    res = cnvResult(eitherResultShapeMap, rdf,pm)
   } yield res
 
   def validateNodeStart(node: IRI, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
     validator <- getValidator(builder)
     r <- validator.validateNodeStart(rdf, node)
     pm <- rdf.getPrefixMap
-    res = cnvResult(r.toEitherS, rdf,pm)
+    eitherResultShapeMap = r.toEitherS.map(_._2)
+    res = cnvResult(eitherResultShapeMap, rdf,pm)
   } yield res
 
 
@@ -126,8 +129,8 @@ case class ShExSchema(schema: SchemaShEx)
     ErrorInfo(v.show)
   }
 
-  override def fromString(cs: CharSequence, format: String, base: Option[String]): IO[Schema] = {
-    ShExSchema.fromString(cs, format, base)
+  override def fromString(str: String, format: String, base: Option[String]): IO[Schema] = {
+    ShExSchema.fromString(str, format, base)
   }
 
   private def handleErr[A](e: Either[String,A]): IO[A] = e.fold(
@@ -208,9 +211,9 @@ case class ShExSchema(schema: SchemaShEx)
 object ShExSchema {
   def empty: es.weso.schema.Schema = ShExSchema(schema = SchemaShEx.empty)
 
-  def fromString(cs: CharSequence, format: String, base: Option[String]): IO[ShExSchema] = RDFAsJenaModel.empty.flatMap(_.use(rdf => 
+  def fromString(str: String, format: String, base: Option[String]): IO[ShExSchema] = RDFAsJenaModel.empty.flatMap(_.use(rdf => 
   for {
-    schema <- SchemaShEx.fromString(cs, format, base.map(IRI(_)), Some(rdf)).map(p => ShExSchema(p))
+    schema <- SchemaShEx.fromString(str, format, base.map(IRI(_)), Some(rdf)).map(p => ShExSchema(p))
   } yield schema))
 
 }
