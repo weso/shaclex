@@ -2,17 +2,21 @@ package es.weso.rdf.sgraph
 
 import es.weso.rdf.jena.RDFAsJenaModel
 
-import es.weso.utils.test._
-import org.scalatest.matchers.should._ 
-import org.scalatest.funspec.AnyFunSpec
+// import es.weso.utils.test._
+// import org.scalatest.matchers.should._ 
+// import org.scalatest.funspec.AnyFunSpec
 // import cats.data._
 // import cats.effect._
 // import es.weso.utils.IOUtils._
+import munit._
+import cats.effect.IO
+import io.circe._
+import io.circe.parser._
+import cats.implicits._
 
-class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
+class SGraphTest extends CatsEffectSuite {
 
-  describe("SGraph") {
-    it("Should generate from example") {
+ test("Should generate from example") {
       val e = RDFAsJenaModel.fromChars(
             """|prefix : <http://example.org/>
                |prefix xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -39,7 +43,7 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
             println(s"RDF parsed: ${ts.size}")
             println(s"Size of triples: ${ts.size}")
             println(s"Dot generated: $dot")
-            dot.edges.size should be(13)
+            assertEquals(dot.edges.size, 13)
           }
         )
     }
@@ -75,11 +79,9 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
     )
   }
 */
-  }
 
-  describe(s"Json generation") {
-    it(s"Should convert to Json") {
-      val expected =
+  test(s"Should convert to Json") {
+      val expectedStr =
         """|[
            |{ "data": { "id": "N0", "label": ":x", "type": "iri" } },
            |{ "data": { "id": "N1", "label": ":y", "type": "iri" } },
@@ -89,18 +91,17 @@ class SGraphTest extends AnyFunSpec with Matchers with JsonMatchers {
            |]
            |""".stripMargin
 
-      val e = RDFAsJenaModel.fromString(
+      val eitherParsed: Either[Throwable,Json] = parse(expectedStr).leftMap(e => new RuntimeException(e))
+
+      val cmp: IO[(Json,Json)] = RDFAsJenaModel.fromString(
           """prefix : <http://example.org/>
             |:x a :A ;
             |   :p :y .
             |""".stripMargin, "TURTLE"
         ).flatMap(_.use(rdf => for {
         sg <- RDF2SGraph.rdf2sgraph(rdf)
-      } yield sg.toJson))
-      e.attempt.unsafeRunSync.fold(
-        e => fail(s"SGraph: Error in conversion to Json: $e"),
-        json => json should matchJsonString(expected)
-      )
+        expected <- IO.fromEither(eitherParsed)
+      } yield (sg.toJson, expected)))
+      cmp.map { case (json,expected) => assertEquals(json, expected) }
     }
   }
-}

@@ -2,11 +2,11 @@ package es.weso.schema
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import com.typesafe.scalalogging.LazyLogging
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 import es.weso.utils.EitherUtils
 import io.circe._
 import io.circe.JsonObject._
-
+import cats.implicits._
 import util._
 
 sealed abstract class ValidationTrigger {
@@ -71,7 +71,7 @@ object ValidationTrigger extends LazyLogging {
             case None => Right(None)
             case Some(baseStr) => IRI.fromString(baseStr).map(Some(_))
           }
-          shapeMap <- ShapeMap.fromCompact(shapeMapStr, base, nodePrefixMap, shapePrefixMap)
+          shapeMap <- ShapeMap.fromCompact(shapeMapStr, base, nodePrefixMap, shapePrefixMap).leftMap(_.toList.mkString("\n"))
         } yield ShapeMapTrigger(shapeMap)
       case "NODESHAPE" => (optNode, optShape) match {
         case (Some(strNode), Some(strShape)) => for {

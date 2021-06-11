@@ -1,15 +1,18 @@
 package es.weso.schema
 import java.io.File
 
-import util._
+// import util._
 import cats.effect._
 // import cats.implicits._
 import es.weso.rdf.RDFReader
-import es.weso.utils.FileUtils._
+// import es.weso.utils.FileUtils._
+import java.nio.file.Paths
+// import es.weso.utils.IOUtils
+import es.weso.utils.FileUtils
 
 object Schemas {
 
-  type SchemaParser = (CharSequence, String, Option[String]) => IO[Schema]
+  type SchemaParser = (String, String, Option[String]) => IO[Schema]
 
   lazy val shEx: Schema = ShExSchema.empty
   lazy val shaclex : Schema = ShaclexSchema.empty
@@ -58,26 +61,26 @@ object Schemas {
     schemaName: String,
     base: Option[String] = None): IO[Schema] =
     for {
-     cs <- getFileContents(file)
+     cs <- FileUtils.getContents(Paths.get(file.getAbsolutePath()))
      schema <- fromString(cs, format, schemaName, base)
     } yield schema
 
   def fromString(
-    cs: CharSequence,
+    str: String,
     format: String,
     schemaName: String,
     base: Option[String] = None): IO[Schema] = for {
     schema <- lookupSchema(schemaName)
-    schemaParsed <- if (cs.length == 0) IO.pure(schema.empty)
-                    else schema.empty.fromString(cs, format, base)
+    schemaParsed <- if (str.length == 0) IO.pure(schema.empty)
+                    else schema.empty.fromString(str, format, base)
   } yield schemaParsed
 
-  private def getFileContents(file: File): IO[CharSequence] = {
-    getContents(file).value.flatMap(e => e match {
+/*  private def getFileContents(file: File): IO[CharSequence] = {
+    getContents(Paths.get(file.getAbsolutePath())).value.flatMap(e => e match {
       case Left(s) => IO.raiseError(new RuntimeException(s))
       case Right(cs) => IO.pure(cs)
     })
-  }
+  } */
 
   def fromRDF(rdf: RDFReader, schemaName: String): IO[Schema] = {
     for {

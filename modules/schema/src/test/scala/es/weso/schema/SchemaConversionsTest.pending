@@ -1,8 +1,5 @@
 package es.weso.schema
 
-import org.scalatest._
-import matchers.should._
-import funspec._
 import cats._
 import cats.implicits._
 import cats.effect._
@@ -11,8 +8,9 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.utils.IOUtils._
 import es.weso.utils._
 import io.circe.parser._
+import munit.CatsEffectSuite
 
-class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
+class SchemaConversionsTest extends CatsEffectSuite {
 
   type PureCompare = (String,String) => Either[String,Boolean]
   type IOCompare = (String,String) => IO[Boolean]
@@ -83,7 +81,7 @@ class SchemaConversionsTest extends AnyFunSpec with Matchers with EitherValues {
           |@prefix sx:      <http://shex.io/ns/shex#> .
           |
           |:S a    sx:Shape ;
-          |   sx:closed false ;
+          |#   sx:closed false ;
           |   sx:expression [
           |    a sx:TripleConstraint ;
           |    sx:predicate :p ;

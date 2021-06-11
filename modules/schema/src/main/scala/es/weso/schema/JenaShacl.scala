@@ -1,11 +1,11 @@
 package es.weso.schema
 
-import cats.implicits._
+// import cats.implicits._
 import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import cats.effect._
-import cats.effect.concurrent._
+//import cats.effect.concurrent._
 import org.apache.jena.shacl._
 import scala.util.control.NoStackTrace
 import org.apache.jena.rdf.model.Model
@@ -17,9 +17,9 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.graph.Graph
 import org.apache.jena.riot.system.{PrefixMap => _, _}
 import org.apache.jena.riot.RDFLanguages
-import es.weso.shapeMaps.ResultShapeMap
+import es.weso.shapemaps.ResultShapeMap
 import collection.JavaConverters._
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.ShapeMap
 import java.io._
 import es.weso.utils.JenaUtils
 
@@ -69,7 +69,7 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
      else s"Number of violations: ${report.getEntries().size()}"
     val shapesMap = report2ShapesMap(report, nodesPrefixMap, shapesPrefixMap)
     val errors: Seq[ErrorInfo] = report2errors(report)
-    val esRdf = eitherRdf.leftMap(_.getMessage())
+    // val esRdf = eitherRdf.leftMap(_.getMessage())
     Result(isValid = isValid, 
       message = message, 
       shapeMaps = Seq(shapesMap), 
@@ -82,7 +82,7 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
 
   private def report2reader(report: ValidationReport): IO[RDFReader] = for {
     refModel <- Ref.of[IO, Model](report.getModel())
-  } yield RDFAsJenaModel(refModel,None,None)
+  } yield RDFAsJenaModel(refModel,None,None,Map(),Map())
     
 
   private def report2errors(report: ValidationReport): Seq[ErrorInfo] = Seq()
@@ -91,13 +91,13 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
     ResultShapeMap.empty
   }
 
-  override def fromString(cs: CharSequence, 
+  override def fromString(str: String, 
                           format: String, 
                           base: Option[String]
                           ): IO[Schema] = for {
     model <- IO { 
       val m : Model       = ModelFactory.createDefaultModel() 
-      val str_reader      = new StringReader(cs.toString)
+      val str_reader      = new StringReader(str)
       val g: Graph        = m.getGraph
       val dest: StreamRDF = StreamRDFLib.graph(g)
       RDFParser.create.source(str_reader).lang(RDFLanguages.shortnameToLang(format)).parse(dest)
