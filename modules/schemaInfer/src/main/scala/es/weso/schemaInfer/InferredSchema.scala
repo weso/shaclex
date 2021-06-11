@@ -26,7 +26,7 @@ case class InferredSchema(smap: Map[IRI, InferredShape]) extends AnyVal {
     smap.toList.map { case (iri, is) => is.toShapeExpr(Some(iri),opts, rdf) }                    
   for {
     es <- rs.sequence
-  } yield Schema(IRI(""), Some(pm), None, None, None, Some(es),None,List())
+  } yield Schema(IRI(""), Some(pm), None, None, None, Some(es),None,List(), None)
  }
 }
 

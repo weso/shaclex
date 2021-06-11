@@ -6,7 +6,7 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.schema.Schemas._
 import es.weso.schema._
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 import cats.effect.IO
 import es.weso.utils.internal.CollectionCompat._
 // import es.weso.rdf.triples.RDFTriple
@@ -36,6 +36,9 @@ object SchemaInfer {
 
   private def updateSchema(fn: InferredSchema => InferredSchema): Comp[Unit] =
     updateState(_.updateSchema(fn))
+
+  private def fromIO[A](io: IO[A]): Comp[A] = 
+    EitherT.liftF(StateT.liftF(ReaderT.liftF(io)))
 
   private def updateShapeMap(fn: ResultShapeMap => ResultShapeMap): Comp[Unit] =
     updateState(_.updateShapeMap(fn))
@@ -77,8 +80,9 @@ object SchemaInfer {
                      shapeLabel: IRI,
                      opts: InferOptions = InferOptions.defaultOptions
                     ): IO[Either[String, (Schema, ResultShapeMap)]] = for {
+    pm <- rdfReader.getPrefixMap                      
     e <- runWithState(inferSchema(selector, engine, shapeLabel),
-                 InferState.initial.addPrefixMap(rdfReader.getPrefixMap),
+                 InferState.initial.addPrefixMap(pm),
                  Config(opts, rdfReader))
    } yield {
     e.map(pair => {
@@ -99,7 +103,8 @@ object SchemaInfer {
     _ <- associateNodesLabel(nodes.toSet,shapeLabel)
     _ <- inferShapeFromNodes(nodes.toSet, shapeLabel, 0)
     schema <- mkSchema(engine, shapeLabel)
-    _ <- updateShapeMap(_.addNodesPrefixMap(rdfReader.getPrefixMap()).addShapesPrefixMap(schema.pm))
+    pm <- fromIO(rdfReader.getPrefixMap)
+    _ <- updateShapeMap(_.addNodesPrefixMap(pm).addShapesPrefixMap(schema.pm))
   } yield schema
 
 /*  private def inferShapes(neighMap: NeighMap,
@@ -370,13 +375,20 @@ object SchemaInfer {
     else pm
   } */
 
-  private def mkSchema(engine: String, label: IRI): Comp[Schema] =
-   lookupSchema(engine) match {
-    case Right(_: ShExSchema) => mkShExSchema(label)
-    case Right(_: ShaclexSchema) => err(s"Not implemented yet")
-    case Left(e) => err(s"Not found engine $engine, Error: $e")
-    case l => err(s"Not found schema $engine. Found: $l")
-  }
+  private def mkSchema(engine: String, label: IRI): Comp[Schema] = for {
+    eitherSchema <- {
+      val s: Comp[Either[Throwable,Schema]] = liftIO(lookupSchema(engine).attempt)
+      s
+    }
+    schema <- eitherSchema.fold(
+      exc => err(s"schemaInfer/mkSchema: Not found engine ${engine}: ${exc.getMessage }"),
+      s => s match {
+        case _: ShExSchema => mkShExSchema(label)
+        case _: ShaclexSchema => err(s"SchemaInfer: Not implemented yet creation of ShaclexSchema yet")
+        case _ => err(s"SchemaInfer: Not implemented creation of unknown schema: ${s.name} ")
+      }
+    )
+  } yield schema
 
   private def mkShExSchema(label: IRI): Comp[Schema]  = for {
     rdfReader <- getRDF

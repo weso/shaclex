@@ -1,0 +1,141 @@
+@startuml
+
+package RDFShapeClient {
+} 
+note left of RDFShapeClient 
+ Online demo deployed at
+ <b>http://rdfshape.weso.es</b>
+ React app
+end note
+RDFShapeClient --> RDFShape
+RDFShapeClient --> shapeComponents
+
+package WikiShape {
+} 
+note right of WikiShape 
+ Online demo deployed at
+ <b>http://wikishape.weso.es</b>
+ React app
+end note
+WikiShape --> RDFShape
+WikiShape --> shapeComponents
+
+package SHaclEx {
+}
+note left of SHaclEx
+ ShEx SHACL converter
+end note
+
+
+[ShEx-s] as ShExs
+package ShExs {
+}
+note right of ShExs
+ ShEx implementation (Scala)
+end note
+
+
+[SHACL-s] as SHACLs
+package SHACLs {
+}
+note left of SHACLs
+ SHACL implementation (Scala)
+end note
+
+
+package SRDF {
+}
+note left of SRDF
+ Simple RDF interface
+end note
+
+
+[Apache Jena] as ApacheJena
+
+[RDF4j] as RDF4j
+
+
+
+
+
+note left of RDFShape 
+ Online demo server 
+ Provides API
+end note
+package RDFShape {
+}
+RDFShape --> UMLSHaclEx
+RDFShape --> SHaclEx
+
+package YASHE {
+}
+note right of YASHE
+ ShEx Editor
+end note
+
+
+package UMLSHaclEx {
+}
+note left of UMLSHaclEx
+ UML visualzations
+end note
+
+
+package shapeComponents {
+}
+note right of shapeComponents
+ React components 
+ for Shapes
+end note
+
+' package shexJava { }
+
+package Utils {
+}
+note right of Utils
+ Scala common
+ utils
+end note
+
+note right of ShExAuthor
+ ShEx visual
+ editor
+end note
+package ShExAuthor {
+}
+
+note right of ShExProtege
+ Protégé plugin 
+ for ShEx 
+end note
+package ShExProtege {
+}
+ShExProtege --> ShExAuthor
+
+WikiShape --> YASHE
+RDFShapeClient --> YASHE
+ShExAuthor --> YASHE
+
+UMLSHaclEx --> SHaclEx
+
+
+SHaclEx --> ShExs
+SHaclEx --> SHACLs
+
+ShExs --> SRDF
+SHACLs --> SRDF
+
+ShExs --> Utils
+SHACLs --> Utils
+
+SRDF -- ApacheJena
+SRDF -- RDF4j
+' shexJava --> SHaclEx
+
+
+'note right of shexJava 
+' Demo using SHACLex 
+' from Java
+'end note
+
+@enduml

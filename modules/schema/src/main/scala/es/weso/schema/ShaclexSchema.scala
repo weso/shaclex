@@ -11,34 +11,33 @@ import es.weso.shacl.{Schema => ShaclSchema, _}
 import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
 import es.weso.shacl.report.{ValidationReport, ValidationResult}
 import es.weso.shacl.validator.{CheckResult, Evidence, ShapeTyping, Validator}
-import es.weso.shapeMaps._
+import es.weso.shapemaps._
 import es.weso.utils.internal.CollectionCompat._
 import util._
 import es.weso.typing._
 import es.weso.utils.MapUtils
-import cats.data.EitherT
+//import cats.data.EitherT
 import cats.effect._
 
 case class ShaclexSchema(schema: ShaclSchema) extends Schema {
   override def name = "SHACLex"
 
-  override def formats = DataFormats.formatNames ++ Seq("TREE")
+  override def formats: Seq[String] = DataFormats.formatNames ++ Seq("TREE")
 
-  override def defaultTriggerMode = TargetDeclarations
+  override def defaultTriggerMode: ValidationTrigger = TargetDeclarations
 
-  override def validate(rdf: RDFReader, trigger: ValidationTrigger): IO[Result] = trigger match {
+  override def validate(rdf: RDFReader, trigger: ValidationTrigger, builder: RDFBuilder): IO[Result] = trigger match {
     case TargetDeclarations => validateTargetDecls(rdf).map(_.addTrigger(trigger))
     case _ => IO(Result.errStr(s"Not implemented trigger ${trigger.name} for SHACL yet"))
   }
 
   def validateTargetDecls(rdf: RDFReader): IO[Result] = {
     val validator = Validator(schema)
-    for {
-     r <- validator.validateAll(rdf)
-     emptyRdf <- RDFAsJenaModel.empty  
-     builder <- emptyRdf.addPrefixMap(schema.pm)
-     result <-  cnvResult(r, rdf, builder)
-    } yield result
+    RDFAsJenaModel.empty.flatMap(_.use(emptyRdf => for {
+      r <- validator.validateAll(rdf)
+      builder <- emptyRdf.addPrefixMap(schema.pm)
+      result <-  cnvResult(r, rdf, builder)
+    } yield result))
   }
 
   def cnvResult(r: CheckResult[AbstractResult, (ShapeTyping,Boolean), List[Evidence]],
@@ -46,30 +45,31 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
                 builder: RDFBuilder
                ): IO[Result] = {
     val vr: ValidationReport =
-      r.result.fold(e => ValidationReport.fromError(e), r =>
+      r.result.fold(
+        e => ValidationReport.fromError(e), r =>
         r._1.toValidationReport
       )
     for {
-      eitherVR <- vr.toRDF(builder).attempt
+      pm <- rdf.getPrefixMap
     } yield Result(
       isValid = vr.conforms,
       message = if (vr.conforms) "Valid" else "Not valid",
-      shapeMaps = r.results.map(cnvShapeTyping(_, rdf)),
-      validationReport = eitherVR.leftMap(_.getMessage),
-      errors = vr.results.map(cnvViolationError(_)),
+      shapeMaps = r.results.map(cnvShapeTyping(_, rdf,pm)),
+      validationReport = ShaclexReport(vr),
+      errors = vr.results.map(cnvViolationError),
       trigger = None,
-      nodesPrefixMap = rdf.getPrefixMap(),
+      nodesPrefixMap = pm,
       shapesPrefixMap = schema.pm)
   }
   
-  def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader): ResultShapeMap = {
+  def cnvShapeTyping(t: (ShapeTyping, Boolean), rdf: RDFReader, pm: PrefixMap): ResultShapeMap = {
     ResultShapeMap(
-      mapValues(t._1.getMap)(cnvMapShapeResult).toMap, rdf.getPrefixMap(), schema.pm)
+      mapValues(t._1.getMap)(cnvMapShapeResult), pm, schema.pm)
   }
 
-  private def cnvMapShapeResult(m: Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
+  private def cnvMapShapeResult(m: scala.collection.Map[Shape, TypingResult[AbstractResult, String]]): Map[ShapeMapLabel, Info] = {
 
-    MapUtils.cnvMap(m, cnvShape, cnvTypingResult)
+    MapUtils.cnvMap(m.toMap, cnvShape, cnvTypingResult)
   }
 
   private def cnvShape(s: Shape): ShapeMapLabel = {
@@ -106,40 +106,55 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
     throw new Exception("Unimplemented validateShapeMap")
   }*/
 
-  override def fromString(cs: CharSequence, format: String, 
+  override def fromString(str: String, format: String, 
      base: Option[String]
-    ): EitherT[IO, String, Schema] = {
-    for {
-      rdf <- EitherT.liftF(RDFAsJenaModel.fromString(cs.toString, format, base.map(IRI(_))))
-      schema <- RDF2Shacl.getShacl(rdf, true)
-    } yield ShaclexSchema(schema)
+    ): IO[Schema] = {
+    RDFAsJenaModel.fromString(str.toString, format, base.map(IRI(_))).flatMap(_.use(rdf => for {
+      eitherSchema <- RDF2Shacl.getShacl(rdf, resolveImports = true).attempt
+      schema <- eitherSchema match {
+        case Left(s) => IO.raiseError(new RuntimeException(s))
+        case Right(schema) => IO.pure(schema)
+      }
+    } yield ShaclexSchema(schema)))
   }
 
-  private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
+  // private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
 
-  override def fromRDF(rdf: RDFReader): EitherT[IO, String, Schema] = for {
-    eitherBuilder <- EitherT.liftF(rdf.asRDFBuilder.attempt)
+  override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = for {
+    eitherBuilder <- rdf.asRDFBuilder.attempt
     schema <- eitherBuilder match {
     case Left(_) => for {
-      ts <- EitherT.liftF(rdf.triplesWithPredicate(`owl:imports`).compile.toList)
+      ts <- rdf.triplesWithPredicate(`owl:imports`).compile.toList
       schema <- ts.size match {
         case 0 => RDF2Shacl.getShaclReader(rdf).map(ShaclexSchema(_))
-        case _ => err[ShaclexSchema](s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: ${rdf}")
+        case _ => IO.raiseError(new RuntimeException(s"fromRDF: Not supported owl:imports for this kind of RDF model\nRDFReader: $rdf"))
       }
     } yield schema
+
     case Right(rdfBuilder) =>
       for {
-        schemaShacl <- RDF2Shacl.getShacl(rdfBuilder, true)
-      } yield ShaclexSchema(schemaShacl) 
+        maybeSchemaShacl <- RDF2Shacl.getShacl(rdfBuilder, resolveImports = true).attempt
+        schemaShacl <- maybeSchemaShacl.fold(
+          s => IO.raiseError(new RuntimeException(s)),
+          s => IO.pure(s)
+        )
+      } yield {
+        val ss: es.weso.schema.Schema = ShaclexSchema(schemaShacl)
+        ss
+      }
    }
   } yield schema
 
-  override def serialize(format: String, base: Option[IRI]): IO[String] = for {
-    builder <- RDFAsJenaModel.empty
+/*  private def handleErr[A](e: Either[String,A]): IO[A] = e.fold(
+    s => IO.raiseError(new RuntimeException(s)),
+    IO.pure
+  ) */
+
+  override def serialize(format: String, base: Option[IRI]): IO[String] = RDFAsJenaModel.empty.flatMap(_.use(builder => for {
     str <- if (formats.contains(format.toUpperCase))
       schema.serialize(format, base, builder)
     else IO.raiseError(new RuntimeException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
-  } yield str  
+  } yield str))
 
   override def empty: Schema = ShaclexSchema.empty
 
@@ -149,36 +164,38 @@ case class ShaclexSchema(schema: ShaclSchema) extends Schema {
 
   override def pm: PrefixMap = schema.pm
 
-  override def convert(targetFormat: Option[String],
-                       targetEngine: Option[String],
+  override def convert(maybeTargetFormat: Option[String],
+                       maybeTargetEngine: Option[String],
                        base: Option[IRI]
-                      ): EitherT[IO,String,String] = {
-   targetEngine.map(_.toUpperCase) match {
-     case None => EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName)))
-     case Some("SHACL") | Some("SHACLEX") => {
-       EitherT.liftF(serialize(targetFormat.getOrElse(DataFormats.defaultFormatName)))
-     }
-     case Some("SHEX") => for {
-       pair <- EitherT.fromEither[IO](Shacl2ShEx.shacl2ShEx(schema)).leftMap(e => s"Error converting: $e")
-       (newSchema,queryMap) = pair
-       builder <- EitherT.liftF(RDFAsJenaModel.empty)
-       str <- EitherT.liftF(es.weso.shex.Schema.serialize(
-         newSchema,
-         targetFormat.getOrElse(DataFormats.defaultFormatName),
-         base,
-         builder))
-     } yield str
-     case Some(other) => err(s"Conversion $name -> $other not implemented yet")
-   }
-  }
+                      ): IO[String] = {
+   val targetFormat = maybeTargetFormat.getOrElse(DataFormats.defaultFormatName)
+   for {
+    str <- maybeTargetEngine.map(_.toUpperCase) match {
+     case None => 
+       serialize(targetFormat)
+     case Some("SHACL") | Some("SHACLEX") =>
+       serialize(targetFormat)
+     case Some("SHEX") => RDFAsJenaModel.empty.flatMap(_.use(builder => for {
+       pair <- Shacl2ShEx.shacl2ShEx(schema).fold(
+         s => IO.raiseError(new RuntimeException(s"SHACL2ShEx: Error converting: $s")),
+         IO.pure
+       )
+       (newSchema,_) = pair
+       str <- es.weso.shex.Schema.serialize(newSchema,targetFormat,base,builder)
+     } yield (str)))
+     case Some(other) =>
+       IO.raiseError(new RuntimeException(s"Conversion $name -> $other not implemented yet"))
+   } 
+  } yield str
+ }
 
   override def info: SchemaInfo = {
     // TODO: Check if shacl schemas are well formed
-    SchemaInfo(name,"SHACLex", true, List())
+    SchemaInfo(name,"SHACLex", isWellFormed = true, List())
   }
 
-  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap)
-  : EitherT[IO,String, String] = EitherT.fromEither(Left(s"Not implemented yet"))
+  override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String] =
+    IO.raiseError(new RuntimeException(s"Not implemented yet"))
 
 }
 
