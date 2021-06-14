@@ -28,7 +28,7 @@ lazy val munitEffectVersion    = "1.0.1"
 lazy val pprintVersion         = "0.6.0"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
-lazy val scallopVersion        = "3.3.2"
+lazy val scallopVersion        = "3.5.1"
 lazy val shaclTQVersion        = "1.3.2"
 lazy val typesafeConfigVersion = "1.3.4"
 
