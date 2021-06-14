@@ -40,7 +40,7 @@ class SchemaTest extends CatsEffectSuite {
          optShape = None, 
          nodePrefixMap = pm, 
          shapesPrefixMap = schema.pm, 
-         builder = builder)
+         builder = Some(builder))
       } yield result }
       } yield vv
       
@@ -67,7 +67,7 @@ class SchemaTest extends CatsEffectSuite {
        vv <- (res1,res2).tupled.use{ case (rdf, builder) => for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
         pm <- rdf.getPrefixMap
-        result <- schema.validate(rdf,"TargetDecls","",None,None,pm,schema.pm,builder)
+        result <- schema.validate(rdf,"TargetDecls","",None,None,pm,schema.pm,Some(builder))
       } yield result }
       } yield vv
       

@@ -1,10 +1,8 @@
 package es.weso.shaclex
 
 import es.weso.rdf.jena.RDFAsJenaModel
-import es.weso.shacl._
-import es.weso.shapemaps._
-import es.weso.shacl.validator._
 import cats.effect._
+import es.weso.schema._
 import cats.implicits._
 import es.weso.utils.IOUtils._
 import java.io.InputStream
@@ -25,25 +23,21 @@ object SHACLWrapper {
      data: InputStream, 
      shapes: InputStream, 
      options: SHACLsOptions
-  ): ValidationReport = {
+  ): RDFReport = {
       val dataReader = new InputStreamReader(data)
 
-      val cmp: IO[ResultShapeMap] = for {
+      val cmp: IO[RDFReport] = for {
           res1 <- RDFAsJenaModel.fromReader(dataReader,options.dataFormat,options.base)
           res2 <- if (shapes == null) RDFAsJenaModel.empty
                   else RDFAsJenaModel.fromReader(new InputStreamReader(shapes),options.dataFormat,options.base)
-          v <- (res1,res2).tupled.use {
-              case (rdf,shapes) => for {
+          res3 <- RDFAsJenaModel.empty                  
+          v <- (res1,res2, res3).tupled.use {
+              case (rdf,shapes, builder) => for {
                 prefixMap <- rdf.getPrefixMap
-                schema <- Schema.fromInputStream(schema, options.schemaFormat, options.base,None)
-                resolved <- ResolvedSchema.resolve(schema, options.base)
-                shapeMap <- fromES(
-                  ShapeMap.fromInputStream(shapeMap, options.shapemapFormat,options.base, prefixMap,resolved.prefixMap
-                  ).leftMap(es => es.toList.mkString("\n")))
-                fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap,rdf,prefixMap,schema.prefixMap)
-                result <- Validator.validate(resolved,fixedShapeMap,rdf,builder,options.verbose)
-                resultShapeMap <- result.toResultShapeMap
-              } yield resultShapeMap
+                schema <- Schemas.fromRDF(shapes, "SHACLEX")
+                pm <- rdf.getPrefixMap
+                result <- schema.validate(rdf,TargetDeclarations, builder)
+              } yield result.validationReport
           }
       } yield v 
       cmp.unsafeRunSync()
