@@ -18,7 +18,7 @@
         "classpath": [
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.5.1/sbt-1.5.1.jar",
             "/home/labra/.sbt/boot/scala-2.12.13/lib/scala-library.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.8/sbt-bloop-1.4.8.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.8-19-4d9f966b/sbt-bloop-1.4.8-19-4d9f966b.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.codecommit/sbt-github-actions/scala_2.12/sbt_1.0/0.10.1/jars/sbt-github-actions.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.codecommit/sbt-github-packages/scala_2.12/sbt_1.0/0.5.2/jars/sbt-github-packages.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.eed3si9n/sbt-unidoc/scala_2.12/sbt_1.0/0.4.3/jars/sbt-unidoc.jar",
@@ -321,7 +321,7 @@
         "platform": {
             "name": "jvm",
             "config": {
-                "home": "/usr/lib/jvm/java-11-openjdk-amd64",
+                "home": "/usr/lib/jvm/jdk-12.0.2",
                 "options": [
                     "-Duser.dir=/home/labra/src/shapes/shaclex/project"
                 ]
@@ -335,12 +335,12 @@
                 {
                     "organization": "ch.epfl.scala",
                     "name": "sbt-bloop",
-                    "version": "1.4.8",
+                    "version": "1.4.8-19-4d9f966b",
                     "configurations": "default",
                     "artifacts": [
                         {
                             "name": "sbt-bloop",
-                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.8/sbt-bloop-1.4.8.jar"
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.8-19-4d9f966b/sbt-bloop-1.4.8-19-4d9f966b.jar"
                         }
                     ]
                 },
@@ -2222,6 +2222,11 @@
                         {
                             "name": "sbt",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.5.1/sbt-1.5.1.jar"
+                        },
+                        {
+                            "name": "sbt",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.5.1/sbt-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2234,6 +2239,11 @@
                         {
                             "name": "main_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main_2.12/1.5.1/main_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "main_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main_2.12/1.5.1/main_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2335,6 +2345,11 @@
                         {
                             "name": "logic_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/logic_2.12/1.5.1/logic_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "logic_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/logic_2.12/1.5.1/logic_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2347,6 +2362,11 @@
                         {
                             "name": "actions_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/actions_2.12/1.5.1/actions_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "actions_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/actions_2.12/1.5.1/actions_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2359,6 +2379,11 @@
                         {
                             "name": "main-settings_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main-settings_2.12/1.5.1/main-settings_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "main-settings_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main-settings_2.12/1.5.1/main-settings_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2371,6 +2396,11 @@
                         {
                             "name": "run_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/run_2.12/1.5.1/run_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "run_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/run_2.12/1.5.1/run_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2383,6 +2413,11 @@
                         {
                             "name": "command_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/command_2.12/1.5.1/command_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "command_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/command_2.12/1.5.1/command_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2395,6 +2430,11 @@
                         {
                             "name": "collections_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/collections_2.12/1.5.1/collections_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "collections_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/collections_2.12/1.5.1/collections_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2407,6 +2447,11 @@
                         {
                             "name": "scripted-plugin_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/scripted-plugin_2.12/1.5.1/scripted-plugin_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "scripted-plugin_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/scripted-plugin_2.12/1.5.1/scripted-plugin_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2419,6 +2464,11 @@
                         {
                             "name": "zinc-lm-integration_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-lm-integration_2.12/1.5.1/zinc-lm-integration_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-lm-integration_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-lm-integration_2.12/1.5.1/zinc-lm-integration_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2431,6 +2481,11 @@
                         {
                             "name": "util-logging_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-logging_2.12/1.5.1/util-logging_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-logging_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-logging_2.12/1.5.1/util-logging_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2443,6 +2498,11 @@
                         {
                             "name": "launcher-interface",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/launcher-interface/1.3.1/launcher-interface-1.3.1.jar"
+                        },
+                        {
+                            "name": "launcher-interface",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/launcher-interface/1.3.1/launcher-interface-1.3.1-sources.jar"
                         }
                     ]
                 },
@@ -2586,6 +2646,11 @@
                         {
                             "name": "compiler-interface",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-interface/1.5.1/compiler-interface-1.5.1.jar"
+                        },
+                        {
+                            "name": "compiler-interface",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-interface/1.5.1/compiler-interface-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2598,6 +2663,11 @@
                         {
                             "name": "zinc-compile_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile_2.12/1.5.1/zinc-compile_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-compile_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile_2.12/1.5.1/zinc-compile_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2648,6 +2718,11 @@
                         {
                             "name": "util-relation_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-relation_2.12/1.5.1/util-relation_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-relation_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-relation_2.12/1.5.1/util-relation_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2660,6 +2735,11 @@
                         {
                             "name": "completion_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/completion_2.12/1.5.1/completion_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "completion_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/completion_2.12/1.5.1/completion_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2672,6 +2752,11 @@
                         {
                             "name": "task-system_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/task-system_2.12/1.5.1/task-system_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "task-system_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/task-system_2.12/1.5.1/task-system_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2684,6 +2769,11 @@
                         {
                             "name": "tasks_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/tasks_2.12/1.5.1/tasks_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "tasks_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/tasks_2.12/1.5.1/tasks_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2696,6 +2786,11 @@
                         {
                             "name": "testing_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/testing_2.12/1.5.1/testing_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "testing_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/testing_2.12/1.5.1/testing_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2708,6 +2803,11 @@
                         {
                             "name": "util-tracking_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-tracking_2.12/1.5.1/util-tracking_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-tracking_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-tracking_2.12/1.5.1/util-tracking_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2754,6 +2854,11 @@
                         {
                             "name": "zinc-classpath_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classpath_2.12/1.5.1/zinc-classpath_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-classpath_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classpath_2.12/1.5.1/zinc-classpath_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2766,6 +2871,11 @@
                         {
                             "name": "zinc-apiinfo_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-apiinfo_2.12/1.5.1/zinc-apiinfo_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-apiinfo_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-apiinfo_2.12/1.5.1/zinc-apiinfo_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2778,6 +2888,11 @@
                         {
                             "name": "zinc_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc_2.12/1.5.1/zinc_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc_2.12/1.5.1/zinc_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2790,6 +2905,11 @@
                         {
                             "name": "core-macros_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/core-macros_2.12/1.5.1/core-macros_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "core-macros_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/core-macros_2.12/1.5.1/core-macros_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2802,6 +2922,11 @@
                         {
                             "name": "util-cache_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-cache_2.12/1.5.1/util-cache_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-cache_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-cache_2.12/1.5.1/util-cache_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2814,6 +2939,11 @@
                         {
                             "name": "util-control_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-control_2.12/1.5.1/util-control_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-control_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-control_2.12/1.5.1/util-control_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2826,6 +2956,11 @@
                         {
                             "name": "protocol_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/protocol_2.12/1.5.1/protocol_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "protocol_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/protocol_2.12/1.5.1/protocol_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2876,6 +3011,11 @@
                         {
                             "name": "util-position_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-position_2.12/1.5.1/util-position_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-position_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-position_2.12/1.5.1/util-position_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2888,6 +3028,11 @@
                         {
                             "name": "zinc-compile-core_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile-core_2.12/1.5.1/zinc-compile-core_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-compile-core_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile-core_2.12/1.5.1/zinc-compile-core_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -2900,6 +3045,11 @@
                         {
                             "name": "util-interface",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-interface/1.5.1/util-interface-1.5.1.jar"
+                        },
+                        {
+                            "name": "util-interface",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-interface/1.5.1/util-interface-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -3145,6 +3295,11 @@
                         {
                             "name": "test-agent",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-agent/1.5.1/test-agent-1.5.1.jar"
+                        },
+                        {
+                            "name": "test-agent",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-agent/1.5.1/test-agent-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -3216,6 +3371,11 @@
                         {
                             "name": "compiler-bridge_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-bridge_2.12/1.5.1/compiler-bridge_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "compiler-bridge_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-bridge_2.12/1.5.1/compiler-bridge_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -3228,6 +3388,11 @@
                         {
                             "name": "zinc-classfile_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classfile_2.12/1.5.1/zinc-classfile_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-classfile_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-classfile_2.12/1.5.1/zinc-classfile_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -3240,6 +3405,11 @@
                         {
                             "name": "zinc-core_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-core_2.12/1.5.1/zinc-core_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-core_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-core_2.12/1.5.1/zinc-core_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -3252,6 +3422,11 @@
                         {
                             "name": "zinc-persist_2.12",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-persist_2.12/1.5.1/zinc-persist_2.12-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-persist_2.12",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-persist_2.12/1.5.1/zinc-persist_2.12-1.5.1-sources.jar"
                         }
                     ]
                 },
@@ -3391,6 +3566,11 @@
                         {
                             "name": "zinc-persist-core-assembly",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-persist-core-assembly/1.5.1/zinc-persist-core-assembly-1.5.1.jar"
+                        },
+                        {
+                            "name": "zinc-persist-core-assembly",
+                            "classifier": "sources",
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-persist-core-assembly/1.5.1/zinc-persist-core-assembly-1.5.1-sources.jar"
                         }
                     ]
                 },
