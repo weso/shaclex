@@ -285,13 +285,13 @@ lazy val publishSettings = Seq(
   scmInfo         := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
   autoAPIMappings := true,
   apiURL          := Some(url("http://weso.github.io/shaclex/latest/api/")),
-  pomExtra        := <developers>
+ /* pomExtra        := <developers>
                        <developer>
                          <id>labra</id>
                          <name>Jose Emilio Labra Gayo</name>
                          <url>https://labra.weso.es/</url>
                        </developer>
-                     </developers>,
+                     </developers>, */
   publishMavenStyle              := true,
   sonatypeProfileName := ("es.weso"),
   homepage            := Some(url("https://github.com/weso/shaclex")),
@@ -305,6 +305,6 @@ lazy val publishSettings = Seq(
       id="labra",
       name="Jose Emilio Labra Gayo",
       email="jelabra@gmail.com",
-      url=url("https://weso.labra.es")
+      url=url("https://labra.weso.es")
     ))
 )
