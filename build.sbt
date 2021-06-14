@@ -30,7 +30,7 @@ lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
 lazy val scallopVersion        = "3.3.2"
 lazy val shaclTQVersion        = "1.3.2"
-lazy val typesafeConfigVersion = "1.3.4"
+lazy val typesafeConfigVersion = "1.4.1"
 
 
 // Compiler plugin dependency versions
