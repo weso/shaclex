@@ -125,7 +125,7 @@ lazy val schemaInfer = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(srdf)
   )
   .dependsOn(
@@ -137,7 +137,7 @@ lazy val schema = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(
       srdf,
       srdfJena,
@@ -159,7 +159,7 @@ lazy val schema = project
 lazy val slang = project
   .in(file("modules/slang"))
 //  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings)
+  .settings(commonSettings, publishSettings)
   .dependsOn(
   )
   .settings(
@@ -182,7 +182,7 @@ lazy val sgraph = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(
       utils,
       utilsTest % Test,
@@ -203,7 +203,7 @@ lazy val converter = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(
     logbackClassic,
     scalaLogging,
@@ -300,8 +300,7 @@ lazy val publishSettings = Seq(
   autoAPIMappings     := true,
   apiURL              := Some(url("http://weso.github.io/shaclex/latest/api/")),
   autoAPIMappings     := true,
-  developers := List(
-    Developer(
+  developers          := List(Developer(
       id="labra",
       name="Jose Emilio Labra Gayo",
       email="jelabra@gmail.com",
