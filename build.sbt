@@ -1,20 +1,20 @@
-lazy val scala212 = "2.12.13"
-lazy val scala213 = "2.13.5"
+lazy val scala212 = "2.12.14"
+lazy val scala213 = "2.13.6"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 val Java11 = "adopt@1.11"
 
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.94"
-lazy val srdfVersion          = "0.1.101"
-lazy val shexVersion          = "0.1.92-SNAPSHOT"
+lazy val utilsVersion         = "0.1.98"
+lazy val srdfVersion          = "0.1.102"
+lazy val shexVersion          = "0.1.91"
 lazy val shaclVersion         = "0.1.75"
 
 // Dependency versions
-lazy val catsVersion           = "2.5.0"
+lazy val catsVersion           = "2.6.1"
 // lazy val commonsTextVersion    = "1.8"
-lazy val circeVersion          = "0.14.0-M5"
+lazy val circeVersion          = "0.14.1"
 // lazy val diffsonVersion        = "4.0.0"
 // lazy val effVersion            = "4.6.1"
 lazy val jenaVersion           = "3.16.0"
@@ -22,22 +22,15 @@ lazy val jgraphtVersion        = "1.3.1"
 lazy val jlineVersion          = "3.17.0"
 lazy val jnaVersion            = "5.6.0"
 lazy val logbackVersion        = "1.2.3"
-lazy val loggingVersion        = "3.9.3"
-lazy val munitVersion          = "0.7.23"
+lazy val loggingVersion        = "3.9.2"
+lazy val munitVersion          = "0.7.26"
 lazy val munitEffectVersion    = "1.0.1"
 lazy val pprintVersion         = "0.6.0"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.14.0"
-// lazy val scalacticVersion      = "3.2.0"
-// lazy val scalaTestVersion      = "3.2.0"
-// lazy val scalaGraphVersion     = "1.11.5"
-// lazy val scalatagsVersion      = "0.6.7"
 lazy val scallopVersion        = "3.3.2"
-// lazy val seleniumVersion       = "2.35.0"
-// lazy val sextVersion           = "0.2.6"
 lazy val shaclTQVersion        = "1.3.2"
 lazy val typesafeConfigVersion = "1.3.4"
-// lazy val xercesVersion         = "2.12.0"
 
 
 // Compiler plugin dependency versions
@@ -132,7 +125,7 @@ lazy val schemaInfer = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(srdf)
   )
   .dependsOn(
@@ -144,7 +137,7 @@ lazy val schema = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(
       srdf,
       srdfJena,
@@ -166,7 +159,7 @@ lazy val schema = project
 lazy val slang = project
   .in(file("modules/slang"))
 //  .disablePlugins(RevolverPlugin)
-  .settings(commonSettings)
+  .settings(commonSettings, publishSettings)
   .dependsOn(
   )
   .settings(
@@ -189,7 +182,7 @@ lazy val sgraph = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(
       utils,
       utilsTest % Test,
@@ -210,7 +203,7 @@ lazy val converter = project
 //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings,
+    commonSettings, publishSettings, 
     libraryDependencies ++= Seq(
     logbackClassic,
     scalaLogging,
@@ -292,13 +285,13 @@ lazy val publishSettings = Seq(
   scmInfo         := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
   autoAPIMappings := true,
   apiURL          := Some(url("http://weso.github.io/shaclex/latest/api/")),
-  pomExtra        := <developers>
+ /* pomExtra        := <developers>
                        <developer>
                          <id>labra</id>
                          <name>Jose Emilio Labra Gayo</name>
                          <url>https://labra.weso.es/</url>
                        </developer>
-                     </developers>,
+                     </developers>, */
   publishMavenStyle              := true,
   sonatypeProfileName := ("es.weso"),
   homepage            := Some(url("https://github.com/weso/shaclex")),
@@ -307,11 +300,10 @@ lazy val publishSettings = Seq(
   autoAPIMappings     := true,
   apiURL              := Some(url("http://weso.github.io/shaclex/latest/api/")),
   autoAPIMappings     := true,
-  developers := List(
-    Developer(
+  developers          := List(Developer(
       id="labra",
       name="Jose Emilio Labra Gayo",
       email="jelabra@gmail.com",
-      url=url("https://weso.labra.es")
+      url=url("https://labra.weso.es")
     ))
 )
