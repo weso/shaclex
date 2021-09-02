@@ -6,7 +6,7 @@ val Java11 = "adopt@1.11"
 
 
 // Local dependencies
-lazy val utilsVersion         = "0.1.98"
+lazy val utilsVersion         = "0.1.99"
 lazy val srdfVersion          = "0.1.102"
 lazy val shexVersion          = "0.1.91"
 lazy val shaclVersion         = "0.1.75"
