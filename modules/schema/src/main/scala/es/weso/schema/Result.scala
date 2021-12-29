@@ -148,7 +148,7 @@ object Result extends LazyLogging {
   def errStr(str: String) =
     empty.copy(isValid = false, message = str)
 
-  implicit val showResult = new Show[Result] {
+  implicit val showResult: Show[Result] = new Show[Result] {
     override def show(r: Result): String = r.show(None,Details)
   }
 

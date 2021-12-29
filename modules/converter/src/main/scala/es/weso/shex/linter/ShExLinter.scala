@@ -52,9 +52,11 @@ object ShExLinter {
   } yield newSchema
 
   private def replaceSchema(schema: Schema, expr: ShapeExpr, newExpr: ShapeExpr): Schema = {
-    schema.copy(shapes = schema.shapes.map(ls => {
-      replaceList(ls, expr, newExpr)
-    }))
+    schema.copy(
+      shapes = schema.shapes.map(ls => {
+       replaceList(ls, expr, newExpr)
+      })
+    )
   }
 
   private def removeShape(schema: Schema, expr: ShapeExpr): Schema = {
