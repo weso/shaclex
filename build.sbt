@@ -1,35 +1,36 @@
-lazy val scala212               = "2.12.14"
-lazy val scala213               = "2.13.6"
-lazy val supportedScalaVersions = List(scala212, scala213)
+lazy val scala212 = "2.12.15"
+lazy val scala213 = "2.13.7"
+lazy val scala3   = "3.1.0"
 
-val Java11 = "adopt@1.11"
+lazy val supportedScalaVersions = List(
+ scala3, scala212, scala213
+)
+
+val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 
 // Local dependencies
-lazy val utilsVersion = "0.1.98"
-lazy val srdfVersion  = "0.1.102"
-lazy val shexVersion  = "0.1.91"
-lazy val shaclVersion = "0.1.75"
+lazy val srdfVersion          = "0.1.106"
+lazy val utilsVersion         = "0.2.2"
+lazy val shexVersion          = "0.1.107"
+lazy val shaclVersion         = "0.1.78"
 
 // Dependency versions
-lazy val catsVersion = "2.6.1"
-// lazy val commonsTextVersion    = "1.8"
-lazy val circeVersion = "0.14.1"
-// lazy val diffsonVersion        = "4.0.0"
-// lazy val effVersion            = "4.6.1"
-lazy val jenaVersion           = "3.16.0"
+lazy val catsVersion           = "2.7.0"
+lazy val circeVersion          = "0.14.1"
+lazy val jenaVersion           = "4.3.2"
 lazy val jgraphtVersion        = "1.3.1"
 lazy val jlineVersion          = "3.17.0"
 lazy val jnaVersion            = "5.6.0"
-lazy val logbackVersion        = "1.2.10"
-lazy val loggingVersion        = "3.9.2"
-lazy val munitVersion          = "0.7.26"
-lazy val munitEffectVersion    = "1.0.1"
-lazy val pprintVersion         = "0.6.0"
+lazy val logbackVersion        = "1.2.3"
+lazy val loggingVersion        = "3.9.4"
+lazy val munitVersion          = "0.7.29"
+lazy val munitEffectVersion    = "1.0.7"
+lazy val pprintVersion         = "0.7.1"
 lazy val rdf4jVersion          = "3.0.0"
-lazy val scalacheckVersion     = "1.14.0"
-lazy val scallopVersion        = "3.3.2"
+lazy val scalacheckVersion     = "1.15.4"
+lazy val scallopVersion        = "4.1.0"
 lazy val shaclTQVersion        = "1.3.2"
-lazy val typesafeConfigVersion = "1.3.4"
+lazy val typesafeConfigVersion = "1.4.1"
 
 // Compiler plugin dependency versions
 lazy val simulacrumVersion = "1.0.0"

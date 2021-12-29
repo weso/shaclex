@@ -20,7 +20,7 @@ case class SchemaLabel(node: RDFNode, pm: PrefixMap = PrefixMap.empty) {
 }
 
 object SchemaLabel {
-  implicit val showSchemaLabel = new Show[SchemaLabel] {
+  implicit val showSchemaLabel: Show[SchemaLabel] = new Show[SchemaLabel] {
     override def show(s: SchemaLabel): String = s.show
   }
 }

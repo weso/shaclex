@@ -36,7 +36,7 @@ class ShExLinterTest extends CatsEffectSuite {
      expected <- io2es(shex.Schema.fromString(strExpected,"SHEXC"))
    } yield (schema,simplified, expected)
 
-   run_es(r).unsafeRunSync.fold(e => fail(s"Error: $e"), values => {
+   run_es(r).unsafeRunSync().fold(e => fail(s"Error: $e"), values => {
      val (schema,simplified,expected) = values
      if (Eq[Schema].eqv(simplified,expected)) {
        assertEquals(true,true)

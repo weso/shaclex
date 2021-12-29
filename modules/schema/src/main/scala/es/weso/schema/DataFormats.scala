@@ -2,7 +2,7 @@ package es.weso.schema
 
 import scala.util._
 
-case class DataFormats(name: String)
+case class DataFormats(name: String) 
 
 object DataFormats {
   lazy val TURTLE = DataFormats("Turtle")
@@ -28,9 +28,10 @@ object DataFormats {
 
   lazy val toList: List[String] = availableFormats.map(_.name).toList
 
-  override def toString(): String = {
+  def show: String = {
     toList.mkString(",")
   }
+
 
   def lookup(format: String): Try[DataFormats] = {
     availableFormats.find(_.name.toUpperCase == format.toUpperCase).headOption match {
