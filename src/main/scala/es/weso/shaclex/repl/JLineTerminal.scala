@@ -59,7 +59,7 @@ final class JLineTerminal extends java.io.Closeable {
       .option(DISABLE_EVENT_EXPANSION, true)    // don't process escape sequences in input
       .build()
 
-    lineReader.readLine(prompt)
+    lineReader.readLine(prompt())
   }
 
   def close(): Unit = terminal.close()

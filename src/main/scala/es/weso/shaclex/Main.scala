@@ -28,53 +28,53 @@ object Main extends IOApp with LazyLogging {
 
   type ESIO[A] = IO[A] // EitherT[IO, String, A]
 
-  private def fromUnit(x: => Unit): ESIO[Unit] = 
+  def fromUnit(x: => Unit): ESIO[Unit] = 
     // EitherT.liftF[IO,String,Unit](IO(x))
     IO(x)
 
-  private def fromEither[A](e: Either[String,A]): ESIO[A] =
+  def fromEither[A](e: Either[String,A]): ESIO[A] =
     // EitherT.fromEither[IO](e)
     IO.fromEither(e.leftMap(s => new RuntimeException(s)))
 
-  private def fromIO[A](io: IO[A]): ESIO[A] = io
-  private def done: IO[Unit] = ().pure[IO]
+  def fromIO[A](io: IO[A]): ESIO[A] = io
+  def done: IO[Unit] = ().pure[IO]
   //private def err[A](msg: String): ESIO[A] = fromIO(IO.raiseError(new RuntimeException(msg)))
 
 
   // private def printlnIO(str: String): ESIO[Unit] = EitherT.liftF[IO,String,Unit](IO { println(str) })
 
-  private def whenA[A](x: Boolean, v: ESIO[Unit]): ESIO[Unit] = {
+  def whenA[A](x: Boolean, v: ESIO[Unit]): ESIO[Unit] = {
     Applicative[ESIO].whenA(x)(v)
   }
 
   val relativeBase: Option[IRI] = Some(IRI("internal://base/"))
   val relativeBaseStr = relativeBase.map(_.str)
 
-  private def getBaseFolder(opts: MainOpts): IO[Path] = 
+  def getBaseFolder(opts: MainOpts): IO[Path] = 
    IO(if (opts.baseFolder.isDefined) {
     Paths.get(opts.baseFolder())
    } else {
     Paths.get(".")
    })
 
-  private def doShExTest(opts:MainOpts): IO[Unit] =  
+  def doShExTest(opts:MainOpts): IO[Unit] =  
    if (opts.testShEx.isDefined) {
     IO(ShExTestRunner.run(opts.testShEx()))
-   } else IO(())
+  } else IO(())
 
-   private def doShapeInfer(baseFolder: Path, opts:MainOpts): IO[Unit] =  
+  def doShapeInfer(baseFolder: Path, opts:MainOpts): IO[Unit] =  
    if (opts.shapeInfer()) {
     IO(()) //shapeInfer(opts,baseFolder)
-   } else IO(())
+  } else IO(())
 
-   private def doShowTime(startTime: Long, opts:MainOpts): IO[Unit] =
+  def doShowTime(startTime: Long, opts:MainOpts): IO[Unit] =
     if (opts.time()) IO {
     val endTime = System.nanoTime()
     val time: Long = endTime - startTime
     printTime("Time", opts, time)
    } else IO(())
 
-   def run(args: List[String]): IO[ExitCode] = {
+  def run(args: List[String]): IO[ExitCode] = {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
 
@@ -102,7 +102,7 @@ object Main extends IOApp with LazyLogging {
     } yield code
   }
 
-  private def doProcess(baseFolder: Path, opts:MainOpts): IO[Either[Throwable,Unit]] = {
+  def doProcess(baseFolder: Path, opts:MainOpts): IO[Either[Throwable,Unit]] = {
     val e: IO[Unit] = for {
       res1 <- getRDFReader(opts, baseFolder)
       res2 <- RDFAsJenaModel.empty
@@ -126,7 +126,7 @@ object Main extends IOApp with LazyLogging {
    e.attempt
   }
 
-  private def doValidation(opts: MainOpts, 
+  def doValidation(opts: MainOpts, 
       rdf: RDFReader, 
       schema: Schema, 
       trigger: ValidationTrigger, 
@@ -210,12 +210,12 @@ object Main extends IOApp with LazyLogging {
   private def errorDriver(e: Throwable, scallop: Scallop) = e match {
     case Help(s) => {
       println("Help: " + s)
-      scallop.printHelp
+      scallop.printHelp()
       sys.exit(0)
     }
     case _ => {
       println("Error: %s".format(e.getMessage))
-      scallop.printHelp
+      scallop.printHelp()
       sys.exit(1)
     }
   }

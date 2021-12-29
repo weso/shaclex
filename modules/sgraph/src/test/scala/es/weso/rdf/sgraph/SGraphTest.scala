@@ -33,10 +33,10 @@ class SGraphTest extends CatsEffectSuite {
             "TURTLE",
             None
           ).flatMap(_.use(rdf => for {
-       ts <- rdf.rdfTriples.compile.toList
+       ts <- rdf.rdfTriples().compile.toList
        dot <-RDF2SGraph.rdf2sgraph(rdf)
       } yield (rdf,ts,dot)))
-      e.attempt.unsafeRunSync.fold(
+      e.attempt.unsafeRunSync().fold(
           e => fail(s"Error: $e"),
         tuple => {
             val (_,ts,dot) = tuple
