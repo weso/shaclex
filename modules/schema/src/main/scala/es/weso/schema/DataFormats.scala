@@ -5,12 +5,12 @@ import scala.util._
 case class DataFormats(name: String) 
 
 object DataFormats {
-  lazy val TURTLE = DataFormats("TURTLE")
+  lazy val TURTLE = DataFormats("Turtle")
   lazy val RDFXML = DataFormats("RDF/XML")
   lazy val JSONLD = DataFormats("JSON-LD")
-  lazy val NTRIPLES = DataFormats("N-TRIPLES")
+  lazy val NTRIPLES = DataFormats("N-Triples")
   lazy val RDFJSON = DataFormats("RDF/JSON")
-  lazy val TRIG = DataFormats("TRIG")
+  lazy val TRIG = DataFormats("TriG")
   lazy val DOT = DataFormats("DOT")
 
   lazy val availableFormats: Seq[DataFormats] =
@@ -34,7 +34,7 @@ object DataFormats {
 
 
   def lookup(format: String): Try[DataFormats] = {
-    availableFormats.find(_.name == format.toUpperCase).headOption match {
+    availableFormats.find(_.name.toUpperCase == format.toUpperCase).headOption match {
       case Some(df) => Success(df)
       case None => Failure(new Exception(s"Not found format $format in ${availableFormats.toList}"))
     }
