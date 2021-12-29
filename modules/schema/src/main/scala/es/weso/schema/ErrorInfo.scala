@@ -9,7 +9,7 @@ case class ErrorInfo(msg: String) {
 }
 
 object ErrorInfo extends LazyLogging {
-  implicit val showErrorInfo = new Show[ErrorInfo] {
+  implicit val showErrorInfo: Show[ErrorInfo] = new Show[ErrorInfo] {
     override def show(e: ErrorInfo): String = e.show
   }
 
