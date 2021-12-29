@@ -155,7 +155,7 @@ case object InferredString extends InferredNodeConstraint {
 case class InferredLang(lang: Lang) extends InferredNodeConstraint {
   override def collapse(other: InferredNodeConstraint) = other match {
     case l : InferredLang =>
-      if (lang.lang == l.lang) InferredLang(lang)
+      if (lang.lang == l.lang.lang) InferredLang(lang)
       else InferredLangString
     case InferredLangString => InferredLangString
     case InferredLiteral | _:InferredDatatype=> InferredLiteral
