@@ -12,7 +12,7 @@ val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 // Local dependencies
 lazy val srdfVersion          = "0.1.106"
 lazy val utilsVersion         = "0.2.2"
-lazy val shexVersion          = "0.1.107"
+lazy val shexVersion          = "0.1.108"
 lazy val shaclVersion         = "0.1.78"
 
 // Dependency versions
@@ -62,6 +62,7 @@ lazy val circeParser       = "io.circe"                   %% "circe-parser"     
 lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
 lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
 lazy val jenaShacl         = "org.apache.jena"            % "jena-shacl"           % jenaVersion
+lazy val jenaShEx          = "org.apache.jena"            % "jena-shex"           % jenaVersion
 lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
 lazy val jline             = "org.jline"                  % "jline"                % jlineVersion
 lazy val jna               = "net.java.dev.jna"           % "jna"                  % jnaVersion
@@ -135,7 +136,6 @@ lazy val schemaInfer = project
 
 lazy val schema = project
   .in(file("modules/schema"))
-//  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings, 
@@ -147,6 +147,7 @@ lazy val schema = project
       shacl,
       shapemap,
       jenaShacl,
+      jenaShEx,
       shaclTQ,
       munitEffect % Test
       ),
