@@ -11,7 +11,7 @@ val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 // Local dependencies
 lazy val srdfVersion          = "0.1.106"
 lazy val utilsVersion         = "0.2.2"
-lazy val shexVersion          = "0.1.107"
+lazy val shexVersion          = "0.1.108"
 lazy val shaclVersion         = "0.1.78"
 
 // Dependency versions
@@ -51,19 +51,20 @@ lazy val shapemap   = "es.weso" %% "shapemap"   % shexVersion
 lazy val shacl      = "es.weso" %% "shacl"      % shaclVersion
 
 // Other dependency modules
-lazy val catsCore       = "org.typelevel" %% "cats-core" % catsVersion
-lazy val catsKernel     = "org.typelevel" %% "cats-kernel" % catsVersion
-lazy val circeCore      = "io.circe" %% "circe-core" % circeVersion
-lazy val circeGeneric   = "io.circe" %% "circe-generic" % circeVersion
-lazy val circeParser    = "io.circe" %% "circe-parser" % circeVersion
-lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
-lazy val jenaArq        = "org.apache.jena" % "jena-arq" % jenaVersion
-lazy val jenaShacl      = "org.apache.jena" % "jena-shacl" % jenaVersion
-lazy val jenaFuseki     = "org.apache.jena" % "jena-fuseki-main" % jenaVersion
-lazy val jline          = "org.jline" % "jline" % jlineVersion
-lazy val jna            = "net.java.dev.jna" % "jna" % jnaVersion
-lazy val munit          = "org.scalameta" %% "munit" % munitVersion
-lazy val munitEffect    = "org.typelevel" %% "munit-cats-effect-3" % munitEffectVersion
+lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
+lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
+lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
+lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
+lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
+lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
+lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
+lazy val jenaShacl         = "org.apache.jena"            % "jena-shacl"           % jenaVersion
+lazy val jenaShEx          = "org.apache.jena"            % "jena-shex"           % jenaVersion
+lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
+lazy val jline             = "org.jline"                  % "jline"                % jlineVersion
+lazy val jna               = "net.java.dev.jna"           % "jna"                  % jnaVersion
+lazy val munit             = "org.scalameta"              %% "munit"               % munitVersion
+lazy val munitEffect    = "org.typelevel"     %% "munit-cats-effect-3" % munitEffectVersion
 lazy val MUnitFramework = new TestFramework("munit.Framework")
 
 lazy val pprint         = "com.lihaoyi"                %% "pprint"        % pprintVersion
@@ -133,7 +134,6 @@ lazy val schemaInfer = project
 
 lazy val schema = project
   .in(file("modules/schema"))
-  //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
     commonSettings,
@@ -146,6 +146,7 @@ lazy val schema = project
       shacl,
       shapemap,
       jenaShacl,
+      jenaShEx,
       shaclTQ,
       munitEffect % Test
     ),

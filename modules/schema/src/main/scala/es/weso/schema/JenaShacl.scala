@@ -105,8 +105,6 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
     }
   } yield JenaShacl(model)
 
-  // private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
-
   override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = rdf match {
     case rdfJena: RDFAsJenaModel => for {
       _ <- IO { println(s"JenaSHACL: Parsing Shapes graph from RDF data")}
@@ -152,7 +150,7 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
 
   override def info: SchemaInfo = {
     // TODO: Check if shacl schemas are well formed
-    SchemaInfo(name,"SHACLex", isWellFormed = true, List())
+    SchemaInfo(name,"JenaSHACL", isWellFormed = true, List())
   }
 
   override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String] =
