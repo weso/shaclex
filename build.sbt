@@ -3,17 +3,18 @@ lazy val scala213 = "2.13.7"
 lazy val scala3   = "3.1.0"
 
 lazy val supportedScalaVersions = List(
- scala3, scala212, scala213
+  scala3,
+  scala212,
+  scala213
 )
 
 val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 
-
 // Local dependencies
-lazy val srdfVersion          = "0.1.106"
-lazy val utilsVersion         = "0.2.2"
-lazy val shexVersion          = "0.1.108"
-lazy val shaclVersion         = "0.1.78"
+lazy val srdfVersion  = "0.1.106"
+lazy val utilsVersion = "0.2.2"
+lazy val shexVersion  = "0.1.108"
+lazy val shaclVersion = "0.1.78"
 
 // Dependency versions
 lazy val catsVersion           = "2.7.0"
@@ -30,55 +31,52 @@ lazy val pprintVersion         = "0.7.1"
 lazy val rdf4jVersion          = "3.0.0"
 lazy val scalacheckVersion     = "1.15.4"
 lazy val scallopVersion        = "4.1.0"
-lazy val shaclTQVersion        = "1.3.2"
+lazy val shaclTQVersion        = "1.4.2"
 lazy val typesafeConfigVersion = "1.4.1"
 
-
 // Compiler plugin dependency versions
-lazy val simulacrumVersion    = "1.0.0"
+lazy val simulacrumVersion = "1.0.0"
 // lazy val kindProjectorVersion = "0.9.5"
 // lazy val scalaMacrosVersion   = "2.1.1"
 
-
 // WESO components
-lazy val srdf              = "es.weso"                    %% "srdf"            % srdfVersion
-lazy val srdfJena          = "es.weso"                    %% "srdfjena"        % srdfVersion
-lazy val srdf4j            = "es.weso"                    %% "srdf4j"          % srdfVersion
-lazy val utils             = "es.weso"                    %% "utils"           % utilsVersion
-lazy val typing            = "es.weso"                    %% "typing"          % utilsVersion
-lazy val validating        = "es.weso"                    %% "validating"      % utilsVersion
-lazy val utilsTest         = "es.weso"                    %% "utilstest"       % utilsVersion
-lazy val shex              = "es.weso"                    %% "shex"            % shexVersion
-lazy val shexTest          = "es.weso"                    %% "shextest"        % shexVersion
-lazy val shapemap          = "es.weso"                    %% "shapemap"        % shexVersion
-lazy val shacl             = "es.weso"                    %% "shacl"           % shaclVersion
+lazy val srdf       = "es.weso" %% "srdf"       % srdfVersion
+lazy val srdfJena   = "es.weso" %% "srdfjena"   % srdfVersion
+lazy val srdf4j     = "es.weso" %% "srdf4j"     % srdfVersion
+lazy val utils      = "es.weso" %% "utils"      % utilsVersion
+lazy val typing     = "es.weso" %% "typing"     % utilsVersion
+lazy val validating = "es.weso" %% "validating" % utilsVersion
+lazy val utilsTest  = "es.weso" %% "utilstest"  % utilsVersion
+lazy val shex       = "es.weso" %% "shex"       % shexVersion
+lazy val shexTest   = "es.weso" %% "shextest"   % shexVersion
+lazy val shapemap   = "es.weso" %% "shapemap"   % shexVersion
+lazy val shacl      = "es.weso" %% "shacl"      % shaclVersion
 
 // Other dependency modules
-lazy val catsCore          = "org.typelevel"              %% "cats-core"           % catsVersion
-lazy val catsKernel        = "org.typelevel"              %% "cats-kernel"         % catsVersion
-lazy val circeCore         = "io.circe"                   %% "circe-core"          % circeVersion
-lazy val circeGeneric      = "io.circe"                   %% "circe-generic"       % circeVersion
-lazy val circeParser       = "io.circe"                   %% "circe-parser"        % circeVersion
-lazy val logbackClassic    = "ch.qos.logback"             % "logback-classic"      % logbackVersion
-lazy val jenaArq           = "org.apache.jena"            % "jena-arq"             % jenaVersion
-lazy val jenaShacl         = "org.apache.jena"            % "jena-shacl"           % jenaVersion
-lazy val jenaShEx          = "org.apache.jena"            % "jena-shex"           % jenaVersion
-lazy val jenaFuseki        = "org.apache.jena"            % "jena-fuseki-main"     % jenaVersion
-lazy val jline             = "org.jline"                  % "jline"                % jlineVersion
-lazy val jna               = "net.java.dev.jna"           % "jna"                  % jnaVersion
-lazy val munit             = "org.scalameta"              %% "munit"               % munitVersion
-lazy val munitEffect    = "org.typelevel"     %% "munit-cats-effect-3" % munitEffectVersion
+lazy val catsCore       = "org.typelevel" %% "cats-core" % catsVersion
+lazy val catsKernel     = "org.typelevel" %% "cats-kernel" % catsVersion
+lazy val circeCore      = "io.circe" %% "circe-core" % circeVersion
+lazy val circeGeneric   = "io.circe" %% "circe-generic" % circeVersion
+lazy val circeParser    = "io.circe" %% "circe-parser" % circeVersion
+lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
+lazy val jenaArq        = "org.apache.jena" % "jena-arq" % jenaVersion
+lazy val jenaShacl      = "org.apache.jena" % "jena-shacl" % jenaVersion
+lazy val jenaShEx       = "org.apache.jena" % "jena-shex" % jenaVersion
+lazy val jenaFuseki     = "org.apache.jena" % "jena-fuseki-main" % jenaVersion
+lazy val jline          = "org.jline" % "jline" % jlineVersion
+lazy val jna            = "net.java.dev.jna" % "jna" % jnaVersion
+lazy val munit          = "org.scalameta" %% "munit" % munitVersion
+lazy val munitEffect    = "org.typelevel" %% "munit-cats-effect-3" % munitEffectVersion
 lazy val MUnitFramework = new TestFramework("munit.Framework")
 
-lazy val pprint            = "com.lihaoyi"                %% "pprint"              % pprintVersion
-lazy val rdf4j_runtime     = "org.eclipse.rdf4j"          %  "rdf4j-runtime"       % rdf4jVersion
-lazy val shaclTQ           = "org.topbraid"               %  "shacl"               % shaclTQVersion
-lazy val scalaLogging      = "com.typesafe.scala-logging" %% "scala-logging"       % loggingVersion
-lazy val scallop           = "org.rogach"                 %% "scallop"             % scallopVersion
-lazy val typesafeConfig    = "com.typesafe"               % "config"               % typesafeConfigVersion
+lazy val pprint         = "com.lihaoyi"                %% "pprint"        % pprintVersion
+lazy val rdf4j_runtime  = "org.eclipse.rdf4j"          % "rdf4j-runtime"  % rdf4jVersion
+lazy val shaclTQ        = "org.topbraid"               % "shacl"          % shaclTQVersion
+lazy val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
+lazy val scallop        = "org.rogach"                 %% "scallop"       % scallopVersion
+lazy val typesafeConfig = "com.typesafe"               % "config"         % typesafeConfigVersion
 
 ThisBuild / githubWorkflowJavaVersions := Seq(Java11)
-
 
 lazy val shaclex = project
   .in(file("."))
@@ -89,12 +87,13 @@ lazy val shaclex = project
     SbtNativePackager,
     WindowsPlugin,
     JavaAppPackaging,
-    LauncherJarPlugin)
-//  .disablePlugins(RevolverPlugin)
-//  .settings(
-//    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
-//    buildInfoPackage := "es.weso.shaclex.buildinfo"
-//  )
+    LauncherJarPlugin
+  )
+  //  .disablePlugins(RevolverPlugin)
+  //  .settings(
+  //    buildInfoKeys := BuildInfoKey.ofN(name, version, scalaVersion, sbtVersion),
+  //    buildInfoPackage := "es.weso.shaclex.buildinfo"
+  //  )
   .settings(commonSettings, packagingSettings, ghPagesSettings, publishSettings, wixSettings)
   .aggregate(schemaInfer, schema, converter, slang, sgraph)
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
@@ -115,19 +114,20 @@ lazy val shaclex = project
       jline,
       jna
     ),
-    cancelable in Global      := true,
-    fork                      := true,
+    cancelable in Global := true,
+    fork := true,
 //    parallelExecution in Test := false,
-    ThisBuild / turbo := true,
-  //   skip in publish := true
+    ThisBuild / turbo := true
+    //   skip in publish := true
   )
 
 lazy val schemaInfer = project
   .in(file("modules/schemaInfer"))
-//  .disablePlugins(RevolverPlugin)
+  //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, publishSettings, 
+    commonSettings,
+    publishSettings,
     libraryDependencies ++= Seq(srdf)
   )
   .dependsOn(
@@ -138,7 +138,8 @@ lazy val schema = project
   .in(file("modules/schema"))
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, publishSettings, 
+    commonSettings,
+    publishSettings,
     libraryDependencies ++= Seq(
       srdf,
       srdfJena,
@@ -150,7 +151,7 @@ lazy val schema = project
       jenaShEx,
       shaclTQ,
       munitEffect % Test
-      ),
+    ),
     testFrameworks += MUnitFramework
   )
   .dependsOn(
@@ -160,10 +161,10 @@ lazy val schema = project
 
 lazy val slang = project
   .in(file("modules/slang"))
-//  .disablePlugins(RevolverPlugin)
+  //  .disablePlugins(RevolverPlugin)
   .settings(commonSettings, publishSettings)
   .dependsOn(
-  )
+    )
   .settings(
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
@@ -174,17 +175,18 @@ lazy val slang = project
       shacl,
       utils,
       srdf,
-      srdf4j % Test,
-      srdfJena % Test,
-      )
+      srdf4j   % Test,
+      srdfJena % Test
+    )
   )
 
 lazy val sgraph = project
   .in(file("modules/sgraph"))
-//  .disablePlugins(RevolverPlugin)
+  //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, publishSettings, 
+    commonSettings,
+    publishSettings,
     libraryDependencies ++= Seq(
       utils,
       utilsTest % Test,
@@ -192,31 +194,32 @@ lazy val sgraph = project
       catsCore,
       catsKernel,
       // catsMacros,
-      srdf4j % Test,
-      srdfJena % Test,
-      munit % Test,
+      srdf4j      % Test,
+      srdfJena    % Test,
+      munit       % Test,
       munitEffect % Test
-      ),
+    ),
     testFrameworks += MUnitFramework
   )
 
 lazy val converter = project
   .in(file("modules/converter"))
-//  .disablePlugins(RevolverPlugin)
+  //  .disablePlugins(RevolverPlugin)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    commonSettings, publishSettings, 
+    commonSettings,
+    publishSettings,
     libraryDependencies ++= Seq(
-    logbackClassic,
-    scalaLogging,
-    srdfJena % Test,
-    shex,
-    shacl,
-    pprint,
-    munit % Test,
-    munitEffect % Test
-   ),
-   testFrameworks += MUnitFramework
+      logbackClassic,
+      scalaLogging,
+      srdfJena % Test,
+      shex,
+      shacl,
+      pprint,
+      munit       % Test,
+      munitEffect % Test
+    ),
+    testFrameworks += MUnitFramework
   )
 
 /* ********************************************************
@@ -227,19 +230,19 @@ lazy val noDocProjects = Seq[ProjectReference]()
 
 lazy val sharedDependencies = Seq(
   libraryDependencies ++= Seq(
-   // scalactic,
-   // scalaTest % Test
+    // scalactic,
+    // scalaTest % Test
   )
 )
 
 lazy val packagingSettings = Seq(
-  mainClass in Compile        := Some("es.weso.shaclex.Main"),
-  mainClass in assembly       := Some("es.weso.shaclex.Main"),
-  test in assembly            := {},
+  mainClass in Compile := Some("es.weso.shaclex.Main"),
+  mainClass in assembly := Some("es.weso.shaclex.Main"),
+  test in assembly := {},
   assemblyJarName in assembly := "shaclex.jar",
-  packageSummary in Linux     := name.value,
-  packageSummary in Windows   := name.value,
-  packageDescription          := name.value
+  packageSummary in Linux := name.value,
+  packageSummary in Windows := name.value,
+  packageDescription := name.value
 )
 
 lazy val compilationSettings = Seq(
@@ -256,13 +259,13 @@ lazy val compilationSettings = Seq(
     "-Yrangepos",
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
     // "-Xfatal-warnings",
-    "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
+    "-Ywarn-extra-implicit"              // Warn when more than one implicit parameter section is defined.
   )
   // format: on
 )
 
 lazy val wixSettings = Seq(
-  wixProductId        := "39b564d5-d381-4282-ada9-87244c76e14b",
+  wixProductId := "39b564d5-d381-4282-ada9-87244c76e14b",
   wixProductUpgradeId := "6a710435-9af4-4adb-a597-98d3dd0bade1"
 // The same numbers as in the docs?
 // wixProductId := "ce07be71-510d-414a-92d4-dff47631848a",
@@ -282,30 +285,32 @@ lazy val commonSettings = compilationSettings ++ sharedDependencies ++ Seq(
 
 lazy val publishSettings = Seq(
 //  maintainer      := "Jose Emilio Labra Gayo <labra@uniovi.es>",
-  homepage        := Some(url("https://github.com/weso/shaclex")),
-  licenses        := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
-  scmInfo         := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
+  homepage := Some(url("https://github.com/weso/shaclex")),
+  licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
+  scmInfo := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:labra/shaclex.git")),
   autoAPIMappings := true,
-  apiURL          := Some(url("http://weso.github.io/shaclex/latest/api/")),
- /* pomExtra        := <developers>
+  apiURL := Some(url("http://weso.github.io/shaclex/latest/api/")),
+  /* pomExtra        := <developers>
                        <developer>
                          <id>labra</id>
                          <name>Jose Emilio Labra Gayo</name>
                          <url>https://labra.weso.es/</url>
                        </developer>
                      </developers>, */
-  publishMavenStyle              := true,
+  publishMavenStyle := true,
   sonatypeProfileName := ("es.weso"),
-  homepage            := Some(url("https://github.com/weso/shaclex")),
-  licenses            := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
-  scmInfo             := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:weso/shaclex.git")),
-  autoAPIMappings     := true,
-  apiURL              := Some(url("http://weso.github.io/shaclex/latest/api/")),
-  autoAPIMappings     := true,
-  developers          := List(Developer(
-      id="labra",
-      name="Jose Emilio Labra Gayo",
-      email="jelabra@gmail.com",
-      url=url("https://labra.weso.es")
-    ))
+  homepage := Some(url("https://github.com/weso/shaclex")),
+  licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT")),
+  scmInfo := Some(ScmInfo(url("https://github.com/weso/shaclex"), "scm:git:git@github.com:weso/shaclex.git")),
+  autoAPIMappings := true,
+  apiURL := Some(url("http://weso.github.io/shaclex/latest/api/")),
+  autoAPIMappings := true,
+  developers := List(
+    Developer(
+      id = "labra",
+      name = "Jose Emilio Labra Gayo",
+      email = "jelabra@gmail.com",
+      url = url("https://labra.weso.es")
+    )
+  )
 )
