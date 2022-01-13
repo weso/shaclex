@@ -17,7 +17,7 @@ object DataFormats {
     List(TURTLE, RDFXML, JSONLD, NTRIPLES, RDFJSON, TRIG, DOT)
 
   lazy val formatNames: Seq[String] =
-    availableFormats.map(_.name)
+    availableFormats.map(_.name.toUpperCase)
 
   def available(format: String): Boolean = {
     formatNames.contains(format.toUpperCase)
