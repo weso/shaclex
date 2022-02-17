@@ -2,6 +2,7 @@ package es.weso.shaclex
 import es.weso.shextest.manifest._
 import com.typesafe.config.{Config, ConfigFactory}
 import java.nio.file.Paths
+import cats.effect.unsafe.implicits.global
 
 object ShExTestRunner {
 
@@ -10,8 +11,8 @@ object ShExTestRunner {
   val shexFolderURI = Paths.get(shexFolder).normalize.toUri
 
   def run(testName: String): Unit = {
-    val r = RDF2Manifest.read(shexFolder + "/" + "manifest.ttl", "Turtle", Some(shexFolderURI.toString), false)
-    r.attempt.unsafeRunSync.fold(e => println(s"Error reading manifest: $e"),
+    val r = RDF2Manifest.read(Paths.get(shexFolder + "/" + "manifest.ttl"), "Turtle", Some(shexFolderURI.toString), false)
+    r.attempt.unsafeRunSync().fold(e => println(s"Error reading manifest: $e"),
       mf => {
         println(s"Manifest read with ${mf.entries.length} entries")
         for (e <- mf.entries) {

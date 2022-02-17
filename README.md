@@ -9,6 +9,7 @@ This project contains an implementation of
 [![Build Status](https://travis-ci.org/weso/shaclex.svg?branch=master)](https://travis-ci.org/weso/shaclex)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1c264d2087734a80b4cecf071bb5eaad)](https://www.codacy.com/gh/weso/shaclex?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=weso/shaclex&amp;utm_campaign=Badge_Grade)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214239.svg)](https://doi.org/10.5281/zenodo.1214239)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.weso/shaclex_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.weso/shaclex_2.13)
 
 ## Introduction
 
@@ -40,9 +41,27 @@ It is possible to run the program inside `sbt` as:
 Example:
 
 ```sh
-sbt "run --data examples/shacl/good1.ttl 
-         --engine ShaClex"
+sbt "run --data examples/shacl/good1.ttl \
+         --engine shaclex \
+         --showValidationReport"
 ```
+
+It is also possible to use [Jena SHACL](https://jena.apache.org/documentation/shacl/) using:  
+
+```sh
+sbt "run --data examples/shacl/good1.ttl \
+         --engine JenaSHACL \
+         --showValidationReport"
+```
+
+or [Top Braid SHACL API] using:
+
+```sh
+sbt "run --data examples/shacl/good1.ttl \
+         --engine shacl-tq \
+         --showValidationReport"
+```
+
 
 ### Validating RDF with ShEx 
 
@@ -84,8 +103,9 @@ sbt> run -d examples/shacl/good1.ttl --engine ShaClex
 
 ### Binary mode
 
-The fastest way to run Shaclex is to compile the code and generate a binary. 
-The following command:
+The fastest way to run Shaclex is to compile the code and generate a comand line binary file. 
+
+The following command will generate a binary file:
 
 ```sh
 $ sbt universal:packageBin
@@ -192,6 +212,19 @@ This feature is experimental. This [issue tracks the Clingo conversion](https://
 * An online demo based on this library is available at [http://rdfshape.weso.es](http://rdfshape.weso.es).
 * Another online demo based on this library customized for Wikidata is available at [http://wikidata.weso.es](http://wikidata.weso.es).
 * This project was based on [ShExcala](http://labra.github.io/ShExcala/) which was focused on Shape Expressions only.
+
+## Publishing to OSS-Sonatype
+
+This project uses [the sbt ci release](https://github.com/olafurpg/sbt-ci-release) plugin for publishing to [OSS Sonatype](https://oss.sonatype.org/).
+
+##### SNAPSHOT Releases
+Open a PR and merge it to watch the CI release a -SNAPSHOT version
+
+##### Full Library Releases
+1. Push a tag and watch the CI do a regular release
+2. `git tag -a v0.1.0 -m "v0.1.0"`
+3. `git push origin v0.1.0`
+_Note that the tag version MUST start with v._
 
 ## Author & contributors
 

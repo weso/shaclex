@@ -1,9 +1,10 @@
 package es.weso.shaclex
 import org.rogach.scallop._
 import es.weso.schema._
+import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.schema.ValidationTrigger
-import es.weso.shapeMaps.ShapeMap
+import es.weso.shapemaps.ShapeMap
 
 class MainOpts(arguments: List[String],
                onError: (Throwable, Scallop) => Nothing
@@ -23,6 +24,7 @@ class MainOpts(arguments: List[String],
   private lazy val shapeMapFormats = ShapeMap.formats
   private lazy val defaultValidationReportFormat = "TURTLE"
   private lazy val validationReportFormats = RDFAsJenaModel.availableFormats.map(_.toUpperCase).distinct
+  private lazy val inferenceValues: List[String] = InferenceEngine.availableInferenceEngineNames
 
   banner("""| shaclex: SHACL/ShEx processor
             | Options:
@@ -261,11 +263,11 @@ class MainOpts(arguments: List[String],
     required = false,
     descr = "Label (IRI) of Constraint.scala in Schema")
 
-  val inference: ScallopOption[String] = opt[String](
-    "inference",
-    default = None,
+  val inference: ScallopOption[String] = opt[String]("inference",
+    default = Some("NONE"),
     required = false,
-    descr = "Apply some inference before. Available values: RDFS")
+    descr = s"Apply some inference before. Available values: ${inferenceValues.mkString(",")}"
+  )
 
   val shapeInfer: ScallopOption[Boolean] = toggle("shapeInfer",
     prefix="no-",

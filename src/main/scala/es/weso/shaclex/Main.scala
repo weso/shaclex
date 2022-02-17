@@ -4,16 +4,11 @@ import cats.implicits._
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
 import com.typesafe.scalalogging._
-// import es.weso.rdf.PrefixMap
 import es.weso.rdf.jena.Endpoint
 import es.weso.rdf.nodes.IRI
-// import es.weso.schemaInfer.SchemaInfer
 import es.weso.shaclex.repl.Repl
-// import es.weso.shapeMaps.NodeSelector
-import fs2._
 
 import scala.io.Source
-// import es.weso.server._
 import es.weso.schema._
 import es.weso.rdf.jena.RDFAsJenaModel
 import scala.concurrent.duration._
@@ -25,61 +20,61 @@ import es.weso.rdf.RDFReader
 import cats.effect._
 import cats._
 // import scala.concurrent.ExecutionContext
-import fs2.Pipe
 import es.weso.rdf.RDFBuilder
+import es.weso.rdf.InferenceEngine
 // import cats.implicits._
 
 object Main extends IOApp with LazyLogging {
 
   type ESIO[A] = IO[A] // EitherT[IO, String, A]
 
-  private def fromUnit(x: => Unit): ESIO[Unit] = 
+  def fromUnit(x: => Unit): ESIO[Unit] = 
     // EitherT.liftF[IO,String,Unit](IO(x))
     IO(x)
 
-  private def fromEither[A](e: Either[String,A]): ESIO[A] =
+  def fromEither[A](e: Either[String,A]): ESIO[A] =
     // EitherT.fromEither[IO](e)
     IO.fromEither(e.leftMap(s => new RuntimeException(s)))
 
-  private def fromIO[A](io: IO[A]): ESIO[A] = io
-  private def done: IO[Unit] = ().pure[IO]
+  def fromIO[A](io: IO[A]): ESIO[A] = io
+  def done: IO[Unit] = ().pure[IO]
   //private def err[A](msg: String): ESIO[A] = fromIO(IO.raiseError(new RuntimeException(msg)))
 
 
   // private def printlnIO(str: String): ESIO[Unit] = EitherT.liftF[IO,String,Unit](IO { println(str) })
 
-  private def whenA[A](x: Boolean, v: ESIO[Unit]): ESIO[Unit] = {
+  def whenA[A](x: Boolean, v: ESIO[Unit]): ESIO[Unit] = {
     Applicative[ESIO].whenA(x)(v)
   }
 
   val relativeBase: Option[IRI] = Some(IRI("internal://base/"))
   val relativeBaseStr = relativeBase.map(_.str)
 
-  private def getBaseFolder(opts: MainOpts): IO[Path] = 
+  def getBaseFolder(opts: MainOpts): IO[Path] = 
    IO(if (opts.baseFolder.isDefined) {
     Paths.get(opts.baseFolder())
    } else {
     Paths.get(".")
    })
 
-  private def doShExTest(opts:MainOpts): IO[Unit] =  
+  def doShExTest(opts:MainOpts): IO[Unit] =  
    if (opts.testShEx.isDefined) {
     IO(ShExTestRunner.run(opts.testShEx()))
-   } else IO(())
+  } else IO(())
 
-   private def doShapeInfer(baseFolder: Path, opts:MainOpts): IO[Unit] =  
+  def doShapeInfer(baseFolder: Path, opts:MainOpts): IO[Unit] =  
    if (opts.shapeInfer()) {
     IO(()) //shapeInfer(opts,baseFolder)
-   } else IO(())
+  } else IO(())
 
-   private def doShowTime(startTime: Long, opts:MainOpts): IO[Unit] =
+  def doShowTime(startTime: Long, opts:MainOpts): IO[Unit] =
     if (opts.time()) IO {
     val endTime = System.nanoTime()
     val time: Long = endTime - startTime
     printTime("Time", opts, time)
    } else IO(())
 
-   def run(args: List[String]): IO[ExitCode] = {
+  def run(args: List[String]): IO[ExitCode] = {
     val opts = new MainOpts(args, errorDriver)
     opts.verify()
 
@@ -107,7 +102,7 @@ object Main extends IOApp with LazyLogging {
     } yield code
   }
 
-  private def doProcess(baseFolder: Path, opts:MainOpts): IO[Either[Throwable,Unit]] = {
+  def doProcess(baseFolder: Path, opts:MainOpts): IO[Either[Throwable,Unit]] = {
     val e: IO[Unit] = for {
       res1 <- getRDFReader(opts, baseFolder)
       res2 <- RDFAsJenaModel.empty
@@ -115,6 +110,7 @@ object Main extends IOApp with LazyLogging {
     schema <- getSchema(opts, baseFolder, rdf)
     triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
     shapeMapStr <- getShapeMapStr(opts, baseFolder)
+    // _ <- IO { pprint.log(shapeMapStr) }
     pm <- rdf.getPrefixMap
     trigger <- fromEither(ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBaseStr,
         opts.node.toOption, opts.shapeLabel.toOption,
@@ -130,7 +126,7 @@ object Main extends IOApp with LazyLogging {
    e.attempt
   }
 
-  private def doValidation(opts: MainOpts, 
+  def doValidation(opts: MainOpts, 
       rdf: RDFReader, 
       schema: Schema, 
       trigger: ValidationTrigger, 
@@ -214,12 +210,12 @@ object Main extends IOApp with LazyLogging {
   private def errorDriver(e: Throwable, scallop: Scallop) = e match {
     case Help(s) => {
       println("Help: " + s)
-      scallop.printHelp
+      scallop.printHelp()
       sys.exit(0)
     }
     case _ => {
       println("Error: %s".format(e.getMessage))
-      scallop.printHelp
+      scallop.printHelp()
       sys.exit(1)
     }
   }
@@ -230,22 +226,10 @@ object Main extends IOApp with LazyLogging {
       val path = baseFolder.resolve(opts.shapeMap())
       for {
         // TODO: Allow different shapeMap formats
-        content <- getContents(path.toFile.getName())
+        content <- FileUtils.getContents(path)
       } yield content.toString
     } else "".pure[IO]
   }
-
-
-  // TODO: Move to a common tools package
-  private def getContents(fileName: String): IO[CharSequence] = {
-    val path = Paths.get(fileName)
-    // implicit val cs = IO.contextShift(ExecutionContext.global)
-    val decoder: Pipe[IO,Byte,String] = fs2.text.utf8Decode
-    Stream.resource(Blocker[IO]).flatMap(blocker =>
-      fs2.io.file.readAll[IO](path, blocker,4096).through(decoder)
-    ).compile.string
-  }
-
 
 /*  private def getNodeSelector(opts:MainOpts, pm: PrefixMap): EitherT[IO, String, NodeSelector] = {
     if (opts.shapeInferNode.isDefined) {
@@ -262,15 +246,18 @@ object Main extends IOApp with LazyLogging {
       for {
         rdf <- if (opts.data.isDefined) {
           val path = baseFolder.resolve(opts.data())
-          IO(RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase))
+          RDFAsJenaModel.fromFile(path.toFile(), opts.dataFormat(), relativeBase)
         } else {
-          IO(RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase))
+          RDFAsJenaModel.fromURI(opts.dataUrl(), opts.dataFormat(), relativeBase)
         }
-        newRdf = if (opts.inference.isDefined) rdf.evalMap(rdf => rdf.applyInference(opts.inference()))
-                  else rdf
+        newRdf = if (opts.inference.isDefined) for {
+          inference <- Resource.eval(fromEither(InferenceEngine.fromString(opts.inference())))
+          r <- rdf.evalMap(rdf => rdf.applyInference(inference))
+        } yield r 
+        else rdf
       } yield newRdf 
     } else if (opts.endpoint.isDefined) {
-      IO(Resource.liftF(Endpoint.fromString(opts.endpoint())))
+      IO(Resource.eval(Endpoint.fromString(opts.endpoint())))
     } else {
       logger.info("RDF Data option not specified")
       RDFAsJenaModel.empty

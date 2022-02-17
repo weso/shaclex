@@ -2,16 +2,13 @@ package es.weso.schema
 
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes.{ IRI, RDFNode }
-import org.scalatest._
-import matchers.should._
-import funspec._
 import cats.effect._
 import cats.implicits._
+import munit.CatsEffectSuite
 
-class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
+class SchemaTest extends CatsEffectSuite {
 
-  describe("Simple schema") {
-    it("Validates a simple Schema using ShEx") {
+  test("Validates a simple Schema using ShEx") {
       val schema =
         """|prefix : <http://example.org/>
            |:S { :p . }
@@ -28,6 +25,7 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
       val schemaEngine = "SHEX"
       val node: RDFNode = IRI("http://example.org/x")
       val shape: SchemaLabel = SchemaLabel(IRI("http://example.org/S"))
+
       val tryResult: IO[Result] = for {
         res1 <- RDFAsJenaModel.fromString(data, dataFormat)
         res2 <- RDFAsJenaModel.empty
@@ -42,21 +40,17 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
          optShape = None, 
          nodePrefixMap = pm, 
          shapesPrefixMap = schema.pm, 
-         builder = builder)
+         builder = Some(builder))
       } yield result }
       } yield vv
       
-      tryResult.attempt.unsafeRunSync match {
-        case Right(result) =>
-          info(s"Result: ${result.serialize(Result.TEXT)}")
-          info(s"Result solution: ${result.solution}")
-          result.isValid should be(true)
-          result.hasShapes(node) should contain only shape
-        case Left(e) => fail(s"Error trying to validate: $e")
-      }
+      tryResult.map(result => { 
+        assertEquals(result.isValid, true)
+        assertEquals(result.hasShapes(node), List(shape))
+      })
     }
 
-    it("fails to validate a wrong SHACL validation") {
+    test("fails to validate a wrong SHACL validation") {
       val data =
         """
           |@prefix :      <http://example.org/> .
@@ -73,13 +67,12 @@ class SchemaTest extends AnyFunSpec with Matchers with EitherValues {
        vv <- (res1,res2).tupled.use{ case (rdf, builder) => for {
         schema <- Schemas.fromString(data,"TURTLE","SHACLEX",None)
         pm <- rdf.getPrefixMap
-        result <- schema.validate(rdf,"TargetDecls","",None,None,pm,schema.pm,builder)
+        result <- schema.validate(rdf,"TargetDecls","",None,None,pm,schema.pm,Some(builder))
       } yield result }
       } yield vv
       
-      eitherResult.attempt.unsafeRunSync.fold(e => fail(s"Error: $e"), result => {
-        result.isValid should be(false)
+      eitherResult.map(result => {
+        assertEquals(result.isValid, false)
       })
     }
-  }
 }

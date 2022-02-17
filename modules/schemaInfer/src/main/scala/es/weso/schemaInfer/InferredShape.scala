@@ -59,7 +59,7 @@ case class InferredShape(nodeShape: InferredNodesValue,
       case 1 => Some(es.head)
       case _ => Some(EachOf(None, es, None, None, None, None))
     }
-    Shape(shapeLabel,None,None,None,expr,None,None,None)
+    Shape.empty.copy(id = shapeLabel, expression = expr) 
   }
 
   private def mkTripleExpr(iri: IRI,

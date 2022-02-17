@@ -5,8 +5,7 @@ import es.weso.rdf._
 import es.weso.rdf.nodes._
 import es.weso.rdf.jena.RDFAsJenaModel
 import cats.effect._
-//import cats.effect.concurrent._
-import org.apache.jena.shacl._
+// import cats.effect.concurrent._
 import scala.util.control.NoStackTrace
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
@@ -14,6 +13,7 @@ import java.io.StringReader
 import org.apache.jena.riot._
 import org.apache.jena.riot.Lang
 import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.graph.Graph
 import org.apache.jena.riot.system.{PrefixMap => _, _}
 import org.apache.jena.riot.RDFLanguages
@@ -22,13 +22,16 @@ import collection.JavaConverters._
 import es.weso.shapemaps.ShapeMap
 import java.io._
 import es.weso.utils.JenaUtils
+import org.topbraid.shacl.validation.ValidationUtil
+import org.topbraid.jenax.util.JenaDatatypes
+import org.topbraid.shacl.vocabulary.SH
+import org.apache.jena.vocabulary.RDF
+
+case class ShaclTQException(msg: String) extends Exception(msg) with NoStackTrace
 
 
-case class JenaShaclException(msg: String) extends Exception(msg) with NoStackTrace
-
-
-case class JenaShacl(shapesGraph: Model) extends Schema {
-  override def name = "JenaSHACL"
+case class ShaclTQ(shapesGraph: Model) extends Schema {
+  override def name = "SHACL_TQ"
 
   override def formats: Seq[String] = DataFormats.formatNames ++ Seq(Lang.SHACLC.getName().toUpperCase())
 
@@ -45,12 +48,14 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
       pm <- rdfJena.getPrefixMap
       shapesPm = shapesGraph.getNsPrefixMap()
       report <- IO {
-        val report: ValidationReport = ShaclValidator.get().validate(shapesGraph.getGraph(), rdfModel.getGraph())
+        val report: Resource = ValidationUtil.validateModel(rdfModel, shapesGraph, true);
+
+        // val report: ValidationReport = ShaclValidator.get().validate(shapesGraph.getGraph(), rdfModel.getGraph())
         report
       } 
       result <- report2Result(report, pm, prefixMapFromModel(shapesGraph))
     } yield result
-    case _ => IO.raiseError(JenaShaclException(s"Not Implemented Jena SHACL validation for ${rdf.rdfReaderName} yet"))
+    case _ => IO.raiseError(ShaclTQException(s"Not Implemented Jena SHACL validation for ${rdf.rdfReaderName} yet"))
   }
 
   private def prefixMapFromModel(model: Model): PrefixMap = PrefixMap(model.getNsPrefixMap().asScala.toMap.map {
@@ -58,17 +63,18 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
   })
 
   private def report2Result(
-    report: ValidationReport, 
+    report: Resource, 
     nodesPrefixMap: PrefixMap, 
     shapesPrefixMap: PrefixMap
   ): IO[Result] = for {
-    eitherRdf <- report2reader(report).attempt
+    eitherRdf <- report2reader(report.getModel()).attempt
+    isValid <- conforms(report)
+    numViolations <- countViolations(report)
   } yield {  
-    val isValid = report.conforms()
-    val message = if (report.conforms()) s"Validated" 
-     else s"Number of violations: ${report.getEntries().size()}"
-    val shapesMap = report2ShapesMap(report, nodesPrefixMap, shapesPrefixMap)
-    val errors: Seq[ErrorInfo] = report2errors(report)
+    val message = if (isValid) s"Validated" 
+     else s"Number of violations: ${numViolations}"
+    val shapesMap = report2ShapesMap()
+    val errors: Seq[ErrorInfo] = report2errors()
     // val esRdf = eitherRdf.leftMap(_.getMessage())
     Result(isValid = isValid, 
       message = message, 
@@ -80,14 +86,21 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
       shapesPrefixMap = shapesPrefixMap)
   }
 
-  private def report2reader(report: ValidationReport): IO[RDFReader] = for {
-    refModel <- Ref.of[IO, Model](report.getModel())
+  private def conforms(report: Resource): IO[Boolean] = 
+    IO { report.hasProperty(SH.conforms,JenaDatatypes.TRUE) }
+
+  private def countViolations(report: Resource): IO[Int] = 
+    IO { report.getModel.listResourcesWithProperty(RDF.`type`,SH.ValidationResult).toList.size }
+
+
+  private def report2reader(model: Model): IO[RDFReader] = for {
+    refModel <- Ref.of[IO, Model](model)
   } yield RDFAsJenaModel(refModel,None,None,Map(),Map())
     
 
-  private def report2errors(report: ValidationReport): Seq[ErrorInfo] = Seq()
+  private def report2errors(): Seq[ErrorInfo] = Seq()
 
-  private def report2ShapesMap(report: ValidationReport, nodesPrefixMap:PrefixMap, shapesPrefixMap: PrefixMap): ResultShapeMap = {
+  private def report2ShapesMap(): ResultShapeMap = {
     ResultShapeMap.empty
   }
 
@@ -103,16 +116,18 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
       RDFParser.create.source(str_reader).lang(RDFLanguages.shortnameToLang(format)).parse(dest)
       m
     }
-  } yield JenaShacl(model)
+  } yield ShaclTQ(model)
+
+  // private def err[A](msg:String): EitherT[IO,String, A] = EitherT.leftT[IO,A](msg)
 
   override def fromRDF(rdf: RDFReader): IO[es.weso.schema.Schema] = rdf match {
     case rdfJena: RDFAsJenaModel => for {
-      _ <- IO { println(s"JenaSHACL: Parsing Shapes graph from RDF data")}
+      _ <- IO { println(s"SHACL_TQ: Parsing Shapes graph from RDF data")}
       model <- rdfJena.getModel
       str <- rdfJena.serialize("TURTLE")
       _ <- IO { println(s"RDF to parse:\n${str}")}
-    } yield JenaShacl(model)
-    case _ => IO.raiseError(JenaShaclException(s"Cannot obtain ${name} from RDFReader ${rdf.rdfReaderName} yet"))
+    } yield ShaclTQ(model)
+    case _ => IO.raiseError(ShaclTQException(s"Cannot obtain ${name} from RDFReader ${rdf.rdfReaderName} yet"))
   }
 
   override def serialize(format: String, base: Option[IRI]): IO[String] = 
@@ -123,9 +138,9 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
       out.toString
     }
     else 
-      IO.raiseError(JenaShaclException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
+      IO.raiseError(ShaclTQException(s"Format $format not supported to serialize $name. Supported formats=$formats"))
 
-  override def empty: Schema = JenaShacl.empty
+  override def empty: Schema = ShaclTQ.empty
 
   override def shapes: List[String] = {
     List()
@@ -142,26 +157,26 @@ case class JenaShacl(shapesGraph: Model) extends Schema {
      case Some("SHACL") | Some("SHACLEX") =>
        serialize(targetFormat.getOrElse(DataFormats.defaultFormatName))
      case Some("SHEX") => 
-       IO.raiseError(JenaShaclException(s"Not implemented conversion between ${name} to ShEx yet")) 
+       IO.raiseError(ShaclTQException(s"Not implemented conversion between ${name} to ShEx yet")) 
      case Some(other) =>
-       IO.raiseError(JenaShaclException(s"Conversion $name -> $other not implemented yet"))
+       IO.raiseError(ShaclTQException(s"Conversion $name -> $other not implemented yet"))
    }
   }
 
   override def info: SchemaInfo = {
     // TODO: Check if shacl schemas are well formed
-    SchemaInfo(name,"JenaSHACL", isWellFormed = true, List())
+    SchemaInfo(name,"SHACLex", isWellFormed = true, List())
   }
 
   override def toClingo(rdf: RDFReader, shapeMap: ShapeMap): IO[String] =
-    IO.raiseError(JenaShaclException(s"Not implemented yet toClingo for $name"))
+    IO.raiseError(ShaclTQException(s"Not implemented yet toClingo for $name"))
 
 }
 
-object JenaShacl {
-  def empty: JenaShacl = {
+object ShaclTQ {
+  def empty: ShaclTQ = {
     val m = ModelFactory.createDefaultModel()
-    JenaShacl(m)
+    ShaclTQ(m)
   }
 
 }
