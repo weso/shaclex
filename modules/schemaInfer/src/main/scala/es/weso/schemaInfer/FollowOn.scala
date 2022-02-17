@@ -46,7 +46,6 @@ object FollowOn {
       prop.str match {
         case stemRegex(rest) => {
           val suffix = if (num == 1) "" else num.toString
-          println(s"Matches with $rest, num: $num, suffix: $suffix")
           Right(label.resolve(IRI(rest + ("Shape" + suffix))))
         }
         case _ => Left(s"$prop does not match $stemRegex")
