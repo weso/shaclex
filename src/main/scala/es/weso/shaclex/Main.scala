@@ -1,45 +1,42 @@
 package es.weso.shaclex
 
 import cats.implicits._
+import com.typesafe.scalalogging._
+import es.weso.rdf.RDFReader
+import es.weso.rdf.jena.{Endpoint, RDFAsJenaModel}
+import es.weso.rdf.nodes.IRI
+import es.weso.schema._
+import es.weso.shaclex.repl.Repl
+import es.weso.utils.FileUtils
 import org.rogach.scallop._
 import org.rogach.scallop.exceptions._
-import com.typesafe.scalalogging._
-import es.weso.rdf.jena.Endpoint
-import es.weso.rdf.nodes.IRI
-import es.weso.shaclex.repl.Repl
 
-import scala.io.Source
-import es.weso.schema._
-import es.weso.rdf.jena.RDFAsJenaModel
-import scala.concurrent.duration._
-import es.weso.utils.FileUtils
-import scala.util._
 import java.nio.file._
-import es.weso.rdf.RDFReader
+import scala.concurrent.duration._
+import scala.io.Source
+import scala.util._
 //import cats.data.EitherT
-import cats.effect._
 import cats._
+import cats.effect._
 // import scala.concurrent.ExecutionContext
-import es.weso.rdf.RDFBuilder
-import es.weso.rdf.InferenceEngine
+import es.weso.rdf.{InferenceEngine, RDFBuilder}
 // import cats.implicits._
 
 object Main extends IOApp with LazyLogging {
 
   type ESIO[A] = IO[A] // EitherT[IO, String, A]
 
-  def fromUnit(x: => Unit): ESIO[Unit] = 
+  def fromUnit(x: => Unit): ESIO[Unit] =
     // EitherT.liftF[IO,String,Unit](IO(x))
     IO(x)
 
-  def fromEither[A](e: Either[String,A]): ESIO[A] =
+  def fromEither[A](e: Either[String, A]): ESIO[A] =
     // EitherT.fromEither[IO](e)
     IO.fromEither(e.leftMap(s => new RuntimeException(s)))
 
   def fromIO[A](io: IO[A]): ESIO[A] = io
-  def done: IO[Unit] = ().pure[IO]
+  def done: IO[Unit]                = ().pure[IO]
   //private def err[A](msg: String): ESIO[A] = fromIO(IO.raiseError(new RuntimeException(msg)))
-
 
   // private def printlnIO(str: String): ESIO[Unit] = EitherT.liftF[IO,String,Unit](IO { println(str) })
 
@@ -48,31 +45,31 @@ object Main extends IOApp with LazyLogging {
   }
 
   val relativeBase: Option[IRI] = Some(IRI("internal://base/"))
-  val relativeBaseStr = relativeBase.map(_.str)
+  val relativeBaseStr           = relativeBase.map(_.str)
 
-  def getBaseFolder(opts: MainOpts): IO[Path] = 
-   IO(if (opts.baseFolder.isDefined) {
-    Paths.get(opts.baseFolder())
-   } else {
-    Paths.get(".")
-   })
+  def getBaseFolder(opts: MainOpts): IO[Path] =
+    IO(if (opts.baseFolder.isDefined) {
+      Paths.get(opts.baseFolder())
+    } else {
+      Paths.get(".")
+    })
 
-  def doShExTest(opts:MainOpts): IO[Unit] =  
-   if (opts.testShEx.isDefined) {
-    IO(ShExTestRunner.run(opts.testShEx()))
-  } else IO(())
+  def doShExTest(opts: MainOpts): IO[Unit] =
+    if (opts.testShEx.isDefined) {
+      IO(ShExTestRunner.run(opts.testShEx()))
+    } else IO(())
 
-  def doShapeInfer(baseFolder: Path, opts:MainOpts): IO[Unit] =  
-   if (opts.shapeInfer()) {
-    IO(()) //shapeInfer(opts,baseFolder)
-  } else IO(())
+  def doShapeInfer(baseFolder: Path, opts: MainOpts): IO[Unit] =
+    if (opts.shapeInfer()) {
+      IO(()) //shapeInfer(opts,baseFolder)
+    } else IO(())
 
-  def doShowTime(startTime: Long, opts:MainOpts): IO[Unit] =
+  def doShowTime(startTime: Long, opts: MainOpts): IO[Unit] =
     if (opts.time()) IO {
-    val endTime = System.nanoTime()
-    val time: Long = endTime - startTime
-    printTime("Time", opts, time)
-   } else IO(())
+      val endTime    = System.nanoTime()
+      val time: Long = endTime - startTime
+      printTime("Time", opts, time)
+    } else IO(())
 
   def run(args: List[String]): IO[ExitCode] = {
     val opts = new MainOpts(args, errorDriver)
@@ -81,81 +78,95 @@ object Main extends IOApp with LazyLogging {
     if (args.isEmpty) for {
       _ <- IO { opts.printHelp() }
     } yield ExitCode.Error
-    else for {
-     _ <- doShExTest(opts) 
-     baseFolder <- getBaseFolder(opts) 
-     startTime <- IO(System.nanoTime())
-     _ <- doShapeInfer(baseFolder,opts)
-     either <- doProcess(baseFolder, opts)
-     code <- either.fold(
-       err => IO(println(s"Error: $err")) >> IO.pure(ExitCode.Error),
-       _ => IO.pure(ExitCode.Success)
-     )
-     _ <- doShowTime(startTime, opts)
-     _ <- if (opts.shell()) {
-       IO {
-         new Repl(opts).runUntilQuit()
-       }
-     } else {
-       IO.pure(())
-     }
-    } yield code
+    else
+      for {
+        _          <- doShExTest(opts)
+        baseFolder <- getBaseFolder(opts)
+        startTime  <- IO(System.nanoTime())
+        _          <- doShapeInfer(baseFolder, opts)
+        either     <- doProcess(baseFolder, opts)
+        code <- either.fold(
+          err => IO(logger.error(s"Error: $err")) >> IO.pure(ExitCode.Error),
+          _ => IO.pure(ExitCode.Success)
+        )
+        _ <- doShowTime(startTime, opts)
+        _ <- if (opts.shell()) {
+          IO {
+            new Repl(opts).runUntilQuit()
+          }
+        } else {
+          IO.pure(())
+        }
+      } yield code
   }
 
-  def doProcess(baseFolder: Path, opts:MainOpts): IO[Either[Throwable,Unit]] = {
+  def doProcess(baseFolder: Path, opts: MainOpts): IO[Either[Throwable, Unit]] = {
     val e: IO[Unit] = for {
       res1 <- getRDFReader(opts, baseFolder)
       res2 <- RDFAsJenaModel.empty
-      vv <- (res1, res2).tupled.use { case (rdf,builder) => for {
-    schema <- getSchema(opts, baseFolder, rdf)
-    triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
-    shapeMapStr <- getShapeMapStr(opts, baseFolder)
-    // _ <- IO { pprint.log(shapeMapStr) }
-    pm <- rdf.getPrefixMap
-    trigger <- fromEither(ValidationTrigger.findTrigger(triggerName, shapeMapStr, relativeBaseStr,
-        opts.node.toOption, opts.shapeLabel.toOption,
-        pm, schema.pm))
-    _ <- doShowData(opts,rdf)    
-    _ <- doShowSchema(opts,schema)
-    _ <- doShowShapeMap(opts, trigger)
-    _ <- doShowClingo(opts,rdf,schema,trigger)
-    _ <- whenA(opts.validate(), doValidation(opts, rdf, schema, trigger,builder))
-    } yield ()
-   }
-    } yield vv 
-   e.attempt
+      vv <- (res1, res2).tupled.use {
+        case (rdf, builder) =>
+          for {
+            schema <- getSchema(opts, baseFolder, rdf)
+            triggerName = opts.trigger.toOption.getOrElse(ValidationTrigger.default.name)
+            shapeMapStr <- getShapeMapStr(opts, baseFolder)
+            // _ <- IO { pprint.log(shapeMapStr) }
+            pm <- rdf.getPrefixMap
+            trigger <- fromEither(
+              ValidationTrigger.findTrigger(
+                triggerName,
+                shapeMapStr,
+                relativeBaseStr,
+                opts.node.toOption,
+                opts.shapeLabel.toOption,
+                pm,
+                schema.pm
+              )
+            )
+            _ <- doShowData(opts, rdf)
+            _ <- doShowSchema(opts, schema)
+            _ <- doShowShapeMap(opts, trigger)
+            _ <- doShowClingo(opts, rdf, schema, trigger)
+            _ <- whenA(opts.validate(), doValidation(opts, rdf, schema, trigger, builder))
+          } yield ()
+      }
+    } yield vv
+    e.attempt
   }
 
-  def doValidation(opts: MainOpts, 
-      rdf: RDFReader, 
-      schema: Schema, 
-      trigger: ValidationTrigger, 
-      builder: RDFBuilder): ESIO[Unit] = for {
-    result <- schema.validate(rdf, trigger, builder)
-    _ <- doShowResult(opts,result)
-    _ <- doShowValidationReport(opts,result)
-  } yield ()
+  def doValidation(
+      opts: MainOpts,
+      rdf: RDFReader,
+      schema: Schema,
+      trigger: ValidationTrigger,
+      builder: RDFBuilder
+  ): ESIO[Unit] =
+    for {
+      result <- schema.validate(rdf, trigger, builder)
+      _      <- doShowResult(opts, result)
+      _      <- doShowValidationReport(opts, result)
+    } yield ()
 
-  private def doShowData(opts:MainOpts, rdf:RDFReader): IO[Unit] = {
+  private def doShowData(opts: MainOpts, rdf: RDFReader): IO[Unit] = {
     if (opts.showData()) {
       // If not specified uses the input schema format
-      val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat())
-      for { 
+      val outDataFormat = opts.outDataFormat.getOrElse(opts.dataFormat()
+      for {
         str <- rdf.serialize(outDataFormat, relativeBase)
-        _ <- IO(println(str))
+        _   <- IO(println(str))
       } yield ()
     } else {
       ().pure[IO]
     }
   }
 
-  private def doShowSchema(opts:MainOpts, schema:Schema): IO[Unit] = {
+  private def doShowSchema(opts: MainOpts, schema: Schema): IO[Unit] = {
     if (opts.showSchema() || opts.outSchemaFile.isDefined) {
       for {
         // _ <- printlnIO(s"Schema: ${schema}\n")
-        str <- schema.convert(opts.outSchemaFormat.toOption,opts.outEngine.toOption,relativeBase)
-        _ <- whenA(opts.showSchema(), fromUnit(println(str)))
-        _ <- whenA(opts.outSchemaFile.isDefined, fromUnit(FileUtils.writeFile(opts.outSchemaFile(), str)))
+        str <- schema.convert(opts.outSchemaFormat.toOption, opts.outEngine.toOption, relativeBase)
+        _   <- whenA(opts.showSchema(), fromUnit(println(str)))
+        _   <- whenA(opts.outSchemaFile.isDefined, fromUnit(FileUtils.writeFile(opts.outSchemaFile(), str)))
       } yield ()
     } else {
       done
@@ -163,39 +174,38 @@ object Main extends IOApp with LazyLogging {
 
   }
 
-  
+  private def doShowShapeMap(opts: MainOpts, trigger: ValidationTrigger): ESIO[Unit] =
+    whenA(
+      opts.showShapeMap(),
+      fromUnit(println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat(), relativeBase)}"))
+    )
 
-  private def doShowShapeMap(opts:MainOpts, trigger: ValidationTrigger): ESIO[Unit] = 
-   whenA(opts.showShapeMap(), 
-     fromUnit(println(s"ShapeMap: ${trigger.shapeMap.serialize(opts.outShapeMapFormat(),relativeBase)}"))
-   )
-
-  private def doShowClingo(opts: MainOpts, rdf: RDFReader, schema: Schema, trigger: ValidationTrigger): ESIO[Unit] = 
+  private def doShowClingo(opts: MainOpts, rdf: RDFReader, schema: Schema, trigger: ValidationTrigger): ESIO[Unit] =
     if (opts.clingoFile.isDefined || opts.showClingo()) for {
       str <- schema.toClingo(rdf, trigger.shapeMap) // .leftMap(e => s"Error converting to clingo: $e")
-      _ <- whenA(opts.showClingo(),fromUnit(println(s"$str")))
-      _ <- whenA(opts.clingoFile.isDefined, fromUnit(FileUtils.writeFile(opts.clingoFile(), str)))
+      _   <- whenA(opts.showClingo(), fromUnit(println(s"$str")))
+      _   <- whenA(opts.clingoFile.isDefined, fromUnit(FileUtils.writeFile(opts.clingoFile(), str)))
     } yield (())
     else done
 
-  
-  private def doShowResult(opts: MainOpts, result: Result): ESIO[Unit] = 
-  if (opts.showResult() || opts.outputFile.isDefined) {
-    // val resultSerialized = result.serialize(opts.resultFormat(),relativeBase)
-    for {
-      resEmpty <-fromIO(RDFAsJenaModel.empty)
-      str <- fromIO(resEmpty.use(builder => result.serialize(opts.resultFormat(),relativeBase,builder)))
-      _ <- whenA(opts.showResult(),fromUnit(println(str)))
-      _ <- whenA(opts.outputFile.isDefined,fromUnit(FileUtils.writeFile(opts.outputFile(), str)))
-    } yield (())
-  } else done
+  private def doShowResult(opts: MainOpts, result: Result): ESIO[Unit] =
+    if (opts.showResult() || opts.outputFile.isDefined) {
+      // val resultSerialized = result.serialize(opts.resultFormat(),relativeBase)
+      for {
+        resEmpty <- fromIO(RDFAsJenaModel.empty)
+        str      <- fromIO(resEmpty.use(builder => result.serialize(opts.resultFormat(), relativeBase, builder)))
+        _        <- whenA(opts.showResult(), fromUnit(println(str)))
+        _        <- whenA(opts.outputFile.isDefined, fromUnit(FileUtils.writeFile(opts.outputFile(), str)))
+      } yield (())
+    } else done
 
-
-  private def doShowValidationReport(opts:MainOpts, result: Result): ESIO[Unit] = 
-    if (opts.showValidationReport()) 
+  private def doShowValidationReport(opts: MainOpts, result: Result): ESIO[Unit] =
+    if (opts.showValidationReport())
       for {
         res <- fromIO(RDFAsJenaModel.empty)
-        str <- fromIO(res.use(builder => result.validationReport.toRDF(builder).flatMap(_.serialize(opts.validationReportFormat()))))
+        str <- fromIO(
+          res.use(builder => result.validationReport.toRDF(builder).flatMap(_.serialize(opts.validationReportFormat())))
+        )
         _ <- fromUnit(println(str))
       } yield (())
     else done
@@ -231,7 +241,7 @@ object Main extends IOApp with LazyLogging {
     } else "".pure[IO]
   }
 
-/*  private def getNodeSelector(opts:MainOpts, pm: PrefixMap): EitherT[IO, String, NodeSelector] = {
+  /*  private def getNodeSelector(opts:MainOpts, pm: PrefixMap): EitherT[IO, String, NodeSelector] = {
     if (opts.shapeInferNode.isDefined) {
       EitherT.fromEither[IO](NodeSelector.fromString(opts.shapeInferNode(),None,pm))
     } else
@@ -241,7 +251,7 @@ object Main extends IOApp with LazyLogging {
   // private def ok[A](x:A):ESIO[A] = IO.pure(x)
   // private def okResource[A](x:A): Resource[IO,A] = Resource.pure[IO,A](x)
 
-  private def getRDFReader(opts: MainOpts, baseFolder: Path): IO[Resource[IO,RDFReader]] = {
+  private def getRDFReader(opts: MainOpts, baseFolder: Path): IO[Resource[IO, RDFReader]] = {
     if (opts.data.isDefined || opts.dataUrl.isDefined) {
       for {
         rdf <- if (opts.data.isDefined) {
@@ -252,10 +262,10 @@ object Main extends IOApp with LazyLogging {
         }
         newRdf = if (opts.inference.isDefined) for {
           inference <- Resource.eval(fromEither(InferenceEngine.fromString(opts.inference())))
-          r <- rdf.evalMap(rdf => rdf.applyInference(inference))
-        } yield r 
+          r         <- rdf.evalMap(rdf => rdf.applyInference(inference))
+        } yield r
         else rdf
-      } yield newRdf 
+      } yield newRdf
     } else if (opts.endpoint.isDefined) {
       IO(Resource.eval(Endpoint.fromString(opts.endpoint())))
     } else {
@@ -270,17 +280,16 @@ object Main extends IOApp with LazyLogging {
       Schemas.fromFile(path.toFile(), opts.schemaFormat(), opts.engine(), relativeBaseStr)
     } else if (opts.schemaUrl.isDefined) {
       val str = Source.fromURL(opts.schemaUrl()).mkString
-      Schemas.fromString(str,opts.schemaFormat(),opts.engine(),relativeBaseStr)
-    }
-    else {
+      Schemas.fromString(str, opts.schemaFormat(), opts.engine(), relativeBaseStr)
+    } else {
       logger.info("Schema not specified. Extracting schema from data")
       Schemas.fromRDF(rdf, opts.engine())
     }
-   // val v: IO[Either[String,Schema]] = r.map(_.leftMap(_.getMessage))
-   r
+    // val v: IO[Either[String,Schema]] = r.map(_.leftMap(_.getMessage))
+    r
   }
 
-/*  private def shapeInfer(opts: MainOpts, baseFolder: Path): IO[Unit] = {
+  /*  private def shapeInfer(opts: MainOpts, baseFolder: Path): IO[Unit] = {
 
     val dataOptions: IO[(RDFReader,Schema,String)] = getRDFReader(opts, baseFolder).use(rdf => for {
      pm <- EitherT.liftF(rdf.getPrefixMap)
@@ -300,8 +309,7 @@ object Main extends IOApp with LazyLogging {
       val (rdf,schema,str) = values
       println(s"Shape infered: $str")
     }) */
-    dataOptions 
+    dataOptions
   } */
 
 }
-

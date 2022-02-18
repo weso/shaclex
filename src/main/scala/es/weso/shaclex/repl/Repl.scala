@@ -1,16 +1,16 @@
 package es.weso.shaclex.repl
 
-import java.io.PrintStream
-
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.shaclex.{JLineTerminal, MainOpts}
 import org.jline.reader._
 
+import java.io.PrintStream
 import scala.annotation.tailrec
 // import scala.collection.JavaConverters._
 
 case class State(index: Int)
 
-class Repl(opts: MainOpts, out: PrintStream = Console.out) {
+class Repl(opts: MainOpts, out: PrintStream = Console.out) extends LazyLogging {
 
   final def initialState: State = State(0)
 
@@ -28,8 +28,7 @@ class Repl(opts: MainOpts, out: PrintStream = Console.out) {
         val line = terminal.readLine(completer)
         ParseResult(line)(state)
       } catch {
-        case _: EndOfFileException |
-             _: UserInterruptException => // Ctrl+D or Ctrl+C
+        case _: EndOfFileException | _: UserInterruptException => // Ctrl+D or Ctrl+C
           Quit
       }
     }
@@ -40,8 +39,7 @@ class Repl(opts: MainOpts, out: PrintStream = Console.out) {
       else loop(interpret(res)(state))
     }
 
-    try withRedirectedOutput { loop(initialState) }
-    finally terminal.close()
+    try withRedirectedOutput { loop(initialState) } finally terminal.close()
   }
 
   // redirecting the output allows us to test `println` in scripted tests
@@ -52,8 +50,7 @@ class Repl(opts: MainOpts, out: PrintStream = Console.out) {
       System.setOut(out)
       System.setErr(out)
       op
-    }
-    finally {
+    } finally {
       System.setOut(savedOut)
       System.setErr(savedErr)
     }
@@ -80,23 +77,21 @@ class Repl(opts: MainOpts, out: PrintStream = Console.out) {
       state
 
     case AmbiguousCommand(cmd, matching) =>
-      out.println(s""""$cmd" matches ${matching.mkString(", ")}. Try typing a few more characters. Run ":help" for a list of commands""")
+      out.println(s""""$cmd" matches ${matching
+        .mkString(", ")}. Try typing a few more characters. Run ":help" for a list of commands""")
       state
 
     case Help =>
       out.println(Help.text)
       state
 
-
     case Load(path) =>
       out.println(s"Load: $path")
       state
-
 
     case Quit =>
       // end of the world!
       state
   }
-
 
 }
