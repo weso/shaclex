@@ -140,6 +140,7 @@ lazy val schema = project
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       srdf,
       srdfJena,
       srdf4j,
@@ -167,6 +168,7 @@ lazy val slang = project
   .settings(
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
+      scalaLogging,
       catsCore,
       catsKernel,
       // catsMacros,
@@ -186,6 +188,7 @@ lazy val sgraph = project
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       utils,
       utilsTest % Test,
       srdf,
@@ -207,6 +210,7 @@ lazy val converter = project
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       logbackClassic,
       scalaLogging,
       srdfJena % Test,
