@@ -4,32 +4,32 @@ import cats.Show
 import com.typesafe.scalalogging.LazyLogging
 // import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.syntax._
 import es.weso.shapemaps._
+import io.circe._
+import io.circe.syntax._
 // import es.weso.rdf.jena.RDFAsJenaModel
 import java.io._
 // import es.weso.shacl.report.ValidationReport
-import es.weso.rdf.RDFBuilder
 import cats.effect._
-import es.weso.rdf.PrefixMap
+import es.weso.rdf.{PrefixMap, RDFBuilder}
 
-sealed abstract trait DetailsOption extends Product with Serializable
+sealed trait DetailsOption extends Product with Serializable
+
 case object Details extends DetailsOption
+
 case object NoDetails extends DetailsOption
 
 case class Result(
-  isValid: Boolean,
-  message: String,
-  shapeMaps: Seq[ResultShapeMap],
-  validationReport: RDFReport,  
-  errors: Seq[ErrorInfo],
-  trigger: Option[ValidationTrigger],
-  nodesPrefixMap: PrefixMap,
-  shapesPrefixMap: PrefixMap,
-  reportFormat: String = "TURTLE",
-  ) extends LazyLogging {
+                   isValid: Boolean,
+                   message: String,
+                   shapeMaps: Seq[ResultShapeMap],
+                   validationReport: RDFReport,
+                   errors: Seq[ErrorInfo],
+                   trigger: Option[ValidationTrigger],
+                   nodesPrefixMap: PrefixMap,
+                   shapesPrefixMap: PrefixMap,
+                   reportFormat: String = "TURTLE",
+                 ) extends LazyLogging {
 
   def noSolutions(shapeMaps: Seq[ResultShapeMap]): Boolean = {
     shapeMaps.size == 0 || shapeMaps.head.noSolutions
@@ -54,7 +54,7 @@ case class Result(
   def show(base: Option[IRI], details: DetailsOption): String = {
     val sb = new StringBuilder
     if (isValid) {
-      if (shapeMaps.size == 0) {
+      if (shapeMaps.isEmpty) {
         sb ++= s"No solutions"
       } else {
         for ((solution, n) <- shapeMaps zip (1 to cut)) {
@@ -79,17 +79,17 @@ case class Result(
     }
 
     def result2Json(result: Result, strValidationReport: String): Json = Json.obj(
-          ("valid", isValid.asJson),
-          ("type", "Result".asJson),
-          ("message", message.asJson),
-          ("shapeMap", solution match {
-            case Left(msg) => Json.fromString(msg)
-            case Right(r) => r.toJson
-          }),
-          ("errors", errors.toList.asJson),
-          ("nodesPrefixMap", nodesPrefixMap.asJson),
-          ("shapesPrefixMap", shapesPrefixMap.asJson),
-          ("validationReport", Json.fromString(strValidationReport))
+      ("valid", isValid.asJson),
+      ("type", "Result".asJson),
+      ("message", message.asJson),
+      ("shapeMap", solution match {
+        case Left(msg) => Json.fromString(msg)
+        case Right(r) => r.toJson
+      }),
+      ("errors", errors.toList.asJson),
+      ("nodesPrefixMap", nodesPrefixMap.asJson),
+      ("shapesPrefixMap", shapesPrefixMap.asJson),
+      ("validationReport", Json.fromString(strValidationReport))
     )
 
     for {
@@ -98,10 +98,10 @@ case class Result(
     } yield {
       result2Json(this, str)
     }
-  } 
+  }
 
   private def toJsonString2spaces(builder: RDFBuilder): IO[String] =
-    toJson(builder)map(_.spaces2)
+    toJson(builder) map (_.spaces2)
 
   private lazy val cut = 1 // TODO maybe remove concept of cut
 
@@ -149,7 +149,7 @@ object Result extends LazyLogging {
     empty.copy(isValid = false, message = str)
 
   implicit val showResult = new Show[Result] {
-    override def show(r: Result): String = r.show(None,Details)
+    override def show(r: Result): String = r.show(None, Details)
   }
 
   lazy val TEXT = "COMPACT"
@@ -160,26 +160,23 @@ object Result extends LazyLogging {
   lazy val defaultResultFormat = availableResultFormats.head
 
   // TODO: implement this
-  implicit val decodeTrigger: Decoder[Option[ValidationTrigger]] = Decoder.instance { c =>
-    {
-      logger.warn("Trigger decoder not implemented")
-      throw new RuntimeException("Trigger decoder not implemented yet")
-    }
+  implicit val decodeTrigger: Decoder[Option[ValidationTrigger]] = Decoder.instance { c => {
+    logger.warn("Trigger decoder not implemented")
+    throw new RuntimeException("Trigger decoder not implemented yet")
+  }
   }
 
   // TODO: implement this
-  implicit val decodePrefixMap: Decoder[PrefixMap] = Decoder.instance { c =>
-    {
-      logger.warn("PrefixMap decoder not implemented")
-      ??? //Right(None)
-    }
+  implicit val decodePrefixMap: Decoder[PrefixMap] = Decoder.instance { c => {
+    logger.warn("PrefixMap decoder not implemented")
+    ??? //Right(None)
+  }
   }
 
   // TODO: implement this
-  implicit val decodeResultShapeMap: Decoder[ResultShapeMap] = Decoder.instance { c =>
-    {
-      throw new Exception("unimplemented decodeResulShapeMap")
-    }
+  implicit val decodeResultShapeMap: Decoder[ResultShapeMap] = Decoder.instance { c => {
+    throw new Exception("unimplemented decodeResulShapeMap")
+  }
   }
 
   implicit val decodeResult: Decoder[Result] = Decoder.instance { c =>

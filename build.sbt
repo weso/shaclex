@@ -102,8 +102,6 @@ lazy val shaclex = project
       file("src/assets/favicon.ico") -> "favicon.ico"
     ),
     libraryDependencies ++= Seq(
-      logbackClassic,
-      scalaLogging,
       scallop,
       typesafeConfig,
       shexTest,
@@ -138,6 +136,7 @@ lazy val schema = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       srdf,
       srdfJena,
       srdf4j,
@@ -164,6 +163,7 @@ lazy val slang = project
   .settings(
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
+      scalaLogging,
       catsCore,
       catsKernel,
       // catsMacros,
@@ -184,6 +184,7 @@ lazy val sgraph = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       utils,
       utilsTest % Test,
       srdf,
@@ -206,8 +207,6 @@ lazy val converter = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= Seq(
-      logbackClassic,
-      scalaLogging,
       srdfJena % Test,
       shex,
       shacl,
@@ -226,6 +225,8 @@ lazy val noDocProjects = Seq[ProjectReference]()
 
 lazy val sharedDependencies = Seq(
   libraryDependencies ++= Seq(
+    logbackClassic,
+    scalaLogging,
     // scalactic,
     // scalaTest % Test
   )

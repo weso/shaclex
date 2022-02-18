@@ -1,7 +1,5 @@
 package es.weso.shaclex.repl
 
-import java.nio.charset.StandardCharsets
-
 class SourceFile(computeContent: => String) {
   private var myContent: String = null
 
