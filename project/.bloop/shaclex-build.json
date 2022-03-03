@@ -18,7 +18,7 @@
         "classpath": [
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.6.1/sbt-1.6.1.jar",
             "/home/labra/.sbt/boot/scala-2.12.15/lib/scala-library.jar",
-            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.11/sbt-bloop-1.4.11.jar",
+            "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.12/sbt-bloop-1.4.12.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/codecommit/sbt-github-actions_2.12_1.0/0.14.2/sbt-github-actions-0.14.2.jar",
             "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/sbt-assembly_2.12_1.0/1.1.0/sbt-assembly-1.1.0.jar",
             "/home/labra/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/com.eed3si9n/sbt-buildinfo/scala_2.12/sbt_1.0/0.10.0/jars/sbt-buildinfo.jar",
@@ -273,7 +273,6 @@
                 "/home/labra/.sbt/boot/scala-2.12.15/lib/scala-reflect.jar",
                 "/home/labra/.sbt/boot/scala-2.12.15/lib/scala-compiler.jar"
             ],
-            "analysis": "/home/labra/src/shapes/shaclex/project/target/streams/compile/bloopAnalysisOut/_global/streams/inc_compile_2.12.zip",
             "setup": {
                 "order": "mixed",
                 "addLibraryToBootClasspath": true,
@@ -346,7 +345,7 @@
         "platform": {
             "name": "jvm",
             "config": {
-                "home": "/usr/lib/jvm/java-11-openjdk-amd64",
+                "home": "/home/labra/.jabba/jdk/adopt@1.8.0-292/jre",
                 "options": [
                     "-Duser.dir=/home/labra/src/shapes/shaclex/project"
                 ]
@@ -360,17 +359,17 @@
                 {
                     "organization": "ch.epfl.scala",
                     "name": "sbt-bloop",
-                    "version": "1.4.11",
+                    "version": "1.4.12",
                     "configurations": "default",
                     "artifacts": [
                         {
                             "name": "sbt-bloop",
-                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.11/sbt-bloop-1.4.11.jar"
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.12/sbt-bloop-1.4.12.jar"
                         },
                         {
                             "name": "sbt-bloop",
                             "classifier": "sources",
-                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.11/sbt-bloop-1.4.11-sources.jar"
+                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.12/sbt-bloop-1.4.12-sources.jar"
                         }
                     ]
                 },
@@ -2211,28 +2210,6 @@
                     "version": "1.2.18",
                     "configurations": "default",
                     "artifacts": [
-                        {
-                            "name": "jffi",
-                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18.jar"
-                        },
-                        {
-                            "name": "jffi",
-                            "classifier": "sources",
-                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18-sources.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization": "com.github.jnr",
-                    "name": "jffi",
-                    "version": "1.2.18",
-                    "configurations": "default",
-                    "artifacts": [
-                        {
-                            "name": "jffi",
-                            "classifier": "native",
-                            "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18-native.jar"
-                        },
                         {
                             "name": "jffi",
                             "path": "/home/labra/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/jnr/jffi/1.2.18/jffi-1.2.18.jar"
