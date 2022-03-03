@@ -10,6 +10,7 @@ import es.weso.utils.IOUtils._
 import java.io.InputStream
 import java.io.InputStreamReader
 import cats.effect.unsafe.implicits.global
+import es.weso.utils.VerboseLevel
 
 case class ResultValidation(resultShapeMap: ResultShapeMap, expectedShapeMap: ShapeMap)
 
@@ -38,12 +39,12 @@ object ShExWrapper {
               case (rdf,builder) => for {
                 prefixMap <- rdf.getPrefixMap
                 schema <- Schema.fromInputStream(schema, options.schemaFormat, options.base,None)
-                resolved <- ResolvedSchema.resolve(schema, options.base)
+                resolved <- ResolvedSchema.resolve(schema, options.base, bool2Verbose(options.verbose))
                 shapeMap <- fromES(
                   ShapeMap.fromInputStream(shapeMap, options.shapemapFormat,options.base, prefixMap,resolved.prefixMap
                   ).leftMap(es => es.toList.mkString("\n")))
                 fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap,rdf,prefixMap,schema.prefixMap)
-                result <- Validator.validate(resolved,fixedShapeMap,rdf,builder,options.verbose)
+                result <- Validator.validate(resolved,fixedShapeMap,rdf,builder,bool2Verbose(options.verbose))
                 resultShapeMap <- result.toResultShapeMap
               } yield resultShapeMap
           }
@@ -74,12 +75,12 @@ object ShExWrapper {
               case (rdf,builder) => for {
                 prefixMap <- rdf.getPrefixMap      
                 schema <- Schema.fromString(schemaStr, options.schemaFormat, options.base,None)
-                resolved <- ResolvedSchema.resolve(schema, options.base)
+                resolved <- ResolvedSchema.resolve(schema, options.base, bool2Verbose(options.verbose))
                 shapeMap <- fromES(
                   ShapeMap.fromString(shapeMapStr, options.shapemapFormat,options.base, prefixMap,resolved.prefixMap).leftMap(_.toString.mkString("\n"))
                 )
                 fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap,rdf,prefixMap,schema.prefixMap)
-                result <- Validator.validate(resolved,fixedShapeMap,rdf,builder,options.verbose)
+                result <- Validator.validate(resolved,fixedShapeMap,rdf,builder,bool2Verbose(options.verbose))
                 resultShapeMap <- result.toResultShapeMap
               } yield resultShapeMap
           }
@@ -149,10 +150,10 @@ object ShExWrapper {
           merged <- rdfOntology.merge(rdfData)
           prefixMap <- merged.getPrefixMap
           schema <- Schema.fromString(schemaStr, "SHEXC", None,None)
-          resolved <- ResolvedSchema.resolve(schema, None)
+          resolved <- ResolvedSchema.resolve(schema, None, VerboseLevel.Nothing)
           shapeMap <- fromES(ShapeMap.fromString(shapeMapStr, "Compact",None, prefixMap,resolved.prefixMap).leftMap(_.toString.mkString("\n")))
           fixedShapeMap <- ShapeMap.fixShapeMap(shapeMap,merged,prefixMap,resolved.prefixMap)
-          result <- Validator.validate(resolved,fixedShapeMap,merged,builder,false)
+          result <- Validator.validate(resolved,fixedShapeMap,merged,builder,VerboseLevel.Nothing)
           resultShapeMap <- result.toResultShapeMap
      } yield resultShapeMap
     }
@@ -162,5 +163,8 @@ object ShExWrapper {
     validateStrIO(dataStr,ontologyStr,schemaStr,shapeMapStr).unsafeRunSync()
   }
 
+  def bool2Verbose(b: Boolean): VerboseLevel =
+    if (b) VerboseLevel.Debug
+    else VerboseLevel.Info
 
 }
