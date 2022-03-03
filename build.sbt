@@ -1,6 +1,6 @@
 lazy val scala212 = "2.12.15"
-lazy val scala213 = "2.13.7"
-lazy val scala3 = "3.1.0"
+lazy val scala213 = "2.13.8"
+lazy val scala3   = "3.1.1"
 
 lazy val supportedScalaVersions = List(
   scala3, scala212, scala213
@@ -10,10 +10,10 @@ val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 
 
 // Local dependencies
-lazy val srdfVersion = "0.1.106"
-lazy val utilsVersion = "0.2.2"
-lazy val shexVersion = "0.1.108"
-lazy val shaclVersion = "0.1.78"
+lazy val srdfVersion          = "0.1.106"
+lazy val utilsVersion         = "0.2.4"
+lazy val shexVersion          = "0.2.0"
+lazy val shaclVersion         = "0.1.78"
 
 // Dependency versions
 lazy val catsVersion = "2.7.0"
@@ -86,7 +86,7 @@ lazy val shaclex = project
     ScalaUnidocPlugin,
     SiteScaladocPlugin,
     AsciidoctorPlugin,
-    SbtNativePackager,
+//    SbtNativePackager,
     WindowsPlugin,
     JavaAppPackaging,
     LauncherJarPlugin)
@@ -100,8 +100,8 @@ lazy val shaclex = project
   .dependsOn(schemaInfer, schema, converter, slang, sgraph)
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    ScalaUnidoc / siteSubdirName := "scaladoc/latest",
-    addMappingsToSiteDir(mappings in(ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
+    // ScalaUnidoc / siteSubdirName := "scaladoc/latest",
+    // addMappingsToSiteDir(mappings in(ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
     ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(noDocProjects: _*),
     makeSite / mappings ++= Seq(
       file("src/assets/favicon.ico") -> "favicon.ico"
@@ -140,6 +140,7 @@ lazy val schema = project
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       srdf,
       srdfJena,
       srdf4j,
@@ -167,6 +168,7 @@ lazy val slang = project
   .settings(
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies ++= Seq(
+      scalaLogging,
       catsCore,
       catsKernel,
       // catsMacros,
@@ -186,6 +188,7 @@ lazy val sgraph = project
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       utils,
       utilsTest % Test,
       srdf,
@@ -207,6 +210,7 @@ lazy val converter = project
     crossScalaVersions := supportedScalaVersions,
     commonSettings, publishSettings,
     libraryDependencies ++= Seq(
+      scalaLogging,
       logbackClassic,
       scalaLogging,
       srdfJena % Test,
