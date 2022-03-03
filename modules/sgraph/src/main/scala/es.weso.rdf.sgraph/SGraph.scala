@@ -1,25 +1,24 @@
 package es.weso.rdf.sgraph
 
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.PrefixMap
 import es.weso.rdf.nodes._
 import io.circe.Json
 
 /**
-* Representation of RDF graphs as simple graphs
- * It is used to serialize RDF graphs to DOT or JSON
- * @param rdfNodeIdMap
- * @param edges
- */
-case class SGraph(rdfNodeIdMap: Map[RDFNode, Node],
-                  edges: List[Edge]
-                 ) {
+  * Representation of RDF graphs as simple graphs
+  * It is used to serialize RDF graphs to DOT or JSON
+  * @param rdfNodeIdMap
+  * @param edges
+  */
+case class SGraph(rdfNodeIdMap: Map[RDFNode, Node], edges: List[Edge]) extends LazyLogging {
 
   def addNode(node: RDFNode, pm: PrefixMap): (SGraph, Node) = rdfNodeIdMap.get(node) match {
     case None => {
-      val id = "N" + nextId
+      val id    = "N" + nextId
       val label = pm.qualify(node)
-      println(s"Label: $label, node: $node\nPrefixMap: $pm")
-      val n = Node(id, label, node, pm)
+      logger.debug(s"Label: $label, node: $node\nPrefixMap: $pm")
+      val n      = Node(id, label, node, pm)
       val newMap = rdfNodeIdMap.updated(node, n)
       (this.copy(rdfNodeIdMap = newMap), n)
     }
@@ -48,11 +47,11 @@ case class SGraph(rdfNodeIdMap: Map[RDFNode, Node],
   def toJson: Json =
     Json.fromValues(
       rdfNodeIdMap.values.map(_.toJson) ++
-       edges.map(_.toJson)
+        edges.map(_.toJson)
     )
 
 }
 
 object SGraph {
-  def empty: SGraph = SGraph(Map(),List())
+  def empty: SGraph = SGraph(Map(), List())
 }
