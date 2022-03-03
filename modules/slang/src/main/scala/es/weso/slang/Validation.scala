@@ -1,5 +1,6 @@
 package es.weso.slang
 
+import com.typesafe.scalalogging.LazyLogging
 import es.weso.rdf.RDFReader
 import es.weso.rdf.nodes.{Literal => RDFLiteral, _}
 import es.weso.rdf.triples.RDFTriple
@@ -11,7 +12,7 @@ import fs2.Stream
 
 // Naïve implementation of SLang validation
 
-object Validation {
+object Validation extends LazyLogging{
 
   type State = ShapesMap
   type SV[A] = StateT[IO,State,A]
@@ -73,7 +74,7 @@ object Validation {
         }
       }
       case QualifiedArc(pp, shape, card) => {
-        println(s"QualifiedArc($pp,$shape,$card)?")
+        logger.debug(s"QualifiedArc($pp,$shape,$card)?")
         for {
           neighbourhood <- fromStreamIO(rdf.triplesWithSubject(node))
           predicates = pp match {

@@ -18,6 +18,7 @@ import es.weso.slang.{SLang2Clingo, ShEx2SLang}
 import scala.util._
 import es.weso.shex.ResolvedSchema
 import scala.util.control.NoStackTrace
+import es.weso.utils.VerboseLevel
 
 case class ShExSchema(schema: SchemaShEx)
     extends es.weso.schema.Schema
@@ -31,7 +32,7 @@ case class ShExSchema(schema: SchemaShEx)
   //  lazy val svgFormat = "SVG"
 
   def getValidator(builder: RDFBuilder): IO[Validator] = for { 
-    resolvedSchema <- ResolvedSchema.resolve(schema, None)
+    resolvedSchema <- ResolvedSchema.resolve(schema, None, VerboseLevel.Nothing,None)
   } yield Validator(schema = resolvedSchema, builder= builder)
 
   // TODO: Separate input/output formats
@@ -60,7 +61,7 @@ case class ShExSchema(schema: SchemaShEx)
 
   def validateTargetDecls(rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
     validator <- getValidator(builder)
-    r <- validator.validateNodeDecls(rdf)
+    r <- validator.validateNodeDecls(rdf, VerboseLevel.Nothing)
     pm <- rdf.getPrefixMap
     eitherResultShapeMap = r.toEitherS.map(_._2) 
     converted = cnvResult(eitherResultShapeMap, rdf, pm)
@@ -97,7 +98,7 @@ case class ShExSchema(schema: SchemaShEx)
 
   def validateNodeShape(node: IRI, shape: String, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
     validator <- getValidator(builder)
-    r <- validator.validateNodeShape(rdf, node, shape)
+    r <- validator.validateNodeShape(rdf, node, shape, VerboseLevel.Nothing)
     pm <- rdf.getPrefixMap
     eitherResultShapeMap = r.toEitherS.map(_._2)
     res = cnvResult(eitherResultShapeMap, rdf,pm)
@@ -105,7 +106,7 @@ case class ShExSchema(schema: SchemaShEx)
 
   def validateNodeStart(node: IRI, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
     validator <- getValidator(builder)
-    r <- validator.validateNodeStart(rdf, node)
+    r <- validator.validateNodeStart(rdf, node, VerboseLevel.Nothing)
     pm <- rdf.getPrefixMap
     eitherResultShapeMap = r.toEitherS.map(_._2)
     res = cnvResult(eitherResultShapeMap, rdf,pm)
@@ -114,7 +115,7 @@ case class ShExSchema(schema: SchemaShEx)
 
   def validateShapeMap(shapeMap: FixedShapeMap, rdf: RDFReader, builder: RDFBuilder): IO[Result] = for {
     validator <- getValidator(builder)
-    r <- validator.validateShapeMap(rdf,shapeMap).attempt
+    r <- validator.validateShapeMap(rdf,shapeMap, VerboseLevel.Nothing).attempt
     pm <- rdf.getPrefixMap
     res <- r match {
       case Left(error) =>
