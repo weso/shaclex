@@ -5,11 +5,8 @@ import cats.effect._
 import es.weso.rdf._
 import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.rdf.nodes._
-import es.weso.shapemaps.ResultShapeMap
 import es.weso.shapemaps.ShapeMap
-import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.system.{PrefixMap => _}
-import org.apache.jena.shacl._
 import org.apache.jena.shex._
 import scala.util.control.NoStackTrace
 import collection.JavaConverters._
@@ -18,6 +15,7 @@ import es.weso.shapemaps.ShapeMapLabel
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
 import es.weso.shapemaps.IRILabel
+import cats.implicits._
 
 
 case class JenaShExException(msg: String) extends Exception(msg) with NoStackTrace
@@ -73,14 +71,16 @@ case class JenaShEx(schema: ShexSchema) extends Schema {
     case _ => IO.raiseError(JenaShExException(s"cnvLabel: unsupported $label, must be an IRI"))
   }
   
-  private def report2Result(report: ShexReport): IO[Result] = for {
-
-  } yield { 
+  private def report2Result(report: ShexReport): IO[Result] = { 
    val message = if (report.conforms()) s"Validated" 
-     else s"Number of entries: ${report.getEntries().size()}"
-   Result(
-    isValid = report.conforms(), 
-   )
+     else s"Not valid"
+   Result(isValid = report.conforms(), message,
+      shapeMaps = Seq(),
+      validationReport = RDFReport.empty,
+      errors = Seq(),
+      None,
+      PrefixMap.empty,
+      PrefixMap.empty).pure[IO]
   }
 
   override def fromString(str: String, 
