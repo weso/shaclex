@@ -31,7 +31,7 @@ lazy val pprintVersion         = "0.7.3"
 lazy val rdf4jVersion          = "3.7.6"
 lazy val scalacheckVersion     = "1.15.4"
 lazy val scallopVersion        = "4.1.0"
-lazy val shaclTQVersion        = "1.4.0"
+lazy val shaclTQVersion        = "1.4.2"
 lazy val typesafeConfigVersion = "1.4.2"
 
 // Compiler plugin dependency versions
