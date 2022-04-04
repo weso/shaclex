@@ -1,7 +1,7 @@
 *.class
 *.log
 .bloop
-.bsp
+.bsp/*
 .bloop/*
 
 # sbt specific
