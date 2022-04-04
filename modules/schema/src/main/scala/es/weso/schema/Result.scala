@@ -4,18 +4,16 @@ import cats.Show
 import com.typesafe.scalalogging.LazyLogging
 // import es.weso.rdf.{PrefixMap, RDFReader}
 import es.weso.rdf.nodes.{IRI, RDFNode}
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.syntax._
 import es.weso.shapemaps._
+import io.circe._
+import io.circe.syntax._
 // import es.weso.rdf.jena.RDFAsJenaModel
 import java.io._
 // import es.weso.shacl.report.ValidationReport
-import es.weso.rdf.RDFBuilder
 import cats.effect._
-import es.weso.rdf.PrefixMap
+import es.weso.rdf.{PrefixMap, RDFBuilder}
 
-sealed abstract trait DetailsOption extends Product with Serializable
+sealed trait DetailsOption extends Product with Serializable
 case object Details extends DetailsOption
 case object NoDetails extends DetailsOption
 
@@ -32,7 +30,7 @@ case class Result(
   ) extends LazyLogging {
 
   def noSolutions(shapeMaps: Seq[ResultShapeMap]): Boolean = {
-    shapeMaps.size == 0 || shapeMaps.head.noSolutions
+    shapeMaps.isEmpty || shapeMaps.head.noSolutions
   }
 
   def solution: Either[String, ResultShapeMap] = {
@@ -54,7 +52,7 @@ case class Result(
   def show(base: Option[IRI], details: DetailsOption): String = {
     val sb = new StringBuilder
     if (isValid) {
-      if (shapeMaps.size == 0) {
+      if (shapeMaps.isEmpty) {
         sb ++= s"No solutions"
       } else {
         for ((solution, n) <- shapeMaps zip (1 to cut)) {
@@ -134,7 +132,7 @@ case class Result(
 }
 
 object Result extends LazyLogging {
-  def empty =
+  def empty: Result =
     Result(
       isValid = true,
       message = "",
@@ -145,7 +143,7 @@ object Result extends LazyLogging {
       PrefixMap.empty,
       PrefixMap.empty)
 
-  def errStr(str: String) =
+  def errStr(str: String): Result =
     empty.copy(isValid = false, message = str)
 
   implicit val showResult: Show[Result] = new Show[Result] {
@@ -156,8 +154,8 @@ object Result extends LazyLogging {
   lazy val JSON = "JSON"
   lazy val DETAILS = "DETAILS"
 
-  lazy val availableResultFormats = List(TEXT, JSON, DETAILS).map(_.toUpperCase)
-  lazy val defaultResultFormat = availableResultFormats.head
+  lazy val availableResultFormats: List[String] = List(TEXT, JSON, DETAILS).map(_.toUpperCase)
+  lazy val defaultResultFormat: String = availableResultFormats.head
 
   // TODO: implement this
   implicit val decodeTrigger: Decoder[Option[ValidationTrigger]] = Decoder.instance { c =>

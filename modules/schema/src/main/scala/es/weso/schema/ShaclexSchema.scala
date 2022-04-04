@@ -7,6 +7,7 @@ import es.weso.rdf.jena.RDFAsJenaModel
 import es.weso.shacl.SHACLPrefixes.`owl:imports`
 import es.weso.shacl.report.{AbstractResult, MsgError}
 import es.weso.shacl.{Schema => ShaclSchema, _}
+import es.weso.shapemaps.Status.{Conformant, NonConformant}
 // import es.weso.shacl._
 import es.weso.shacl.converter.{RDF2Shacl, Shacl2ShEx}
 import es.weso.shacl.report.{ValidationReport, ValidationResult}
