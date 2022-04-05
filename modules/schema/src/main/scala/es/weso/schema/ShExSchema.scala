@@ -20,7 +20,7 @@ import scala.util._
 import scala.util.control.NoStackTrace
 
 case class ShExSchema(schema: SchemaShEx)
-    extends es.weso.schema.Schema
+  extends es.weso.schema.Schema
     with LazyLogging
     with SLang2Clingo
     with ShEx2SLang {
@@ -82,10 +82,10 @@ case class ShExSchema(schema: SchemaShEx)
         schema.prefixMap
       )
     case Right(resultShapeMap) =>
-      val valid = resultShapeMap.isAllConformant
+      val allValid = resultShapeMap.isAllConformant
       Result(
-        isValid = valid,
-        if (!valid) "Validated" else "Validated with errors",
+        isValid = allValid,
+        if (allValid) "Validated" else "Validated with errors",
         shapeMaps = Seq(resultShapeMap),
         validationReport = EmptyReport,
         errors = resultShapeMap.getAllErrors.map(ErrorInfo(_)),
@@ -139,16 +139,19 @@ case class ShExSchema(schema: SchemaShEx)
         case Right(result) =>
           for {
             resultShapeMap <- result.toResultShapeMap
-          } yield Result(
-            isValid = resultShapeMap.isAllConformant,
-            if (resultShapeMap.isAllConformant) "Validated" else "Validated with errors",
-            Seq(resultShapeMap),
-            EmptyReport,
-            Seq(),
-            None,
-            pm,
-            schema.prefixMap
-          )
+          } yield {
+            val allValid = resultShapeMap.isAllConformant
+            Result(
+              isValid = allValid,
+              message = if (allValid) "Validated" else "Validated with errors",
+              shapeMaps = Seq(resultShapeMap),
+              validationReport = EmptyReport,
+              errors = resultShapeMap.getAllErrors.map(ErrorInfo(_)),
+              trigger = None,
+              nodesPrefixMap = pm,
+              shapesPrefixMap = schema.prefixMap
+            )
+          }
       }
     } yield res
 
@@ -200,10 +203,10 @@ case class ShExSchema(schema: SchemaShEx)
   override def pm: PrefixMap = schema.prefixMap
 
   override def convert(
-      targetFormat: Option[String],
-      targetEngine: Option[String],
-      base: Option[IRI]
-  ): IO[String] = {
+                        targetFormat: Option[String],
+                        targetEngine: Option[String],
+                        base: Option[IRI]
+                      ): IO[String] = {
     targetEngine.map(_.toUpperCase) match {
       case None => serialize(targetFormat.getOrElse(DataFormats.defaultFormatName), base)
       case Some(engine) if (engine.equalsIgnoreCase(name)) => {
