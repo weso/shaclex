@@ -17,7 +17,7 @@ lazy val shexVersion  = "0.2.2"
 lazy val shaclVersion = "0.1.78"
 
 // Dependency versions
-lazy val catsVersion           = "2.7.0"
+lazy val catsVersion           = "2.9.0"
 lazy val circeVersion          = "0.14.1"
 lazy val jenaVersion           = "4.4.0"
 lazy val jgraphtVersion        = "1.3.1"
