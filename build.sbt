@@ -14,7 +14,7 @@ val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 lazy val srdfVersion  = "0.1.107"
 lazy val utilsVersion = "0.2.4"
 lazy val shexVersion  = "0.2.2"
-lazy val shaclVersion = "0.1.78"
+lazy val shaclVersion = "0.1.83"
 
 // Dependency versions
 lazy val catsVersion           = "2.7.0"
