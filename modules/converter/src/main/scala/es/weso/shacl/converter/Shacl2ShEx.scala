@@ -204,7 +204,7 @@ object Shacl2ShEx extends LazyLogging {
   case class PredicateInverse(pred: IRI, inverse: Option[Boolean])
 
   private def getMinComponent(components: List[shacl.Component]): Result[Option[Int]] = {
-    ok(components.collect { case shacl.MinCount(m) => m }.headOption)
+    ok(option(components.collect { case shacl.MinCount(m) => m }.headOption.getOrElse(0)))
   }
 
   private def getMaxComponent(components: List[shacl.Component]): Result[Option[shex.Max]] = {
