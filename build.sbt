@@ -11,9 +11,9 @@ lazy val supportedScalaVersions = List(
 val Java11 = JavaSpec.temurin("11") // "adopt@1.11"
 
 // Local dependencies
-lazy val srdfVersion  = "0.1.122"
+lazy val srdfVersion  = "0.1.125"
 lazy val utilsVersion = "0.2.25"
-lazy val shexVersion  = "0.2.32"
+lazy val shexVersion  = "0.2.33"
 lazy val shaclVersion = "0.1.83"
 
 // Dependency versions
