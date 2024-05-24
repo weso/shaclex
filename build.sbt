@@ -26,7 +26,7 @@ lazy val jnaVersion            = "5.11.0"
 lazy val logbackVersion        = "1.2.11"
 lazy val loggingVersion        = "3.9.4"
 lazy val munitVersion          = "0.7.29"
-lazy val munitEffectVersion    = "1.0.7"
+lazy val munitEffectVersion    = "2.0.0"
 lazy val pprintVersion         = "0.7.3"
 lazy val rdf4jVersion          = "3.7.6"
 lazy val scalacheckVersion     = "1.15.4"
@@ -66,7 +66,7 @@ lazy val jenaFuseki     = "org.apache.jena" % "jena-fuseki-main" % jenaVersion
 lazy val jline          = "org.jline" % "jline" % jlineVersion
 lazy val jna            = "net.java.dev.jna" % "jna" % jnaVersion
 lazy val munit          = "org.scalameta" %% "munit" % munitVersion
-lazy val munitEffect    = "org.typelevel" %% "munit-cats-effect-3" % munitEffectVersion
+lazy val munitEffect    = "org.typelevel" %% "munit-cats-effect" % munitEffectVersion
 lazy val MUnitFramework = new TestFramework("munit.Framework")
 
 lazy val pprint         = "com.lihaoyi"                %% "pprint"        % pprintVersion
